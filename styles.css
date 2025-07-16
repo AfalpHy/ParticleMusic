@@ -15,6 +15,25 @@
      background-color: rgb(240, 240, 240);
  }
 
+ #title {
+     height: 2%;
+     padding: 20px;
+     text-align: center;
+     font-family: Arial, "宋体";
+     font-size: 36;
+     font-weight: bold;
+ }
+
+ .file-line {
+     text-align: center;
+     user-select: none;
+     padding: 10px;
+ }
+
+ .file-line:hover {
+     background-color: grey;
+ }
+
  .mainBody {
      height: 100%;
      width: 80%;
@@ -90,14 +109,6 @@
 
  #volume {
      width: 100px;
- }
-
- .file-info {
-     margin: 20px 0;
-     padding: 10px;
-     background-color: #f0f0f0;
-     border-radius: 4px;
-     text-align: center;
  }
 
  .lyrics-container {

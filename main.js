@@ -33,10 +33,10 @@ app.whenReady().then(() => {
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    minWidth: 800,
-    minHeight: 600,
-    width: 800,
-    height: 600,
+    minWidth: 1000,
+    minHeight: 800,
+    width: 1000,
+    height: 800,
     transparent: true,
     frame: false,
     webPreferences: {
@@ -61,7 +61,7 @@ function createWindow() {
     songPaths = await findSongs(path.resolve('music'))
     let songBases = songPaths.slice(0, songPaths.length);
     for (let i = 0; i < songBases.length; i++) {
-      songBases[i] = path.basename(songBases[i]);
+      songBases[i] = path.basename(songBases[i], path.extname(songBases[i]));
     }
     // Send to renderer
     mainWindow.webContents.send('initial-songs', songPaths, songBases)

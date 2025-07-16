@@ -7,6 +7,7 @@ const timeDisplay = document.getElementById('timeDisplay');
 const progressBar = document.getElementById('progress');
 
 let songPaths = [];
+let songBaseNames = [];
 let songIndex = 0;
 
 class LyricsPlayer {
@@ -144,7 +145,10 @@ lastBtn.addEventListener('click', () => {
   audioPlayer.src = `file://${songPaths[songIndex]}`;
   loadLyricsForSong(songPaths[songIndex].replace(/\.[^/.]+$/, '.lrc'));
   audioPlayer.currentTime = 0;
-  toggleBtn.textContent = '播放';
+  if (toggleBtn.textContent == '暂停') {
+    audioPlayer.play();
+  }
+
   updateTimeDisplay();
 });
 
@@ -165,7 +169,9 @@ nextBtn.addEventListener('click', () => {
   audioPlayer.src = `file://${songPaths[songIndex]}`;
   loadLyricsForSong(songPaths[songIndex].replace(/\.[^/.]+$/, '.lrc'));
   audioPlayer.currentTime = 0;
-  toggleBtn.textContent = '播放';
+  if (toggleBtn.textContent == '暂停') {
+    audioPlayer.play();
+  }
   updateTimeDisplay();
 });
 
@@ -185,6 +191,11 @@ audioPlayer.addEventListener('timeupdate', updateTimeDisplay);
 
 audioPlayer.addEventListener('ended', () => {
   audioPlayer.currentTime = 0;
+  songIndex += 1;
+  songIndex %= songPaths.length;
+  audioPlayer.src = `file://${songPaths[songIndex]}`;
+  loadLyricsForSong(songPaths[songIndex].replace(/\.[^/.]+$/, '.lrc'));
+  audioPlayer.play();
   updateTimeDisplay();
 });
 
@@ -192,6 +203,7 @@ audioPlayer.volume = volumeSlider.value;
 
 window.electronAPI.receiveInitialSongs((songs, songBases) => {
   songPaths = songs;
+  songBaseNames = songBases;
   audioPlayer.src = `file://${songPaths[0]}`;
   loadLyricsForSong(songPaths[songIndex].replace(/\.[^/.]+$/, '.lrc'));
   audioPlayer.currentTime = 0;
@@ -200,5 +212,17 @@ window.electronAPI.receiveInitialSongs((songs, songBases) => {
     lineElement.className = 'file-line';
     lineElement.textContent = songBases[i];
     document.getElementById('leftbody').appendChild(lineElement);
+    lineElement.addEventListener('dblclick', () => {
+      for (let i = 0; i < songBaseNames.length; i++) {
+        if (lineElement.textContent == songBaseNames[i]) {
+          songIndex = i;
+          break;
+        }
+      }
+      audioPlayer.src = `file://${songPaths[songIndex]}`;
+      loadLyricsForSong(songPaths[songIndex].replace(/\.[^/.]+$/, '.lrc'));
+      audioPlayer.play();
+      toggleBtn.textContent = '暂停';
+    });
   }
 });
