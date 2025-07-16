@@ -4,6 +4,7 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
+    "test": "NODE_ENV=development electron .",
     "build": "electron-builder --win --x64"
   },
   "keywords": [],
