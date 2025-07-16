@@ -8,49 +8,53 @@
 </head>
 
 <body>
-  <div class="mainBody">
-    <div class="custom-title-bar">
-      <div class="window-title">My App</div>
-      <div class="window-controls">
-        <button id="minimize">─</button>
-        <button id="maximize">□</button>
-        <button id="close">✕</button>
+  <div class="bigBody">
+
+    <div class="leftBody">
+      <div id="leftbody">
       </div>
     </div>
 
-    <div class="container">
+    <div class="mainBody">
 
-      <div class="controls">
-        <button id="selectFile">选择音乐文件</button>
-        <button id="playBtn" disabled>播放</button>
-        <button id="pauseBtn" disabled>暂停</button>
-        <button id="stopBtn" disabled>停止</button>
+      <div class="custom-title-bar">
+        <div class="window-title"></div>
+        <div class="window-controls">
+          <button id="minimize">─</button>
+          <button id="maximize">□</button>
+          <button id="close">✕</button>
+        </div>
+      </div>
+
+      <div class="container">
+
+        <div class="controls">
+          <button id="lastBtn">上一首</button>
+          <button id="toggleBtn">播放</button>
+          <button id="nextBtn">下一首</button>
+        </div>
 
         <div class="volume-control">
           <span>音量:</span>
           <input type="range" id="volume" min="0" max="1" step="0.1" value="0.7">
         </div>
+
+        <div class="lyrics-container">
+          <div id="lyrics-display"></div>
+        </div>
+
+        <div class="progress-container">
+          <input type="range" id="progress" min="0" max="100" value="0">
+        </div>
+
+        <div class="time-display" id="timeDisplay">00:00 / 00:00</div>
+
+        <audio id="audioPlayer"></audio>
       </div>
 
-      <div class="file-info" id="fileInfo">
-        未选择文件
-      </div>
-
-      <div class="lyrics-container">
-        <div id="lyrics-display"></div>
-      </div>
-
-      <div class="progress-container">
-        <input type="range" id="progress" min="0" max="100" value="0">
-      </div>
-
-      <div class="time-display" id="timeDisplay">00:00 / 00:00</div>
-
-      <audio id="audioPlayer"></audio>
     </div>
-
-    <script src="renderer.js"></script>
   </div>
+  <script src="renderer.js"></script>
 </body>
 
 </html>

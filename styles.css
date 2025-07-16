@@ -3,28 +3,39 @@
      padding: 0;
  }
 
- .mainBody {
+ .bigBody {
      height: 100vh;
-     width: 100vw;
-     border-radius: 2vh;
-     background-color: white;
+     display: flex;
+ }
+
+ .leftBody {
+     height: 100%;
+     width: 20%;
+     border-radius: 2vh 0 0 2vh;
+     background-color: rgb(240, 240, 240);
+ }
+
+ .mainBody {
+     height: 100%;
+     width: 80%;
+     border-radius: 0 2vh 2vh 0;
+     background-color: rgb(247, 247, 247);
+
  }
 
  .custom-title-bar {
      -webkit-app-region: drag;
      /* Allows window dragging */
-     height: 30px;
+     height: 50px;
      border-radius: 2vh;
-     background: white;
-     /* Dark title bar color */
-     color: white;
+     background: rgb(247, 247, 247);
      display: flex;
      justify-content: space-between;
      align-items: center;
  }
 
  .custom-title-bar button {
-     background-color: white;
+     background-color: rgb(247, 247, 247);
      border: none;
      border-radius: 2vh;
      cursor: pointer;
@@ -39,32 +50,30 @@
 
  .window-controls button {
      border: none;
+     /* word color */
      color: grey;
- }
-
- .window-controls button:hover {
-     background-color: white;
  }
 
  .container {
      width: 80%;
+     height: 75%;
      margin: 0 auto;
      background-color: white;
-     padding: 20px;
+     padding: 5%;
      border-radius: 8px;
+     position: relative;
  }
 
  .controls {
-     display: flex;
-     justify-content: center;
-     align-items: center;
-     margin: 20px 0;
-     gap: 10px;
+     position: absolute;
+     top: 90%;
+     left: 50%;
+     transform: translate(-50%, 0%);
  }
 
  button {
-     padding: 8px 16px;
-     background-color: #4CAF50;
+     padding: 8px 20px;
+     background-color: red;
      color: white;
      border: none;
      border-radius: 4px;
@@ -72,19 +81,11 @@
      font-size: 16px;
  }
 
- button:hover {
-     background-color: #45a049;
- }
-
- button:disabled {
-     background-color: #cccccc;
-     cursor: not-allowed;
- }
-
  .volume-control {
-     display: flex;
-     align-items: center;
-     gap: 10px;
+     position: absolute;
+     top: 80%;
+     left: 48%;
+     transform: translate(-50%, 0%);
  }
 
  #volume {
@@ -96,11 +97,12 @@
      padding: 10px;
      background-color: #f0f0f0;
      border-radius: 4px;
+     text-align: center;
  }
 
  .lyrics-container {
      position: absolute;
-     top: 50%;
+     top: 30%;
      left: 50%;
      transform: translate(-50%, -50%);
      width: 80%;
@@ -125,26 +127,22 @@
      text-shadow: 0 0 5px rgba(29, 185, 84, 0.3);
  }
 
- audio {
-     width: 100%;
-     margin-top: 20px;
- }
-
- .time-display {
-     position: absolute;
-     top: 90%;
-     left: 50%;
-     transform: translate(-50%, -50%);
-     text-align: center;
-     font-family: Arial, sans-serif;
- }
-
  .progress-container {
-     top: 80%;
-     width: 80%;
      position: absolute;
+     top: 70%;
+     left: 50%;
+     width: 80%;
+     transform: translate(-50%, 0%);
  }
 
  #progress {
      width: 100%;
+ }
+
+ .time-display {
+     position: absolute;
+     top: 75%;
+     left: 50%;
+     transform: translate(-50%, 0%);
+     font-family: Arial, sans-serif;
  }

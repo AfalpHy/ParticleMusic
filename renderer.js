@@ -1,13 +1,13 @@
-
-const selectFileBtn = document.getElementById('selectFile');
-const playBtn = document.getElementById('playBtn');
-const pauseBtn = document.getElementById('pauseBtn');
-const stopBtn = document.getElementById('stopBtn');
+const lastBtn = document.getElementById('lastBtn');
+const toggleBtn = document.getElementById('toggleBtn');
+const nextBtn = document.getElementById('nextBtn');
 const volumeSlider = document.getElementById('volume');
-const fileInfoDiv = document.getElementById('fileInfo');
 const audioPlayer = document.getElementById('audioPlayer');
 const timeDisplay = document.getElementById('timeDisplay');
 const progressBar = document.getElementById('progress');
+
+let songPaths = [];
+let songIndex = 0;
 
 class LyricsPlayer {
   constructor(audioElement) {
@@ -138,36 +138,35 @@ function updateTimeDisplay() {
   }
 }
 
-selectFileBtn.addEventListener('click', async () => {
-  const filePaths = await window.electronAPI.openFileDialog();
-
-  if (filePaths && filePaths.length > 0) {
-    const filePath = filePaths[0];
-    fileInfoDiv.textContent = `当前文件: ${filePath}`;
-    audioPlayer.src = `file://${filePath}`;
-
-    loadLyricsForSong(filePath.replace(/\.[^/.]+$/, '.lrc'));
-
-    playBtn.disabled = false;
-    pauseBtn.disabled = false;
-    stopBtn.disabled = false;
-  }
-});
-
-playBtn.addEventListener('click', () => {
-  audioPlayer.play();
-  window.electronAPI.sendPlayerCommand('play');
-});
-
-pauseBtn.addEventListener('click', () => {
+lastBtn.addEventListener('click', () => {
   audioPlayer.pause();
-  window.electronAPI.sendPlayerCommand('pause');
-});
-
-stopBtn.addEventListener('click', () => {
-  audioPlayer.pause();
+  if (songIndex > 0) songIndex -= 1;
+  audioPlayer.src = `file://${songPaths[songIndex]}`;
+  loadLyricsForSong(songPaths[songIndex].replace(/\.[^/.]+$/, '.lrc'));
   audioPlayer.currentTime = 0;
-  window.electronAPI.sendPlayerCommand('stop');
+  toggleBtn.textContent = '播放';
+  updateTimeDisplay();
+});
+
+toggleBtn.addEventListener('click', () => {
+  if (toggleBtn.textContent == '播放') {
+    toggleBtn.textContent = '暂停';
+    audioPlayer.play();
+  } else {
+    toggleBtn.textContent = '播放';
+    audioPlayer.pause();
+  }
+  updateTimeDisplay();
+});
+
+nextBtn.addEventListener('click', () => {
+  audioPlayer.pause();
+  if (songIndex < songPaths.length - 1) songIndex += 1;
+  audioPlayer.src = `file://${songPaths[songIndex]}`;
+  loadLyricsForSong(songPaths[songIndex].replace(/\.[^/.]+$/, '.lrc'));
+  audioPlayer.currentTime = 0;
+  toggleBtn.textContent = '播放';
+  updateTimeDisplay();
 });
 
 volumeSlider.addEventListener('input', () => {
@@ -187,15 +186,19 @@ audioPlayer.addEventListener('timeupdate', updateTimeDisplay);
 audioPlayer.addEventListener('ended', () => {
   audioPlayer.currentTime = 0;
   updateTimeDisplay();
-  window.electronAPI.sendPlayerCommand('stopped');
 });
 
 audioPlayer.volume = volumeSlider.value;
 
-window.electronAPI.onPlayerControl((command) => {
-  console.log('Received player command:', command);
-});
-
-window.electronAPI.onVolumeChanged((volume) => {
-  console.log('Volume changed to:', volume);
+window.electronAPI.receiveInitialSongs((songs, songBases) => {
+  songPaths = songs;
+  audioPlayer.src = `file://${songPaths[0]}`;
+  loadLyricsForSong(songPaths[songIndex].replace(/\.[^/.]+$/, '.lrc'));
+  audioPlayer.currentTime = 0;
+  for (let i = 0; i < songBases.length; i++) {
+    const lineElement = document.createElement('div');
+    lineElement.className = 'file-line';
+    lineElement.textContent = songBases[i];
+    document.getElementById('leftbody').appendChild(lineElement);
+  }
 });

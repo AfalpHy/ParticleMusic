@@ -7,16 +7,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   closeWindow: () => ipcRenderer.send('window-close'),
 
-  openFileDialog: () => ipcRenderer.invoke('open-file-dialog'),
-
-  sendPlayerCommand: (command) => ipcRenderer.send('player-control', command),
-
   setVolume: (volume) => ipcRenderer.send('set-volume', volume),
 
-  onPlayerControl: (callback) => {
-    ipcRenderer.on('player-control', (event, command) => callback(command));
-  },
-  onVolumeChanged: (callback) => {
-    ipcRenderer.on('volume-changed', (event, volume) => callback(volume));
+  receiveInitialSongs: (callback) => {
+    ipcRenderer.on(
+        'initial-songs',
+        (event, songs, songBases) => callback(songs, songBases))
   }
 });
