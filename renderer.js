@@ -1,9 +1,9 @@
-const lastBtn = document.getElementById('lastBtn');
-const playOrStopBtn = document.getElementById('playOrStopBtn');
-const nextBtn = document.getElementById('nextBtn');
+const lastBtn = document.getElementById('last-btn');
+const playStopBtn = document.getElementById('play-stop-btn');
+const nextBtn = document.getElementById('next-btn');
 const volumeSlider = document.getElementById('volume');
-const audioPlayer = document.getElementById('audioPlayer');
-const timeDisplay = document.getElementById('timeDisplay');
+const audioPlayer = document.getElementById('audio-player');
+const timeDisplay = document.getElementById('time-display');
 const progressBar = document.getElementById('progress');
 
 let songPaths = [];
@@ -151,7 +151,7 @@ lastBtn.addEventListener('click', () => {
   audioPlayer.src = `file://${songPaths[songIndex]}`;
   loadLyricsForSong(songPaths[songIndex].replace(/\.[^/.]+$/, '.lrc'));
   audioPlayer.currentTime = 0;
-  if (playOrStopBtn.textContent == '暂停') {
+  if (playStopBtn.textContent == '暂停') {
     audioPlayer.play();
   }
 
@@ -159,13 +159,13 @@ lastBtn.addEventListener('click', () => {
 });
 
 
-playOrStopBtn.addEventListener('click', () => {
-  if (playOrStopBtn.textContent == '播放') {
-    playOrStopBtn.textContent = '暂停';
+playStopBtn.addEventListener('click', () => {
+  if (playStopBtn.textContent == '播放') {
+    playStopBtn.textContent = '暂停';
     document.getElementById('lyrics-body').classList.add('visible');
     audioPlayer.play();
   } else {
-    playOrStopBtn.textContent = '播放';
+    playStopBtn.textContent = '播放';
     audioPlayer.pause();
   }
   updateTimeDisplay();
@@ -177,7 +177,7 @@ nextBtn.addEventListener('click', () => {
   audioPlayer.src = `file://${songPaths[songIndex]}`;
   loadLyricsForSong(songPaths[songIndex].replace(/\.[^/.]+$/, '.lrc'));
   audioPlayer.currentTime = 0;
-  if (playOrStopBtn.textContent == '暂停') {
+  if (playStopBtn.textContent == '暂停') {
     audioPlayer.play();
   }
   updateTimeDisplay();
@@ -219,7 +219,7 @@ window.electronAPI.receiveInitialSongs((songs, songBases) => {
     const lineElement = document.createElement('div');
     lineElement.className = 'file-line';
     lineElement.textContent = songBases[i];
-    document.getElementById('leftbody').appendChild(lineElement);
+    document.getElementById('playList').appendChild(lineElement);
     lineElement.addEventListener('dblclick', () => {
       for (let i = 0; i < songBaseNames.length; i++) {
         if (lineElement.textContent == songBaseNames[i]) {
@@ -230,7 +230,7 @@ window.electronAPI.receiveInitialSongs((songs, songBases) => {
       audioPlayer.src = `file://${songPaths[songIndex]}`;
       loadLyricsForSong(songPaths[songIndex].replace(/\.[^/.]+$/, '.lrc'));
       audioPlayer.play();
-      playOrStopBtn.textContent = '暂停';
+      playStopBtn.textContent = '暂停';
     });
   }
 });
