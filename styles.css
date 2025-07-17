@@ -2,13 +2,13 @@
      margin: 0;
  }
 
- .bigBody {
+ .entireBody {
      height: 100vh;
      position: relative;
      overflow: hidden;
  }
 
- .leftBody {
+ .sideBar {
      height: 100%;
      width: 20%;
      border-radius: 2vh 0 0 2vh;
@@ -173,7 +173,7 @@
      width: 100%;
  }
 
- .time-display {
+ #timeDisplay {
      position: absolute;
      top: 75%;
      left: 50%;

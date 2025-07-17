@@ -1,5 +1,5 @@
 const lastBtn = document.getElementById('lastBtn');
-const toggleBtn = document.getElementById('toggleBtn');
+const playOrStopBtn = document.getElementById('playOrStopBtn');
 const nextBtn = document.getElementById('nextBtn');
 const volumeSlider = document.getElementById('volume');
 const audioPlayer = document.getElementById('audioPlayer');
@@ -151,7 +151,7 @@ lastBtn.addEventListener('click', () => {
   audioPlayer.src = `file://${songPaths[songIndex]}`;
   loadLyricsForSong(songPaths[songIndex].replace(/\.[^/.]+$/, '.lrc'));
   audioPlayer.currentTime = 0;
-  if (toggleBtn.textContent == '暂停') {
+  if (playOrStopBtn.textContent == '暂停') {
     audioPlayer.play();
   }
 
@@ -159,13 +159,13 @@ lastBtn.addEventListener('click', () => {
 });
 
 
-toggleBtn.addEventListener('click', () => {
-  if (toggleBtn.textContent == '播放') {
-    toggleBtn.textContent = '暂停';
+playOrStopBtn.addEventListener('click', () => {
+  if (playOrStopBtn.textContent == '播放') {
+    playOrStopBtn.textContent = '暂停';
     document.getElementById('lyrics-body').classList.add('visible');
     audioPlayer.play();
   } else {
-    toggleBtn.textContent = '播放';
+    playOrStopBtn.textContent = '播放';
     audioPlayer.pause();
   }
   updateTimeDisplay();
@@ -177,7 +177,7 @@ nextBtn.addEventListener('click', () => {
   audioPlayer.src = `file://${songPaths[songIndex]}`;
   loadLyricsForSong(songPaths[songIndex].replace(/\.[^/.]+$/, '.lrc'));
   audioPlayer.currentTime = 0;
-  if (toggleBtn.textContent == '暂停') {
+  if (playOrStopBtn.textContent == '暂停') {
     audioPlayer.play();
   }
   updateTimeDisplay();
@@ -230,7 +230,7 @@ window.electronAPI.receiveInitialSongs((songs, songBases) => {
       audioPlayer.src = `file://${songPaths[songIndex]}`;
       loadLyricsForSong(songPaths[songIndex].replace(/\.[^/.]+$/, '.lrc'));
       audioPlayer.play();
-      toggleBtn.textContent = '暂停';
+      playOrStopBtn.textContent = '暂停';
     });
   }
 });
