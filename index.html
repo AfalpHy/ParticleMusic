@@ -26,33 +26,31 @@
           <button class="close">✕</button>
         </div>
       </div>
+    </div>
 
-      <div class="container">
-
-        <div class="controls">
-          <button id="lastBtn">上一首</button>
-          <button id="playOrStopBtn">播放</button>
-          <button id="nextBtn">下一首</button>
-        </div>
-
-        <div class="volume-control">
-          <span>音量:</span>
-          <input type="range" id="volume" min="0" max="1" step="0.1" value="0.7">
-        </div>
-
-
-        <div class="progress-container">
-          <input type="range" id="progress" min="0" max="100" value="0">
-        </div>
-
-        <div id="timeDisplay">00:00 / 00:00</div>
-
-        <audio id="audioPlayer"></audio>
+    <div class="container">
+      <div class="controls">
+        <button id="lastBtn">上一首</button>
+        <button id="playOrStopBtn">播放</button>
+        <button id="nextBtn">下一首</button>
       </div>
 
-    </div>
-    <div id="lyrics-body">
+      <div id="timeDisplay">00:00 / 00:00</div>
 
+      <div class="progress-container">
+        <input type="range" id="progress" min="0" max="100" value="0">
+      </div>
+
+      <div class="volume-control">
+        <span>音量:</span>
+        <input type="range" id="volume" min="0" max="1" step="0.1" value="0.7">
+      </div>
+
+
+      <audio id="audioPlayer"></audio>
+    </div>
+
+    <div id="lyrics-body">
       <div class="custom-title-bar">
         <div></div>
         <div class="window-controls">

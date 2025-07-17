@@ -9,10 +9,10 @@
  }
 
  .sideBar {
-     height: 100%;
+     height: 90%;
      width: 20%;
-     border-radius: 2vh 0 0 2vh;
-     background-color: rgb(240, 240, 240);
+     border-radius: 2vh 0 0 0;
+     background-color: rgb(230, 230, 230);
  }
 
  #title {
@@ -37,11 +37,11 @@
 
  .mainBody {
      position: absolute;
-     height: 100%;
+     height: 90%;
      width: 80%;
      top: 0%;
      left: 20%;
-     border-radius: 0 2vh 2vh 0;
+     border-radius: 0 2vh 0 0;
      background-color: rgb(247, 247, 247);
  }
 
@@ -96,25 +96,22 @@
 
  .container {
      position: absolute;
-     top: 5%;
-     width: 80%;
-     height: 75%;
-     margin: 0 auto;
-     background-color: white;
-     padding: 5%;
-     border-radius: 8px;
-     position: relative;
+     top: 90%;
+     width: 100%;
+     height: 10%;
+     background-color: rgb(240, 240, 240);
+     border-radius: 0 0 2vh 2vh;
  }
 
  .controls {
      position: absolute;
-     top: 90%;
+     top: 0%;
      left: 50%;
      transform: translate(-50%, 0%);
  }
 
  button {
-     padding: 8px 20px;
+     padding: 4px 10px;
      background-color: red;
      color: white;
      border: none;
@@ -125,12 +122,13 @@
 
  .volume-control {
      position: absolute;
-     top: 80%;
-     left: 48%;
+     top: 60%;
+     left: 85%;
      transform: translate(-50%, 0%);
  }
 
  #volume {
+     height: 5px;
      width: 100px;
  }
 
@@ -164,18 +162,18 @@
  .progress-container {
      position: absolute;
      top: 70%;
-     left: 50%;
-     width: 80%;
-     transform: translate(-50%, 0%);
+     left: 25%;
+     width: 100%;
  }
 
  #progress {
-     width: 100%;
+     height: 5px;
+     width: 50%;
  }
 
  #timeDisplay {
      position: absolute;
-     top: 75%;
+     top: 60%;
      left: 50%;
      transform: translate(-50%, 0%);
      font-family: Arial, sans-serif;
