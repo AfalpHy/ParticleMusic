@@ -1,11 +1,11 @@
  body {
      margin: 0;
-     padding: 0;
  }
 
  .bigBody {
      height: 100vh;
-     display: flex;
+     position: relative;
+     overflow: hidden;
  }
 
  .leftBody {
@@ -22,6 +22,7 @@
      font-family: Arial, "宋体";
      font-size: 36;
      font-weight: bold;
+     user-select: none;
  }
 
  .file-line {
@@ -35,45 +36,67 @@
  }
 
  .mainBody {
+     position: absolute;
      height: 100%;
      width: 80%;
+     top: 0%;
+     left: 20%;
      border-radius: 0 2vh 2vh 0;
      background-color: rgb(247, 247, 247);
+ }
 
+ #lyrics-body {
+     position: absolute;
+     height: 90%;
+     width: 100%;
+     top: 0%;
+     left: 0%;
+     border-radius: 2vh 2vh 0 0;
+     background-image: url('bg.jpg');
+     background-size: cover;
+     background-position: center;
+     transform: translateY(100vh);
+     transition: transform 0.5s ease;
+     visibility: hidden;
+ }
+
+ #lyrics-body.visible {
+     transform: translateY(0);
+     visibility: visible;
  }
 
  .custom-title-bar {
-     -webkit-app-region: drag;
      /* Allows window dragging */
-     height: 50px;
-     border-radius: 2vh;
-     background: rgb(247, 247, 247);
+     -webkit-app-region: drag;
+     position: absolute;
+     top: 0%;
+     left: 0%;
+     height: 5%;
+     width: 100%;
+     border-radius: 0 2vh 0 0;
      display: flex;
      justify-content: space-between;
      align-items: center;
  }
 
  .custom-title-bar button {
-     background-color: rgb(247, 247, 247);
+     background-color: rgba(0, 0, 0, 0);
      border: none;
      border-radius: 2vh;
      cursor: pointer;
      font-size: 16px;
+     color: grey;
+     user-select: none;
  }
 
  .window-controls {
      -webkit-app-region: no-drag;
      display: flex;
-     gap: 10px;
- }
-
- .window-controls button {
-     border: none;
-     /* word color */
-     color: grey;
  }
 
  .container {
+     position: absolute;
+     top: 5%;
      width: 80%;
      height: 75%;
      margin: 0 auto;

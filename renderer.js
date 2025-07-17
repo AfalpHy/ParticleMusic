@@ -110,14 +110,20 @@ async function loadLyricsForSong(lyricPatg) {
   }
 }
 
-document.getElementById('minimize')
-    .addEventListener('click', () => {window.electronAPI.minimizeWindow()})
+document.querySelectorAll('.minimize')
+    .forEach(
+        element => {element.addEventListener(
+            'click', () => {window.electronAPI.minimizeWindow()})});
 
-document.getElementById('maximize')
-    .addEventListener('click', () => {window.electronAPI.toggleWindow()})
+document.querySelectorAll('.maximize')
+    .forEach(
+        element => {element.addEventListener(
+            'click', () => {window.electronAPI.toggleWindow()})});
 
-document.getElementById('close').addEventListener(
-    'click', () => {window.electronAPI.closeWindow()})
+document.querySelectorAll('.close').forEach(
+    element => {element.addEventListener(
+        'click', () => {window.electronAPI.closeWindow()})});
+
 
 function formatTime(seconds) {
   const minutes = Math.floor(seconds / 60);
@@ -152,9 +158,11 @@ lastBtn.addEventListener('click', () => {
   updateTimeDisplay();
 });
 
+
 toggleBtn.addEventListener('click', () => {
   if (toggleBtn.textContent == '播放') {
     toggleBtn.textContent = '暂停';
+    document.getElementById('lyrics-body').classList.add('visible');
     audioPlayer.play();
   } else {
     toggleBtn.textContent = '播放';

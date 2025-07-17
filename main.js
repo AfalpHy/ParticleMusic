@@ -33,9 +33,9 @@ app.whenReady().then(() => {
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    minWidth: 1000,
+    minWidth: 1200,
     minHeight: 800,
-    width: 1000,
+    width: 1200,
     height: 800,
     transparent: true,
     frame: false,
@@ -74,7 +74,9 @@ app.on('window-all-closed', () => {
   }
 });
 
-ipcMain.on('window-close', () => mainWindow.close())
+ipcMain.on('window-close', () => {
+  mainWindow.close();
+})
 
 ipcMain.on('window-minimize', () => {mainWindow.minimize()})
 

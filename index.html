@@ -18,13 +18,12 @@
     </div>
 
     <div class="mainBody">
-
       <div class="custom-title-bar">
-        <div class="window-title"></div>
+        <div></div>
         <div class="window-controls">
-          <button id="minimize">─</button>
-          <button id="maximize">□</button>
-          <button id="close">✕</button>
+          <button class="minimize">─</button>
+          <button class="maximize">□</button>
+          <button class="close">✕</button>
         </div>
       </div>
 
@@ -41,9 +40,6 @@
           <input type="range" id="volume" min="0" max="1" step="0.1" value="0.7">
         </div>
 
-        <div class="lyrics-container">
-          <div id="lyrics-display"></div>
-        </div>
 
         <div class="progress-container">
           <input type="range" id="progress" min="0" max="100" value="0">
@@ -54,6 +50,20 @@
         <audio id="audioPlayer"></audio>
       </div>
 
+    </div>
+    <div id="lyrics-body">
+
+      <div class="custom-title-bar">
+        <div></div>
+        <div class="window-controls">
+          <button class="minimize">─</button>
+          <button class="maximize">□</button>
+          <button class="close">✕</button>
+        </div>
+      </div>
+      <div class="lyrics-container">
+        <div id="lyrics-display"></div>
+      </div>
     </div>
   </div>
   <script src="renderer.js"></script>
