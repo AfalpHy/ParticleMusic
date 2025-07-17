@@ -25,6 +25,11 @@
      user-select: none;
  }
 
+ #playlist {
+     padding: 60px 0 0 0;
+     text-align: center;
+ }
+
  .file-line {
      text-align: center;
      user-select: none;
@@ -43,6 +48,18 @@
      left: 20%;
      border-radius: 0 2vh 0 0;
      background-color: rgb(247, 247, 247);
+ }
+
+ .song-list {
+     position: absolute;
+     top: 30%;
+     left: 50%;
+     transform: translateX(-50%);
+ }
+
+ /* For modern browsers (Chrome, Safari, Edge) */
+ ::-webkit-scrollbar {
+     display: none;
  }
 
  #lyrics-body {

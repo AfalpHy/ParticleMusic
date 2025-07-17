@@ -9,9 +9,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   setVolume: (volume) => ipcRenderer.send('set-volume', volume),
 
+  getSongs: () => ipcRenderer.send('get-songs'),
+
   receiveInitialSongs: (callback) => {
     ipcRenderer.on(
         'initial-songs',
-        (event, songs, songBases) => callback(songs, songBases))
+        (event, songPaths, songBases) => callback(songPaths, songBases))
   }
 });

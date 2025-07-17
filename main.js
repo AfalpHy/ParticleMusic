@@ -2,23 +2,6 @@ const {app, BrowserWindow, ipcMain, dialog} = require('electron');
 const fs = require('fs');
 const path = require('path');
 
-// Global variable to store songs
-let songPaths = [];
-
-async function findSongs(dirPath) {
-  try {
-    const files = await fs.promises.readdir(dirPath)
-    return files
-        .filter(
-            file => ['.mp3', '.wav', '.flac', '.aac', '.ogg'].includes(
-                path.extname(file).toLowerCase()))
-        .map(file => path.join(dirPath, file))
-  } catch (error) {
-    console.error('Error finding songs:', error)
-    return []
-  }
-}
-
 let mainWindow;
 
 app.whenReady().then(() => {
@@ -55,17 +38,6 @@ function createWindow() {
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
-
-  // Find songs when window is ready
-  mainWindow.webContents.on('did-finish-load', async () => {
-    songPaths = await findSongs(path.resolve('music'))
-    let songBases = songPaths.slice(0, songPaths.length);
-    for (let i = 0; i < songBases.length; i++) {
-      songBases[i] = path.basename(songBases[i], path.extname(songBases[i]));
-    }
-    // Send to renderer
-    mainWindow.webContents.send('initial-songs', songPaths, songBases)
-  })
 }
 
 app.on('window-all-closed', () => {
@@ -85,3 +57,27 @@ ipcMain.on(
     () => {
         mainWindow.isMaximized() ? mainWindow.unmaximize() :
                                    mainWindow.maximize()})
+
+async function findSongs(dirPath) {
+  try {
+    const files = await fs.promises.readdir(dirPath)
+    return files
+        .filter(
+            file => ['.mp3', '.wav', '.flac', '.aac', '.ogg'].includes(
+                path.extname(file).toLowerCase()))
+        .map(file => path.join(dirPath, file))
+  } catch (error) {
+    console.error('Error finding songs:', error)
+    return []
+  }
+}
+
+ipcMain.on('get-songs', async () => {
+  let songPaths = await findSongs(path.resolve('music'))
+  let songBases = songPaths.slice(0, songPaths.length);
+  for (let i = 0; i < songBases.length; i++) {
+    songBases[i] = path.basename(songBases[i], path.extname(songBases[i]));
+  }
+  // Send to renderer
+  mainWindow.webContents.send('initial-songs', songPaths, songBases)
+})
