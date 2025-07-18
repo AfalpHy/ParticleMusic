@@ -13,7 +13,7 @@ document.querySelectorAll('.close').forEach(
         'click', () => {window.electronAPI.closeWindow()})});
 
 const lastBtn = document.getElementById('last-btn');
-const playStopBtn = document.getElementById('play-stop-btn');
+const playPauseBtn = document.getElementById('play-pause-btn');
 const nextBtn = document.getElementById('next-btn');
 const volumeSlider = document.getElementById('volume');
 const audioPlayer = document.getElementById('audio-player');
@@ -50,15 +50,15 @@ class Playlist {
     this.songIndex %= this.songPaths.length;
     this.load();
 
-    this.playOrStop();
+    this.playOrPause();
   }
 
-  playOrStop() {
+  playOrPause() {
     if (this.play) {
-      playStopBtn.textContent = 'stop';
+      playPauseBtn.textContent = 'pause';
       audioPlayer.play();
     } else {
-      playStopBtn.textContent = 'play';
+      playPauseBtn.textContent = 'play';
       audioPlayer.pause();
     }
   }
@@ -68,7 +68,7 @@ class Playlist {
     this.songIndex += 1;
     this.songIndex %= this.songPaths.length;
     this.load();
-    this.playOrStop();
+    this.playOrPause();
   }
 }
 
@@ -182,9 +182,9 @@ lastBtn.addEventListener('click', () => {
   playlist.last();
 });
 
-playStopBtn.addEventListener('click', () => {
+playPauseBtn.addEventListener('click', () => {
   playlist.play = !playlist.play;
-  playlist.playOrStop();
+  playlist.playOrPause();
 });
 
 nextBtn.addEventListener('click', () => {
@@ -243,7 +243,7 @@ window.electronAPI.receiveInitialSongs((songPaths, songBases) => {
       }
       playlist.load();
       playlist.play = !playlist.play;
-      playlist.playOrStop();
+      playlist.playOrPause();
     });
     document.querySelector('.song-list').appendChild(lineElement);
   }
