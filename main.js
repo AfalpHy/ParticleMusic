@@ -16,10 +16,10 @@ app.whenReady().then(() => {
 
 function createWindow() {
   mainWindow = new BrowserWindow({
-    minWidth: 1200,
-    minHeight: 800,
-    width: 1200,
-    height: 800,
+    minWidth: 1050,
+    minHeight: 750,
+    width: 1050,
+    height: 750,
     transparent: true,
     frame: false,
     webPreferences: {
@@ -52,11 +52,15 @@ ipcMain.on('window-close', () => {
 
 ipcMain.on('window-minimize', () => {mainWindow.minimize()})
 
-ipcMain.on(
-    'window-toggle',
-    () => {
-        mainWindow.isMaximized() ? mainWindow.unmaximize() :
-                                   mainWindow.maximize()})
+ipcMain.on('window-toggle', () => {
+  if (mainWindow.isMaximized()) {
+    mainWindow.unmaximize();
+    mainWindow.webContents.send('remove-corner');
+  } else {
+    mainWindow.webContents.send('add-corner');
+    mainWindow.maximize();
+  }
+})
 
 async function findSongs(dirPath) {
   try {

@@ -19,9 +19,16 @@ const volumeSlider = document.getElementById('volume');
 const audioPlayer = document.getElementById('audio-player');
 const timeDisplay = document.getElementById('time-display');
 const progressBar = document.getElementById('progress');
+const lyricsBody = document.getElementById('lyrics-body');
+
+document.getElementById('pull').addEventListener('click', () => {
+  lyricsPlayer.active = false;
+  lyricsBody.classList.remove('visible');
+});
 
 
 audioPlayer.volume = volumeSlider.value;
+
 class Playlist {
   constructor() {
     this.play = false;
@@ -49,8 +56,6 @@ class Playlist {
   playOrStop() {
     if (this.play) {
       playStopBtn.textContent = 'stop';
-      document.getElementById('lyrics-body').style.display = 'block';
-      document.getElementById('lyrics-body').classList.add('visible');
       audioPlayer.play();
     } else {
       playStopBtn.textContent = 'play';
@@ -73,15 +78,28 @@ document.getElementById('playlist').addEventListener('click', () => {
   window.electronAPI.getSongs();
 })
 
+document.querySelector('.container').addEventListener('click', function(e) {
+  if (e.target !== this) {
+    return;  // Exit if click came from any child element
+  }
+  if (!lyricsPlayer.active) {
+    lyricsPlayer.active = true;
+    lyricsBody.classList.add('visible');
+  }
+})
+
 class LyricsPlayer {
   constructor() {
+    this.active = false;
     this.lines = [];
+    this.lineElements = [];
     this.container = document.getElementById('lyrics-display');
     this.currentLineIndex = -1;
   }
 
   // Parse LRC file content
   parseLyrics(lrcText) {
+    this.container.innerHTML = '';
     const lines = lrcText.split('\n');
     this.lines = lines
                      .map(line => {
@@ -99,6 +117,16 @@ class LyricsPlayer {
                        return null;
                      })
                      .filter(line => line !== null);
+
+    this.lineElements = [];
+    for (let lineIndex = 0; lineIndex < this.lines.length; lineIndex++) {
+      const lineElement = document.createElement('div');
+      lineElement.className = 'lyrics-line';
+      lineElement.textContent = this.lines[lineIndex].text;
+      this.lineElements.push(lineElement);
+      this.container.appendChild(lineElement);
+    }
+    this.currentLineIndex = -1;
   }
 
   // Update display based on current audio time
@@ -114,43 +142,23 @@ class LyricsPlayer {
         break;
       }
     }
-
     // Only update if line changed
-    if (activeLineIndex !== this.currentLineIndex) {
+    if (activeLineIndex >= 0 && activeLineIndex !== this.currentLineIndex) {
       this.currentLineIndex = activeLineIndex;
       this.render();
     }
-
-    requestAnimationFrame(() => this.update());
   }
 
   render() {
-    this.container.innerHTML = '';
-
-    for (let i = -3; i <= 3; i++) {
-      const lineIndex = this.currentLineIndex + i;
-      if (lineIndex >= 0 && lineIndex < this.lines.length) {
-        const lineElement = document.createElement('div');
-        lineElement.className = 'lyrics-line';
-        lineElement.textContent = this.lines[lineIndex].text;
-
-        if (i === 0) {
-          lineElement.classList.add('current-line');
-        } else {
-          // Fade lines based on distance from current line
-          const opacity = 1 - Math.min(0.7, Math.abs(i) * 0.2);
-          lineElement.style.opacity = opacity;
-        }
-
-        this.container.appendChild(lineElement);
-      }
-    }
-
     // Auto-scroll to current line
-    const currentLineElement = this.container.querySelector('.current-line');
+    let currentLineElement = this.container.querySelector('.current-line');
     if (currentLineElement) {
-      currentLineElement.scrollTo({behavior: 'smooth', block: 'center'});
+      currentLineElement.classList.remove('current-line');
     }
+    currentLineElement = this.lineElements[this.currentLineIndex];
+    currentLineElement.classList.add('current-line');
+    if (this.active)
+      currentLineElement.scrollIntoView({behavior: 'smooth', block: 'center'});
   }
 }
 
@@ -163,8 +171,6 @@ async function loadLyricsForSong(lyricPatg) {
     const lrcText = await response.text();
 
     lyricsPlayer.parseLyrics(lrcText);
-    lyricsPlayer.update();
-
   } catch (error) {
     console.error('Error loading lyrics:', error);
     document.getElementById('lyrics-display').textContent =
@@ -172,11 +178,9 @@ async function loadLyricsForSong(lyricPatg) {
   }
 }
 
-
 lastBtn.addEventListener('click', () => {
   playlist.last();
 });
-
 
 playStopBtn.addEventListener('click', () => {
   playlist.play = !playlist.play;
@@ -244,3 +248,13 @@ window.electronAPI.receiveInitialSongs((songPaths, songBases) => {
     document.querySelector('.song-list').appendChild(lineElement);
   }
 });
+
+window.electronAPI.addCorner(() => {
+  document.querySelector('.entire-body').classList.add('corner');
+  lyricsBody.classList.add('corner');
+})
+
+window.electronAPI.removeCorner(() => {
+  document.querySelector('.entire-body').classList.remove('corner');
+  lyricsBody.classList.remove('corner');
+})
