@@ -21,7 +21,7 @@
 
  #title {
      height: 2%;
-     padding: 20px;
+     padding: 40px 0 0 0;
      text-align: center;
      font-family: Arial, "宋体";
      font-size: 36;
@@ -67,11 +67,11 @@
 
  #lyrics-body {
      position: absolute;
-     height: 90%;
+     height: 100%;
      width: 100%;
      top: 0%;
      left: 0%;
-     border-radius: 1vh 1vh 0 0;
+     border-radius: 1vh;
      background-image: url('bg.jpg');
      background-size: cover;
      background-position: center;
@@ -162,11 +162,11 @@
 
  .lyrics-container {
      position: absolute;
-     top: 30%;
+     top: 50%;
      left: 50%;
      transform: translate(-50%, -50%);
      width: 80%;
-     max-height: 30vh;
+     max-height: 70%;
      overflow-y: auto;
      text-align: center;
      font-family: Arial, "宋体";
