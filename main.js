@@ -83,10 +83,27 @@ ipcMain.on('get-songs', async () => {
     songBases[i] = path.basename(songBases[i], path.extname(songBases[i]));
   }
   // Send to renderer
-  mainWindow.webContents.send('initial-songs', songPaths, songBases)
+  mainWindow.webContents.send('initial-songs', songPaths, songBases);
+  for (let i = 0; i < songPaths.length; i++) {
+    const metadata = await getAudioMetadata(songPaths[i]);
+    mainWindow.webContents.send('add-song', metadata);
+  }
 })
 
 const musicMetadata = require('music-metadata');
+
+const formatDuration = (seconds) => {
+  if (isNaN(seconds)) return '00:00';
+
+  const minutes = Math.floor(seconds / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+
+  // Pad with leading zeros
+  const paddedMinutes = String(minutes).padStart(2, '0');
+  const paddedSeconds = String(remainingSeconds).padStart(2, '0');
+
+  return `${paddedMinutes}:${paddedSeconds}`;
+};
 
 async function getAudioMetadata(filePath) {
   try {
@@ -95,25 +112,11 @@ async function getAudioMetadata(filePath) {
       title: metadata.common.title ||
           path.basename(filePath, path.extname(filePath)),
       artist: metadata.common.artist || 'Unknown Artist',
-      album: metadata.common.album,
-      duration: metadata.format.duration,
-      picture: metadata.common.picture
+      album: metadata.common.album || 'Unknown',
+      duration: formatDuration(metadata.format.duration)
     };
   } catch (error) {
     console.error('Error reading metadata:', error);
     return null;
   }
 }
-
-
-ipcMain.on('open-file', async () => {
-  const {filePaths} = await dialog.showOpenDialog({
-    properties: ['openFile'],
-    filters: [{name: 'Audio Files', extensions: ['mp3']}]
-  });
-
-  if (filePaths.length > 0) {
-    const metadata = await getAudioMetadata(filePaths[0]);
-    console.log(metadata);
-  }
-});

@@ -11,8 +11,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   getSongs: () => ipcRenderer.send('get-songs'),
 
-  openFile: () => ipcRenderer.send('open-file'),
-
   receiveInitialSongs: (callback) => {ipcRenderer.on(
       'initial-songs',
       (event, songPaths, songBases) => callback(songPaths, songBases))},
@@ -20,7 +18,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
   addCorner:
       (callback) => {ipcRenderer.on('add-corner', (event) => callback())},
 
-  removeCorner: (callback) => {
-    ipcRenderer.on('remove-corner', (event) => callback())
+  removeCorner:
+      (callback) => {ipcRenderer.on('remove-corner', (event) => callback())},
+
+  addSong: (callback) => {
+    ipcRenderer.on('add-song', (event, metadata) => callback(metadata))
   }
 });

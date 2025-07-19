@@ -26,11 +26,6 @@ document.getElementById('pull').addEventListener('click', () => {
   lyricsBody.classList.remove('visible');
 });
 
-document.getElementById('open-file').addEventListener('click', async () => {
-  window.electronAPI.openFile();
-});
-
-
 audioPlayer.volume = volumeSlider.value;
 
 class Playlist {
@@ -234,23 +229,23 @@ window.electronAPI.receiveInitialSongs((songPaths, songBases) => {
   playlist.songBaseNames = songBases;
   playlist.load();
 
-  for (let i = 0; i < songBases.length; i++) {
-    const lineElement = document.createElement('div');
-    lineElement.className = 'file-line';
-    lineElement.textContent = songBases[i];
-    lineElement.addEventListener('dblclick', () => {
-      for (let i = 0; i < playlist.songBaseNames.length; i++) {
-        if (lineElement.textContent == playlist.songBaseNames[i]) {
-          playlist.songIndex = i;
-          break;
-        }
-      }
-      playlist.load();
-      playlist.play = !playlist.play;
-      playlist.playOrPause();
-    });
-    document.querySelector('.songs').appendChild(lineElement);
-  }
+  // for (let i = 0; i < songBases.length; i++) {
+  //   const lineElement = document.createElement('div');
+  //   lineElement.className = 'file-line';
+  //   lineElement.textContent = songBases[i];
+  //   lineElement.addEventListener('dblclick', () => {
+  //     for (let i = 0; i < playlist.songBaseNames.length; i++) {
+  //       if (lineElement.textContent == playlist.songBaseNames[i]) {
+  //         playlist.songIndex = i;
+  //         break;
+  //       }
+  //     }
+  //     playlist.load();
+  //     playlist.play = !playlist.play;
+  //     playlist.playOrPause();
+  //   });
+  //   document.querySelector('.songs').appendChild(lineElement);
+  // }
 });
 
 window.electronAPI.addCorner(() => {
@@ -261,4 +256,22 @@ window.electronAPI.addCorner(() => {
 window.electronAPI.removeCorner(() => {
   document.querySelector('.entire-body').classList.remove('corner');
   lyricsBody.classList.remove('corner');
+})
+
+let metaIndex = 0;
+window.electronAPI.addSong((metadata) => {
+  const message =
+      [metadata.title, metadata.artist, metadata.album, metadata.duration];
+  const songs = document.querySelector('.songs');
+  const lineElement = document.createElement('div');
+  lineElement.className = 'song-line';
+  const columnElement = document.createElement('div');
+  columnElement.textContent = metaIndex++;
+  lineElement.append(columnElement);
+  for (let i = 0; i < message.length; i++) {
+    const columnElement = document.createElement('div');
+    columnElement.textContent = message[i];
+    lineElement.append(columnElement);
+  }
+  songs.append(lineElement);
 })

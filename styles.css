@@ -34,16 +34,6 @@
      text-align: center;
  }
 
- .file-line {
-     text-align: center;
-     user-select: none;
-     padding: 10px;
- }
-
- .file-line:hover {
-     background-color: grey;
- }
-
  .main-body {
      position: absolute;
      height: 90%;
@@ -88,6 +78,13 @@
      }
  }
 
+ .song-line {
+     height: 5%;
+     width: 100%;
+     display: flex;
+     flex-direction: row;
+     justify-content: space-between;
+ }
 
  .lyrics-container::-webkit-scrollbar {
      display: none;
