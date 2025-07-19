@@ -23,5 +23,8 @@
     "win": {
       "target": "nsis"
     }
+  },
+  "dependencies": {
+    "music-metadata": "^11.7.0"
   }
 }

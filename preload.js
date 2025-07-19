@@ -11,6 +11,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   getSongs: () => ipcRenderer.send('get-songs'),
 
+  openFile: () => ipcRenderer.send('open-file'),
+
   receiveInitialSongs: (callback) => {ipcRenderer.on(
       'initial-songs',
       (event, songPaths, songBases) => callback(songPaths, songBases))},

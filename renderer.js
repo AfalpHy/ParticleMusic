@@ -26,6 +26,10 @@ document.getElementById('pull').addEventListener('click', () => {
   lyricsBody.classList.remove('visible');
 });
 
+document.getElementById('open-file').addEventListener('click', async () => {
+  window.electronAPI.openFile();
+});
+
 
 audioPlayer.volume = volumeSlider.value;
 
@@ -245,7 +249,7 @@ window.electronAPI.receiveInitialSongs((songPaths, songBases) => {
       playlist.play = !playlist.play;
       playlist.playOrPause();
     });
-    document.querySelector('.song-list').appendChild(lineElement);
+    document.querySelector('.songs').appendChild(lineElement);
   }
 });
 

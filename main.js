@@ -85,3 +85,35 @@ ipcMain.on('get-songs', async () => {
   // Send to renderer
   mainWindow.webContents.send('initial-songs', songPaths, songBases)
 })
+
+const musicMetadata = require('music-metadata');
+
+async function getAudioMetadata(filePath) {
+  try {
+    const metadata = await musicMetadata.parseFile(filePath);
+    return {
+      title: metadata.common.title ||
+          path.basename(filePath, path.extname(filePath)),
+      artist: metadata.common.artist || 'Unknown Artist',
+      album: metadata.common.album,
+      duration: metadata.format.duration,
+      picture: metadata.common.picture
+    };
+  } catch (error) {
+    console.error('Error reading metadata:', error);
+    return null;
+  }
+}
+
+
+ipcMain.on('open-file', async () => {
+  const {filePaths} = await dialog.showOpenDialog({
+    properties: ['openFile'],
+    filters: [{name: 'Audio Files', extensions: ['mp3']}]
+  });
+
+  if (filePaths.length > 0) {
+    const metadata = await getAudioMetadata(filePaths[0]);
+    console.log(metadata);
+  }
+});

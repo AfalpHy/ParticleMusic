@@ -55,13 +55,41 @@
 
  .song-list {
      position: absolute;
-     top: 30%;
-     left: 50%;
-     transform: translateX(-50%);
+     top: 10%;
+     height: 90%;
+     /* Create a gap between the scrollbar and the edge of the window */
+     width: 99%;
  }
 
- /* For modern browsers (Chrome, Safari, Edge) */
- ::-webkit-scrollbar {
+ .song-label {
+     height: 5%;
+     width: 100%;
+     display: flex;
+     flex-direction: row;
+     justify-content: space-between;
+ }
+
+ .songs {
+     position: absolute;
+     top: 5%;
+     overflow-y: auto;
+     scroll-behavior: smooth;
+     left: 0%;
+     height: 95%;
+     width: 100%;
+
+     &::-webkit-scrollbar {
+         width: 10px;
+     }
+
+     &::-webkit-scrollbar-thumb {
+         background-color: rgb(230, 230, 230);
+         border-radius: 5px;
+     }
+ }
+
+
+ .lyrics-container::-webkit-scrollbar {
      display: none;
  }
 
