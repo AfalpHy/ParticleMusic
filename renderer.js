@@ -230,8 +230,6 @@ progressBarElements.forEach(element => {
   element.addEventListener('input', () => {
     if (audioPlayer.duration) {
       const value = element.value / 100;
-      element.style.background = `linear-gradient(to right, black 0%, black ${
-          value}%, #d3d3d3 ${value}%, #d3d3d3 100%)`
       const seekTime = (element.value / 100) * audioPlayer.duration;
       audioPlayer.currentTime = seekTime;
     }

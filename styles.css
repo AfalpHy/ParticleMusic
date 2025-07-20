@@ -187,6 +187,7 @@
      appearance: none;
      height: 3px;
      width: 80%;
+     background-color: #d3d3d3;
 
      &::-webkit-slider-thumb {
          -webkit-appearance: none;
