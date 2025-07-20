@@ -12,13 +12,11 @@ document.querySelectorAll('.close').forEach(
     element => {element.addEventListener(
         'click', () => {window.electronAPI.closeWindow()})});
 
-const lastBtn = document.getElementById('last-btn');
-const playPauseBtn = document.getElementById('play-pause-btn');
-const nextBtn = document.getElementById('next-btn');
 const volumeSlider = document.getElementById('volume');
 const audioPlayer = document.getElementById('audio-player');
-const timeDisplay = document.getElementById('time-display');
-const progressBar = document.getElementById('progress');
+const currentTimeElements = document.querySelectorAll('.current-time');
+const totalTimeElements = document.querySelectorAll('.total-time');
+const progressBarElements = document.querySelectorAll('.progress');
 const lyricsBody = document.getElementById('lyrics-body');
 
 document.getElementById('pull').addEventListener('click', () => {
@@ -54,10 +52,14 @@ class Playlist {
 
   playOrPause() {
     if (this.play) {
-      playPauseBtn.style.backgroundImage = 'url(\'pictures/pause.png\')';
+      document.querySelectorAll('.play-pause-btn').forEach(element => {
+        element.style.backgroundImage = 'url(\'pictures/pause.png\')';
+      });
       audioPlayer.play();
     } else {
-      playPauseBtn.style.backgroundImage = 'url(\'pictures/play.png\')';
+      document.querySelectorAll('.play-pause-btn').forEach(element => {
+        element.style.backgroundImage = 'url(\'pictures/play.png\')';
+      });
       audioPlayer.pause();
     }
   }
@@ -77,15 +79,16 @@ document.getElementById('playlist').addEventListener('click', () => {
   window.electronAPI.getSongs();
 })
 
-document.querySelector('.container').addEventListener('click', function(e) {
-  if (e.target !== this) {
-    return;  // Exit if click came from any child element
-  }
-  if (!lyricsPlayer.active) {
-    lyricsPlayer.active = true;
-    lyricsBody.classList.add('visible');
-  }
-})
+document.getElementById('music-controls')
+    .addEventListener('click', function(e) {
+      if (e.target !== this) {
+        return;  // Exit if click came from any child element
+      }
+      if (!lyricsPlayer.active) {
+        lyricsPlayer.active = true;
+        lyricsBody.classList.add('visible');
+      }
+    })
 
 class LyricsPlayer {
   constructor() {
@@ -177,18 +180,21 @@ async function loadLyricsForSong(lyricPatg) {
   }
 }
 
-lastBtn.addEventListener('click', () => {
-  playlist.last();
-});
+document.querySelectorAll('.last-btn')
+    .forEach(element => {element.addEventListener('click', () => {
+               playlist.last();
+             })});
 
-playPauseBtn.addEventListener('click', () => {
-  playlist.play = !playlist.play;
-  playlist.playOrPause();
-});
+document.querySelectorAll('.play-pause-btn')
+    .forEach(element => {element.addEventListener('click', () => {
+               playlist.play = !playlist.play;
+               playlist.playOrPause();
+             })});
 
-nextBtn.addEventListener('click', () => {
-  playlist.next();
-});
+document.querySelectorAll('.next-btn')
+    .forEach(element => {element.addEventListener('click', () => {
+               playlist.next();
+             })});
 
 function formatTime(seconds) {
   const minutes = Math.floor(seconds / 60);
@@ -200,22 +206,37 @@ function formatTime(seconds) {
 function updateTimeDisplay() {
   const currentTime = audioPlayer.currentTime;
   const duration = audioPlayer.duration || 0;
-  timeDisplay.textContent =
-      `${formatTime(currentTime)} / ${formatTime(duration)}`;
+  currentTimeElements.forEach(element => {
+    element.textContent = `${formatTime(currentTime)}`;
+  });
+
+  totalTimeElements.forEach(element => {
+    element.textContent = `${formatTime(duration)}`;
+  });
 
   if (duration > 0) {
     const progress = (currentTime / duration) * 100;
-    progressBar.value = progress;
+    progressBarElements.forEach(element => {
+      element.style.background = `linear-gradient(to right, black 0%, black ${
+          progress}%, #d3d3d3 ${progress}%, #d3d3d3 100%)`;
+      element.value = progress;
+    })
+
     lyricsPlayer.update();
   }
 }
 
-progressBar.addEventListener('input', () => {
-  if (audioPlayer.duration) {
-    const seekTime = (progressBar.value / 100) * audioPlayer.duration;
-    audioPlayer.currentTime = seekTime;
-  }
-});
+progressBarElements.forEach(element => {
+  element.addEventListener('input', () => {
+    if (audioPlayer.duration) {
+      const value = element.value / 100;
+      element.style.background = `linear-gradient(to right, black 0%, black ${
+          value}%, #d3d3d3 ${value}%, #d3d3d3 100%)`
+      const seekTime = (element.value / 100) * audioPlayer.duration;
+      audioPlayer.currentTime = seekTime;
+    }
+  });
+})
 
 volumeSlider.addEventListener('input', () => {
   audioPlayer.volume = volumeSlider.value;
@@ -231,12 +252,12 @@ window.electronAPI.receiveInitialSongs((songPaths, songBases) => {
 });
 
 window.electronAPI.addCorner(() => {
-  document.querySelector('.entire-body').classList.add('corner');
+  document.getElementById('entire-body').classList.add('corner');
   lyricsBody.classList.add('corner');
 })
 
 window.electronAPI.removeCorner(() => {
-  document.querySelector('.entire-body').classList.remove('corner');
+  document.getElementById('entire-body').classList.remove('corner');
   lyricsBody.classList.remove('corner');
 })
 
@@ -244,7 +265,7 @@ let metaIndex = 0;
 window.electronAPI.addSong((metadata) => {
   const message =
       [metadata.title, metadata.artist, metadata.album, metadata.duration];
-  const songs = document.querySelector('.songs');
+  const songs = document.getElementById('songs');
   const lineElement = document.createElement('div');
   lineElement.className = 'song-line';
   const columnElement = document.createElement('div');
