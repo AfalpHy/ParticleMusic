@@ -253,12 +253,10 @@ window.electronAPI.receiveInitialSongs((songPaths, songBases) => {
 
 window.electronAPI.addCorner(() => {
   document.getElementById('entire-body').classList.add('corner');
-  lyricsBody.classList.add('corner');
 })
 
 window.electronAPI.removeCorner(() => {
   document.getElementById('entire-body').classList.remove('corner');
-  lyricsBody.classList.remove('corner');
 })
 
 let metaIndex = 0;

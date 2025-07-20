@@ -1,10 +1,13 @@
  body {
+     height: 100vh;
+     width: 100vw;
      margin: 0;
  }
 
  #entire-body {
-     height: 100vh;
-     border-radius: 1vh;
+     height: 100%;
+     width: 100%;
+     border-radius: 2vh;
      position: relative;
      overflow: hidden;
  }
@@ -84,6 +87,7 @@
      width: 100%;
      display: flex;
      flex-direction: row;
+     /* make the item evenly distributed */
      justify-content: space-between;
  }
 
@@ -219,17 +223,12 @@
      width: 100%;
      top: 0%;
      left: 0%;
-     border-radius: 1vh;
      background-image: url('pictures/bg.jpg');
      background-size: cover;
      background-position: center;
      /* use 150vh to retain the hidden effect during window maximization */
      transform: translateY(150vh);
      transition: transform 2s ease;
- }
-
- #lyrics-body.corner {
-     border-radius: 0;
  }
 
  #lyrics-body.visible {
