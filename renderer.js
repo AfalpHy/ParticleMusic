@@ -54,10 +54,10 @@ class Playlist {
 
   playOrPause() {
     if (this.play) {
-      playPauseBtn.textContent = 'pause';
+      playPauseBtn.style.backgroundImage = 'url(\'pictures/pause.png\')';
       audioPlayer.play();
     } else {
-      playPauseBtn.textContent = 'play';
+      playPauseBtn.style.backgroundImage = 'url(\'pictures/play.png\')';
       audioPlayer.pause();
     }
   }
@@ -228,24 +228,6 @@ window.electronAPI.receiveInitialSongs((songPaths, songBases) => {
   playlist.songPaths = songPaths;
   playlist.songBaseNames = songBases;
   playlist.load();
-
-  // for (let i = 0; i < songBases.length; i++) {
-  //   const lineElement = document.createElement('div');
-  //   lineElement.className = 'file-line';
-  //   lineElement.textContent = songBases[i];
-  //   lineElement.addEventListener('dblclick', () => {
-  //     for (let i = 0; i < playlist.songBaseNames.length; i++) {
-  //       if (lineElement.textContent == playlist.songBaseNames[i]) {
-  //         playlist.songIndex = i;
-  //         break;
-  //       }
-  //     }
-  //     playlist.load();
-  //     playlist.play = !playlist.play;
-  //     playlist.playOrPause();
-  //   });
-  //   document.querySelector('.songs').appendChild(lineElement);
-  // }
 });
 
 window.electronAPI.addCorner(() => {
@@ -274,4 +256,10 @@ window.electronAPI.addSong((metadata) => {
     lineElement.append(columnElement);
   }
   songs.append(lineElement);
+  lineElement.addEventListener('dblclick', () => {
+    playlist.songIndex = lineElement.children[0].textContent;
+    playlist.load();
+    playlist.play = true;
+    playlist.playOrPause();
+  });
 })

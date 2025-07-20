@@ -97,12 +97,43 @@
      top: 0%;
      left: 0%;
      border-radius: 1vh;
-     background-image: url('bg.jpg');
+     background-image: url('pictures/bg.jpg');
      background-size: cover;
      background-position: center;
      /* use 150vh to retain the hidden effect during window maximization */
      transform: translateY(150vh);
      transition: transform 2s ease;
+ }
+
+ #last-btn {
+     height: 20px;
+     width: 20px;
+     background-image: url('pictures/lastButton.png');
+     background-size: cover;
+     background-position: center;
+     border: none;
+     cursor: pointer;
+ }
+
+ #play-pause-btn {
+     height: 30px;
+     width: 30px;
+     background-image: url('pictures/play.png');
+     background-size: cover;
+     background-position: center;
+     border: none;
+     cursor: pointer;
+ }
+
+
+ #next-btn {
+     height: 20px;
+     width: 20px;
+     background-image: url('pictures/nextButton.png');
+     background-size: cover;
+     background-position: center;
+     border: none;
+     cursor: pointer;
  }
 
  #lyrics-body.corner {
@@ -161,16 +192,10 @@
      top: 0%;
      left: 50%;
      transform: translate(-50%, 0%);
- }
-
- button {
-     padding: 4px 10px;
-     background-color: red;
-     color: white;
-     border: none;
-     border-radius: 4px;
-     cursor: pointer;
-     font-size: 16px;
+     display: flex;
+     padding: 10px 0 0 0;
+     gap: 20px;
+     align-items: center;
  }
 
  .volume-control {
