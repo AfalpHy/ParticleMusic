@@ -79,15 +79,33 @@
      background-color: rgba(0, 0, 0, 0);
      border: none;
      cursor: pointer;
-     font-size: 20px;
-     color: grey;
-     user-select: none;
+     width: 15px;
+     height: 15px;
+     background-size: cover;
+     background-position: center;
  }
 
  .window-controls {
      -webkit-app-region: no-drag;
-     transform: translateX(-30px);
+     position: absolute;
+     top: 30px;
+     left: calc(100% - 120px);
      display: flex;
+     justify-content: space-between;
+     align-items: center;
+     gap: 15px;
+ }
+
+ .minimize {
+     background-image: url('pictures/minimize.png');
+ }
+
+ .maximize {
+     background-image: url('pictures/maximize.png');
+ }
+
+ .close {
+     background-image: url('pictures/close.png');
  }
 
  #song-list {

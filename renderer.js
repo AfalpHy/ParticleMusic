@@ -351,12 +351,18 @@ window.electronAPI.addCorner(() => {
   document.getElementById('entire-body').classList.add('corner');
   document.getElementById('sidebar').classList.add('adjustSize');
   document.getElementById('main-body').classList.add('adjustSize');
+  document.querySelectorAll('.maximize').forEach(element => {
+    element.style.backgroundImage = 'url(\'pictures/unmaximize.png\')';
+  });
 })
 
 window.electronAPI.removeCorner(() => {
   document.getElementById('entire-body').classList.remove('corner');
   document.getElementById('sidebar').classList.remove('adjustSize');
   document.getElementById('main-body').classList.remove('adjustSize');
+  document.querySelectorAll('.maximize').forEach(element => {
+    element.style.backgroundImage = 'url(\'pictures/maximize.png\')';
+  });
 })
 
 let metaIndex = 0;
