@@ -11,20 +11,8 @@
   "author": "",
   "license": "ISC",
   "description": "",
-  "devDependencies": {
-    "electron": "^37.2.1",
-    "electron-builder": "^26.0.12",
-    "electron-packager": "^17.1.2"
-  },
-  "build": {
-    "directories": {
-      "output": "output"
-    },
-    "win": {
-      "target": "nsis"
-    }
-  },
   "dependencies": {
+    "electron": "^37.2.1",
     "music-metadata": "^11.7.0"
   }
 }
