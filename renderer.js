@@ -203,6 +203,7 @@ function formatTime(seconds) {
       secs.toString().padStart(2, '0')}`;
 }
 
+let paintWhenUpdateTime = true;
 function updateTimeDisplay() {
   const currentTime = audioPlayer.currentTime;
   const duration = audioPlayer.duration || 0;
@@ -216,23 +217,39 @@ function updateTimeDisplay() {
 
   if (duration > 0) {
     const progress = (currentTime / duration) * 100;
-    progressBarElements.forEach(element => {
-      element.style.background = `linear-gradient(to right, black 0%, black ${
-          progress}%, #d3d3d3 ${progress}%, #d3d3d3 100%)`;
-      element.value = progress;
-    })
+    if (paintWhenUpdateTime) {
+      progressBarElements.forEach(element => {
+        element.style.background = `linear-gradient(to right, black 0%, black ${
+            progress}%, #d3d3d3 ${progress}%, #d3d3d3 100%)`;
+        element.value = progress;
+      })
+    }
 
     lyricsPlayer.update();
   }
 }
 
 progressBarElements.forEach(element => {
-  element.addEventListener('input', () => {
+  element.addEventListener('mousedown', () => {
+    paintWhenUpdateTime = false;
+  });
+})
+
+progressBarElements.forEach(element => {
+  element.addEventListener('mouseup', () => {
+    paintWhenUpdateTime = true;
     if (audioPlayer.duration) {
-      const value = element.value / 100;
       const seekTime = (element.value / 100) * audioPlayer.duration;
       audioPlayer.currentTime = seekTime;
     }
+  });
+})
+
+progressBarElements.forEach(element => {
+  element.addEventListener('input', () => {
+    const progress = element.value;
+    element.style.background = `linear-gradient(to right, black 0%, black ${
+        progress}%, #d3d3d3 ${progress}%, #d3d3d3 100%)`;
   });
 })
 
