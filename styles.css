@@ -279,9 +279,8 @@
      background-image: url('pictures/bg.jpg');
      background-size: cover;
      background-position: center;
-     /* use 150vh to retain the hidden effect during window maximization */
-     transform: translateY(150vh);
-     transition: transform 2s ease;
+     transform: translateY(100%);
+     transition: transform 1s ease;
  }
 
  #lyrics-body.visible {
