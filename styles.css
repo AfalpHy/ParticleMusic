@@ -68,7 +68,7 @@
      position: absolute;
      top: 0%;
      left: 0%;
-     height: 10%;
+     height: 75px;
      width: 100%;
      display: flex;
      justify-content: space-between;
@@ -92,10 +92,11 @@
 
  #song-list {
      position: absolute;
-     top: 10%;
-     height: 90%;
+     top: 75px;
+     /* calc(100%-75px) is wrong */
+     height: calc(100% - 75px);
      /* Create a gap between the scrollbar and the edge of the window */
-     width: 99%;
+     width: calc(100% - 5px);
  }
 
  #song-label {
