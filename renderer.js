@@ -31,6 +31,7 @@ class Playlist {
     this.play = false;
     this.songPaths = [];
     this.songBaseNames = [];
+    this.duration = [];
     this.songIndex = 0;
   }
 
@@ -39,16 +40,15 @@ class Playlist {
     audioPlayer.src = src;
     loadLyricsForSong(src.replace(/\.[^/.]+$/, '.lrc'));
     audioPlayer.currentTime = 0;
+    updateTimeDisplay();
   }
 
   last() {
-    if (this.songPaths.length) {
-      audioPlayer.pause();
-      this.songIndex += this.songPaths.length - 1;
-      this.songIndex %= this.songPaths.length;
-      this.load();
-      this.playOrPause();
-    }
+    audioPlayer.pause();
+    this.songIndex += this.songPaths.length - 1;
+    this.songIndex %= this.songPaths.length;
+    this.load();
+    this.playOrPause();
   }
 
   playOrPause() {
@@ -63,25 +63,21 @@ class Playlist {
       });
       audioPlayer.pause();
     }
-    if (this.songPaths.length) {
-      document.querySelectorAll('.song-line').forEach(element => {
-        if (element.children[0].textContent == this.songIndex) {
-          element.style.background = 'rgba(220, 220, 220, 0.5)';
-        } else {
-          element.style.background = 'none';
-        }
-      })
-    }
+    document.querySelectorAll('.song-line').forEach(element => {
+      if (element.children[0].textContent == this.songIndex) {
+        element.style.background = 'rgba(220, 220, 220, 0.5)';
+      } else {
+        element.style.background = 'none';
+      }
+    })
   }
 
   next() {
-    if (this.songPaths.length) {
-      audioPlayer.pause();
-      this.songIndex += 1;
-      this.songIndex %= this.songPaths.length;
-      this.load();
-      this.playOrPause();
-    }
+    audioPlayer.pause();
+    this.songIndex += 1;
+    this.songIndex %= this.songPaths.length;
+    this.load();
+    this.playOrPause();
   }
 }
 
@@ -194,7 +190,9 @@ async function loadLyricsForSong(lyricPatg) {
 
 document.querySelectorAll('.last-btn')
     .forEach(element => {element.addEventListener('click', () => {
-               playlist.last();
+               if (playlist.songPaths.length) {
+                 playlist.last();
+               }
              })});
 
 document.querySelectorAll('.play-pause-btn')
@@ -207,7 +205,9 @@ document.querySelectorAll('.play-pause-btn')
 
 document.querySelectorAll('.next-btn')
     .forEach(element => {element.addEventListener('click', () => {
-               playlist.next();
+               if (playlist.songPaths.length) {
+                 playlist.next();
+               }
              })});
 
 function formatTime(seconds) {
@@ -217,10 +217,21 @@ function formatTime(seconds) {
       secs.toString().padStart(2, '0')}`;
 }
 
+function toSecond(timeStr) {
+  const parts = timeStr.split(':').map(Number);
+  if (parts.length === 2) {
+    // MM:SS
+    return parts[0] * 60 + parts[1];
+  } else {
+    throw new Error('Invalid time format');
+  }
+}
+
 let paintWhenUpdateTime = true;
 function updateTimeDisplay() {
   const currentTime = audioPlayer.currentTime;
-  const duration = audioPlayer.duration || 0;
+  const duration =
+      playlist.songPaths.length ? playlist.duration[playlist.songIndex] : 0;
   currentTimeElements.forEach(element => {
     element.textContent = `${formatTime(currentTime)}`;
   });
@@ -264,8 +275,9 @@ progressBarElements.forEach(element => {
 progressBarElements.forEach(element => {
   element.addEventListener('mouseup', () => {
     paintWhenUpdateTime = true;
-    if (audioPlayer.duration) {
-      const seekTime = (element.value / 100) * audioPlayer.duration;
+    if (playlist.songPaths.length) {
+      const seekTime =
+          (element.value / 100) * playlist.duration[playlist.songIndex];
       audioPlayer.currentTime = seekTime;
     }
   });
@@ -320,7 +332,6 @@ volumeSlider.forEach(element => element.addEventListener('input', () => {
 
 document.querySelectorAll('.volume-icon')
     .forEach(element => {element.addEventListener('click', () => {
-               console.log(volumeSlider[0].value);
                if (volumeSlider[0].value != 0) {
                  adjustVolume(0);
                } else {
@@ -348,6 +359,7 @@ let metaIndex = 0;
 window.electronAPI.addSong((metadata) => {
   const message =
       [metadata.title, metadata.artist, metadata.album, metadata.duration];
+  playlist.duration.push(toSecond(metadata.duration));
   const songs = document.getElementById('songs');
   const lineElement = document.createElement('div');
   lineElement.className = 'song-line';
