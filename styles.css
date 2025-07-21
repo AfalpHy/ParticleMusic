@@ -121,8 +121,12 @@
      }
 
      &::-webkit-scrollbar-thumb {
-         background-color: rgb(230, 230, 230);
+         background-color: rgb(200, 200, 200);
          border-radius: 3px;
+     }
+
+     &::-webkit-scrollbar-thumb:hover {
+         background-color: rgb(180, 180, 180);
      }
  }
 
