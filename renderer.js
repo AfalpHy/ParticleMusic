@@ -6,7 +6,7 @@ document.querySelectorAll('.minimize')
 document.querySelectorAll('.maximize')
     .forEach(
         element => {element.addEventListener(
-            'click', () => {window.electronAPI.toggleWindow()})});
+            'click', () => {window.electronAPI.resizeWindow()})});
 
 document.querySelectorAll('.close').forEach(
     element => {element.addEventListener(

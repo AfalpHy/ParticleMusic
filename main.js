@@ -60,7 +60,7 @@ ipcMain.on('window-close', () => {
 
 ipcMain.on('window-minimize', () => {mainWindow.minimize()})
 
-ipcMain.on('window-toggle', () => {
+ipcMain.on('window-resize', () => {
   if (mainWindow.isMaximized()) {
     mainWindow.unmaximize();
   } else {
