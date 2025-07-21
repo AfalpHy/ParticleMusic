@@ -87,11 +87,11 @@ ipcMain.on('get-songs', async () => {
       songBases[i] = path.basename(songBases[i], path.extname(songBases[i]));
     }
     // Send to renderer
-    mainWindow.webContents.send('initial-songs', songPaths, songBases);
     for (let i = 0; i < songPaths.length; i++) {
       const metadata = await getAudioMetadata(songPaths[i]);
       mainWindow.webContents.send('add-song', metadata);
     }
+    mainWindow.webContents.send('initial-songs', songPaths, songBases);
   }
 })
 
