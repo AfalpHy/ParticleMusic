@@ -198,6 +198,13 @@
          border-radius: 50%;
          background: black;
          cursor: pointer;
+         display: none;
+     }
+ }
+
+ .progress.hover {
+     &::-webkit-slider-thumb {
+         display: block;
      }
  }
 

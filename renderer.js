@@ -230,6 +230,19 @@ function updateTimeDisplay() {
 }
 
 progressBarElements.forEach(element => {
+  element.addEventListener('mouseenter', () => {
+    element.classList.add('hover');
+  });
+})
+
+progressBarElements.forEach(element => {
+  element.addEventListener('mouseleave', () => {
+    element.classList.remove('hover');
+  });
+})
+
+
+progressBarElements.forEach(element => {
   element.addEventListener('mousedown', () => {
     paintWhenUpdateTime = false;
   });
