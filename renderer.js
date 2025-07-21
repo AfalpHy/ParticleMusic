@@ -63,6 +63,15 @@ class Playlist {
       });
       audioPlayer.pause();
     }
+    if (this.songPaths.length) {
+      document.querySelectorAll('.song-line').forEach(element => {
+        if (element.children[0].textContent == this.songIndex) {
+          element.style.background = 'rgba(220, 220, 220, 0.5)';
+        } else {
+          element.style.background = 'none';
+        }
+      })
+    }
   }
 
   next() {
@@ -352,7 +361,7 @@ window.electronAPI.addSong((metadata) => {
   }
   songs.append(lineElement);
   lineElement.addEventListener('dblclick', () => {
-    playlist.songIndex = lineElement.children[0].textContent;
+    playlist.songIndex = parseInt(lineElement.children[0].textContent);
     playlist.load();
     playlist.play = true;
     playlist.playOrPause();

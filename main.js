@@ -77,16 +77,21 @@ async function findSongs(dirPath) {
 }
 
 ipcMain.on('get-songs', async () => {
-  let songPaths = await findSongs(path.resolve('music'))
-  let songBases = songPaths.slice(0, songPaths.length);
-  for (let i = 0; i < songBases.length; i++) {
-    songBases[i] = path.basename(songBases[i], path.extname(songBases[i]));
-  }
-  // Send to renderer
-  mainWindow.webContents.send('initial-songs', songPaths, songBases);
-  for (let i = 0; i < songPaths.length; i++) {
-    const metadata = await getAudioMetadata(songPaths[i]);
-    mainWindow.webContents.send('add-song', metadata);
+  const topWindow = BrowserWindow.getFocusedWindow();
+  const result =
+      await dialog.showOpenDialog(topWindow, {properties: ['openDirectory']});
+  if (!result.canceled) {
+    let songPaths = await findSongs(result.filePaths[0]);
+    let songBases = songPaths.slice(0, songPaths.length);
+    for (let i = 0; i < songBases.length; i++) {
+      songBases[i] = path.basename(songBases[i], path.extname(songBases[i]));
+    }
+    // Send to renderer
+    mainWindow.webContents.send('initial-songs', songPaths, songBases);
+    for (let i = 0; i < songPaths.length; i++) {
+      const metadata = await getAudioMetadata(songPaths[i]);
+      mainWindow.webContents.send('add-song', metadata);
+    }
   }
 })
 
