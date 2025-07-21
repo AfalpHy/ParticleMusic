@@ -349,10 +349,14 @@ window.electronAPI.receiveInitialSongs((songPaths, songBases) => {
 
 window.electronAPI.addCorner(() => {
   document.getElementById('entire-body').classList.add('corner');
+  document.getElementById('sidebar').classList.add('adjustSize');
+  document.getElementById('main-body').classList.add('adjustSize');
 })
 
 window.electronAPI.removeCorner(() => {
   document.getElementById('entire-body').classList.remove('corner');
+  document.getElementById('sidebar').classList.remove('adjustSize');
+  document.getElementById('main-body').classList.remove('adjustSize');
 })
 
 let metaIndex = 0;
