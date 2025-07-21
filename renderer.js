@@ -42,12 +42,13 @@ class Playlist {
   }
 
   last() {
-    audioPlayer.pause();
-    this.songIndex += this.songPaths.length - 1;
-    this.songIndex %= this.songPaths.length;
-    this.load();
-
-    this.playOrPause();
+    if (this.songPaths.length) {
+      audioPlayer.pause();
+      this.songIndex += this.songPaths.length - 1;
+      this.songIndex %= this.songPaths.length;
+      this.load();
+      this.playOrPause();
+    }
   }
 
   playOrPause() {
@@ -65,11 +66,13 @@ class Playlist {
   }
 
   next() {
-    audioPlayer.pause();
-    this.songIndex += 1;
-    this.songIndex %= this.songPaths.length;
-    this.load();
-    this.playOrPause();
+    if (this.songPaths.length) {
+      audioPlayer.pause();
+      this.songIndex += 1;
+      this.songIndex %= this.songPaths.length;
+      this.load();
+      this.playOrPause();
+    }
   }
 }
 
@@ -187,8 +190,10 @@ document.querySelectorAll('.last-btn')
 
 document.querySelectorAll('.play-pause-btn')
     .forEach(element => {element.addEventListener('click', () => {
-               playlist.play = !playlist.play;
-               playlist.playOrPause();
+               if (playlist.songPaths.length) {
+                 playlist.play = !playlist.play;
+                 playlist.playOrPause();
+               }
              })});
 
 document.querySelectorAll('.next-btn')
@@ -231,13 +236,13 @@ function updateTimeDisplay() {
 
 progressBarElements.forEach(element => {
   element.addEventListener('mouseenter', () => {
-    element.classList.add('hover');
+    if (playlist.songPaths.length) element.classList.add('hover');
   });
 })
 
 progressBarElements.forEach(element => {
   element.addEventListener('mouseleave', () => {
-    element.classList.remove('hover');
+    if (playlist.songPaths.length) element.classList.remove('hover');
   });
 })
 
@@ -278,15 +283,41 @@ volumeSlider.forEach(element => {
   });
 })
 
-volumeSlider.forEach(element => element.addEventListener('input', () => {
-  audioPlayer.volume = element.value / 100;
+function adjustVolume(value) {
+  if (value) {
+    document.querySelectorAll('.volume-icon').forEach(element => {
+      element.style.backgroundImage = 'url(\'pictures/speaker.png\')';
+    });
+  } else {
+    document.querySelectorAll('.volume-icon').forEach(element => {
+      element.style.backgroundImage = 'url(\'pictures/speaker-mute.png\')';
+    });
+  }
+  audioPlayer.volume = value;
   volumeSlider.forEach(
     element => {
       element.value = audioPlayer.volume * 100
       element.style.background =
       `linear-gradient(to right, black 0%, black ${
-        element.value}%, #d3d3d3 ${element.value}%, #d3d3d3 100%)`})
+        element.value}%, #d3d3d3 ${element.value}%, #d3d3d3 100%)`});
+}
+
+
+let tempVolume = volumeSlider[0].value;
+volumeSlider.forEach(element => element.addEventListener('input', () => {
+  tempVolume = element.value;
+  adjustVolume(element.value / 100);
 }));
+
+document.querySelectorAll('.volume-icon')
+    .forEach(element => {element.addEventListener('click', () => {
+               console.log(volumeSlider[0].value);
+               if (volumeSlider[0].value != 0) {
+                 adjustVolume(0);
+               } else {
+                 adjustVolume(tempVolume / 100);
+               }
+             })});
 
 audioPlayer.addEventListener('timeupdate', updateTimeDisplay);
 
