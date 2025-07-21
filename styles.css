@@ -5,9 +5,12 @@
  }
 
  #entire-body {
-     height: 100%;
-     width: 100%;
+     top: 1%;
+     left: 1%;
+     height: 98%;
+     width: 98%;
      border-radius: 2vh;
+     box-shadow: 0 0 1px rgba(0, 0, 0, 1);
      position: relative;
      overflow: hidden;
  }
