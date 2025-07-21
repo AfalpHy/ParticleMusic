@@ -38,6 +38,14 @@ function createWindow() {
   mainWindow.on('closed', () => {
     mainWindow = null;
   });
+
+  mainWindow.on('maximize', () => {
+    mainWindow.webContents.send('add-corner');
+  })
+
+  mainWindow.on('unmaximize', () => {
+    mainWindow.webContents.send('remove-corner');
+  })
 }
 
 app.on('window-all-closed', () => {
@@ -55,9 +63,7 @@ ipcMain.on('window-minimize', () => {mainWindow.minimize()})
 ipcMain.on('window-toggle', () => {
   if (mainWindow.isMaximized()) {
     mainWindow.unmaximize();
-    mainWindow.webContents.send('remove-corner');
   } else {
-    mainWindow.webContents.send('add-corner');
     mainWindow.maximize();
   }
 })
