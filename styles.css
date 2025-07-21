@@ -218,11 +218,37 @@
      top: 60%;
      left: 85%;
      transform: translate(-50%, 0%);
+     display: flex;
+     flex-direction: row;
+     justify-content: space-between;
+     align-items: center;
  }
 
- #volume {
-     height: 5px;
-     width: 80px;
+ .volume {
+     /* Override default CSS styles */
+     -webkit-appearance: none;
+     appearance: none;
+     height: 3px;
+     width: 100px;
+     background: linear-gradient(to right, black 0%, black 30%, #d3d3d3 30%, #d3d3d3 100%);
+
+     &::-webkit-slider-thumb {
+         -webkit-appearance: none;
+         appearance: none;
+         width: 8px;
+         height: 8px;
+         /* ball */
+         border-radius: 50%;
+         background: black;
+         cursor: pointer;
+         display: none;
+     }
+ }
+
+ .volume.hover {
+     &::-webkit-slider-thumb {
+         display: block;
+     }
  }
 
  #lyrics-body {

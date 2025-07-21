@@ -7,8 +7,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   closeWindow: () => ipcRenderer.send('window-close'),
 
-  setVolume: (volume) => ipcRenderer.send('set-volume', volume),
-
   getSongs: () => ipcRenderer.send('get-songs'),
 
   receiveInitialSongs: (callback) => {ipcRenderer.on(

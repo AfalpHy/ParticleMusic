@@ -12,7 +12,7 @@ document.querySelectorAll('.close').forEach(
     element => {element.addEventListener(
         'click', () => {window.electronAPI.closeWindow()})});
 
-const volumeSlider = document.getElementById('volume');
+const volumeSlider = document.querySelectorAll('.volume');
 const audioPlayer = document.getElementById('audio-player');
 const currentTimeElements = document.querySelectorAll('.current-time');
 const totalTimeElements = document.querySelectorAll('.total-time');
@@ -24,7 +24,7 @@ document.getElementById('pull').addEventListener('click', () => {
   lyricsBody.classList.remove('visible');
 });
 
-audioPlayer.volume = volumeSlider.value;
+audioPlayer.volume = volumeSlider[0].value / 100;
 
 class Playlist {
   constructor() {
@@ -241,7 +241,6 @@ progressBarElements.forEach(element => {
   });
 })
 
-
 progressBarElements.forEach(element => {
   element.addEventListener('mousedown', () => {
     paintWhenUpdateTime = false;
@@ -266,10 +265,28 @@ progressBarElements.forEach(element => {
   });
 })
 
-volumeSlider.addEventListener('input', () => {
-  audioPlayer.volume = volumeSlider.value;
-  window.electronAPI.setVolume(volumeSlider.value);
-});
+
+volumeSlider.forEach(element => {
+  element.addEventListener('mouseenter', () => {
+    element.classList.add('hover');
+  });
+})
+
+volumeSlider.forEach(element => {
+  element.addEventListener('mouseleave', () => {
+    element.classList.remove('hover');
+  });
+})
+
+volumeSlider.forEach(element => element.addEventListener('input', () => {
+  audioPlayer.volume = element.value / 100;
+  volumeSlider.forEach(
+    element => {
+      element.value = audioPlayer.volume * 100
+      element.style.background =
+      `linear-gradient(to right, black 0%, black ${
+        element.value}%, #d3d3d3 ${element.value}%, #d3d3d3 100%)`})
+}));
 
 audioPlayer.addEventListener('timeupdate', updateTimeDisplay);
 
