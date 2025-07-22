@@ -129,6 +129,16 @@
      width: 100%;
      display: flex;
      align-items: center;
+     user-select: none;
+ }
+
+ .resizer {
+     position: absolute;
+     top: 0%;
+     left: calc(100% - 10px);
+     width: 10px;
+     height: 100%;
+     cursor: col-resize;
  }
 
  .song-index {
@@ -139,10 +149,12 @@
 
  .song-title {
      flex: 0 0 30%;
+     position: relative;
  }
 
  .artist {
      flex: 0 0 25%;
+     position: relative;
  }
 
  .album {
@@ -161,6 +173,7 @@
      left: 0%;
      height: 95%;
      width: 100%;
+     user-select: none;
 
      &::-webkit-scrollbar {
          width: 6px;

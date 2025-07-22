@@ -19,40 +19,65 @@ const totalTimeElements = document.querySelectorAll('.total-time');
 const progressBarElements = document.querySelectorAll('.progress');
 const lyricsBody = document.getElementById('lyrics-body');
 
-// const resizer = document.getElementById('resizer');
-// const left = document.getElementById('#');
-// const right = document.getElementById('Title');
+const resizer1 = document.getElementById('resizer1');
+const resizer2 = document.getElementById('resizer2');
+const songTtile = document.querySelector('.song-title');
+const artist = document.querySelector('.artist');
+const album = document.querySelector('.album');
 
-// let isDragging = false;
+let isDragging1 = false;
+let isDragging2 = false;
+let totalWidth;
+resizer1.addEventListener('mousedown', (e) => {
+  isDragging1 = true;
+  totalWidth = songTtile.offsetWidth + artist.offsetWidth;
+});
 
-// resizer.addEventListener('mousedown', (e) => {
-//   isDragging = true;
-//   console.log('down');
-// });
+resizer2.addEventListener('mousedown', (e) => {
+  isDragging2 = true;
+  totalWidth = artist.offsetWidth + album.offsetWidth;
+});
 
-// document.addEventListener('mousemove', (e) => {
-//   if (!isDragging) return;
+document.addEventListener('mousemove', (e) => {
+  if (isDragging1) {
+    const containerOffsetLeft = songTtile.getBoundingClientRect().left;
+    const leftCurrentWidth = e.clientX - containerOffsetLeft;
+    const containerWidth = songTtile.parentNode.offsetWidth;
 
-//   const containerOffsetLeft = left.parentNode.getBoundingClientRect().left;
-//   const pointerRelativeXpos = e.clientX - containerOffsetLeft;
-//   const containerWidth = left.parentNode.offsetWidth;
+    const leftPercent = (leftCurrentWidth / containerWidth) * 100;
+    const rightPercent = (totalWidth - leftCurrentWidth) / containerWidth * 100;
+    if (leftPercent < 10 || rightPercent < 10) {
+      return;
+    }
 
-//   // Prevent overflow
-//   if (pointerRelativeXpos < 100 || pointerRelativeXpos > containerWidth -
-//   100)
-//     return;
+    document.querySelectorAll('.song-title')
+        .forEach(element => element.style.flex = `0 0 ${leftPercent}%`)
+    document.querySelectorAll('.artist').forEach(
+        element => element.style.flex = `0 0 ${rightPercent}%`);
+  }
 
-//   const leftPercent = (pointerRelativeXpos / containerWidth) * 100;
-//   const rightPercent = 100 - leftPercent;
-//   console.log(leftPercent);
+  if (isDragging2) {
+    const containerOffsetLeft = artist.getBoundingClientRect().left;
+    const leftCurrentWidth = e.clientX - containerOffsetLeft;
+    const containerWidth = artist.parentNode.offsetWidth;
 
-//   left.style.flex = `0 0 ${leftPercent}%`;
-//   right.style.flex = `0 0 ${rightPercent}%`;
-// });
+    const leftPercent = (leftCurrentWidth / containerWidth) * 100;
+    const rightPercent = (totalWidth - leftCurrentWidth) / containerWidth * 100;
+    if (leftPercent < 10 || rightPercent < 10) {
+      return;
+    }
 
-// document.addEventListener('mouseup', () => {
-//   isDragging = false;
-// });
+    document.querySelectorAll('.artist').forEach(
+        element => element.style.flex = `0 0 ${leftPercent}%`)
+    document.querySelectorAll('.album').forEach(
+        element => element.style.flex = `0 0 ${rightPercent}%`);
+  }
+});
+
+document.addEventListener('mouseup', () => {
+  isDragging1 = false;
+  isDragging2 = false;
+});
 
 let timeOut;
 lyricsBody.addEventListener('mousemove', () => {
@@ -448,6 +473,11 @@ window.electronAPI.unmaximize(() => {
   isMaximized = false;
 })
 
+function updateFlex(element, target) {
+  element.className = target.className;
+  element.style.flex = target.style.flex;
+}
+
 let metaIndex = 0;
 window.electronAPI.addSong((metadata) => {
   const message =
@@ -460,7 +490,7 @@ window.electronAPI.addSong((metadata) => {
   lineElement.className = 'song-line';
 
   const columnElement = document.createElement('div');
-  columnElement.className = songLabelChidren[0].className;
+  updateFlex(columnElement, songLabelChidren[0]);
 
   const columnElementText = document.createElement('div');
   columnElementText.className = 'song-line-column-text';
@@ -469,7 +499,7 @@ window.electronAPI.addSong((metadata) => {
   lineElement.append(columnElement);
   for (let i = 0; i < message.length; i++) {
     const columnElement = document.createElement('div');
-    columnElement.className = songLabelChidren[i + 1].className;
+    updateFlex(columnElement, songLabelChidren[i + 1]);
     columnElement.style.overflow = 'hidden';
 
     const columnElementText = document.createElement('div');
