@@ -322,8 +322,13 @@
 
  #lyric-control {
      -webkit-app-region: no-drag;
-     transform: translateX(30px);
-     display: flex;
+     transform: translate(50px, 5px);
+ }
+
+ #pull {
+     width: 40px;
+     height: 40px;
+     background-image: url('pictures/pull.png');
  }
 
  #lyrics-container {
