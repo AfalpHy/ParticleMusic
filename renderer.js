@@ -19,6 +19,41 @@ const totalTimeElements = document.querySelectorAll('.total-time');
 const progressBarElements = document.querySelectorAll('.progress');
 const lyricsBody = document.getElementById('lyrics-body');
 
+// const resizer = document.getElementById('resizer');
+// const left = document.getElementById('#');
+// const right = document.getElementById('Title');
+
+// let isDragging = false;
+
+// resizer.addEventListener('mousedown', (e) => {
+//   isDragging = true;
+//   console.log('down');
+// });
+
+// document.addEventListener('mousemove', (e) => {
+//   if (!isDragging) return;
+
+//   const containerOffsetLeft = left.parentNode.getBoundingClientRect().left;
+//   const pointerRelativeXpos = e.clientX - containerOffsetLeft;
+//   const containerWidth = left.parentNode.offsetWidth;
+
+//   // Prevent overflow
+//   if (pointerRelativeXpos < 100 || pointerRelativeXpos > containerWidth -
+//   100)
+//     return;
+
+//   const leftPercent = (pointerRelativeXpos / containerWidth) * 100;
+//   const rightPercent = 100 - leftPercent;
+//   console.log(leftPercent);
+
+//   left.style.flex = `0 0 ${leftPercent}%`;
+//   right.style.flex = `0 0 ${rightPercent}%`;
+// });
+
+// document.addEventListener('mouseup', () => {
+//   isDragging = false;
+// });
+
 let timeOut;
 lyricsBody.addEventListener('mousemove', () => {
   if (lyricsPlayer.active) {
@@ -419,19 +454,34 @@ window.electronAPI.addSong((metadata) => {
       [metadata.title, metadata.artist, metadata.album, metadata.duration];
   playlist.duration.push(toSecond(metadata.duration));
   const songs = document.getElementById('songs');
+  const songLabelChidren = document.getElementById('song-label').children;
+
   const lineElement = document.createElement('div');
   lineElement.className = 'song-line';
+
   const columnElement = document.createElement('div');
-  columnElement.textContent = metaIndex++;
+  columnElement.className = songLabelChidren[0].className;
+
+  const columnElementText = document.createElement('div');
+  columnElementText.className = 'song-line-column-text';
+  columnElementText.textContent = metaIndex++;
+  columnElement.append(columnElementText);
   lineElement.append(columnElement);
   for (let i = 0; i < message.length; i++) {
     const columnElement = document.createElement('div');
-    columnElement.textContent = message[i];
+    columnElement.className = songLabelChidren[i + 1].className;
+    columnElement.style.overflow = 'hidden';
+
+    const columnElementText = document.createElement('div');
+    columnElementText.className = 'song-line-column-text'
+    columnElementText.textContent = message[i];
+    columnElement.append(columnElementText);
     lineElement.append(columnElement);
   }
   songs.append(lineElement);
   lineElement.addEventListener('dblclick', () => {
-    playlist.songIndex = parseInt(lineElement.children[0].textContent);
+    playlist.songIndex =
+        parseInt(lineElement.children[0].children[0].textContent);
     playlist.load();
     playlist.play = true;
     playlist.playOrPause();

@@ -128,9 +128,29 @@
      height: 5%;
      width: 100%;
      display: flex;
-     flex-direction: row;
-     /* make the item evenly distributed */
-     justify-content: space-between;
+     align-items: center;
+ }
+
+ .song-index {
+     flex: 0 0 10%;
+     display: flex;
+     justify-content: center;
+ }
+
+ .song-title {
+     flex: 0 0 30%;
+ }
+
+ .artist {
+     flex: 0 0 25%;
+ }
+
+ .album {
+     flex: 0 0 25%;
+ }
+
+ .duration {
+     flex: 0 0 5%;
  }
 
  #songs {
@@ -160,8 +180,14 @@
      height: 5%;
      width: 100%;
      display: flex;
-     flex-direction: row;
-     justify-content: space-between;
+     align-items: center;
+ }
+
+ .song-line-column-text {
+     font-size: 15px;
+     white-space: nowrap;
+     overflow: hidden;
+     text-overflow: ellipsis;
  }
 
  #music-controls {
