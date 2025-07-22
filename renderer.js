@@ -461,12 +461,8 @@ window.electronAPI.receiveInitialSongs((songPaths, songBases) => {
 function fillBlank(fill) {
   if (fill) {
     document.getElementById('entire-body').classList.add('corner');
-    document.getElementById('sidebar').classList.add('adjustSize');
-    document.getElementById('main-body').classList.add('adjustSize');
   } else {
     document.getElementById('entire-body').classList.remove('corner');
-    document.getElementById('sidebar').classList.remove('adjustSize');
-    document.getElementById('main-body').classList.remove('adjustSize');
   }
 }
 

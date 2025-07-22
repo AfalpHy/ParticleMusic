@@ -25,15 +25,11 @@
 
  #sidebar {
      height: calc(100% - 75px);
-     width: 19vw;
+     width: 200px;
      background-color: rgb(230, 230, 230);
      display: flex;
      flex-direction: column;
      align-items: center;
- }
-
- #sidebar.adjustSize {
-     width: 20%;
  }
 
  #title {
@@ -64,15 +60,10 @@
  #main-body {
      position: absolute;
      height: calc(100% - 75px);
-     width: 79vw;
+     width: calc(100% - 200px);
      top: 0%;
-     left: 19vw;
+     left: 200px;
      background-color: rgb(247, 247, 247);
- }
-
- #main-body.adjustSize {
-     left: 20%;
-     width: 80%;
  }
 
  .custom-title-bar {
