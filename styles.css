@@ -85,8 +85,8 @@
      background-color: rgba(0, 0, 0, 0);
      border: none;
      cursor: pointer;
-     width: 15px;
-     height: 15px;
+     width: 18px;
+     height: 18px;
      background-size: cover;
      background-position: center;
  }
@@ -94,12 +94,13 @@
  .window-controls {
      -webkit-app-region: no-drag;
      position: absolute;
-     top: 30px;
-     left: calc(100% - 120px);
+     top: 20px;
+     left: calc(100% - 150px);
      display: flex;
      justify-content: space-between;
      align-items: center;
-     gap: 15px;
+     gap: 20px;
+     padding: 10px;
  }
 
  .minimize {
@@ -362,7 +363,6 @@
      transform: translateX(-50px);
      background-image: url('pictures/leaveFull.png');
  }
-
 
  #lyrics-container {
      position: absolute;
