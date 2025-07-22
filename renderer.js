@@ -181,7 +181,13 @@ class Playlist {
 const playlist = new Playlist();
 
 document.getElementById('playlist').addEventListener('click', () => {
-  window.electronAPI.getSongs();
+  document.getElementById('cover').classList.add('hidden');
+  document.getElementById('song-list').classList.add('visible');
+})
+
+document.getElementById('title').addEventListener('click', () => {
+  document.getElementById('cover').classList.remove('hidden');
+  document.getElementById('song-list').classList.remove('visible');
 })
 
 document.getElementById('add-directory').addEventListener('click', () => {

@@ -128,6 +128,25 @@
      background-image: url('pictures/close.png');
  }
 
+ #cover {
+     position: absolute;
+     top: 75px;
+     left: 10px;
+     /* calc(100%-75px) is wrong */
+     height: calc(100% - 85px);
+     /* Create a gap between the scrollbar and the edge of the window */
+     width: calc(100% - 20px);
+     border-radius: 10px;
+     background-size: cover;
+     background-position: center;
+     background-image: url('pictures/cover.jpg');
+     /* visibility: visible; */
+ }
+
+ #cover.hidden {
+     visibility: hidden;
+ }
+
  #song-list {
      position: absolute;
      top: 75px;
@@ -135,7 +154,14 @@
      height: calc(100% - 75px);
      /* Create a gap between the scrollbar and the edge of the window */
      width: calc(100% - 5px);
+     visibility: hidden;
  }
+
+ #song-list.visible {
+     visibility: visible;
+ }
+
+
 
  #song-label {
      height: 5%;
