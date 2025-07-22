@@ -39,6 +39,28 @@ document.getElementById('pull').addEventListener('click', () => {
   clearTimeout(timeOut);
 });
 
+let fullScreen = false;
+document.getElementById('full-screen').addEventListener('click', () => {
+  fullScreen = !fullScreen;
+  if (fullScreen) {
+    // do nothing when window is maximized
+    if (!isMaximized) fillBlank(true);
+    document.getElementById('pull').style.visibility = 'hidden';
+    document.getElementById('full-screen').classList.add('change');
+    document.querySelectorAll('.window-controls')[1].style.visibility =
+        'hidden';
+    window.electronAPI.enterFullScreen();
+  } else {
+    // do nothing when window is maximized
+    if (!isMaximized) fillBlank(false);
+    document.getElementById('pull').style.visibility = 'visible';
+    document.getElementById('full-screen').classList.remove('change');
+    document.querySelectorAll('.window-controls')[1].style.visibility =
+        'visible';
+    window.electronAPI.leaveFullScreen();
+  }
+});
+
 audioPlayer.volume = volumeSlider[0].value / 100;
 
 class Playlist {
@@ -362,22 +384,33 @@ window.electronAPI.receiveInitialSongs((songPaths, songBases) => {
   playlist.load();
 });
 
-window.electronAPI.addCorner(() => {
-  document.getElementById('entire-body').classList.add('corner');
-  document.getElementById('sidebar').classList.add('adjustSize');
-  document.getElementById('main-body').classList.add('adjustSize');
+function fillBlank(fill) {
+  if (fill) {
+    document.getElementById('entire-body').classList.add('corner');
+    document.getElementById('sidebar').classList.add('adjustSize');
+    document.getElementById('main-body').classList.add('adjustSize');
+  } else {
+    document.getElementById('entire-body').classList.remove('corner');
+    document.getElementById('sidebar').classList.remove('adjustSize');
+    document.getElementById('main-body').classList.remove('adjustSize');
+  }
+}
+
+let isMaximized = false;
+window.electronAPI.maximize(() => {
+  fillBlank(true);
   document.querySelectorAll('.maximize').forEach(element => {
     element.style.backgroundImage = 'url(\'pictures/unmaximize.png\')';
   });
+  isMaximized = true;
 })
 
-window.electronAPI.removeCorner(() => {
-  document.getElementById('entire-body').classList.remove('corner');
-  document.getElementById('sidebar').classList.remove('adjustSize');
-  document.getElementById('main-body').classList.remove('adjustSize');
+window.electronAPI.unmaximize(() => {
+  fillBlank(false);
   document.querySelectorAll('.maximize').forEach(element => {
     element.style.backgroundImage = 'url(\'pictures/maximize.png\')';
   });
+  isMaximized = false;
 })
 
 let metaIndex = 0;

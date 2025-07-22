@@ -339,6 +339,11 @@
  #lyric-control {
      -webkit-app-region: no-drag;
      transform: translate(50px, 5px);
+     display: flex;
+     flex-direction: row;
+     justify-content: space-between;
+     align-items: center;
+     gap: 10px;
  }
 
  #pull {
@@ -346,6 +351,18 @@
      height: 40px;
      background-image: url('pictures/pull.png');
  }
+
+ #full-screen {
+     width: 30px;
+     height: 30px;
+     background-image: url('pictures/enterFull.png');
+ }
+
+ #full-screen.change {
+     transform: translateX(-50px);
+     background-image: url('pictures/leaveFull.png');
+ }
+
 
  #lyrics-container {
      position: absolute;

@@ -40,11 +40,17 @@ function createWindow() {
   });
 
   mainWindow.on('maximize', () => {
-    mainWindow.webContents.send('add-corner');
+    // do nothing when setFullScreen automatically invoke maximize
+    if (!mainWindow.isFullScreen()) {
+      mainWindow.webContents.send('maximize');
+    }
   })
 
   mainWindow.on('unmaximize', () => {
-    mainWindow.webContents.send('remove-corner');
+    // do nothing when setFullScreen automatically invoke unmaximize
+    if (!mainWindow.isFullScreen()) {
+      mainWindow.webContents.send('unmaximize');
+    }
   })
 }
 
@@ -67,6 +73,14 @@ ipcMain.on('window-resize', () => {
     mainWindow.maximize();
   }
 })
+
+ipcMain.on('window-enter-fullScreen', () => {
+  mainWindow.setFullScreen(true);
+});
+
+ipcMain.on('window-leave-fullScreen', () => {
+  mainWindow.setFullScreen(false);
+});
 
 async function findSongs(dirPath) {
   try {
