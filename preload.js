@@ -13,12 +13,16 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   getSongs: () => ipcRenderer.send('get-songs'),
 
+  addDirectory: () => ipcRenderer.send('add-directory'),
+
+  displayDirectory: (callback) => {ipcRenderer.on(
+      'display-directory', (event, filePath) => callback(filePath))},
+
   receiveInitialSongs: (callback) => {ipcRenderer.on(
       'initial-songs',
       (event, songPaths, songBases) => callback(songPaths, songBases))},
 
-  maximize:
-      (callback) => {ipcRenderer.on('maximize', (event) => callback())},
+  maximize: (callback) => {ipcRenderer.on('maximize', (event) => callback())},
 
   unmaximize:
       (callback) => {ipcRenderer.on('unmaximize', (event) => callback())},

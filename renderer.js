@@ -184,6 +184,14 @@ document.getElementById('playlist').addEventListener('click', () => {
   window.electronAPI.getSongs();
 })
 
+document.getElementById('add-directory').addEventListener('click', () => {
+  window.electronAPI.addDirectory();
+})
+
+window.electronAPI.displayDirectory(filePath => {
+  document.getElementById('directories').textContent += filePath;
+});
+
 document.getElementById('music-controls')
     .addEventListener('click', function(e) {
       if (e.target !== this) {
@@ -439,8 +447,8 @@ document.querySelectorAll('.volume-icon')
 audioPlayer.addEventListener('timeupdate', updateTimeDisplay);
 
 window.electronAPI.receiveInitialSongs((songPaths, songBases) => {
-  playlist.songPaths = songPaths;
-  playlist.songBaseNames = songBases;
+  playlist.songPaths = playlist.songPaths.concat(songPaths);
+  playlist.songBaseNames = playlist.songBaseNames.concat(songBases);
   playlist.load();
 });
 
@@ -510,8 +518,7 @@ window.electronAPI.addSong((metadata) => {
   }
   songs.append(lineElement);
   lineElement.addEventListener('dblclick', () => {
-    playlist.songIndex =
-        parseInt(lineElement.children[0].children[0].textContent);
+    playlist.songIndex = parseInt(lineElement.children[0].textContent);
     playlist.load();
     playlist.play = true;
     playlist.playOrPause();
