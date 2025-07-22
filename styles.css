@@ -50,11 +50,13 @@
  #directories {
      padding: 20px 0 20px 0;
      text-align: center;
+     visibility: hidden;
  }
 
  #add-directory {
      width: 40px;
      height: 40px;
+     visibility: hidden;
  }
 
  #main-body {
