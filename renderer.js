@@ -21,18 +21,22 @@ const lyricsBody = document.getElementById('lyrics-body');
 
 let timeOut;
 lyricsBody.addEventListener('mousemove', () => {
-  clearTimeout(timeOut);
-  document.querySelectorAll('.custom-title-bar')[1].classList.remove('hidden');
-  document.getElementById('vice-music-controls').classList.remove('hidden');
-  timeOut = setTimeout(() => {
-    document.querySelectorAll('.custom-title-bar')[1].classList.add('hidden');
-    document.getElementById('vice-music-controls').classList.add('hidden');
-  }, 5000);
+  if (lyricsPlayer.active) {
+    clearTimeout(timeOut);
+    document.querySelectorAll('.custom-title-bar')[1].classList.remove(
+        'hidden');
+    document.getElementById('vice-music-controls').classList.remove('hidden');
+    timeOut = setTimeout(() => {
+      document.querySelectorAll('.custom-title-bar')[1].classList.add('hidden');
+      document.getElementById('vice-music-controls').classList.add('hidden');
+    }, 5000);
+  }
 });
 
 document.getElementById('pull').addEventListener('click', () => {
   lyricsPlayer.active = false;
   lyricsBody.classList.remove('visible');
+  clearTimeout(timeOut);
 });
 
 audioPlayer.volume = volumeSlider[0].value / 100;
