@@ -172,7 +172,7 @@ const formatDuration = (seconds) => {
 async function getAudioMetadata(filePath) {
   try {
     const stream = fs.createReadStream(filePath);
-    const detected = await fileTypeFromFile(filePath);
+    const detected = fileTypeFromFile(filePath);
     const metadata = await parseStream(stream, detected.mime);
     return {
       title: metadata.common.title ||
