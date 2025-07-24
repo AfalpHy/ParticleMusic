@@ -5,15 +5,19 @@
   "scripts": {
     "start": "electron .",
     "test": "NODE_ENV=development electron .",
-    "build": "electron-builder --win --x64"
+    "package-linux": "npx electron-packager . ParticleMusic --platform=linux --arch=x64 --out=dist",
+    "package-windows": "npx electron-packager . ParticleMusic --platform=win32 --arch=x64 --out=dist"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "description": "",
   "dependencies": {
-    "electron": "^37.2.1",
     "file-type": "^21.0.0",
     "music-metadata": "^11.7.0"
+  },
+  "devDependencies": {
+    "electron": "^37.2.4",
+    "electron-packager": "^17.1.2"
   }
 }
