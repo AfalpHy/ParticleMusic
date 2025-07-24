@@ -418,7 +418,7 @@ function formatTime(seconds) {
       secs.toString().padStart(2, '0')}`;
 }
 
-let isDraggingProcessBar = true;
+let isDraggingProcessBar = false;
 const progressBarElements = document.querySelectorAll('.progress');
 function updateProgressDisplay() {
   const currentTime = audioPlayer.currentTime;
