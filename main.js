@@ -153,7 +153,8 @@ ipcMain.on('add-directory', async () => {
   }
 })
 
-const musicMetadata = require('music-metadata');
+const {fileTypeFromFile} = require('file-type');
+const {parseStream} = require('music-metadata');
 
 const formatDuration = (seconds) => {
   if (isNaN(seconds)) return '00:00';
@@ -170,7 +171,9 @@ const formatDuration = (seconds) => {
 
 async function getAudioMetadata(filePath) {
   try {
-    const metadata = await musicMetadata.parseFile(filePath);
+    const stream = fs.createReadStream(filePath);
+    const detected = await fileTypeFromFile(filePath);
+    const metadata = await parseStream(stream, detected.mime);
     return {
       title: metadata.common.title ||
           path.basename(filePath, path.extname(filePath)),
@@ -179,7 +182,7 @@ async function getAudioMetadata(filePath) {
       duration: formatDuration(metadata.format.duration)
     };
   } catch (error) {
-    console.error('Error reading metadata:', error);
+    console.error('Error reading metadata:', error, filePath);
     return null;
   }
 }
