@@ -41,14 +41,14 @@ function createWindow() {
 
   mainWindow.on('maximize', () => {
     // do nothing when setFullScreen automatically invoke maximize
-    if (!mainWindow.isFullScreen()) {
+    if (!fullScreenCall) {
       mainWindow.webContents.send('maximize');
     }
   })
 
   mainWindow.on('unmaximize', () => {
     // do nothing when setFullScreen automatically invoke unmaximize
-    if (!mainWindow.isFullScreen()) {
+    if (!fullScreenCall) {
       mainWindow.webContents.send('unmaximize');
     }
   })
@@ -82,20 +82,33 @@ ipcMain.on('window-close', () => {
 
 ipcMain.on('window-minimize', () => {mainWindow.minimize()})
 
+let isMaximized = false;
 ipcMain.on('window-resize', () => {
-  if (mainWindow.isMaximized()) {
+  if (isMaximized) {
     mainWindow.unmaximize();
   } else {
     mainWindow.maximize();
   }
+  isMaximized = !isMaximized;
 })
 
+let fullScreenCall = false;
 ipcMain.on('window-enter-fullScreen', () => {
+  fullScreenCall = true;
+  if (process.platform === 'win32' && isMaximized) {
+    mainWindow.unmaximize();
+  }
   mainWindow.setFullScreen(true);
+  fullScreenCall = false;
 });
 
 ipcMain.on('window-leave-fullScreen', () => {
+  fullScreenCall = true;
   mainWindow.setFullScreen(false);
+  if (process.platform === 'win32' && isMaximized) {
+    mainWindow.maximize();
+  }
+  fullScreenCall = false;
 });
 
 async function findSongs(dirPath) {
