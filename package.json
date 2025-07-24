@@ -5,19 +5,33 @@
   "scripts": {
     "start": "electron .",
     "test": "NODE_ENV=development electron .",
-    "package-linux": "npx electron-packager . ParticleMusic --platform=linux --arch=x64 --out=dist",
-    "package-windows": "npx electron-packager . ParticleMusic --platform=win32 --arch=x64 --out=dist"
+    "build-linux": "electron-builder --linux --x64",
+    "build-windows": "electron-builder --win --x64"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "",
+  "description": "a freedom music player",
   "dependencies": {
     "file-type": "^21.0.0",
     "music-metadata": "^11.7.0"
   },
   "devDependencies": {
     "electron": "^37.2.4",
-    "electron-packager": "^17.1.2"
+    "electron-builder": "^26.0.12",
+    "electron-packager": "^17.1.0"
+  },
+  "build": {
+    "appId": "me.username.ParticleMusic",
+    "productName": "ParticleMusic",
+    "icon": "pictures/icon.png",
+    "linux": {
+      "target": "dir",
+      "category": "AudioVideo",
+      "executableName": "ParticleMusic"
+    },
+    "win": {
+      "target": "dir"
+    }
   }
 }
