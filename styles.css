@@ -47,18 +47,6 @@
      text-align: center;
  }
 
- #directories {
-     padding: 20px 0 20px 0;
-     text-align: center;
-     visibility: hidden;
- }
-
- #add-directory {
-     width: 40px;
-     height: 40px;
-     visibility: hidden;
- }
-
  #main-body {
      position: absolute;
      height: calc(100% - 75px);
@@ -153,8 +141,6 @@
  #song-list.visible {
      visibility: visible;
  }
-
-
 
  #song-label {
      height: 5%;

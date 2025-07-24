@@ -11,23 +11,21 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   leaveFullScreen: () => ipcRenderer.send('window-leave-fullScreen'),
 
-  getSongs: () => ipcRenderer.send('get-songs'),
-
   addDirectory: () => ipcRenderer.send('add-directory'),
 
   displayDirectory: (callback) => {ipcRenderer.on(
       'display-directory', (event, filePath) => callback(filePath))},
 
-  receiveInitialSongs: (callback) => {ipcRenderer.on(
-      'initial-songs',
-      (event, songPaths, songBases) => callback(songPaths, songBases))},
+  getPlaylist: (playlistName) =>
+      ipcRenderer.invoke('get-playlist', playlistName),
 
   maximize: (callback) => {ipcRenderer.on('maximize', (event) => callback())},
 
   unmaximize:
       (callback) => {ipcRenderer.on('unmaximize', (event) => callback())},
 
-  addSong: (callback) => {
-    ipcRenderer.on('add-song', (event, metadata) => callback(metadata))
+  addSongToList: (callback) => {
+    ipcRenderer.on('add-song-to-list', (event, metadata) => callback(metadata))
   }
+
 });
