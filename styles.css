@@ -160,24 +160,28 @@
 
  #song-title-label:hover {
      padding: 5px 0 5px 0;
+     border-radius: 5px;
      cursor: pointer;
      background-color: rgb(220, 220, 220);
  }
 
  #artist-label:hover {
      padding: 5px 0 5px 0;
+     border-radius: 5px;
      cursor: pointer;
      background-color: rgb(220, 220, 220);
  }
 
  #album-label:hover {
      padding: 5px 0 5px 0;
+     border-radius: 5px;
      cursor: pointer;
      background-color: rgb(220, 220, 220);
  }
 
  #duration-label:hover {
      padding: 5px 0 5px 0;
+     border-radius: 5px;
      cursor: pointer;
      background-color: rgb(220, 220, 220);
  }
