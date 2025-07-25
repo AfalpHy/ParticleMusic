@@ -136,7 +136,8 @@ class PlaybackQueue {
       audioPlayer.pause();
     }
     document.querySelectorAll('.song-line').forEach(element => {
-      if (element.children[0].textContent - 1 == this.songIndex) {
+      if (playlist.filePaths[element.children[0].textContent - 1] ==
+          this.songPaths[this.songIndex]) {
         element.style.background = 'rgba(220, 220, 220, 0.5)';
       } else {
         element.style.background = 'none';
@@ -298,6 +299,69 @@ document.addEventListener('mouseup', () => {
   isDragging2 = false;
 });
 
+function sortSongList(category, ascending) {
+  const songs = document.getElementById('songs');
+  const sorted = Array.from(songs.children).sort((a, b) => {
+    if (ascending) {
+      return a.children[category].textContent.trim().localeCompare(
+          b.children[category].textContent.trim());
+    } else {
+      return b.children[category].textContent.trim().localeCompare(
+          a.children[category].textContent.trim());
+    }
+  });
+  let i = 1;
+  let newFilePaths = [];
+  let newDurations = []
+  sorted.forEach(element => {
+    const index = element.children[0].textContent;
+    newFilePaths.push(playlist.filePaths[index - 1]);
+    newDurations.push(playlist.durations[index - 1]);
+    element.children[0].textContent = i++;
+    songs.appendChild(element);
+  });
+  playlist.filePaths = newFilePaths;
+  playlist.durations = newDurations;
+}
+
+let songTtileAscending = false;
+let artistAscending = false;
+let albumAscending = false;
+let durationAscending = false;
+songTtile.addEventListener('click', () => {
+  songTtileAscending = !songTtileAscending;
+  sortSongList(1, songTtileAscending);
+  // reset others
+  artistAscending = false;
+  albumAscending = false;
+  durationAscending = false;
+});
+
+artist.addEventListener('click', () => {
+  artistAscending = !artistAscending;
+  sortSongList(2, artistAscending);
+  songTtileAscending = false;
+  albumAscending = false;
+  durationAscending = false;
+});
+
+
+album.addEventListener('click', () => {
+  albumAscending = !albumAscending;
+  sortSongList(3, albumAscending);
+  songTtileAscending = false;
+  artistAscending = false;
+  durationAscending = false;
+});
+
+document.querySelector('.duration').addEventListener('click', () => {
+  durationAscending = !durationAscending;
+  sortSongList(4, durationAscending);
+  songTtileAscending = false;
+  artistAscending = false;
+  albumAscending = false;
+});
+
 const formatDuration = (seconds) => {
   if (isNaN(seconds)) return '00:00';
 
@@ -338,7 +402,6 @@ window.electronAPI.addSongToList((metadata) => {
   }
   songs.append(lineElement);
   lineElement.addEventListener('dblclick', () => {
-    console.log(123);
     playbackQueue.empty = false;
     playbackQueue.songPaths = playlist.filePaths;
     playbackQueue.durations = playlist.durations;

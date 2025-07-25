@@ -101,10 +101,8 @@ async function findSongs(dirPath) {
 ipcMain.handle('get-playlist', async (Event, playlistName) => {
   let songPaths = await findSongs(path.resolve('../Music'));
 
-  let metadatas = [];
   for (let i = 0; i < songPaths.length; i++) {
     const metadata = await getAudioMetadata(songPaths[i]);
-    metadatas.push(metadata);
     mainWindow.webContents.send('add-song-to-list', metadata);
   }
   return songPaths;
