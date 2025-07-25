@@ -299,15 +299,34 @@ document.addEventListener('mouseup', () => {
   isDragging2 = false;
 });
 
+function isAlphaNumeric(str) {
+  return /^[A-Za-z0-9]+$/.test(str);
+}
+
+function compare(textA, textB) {
+  if (isAlphaNumeric(textA[0])) {
+    if (isAlphaNumeric(textB[0])) {
+      return textA.localeCompare(textB);
+    } else {
+      return -1;
+    }
+  } else {
+    if (isAlphaNumeric(textB[0])) {
+      return 1;
+    } else {
+      return textA.localeCompare(textB, 'zh', {sensitivity: 'accent'});
+    }
+  }
+}
 function sortSongList(category, ascending) {
   const songs = document.getElementById('songs');
   const sorted = Array.from(songs.children).sort((a, b) => {
+    const textA = a.children[category].textContent.trim()
+    const textB = b.children[category].textContent.trim();
     if (ascending) {
-      return a.children[category].textContent.trim().localeCompare(
-          b.children[category].textContent.trim());
+      return compare(textA, textB);
     } else {
-      return b.children[category].textContent.trim().localeCompare(
-          a.children[category].textContent.trim());
+      return compare(textB, textA);
     }
   });
   let i = 1;
