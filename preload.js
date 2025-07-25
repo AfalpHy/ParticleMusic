@@ -16,8 +16,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   displayDirectory: (callback) => {ipcRenderer.on(
       'display-directory', (event, filePath) => callback(filePath))},
 
-  getPlaylist: (playlistName) =>
-      ipcRenderer.invoke('get-playlist', playlistName),
+  loadPlaylist: (playlistName) =>
+      ipcRenderer.invoke('load-playlist', playlistName),
 
   maximize: (callback) => {ipcRenderer.on('maximize', (event) => callback())},
 

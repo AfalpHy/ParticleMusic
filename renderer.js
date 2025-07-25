@@ -348,6 +348,9 @@ let artistAscending = false;
 let albumAscending = false;
 let durationAscending = false;
 songTtile.addEventListener('click', () => {
+  if (loadingPlaylist) {
+    return;
+  }
   songTtileAscending = !songTtileAscending;
   sortSongList(1, songTtileAscending);
   // reset others
@@ -357,6 +360,9 @@ songTtile.addEventListener('click', () => {
 });
 
 artist.addEventListener('click', () => {
+  if (loadingPlaylist) {
+    return;
+  }
   artistAscending = !artistAscending;
   sortSongList(2, artistAscending);
   songTtileAscending = false;
@@ -366,6 +372,9 @@ artist.addEventListener('click', () => {
 
 
 album.addEventListener('click', () => {
+  if (loadingPlaylist) {
+    return;
+  }
   albumAscending = !albumAscending;
   sortSongList(3, albumAscending);
   songTtileAscending = false;
@@ -374,6 +383,9 @@ album.addEventListener('click', () => {
 });
 
 document.querySelector('.duration').addEventListener('click', () => {
+  if (loadingPlaylist) {
+    return;
+  }
   durationAscending = !durationAscending;
   sortSongList(4, durationAscending);
   songTtileAscending = false;
@@ -421,6 +433,9 @@ window.electronAPI.addSongToList((metadata) => {
   }
   songs.append(lineElement);
   lineElement.addEventListener('dblclick', () => {
+    if (loadingPlaylist) {
+      return;
+    }
     playbackQueue.empty = false;
     playbackQueue.songPaths = playlist.filePaths;
     playbackQueue.durations = playlist.durations;
@@ -431,12 +446,12 @@ window.electronAPI.addSongToList((metadata) => {
   });
 })
 
-let gettingPlaylist = false;
+let loadingPlaylist = false;
 document.getElementById('playlist').addEventListener('click', () => {
-  if (gettingPlaylist) {
+  if (loadingPlaylist) {
     return;
   }
-  gettingPlaylist = true;
+  loadingPlaylist = true;
   document.getElementById('cover').classList.add('hidden');
   document.getElementById('song-list').classList.add('visible');
 
@@ -448,10 +463,10 @@ document.getElementById('playlist').addEventListener('click', () => {
   metaIndex = 1;
 
   window.electronAPI
-      .getPlaylist(document.getElementById('playlist').textContent)
+      .loadPlaylist(document.getElementById('playlist').textContent)
       .then((songPaths) => {
         playlist.filePaths = songPaths;
-        gettingPlaylist = false;
+        loadingPlaylist = false;
       });
 })
 

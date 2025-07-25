@@ -98,7 +98,7 @@ async function findSongs(dirPath) {
   }
 }
 
-ipcMain.handle('get-playlist', async (Event, playlistName) => {
+ipcMain.handle('load-playlist', async (Event, playlistName) => {
   let songPaths = await findSongs(path.resolve('../Music'));
 
   for (let i = 0; i < songPaths.length; i++) {
