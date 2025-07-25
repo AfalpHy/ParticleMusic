@@ -19,7 +19,7 @@
   "devDependencies": {
     "electron": "^37.2.4",
     "electron-builder": "^26.0.12",
-    "electron-packager": "^17.1.0"
+    "electron-packager": "^17.1.2"
   },
   "build": {
     "appId": "me.username.ParticleMusic",
