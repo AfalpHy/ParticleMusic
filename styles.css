@@ -30,11 +30,12 @@
      display: flex;
      flex-direction: column;
      align-items: center;
+     gap: 20px;
  }
 
  #title {
      height: 2%;
-     padding: 40px 0 40px 0;
+     padding: 40px 0 20px 0;
      text-align: center;
      font-family: Arial, "宋体";
      font-size: 36;
@@ -45,8 +46,13 @@
 
  #playlist {
      padding: 20px 0 20px 0;
+     width: 100%;
      text-align: center;
      cursor: pointer;
+ }
+
+ #playlist:hover {
+     background-color: rgb(220, 220, 220);
  }
 
  #main-body {
@@ -150,6 +156,30 @@
      display: flex;
      align-items: center;
      user-select: none;
+ }
+
+ #song-title-label:hover {
+     padding: 5px 0 5px 0;
+     cursor: pointer;
+     background-color: rgb(220, 220, 220);
+ }
+
+ #artist-label:hover {
+     padding: 5px 0 5px 0;
+     cursor: pointer;
+     background-color: rgb(220, 220, 220);
+ }
+
+ #album-label:hover {
+     padding: 5px 0 5px 0;
+     cursor: pointer;
+     background-color: rgb(220, 220, 220);
+ }
+
+ #duration-label:hover {
+     padding: 5px 0 5px 0;
+     cursor: pointer;
+     background-color: rgb(220, 220, 220);
  }
 
  .resizer {
