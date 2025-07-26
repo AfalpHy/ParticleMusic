@@ -8,42 +8,76 @@
 </head>
 
 <body>
-  <div id="entire-body">
+  <div id="sidebar">
+    <div id="title"> Particle Music
+    </div>
+    <div id="playlist">
+      Local Music
+    </div>
+  </div>
 
-    <div id="sidebar">
-      <div id="title"> Particle Music
-      </div>
-      <div id="playlist">
-        Local Music
+  <div id="main-body">
+    <div class="custom-title-bar">
+      <div class="window-controls">
+        <button class="minimize"></button>
+        <button class="maximize"></button>
+        <button class="close"></button>
       </div>
     </div>
+    <div id="cover"></div>
+    <div id="song-list">
+      <div id="song-label">
+        <div class="song-index">#</div>
+        <div class="song-title" id="song-title-label">Title
+          <div class="resizer" id="resizer1"></div>
+        </div>
+        <div class="artist" id="artist-label">Artist
+          <div class="resizer" id="resizer2"></div>
+        </div>
+        <div class="album" id="album-label">Album</div>
+        <div class="duration" id="duration-label">Duration</div>
+      </div>
+      <div id="songs"> </div>
+    </div>
+  </div>
 
-    <div id="main-body">
-      <div class="custom-title-bar">
-        <div class="window-controls">
-          <button class="minimize"></button>
-          <button class="maximize"></button>
-          <button class="close"></button>
-        </div>
-      </div>
-      <div id="cover"></div>
-      <div id="song-list">
-        <div id="song-label">
-          <div class="song-index">#</div>
-          <div class="song-title" id="song-title-label">Title
-            <div class="resizer" id="resizer1"></div>
-          </div>
-          <div class="artist" id="artist-label">Artist
-            <div class="resizer" id="resizer2"></div>
-          </div>
-          <div class="album" id="album-label">Album</div>
-          <div class="duration" id="duration-label">Duration</div>
-        </div>
-        <div id="songs"> </div>
-      </div>
+  <div id="music-controls">
+    <div class="play-controls">
+      <button class="last-btn"></button>
+      <button class="play-pause-btn"></button>
+      <button class="next-btn"></button>
     </div>
 
-    <div id="music-controls">
+    <div class="progress-container">
+      <div class="current-time">00:00</div>
+
+      <input type="range" class="progress" min="0" max="100" value="0">
+
+      <div class="total-time"> 00:00</div>
+    </div>
+
+    <div class="volume-control">
+      <div class="volume-icon"> </div>
+      <input type="range" class="volume" min="0" max="100" value="30">
+    </div>
+  </div>
+
+  <div id="lyrics-body">
+    <div class="custom-title-bar">
+      <div id="lyric-control">
+        <button id="pull"></button>
+        <button id="full-screen"></button>
+      </div>
+      <div class="window-controls">
+        <button class="minimize"></button>
+        <button class="maximize"></button>
+        <button class="close"></button>
+      </div>
+    </div>
+    <div id="lyrics-container">
+      <div id="lyrics-display"></div>
+    </div>
+    <div id="vice-music-controls">
       <div class="play-controls">
         <button class="last-btn"></button>
         <button class="play-pause-btn"></button>
@@ -63,45 +97,8 @@
         <input type="range" class="volume" min="0" max="100" value="30">
       </div>
     </div>
-
-    <div id="lyrics-body">
-      <div class="custom-title-bar">
-        <div id="lyric-control">
-          <button id="pull"></button>
-          <button id="full-screen"></button>
-        </div>
-        <div class="window-controls">
-          <button class="minimize"></button>
-          <button class="maximize"></button>
-          <button class="close"></button>
-        </div>
-      </div>
-      <div id="lyrics-container">
-        <div id="lyrics-display"></div>
-      </div>
-      <div id="vice-music-controls">
-        <div class="play-controls">
-          <button class="last-btn"></button>
-          <button class="play-pause-btn"></button>
-          <button class="next-btn"></button>
-        </div>
-
-        <div class="progress-container">
-          <div class="current-time">00:00</div>
-
-          <input type="range" class="progress" min="0" max="100" value="0">
-
-          <div class="total-time"> 00:00</div>
-        </div>
-
-        <div class="volume-control">
-          <div class="volume-icon"> </div>
-          <input type="range" class="volume" min="0" max="100" value="30">
-        </div>
-      </div>
-    </div>
-
   </div>
+
   <audio id="audio-player"></audio>
 
   <script src="renderer.js"></script>
