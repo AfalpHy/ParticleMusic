@@ -87,22 +87,26 @@
      background-color: rgba(0, 0, 0, 0);
      border: none;
      cursor: pointer;
-     width: 16px;
-     height: 16px;
+     border-radius: 5px;
+     width: 30px;
+     height: 30px;
      background-size: cover;
      background-position: center;
+ }
+
+ .custom-title-bar button:hover {
+     background-color: rgba(0, 0, 0, 0.05);
  }
 
  .window-controls {
      -webkit-app-region: no-drag;
      position: absolute;
-     top: 20px;
+     top: 25px;
      left: calc(100% - 150px);
      display: flex;
      justify-content: space-between;
      align-items: center;
-     gap: 20px;
-     padding: 10px;
+     gap: 10px;
  }
 
  .minimize {
@@ -271,35 +275,36 @@
      left: 50%;
      transform: translate(-50%, 0%);
      display: flex;
-     padding: 10px 20px 10px 20px;
-     gap: 30px;
+     padding: 5px 20px 5px 20px;
+     gap: 20px;
      background-color: rgba(0, 0, 0, 0);
      align-items: center;
  }
 
  .play-controls button {
+     height: 30px;
+     width: 30px;
      background-size: cover;
      background-position: center;
      border: none;
      cursor: pointer;
      background-color: rgba(0, 0, 0, 0);
+     border-radius: 5px;
+ }
+
+ .play-controls button:hover {
+     background-color: rgba(0, 0, 0, 0.05);
  }
 
  .last-btn {
-     height: 20px;
-     width: 20px;
      background-image: url('pictures/lastButton.png');
  }
 
  .play-pause-btn {
-     height: 25px;
-     width: 25px;
      background-image: url('pictures/play.png');
  }
 
  .next-btn {
-     height: 20px;
-     width: 20px;
      background-image: url('pictures/nextButton.png');
  }
 
@@ -378,11 +383,16 @@
  }
 
  .volume-icon {
-     height: 20px;
-     width: 20px;
+     height: 30px;
+     width: 30px;
      background-image: url('pictures/speaker.png');
      background-size: cover;
      background-position: center;
+     border-radius: 5px;
+ }
+
+ .volume-icon:hover {
+     background-color: rgba(0, 0, 0, 0.05);
  }
 
  .volume {
@@ -432,23 +442,20 @@
 
  #lyric-control {
      -webkit-app-region: no-drag;
-     transform: translate(50px, 5px);
+     position: absolute;
+     top: 25px;
+     left: 50px;
      display: flex;
-     flex-direction: row;
      justify-content: space-between;
      align-items: center;
      gap: 10px;
  }
 
  #pull {
-     width: 40px;
-     height: 40px;
      background-image: url('pictures/pull.png');
  }
 
  #full-screen {
-     width: 30px;
-     height: 30px;
      background-image: url('pictures/enterFull.png');
  }
 
