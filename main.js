@@ -78,16 +78,6 @@ async function findSongs(dirPath) {
   }
 }
 
-ipcMain.handle('load-playlist', async (Event, playlistName) => {
-  let songPaths = await findSongs(path.resolve('../Music'));
-
-  for (let i = 0; i < songPaths.length; i++) {
-    const metadata = await getAudioMetadata(songPaths[i]);
-    mainWindow.webContents.send('add-song-to-list', metadata);
-  }
-  return songPaths;
-})
-
 const {fileTypeFromFile} = require('file-type');
 const {parseStream} = require('music-metadata');
 const {parseFile} = require('music-metadata');
@@ -103,14 +93,24 @@ async function getAudioMetadata(filePath) {
       metadata = await parseStream(stream, detected.mime);
     }
     return {
+      filePath: filePath,
       title: metadata.common.title ||
           path.basename(filePath, path.extname(filePath)),
       artist: metadata.common.artist || 'Unknown Artist',
       album: metadata.common.album || 'Unknown',
-      duration: metadata.format.duration
+      duration: parseInt(metadata.format.duration)
     };
   } catch (error) {
     console.error('Error reading metadata:', error, filePath);
     return null;
   }
 }
+
+ipcMain.handle('load-playlist', async (Event, playlistName) => {
+  let songPaths = await findSongs(path.resolve('../Music'));
+
+  for (let i = 0; i < songPaths.length; i++) {
+    const metadata = await getAudioMetadata(songPaths[i]);
+    mainWindow.webContents.send('add-song-to-list', metadata);
+  }
+})

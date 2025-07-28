@@ -77,14 +77,8 @@ class LyricsPlayer {
 }
 
 const lyricsPlayer = new LyricsPlayer();
-class Playlist {
-  constructor() {
-    this.filePaths = [];
-    this.durations = [];
-  }
-};
 
-const playlist = new Playlist();
+let playlist = [];
 
 async function loadLyricsForSong(lrcPath) {
   try {
@@ -102,23 +96,22 @@ class PlaybackQueue {
   constructor() {
     this.play = false;
     this.empty = true;
-    this.songPaths = [];
-    this.durations = [];
-    this.songIndex = 0;
+    this.metadatas = [];
+    this.currentMetadata = [];
+    this.currentIndex = 0;
   }
 
   load() {
-    let src = `file://${this.songPaths[this.songIndex]}`;
+    this.currentMetadata = this.metadatas[this.currentIndex];
+    let src = this.currentMetadata.filePath;
     audioPlayer.src = src;
     loadLyricsForSong(src.replace(/\.[^/.]+$/, '.lrc'));
     audioPlayer.currentTime = 0;
-    updateProgressDisplay();
   }
 
   last() {
     audioPlayer.pause();
-    this.songIndex += this.songPaths.length - 1;
-    this.songIndex %= this.songPaths.length;
+    this.currentIndex -= 1;
     this.load();
     this.playOrPause();
   }
@@ -136,19 +129,18 @@ class PlaybackQueue {
       audioPlayer.pause();
     }
     document.querySelectorAll('.song-line').forEach(element => {
-      if (playlist.filePaths[element.children[0].textContent - 1] ==
-          this.songPaths[this.songIndex]) {
+      if (playlist[element.children[0].textContent - 1].filePath ==
+          this.currentMetadata.filePath) {
         element.style.background = 'rgba(220, 220, 220, 0.5)';
       } else {
         element.style.background = 'none';
       }
-    })
+    });
   }
 
   next() {
     audioPlayer.pause();
-    this.songIndex += 1;
-    this.songIndex %= this.songPaths.length;
+    this.currentIndex += 1;
     this.load();
     this.playOrPause();
   }
@@ -313,17 +305,14 @@ function sortSongList(category, ascending) {
     }
   });
   let i = 1;
-  let newFilePaths = [];
-  let newDurations = []
+  let newPlaylist = [];
   sorted.forEach(element => {
-    const index = element.children[0].textContent;
-    newFilePaths.push(playlist.filePaths[index - 1]);
-    newDurations.push(playlist.durations[index - 1]);
+    const index = element.children[0].textContent - 1;
+    newPlaylist.push(playlist[index]);
     element.children[0].textContent = i++;
     songs.appendChild(element);
   });
-  playlist.filePaths = newFilePaths;
-  playlist.durations = newDurations;
+  playlist = newPlaylist;
 }
 
 let songTtileAscending = false;
@@ -376,27 +365,21 @@ document.querySelector('.duration').addEventListener('click', () => {
   albumAscending = false;
 });
 
-const formatDuration = (seconds) => {
-  if (isNaN(seconds)) return '00:00';
 
+function formatTime(seconds) {
   const minutes = Math.floor(seconds / 60);
-  const remainingSeconds = Math.floor(seconds % 60);
-
-  // Pad with leading zeros
-  const paddedMinutes = String(minutes).padStart(2, '0');
-  const paddedSeconds = String(remainingSeconds).padStart(2, '0');
-
-  return `${paddedMinutes}:${paddedSeconds}`;
-};
+  const secs = Math.floor(seconds % 60);
+  return `${minutes.toString().padStart(2, '0')}:${
+      secs.toString().padStart(2, '0')}`;
+}
 
 let metaIndex = 1;
 window.electronAPI.addSongToList((metadata) => {
-  playlist.durations.push(parseInt(metadata.duration));
+  playlist.push(metadata);
   message = [
     metaIndex++, metadata.title, metadata.artist, metadata.album,
-    formatDuration(metadata.duration)
+    formatTime(metadata.duration)
   ];
-  const songs = document.getElementById('songs');
   const songLabelChidren = document.getElementById('song-label').children;
 
   const lineElement = document.createElement('div');
@@ -414,15 +397,17 @@ window.electronAPI.addSongToList((metadata) => {
     columnElement.append(columnElementText);
     lineElement.append(columnElement);
   }
-  songs.append(lineElement);
+
+  document.getElementById('songs').append(lineElement);
+
   lineElement.addEventListener('dblclick', () => {
     if (loadingPlaylist) {
       return;
     }
     playbackQueue.empty = false;
-    playbackQueue.songPaths = playlist.filePaths;
-    playbackQueue.durations = playlist.durations;
-    playbackQueue.songIndex = parseInt(lineElement.children[0].textContent) - 1;
+    playbackQueue.metadatas = playlist;
+    playbackQueue.currentIndex =
+        parseInt(lineElement.children[0].textContent) - 1;
     playbackQueue.load();
     playbackQueue.play = true;
     playbackQueue.playOrPause();
@@ -441,16 +426,14 @@ document.getElementById('playlist').addEventListener('click', () => {
   // reset
   const songs = document.getElementById('songs');
   songs.innerHTML = '';
-  playlist.filePaths = [];
-  playlist.durations = [];
+  playlist = [];
   metaIndex = 1;
 
   window.electronAPI
       .loadPlaylist(document.getElementById('playlist').textContent)
-      .then((songPaths) => {
-        playlist.filePaths = songPaths;
+      .then(() => {
         loadingPlaylist = false;
-      });
+      })
 })
 
 document.getElementById('title').addEventListener('click', () => {
@@ -491,20 +474,13 @@ document.querySelectorAll('.next-btn')
                }
              })});
 
-function formatTime(seconds) {
-  const minutes = Math.floor(seconds / 60);
-  const secs = Math.floor(seconds % 60);
-  return `${minutes.toString().padStart(2, '0')}:${
-      secs.toString().padStart(2, '0')}`;
-}
+
 
 let isDraggingProcessBar = false;
 const progressBarElements = document.querySelectorAll('.progress');
 function updateProgressDisplay() {
   const currentTime = audioPlayer.currentTime;
-  const duration = playbackQueue.empty ?
-      0 :
-      playbackQueue.durations[playbackQueue.songIndex];
+  const duration = playbackQueue.currentMetadata.duration;
   const currentTimeElements = document.querySelectorAll('.current-time');
   const totalTimeElements = document.querySelectorAll('.total-time');
   currentTimeElements.forEach(element => {
@@ -551,8 +527,8 @@ progressBarElements.forEach(element => {
   element.addEventListener('mouseup', () => {
     isDraggingProcessBar = false;
     if (!playbackQueue.empty) {
-      const seekTime = (element.value / 100) *
-          playbackQueue.durations[playbackQueue.songIndex];
+      const seekTime =
+          (element.value / 100) * playbackQueue.currentMetadata.duration;
       audioPlayer.currentTime = seekTime;
     }
   });
