@@ -111,6 +111,6 @@ ipcMain.handle('load-playlist', async (Event, playlistName) => {
 
   for (let i = 0; i < songPaths.length; i++) {
     const metadata = await getAudioMetadata(songPaths[i]);
-    mainWindow.webContents.send('add-song-to-list', metadata);
+    mainWindow.webContents.send('song-metadata', metadata);
   }
 })

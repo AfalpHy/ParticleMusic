@@ -380,7 +380,7 @@ function formatTime(seconds) {
 }
 
 let metaIndex = 1;
-window.electronAPI.addSongToList((metadata) => {
+window.electronAPI.receiveSongMetadata((metadata) => {
   playlist.push(metadata);
   message = [
     metaIndex++, metadata.title, metadata.artist, metadata.album,

@@ -24,8 +24,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   unmaximize:
       (callback) => {ipcRenderer.on('unmaximize', (event) => callback())},
 
-  addSongToList: (callback) => {
-    ipcRenderer.on('add-song-to-list', (event, metadata) => callback(metadata))
+  receiveSongMetadata: (callback) => {
+    ipcRenderer.on('song-metadata', (event, metadata) => callback(metadata))
   }
 
 });
