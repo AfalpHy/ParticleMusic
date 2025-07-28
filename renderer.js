@@ -447,15 +447,16 @@ document.getElementById('title').addEventListener('click', () => {
   document.getElementById('song-list').classList.remove('visible');
 })
 
-document.getElementById('music-controls').addEventListener('click', (e) => {
-  if (e.target !== this) {
-    return;  // Exit if click came from any child element
-  }
-  if (!lyricBodyActive) {
-    lyricBodyActive = true;
-    lyricsBody.classList.add('visible');
-  }
-});
+document.getElementById('music-controls')
+    .addEventListener('click', function(e) {
+      if (e.target !== this) {
+        return;  // Exit if click came from any child element
+      }
+      if (!lyricBodyActive) {
+        lyricBodyActive = true;
+        lyricsBody.classList.add('visible');
+      }
+    });
 
 document.querySelectorAll('.last-btn')
     .forEach(element => {element.addEventListener('click', () => {
