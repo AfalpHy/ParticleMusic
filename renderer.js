@@ -447,16 +447,15 @@ document.getElementById('title').addEventListener('click', () => {
   document.getElementById('song-list').classList.remove('visible');
 })
 
-document.getElementById('music-controls')
-    .addEventListener('click', function(e) {
-      if (e.target !== this) {
-        return;  // Exit if click came from any child element
-      }
-      if (!lyricBodyActive) {
-        lyricBodyActive = true;
-        lyricsBody.classList.add('visible');
-      }
-    });
+document.getElementById('music-controls').addEventListener('click', (e) => {
+  if (e.target !== this) {
+    return;  // Exit if click came from any child element
+  }
+  if (!lyricBodyActive) {
+    lyricBodyActive = true;
+    lyricsBody.classList.add('visible');
+  }
+});
 
 document.querySelectorAll('.last-btn')
     .forEach(element => {element.addEventListener('click', () => {
@@ -546,6 +545,29 @@ progressBarElements.forEach(element => {
     element.style.background = `linear-gradient(to right, black 0%, black ${
         progress}%, #d3d3d3 ${progress}%, #d3d3d3 100%)`;
   });
+})
+
+let clickPlaybackQueueBtn = false;
+let playbackQueueDisplay = false;
+document.querySelectorAll('.playback-queue-btn')
+    .forEach(element => element.addEventListener('click', () => {
+      clickPlaybackQueueBtn = true;
+      playbackQueueDisplay = !playbackQueueDisplay;
+      if (playbackQueueDisplay)
+        document.getElementById('playback-queue').classList.add('display');
+      else
+        document.getElementById('playback-queue').classList.remove('display');
+    }));
+
+document.addEventListener('click', (e) => {
+  if (clickPlaybackQueueBtn) {
+    clickPlaybackQueueBtn = false;
+    return;
+  }
+  if (playbackQueueDisplay) {
+    playbackQueueDisplay = false;
+    document.getElementById('playback-queue').classList.remove('display');
+  }
 })
 
 const volumeSlider = document.querySelectorAll('.volume');

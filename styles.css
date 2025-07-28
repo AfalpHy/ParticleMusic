@@ -488,3 +488,19 @@
  #vice-music-controls.hidden {
      transform: translateY(100%);
  }
+
+ #playback-queue {
+     position: absolute;
+     top: 30%;
+     left: 100%;
+     width: 30%;
+     height: calc(70% - 75px);
+     border-radius: 5px 0 0 5px;
+     transform: translateX(0);
+     transition: transform 0.5s ease;
+     background-color: white;
+ }
+
+ #playback-queue.display {
+     transform: translateX(-100%);
+ }
