@@ -111,7 +111,10 @@ class PlaybackQueue {
 
   last() {
     audioPlayer.pause();
-    this.currentIndex -= 1;
+    if (this.currentIndex == 0)
+      this.currentIndex = this.metadatas.length - 1;
+    else
+      this.currentIndex -= 1;
     this.load();
     this.playOrPause();
   }
@@ -140,7 +143,10 @@ class PlaybackQueue {
 
   next() {
     audioPlayer.pause();
-    this.currentIndex += 1;
+    if (this.currentIndex == this.metadatas.length - 1)
+      this.currentIndex = 0;
+    else
+      this.currentIndex += 1;
     this.load();
     this.playOrPause();
   }
