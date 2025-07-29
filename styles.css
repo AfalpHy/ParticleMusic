@@ -359,9 +359,9 @@
 
  .play-mode-btn-container {
      position: absolute;
-     top: 7px;
+     top: 14px;
      left: calc(100% - 280px);
-     padding: 30px 25px 30px 25px;
+     padding: 25px;
      align-items: center;
      justify-content: center;
      display: flex;
@@ -386,9 +386,9 @@
 
  .playback-queue-btn-container {
      position: absolute;
-     top: 7px;
+     top: 14px;
      left: calc(100% - 230px);
-     padding: 30px 25px 30px 25px;
+     padding: 25px;
      align-items: center;
      justify-content: center;
      display: flex;
@@ -413,9 +413,9 @@
 
  .volume-control {
      position: absolute;
-     top: 10px;
+     top: 18px;
      left: calc(100% - 100px);
-     padding: 10px 20px 10px 10px;
+     padding: 5px 20px 5px 10px;
      transform: translate(-50%, 0%);
      display: flex;
      flex-direction: row;
@@ -551,10 +551,10 @@
 
  #playback-queue {
      position: absolute;
-     top: 35%;
+     top: 15%;
      left: 100%;
-     width: 325px;
-     height: calc(65% - 100px);
+     width: 350px;
+     height: calc(85% - 100px);
      border-radius: 5px 0 0 5px;
      transform: translateX(10px);
      transition: transform 0.5s ease;
@@ -569,7 +569,7 @@
 
  #playback-queue-label {
      position: relative;
-     height: 40px;
+     height: 50px;
      display: flex;
      justify-content: center;
      font-size: 25px;
@@ -577,8 +577,8 @@
 
  #clear-playback-queue {
      position: absolute;
-     top: 15px;
-     left: 260px;
+     top: 30px;
+     left: 80%;
      border: none;
      cursor: pointer;
      background-color: rgba(0, 0, 0, 0.1);
@@ -596,7 +596,7 @@
      overflow-y: auto;
      scroll-behavior: smooth;
      left: 2%;
-     height: calc(100% - 30px);
+     height: calc(100% - 50px);
      width: 95%;
      user-select: none;
 
@@ -615,7 +615,7 @@
  }
 
  .playback-queue-song-line {
-     height: 10%;
+     height: 5%;
      width: 100%;
      display: flex;
      align-items: center;
