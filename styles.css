@@ -357,10 +357,18 @@
      transform: translateX(20%);
  }
 
+ .playback-queue-btn-container {
+     position: absolute;
+     top: 5px;
+     left: calc(100% - 260px);
+     padding: 30px 20px 30px 30px;
+     align-items: center;
+     justify-content: center;
+     display: flex;
+ }
+
  .playback-queue-btn {
      position: absolute;
-     top: 20px;
-     left: calc(100% - 260px);
      height: 30px;
      width: 30px;
      background-size: cover;
@@ -373,14 +381,14 @@
  }
 
  .playback-queue-btn:hover {
-     background-color: rgba(0, 0, 0, 0.05);
+     background-color: rgba(0, 0, 0, 0.1);
  }
 
  .volume-control {
      position: absolute;
      top: 10px;
-     left: calc(100% - 150px);
-     padding: 10px 20px 10px 20px;
+     left: calc(100% - 130px);
+     padding: 10px 20px 10px 10px;
      transform: translate(-50%, 0%);
      display: flex;
      flex-direction: row;
