@@ -33,6 +33,14 @@ document.querySelectorAll('.next-btn')
         })
     });
 
+
+document.querySelectorAll('.play-mode-btn').forEach(element => {
+    element.addEventListener('click', () => {
+        playbackQueue.switchPlayMode();
+    })
+});
+
+
 let isDraggingProcessBar = false;
 const progressBarElements = document.querySelectorAll('.progress');
 
@@ -148,5 +156,11 @@ document.querySelectorAll('.volume-icon')
 audioPlayer.addEventListener('timeupdate', updateProgressDisplay);
 
 audioPlayer.addEventListener('ended', () => {
+    // repeat
+    if (playbackQueue.playMode == 1) {
+        playbackQueue.load();
+        playbackQueue.playOrPause();
+        return;
+    }
     playbackQueue.next();
 })

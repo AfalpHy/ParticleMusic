@@ -295,6 +295,10 @@
      background-image: url('pictures/nextButton.png');
  }
 
+ .play-mode-btn {
+     background-image: url('pictures/loop.png');
+ }
+
  .progress-container {
      position: absolute;
      top: 40%;

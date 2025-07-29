@@ -187,6 +187,9 @@ function dblclickSong(index) {
     playbackQueue.empty = false;
     playbackQueue.metadatas = shared.playlist;
     playbackQueue.currentIndex = index;
+    if (playbackQueue.playMode == 2) {
+        playbackQueue.generateRandom();
+    }
     playbackQueue.load();
     playbackQueue.play = true;
     playbackQueue.playOrPause();

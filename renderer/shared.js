@@ -106,6 +106,10 @@ async function loadLyricsForSong(lrcPath) {
     }
 }
 
+function getRandomInt(min, max) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 class PlaybackQueue {
     constructor() {
         this.play = false;
@@ -113,10 +117,17 @@ class PlaybackQueue {
         this.metadatas = [];
         this.currentMetadata = [];
         this.currentIndex = 0;
+        this.playMode = 0;
+        this.actualCurrentIndex = 0;
+        this.randomIndex = [];
     }
 
     load() {
-        this.currentMetadata = this.metadatas[this.currentIndex];
+        this.actualCurrentIndex = this.currentIndex;
+        if (this.playMode == 2)
+            this.actualCurrentIndex = this.randomIndex[this.currentIndex];
+
+        this.currentMetadata = this.metadatas[this.actualCurrentIndex];
         let src = this.currentMetadata.filePath;
         audioPlayer.src = src;
         loadLyricsForSong(src.replace(/\.[^/.]+$/, '.lrc'));
@@ -163,6 +174,47 @@ class PlaybackQueue {
             this.currentIndex += 1;
         this.load();
         this.playOrPause();
+    }
+
+    switchPlayMode() {
+        this.playMode += 1;
+        this.playMode %= 3;
+        switch (this.playMode) {
+            case 0: {
+                this.currentIndex = this.actualCurrentIndex;
+                document.querySelectorAll('.play-mode-btn')
+                    .forEach(element => {
+                        element.style.backgroundImage = 'url(\'pictures/loop.png\')';
+                    });
+                break;
+            }
+            case 1: {
+                this.currentIndex = this.actualCurrentIndex;
+                document.querySelectorAll('.play-mode-btn')
+                    .forEach(element => {
+                        element.style.backgroundImage = 'url(\'pictures/repeat.png\')';
+                    });
+                break;
+            }
+            case 2: {
+                this.generateRandom();
+                document.querySelectorAll('.play-mode-btn')
+                    .forEach(element => {
+                        element.style.backgroundImage = 'url(\'pictures/random.png\')';
+                    });
+                break;
+            }
+        }
+    }
+
+    generateRandom() {
+        this.randomIndex = [];
+        for (let i = 0; i < this.metadatas.length; i++) {
+            this.randomIndex.push(getRandomInt(0, this.metadatas.length));
+        }
+        if (this.metadatas.length)
+            // keep current index unchanged
+            this.randomIndex[this.currentIndex] = this.currentIndex;
     }
 
     clear() {
