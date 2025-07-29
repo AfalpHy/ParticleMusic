@@ -24,7 +24,7 @@ class LyricsPlayer {
 
     // Parse LRC file content
     parseLyrics(lrcText) {
-        clear();
+        this.clear();
         const lines = lrcText.split('\n');
         this.lines = lines
             .map(line => {
