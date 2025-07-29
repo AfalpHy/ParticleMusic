@@ -295,10 +295,6 @@
      background-image: url('pictures/nextButton.png');
  }
 
- .play-mode-btn {
-     background-image: url('pictures/loop.png');
- }
-
  .progress-container {
      position: absolute;
      top: 40%;
@@ -361,11 +357,38 @@
      transform: translateX(20%);
  }
 
+ .play-mode-btn-container {
+     position: absolute;
+     top: 7px;
+     left: calc(100% - 280px);
+     padding: 30px 25px 30px 25px;
+     align-items: center;
+     justify-content: center;
+     display: flex;
+ }
+
+ .play-mode-btn {
+     position: absolute;
+     height: 30px;
+     width: 30px;
+     background-size: cover;
+     background-position: center;
+     border: none;
+     cursor: pointer;
+     background-color: rgba(0, 0, 0, 0);
+     border-radius: 5px;
+     background-image: url('pictures/loop.png');
+ }
+
+ .play-mode-btn:hover {
+     background-color: rgba(0, 0, 0, 0.1);
+ }
+
  .playback-queue-btn-container {
      position: absolute;
-     top: 5px;
-     left: calc(100% - 260px);
-     padding: 30px 20px 30px 30px;
+     top: 7px;
+     left: calc(100% - 230px);
+     padding: 30px 25px 30px 25px;
      align-items: center;
      justify-content: center;
      display: flex;
@@ -391,7 +414,7 @@
  .volume-control {
      position: absolute;
      top: 10px;
-     left: calc(100% - 130px);
+     left: calc(100% - 100px);
      padding: 10px 20px 10px 10px;
      transform: translate(-50%, 0%);
      display: flex;
