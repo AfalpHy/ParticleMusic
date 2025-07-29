@@ -1,6 +1,7 @@
 import { shared } from "./shared.js";
-import { playbackQueue } from "./shared.js";
 import { formatTime } from "./shared.js";
+
+import { addSongToList } from "./songList.js";
 
 let metaIndex = 1;
 window.electronAPI.receiveSongMetadata((metadata) => {
@@ -9,38 +10,7 @@ window.electronAPI.receiveSongMetadata((metadata) => {
         metaIndex++, metadata.title, metadata.artist, metadata.album,
         formatTime(metadata.duration)
     ];
-    const songLabelChidren = document.getElementById('song-label').children;
-
-    const lineElement = document.createElement('div');
-    lineElement.className = 'song-line';
-
-    for (let i = 0; i < message.length; i++) {
-        const columnElement = document.createElement('div');
-        columnElement.className = songLabelChidren[i].className;
-        columnElement.style.flex = songLabelChidren[i].style.flex;
-        columnElement.style.overflow = 'hidden';
-
-        const columnElementText = document.createElement('div');
-        columnElementText.className = 'song-line-column-text'
-        columnElementText.textContent = message[i];
-        columnElement.append(columnElementText);
-        lineElement.append(columnElement);
-    }
-
-    document.getElementById('songs').append(lineElement);
-
-    lineElement.addEventListener('dblclick', () => {
-        if (shared.loadingPlaylist) {
-            return;
-        }
-        playbackQueue.empty = false;
-        playbackQueue.metadatas = shared.playlist;
-        playbackQueue.currentIndex =
-            parseInt(lineElement.children[0].textContent) - 1;
-        playbackQueue.load();
-        playbackQueue.play = true;
-        playbackQueue.playOrPause();
-    });
+    addSongToList(message);
 })
 
 document.getElementById('playlist').addEventListener('click', () => {

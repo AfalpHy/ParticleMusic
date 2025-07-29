@@ -23,7 +23,7 @@ class LyricsPlayer {
 
     // Parse LRC file content
     parseLyrics(lrcText) {
-        this.container.innerHTML = '';
+        clear();
         const lines = lrcText.split('\n');
         this.lines = lines
             .map(line => {
@@ -42,7 +42,6 @@ class LyricsPlayer {
             })
             .filter(line => line !== null);
 
-        this.lineElements = [];
         for (let lineIndex = 0; lineIndex < this.lines.length; lineIndex++) {
             const lineElement = document.createElement('div');
             lineElement.className = 'lyrics-line';
@@ -50,7 +49,6 @@ class LyricsPlayer {
             this.lineElements.push(lineElement);
             this.container.appendChild(lineElement);
         }
-        this.currentLineIndex = -1;
     }
 
     // Update display based on current audio time
@@ -83,6 +81,12 @@ class LyricsPlayer {
         currentLineElement.classList.add('current-line');
         if (shared.lyricBodyActive)
             currentLineElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    clear() {
+        this.lines = [];
+        this.lineElements = [];
+        this.currentLineIndex = -1;
     }
 }
 
@@ -158,6 +162,14 @@ class PlaybackQueue {
             this.currentIndex += 1;
         this.load();
         this.playOrPause();
+    }
+
+    clear() {
+        this.play = false;
+        this.empty = true;
+        this.metadatas = [];
+        this.currentMetadata = [];
+        this.currentIndex = 0;
     }
 }
 

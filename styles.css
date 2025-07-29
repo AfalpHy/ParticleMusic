@@ -351,6 +351,25 @@
      transform: translateX(20%);
  }
 
+ .playback-queue-btn {
+     position: absolute;
+     top: 20px;
+     left: calc(100% - 260px);
+     height: 30px;
+     width: 30px;
+     background-size: cover;
+     background-position: center;
+     border: none;
+     cursor: pointer;
+     background-color: rgba(0, 0, 0, 0);
+     border-radius: 5px;
+     background-image: url('pictures/playbackQueue.png');
+ }
+
+ .playback-queue-btn:hover {
+     background-color: rgba(0, 0, 0, 0.05);
+ }
+
  .volume-control {
      position: absolute;
      top: 10px;
@@ -491,16 +510,73 @@
 
  #playback-queue {
      position: absolute;
-     top: 30%;
+     top: 35%;
      left: 100%;
-     width: 30%;
-     height: calc(70% - 75px);
+     width: 325px;
+     height: calc(65% - 100px);
      border-radius: 5px 0 0 5px;
-     transform: translateX(0);
+     transform: translateX(10px);
      transition: transform 0.5s ease;
-     background-color: white;
+     background-color: rgba(240, 240, 240, 1);
+     box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+     overflow: hidden;
  }
 
  #playback-queue.display {
      transform: translateX(-100%);
+ }
+
+ #playback-queue-label {
+     position: relative;
+     height: 40px;
+     display: flex;
+     justify-content: center;
+     font-size: 25px;
+ }
+
+ #clear-playback-queue {
+     position: absolute;
+     top: 15px;
+     left: 260px;
+     border: none;
+     cursor: pointer;
+     background-color: rgba(0, 0, 0, 0.1);
+     border-radius: 5px;
+ }
+
+
+ #clear-playback-queue:hover {
+     background-color: rgba(0, 0, 0, 0.2);
+ }
+
+ #playback-queue-songs {
+     position: absolute;
+     top: 50px;
+     overflow-y: auto;
+     scroll-behavior: smooth;
+     left: 0%;
+     height: calc(100% - 30px);
+     width: 100%;
+     user-select: none;
+
+     &::-webkit-scrollbar {
+         width: 4px;
+     }
+
+     &::-webkit-scrollbar-thumb {
+         background-color: rgb(200, 200, 200);
+         border-radius: 2px;
+     }
+
+     &::-webkit-scrollbar-thumb:hover {
+         background-color: rgb(180, 180, 180);
+     }
+ }
+
+ .playback-queue-song-line {
+     height: 10%;
+     width: 100%;
+     display: flex;
+     align-items: center;
+     justify-content: center;
  }

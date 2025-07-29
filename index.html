@@ -56,9 +56,8 @@
       <div class="total-time"> 00:00</div>
     </div>
 
-    <button class="playback-queue-btn">
-      playback-queue
-    </button>
+    <button class="playback-queue-btn"></button>
+
     <div class="volume-control">
       <div class="volume-icon"> </div>
       <input type="range" class="volume" min="0" max="100" value="30">
@@ -95,9 +94,7 @@
         <div class="total-time"> 00:00</div>
       </div>
 
-      <button class="playback-queue-btn">
-        playback-queue
-      </button>
+      <button class="playback-queue-btn"></button>
 
       <div class="volume-control">
         <div class="volume-icon"> </div>
@@ -106,7 +103,14 @@
     </div>
   </div>
 
-  <div id="playback-queue"></div>
+  <div id="playback-queue">
+    <div id="playback-queue-label"> playback queue
+      <button id="clear-playback-queue"> clear</button>
+    </div>
+    <div id="playback-queue-songs"></div>
+  </div>
+
+
   <audio id="audio-player"></audio>
 
   <script type="module" src="renderer/entry.js"></script>

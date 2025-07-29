@@ -1,4 +1,6 @@
+import { updatePlaybackQueueDisplay } from "./playbackQueueControls.js";
 import { shared } from "./shared.js";
+import { playbackQueue } from "./shared.js";
 
 const resizer1 = document.getElementById('resizer1');
 const resizer2 = document.getElementById('resizer2');
@@ -79,6 +81,7 @@ function compare(textA, textB) {
         }
     }
 }
+
 function sortSongList(category, ascending) {
     const songs = document.getElementById('songs');
     const sorted = Array.from(songs.children).sort((a, b) => {
@@ -150,3 +153,43 @@ document.querySelector('.duration').addEventListener('click', () => {
     artistAscending = false;
     albumAscending = false;
 });
+
+export function addSongToList(message) {
+    const songLabelChidren = document.getElementById('song-label').children;
+
+    const lineElement = document.createElement('div');
+    lineElement.className = 'song-line';
+
+    for (let i = 0; i < message.length; i++) {
+        const columnElement = document.createElement('div');
+        columnElement.className = songLabelChidren[i].className;
+        columnElement.style.flex = songLabelChidren[i].style.flex;
+        columnElement.style.overflow = 'hidden';
+
+        const columnElementText = document.createElement('div');
+        columnElementText.className = 'song-line-column-text'
+        columnElementText.textContent = message[i];
+        columnElement.append(columnElementText);
+        lineElement.append(columnElement);
+    }
+
+    document.getElementById('songs').append(lineElement);
+
+    lineElement.addEventListener('dblclick', () => {
+        dblclickSong(parseInt(lineElement.children[0].textContent) - 1);
+    });
+}
+
+function dblclickSong(index) {
+    if (shared.loadingPlaylist) {
+        return;
+    }
+    playbackQueue.empty = false;
+    playbackQueue.metadatas = shared.playlist;
+    playbackQueue.currentIndex = index;
+    playbackQueue.load();
+    playbackQueue.play = true;
+    playbackQueue.playOrPause();
+
+    updatePlaybackQueueDisplay();
+}
