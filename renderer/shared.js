@@ -4,6 +4,7 @@ export const lyricsBody = document.getElementById('lyrics-body');
 export const shared = {
     lyricBodyActive: false,
     loadingPlaylist: false,
+    playbackQueueDisplay: false,
     playlist: []
 }
 

@@ -2,24 +2,33 @@ import { audioPlayer, lyricsPlayer, playbackQueue, shared } from "./shared.js";
 import { formatTime } from "./shared.js";
 
 let clickPlaybackQueueBtn = false;
-let playbackQueueDisplay = false;
+let clickPlaybackQueue = false;
 document.querySelectorAll('.playback-queue-btn')
     .forEach(element => element.addEventListener('click', () => {
         clickPlaybackQueueBtn = true;
-        playbackQueueDisplay = !playbackQueueDisplay;
-        if (playbackQueueDisplay)
+        shared.playbackQueueDisplay = !shared.playbackQueueDisplay;
+        if (shared.playbackQueueDisplay)
             document.getElementById('playback-queue').classList.add('display');
         else
             document.getElementById('playback-queue').classList.remove('display');
     }));
+
+document.getElementById('playback-queue').addEventListener('click', () => {
+    clickPlaybackQueue = true;
+})
 
 document.addEventListener('click', (e) => {
     if (clickPlaybackQueueBtn) {
         clickPlaybackQueueBtn = false;
         return;
     }
-    if (playbackQueueDisplay) {
-        playbackQueueDisplay = false;
+    if (clickPlaybackQueue) {
+        clickPlaybackQueue = false;
+        return;
+    }
+
+    if (shared.playbackQueueDisplay) {
+        shared.playbackQueueDisplay = false;
         document.getElementById('playback-queue').classList.remove('display');
     }
 })

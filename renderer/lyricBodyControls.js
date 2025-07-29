@@ -16,6 +16,10 @@ lyricsBody.addEventListener('mousemove', () => {
 });
 
 document.getElementById('pull').addEventListener('click', () => {
+    // skip once
+    if (shared.playbackQueueDisplay) {
+        return;
+    }
     shared.lyricBodyActive = false;
     lyricsBody.classList.remove('visible');
     clearTimeout(timeOut);
@@ -42,8 +46,13 @@ document.getElementById('full-screen').addEventListener('click', () => {
 
 document.getElementById('music-controls')
     .addEventListener('click', function (e) {
+        // skip once
+        if (shared.playbackQueueDisplay) {
+            return;
+        }
+        // Exit if click came from any child element
         if (e.target !== this) {
-            return;  // Exit if click came from any child element
+            return;
         }
         if (!shared.lyricBodyActive) {
             shared.lyricBodyActive = true;
