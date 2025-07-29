@@ -1,4 +1,5 @@
-const {app, BrowserWindow, ipcMain, dialog} = require('electron');
+const { app, BrowserWindow, ipcMain } = require('electron');
+const os = require('os');
 const fs = require('fs');
 const path = require('path');
 
@@ -46,7 +47,7 @@ ipcMain.on('window-close', () => {
   mainWindow.close();
 })
 
-ipcMain.on('window-minimize', () => {mainWindow.minimize()})
+ipcMain.on('window-minimize', () => { mainWindow.minimize() })
 
 ipcMain.on('window-resize', () => {
   if (mainWindow.isMaximized()) {
@@ -68,19 +69,19 @@ async function findSongs(dirPath) {
   try {
     const files = await fs.promises.readdir(dirPath)
     return files
-        .filter(
-            file => ['.mp3', '.wav', '.flac', '.aac', '.ogg'].includes(
-                path.extname(file).toLowerCase()))
-        .map(file => path.join(dirPath, file))
+      .filter(
+        file => ['.mp3', '.wav', '.flac', '.aac', '.ogg'].includes(
+          path.extname(file).toLowerCase()))
+      .map(file => path.join(dirPath, file))
   } catch (error) {
     console.error('Error finding songs:', error)
     return []
   }
 }
 
-const {fileTypeFromFile} = require('file-type');
-const {parseStream} = require('music-metadata');
-const {parseFile} = require('music-metadata');
+const { fileTypeFromFile } = require('file-type');
+const { parseStream } = require('music-metadata');
+const { parseFile } = require('music-metadata');
 
 async function getAudioMetadata(filePath) {
   try {
@@ -88,14 +89,14 @@ async function getAudioMetadata(filePath) {
     const detected = await fileTypeFromFile(filePath);
     let metadata;
     if (detected.mime == 'audio/ogg') {
-      metadata = await parseFile(filePath, {duration: true})
+      metadata = await parseFile(filePath, { duration: true })
     } else {
       metadata = await parseStream(stream, detected.mime);
     }
     return {
       filePath: filePath,
       title: metadata.common.title ||
-          path.basename(filePath, path.extname(filePath)),
+        path.basename(filePath, path.extname(filePath)),
       artist: metadata.common.artist || 'Unknown Artist',
       album: metadata.common.album || 'Unknown',
       duration: parseInt(metadata.format.duration)
@@ -107,8 +108,7 @@ async function getAudioMetadata(filePath) {
 }
 
 ipcMain.handle('load-playlist', async (Event, playlistName) => {
-  let songPaths = await findSongs(path.resolve('../Music'));
-
+  let songPaths = await findSongs(path.join(os.homedir(), 'Music'));
   for (let i = 0; i < songPaths.length; i++) {
     const metadata = await getAudioMetadata(songPaths[i]);
     mainWindow.webContents.send('song-metadata', metadata);
