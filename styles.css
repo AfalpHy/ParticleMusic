@@ -232,7 +232,13 @@
      height: 5%;
      width: 100%;
      display: flex;
+     border-radius: 10px;
      align-items: center;
+     cursor: pointer;
+ }
+
+ .song-line:hover {
+     background-color: rgba(0, 0, 0, 0.15);
  }
 
  .song-line-column-text {
@@ -554,9 +560,9 @@
      top: 50px;
      overflow-y: auto;
      scroll-behavior: smooth;
-     left: 0%;
+     left: 2%;
      height: calc(100% - 30px);
-     width: 100%;
+     width: 95%;
      user-select: none;
 
      &::-webkit-scrollbar {
@@ -579,4 +585,10 @@
      display: flex;
      align-items: center;
      justify-content: center;
+     cursor: pointer;
+     border-radius: 10px;
+ }
+
+ .playback-queue-song-line:hover {
+     background-color: rgba(0, 0, 0, 0.15);
  }
