@@ -76,7 +76,7 @@
  }
 
  .custom-title-bar button:hover {
-     background-color: rgba(0, 0, 0, 0.05);
+     background-color: rgba(0, 0, 0, 0.1);
  }
 
  .window-controls {
@@ -280,7 +280,7 @@
  }
 
  .play-controls button:hover {
-     background-color: rgba(0, 0, 0, 0.05);
+     background-color: rgba(0, 0, 0, 0.1);
  }
 
  .last-btn {
@@ -406,7 +406,7 @@
  }
 
  .volume-icon:hover {
-     background-color: rgba(0, 0, 0, 0.05);
+     background-color: rgba(0, 0, 0, 0.1);
  }
 
  .volume {
