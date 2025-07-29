@@ -510,7 +510,7 @@
      top: 50%;
      left: 50%;
      transform: translate(-50%, -50%);
-     width: 80%;
+     width: 40%;
      max-height: 70%;
      overflow-y: auto;
      text-align: center;
@@ -525,13 +525,20 @@
  .lyrics-line {
      margin: 12px 0;
      font-size: 22px;
-     color: #666;
+     color: rgb(150, 150, 150);
      transition: all 0.3s ease;
+     user-select: none;
+     cursor: pointer;
+ }
+
+ .lyrics-line:hover {
+     background-color: rgba(255, 255, 255, 0.1);
+     border-radius: 30px;
  }
 
  .current-line {
-     color: #310adf;
-     font-size: 26px;
+     color: white;
+     font-size: 30px;
      font-weight: bold;
  }
 

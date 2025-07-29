@@ -59,3 +59,18 @@ document.getElementById('music-controls')
             lyricsBody.classList.add('visible');
         }
     });
+
+document.getElementById('vice-music-controls')
+    .addEventListener('click', function (e) {
+        // skip once
+        if (shared.playbackQueueDisplay) {
+            return;
+        }
+        // Exit if click came from any child element
+        if (e.target !== this) {
+            return;
+        }
+        shared.lyricBodyActive = false;
+        lyricsBody.classList.remove('visible');
+        clearTimeout(timeOut);
+    });

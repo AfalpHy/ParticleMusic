@@ -47,6 +47,9 @@ class LyricsPlayer {
             const lineElement = document.createElement('div');
             lineElement.className = 'lyrics-line';
             lineElement.textContent = this.lines[lineIndex].text;
+            lineElement.addEventListener('click', () => {
+                audioPlayer.currentTime = this.lines[lineIndex].time;
+            });
             this.lineElements.push(lineElement);
             this.container.appendChild(lineElement);
         }
@@ -88,6 +91,7 @@ class LyricsPlayer {
         this.lines = [];
         this.lineElements = [];
         this.currentLineIndex = -1;
+        this.container.innerHTML = "";
     }
 }
 
