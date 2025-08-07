@@ -82,7 +82,7 @@ async function findSongs(dirPath) {
 const { fileTypeFromFile } = require('file-type');
 const { parseStream } = require('music-metadata');
 const { parseFile } = require('music-metadata');
-const { getColors } = require('get-image-colors');
+const getColors = require('get-image-colors');
 
 async function getAudioMetadata(filePath) {
   try {
