@@ -275,6 +275,7 @@
      background-image: url('pictures/icon.png');
      background-size: cover;
      background-position: center;
+     user-select: none;
  }
 
  #left-bottom-title {
@@ -474,6 +475,9 @@
      background-image: url('pictures/speaker.png');
      background-size: cover;
      background-position: center;
+     border: none;
+     cursor: pointer;
+     background-color: rgba(0, 0, 0, 0);
      border-radius: 5px;
  }
 
@@ -559,6 +563,7 @@
      background-image: url('pictures/icon.png');
      background-size: cover;
      background-position: center;
+     user-select: none;
  }
 
  #lyrics-container {
