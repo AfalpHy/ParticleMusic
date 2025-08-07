@@ -282,7 +282,7 @@
      position: absolute;
      top: 0;
      left: 60px;
-     width: calc(100% - 60px);
+     max-width: calc(100% - 60px);
      font-size: 15px;
      white-space: nowrap;
      overflow: hidden;
@@ -294,7 +294,7 @@
      position: absolute;
      top: 25px;
      left: 60px;
-     width: calc(100% - 60px);
+     max-width: calc(100% - 60px);
      font-size: 15px;
      white-space: nowrap;
      overflow: hidden;
