@@ -256,6 +256,38 @@
      background-color: rgb(240, 240, 240);
  }
 
+ #left-bottom {
+     position: absolute;
+     top: 12px;
+     left: 20px;
+     background-color: rgba(0, 0, 0, 0);
+     display: flex;
+ }
+
+ #left-bottom-title {
+     position: absolute;
+     top: 0;
+     left: 60px;
+     width: 100px;
+ }
+
+ #left-bottom-artist {
+     position: absolute;
+     top: 25px;
+     left: 60px;
+     width: 100px;
+ }
+
+ #cover-art {
+     position: absolute;
+     top: 0;
+     left: 0;
+     height: 50px;
+     width: 50px;
+     border-radius: 5px;
+     background-image: url('pictures/cover.jpg');
+ }
+
  .play-controls {
      position: absolute;
      top: 0%;

@@ -26,6 +26,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   receiveSongMetadata: (callback) => {
     ipcRenderer.on('song-metadata', (event, metadata) => callback(metadata))
-  }
+  },
 
+  fetchCover: (filePath) => ipcRenderer.invoke('get-cover', filePath)
 });

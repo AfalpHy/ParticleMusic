@@ -114,3 +114,22 @@ ipcMain.handle('load-playlist', async (Event, playlistName) => {
     mainWindow.webContents.send('song-metadata', metadata);
   }
 })
+
+async function getCoverDataUrl(filePath) {
+  try {
+    const metadata = await parseFile(filePath);
+    const picture = metadata.common.picture?.[0];
+    if (!picture) return null;
+
+    const base64String = Buffer.from(picture.data).toString('base64');
+    const mimeType = picture.format; // e.g. 'image/jpeg' or 'image/png'
+    return `data:${mimeType};base64,${base64String}`;
+  } catch (err) {
+    console.error('Failed to read metadata:', err);
+    return null;
+  }
+}
+
+ipcMain.handle('get-cover', async (event, filePath) => {
+  return await getCoverDataUrl(filePath);
+});
