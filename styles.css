@@ -260,22 +260,9 @@
      position: absolute;
      top: 12px;
      left: 20px;
+     width: calc(30% - 30px);
      background-color: rgba(0, 0, 0, 0);
      display: flex;
- }
-
- #left-bottom-title {
-     position: absolute;
-     top: 0;
-     left: 60px;
-     width: 100px;
- }
-
- #left-bottom-artist {
-     position: absolute;
-     top: 25px;
-     left: 60px;
-     width: 100px;
  }
 
  #cover-art {
@@ -285,7 +272,33 @@
      height: 50px;
      width: 50px;
      border-radius: 5px;
-     background-image: url('pictures/cover.jpg');
+     background-image: url('pictures/icon.png');
+     background-size: cover;
+     background-position: center;
+ }
+
+ #left-bottom-title {
+     position: absolute;
+     top: 0;
+     left: 60px;
+     width: calc(100% - 60px);
+     font-size: 15px;
+     white-space: nowrap;
+     overflow: hidden;
+     text-overflow: ellipsis;
+     user-select: none;
+ }
+
+ #left-bottom-artist {
+     position: absolute;
+     top: 25px;
+     left: 60px;
+     width: calc(100% - 60px);
+     font-size: 15px;
+     white-space: nowrap;
+     overflow: hidden;
+     text-overflow: ellipsis;
+     user-select: none;
  }
 
  .play-controls {
@@ -501,9 +514,7 @@
      width: 100%;
      top: 0%;
      left: 0%;
-     background-image: url('pictures/bg.jpg');
-     background-size: cover;
-     background-position: center;
+     background-color: #edd275;
      transform: translateY(100%);
      transition: transform 1s ease;
  }
@@ -537,11 +548,24 @@
      background-image: url('pictures/leaveFull.png');
  }
 
+ #cover-art-bigger {
+     position: absolute;
+     top: 50%;
+     left: 30%;
+     height: 30vw;
+     width: 30vw;
+     transform: translate(-50%, -50%);
+     border-radius: 5px;
+     background-image: url('pictures/icon.png');
+     background-size: cover;
+     background-position: center;
+ }
+
  #lyrics-container {
      position: absolute;
      top: 50%;
      left: 50%;
-     transform: translate(-50%, -50%);
+     transform: translateY(-50%);
      width: 40%;
      max-height: 70%;
      overflow-y: auto;
@@ -579,7 +603,7 @@
      top: calc(100% - 75px);
      width: 100%;
      height: 75px;
-     background-color: rgba(255, 255, 255, 0.3);
+     background-color: rgba(255, 255, 255, 0.15);
      transform: translateY(0);
      transition: transform 1s ease;
  }

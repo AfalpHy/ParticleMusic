@@ -14,6 +14,7 @@
   "description": "a freedom music player",
   "dependencies": {
     "file-type": "^21.0.0",
+    "get-image-colors": "^4.0.1",
     "music-metadata": "^11.7.0"
   },
   "devDependencies": {

@@ -195,14 +195,4 @@ function dblclickSong(index) {
     playbackQueue.playOrPause();
 
     updatePlaybackQueueDisplay();
-
-    window.electronAPI.fetchCover(shared.playlist[index].filePath).then((coverDataUrl) => {
-        if (coverDataUrl) {
-            document.getElementById('cover-art').src = coverDataUrl;
-        } else {
-            document.getElementById('cover-art').src = 'pictures/cover.jpg'; // fallback
-        }
-    });
-    document.getElementById('left-bottom-title').textContent = shared.playlist[index].title;
-    document.getElementById('left-bottom-artist').textContent = shared.playlist[index].artist;
 }

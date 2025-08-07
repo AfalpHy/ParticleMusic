@@ -136,6 +136,10 @@ class PlaybackQueue {
         audioPlayer.src = src;
         loadLyricsForSong(src.replace(/\.[^/.]+$/, '.lrc'));
         audioPlayer.currentTime = 0;
+
+        window.electronAPI.fetchCover(src);
+        document.getElementById('left-bottom-title').textContent = this.currentMetadata.title;
+        document.getElementById('left-bottom-artist').textContent = this.currentMetadata.artist;
     }
 
     last() {
@@ -227,7 +231,19 @@ class PlaybackQueue {
         this.metadatas = [];
         this.currentMetadata = [];
         this.currentIndex = 0;
+
+        window.electronAPI.fetchCover("");
+        document.getElementById('left-bottom-title').textContent = 'Title';
+        document.getElementById('left-bottom-artist').textContent = "Artist";
     }
 }
 
 export const playbackQueue = new PlaybackQueue();
+
+window.electronAPI.setCover((result) => {
+    if (result) {
+        document.getElementById('cover-art').src = result.coverDataUrl;
+        document.getElementById('cover-art-bigger').src = result.coverDataUrl;
+        document.getElementById('lyrics-body').style.backgroundColor = result.color;
+    }
+})

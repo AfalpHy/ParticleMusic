@@ -1,4 +1,4 @@
-const {contextBridge, ipcRenderer} = require('electron');
+const { contextBridge, ipcRenderer } = require('electron');
 
 contextBridge.exposeInMainWorld('electronAPI', {
   minimizeWindow: () => ipcRenderer.send('window-minimize'),
@@ -13,20 +13,26 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   addDirectory: () => ipcRenderer.send('add-directory'),
 
-  displayDirectory: (callback) => {ipcRenderer.on(
-      'display-directory', (event, filePath) => callback(filePath))},
+  displayDirectory: (callback) => {
+    ipcRenderer.on(
+      'display-directory', (event, filePath) => callback(filePath))
+  },
 
   loadPlaylist: (playlistName) =>
-      ipcRenderer.invoke('load-playlist', playlistName),
+    ipcRenderer.invoke('load-playlist', playlistName),
 
-  maximize: (callback) => {ipcRenderer.on('maximize', (event) => callback())},
+  maximize: (callback) => { ipcRenderer.on('maximize', (event) => callback()) },
 
   unmaximize:
-      (callback) => {ipcRenderer.on('unmaximize', (event) => callback())},
+    (callback) => { ipcRenderer.on('unmaximize', (event) => callback()) },
 
   receiveSongMetadata: (callback) => {
     ipcRenderer.on('song-metadata', (event, metadata) => callback(metadata))
   },
 
-  fetchCover: (filePath) => ipcRenderer.invoke('get-cover', filePath)
+  fetchCover: (filePath) => ipcRenderer.send('get-cover', filePath),
+
+  setCover: (callback) => {
+    ipcRenderer.on('set-cover', (event, result) => callback(result))
+  },
 });
