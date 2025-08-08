@@ -19,7 +19,7 @@ document.getElementById('playlist').addEventListener('click', () => {
     }
     shared.loadingPlaylist = true;
     document.getElementById('cover').classList.add('hidden');
-    document.getElementById('song-list').classList.add('visible');
+    document.getElementById('song-list').classList.add('display');
 
     // reset
     const songs = document.getElementById('songs');
@@ -36,5 +36,5 @@ document.getElementById('playlist').addEventListener('click', () => {
 
 document.getElementById('title').addEventListener('click', () => {
     document.getElementById('cover').classList.remove('hidden');
-    document.getElementById('song-list').classList.remove('visible');
+    document.getElementById('song-list').classList.remove('display');
 })

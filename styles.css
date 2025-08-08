@@ -114,7 +114,6 @@
      background-size: cover;
      background-position: center;
      background-image: url('pictures/cover.jpg');
-     /* visibility: visible; */
  }
 
  #cover.hidden {
@@ -131,7 +130,7 @@
      visibility: hidden;
  }
 
- #song-list.visible {
+ #song-list.display {
      visibility: visible;
  }
 
@@ -520,12 +519,11 @@
      left: 0%;
      background-color: #edd275;
      transform: translateY(100%);
-     transition: transform 1s ease;
+     transition: transform 0.5s ease;
  }
 
- #lyrics-body.visible {
+ #lyrics-body.display {
      transform: translateY(0);
-     transition: transform 1s ease;
  }
 
  #lyric-control {
@@ -625,7 +623,7 @@
      height: calc(85% - 100px);
      border-radius: 5px 0 0 5px;
      transform: translateX(10px);
-     transition: transform 0.5s ease;
+     transition: transform 0.3s ease;
      background-color: rgba(240, 240, 240, 1);
      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
      overflow: hidden;

@@ -21,7 +21,7 @@ document.getElementById('pull').addEventListener('click', () => {
         return;
     }
     shared.lyricBodyActive = false;
-    lyricsBody.classList.remove('visible');
+    lyricsBody.classList.remove('display');
     clearTimeout(timeOut);
 });
 
@@ -56,7 +56,7 @@ document.getElementById('music-controls')
         }
         if (!shared.lyricBodyActive) {
             shared.lyricBodyActive = true;
-            lyricsBody.classList.add('visible');
+            lyricsBody.classList.add('display');
         }
     });
 
@@ -71,6 +71,6 @@ document.getElementById('vice-music-controls')
             return;
         }
         shared.lyricBodyActive = false;
-        lyricsBody.classList.remove('visible');
+        lyricsBody.classList.remove('display');
         clearTimeout(timeOut);
     });
