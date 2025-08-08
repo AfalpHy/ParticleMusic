@@ -137,7 +137,13 @@ class PlaybackQueue {
         loadLyricsForSong(src.replace(/\.[^/.]+$/, '.lrc'));
         audioPlayer.currentTime = 0;
 
-        setCover({ coverDataUrl: this.currentMetadata.coverDataUrl, color: this.currentMetadata.color });
+        window.electronAPI.getColor(src).then((color) => {
+            if (color == null)
+                setCover({ coverDataUrl: this.currentMetadata.coverDataUrl, color: defaultCover.color });
+            else
+                setCover({ coverDataUrl: this.currentMetadata.coverDataUrl, color: color });
+        })
+
         document.getElementById('left-bottom-title').textContent = this.currentMetadata.title;
         document.getElementById('left-bottom-artist').textContent = this.currentMetadata.artist;
     }
