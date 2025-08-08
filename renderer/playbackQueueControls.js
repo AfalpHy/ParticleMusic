@@ -41,26 +41,40 @@ export function updatePlaybackQueueDisplay() {
         lineElement.className = 'playback-queue-song-line';
         {
             const columnElement = document.createElement('div');
-            columnElement.style.flex = '0 0 40%';
+            columnElement.style.flex = '0 0 80%';
             columnElement.style.overflow = 'hidden';
+            columnElement.style.display = 'flex';
+            columnElement.style.alignItems = 'center';
+            columnElement.style.gap = '10px';
+            columnElement.style.position = 'relative';
 
-            const columnElementText = document.createElement('div');
-            columnElementText.className = 'song-line-column-text'
-            columnElementText.textContent = element.title;
-            columnElement.append(columnElementText);
+            const columnElementImg = document.createElement('img');
+            columnElementImg.style.height = "50px";
+            columnElementImg.style.width = "50px";
+            columnElementImg.style.borderRadius = "10%";
+            columnElementImg.src = element.coverDataUrl;
+            columnElement.append(columnElementImg);
+
+            const columnElementText1 = document.createElement('div');
+            columnElementText1.className = 'song-line-column-text'
+            columnElementText1.textContent = element.title;
+            columnElementText1.style.position = 'absolute';
+            columnElementText1.style.top = '5px';
+            columnElementText1.style.left = '55px';
+
+            const columnElementText2 = document.createElement('div');
+            columnElementText2.className = 'song-line-column-text'
+            columnElementText2.textContent = element.artist;
+            columnElementText2.style.position = 'absolute';
+            columnElementText2.style.top = '30px';
+            columnElementText2.style.left = '55px';
+
+            columnElement.append(columnElementText1);
+            columnElement.append(columnElementText2);
+
             lineElement.append(columnElement);
         }
-        {
-            const columnElement = document.createElement('div');
-            columnElement.style.flex = '0 0 40%';
-            columnElement.style.overflow = 'hidden';
 
-            const columnElementText = document.createElement('div');
-            columnElementText.className = 'song-line-column-text'
-            columnElementText.textContent = element.artist;
-            columnElement.append(columnElementText);
-            lineElement.append(columnElement);
-        }
         {
             const columnElement = document.createElement('div');
             columnElement.style.flex = '0 0 15%';

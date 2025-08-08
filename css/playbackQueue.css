@@ -2,7 +2,7 @@
      position: absolute;
      top: 15%;
      left: 100%;
-     width: 350px;
+     width: 400px;
      height: calc(85% - 100px);
      border-radius: 5px 0 0 5px;
      transform: translateX(10px);
@@ -64,7 +64,7 @@
  }
 
  .playback-queue-song-line {
-     height: 5%;
+     height: 60px;
      width: 100%;
      display: flex;
      align-items: center;
