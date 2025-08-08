@@ -83,8 +83,8 @@ function compare(textA, textB) {
 }
 
 function sortSongList(category, ascending) {
-    const songs = document.getElementById('songs');
-    const sorted = Array.from(songs.children).sort((a, b) => {
+    const songs = document.getElementById('song-list');
+    const sorted = Array.from(songs.children).slice(1).sort((a, b) => {
         const textA = a.children[category].textContent.trim()
         const textB = b.children[category].textContent.trim();
         if (ascending) {
