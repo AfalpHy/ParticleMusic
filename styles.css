@@ -176,10 +176,6 @@
      z-index: 10;
  }
 
- #song-label.reduceZindex {
-     z-index: 0;
- }
-
  #song-title-label:hover {
      padding: 5px 0 5px 0;
      border-radius: 5px;
@@ -534,6 +530,7 @@
      background-color: #edd275;
      transform: translateY(100%);
      transition: transform 0.5s ease;
+     z-index: 20;
  }
 
  #lyrics-body.display {
