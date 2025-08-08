@@ -1,5 +1,5 @@
 {
-  "name": "electron-app",
+  "name": "ParticleMusic",
   "version": "1.0.0",
   "main": "main.js",
   "scripts": {

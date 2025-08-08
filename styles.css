@@ -83,11 +83,11 @@
      -webkit-app-region: no-drag;
      position: absolute;
      top: 25px;
-     left: calc(100% - 150px);
+     left: calc(100% - 130px);
      display: flex;
      justify-content: space-between;
      align-items: center;
-     gap: 10px;
+     gap: 5px;
  }
 
  .minimize {
