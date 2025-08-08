@@ -1,0 +1,63 @@
+ #lyrics-body {
+     position: absolute;
+     height: 100%;
+     width: 100%;
+     top: 0%;
+     left: 0%;
+     background-color: #edd275;
+     transform: translateY(100%);
+     transition: transform 0.5s ease;
+     z-index: 20;
+ }
+
+ #lyrics-body.display {
+     transform: translateY(0);
+ }
+
+ #cover-art-bigger {
+     position: absolute;
+     top: 50%;
+     left: 30%;
+     height: 30vw;
+     width: 30vw;
+     transform: translate(-50%, -50%);
+     border-radius: 5%;
+     user-select: none;
+ }
+
+ #lyrics-container {
+     position: absolute;
+     top: 50%;
+     left: 50%;
+     transform: translateY(-50%);
+     width: 40%;
+     max-height: 70%;
+     overflow-y: auto;
+     text-align: center;
+     font-family: Arial, "宋体";
+     scroll-behavior: smooth;
+
+     &::-webkit-scrollbar {
+         display: none;
+     }
+ }
+
+ .lyrics-line {
+     margin: 12px 0;
+     font-size: 22px;
+     color: rgb(150, 150, 150);
+     transition: all 0.3s ease;
+     user-select: none;
+     cursor: pointer;
+ }
+
+ .lyrics-line:hover {
+     background-color: rgba(255, 255, 255, 0.1);
+     border-radius: 30px;
+ }
+
+ .current-line {
+     color: white;
+     font-size: 30px;
+     font-weight: bold;
+ }

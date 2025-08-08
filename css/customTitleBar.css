@@ -1,0 +1,92 @@
+ .custom-title-bar {
+     /* Allows window dragging */
+     -webkit-app-region: drag;
+     position: absolute;
+     top: 0%;
+     left: 0%;
+     height: 75px;
+     width: 100%;
+     display: flex;
+     justify-content: space-between;
+     align-items: center;
+     transform: translateY(0);
+     transition: transform 1s ease;
+ }
+
+ .custom-title-bar.hidden {
+     transform: translateY(-75px);
+ }
+
+ #search {
+     -webkit-app-region: no-drag;
+     border: 1px solid rgb(220, 220, 220);
+     outline: none;
+     position: absolute;
+     top: 25px;
+     left: 50px;
+     height: 25px;
+     width: 300px;
+     border-radius: 5px;
+ }
+
+ .custom-title-bar button {
+     background-color: rgba(0, 0, 0, 0);
+     border: none;
+     cursor: pointer;
+     border-radius: 5px;
+     width: 30px;
+     height: 30px;
+     background-size: cover;
+     background-position: center;
+ }
+
+ .custom-title-bar button:hover {
+     background-color: rgba(0, 0, 0, 0.1);
+ }
+
+ .window-controls {
+     -webkit-app-region: no-drag;
+     position: absolute;
+     top: 25px;
+     left: calc(100% - 130px);
+     display: flex;
+     justify-content: space-between;
+     align-items: center;
+     gap: 5px;
+ }
+
+ .minimize {
+     background-image: url('../pictures/minimize.png');
+ }
+
+ .maximize {
+     background-image: url('../pictures/maximize.png');
+ }
+
+ .close {
+     background-image: url('../pictures/close.png');
+ }
+
+ #lyric-control {
+     -webkit-app-region: no-drag;
+     position: absolute;
+     top: 25px;
+     left: 50px;
+     display: flex;
+     justify-content: space-between;
+     align-items: center;
+     gap: 10px;
+ }
+
+ #pull {
+     background-image: url('../pictures/pull.png');
+ }
+
+ #full-screen {
+     background-image: url('../pictures/enterFull.png');
+ }
+
+ #full-screen.change {
+     transform: translateX(-50px);
+     background-image: url('../pictures/leaveFull.png');
+ }

@@ -1,0 +1,127 @@
+ #song-list {
+     position: absolute;
+     top: 75px;
+     /* calc(100%-75px) is wrong */
+     height: calc(100% - 75px);
+     /* Create a gap between the scrollbar and the edge of the window */
+     width: calc(100% - 5px);
+     visibility: hidden;
+
+     overflow-y: auto;
+     scroll-behavior: smooth;
+     user-select: none;
+
+     &::-webkit-scrollbar {
+         width: 6px;
+     }
+
+     &::-webkit-scrollbar-thumb {
+         background-color: rgb(200, 200, 200);
+         border-radius: 3px;
+     }
+
+     &::-webkit-scrollbar-thumb:hover {
+         background-color: rgb(180, 180, 180);
+     }
+ }
+
+ #song-list.display {
+     visibility: visible;
+ }
+
+ #song-label {
+     position: sticky;
+     top: 0;
+     left: 0;
+     height: 5%;
+     width: 100%;
+     display: flex;
+     align-items: center;
+     user-select: none;
+     background-color: rgb(247, 247, 247);
+     z-index: 10;
+ }
+
+ #song-title-label:hover {
+     padding: 5px 0 5px 0;
+     border-radius: 5px;
+     cursor: pointer;
+     background-color: rgb(220, 220, 220);
+ }
+
+ #artist-label:hover {
+     padding: 5px 0 5px 0;
+     border-radius: 5px;
+     cursor: pointer;
+     background-color: rgb(220, 220, 220);
+ }
+
+ #album-label:hover {
+     padding: 5px 0 5px 0;
+     border-radius: 5px;
+     cursor: pointer;
+     background-color: rgb(220, 220, 220);
+ }
+
+ #duration-label:hover {
+     padding: 5px 0 5px 0;
+     border-radius: 5px;
+     cursor: pointer;
+     background-color: rgb(220, 220, 220);
+ }
+
+ .resizer {
+     position: absolute;
+     top: 0%;
+     left: calc(100% - 10px);
+     width: 10px;
+     height: 100%;
+     cursor: col-resize;
+ }
+
+ .song-index {
+     flex: 0 0 10%;
+     display: flex;
+     justify-content: center;
+ }
+
+ .song-title {
+     flex: 0 0 40%;
+     position: relative;
+     display: flex;
+     align-items: center;
+     gap: 10px;
+ }
+
+ .artist {
+     flex: 0 0 20%;
+     position: relative;
+ }
+
+ .album {
+     flex: 0 0 20%;
+ }
+
+ .duration {
+     flex: 0 0 5%;
+ }
+
+ .song-line {
+     height: 50px;
+     width: 100%;
+     display: flex;
+     border-radius: 10px;
+     align-items: center;
+     cursor: pointer;
+ }
+
+ .song-line:hover {
+     background-color: rgba(0, 0, 0, 0.15);
+ }
+
+ .song-line-column-text {
+     font-size: 15px;
+     white-space: nowrap;
+     overflow: hidden;
+     text-overflow: ellipsis;
+ }

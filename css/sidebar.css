@@ -1,0 +1,32 @@
+ #sidebar {
+     position: absolute;
+     height: calc(100% - 75px);
+     width: 200px;
+     background-color: rgb(230, 230, 230);
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+     gap: 20px;
+ }
+
+ #title {
+     height: 2%;
+     padding: 40px 0 20px 0;
+     text-align: center;
+     font-family: Arial, "宋体";
+     font-size: 36;
+     font-weight: bold;
+     user-select: none;
+     cursor: pointer;
+ }
+
+ #playlist {
+     padding: 20px 0 20px 0;
+     width: 100%;
+     text-align: center;
+     cursor: pointer;
+ }
+
+ #playlist:hover {
+     background-color: rgb(220, 220, 220);
+ }
