@@ -44,7 +44,7 @@ async function getAudioMetadata(filePath) {
 
 parentPort.on('message', async (data) => {
     iconMIME = 'image/png';
-    iconBase64String = (await fs.promises.readFile('pictures/icon.png')).toString('base64');
+    iconBase64String = (await fs.promises.readFile(path.join(__dirname, 'pictures/icon.png'))).toString('base64');
     for (let i = data.id; i < data.songPaths.length; i += data.taskNum) {
         parentPort.postMessage(await getAudioMetadata(data.songPaths[i]));
     }

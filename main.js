@@ -44,7 +44,7 @@ function createWindow() {
 
   mainWindow.webContents.on('did-finish-load', async () => {
     const getColors = require('get-image-colors');
-    const iconBuff = await fs.promises.readFile('pictures/icon.png');
+    const iconBuff = await fs.promises.readFile(path.join(__dirname, 'pictures/icon.png'));
     const colors = (await getColors(iconBuff, 'image/png')).map(color => color.hex());
     const base64String = iconBuff.toString('base64');
     const result = { coverDataUrl: `data:image/png;base64,${base64String}`, color: colors[0] };
@@ -97,7 +97,7 @@ ipcMain.handle('load-playlist', async (Event, playlistName) => {
   const workerPromises = [];
   for (let i = 0; i < taskNum; i++) {
     workerPromises.push(new Promise((resolve, reject) => {
-      const worker = new Worker('./worker.js');
+      const worker = new Worker(path.join(__dirname, './worker.js'));
 
       worker.on('message', (result) => {
         mainWindow.webContents.send('song-metadata', result);
