@@ -10,6 +10,7 @@
      background-color: rgba(240, 240, 240, 1);
      box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
      overflow: hidden;
+     z-index: 30;
  }
 
  #playback-queue.display {
