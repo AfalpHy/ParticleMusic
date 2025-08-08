@@ -26,7 +26,8 @@ document.getElementById('playlist').addEventListener('click', () => {
 
     // reset
     const songs = document.getElementById('song-list').children;
-    for (let i = 1; i < songs.length; i++) {
+    let len = songs.length;
+    for (let i = len - 1; i >= 1; i--) {
         songs[i].remove();
     }
     shared.playlist = [];
