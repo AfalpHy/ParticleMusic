@@ -140,6 +140,23 @@
      /* Create a gap between the scrollbar and the edge of the window */
      width: calc(100% - 5px);
      visibility: hidden;
+
+     overflow-y: auto;
+     scroll-behavior: smooth;
+     user-select: none;
+
+     &::-webkit-scrollbar {
+         width: 6px;
+     }
+
+     &::-webkit-scrollbar-thumb {
+         background-color: rgb(200, 200, 200);
+         border-radius: 3px;
+     }
+
+     &::-webkit-scrollbar-thumb:hover {
+         background-color: rgb(180, 180, 180);
+     }
  }
 
  #song-list.display {
@@ -147,11 +164,20 @@
  }
 
  #song-label {
+     position: sticky;
+     top: 0;
+     left: 0;
      height: 5%;
      width: 100%;
      display: flex;
      align-items: center;
      user-select: none;
+     background-color: rgb(247, 247, 247);
+     z-index: 10;
+ }
+
+ #song-label.reduceZindex {
+     z-index: 0;
  }
 
  #song-title-label:hover {
@@ -198,49 +224,28 @@
  }
 
  .song-title {
-     flex: 0 0 30%;
+     flex: 0 0 40%;
      position: relative;
+     display: flex;
+     align-items: center;
+     gap: 10px;
  }
 
  .artist {
-     flex: 0 0 25%;
+     flex: 0 0 20%;
      position: relative;
  }
 
  .album {
-     flex: 0 0 25%;
+     flex: 0 0 20%;
  }
 
  .duration {
      flex: 0 0 5%;
  }
 
- #songs {
-     position: absolute;
-     top: 5%;
-     overflow-y: auto;
-     scroll-behavior: smooth;
-     left: 0%;
-     height: 95%;
-     width: 100%;
-     user-select: none;
-
-     &::-webkit-scrollbar {
-         width: 6px;
-     }
-
-     &::-webkit-scrollbar-thumb {
-         background-color: rgb(200, 200, 200);
-         border-radius: 3px;
-     }
-
-     &::-webkit-scrollbar-thumb:hover {
-         background-color: rgb(180, 180, 180);
-     }
- }
-
  .song-line {
-     height: 5%;
+     height: 60px;
      width: 100%;
      display: flex;
      border-radius: 10px;

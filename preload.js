@@ -30,9 +30,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('song-metadata', (event, metadata) => callback(metadata))
   },
 
-  fetchCover: (filePath) => ipcRenderer.send('get-cover', filePath),
-
-  setCover: (callback) => {
-    ipcRenderer.on('set-cover', (event, result) => callback(result))
+  setDefaultCover: (callback) => {
+    ipcRenderer.on('set-default-cover', (event, result) => callback(result))
   },
 });

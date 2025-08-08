@@ -22,6 +22,7 @@ document.getElementById('pull').addEventListener('click', () => {
     }
     shared.lyricBodyActive = false;
     lyricsBody.classList.remove('display');
+    songLabelRecoverZindex();
     clearTimeout(timeOut);
 });
 
@@ -57,6 +58,7 @@ document.getElementById('music-controls')
         if (!shared.lyricBodyActive) {
             shared.lyricBodyActive = true;
             lyricsBody.classList.add('display');
+            document.getElementById("song-label").classList.add("reduceZindex");
         }
     });
 
@@ -72,5 +74,12 @@ document.getElementById('vice-music-controls')
         }
         shared.lyricBodyActive = false;
         lyricsBody.classList.remove('display');
+        songLabelRecoverZindex();
         clearTimeout(timeOut);
     });
+
+function songLabelRecoverZindex() {
+    setTimeout(() => {
+        document.getElementById("song-label").classList.remove("songLabelRecoverZindex");
+    }, 500);
+}

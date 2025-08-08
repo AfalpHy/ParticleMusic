@@ -5,12 +5,15 @@ import { addSongToList } from "./songList.js";
 
 let metaIndex = 1;
 window.electronAPI.receiveSongMetadata((metadata) => {
+    if (!metadata) {
+        return;
+    }
     shared.playlist.push(metadata);
     let message = [
         metaIndex++, metadata.title, metadata.artist, metadata.album,
         formatTime(metadata.duration)
     ];
-    addSongToList(message);
+    addSongToList(message, metadata.coverDataUrl);
 })
 
 document.getElementById('playlist').addEventListener('click', () => {
@@ -22,8 +25,10 @@ document.getElementById('playlist').addEventListener('click', () => {
     document.getElementById('song-list').classList.add('display');
 
     // reset
-    const songs = document.getElementById('songs');
-    songs.innerHTML = '';
+    const songs = document.getElementById('song-list').children;
+    for (let i = 1; i < songs.length; i++) {
+        songs[i].remove();
+    }
     shared.playlist = [];
     metaIndex = 1;
 

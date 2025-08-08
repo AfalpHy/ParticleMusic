@@ -137,7 +137,7 @@ class PlaybackQueue {
         loadLyricsForSong(src.replace(/\.[^/.]+$/, '.lrc'));
         audioPlayer.currentTime = 0;
 
-        window.electronAPI.fetchCover(src);
+        setCover({ coverDataUrl: this.currentMetadata.coverDataUrl, color: this.currentMetadata.color });
         document.getElementById('left-bottom-title').textContent = this.currentMetadata.title;
         document.getElementById('left-bottom-artist').textContent = this.currentMetadata.artist;
     }
@@ -232,7 +232,7 @@ class PlaybackQueue {
         this.currentMetadata = [];
         this.currentIndex = 0;
 
-        window.electronAPI.fetchCover("");
+        setCover(defaultCover);
         document.getElementById('left-bottom-title').textContent = 'Title';
         document.getElementById('left-bottom-artist').textContent = "Artist";
     }
@@ -240,10 +240,14 @@ class PlaybackQueue {
 
 export const playbackQueue = new PlaybackQueue();
 
-window.electronAPI.setCover((result) => {
-    if (result) {
-        document.getElementById('cover-art').src = result.coverDataUrl;
-        document.getElementById('cover-art-bigger').src = result.coverDataUrl;
-        document.getElementById('lyrics-body').style.backgroundColor = result.color;
-    }
+function setCover(result) {
+    document.getElementById('cover-art').src = result.coverDataUrl;
+    document.getElementById('cover-art-bigger').src = result.coverDataUrl;
+    document.getElementById('lyrics-body').style.backgroundColor = result.color;
+}
+
+let defaultCover;
+window.electronAPI.setDefaultCover((result) => {
+    defaultCover = result;
+    setCover(result);
 })

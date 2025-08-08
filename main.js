@@ -4,6 +4,8 @@ const fs = require('fs');
 const path = require('path');
 
 let mainWindow;
+let iconMIME;
+let iconBuff;
 
 app.whenReady().then(() => {
   createWindow();
@@ -43,8 +45,12 @@ function createWindow() {
   })
 
   mainWindow.webContents.on('did-finish-load', async () => {
-    const result = await getCoverDataUrl("");
-    mainWindow.webContents.send('set-cover', result);
+    iconMIME = 'image/png';
+    iconBuff = await fs.promises.readFile('pictures/icon.png');
+    const colors = (await getColors(iconBuff, iconMIME)).map(color => color.hex());
+    const base64String = iconBuff.toString('base64');
+    const result = { coverDataUrl: `data:${iconMIME};base64,${base64String}`, color: colors[0] };
+    mainWindow.webContents.send('set-default-cover', result);
   });
 }
 
@@ -99,8 +105,29 @@ async function getAudioMetadata(filePath) {
     } else {
       metadata = await parseStream(stream, detected.mime);
     }
+    const picture = metadata.common.picture?.[0];
+    let pictureMIME;
+    let buff;
+    if (picture) {
+      pictureMIME = picture.format;
+      buff = Buffer.from(picture.data);
+    } else {
+      pictureMIME = iconMIME;
+      buff = iconBuff;
+    }
+    let color;
+    try {
+      colors = (await getColors(buff, pictureMIME)).map(color => color.hex());
+    } catch {
+      console.log(buff);
+      color = "white";
+    }
+    const base64String = buff.toString('base64');
+
     return {
       filePath: filePath,
+      coverDataUrl: `data:${pictureMIME};base64,${base64String}`,
+      color: color,
       title: metadata.common.title ||
         path.basename(filePath, path.extname(filePath)),
       artist: metadata.common.artist || 'Unknown Artist',
@@ -120,33 +147,3 @@ ipcMain.handle('load-playlist', async (Event, playlistName) => {
     mainWindow.webContents.send('song-metadata', metadata);
   }
 })
-
-async function getCoverDataUrl(filePath) {
-  try {
-    let picture = null;
-    if (fs.existsSync(filePath)) {
-      const metadata = await parseFile(filePath);
-      picture = metadata.common.picture?.[0];
-    }
-    let mimeType;
-    let buff;
-    if (picture) {
-      mimeType = picture.format;
-      buff = Buffer.from(picture.data);
-    } else {
-      mimeType = 'image/png';
-      buff = await fs.promises.readFile('pictures/icon.png');
-    }
-    const colors = (await getColors(buff, mimeType)).map(color => color.hex());
-    const base64String = buff.toString('base64');
-    return { coverDataUrl: `data:${mimeType};base64,${base64String}`, color: colors[0] };
-  } catch (err) {
-    console.error('Failed to read metadata:', err);
-    return null;
-  }
-}
-
-ipcMain.on('get-cover', async (event, filePath) => {
-  const result = await getCoverDataUrl(filePath);
-  mainWindow.webContents.send('set-cover', result);
-});

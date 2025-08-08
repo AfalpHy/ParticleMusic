@@ -154,7 +154,7 @@ document.querySelector('.duration').addEventListener('click', () => {
     albumAscending = false;
 });
 
-export function addSongToList(message) {
+export function addSongToList(message, coverDataUrl) {
     const songLabelChidren = document.getElementById('song-label').children;
 
     const lineElement = document.createElement('div');
@@ -166,6 +166,14 @@ export function addSongToList(message) {
         columnElement.style.flex = songLabelChidren[i].style.flex;
         columnElement.style.overflow = 'hidden';
 
+        if (i == 1) {
+            const columnElementImg = document.createElement('img');
+            columnElementImg.style.height = "40px";
+            columnElementImg.style.width = "40px";
+            columnElementImg.style.borderRadius = "10%";
+            columnElementImg.src = coverDataUrl;
+            columnElement.append(columnElementImg);
+        }
         const columnElementText = document.createElement('div');
         columnElementText.className = 'song-line-column-text'
         columnElementText.textContent = message[i];
@@ -173,7 +181,7 @@ export function addSongToList(message) {
         lineElement.append(columnElement);
     }
 
-    document.getElementById('songs').append(lineElement);
+    document.getElementById('song-list').append(lineElement);
 
     lineElement.addEventListener('dblclick', () => {
         dblclickSong(parseInt(lineElement.children[0].textContent) - 1);
