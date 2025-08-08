@@ -118,6 +118,7 @@ async function getAudioMetadata(filePath) {
     let color;
     try {
       colors = (await getColors(buff, pictureMIME)).map(color => color.hex());
+      color = colors[0];
     } catch {
       console.log(buff);
       color = "white";

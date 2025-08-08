@@ -80,6 +80,6 @@ document.getElementById('vice-music-controls')
 
 function songLabelRecoverZindex() {
     setTimeout(() => {
-        document.getElementById("song-label").classList.remove("songLabelRecoverZindex");
+        document.getElementById("song-label").classList.remove("reduceZindex");
     }, 500);
 }
