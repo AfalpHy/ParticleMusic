@@ -41,6 +41,11 @@ function createWindow() {
   mainWindow.on('unmaximize', () => {
     mainWindow.webContents.send('unmaximize');
   })
+
+  mainWindow.webContents.on('did-finish-load', async () => {
+    const result = await getCoverDataUrl("");
+    mainWindow.webContents.send('set-cover', result);
+  });
 }
 
 ipcMain.on('window-close', () => {
