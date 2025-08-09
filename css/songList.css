@@ -124,4 +124,5 @@
      white-space: nowrap;
      overflow: hidden;
      text-overflow: ellipsis;
+     font-family: Arial, "宋体";
  }

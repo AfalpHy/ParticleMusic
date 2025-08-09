@@ -35,7 +35,6 @@
      border-radius: 5px;
  }
 
-
  #clear-playback-queue:hover {
      background-color: rgba(0, 0, 0, 0.2);
  }
@@ -76,4 +75,35 @@
 
  .playback-queue-song-line:hover {
      background-color: rgba(0, 0, 0, 0.15);
+ }
+
+ .playback-queue-song-line-main {
+     flex: 0 0 80%;
+     display: flex;
+     align-items: center;
+     position: relative;
+ }
+
+ .playback-queue-song-line-title {
+     position: absolute;
+     top: 5px;
+     left: 55px;
+     max-width: calc(100% - 60px);
+     font-size: 15px;
+     white-space: nowrap;
+     overflow: hidden;
+     text-overflow: ellipsis;
+     font-family: Arial, "宋体";
+ }
+
+ .playback-queue-song-line-artist {
+     position: absolute;
+     top: 25px;
+     left: 55px;
+     max-width: calc(100% - 60px);
+     font-size: 15px;
+     white-space: nowrap;
+     overflow: hidden;
+     text-overflow: ellipsis;
+     font-family: Arial, "宋体";
  }

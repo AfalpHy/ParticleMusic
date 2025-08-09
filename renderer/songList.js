@@ -163,7 +163,6 @@ export function addSongToList(message, coverDataUrl) {
     for (let i = 0; i < message.length; i++) {
         const columnElement = document.createElement('div');
         columnElement.className = songLabelChidren[i].className;
-        columnElement.style.flex = songLabelChidren[i].style.flex;
         columnElement.style.overflow = 'hidden';
 
         if (i == 1) {
