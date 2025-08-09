@@ -87,24 +87,22 @@
 
  .playback-queue-song-line-title {
      position: absolute;
-     top: 5px;
+     top: 0;
      left: 55px;
      max-width: calc(100% - 60px);
-     font-size: 15px;
+     font-size: 16px;
      white-space: nowrap;
      overflow: hidden;
      text-overflow: ellipsis;
-     font-family: Arial, "宋体";
  }
 
  .playback-queue-song-line-artist {
      position: absolute;
-     top: 25px;
+     top: 30px;
      left: 55px;
      max-width: calc(100% - 60px);
-     font-size: 15px;
+     font-size: 12px;
      white-space: nowrap;
      overflow: hidden;
      text-overflow: ellipsis;
-     font-family: Arial, "宋体";
  }
