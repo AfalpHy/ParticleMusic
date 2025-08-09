@@ -16,14 +16,7 @@ window.electronAPI.receiveSongMetadata((metadata) => {
     addSongToList(message, metadata.coverDataUrl);
 })
 
-document.getElementById('playlist').addEventListener('click', () => {
-    if (shared.loadingPlaylist) {
-        return;
-    }
-    shared.loadingPlaylist = true;
-    document.getElementById('cover').classList.add('hidden');
-    document.getElementById('song-list').classList.add('display');
-
+window.electronAPI.resetPlaylist(() => {
     // reset
     const songs = document.getElementById('song-list').children;
     let len = songs.length;
@@ -32,6 +25,15 @@ document.getElementById('playlist').addEventListener('click', () => {
     }
     shared.playlist = [];
     metaIndex = 1;
+})
+
+document.getElementById('playlist').addEventListener('click', () => {
+    if (shared.loadingPlaylist) {
+        return;
+    }
+    shared.loadingPlaylist = true;
+    document.getElementById('cover').classList.add('hidden');
+    document.getElementById('song-list').classList.add('display');
 
     window.electronAPI
         .loadPlaylist(document.getElementById('playlist').textContent)

@@ -18,6 +18,10 @@ contextBridge.exposeInMainWorld('electronAPI', {
       'display-directory', (event, filePath) => callback(filePath))
   },
 
+  resetPlaylist: (callback) => {
+    ipcRenderer.on('reset-playlist', (event) => callback())
+  },
+
   loadPlaylist: (playlistName) =>
     ipcRenderer.invoke('load-playlist', playlistName),
 
@@ -35,4 +39,5 @@ contextBridge.exposeInMainWorld('electronAPI', {
   setDefaultCover: (callback) => {
     ipcRenderer.on('set-default-cover', (event, result) => callback(result))
   },
+
 });

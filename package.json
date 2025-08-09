@@ -13,6 +13,7 @@
   "license": "ISC",
   "description": "a freedom music player",
   "dependencies": {
+    "chokidar": "^4.0.3",
     "file-type": "^21.0.0",
     "get-image-colors": "^4.0.1",
     "music-metadata": "^11.7.0"

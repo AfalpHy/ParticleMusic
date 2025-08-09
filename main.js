@@ -88,10 +88,23 @@ async function findSongs(dirPath) {
   }
 }
 
+const chokidar = require('chokidar');
+
+const musicDirectory = path.join(os.homedir(), 'Music');
+
+const watcher = chokidar.watch(musicDirectory, { persistent: true });
+
+let modified = 1;
+watcher.on('all', (event, path) => {
+  modified = 1;
+});
+
 const { Worker } = require('worker_threads');
 
 ipcMain.handle('load-playlist', async (Event, playlistName) => {
-  let songPaths = await findSongs(path.join(os.homedir(), 'Music'));
+  if (!modified) { return; }
+
+  let songPaths = await findSongs(musicDirectory);
 
   let taskNum = 4;
   let results = Array(songPaths.length);
@@ -116,10 +129,13 @@ ipcMain.handle('load-playlist', async (Event, playlistName) => {
     }));
   }
 
+  mainWindow.webContents.send('reset-playlist');
   await Promise.all(workerPromises);
   results.forEach(result => {
     mainWindow.webContents.send('song-metadata', result);
   })
+
+  modified = 0;
 })
 
 const { parseFile } = require('music-metadata')
