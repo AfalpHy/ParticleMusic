@@ -2,6 +2,7 @@ const { app, BrowserWindow, ipcMain } = require('electron');
 const os = require('os');
 const fs = require('fs');
 const path = require('path');
+const getColors = require('get-image-colors')
 
 let mainWindow;
 
@@ -43,7 +44,6 @@ function createWindow() {
   })
 
   mainWindow.webContents.on('did-finish-load', async () => {
-    const getColors = require('get-image-colors');
     const iconBuff = await fs.promises.readFile(path.join(__dirname, 'pictures/icon.png'));
     const colors = (await getColors(iconBuff, 'image/png')).map(color => color.hex());
     const base64String = iconBuff.toString('base64');
@@ -94,13 +94,16 @@ ipcMain.handle('load-playlist', async (Event, playlistName) => {
   let songPaths = await findSongs(path.join(os.homedir(), 'Music'));
 
   let taskNum = 4;
+  let results = Array(songPaths.length);
   const workerPromises = [];
   for (let i = 0; i < taskNum; i++) {
     workerPromises.push(new Promise((resolve, reject) => {
       const worker = new Worker(path.join(__dirname, './worker.js'));
 
+      let index = i;
       worker.on('message', (result) => {
-        mainWindow.webContents.send('song-metadata', result);
+        results[index] = result;
+        index += taskNum;
       });
 
       worker.on('error', reject);
@@ -112,11 +115,14 @@ ipcMain.handle('load-playlist', async (Event, playlistName) => {
       worker.postMessage({ songPaths: songPaths, id: i, taskNum: taskNum });
     }));
   }
+
   await Promise.all(workerPromises);
+  results.forEach(result => {
+    mainWindow.webContents.send('song-metadata', result);
+  })
 })
 
 const { parseFile } = require('music-metadata')
-const getColors = require('get-image-colors')
 
 function hexToRgb(hex) {
   const bigint = parseInt(hex.slice(1), 16);
@@ -150,14 +156,26 @@ function mixColors(colors, weights) {
 
   return rgbToHex(r, g, b);
 }
+function detectImageType(buffer) {
+  if (buffer.slice(0, 2).toString('hex') === 'ffd8') return 'image/jpeg';
+  if (buffer.slice(0, 8).toString('hex') === '89504e470d0a1a0a') return 'image/png';
+  return null;
+}
 
 ipcMain.handle('get-color', async (event, filePath) => {
   try {
     const metadata = await parseFile(filePath)
     const picture = metadata.common.picture?.[0];
     if (picture) {
-      const colors = await getColors(Buffer.from(picture.data), picture.format);
-      return mixColors(colors, [0.6, 0.1, 0.1, 0.1, 0.1]);
+      const pictureBuffer = Buffer.from(picture.data);
+      const realType = detectImageType(pictureBuffer);
+      if (realType) {
+        const colors = await getColors(Buffer.from(picture.data), realType);
+        return mixColors(colors, [0.6, 0.1, 0.1, 0.1, 0.1]);
+      } else {
+        const colors = await getColors(Buffer.from(picture.data), picture.format);
+        return mixColors(colors, [0.6, 0.1, 0.1, 0.1, 0.1]);
+      }
     } else {
       return null;
     }

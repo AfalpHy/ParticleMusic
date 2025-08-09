@@ -9,13 +9,15 @@ let iconMIME;
 let iconBase64String;
 async function getAudioMetadata(filePath) {
     try {
-        const stream = fs.createReadStream(filePath);
-        const detected = await fileTypeFromFile(filePath);
         let metadata;
+        const detected = await fileTypeFromFile(filePath);
         if (detected.mime == 'audio/ogg') {
-            metadata = await parseFile(filePath, { duration: true })
-        } else {
+            metadata = await parseFile(filePath, { duration: true });
+        } else if (detected.mime == 'audio/aac') {
+            const stream = fs.createReadStream(filePath);
             metadata = await parseStream(stream, detected.mime);
+        } else {
+            metadata = await parseFile(filePath);
         }
         const picture = metadata.common.picture?.[0];
         let pictureMIME;
