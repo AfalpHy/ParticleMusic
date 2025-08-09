@@ -27,19 +27,17 @@ window.electronAPI.resetPlaylist(() => {
     metaIndex = 1;
 })
 
-document.getElementById('playlist').addEventListener('click', () => {
-    if (shared.loadingPlaylist) {
-        return;
-    }
+window.electronAPI.setLoadingPlaylist(() => {
     shared.loadingPlaylist = true;
+})
+
+window.electronAPI.unsetLoadingPlaylist(() => {
+    shared.loadingPlaylist = false;
+})
+
+document.getElementById('playlist').addEventListener('click', () => {
     document.getElementById('cover').classList.add('hidden');
     document.getElementById('song-list').classList.add('display');
-
-    window.electronAPI
-        .loadPlaylist(document.getElementById('playlist').textContent)
-        .then(() => {
-            shared.loadingPlaylist = false;
-        })
 })
 
 document.getElementById('title').addEventListener('click', () => {

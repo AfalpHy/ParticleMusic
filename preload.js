@@ -18,12 +18,17 @@ contextBridge.exposeInMainWorld('electronAPI', {
       'display-directory', (event, filePath) => callback(filePath))
   },
 
+  setLoadingPlaylist: (callback) => {
+    ipcRenderer.on('set-loading-playlist', (event) => callback())
+  },
+
   resetPlaylist: (callback) => {
     ipcRenderer.on('reset-playlist', (event) => callback())
   },
 
-  loadPlaylist: (playlistName) =>
-    ipcRenderer.invoke('load-playlist', playlistName),
+  unsetLoadingPlaylist: (callback) => {
+    ipcRenderer.on('unset-loading-playlist', (event) => callback())
+  },
 
   maximize: (callback) => { ipcRenderer.on('maximize', (event) => callback()) },
 

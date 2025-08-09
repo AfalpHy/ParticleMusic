@@ -49,6 +49,8 @@ function createWindow() {
     const base64String = iconBuff.toString('base64');
     const result = { coverDataUrl: `data:image/png;base64,${base64String}`, color: colors[0] };
     mainWindow.webContents.send('set-default-cover', result);
+
+    await loadPlaylist();
   });
 }
 
@@ -88,21 +90,10 @@ async function findSongs(dirPath) {
   }
 }
 
-const chokidar = require('chokidar');
-
 const musicDirectory = path.join(os.homedir(), 'Music');
 
-const watcher = chokidar.watch(musicDirectory, { persistent: true });
-
-let modified = 1;
-watcher.on('all', (event, path) => {
-  modified = 1;
-});
-
-const { Worker } = require('worker_threads');
-
-ipcMain.handle('load-playlist', async (Event, playlistName) => {
-  if (!modified) { return; }
+async function loadPlaylist() {
+  mainWindow.webContents.send('set-loading-playlist');
 
   let songPaths = await findSongs(musicDirectory);
 
@@ -135,8 +126,37 @@ ipcMain.handle('load-playlist', async (Event, playlistName) => {
     mainWindow.webContents.send('song-metadata', result);
   })
 
-  modified = 0;
-})
+  mainWindow.webContents.send('unset-loading-playlist');
+}
+
+const chokidar = require('chokidar');
+const watcher = chokidar.watch(musicDirectory, { persistent: true });
+
+let enable = 0;
+let modified = 0;
+
+async function updatePlaylist() {
+  if (modified) {
+    await loadPlaylist();
+    modified = 0;
+  }
+  setTimeout(() => {
+    updatePlaylist();
+  }, 3000);
+}
+
+watcher.on('ready', async (event, path) => {
+  enable = 1;
+  updatePlaylist();
+});
+
+watcher.on('all', async (event, path) => {
+  if (enable) {
+    modified = 1;
+  }
+});
+
+const { Worker } = require('worker_threads');
 
 const { parseFile } = require('music-metadata')
 
