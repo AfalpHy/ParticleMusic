@@ -18,6 +18,7 @@
      &::-webkit-scrollbar-thumb {
          background-color: rgb(200, 200, 200);
          border-radius: 3px;
+         cursor: pointer;
      }
 
      &::-webkit-scrollbar-thumb:hover {
@@ -80,7 +81,7 @@
  }
 
  .song-index {
-     flex: 0 0 10%;
+     width: 75px;
      display: flex;
      justify-content: center;
  }

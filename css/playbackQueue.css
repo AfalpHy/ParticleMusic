@@ -50,12 +50,13 @@
      user-select: none;
 
      &::-webkit-scrollbar {
-         width: 4px;
+         width: 6px;
      }
 
      &::-webkit-scrollbar-thumb {
          background-color: rgb(200, 200, 200);
-         border-radius: 2px;
+         border-radius: 3px;
+         cursor: pointer;
      }
 
      &::-webkit-scrollbar-thumb:hover {
