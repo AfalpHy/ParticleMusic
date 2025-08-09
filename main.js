@@ -170,10 +170,10 @@ ipcMain.handle('get-color', async (event, filePath) => {
       const pictureBuffer = Buffer.from(picture.data);
       const realType = detectImageType(pictureBuffer);
       if (realType) {
-        const colors = await getColors(Buffer.from(picture.data), realType);
+        const colors = await getColors(pictureBuffer, realType);
         return mixColors(colors, [0.6, 0.1, 0.1, 0.1, 0.1]);
       } else {
-        const colors = await getColors(Buffer.from(picture.data), picture.format);
+        const colors = await getColors(pictureBuffer, picture.format);
         return mixColors(colors, [0.6, 0.1, 0.1, 0.1, 0.1]);
       }
     } else {
