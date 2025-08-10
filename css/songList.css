@@ -26,10 +26,6 @@
      }
  }
 
- #song-list.display {
-     visibility: visible;
- }
-
  #song-label {
      position: sticky;
      top: 0;

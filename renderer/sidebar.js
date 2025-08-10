@@ -36,11 +36,17 @@ window.electronAPI.unsetLoadingPlaylist(() => {
 })
 
 document.getElementById('playlist').addEventListener('click', () => {
-    document.getElementById('cover').classList.add('hidden');
-    document.getElementById('song-list').classList.add('display');
+    // do nothing when search text is not empty
+    if (document.getElementById('search').value == "") {
+        document.getElementById('cover').style.visibility = 'hidden';
+        document.getElementById('song-list').style.visibility = 'visible';
+    }
 })
 
 document.getElementById('title').addEventListener('click', () => {
-    document.getElementById('cover').classList.remove('hidden');
-    document.getElementById('song-list').classList.remove('display');
+    // clear search
+    document.getElementById('search').value = "";
+    document.getElementById('search').dispatchEvent(new Event('input'));
+    document.getElementById('cover').style.visibility = 'visible';
+    document.getElementById('song-list').style.visibility = 'hidden';
 })

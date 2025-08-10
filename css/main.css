@@ -25,7 +25,3 @@
      background-position: center;
      background-image: url('../pictures/cover.jpg');
  }
-
- #cover.hidden {
-     visibility: hidden;
- }

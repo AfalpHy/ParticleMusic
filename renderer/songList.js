@@ -2,6 +2,37 @@ import { updatePlaybackQueueDisplay } from "./playbackQueueControls.js";
 import { shared } from "./shared.js";
 import { playbackQueue } from "./shared.js";
 
+const songList = document.getElementById('song-list');
+const search = document.getElementById('search');
+const searchList = songList.cloneNode(false);
+
+searchList.appendChild(songList.children[0].cloneNode(true));
+songList.parentNode.append(searchList);
+
+search.addEventListener('input', (event) => {
+    console.log(12);
+    for (let i = searchList.children.length - 1; i > 0; i--) {
+        searchList.removeChild(searchList.children[i]);
+    }
+    document.getElementById('cover').style.visibility = 'hidden';
+    if (event.target.value == "") {
+        songList.style.visibility = "visible";
+        searchList.style.visibility = "hidden";
+        return;
+    }
+    for (let i = 1; i < songList.children.length; i++) {
+        const line = songList.children[i];
+        for (let j = 1; j <= 3; j++) {
+            if (line.children[j].textContent.includes(event.target.value)) {
+                searchList.appendChild(line.cloneNode(true));
+                break;
+            }
+        }
+    }
+    songList.style.visibility = "hidden";
+    searchList.style.visibility = "visible";
+});
+
 const resizer1 = document.getElementById('resizer1');
 const resizer2 = document.getElementById('resizer2');
 const songTtile = document.querySelector('.song-title');
@@ -83,8 +114,7 @@ function compare(textA, textB) {
 }
 
 function sortSongList(category, ascending) {
-    const songs = document.getElementById('song-list');
-    const sorted = Array.from(songs.children).slice(1).sort((a, b) => {
+    const sorted = Array.from(songList.children).slice(1).sort((a, b) => {
         const textA = a.children[category].textContent.trim()
         const textB = b.children[category].textContent.trim();
         if (ascending) {
@@ -99,7 +129,7 @@ function sortSongList(category, ascending) {
         const index = element.children[0].textContent - 1;
         newPlaylist.push(shared.playlist[index]);
         element.children[0].textContent = i++;
-        songs.appendChild(element);
+        songList.appendChild(element);
     });
     shared.playlist = newPlaylist;
 }
@@ -180,7 +210,7 @@ export function addSongToList(message, coverDataUrl) {
         lineElement.append(columnElement);
     }
 
-    document.getElementById('song-list').append(lineElement);
+    songList.append(lineElement);
 
     lineElement.addEventListener('dblclick', () => {
         dblclickSong(parseInt(lineElement.children[0].textContent) - 1);
