@@ -29,12 +29,21 @@ async function getAudioMetadata(filePath) {
             pictureMIME = iconMIME;
             base64String = iconBase64String;
         }
+        let artistStr = 'Unknown';
+        if (metadata.common.artists) {
+            metadata.common.artists.forEach(element => {
+                if (artistStr == 'Unknown')
+                    artistStr = element;
+                else
+                    artistStr += '/' + element
+            });
+        }
         return {
             filePath: filePath,
             coverDataUrl: `data:${pictureMIME};base64,${base64String}`,
             title: metadata.common.title ||
                 path.basename(filePath, path.extname(filePath)),
-            artist: metadata.common.artist || 'Unknown Artist',
+            artist: artistStr,
             album: metadata.common.album || 'Unknown',
             duration: parseInt(metadata.format.duration)
         };
