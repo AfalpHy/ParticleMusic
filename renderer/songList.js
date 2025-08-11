@@ -129,7 +129,7 @@ function compare(textA, textB) {
     }
 }
 
-let playlistOrderChanged = true;
+let playlistOrderChanged = false;
 function sortSongList(category, ascending) {
     const sorted = Array.from(songList.children).slice(1).sort((a, b) => {
         const textA = a.children[category].textContent.trim()
@@ -239,9 +239,9 @@ function dblclickSong(index) {
     if (shared.loadingPlaylist) {
         return;
     }
-    playbackQueue.empty = false;
     playbackQueue.currentIndex = index;
-    if (playlistOrderChanged) {
+    if (playbackQueue.empty || playlistOrderChanged) {
+        playbackQueue.empty = false;
         playlistOrderChanged = false;
         playbackQueue.metadatas = shared.playlist;
         updatePlaybackQueueDisplay();
