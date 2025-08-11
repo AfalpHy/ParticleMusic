@@ -19,6 +19,7 @@ search.addEventListener('input', (event) => {
         searchList.style.display = "none";
         return;
     }
+    let index = 1;
     for (let i = 1; i < songList.children.length; i++) {
         const line = songList.children[i];
         for (let j = 1; j <= 3; j++) {
@@ -27,6 +28,7 @@ search.addEventListener('input', (event) => {
                 lineClone.addEventListener('dblclick', () => {
                     dblclickSong(parseInt(line.children[0].textContent) - 1);
                 });
+                lineClone.children[0].textContent = index++;
                 searchList.appendChild(lineClone);
                 break;
             }
@@ -214,6 +216,7 @@ export function addSongToList(message, coverDataUrl) {
     for (let i = 0; i < message.length; i++) {
         const columnElement = document.createElement('div');
         columnElement.className = songLabelChidren[i].className;
+        columnElement.style.flex = songLabelChidren[i].style.flex;
         columnElement.style.overflow = 'hidden';
 
         if (i == 1) {
@@ -232,10 +235,11 @@ export function addSongToList(message, coverDataUrl) {
     }
 
     songList.append(lineElement);
-
+    lineElement.filePath = shared.playlist[parseInt(lineElement.children[0].textContent) - 1].filePath;
     lineElement.addEventListener('dblclick', () => {
         dblclickSong(parseInt(lineElement.children[0].textContent) - 1);
     });
+    playlistOrderChanged = true;
 }
 
 function dblclickSong(index) {

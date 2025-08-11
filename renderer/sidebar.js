@@ -25,6 +25,12 @@ window.electronAPI.resetPlaylist(() => {
     }
     shared.playlist = [];
     metaIndex = 1;
+
+    if (document.getElementById('search').value != "") {
+        // clear search
+        document.getElementById('search').value = "";
+        document.getElementById('search').dispatchEvent(new Event('input'));
+    }
 })
 
 window.electronAPI.setLoadingPlaylist(() => {

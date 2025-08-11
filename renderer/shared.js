@@ -171,8 +171,7 @@ class PlaybackQueue {
             audioPlayer.pause();
         }
         document.querySelectorAll('.song-line').forEach(element => {
-            if (shared.playlist[element.children[0].textContent - 1].filePath ==
-                this.currentMetadata.filePath) {
+            if (element.filePath == this.currentMetadata.filePath) {
                 element.style.background = 'rgba(220, 220, 220, 0.5)';
             } else {
                 element.style.background = '';
