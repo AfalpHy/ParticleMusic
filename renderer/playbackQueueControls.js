@@ -1,40 +1,18 @@
 import { audioPlayer, lyricsPlayer, playbackQueue, shared } from "./shared.js";
 import { formatTime } from "./shared.js";
 
-let clickPlaybackQueueBtn = false;
-let clickPlaybackQueue = false;
-document.querySelectorAll('.playback-queue-btn')
-    .forEach(element => element.addEventListener('click', () => {
-        clickPlaybackQueueBtn = true;
-        shared.playbackQueueDisplay = !shared.playbackQueueDisplay;
-        if (shared.playbackQueueDisplay)
-            document.getElementById('playback-queue').classList.add('display');
-        else
-            document.getElementById('playback-queue').classList.remove('display');
-    }));
+export function displayPlaybackQueue() {
+    shared.playbackQueueDisplay = true;
+    document.getElementById('playback-queue').classList.add('display');
+}
 
-document.getElementById('playback-queue').addEventListener('click', () => {
-    clickPlaybackQueue = true;
-})
-
-document.addEventListener('click', (e) => {
-    if (clickPlaybackQueueBtn) {
-        clickPlaybackQueueBtn = false;
-        return;
-    }
-    if (clickPlaybackQueue) {
-        clickPlaybackQueue = false;
-        return;
-    }
-
-    if (shared.playbackQueueDisplay) {
-        shared.playbackQueueDisplay = false;
-        document.getElementById('playback-queue').classList.remove('display');
-    }
-})
+export function hiddenPlaybackQueue() {
+    shared.playbackQueueDisplay = false;
+    document.getElementById('playback-queue').classList.remove('display');
+}
 
 export function updatePlaybackQueueDisplay() {
-    document.getElementById('playback-queue-songs').innerHTML = "";
+    document.getElementById('playback-queue-songs').textContent = "";
     const playbackQueueSongs = document.getElementById('playback-queue-songs');
     shared.playlist.forEach(element => {
         const lineElement = document.createElement('div');
@@ -77,27 +55,41 @@ export function updatePlaybackQueueDisplay() {
         }
 
         playbackQueueSongs.append(lineElement);
-        lineElement.addEventListener('click', () => {
-            let tmp = lineElement;
-            let index = 0;
-            while ((tmp = tmp.previousElementSibling) != null) {
-                index++;
-            }
-            playbackQueue.currentIndex = index;
-            playbackQueue.load();
-            playbackQueue.play = true;
-            playbackQueue.playOrPause();
-        });
     });
 }
 
-document.getElementById('clear-playback-queue').addEventListener('click', () => {
-    audioPlayer.pause();
-    playbackQueue.clear();
-    audioPlayer.currentTime = 0;
-    document.querySelectorAll('.play-pause-btn').forEach(element => {
-        element.style.backgroundImage = 'url(\'pictures/play.png\')';
-    });
-    document.getElementById('playback-queue-songs').innerHTML = "";
-    lyricsPlayer.clear();
-})
+export function playbackQueueEvent(element) {
+    let className = element.className;
+    let id = element.id;
+    if (id == 'playback-queue-label') {
+        return;
+    }
+    if (id == 'clear-playback-queue') {
+        audioPlayer.pause();
+        playbackQueue.clear();
+        audioPlayer.currentTime = 0;
+        document.querySelectorAll('.play-pause-btn').forEach(element => {
+            element.style.backgroundImage = 'url(\'pictures/play.png\')';
+        });
+        document.getElementById('playback-queue-songs').textContent = "";
+        lyricsPlayer.clear();
+    } else {
+        while (className != 'playback-queue-song-line') {
+            element = element.parentNode;
+            if (element) {
+                className = element.className;
+            } else {
+                return;
+            }
+        }
+        let index = 0;
+        while ((element = element.previousElementSibling) != null) {
+            index++;
+        }
+        playbackQueue.currentIndex = index;
+        playbackQueue.load();
+        playbackQueue.play = true;
+        playbackQueue.playOrPause();
+    }
+
+}

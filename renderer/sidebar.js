@@ -35,18 +35,18 @@ window.electronAPI.unsetLoadingPlaylist(() => {
     shared.loadingPlaylist = false;
 })
 
-document.getElementById('playlist').addEventListener('click', () => {
+export function displaySongList() {
     // do nothing when search text is not empty
     if (document.getElementById('search').value == "") {
-        document.getElementById('cover').style.visibility = 'hidden';
-        document.getElementById('song-list').style.visibility = 'visible';
+        document.getElementById('cover').style.display = 'none';
+        document.getElementById('song-list').style.display = 'block';
     }
-})
+}
 
-document.getElementById('title').addEventListener('click', () => {
+export function displayCover() {
     // clear search
     document.getElementById('search').value = "";
     document.getElementById('search').dispatchEvent(new Event('input'));
-    document.getElementById('cover').style.visibility = 'visible';
-    document.getElementById('song-list').style.visibility = 'hidden';
-})
+    document.getElementById('cover').style.display = 'block';
+    document.getElementById('song-list').style.display = 'none';
+}

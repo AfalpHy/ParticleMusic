@@ -2,7 +2,7 @@ export const audioPlayer = document.getElementById('audio-player');
 export const lyricsBody = document.getElementById('lyrics-body');
 
 export const shared = {
-    lyricBodyActive: false,
+    lyricsBodyActive: false,
     loadingPlaylist: false,
     playbackQueueDisplay: false,
     playlist: []
@@ -83,7 +83,7 @@ class LyricsPlayer {
         }
         currentLineElement = this.lineElements[this.currentLineIndex];
         currentLineElement.classList.add('current-line');
-        if (shared.lyricBodyActive)
+        if (shared.lyricsBodyActive)
             currentLineElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
 

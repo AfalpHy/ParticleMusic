@@ -5,42 +5,6 @@ import { formatTime } from "./shared.js";
 
 audioPlayer.volume = 0.3;
 
-document.querySelectorAll('.last-btn')
-    .forEach(element => {
-        element.addEventListener('click', () => {
-            if (!playbackQueue.empty) {
-                playbackQueue.last();
-            }
-        })
-    });
-
-document.querySelectorAll('.play-pause-btn')
-    .forEach(element => {
-        element.addEventListener('click', () => {
-            if (!playbackQueue.empty) {
-                playbackQueue.play = !playbackQueue.play;
-                playbackQueue.playOrPause();
-            }
-        })
-    });
-
-document.querySelectorAll('.next-btn')
-    .forEach(element => {
-        element.addEventListener('click', () => {
-            if (!playbackQueue.empty) {
-                playbackQueue.next();
-            }
-        })
-    });
-
-
-document.querySelectorAll('.play-mode-btn').forEach(element => {
-    element.addEventListener('click', () => {
-        playbackQueue.switchPlayMode();
-    })
-});
-
-
 let isDraggingProcessBar = false;
 const progressBarElements = document.querySelectorAll('.progress');
 
@@ -142,16 +106,13 @@ volumeSlider.forEach(element => element.addEventListener('input', () => {
     adjustVolume(element.value / 100);
 }));
 
-document.querySelectorAll('.volume-icon')
-    .forEach(element => {
-        element.addEventListener('click', () => {
-            if (volumeSlider[0].value != 0) {
-                adjustVolume(0);
-            } else {
-                adjustVolume(tempVolume / 100);
-            }
-        })
-    });
+export function switchMute() {
+    if (volumeSlider[0].value != 0) {
+        adjustVolume(0);
+    } else {
+        adjustVolume(tempVolume / 100);
+    }
+}
 
 audioPlayer.addEventListener('timeupdate', updateProgressDisplay);
 

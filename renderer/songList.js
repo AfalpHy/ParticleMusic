@@ -10,47 +10,63 @@ searchList.appendChild(songList.children[0].cloneNode(true));
 songList.parentNode.append(searchList);
 
 search.addEventListener('input', (event) => {
-    console.log(12);
     for (let i = searchList.children.length - 1; i > 0; i--) {
         searchList.removeChild(searchList.children[i]);
     }
-    document.getElementById('cover').style.visibility = 'hidden';
+    document.getElementById('cover').style.display = 'none';
     if (event.target.value == "") {
-        songList.style.visibility = "visible";
-        searchList.style.visibility = "hidden";
+        songList.style.display = "block";
+        searchList.style.display = "none";
         return;
     }
     for (let i = 1; i < songList.children.length; i++) {
         const line = songList.children[i];
         for (let j = 1; j <= 3; j++) {
             if (line.children[j].textContent.includes(event.target.value)) {
-                searchList.appendChild(line.cloneNode(true));
+                const lineClone = line.cloneNode(true);
+                lineClone.addEventListener('dblclick', () => {
+                    dblclickSong(parseInt(line.children[0].textContent) - 1);
+                });
+                searchList.appendChild(lineClone);
                 break;
             }
         }
     }
-    songList.style.visibility = "hidden";
-    searchList.style.visibility = "visible";
+    songList.style.display = "none";
+    searchList.style.display = "block";
 });
 
-const resizer1 = document.getElementById('resizer1');
-const resizer2 = document.getElementById('resizer2');
-const songTtile = document.querySelector('.song-title');
-const artist = document.querySelector('.artist');
-const album = document.querySelector('.album');
+let songTtile;
+let artist;
+let album;
 
 let isDragging1 = false;
 let isDragging2 = false;
 let totalWidth;
-resizer1.addEventListener('mousedown', (e) => {
-    isDragging1 = true;
-    totalWidth = songTtile.offsetWidth + artist.offsetWidth;
-});
 
-resizer2.addEventListener('mousedown', (e) => {
+export function enableResizer1() {
+    isDragging1 = true;
+    if (songList.style.display == 'block') {
+        songTtile = songList.children[0].children[1];
+        artist = songList.children[0].children[2];
+    } else {
+        songTtile = searchList.children[0].children[1];
+        artist = searchList.children[0].children[2];
+    }
+    totalWidth = songTtile.offsetWidth + artist.offsetWidth;
+}
+
+export function enableResizer2() {
     isDragging2 = true;
+    if (songList.style.display == 'block') {
+        artist = songList.children[0].children[2];
+        album = songList.children[0].children[3];
+    } else {
+        artist = searchList.children[0].children[2];
+        album = searchList.children[0].children[3];
+    }
     totalWidth = artist.offsetWidth + album.offsetWidth;
-});
+}
 
 document.addEventListener('mousemove', (e) => {
     if (isDragging1) {
@@ -113,6 +129,7 @@ function compare(textA, textB) {
     }
 }
 
+let playlistOrderChanged = true;
 function sortSongList(category, ascending) {
     const sorted = Array.from(songList.children).slice(1).sort((a, b) => {
         const textA = a.children[category].textContent.trim()
@@ -132,14 +149,16 @@ function sortSongList(category, ascending) {
         songList.appendChild(element);
     });
     shared.playlist = newPlaylist;
+    playlistOrderChanged = true;
 }
 
 let songTtileAscending = false;
 let artistAscending = false;
 let albumAscending = false;
 let durationAscending = false;
-songTtile.addEventListener('click', () => {
-    if (shared.loadingPlaylist) {
+
+export function sortSongByTitle() {
+    if (shared.loadingPlaylist || songList.style.display == 'none') {
         return;
     }
     songTtileAscending = !songTtileAscending;
@@ -148,10 +167,10 @@ songTtile.addEventListener('click', () => {
     artistAscending = false;
     albumAscending = false;
     durationAscending = false;
-});
+}
 
-artist.addEventListener('click', () => {
-    if (shared.loadingPlaylist) {
+export function sortSongByArtist() {
+    if (shared.loadingPlaylist || songList.style.display == 'none') {
         return;
     }
     artistAscending = !artistAscending;
@@ -159,11 +178,10 @@ artist.addEventListener('click', () => {
     songTtileAscending = false;
     albumAscending = false;
     durationAscending = false;
-});
+}
 
-
-album.addEventListener('click', () => {
-    if (shared.loadingPlaylist) {
+export function sortSongByAlbum() {
+    if (shared.loadingPlaylist || songList.style.display == 'none') {
         return;
     }
     albumAscending = !albumAscending;
@@ -171,10 +189,10 @@ album.addEventListener('click', () => {
     songTtileAscending = false;
     artistAscending = false;
     durationAscending = false;
-});
+}
 
-document.querySelector('.duration').addEventListener('click', () => {
-    if (shared.loadingPlaylist) {
+export function sortSongByDuration() {
+    if (shared.loadingPlaylist || songList.style.display == 'none') {
         return;
     }
     durationAscending = !durationAscending;
@@ -182,7 +200,7 @@ document.querySelector('.duration').addEventListener('click', () => {
     songTtileAscending = false;
     artistAscending = false;
     albumAscending = false;
-});
+}
 
 export function addSongToList(message, coverDataUrl) {
     const songLabelChidren = document.getElementById('song-label').children;
@@ -222,14 +240,16 @@ function dblclickSong(index) {
         return;
     }
     playbackQueue.empty = false;
-    playbackQueue.metadatas = shared.playlist;
     playbackQueue.currentIndex = index;
+    if (playlistOrderChanged) {
+        playlistOrderChanged = false;
+        playbackQueue.metadatas = shared.playlist;
+        updatePlaybackQueueDisplay();
+    }
     if (playbackQueue.playMode == 2) {
         playbackQueue.generateRandom();
     }
     playbackQueue.load();
     playbackQueue.play = true;
     playbackQueue.playOrPause();
-
-    updatePlaybackQueueDisplay();
 }

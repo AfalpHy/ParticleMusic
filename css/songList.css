@@ -5,7 +5,7 @@
      height: calc(100% - 75px);
      /* Create a gap between the scrollbar and the edge of the window */
      width: calc(100% - 5px);
-     visibility: hidden;
+     display: none;
 
      overflow-y: auto;
      scroll-behavior: smooth;
