@@ -34,6 +34,9 @@ search.addEventListener('input', (event) => {
     }
     songList.style.display = "none";
     searchList.style.display = "block";
+
+    // repaint immediately to avoid shadows
+    songList.style.transform = 'translateZ(0)';
 });
 
 let songTtile;
