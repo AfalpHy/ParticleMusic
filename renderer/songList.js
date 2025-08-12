@@ -1,4 +1,4 @@
-import { updatePlaybackQueueDisplay } from "./playbackQueueControls.js";
+import { updatePlaybackQueue } from "./playbackQueueControls.js";
 import { shared, songList } from "./shared.js";
 import { playbackQueue } from "./shared.js";
 
@@ -24,6 +24,7 @@ search.addEventListener('input', (event) => {
         for (let j = 1; j <= 3; j++) {
             if (line.children[j].textContent.includes(event.target.value)) {
                 const lineClone = line.cloneNode(true);
+                lineClone.filePath = line.filePath;
                 lineClone.addEventListener('dblclick', () => {
                     dblclickSong(parseInt(line.children[0].textContent) - 1);
                 });
@@ -245,7 +246,7 @@ function dblclickSong(index) {
     if (playbackQueue.empty || playlistOrderChanged || playbackQueue.playMode == 2) {
         playbackQueue.empty = false;
         playlistOrderChanged = false;
-        updatePlaybackQueueDisplay();
+        updatePlaybackQueue();
     }
     playbackQueue.load();
     playbackQueue.play = true;

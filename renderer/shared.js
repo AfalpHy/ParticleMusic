@@ -122,6 +122,7 @@ class PlaybackQueue {
         this.currentSong;
         this.currentIndex = 0;
         this.playMode = 0;
+        this.songLines = [];
     }
 
     load() {
@@ -191,7 +192,17 @@ class PlaybackQueue {
         this.playMode %= 3;
         switch (this.playMode) {
             case 0: {
-                this.currentIndex = this.actualCurrentIndex;
+                if (!this.empty) {
+                    this.songLines.forEach(line => {
+                        playbackQueueSongs.appendChild(line);
+                    })
+                    for (let i = 1; i < songList.children.length; i++) {
+                        if (songList.children[i].filePath == this.currentSong.filePath) {
+                            this.currentIndex = i - 1;
+                            break
+                        }
+                    }
+                }
                 document.querySelectorAll('.play-mode-btn')
                     .forEach(element => {
                         element.style.backgroundImage = 'url(\'pictures/loop.png\')';
@@ -199,7 +210,6 @@ class PlaybackQueue {
                 break;
             }
             case 1: {
-                this.currentIndex = this.actualCurrentIndex;
                 document.querySelectorAll('.play-mode-btn')
                     .forEach(element => {
                         element.style.backgroundImage = 'url(\'pictures/repeat.png\')';

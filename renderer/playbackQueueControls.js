@@ -10,8 +10,9 @@ export function hiddenPlaybackQueue() {
     document.getElementById('playback-queue').classList.remove('display');
 }
 
-export function updatePlaybackQueueDisplay() {
+export function updatePlaybackQueue() {
     playbackQueueSongs.textContent = "";
+    playbackQueue.songLines = [];
     for (let i = 1; i < songList.children.length; i++) {
         const element = songList.children[i];
         const lineElement = document.createElement('div');
@@ -55,6 +56,7 @@ export function updatePlaybackQueueDisplay() {
         }
 
         playbackQueueSongs.append(lineElement);
+        playbackQueue.songLines.push(lineElement);
     }
 }
 
