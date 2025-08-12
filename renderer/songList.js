@@ -251,6 +251,6 @@ function dblclickSong(index) {
     playbackQueue.play = true;
     playbackQueue.playOrPause();
     if (playbackQueue.playMode == 2) {
-        playbackQueue.generateRandom();
+        playbackQueue.shuffle();
     }
 }

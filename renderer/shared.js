@@ -207,17 +207,17 @@ class PlaybackQueue {
                 break;
             }
             case 2: {
-                this.generateRandom();
+                this.shuffle();
                 document.querySelectorAll('.play-mode-btn')
                     .forEach(element => {
-                        element.style.backgroundImage = 'url(\'pictures/random.png\')';
+                        element.style.backgroundImage = 'url(\'pictures/shuffle.png\')';
                     });
                 break;
             }
         }
     }
 
-    generateRandom() {
+    shuffle() {
         if (!this.empty) {
             playbackQueueSongs.appendChild(this.currentSong);
             this.currentIndex = 0;
