@@ -1,5 +1,4 @@
-import { audioPlayer, lyricsPlayer, playbackQueue, shared } from "./shared.js";
-import { formatTime } from "./shared.js";
+import { audioPlayer, lyricsPlayer, playbackQueue, shared, songList } from "./shared.js";
 
 export function displayPlaybackQueue() {
     shared.playbackQueueDisplay = true;
@@ -14,7 +13,8 @@ export function hiddenPlaybackQueue() {
 export function updatePlaybackQueueDisplay() {
     document.getElementById('playback-queue-songs').textContent = "";
     const playbackQueueSongs = document.getElementById('playback-queue-songs');
-    shared.playlist.forEach(element => {
+    for (let i = 1; i < songList.children.length; i++) {
+        const element = songList.children[i];
         const lineElement = document.createElement('div');
         lineElement.className = 'playback-queue-song-line';
         {
@@ -25,15 +25,15 @@ export function updatePlaybackQueueDisplay() {
             columnElementImg.style.height = "50px";
             columnElementImg.style.width = "50px";
             columnElementImg.style.borderRadius = "10%";
-            columnElementImg.src = element.coverDataUrl;
+            columnElementImg.src = element.children[1].children[0].src;
 
             const columnElementText1 = document.createElement('div');
             columnElementText1.className = 'playback-queue-song-line-title'
-            columnElementText1.textContent = element.title;
+            columnElementText1.textContent = element.children[1].textContent;
 
             const columnElementText2 = document.createElement('div');
             columnElementText2.className = 'playback-queue-song-line-artist'
-            columnElementText2.textContent = element.artist;
+            columnElementText2.textContent = element.children[2].textContent;
 
             columnElement.append(columnElementImg);
             columnElement.append(columnElementText1);
@@ -49,13 +49,13 @@ export function updatePlaybackQueueDisplay() {
 
             const columnElementText = document.createElement('div');
             columnElementText.className = 'song-line-column-text'
-            columnElementText.textContent = formatTime(element.duration);
+            columnElementText.textContent = element.children[4].textContent;
             columnElement.append(columnElementText);
             lineElement.append(columnElement);
         }
 
         playbackQueueSongs.append(lineElement);
-    });
+    }
 }
 
 export function playbackQueueEvent(element) {
@@ -82,7 +82,7 @@ export function playbackQueueEvent(element) {
                 return;
             }
         }
-        let index = 0;
+        let index = 1;
         while ((element = element.previousElementSibling) != null) {
             index++;
         }

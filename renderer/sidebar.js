@@ -1,4 +1,4 @@
-import { shared } from "./shared.js";
+import { shared, songList } from "./shared.js";
 import { formatTime } from "./shared.js";
 
 import { addSongToList } from "./songList.js";
@@ -8,22 +8,20 @@ window.electronAPI.receiveSongMetadata((metadata) => {
     if (!metadata) {
         return;
     }
-    shared.playlist.push(metadata);
     let message = [
         metaIndex++, metadata.title, metadata.artist, metadata.album,
         formatTime(metadata.duration)
     ];
-    addSongToList(message, metadata.coverDataUrl);
+    addSongToList(message, metadata.coverDataUrl, metadata.filePath);
 })
 
 window.electronAPI.resetPlaylist(() => {
     // reset
-    const songs = document.getElementById('song-list').children;
+    const songs = songList.children;
     let len = songs.length;
     for (let i = len - 1; i >= 1; i--) {
         songs[i].remove();
     }
-    shared.playlist = [];
     metaIndex = 1;
 
     if (document.getElementById('search').value != "") {

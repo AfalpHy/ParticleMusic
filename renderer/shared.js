@@ -1,11 +1,11 @@
 export const audioPlayer = document.getElementById('audio-player');
 export const lyricsBody = document.getElementById('lyrics-body');
+export const songList = document.getElementById('song-list');
 
 export const shared = {
     lyricsBodyActive: false,
     loadingPlaylist: false,
-    playbackQueueDisplay: false,
-    playlist: []
+    playbackQueueDisplay: false
 }
 
 export function formatTime(seconds) {
@@ -118,8 +118,7 @@ class PlaybackQueue {
     constructor() {
         this.play = false;
         this.empty = true;
-        this.metadatas = [];
-        this.currentMetadata = [];
+        this.currentSong;
         this.currentIndex = 0;
         this.playMode = 0;
         this.actualCurrentIndex = 0;
@@ -131,27 +130,36 @@ class PlaybackQueue {
         if (this.playMode == 2)
             this.actualCurrentIndex = this.randomIndex[this.currentIndex];
 
-        this.currentMetadata = this.metadatas[this.actualCurrentIndex];
-        let src = this.currentMetadata.filePath;
+        this.currentSong = songList.children[this.currentIndex];
+        let src = this.currentSong.filePath;
         audioPlayer.src = src;
         loadLyricsForSong(src.replace(/\.[^/.]+$/, '.lrc'));
         audioPlayer.currentTime = 0;
 
         window.electronAPI.getColor(src).then((color) => {
+            const coverDataUrl = this.currentSong.children[1].children[0].src;
             if (color == null)
-                setCover({ coverDataUrl: this.currentMetadata.coverDataUrl, color: defaultCover.color });
+                setCover({ coverDataUrl: coverDataUrl, color: defaultCover.color });
             else
-                setCover({ coverDataUrl: this.currentMetadata.coverDataUrl, color: color });
+                setCover({ coverDataUrl: coverDataUrl, color: color });
         })
 
-        document.getElementById('left-bottom-title').textContent = this.currentMetadata.title;
-        document.getElementById('left-bottom-artist').textContent = this.currentMetadata.artist;
+        document.getElementById('left-bottom-title').textContent = this.currentSong.children[1].textContent;
+        document.getElementById('left-bottom-artist').textContent = this.currentSong.children[2].textContent;
+
+        document.querySelectorAll('.song-line').forEach(element => {
+            if (element.filePath == src) {
+                element.style.background = 'rgba(220, 220, 220, 0.5)';
+            } else {
+                element.style.background = '';
+            }
+        });
     }
 
     last() {
         audioPlayer.pause();
-        if (this.currentIndex == 0)
-            this.currentIndex = this.metadatas.length - 1;
+        if (this.currentIndex == 1)
+            this.currentIndex = songList.children.length;
         else
             this.currentIndex -= 1;
         this.load();
@@ -170,19 +178,13 @@ class PlaybackQueue {
             });
             audioPlayer.pause();
         }
-        document.querySelectorAll('.song-line').forEach(element => {
-            if (element.filePath == this.currentMetadata.filePath) {
-                element.style.background = 'rgba(220, 220, 220, 0.5)';
-            } else {
-                element.style.background = '';
-            }
-        });
+
     }
 
     next() {
         audioPlayer.pause();
-        if (this.currentIndex == this.metadatas.length - 1)
-            this.currentIndex = 0;
+        if (this.currentIndex == songList.children.length)
+            this.currentIndex = 1;
         else
             this.currentIndex += 1;
         this.load();
@@ -222,10 +224,10 @@ class PlaybackQueue {
 
     generateRandom() {
         this.randomIndex = [];
-        for (let i = 0; i < this.metadatas.length; i++) {
-            this.randomIndex.push(getRandomInt(0, this.metadatas.length));
+        for (let i = 0; i <= songList.children.length; i++) {
+            this.randomIndex.push(getRandomInt(1, songList.children.length));
         }
-        if (this.metadatas.length)
+        if (!this.empty)
             // keep current index unchanged
             this.randomIndex[this.currentIndex] = this.currentIndex;
     }
@@ -233,8 +235,6 @@ class PlaybackQueue {
     clear() {
         this.play = false;
         this.empty = true;
-        this.metadatas = [];
-        this.currentMetadata = [];
         this.currentIndex = 0;
 
         setCover(defaultCover);

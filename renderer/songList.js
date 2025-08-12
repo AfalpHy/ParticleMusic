@@ -26,7 +26,7 @@ search.addEventListener('input', (event) => {
             if (line.children[j].textContent.includes(event.target.value)) {
                 const lineClone = line.cloneNode(true);
                 lineClone.addEventListener('dblclick', () => {
-                    dblclickSong(parseInt(line.children[0].textContent) - 1);
+                    dblclickSong(parseInt(line.children[0].textContent));
                 });
                 lineClone.children[0].textContent = index++;
                 searchList.appendChild(lineClone);
@@ -146,14 +146,10 @@ function sortSongList(category, ascending) {
         }
     });
     let i = 1;
-    let newPlaylist = [];
     sorted.forEach(element => {
-        const index = element.children[0].textContent - 1;
-        newPlaylist.push(shared.playlist[index]);
         element.children[0].textContent = i++;
         songList.appendChild(element);
     });
-    shared.playlist = newPlaylist;
     playlistOrderChanged = true;
 }
 
@@ -207,7 +203,7 @@ export function sortSongByDuration() {
     albumAscending = false;
 }
 
-export function addSongToList(message, coverDataUrl) {
+export function addSongToList(message, coverDataUrl, filePath) {
     const songLabelChidren = document.getElementById('song-label').children;
 
     const lineElement = document.createElement('div');
@@ -235,9 +231,9 @@ export function addSongToList(message, coverDataUrl) {
     }
 
     songList.append(lineElement);
-    lineElement.filePath = shared.playlist[parseInt(lineElement.children[0].textContent) - 1].filePath;
+    lineElement.filePath = filePath;
     lineElement.addEventListener('dblclick', () => {
-        dblclickSong(parseInt(lineElement.children[0].textContent) - 1);
+        dblclickSong(parseInt(lineElement.children[0].textContent));
     });
     playlistOrderChanged = true;
 }
@@ -250,7 +246,6 @@ function dblclickSong(index) {
     if (playbackQueue.empty || playlistOrderChanged) {
         playbackQueue.empty = false;
         playlistOrderChanged = false;
-        playbackQueue.metadatas = shared.playlist;
         updatePlaybackQueueDisplay();
     }
     if (playbackQueue.playMode == 2) {

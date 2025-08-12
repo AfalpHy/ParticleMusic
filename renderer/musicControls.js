@@ -8,9 +8,14 @@ audioPlayer.volume = 0.3;
 let isDraggingProcessBar = false;
 const progressBarElements = document.querySelectorAll('.progress');
 
+function mmssToSeconds(timeStr) {
+    const [minutes, seconds] = timeStr.split(':').map(Number);
+    return minutes * 60 + seconds;
+}
+
 function updateProgressDisplay() {
     const currentTime = audioPlayer.currentTime;
-    const duration = playbackQueue.empty ? 0 : playbackQueue.currentMetadata.duration;
+    const duration = mmssToSeconds(playbackQueue.currentSong.children[4].textContent);
     const currentTimeElements = document.querySelectorAll('.current-time');
     const totalTimeElements = document.querySelectorAll('.total-time');
     currentTimeElements.forEach(element => {
@@ -21,7 +26,7 @@ function updateProgressDisplay() {
         element.textContent = `${formatTime(duration)}`;
     });
 
-    const progress = playbackQueue.empty ? 0 : (currentTime / duration) * 100;
+    const progress = (currentTime / duration) * 100;
     if (!isDraggingProcessBar) {
         progressBarElements.forEach(element => {
             element.style.background = `linear-gradient(to right, black 0%, black ${progress}%, #d3d3d3 ${progress}%, #d3d3d3 100%)`;
@@ -55,7 +60,7 @@ progressBarElements.forEach(element => {
         isDraggingProcessBar = false;
         if (!playbackQueue.empty) {
             const seekTime =
-                (element.value / 100) * playbackQueue.currentMetadata.duration;
+                (element.value / 100) * mmssToSeconds(playbackQueue.currentSong.children[4].textContent);
             audioPlayer.currentTime = seekTime;
         }
     });
