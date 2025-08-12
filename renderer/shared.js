@@ -19,7 +19,7 @@ class LyricsPlayer {
     constructor() {
         this.lines = [];
         this.lineElements = [];
-        this.container = document.getElementById('lyrics-display');
+        this.container = document.getElementById('lyrics-container');
         this.currentLineIndex = -1;
     }
 
@@ -30,7 +30,7 @@ class LyricsPlayer {
         this.lines = lines
             .map(line => {
                 const timeMatch =
-                    line.match(/^\[(\d{2}):(\d{2}):(\d{2})\](.*)/);
+                    line.match(/^\[(\d{2}):(\d{2})[:.](\d{2})\](.*)/);
                 if (timeMatch) {
                     const minutes = parseInt(timeMatch[1]);
                     const seconds = parseInt(timeMatch[2]);
@@ -84,8 +84,12 @@ class LyricsPlayer {
         }
         currentLineElement = this.lineElements[this.currentLineIndex];
         currentLineElement.classList.add('current-line');
+
         if (shared.lyricsBodyActive)
-            currentLineElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            this.container.scrollTo({
+                top: currentLineElement.offsetTop - this.container.clientHeight / 2,
+                behavior: 'smooth'
+            });
     }
 
     clear() {
