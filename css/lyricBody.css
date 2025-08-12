@@ -36,6 +36,7 @@
      overflow-y: auto;
      font-family: Arial, "宋体";
      scroll-behavior: smooth;
+     align-content: center;
 
      &::-webkit-scrollbar {
          display: none;
@@ -61,8 +62,7 @@
  }
 
  .lyrics-line:hover {
-     background-color: rgba(255, 255, 255, 0.1);
-     border-radius: 30px;
+     color: black;
  }
 
  .current-line {

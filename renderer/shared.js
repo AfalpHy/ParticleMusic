@@ -3,6 +3,8 @@ export const lyricsBody = document.getElementById('lyrics-body');
 export const songList = document.getElementById('song-list');
 export const playbackQueueSongs = document.getElementById('playback-queue-songs');
 
+const lyricsContainer = document.getElementById('lyrics-container');
+
 export const shared = {
     lyricsBodyActive: false,
     loadingPlaylist: false,
@@ -19,7 +21,6 @@ class LyricsPlayer {
     constructor() {
         this.lines = [];
         this.lineElements = [];
-        this.container = document.getElementById('lyrics-container');
         this.currentLineIndex = -1;
     }
 
@@ -52,7 +53,7 @@ class LyricsPlayer {
                 audioPlayer.currentTime = this.lines[lineIndex].time;
             });
             this.lineElements.push(lineElement);
-            this.container.appendChild(lineElement);
+            lyricsContainer.appendChild(lineElement);
         }
     }
 
@@ -78,7 +79,7 @@ class LyricsPlayer {
 
     render() {
         // Auto-scroll to current line
-        let currentLineElement = this.container.querySelector('.current-line');
+        let currentLineElement = lyricsContainer.querySelector('.current-line');
         if (currentLineElement) {
             currentLineElement.classList.remove('current-line');
         }
@@ -86,8 +87,8 @@ class LyricsPlayer {
         currentLineElement.classList.add('current-line');
 
         if (shared.lyricsBodyActive)
-            this.container.scrollTo({
-                top: currentLineElement.offsetTop - this.container.clientHeight / 2,
+            lyricsContainer.scrollTo({
+                top: currentLineElement.offsetTop - lyricsContainer.clientHeight / 2,
                 behavior: 'smooth'
             });
     }
@@ -96,7 +97,7 @@ class LyricsPlayer {
         this.lines = [];
         this.lineElements = [];
         this.currentLineIndex = -1;
-        this.container.innerHTML = "";
+        lyricsContainer.innerHTML = "";
     }
 }
 
@@ -110,8 +111,7 @@ async function loadLyricsForSong(lrcPath) {
         lyricsPlayer.parseLyrics(lrcText);
     } catch (error) {
         console.error('Error loading lyrics:', error);
-        document.getElementById('lyrics-display').textContent =
-            'Lyrics not available';
+        lyricsContainer.textContent = 'Lyrics not available';
     }
 }
 
