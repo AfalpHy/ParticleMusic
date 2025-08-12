@@ -15,7 +15,7 @@ function mmssToSeconds(timeStr) {
 
 function updateProgressDisplay() {
     const currentTime = audioPlayer.currentTime;
-    const duration = mmssToSeconds(playbackQueue.currentSong.children[4].textContent);
+    const duration = mmssToSeconds(playbackQueue.currentSong.children[1].textContent);
     const currentTimeElements = document.querySelectorAll('.current-time');
     const totalTimeElements = document.querySelectorAll('.total-time');
     currentTimeElements.forEach(element => {
@@ -60,7 +60,7 @@ progressBarElements.forEach(element => {
         isDraggingProcessBar = false;
         if (!playbackQueue.empty) {
             const seekTime =
-                (element.value / 100) * mmssToSeconds(playbackQueue.currentSong.children[4].textContent);
+                (element.value / 100) * mmssToSeconds(playbackQueue.currentSong.children[1].textContent);
             audioPlayer.currentTime = seekTime;
         }
     });

@@ -1,8 +1,7 @@
 import { updatePlaybackQueueDisplay } from "./playbackQueueControls.js";
-import { shared } from "./shared.js";
+import { shared, songList } from "./shared.js";
 import { playbackQueue } from "./shared.js";
 
-const songList = document.getElementById('song-list');
 const search = document.getElementById('search');
 const searchList = songList.cloneNode(false);
 
@@ -26,7 +25,7 @@ search.addEventListener('input', (event) => {
             if (line.children[j].textContent.includes(event.target.value)) {
                 const lineClone = line.cloneNode(true);
                 lineClone.addEventListener('dblclick', () => {
-                    dblclickSong(parseInt(line.children[0].textContent));
+                    dblclickSong(parseInt(line.children[0].textContent) - 1);
                 });
                 lineClone.children[0].textContent = index++;
                 searchList.appendChild(lineClone);
@@ -233,7 +232,7 @@ export function addSongToList(message, coverDataUrl, filePath) {
     songList.append(lineElement);
     lineElement.filePath = filePath;
     lineElement.addEventListener('dblclick', () => {
-        dblclickSong(parseInt(lineElement.children[0].textContent));
+        dblclickSong(parseInt(lineElement.children[0].textContent) - 1);
     });
     playlistOrderChanged = true;
 }

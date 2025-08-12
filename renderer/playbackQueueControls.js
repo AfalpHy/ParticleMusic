@@ -17,6 +17,7 @@ export function updatePlaybackQueueDisplay() {
         const element = songList.children[i];
         const lineElement = document.createElement('div');
         lineElement.className = 'playback-queue-song-line';
+        lineElement.filePath = element.filePath;
         {
             const columnElement = document.createElement('div');
             columnElement.className = 'playback-queue-song-line-main';
@@ -82,7 +83,7 @@ export function playbackQueueEvent(element) {
                 return;
             }
         }
-        let index = 1;
+        let index = 0;
         while ((element = element.previousElementSibling) != null) {
             index++;
         }

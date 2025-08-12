@@ -1,6 +1,7 @@
 export const audioPlayer = document.getElementById('audio-player');
 export const lyricsBody = document.getElementById('lyrics-body');
 export const songList = document.getElementById('song-list');
+export const playbackQueueSongs = document.getElementById('playback-queue-songs');
 
 export const shared = {
     lyricsBodyActive: false,
@@ -130,22 +131,22 @@ class PlaybackQueue {
         if (this.playMode == 2)
             this.actualCurrentIndex = this.randomIndex[this.currentIndex];
 
-        this.currentSong = songList.children[this.currentIndex];
+        this.currentSong = playbackQueueSongs.children[this.actualCurrentIndex];
         let src = this.currentSong.filePath;
         audioPlayer.src = src;
         loadLyricsForSong(src.replace(/\.[^/.]+$/, '.lrc'));
         audioPlayer.currentTime = 0;
 
         window.electronAPI.getColor(src).then((color) => {
-            const coverDataUrl = this.currentSong.children[1].children[0].src;
+            const coverDataUrl = this.currentSong.children[0].children[0].src;
             if (color == null)
                 setCover({ coverDataUrl: coverDataUrl, color: defaultCover.color });
             else
                 setCover({ coverDataUrl: coverDataUrl, color: color });
         })
 
-        document.getElementById('left-bottom-title').textContent = this.currentSong.children[1].textContent;
-        document.getElementById('left-bottom-artist').textContent = this.currentSong.children[2].textContent;
+        document.getElementById('left-bottom-title').textContent = this.currentSong.children[0].children[1].textContent;
+        document.getElementById('left-bottom-artist').textContent = this.currentSong.children[0].children[2].textContent;
 
         document.querySelectorAll('.song-line').forEach(element => {
             if (element.filePath == src) {
@@ -158,8 +159,8 @@ class PlaybackQueue {
 
     last() {
         audioPlayer.pause();
-        if (this.currentIndex == 1)
-            this.currentIndex = songList.children.length;
+        if (this.currentIndex == 0)
+            this.currentIndex = playbackQueueSongs.children.length - 1;
         else
             this.currentIndex -= 1;
         this.load();
@@ -183,8 +184,8 @@ class PlaybackQueue {
 
     next() {
         audioPlayer.pause();
-        if (this.currentIndex == songList.children.length)
-            this.currentIndex = 1;
+        if (this.currentIndex == playbackQueueSongs.children.length - 1)
+            this.currentIndex = 0;
         else
             this.currentIndex += 1;
         this.load();
@@ -224,8 +225,8 @@ class PlaybackQueue {
 
     generateRandom() {
         this.randomIndex = [];
-        for (let i = 0; i <= songList.children.length; i++) {
-            this.randomIndex.push(getRandomInt(1, songList.children.length));
+        for (let i = 0; i < playbackQueueSongs.children.length; i++) {
+            this.randomIndex.push(getRandomInt(1, playbackQueueSongs.children.length));
         }
         if (!this.empty)
             // keep current index unchanged
