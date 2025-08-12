@@ -1,4 +1,4 @@
-import { audioPlayer, lyricsPlayer, playbackQueue, shared, songList } from "./shared.js";
+import { audioPlayer, lyricsPlayer, playbackQueue, playbackQueueSongs, shared, songList } from "./shared.js";
 
 export function displayPlaybackQueue() {
     shared.playbackQueueDisplay = true;
@@ -11,8 +11,7 @@ export function hiddenPlaybackQueue() {
 }
 
 export function updatePlaybackQueueDisplay() {
-    document.getElementById('playback-queue-songs').textContent = "";
-    const playbackQueueSongs = document.getElementById('playback-queue-songs');
+    playbackQueueSongs.textContent = "";
     for (let i = 1; i < songList.children.length; i++) {
         const element = songList.children[i];
         const lineElement = document.createElement('div');
@@ -72,7 +71,7 @@ export function playbackQueueEvent(element) {
         document.querySelectorAll('.play-pause-btn').forEach(element => {
             element.style.backgroundImage = 'url(\'pictures/play.png\')';
         });
-        document.getElementById('playback-queue-songs').textContent = "";
+        playbackQueueSongs.textContent = "";
         lyricsPlayer.clear();
     } else {
         while (className != 'playback-queue-song-line') {

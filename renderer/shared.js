@@ -122,16 +122,10 @@ class PlaybackQueue {
         this.currentSong;
         this.currentIndex = 0;
         this.playMode = 0;
-        this.actualCurrentIndex = 0;
-        this.randomIndex = [];
     }
 
     load() {
-        this.actualCurrentIndex = this.currentIndex;
-        if (this.playMode == 2)
-            this.actualCurrentIndex = this.randomIndex[this.currentIndex];
-
-        this.currentSong = playbackQueueSongs.children[this.actualCurrentIndex];
+        this.currentSong = playbackQueueSongs.children[this.currentIndex];
         let src = this.currentSong.filePath;
         audioPlayer.src = src;
         loadLyricsForSong(src.replace(/\.[^/.]+$/, '.lrc'));
@@ -224,13 +218,14 @@ class PlaybackQueue {
     }
 
     generateRandom() {
-        this.randomIndex = [];
-        for (let i = 0; i < playbackQueueSongs.children.length; i++) {
-            this.randomIndex.push(getRandomInt(1, playbackQueueSongs.children.length));
+        if (!this.empty) {
+            playbackQueueSongs.appendChild(this.currentSong);
+            this.currentIndex = 0;
+            for (let i = 1; i < playbackQueueSongs.children.length; i++) {
+                const song = playbackQueueSongs.children[(getRandomInt(0, playbackQueueSongs.children.length - i - 1))];
+                playbackQueueSongs.appendChild(song);
+            }
         }
-        if (!this.empty)
-            // keep current index unchanged
-            this.randomIndex[this.currentIndex] = this.currentIndex;
     }
 
     clear() {

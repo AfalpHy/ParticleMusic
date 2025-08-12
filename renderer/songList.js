@@ -242,15 +242,15 @@ function dblclickSong(index) {
         return;
     }
     playbackQueue.currentIndex = index;
-    if (playbackQueue.empty || playlistOrderChanged) {
+    if (playbackQueue.empty || playlistOrderChanged || playbackQueue.playMode == 2) {
         playbackQueue.empty = false;
         playlistOrderChanged = false;
         updatePlaybackQueueDisplay();
     }
-    if (playbackQueue.playMode == 2) {
-        playbackQueue.generateRandom();
-    }
     playbackQueue.load();
     playbackQueue.play = true;
     playbackQueue.playOrPause();
+    if (playbackQueue.playMode == 2) {
+        playbackQueue.generateRandom();
+    }
 }
