@@ -4,10 +4,12 @@
   "main": "main.js",
   "scripts": {
     "start": "electron .",
-    "start-win": "chcp 65001 && electron .",
     "test": "NODE_ENV=development electron .",
+    "test-win": "chcp 65001 && electron .",
     "build-linux": "electron-builder --linux --x64",
-    "build-windows": "electron-builder --win --x64"
+    "build-windows": "electron-builder --win --x64",
+    "dev": "nodemon --watch . --ext js,html,css --exec 'electron .'",
+    "dev-test": "nodemon --watch . --ext js,html,css --exec 'electron .'"
   },
   "keywords": [],
   "author": "",
@@ -22,7 +24,8 @@
   "devDependencies": {
     "electron": "^37.2.4",
     "electron-builder": "^26.0.12",
-    "electron-packager": "^17.1.2"
+    "electron-packager": "^17.1.2",
+    "nodemon": "^3.1.10"
   },
   "build": {
     "appId": "me.username.ParticleMusic",
