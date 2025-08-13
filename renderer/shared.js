@@ -22,31 +22,39 @@ class LyricsPlayer {
         this.lines = [];
         this.lineElements = [];
         this.currentLineIndex = -1;
+        this.sync;
     }
 
     // Parse LRC file content
-    parseLyrics(lrcText, originText) {
+    parseLyrics(lyrics, pureText) {
         this.clear();
-        if (originText) {
-            const lines = lrcText.split('\n');
+        this.sync = true;
+        if (pureText) {
+            const lines = lyrics.split('\n');
             this.lines = lines
                 .map(line => {
                     const timeMatch =
-                        line.match(/^\[(\d{2}):(\d{2})[:.](\d{2})\](.*)/);
+                        line.match(/^\[(\d{2}):(\d{2})[:.](\d{2,3})\](.*)/);
                     if (timeMatch) {
                         const minutes = parseInt(timeMatch[1]);
                         const seconds = parseInt(timeMatch[2]);
                         const hundredths = parseInt(timeMatch[3]);
                         return {
-                            time: minutes * 60 + seconds + hundredths / 100,
+                            time: minutes * 60 + seconds + hundredths / (hundredths < 100 ? 100 : 1000),
                             text: timeMatch[4].trim()
                         };
+                    } else {
+                        this.sync = false;
+                        return {
+                            time: 0,
+                            text: line
+                        };
                     }
-                    return null;
                 })
                 .filter(line => line !== null);
         } else {
-            lrcText.forEach(line => {
+            lyrics.forEach(line => {
+                console.log(line.time / 1000);
                 this.lines.push({ time: line.time / 1000, text: line.text });
             })
         }
@@ -56,7 +64,9 @@ class LyricsPlayer {
             lineElement.className = 'lyrics-line';
             lineElement.textContent = this.lines[lineIndex].text;
             lineElement.addEventListener('click', () => {
-                audioPlayer.currentTime = this.lines[lineIndex].time;
+                if (this.lines[lineIndex].time) {
+                    audioPlayer.currentTime = this.lines[lineIndex].time;
+                }
             });
             this.lineElements.push(lineElement);
             lyricsContainer.appendChild(lineElement);
@@ -65,6 +75,9 @@ class LyricsPlayer {
 
     // Update display based on current audio time
     update() {
+        if (!this.sync) {
+            return;
+        }
         const currentTime = audioPlayer.currentTime;
         let activeLineIndex = -1;
 
@@ -138,9 +151,9 @@ class PlaybackQueue {
         this.currentSong = playbackQueueSongs.children[this.currentIndex];
         let src = this.currentSong.filePath;
         audioPlayer.src = src;
-        window.electronAPI.getLyrics(src).then((lycText) => {
-            if (lycText) {
-                lyricsPlayer.parseLyrics(lycText, false);
+        window.electronAPI.getLyrics(src).then((result) => {
+            if (result) {
+                lyricsPlayer.parseLyrics(result.lyrics, result.pureText);
             } else {
                 loadLyricsForSong(src.replace(/\.[^/.]+$/, '.lrc'));
             }

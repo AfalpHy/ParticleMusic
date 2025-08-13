@@ -165,7 +165,7 @@ watcher.on('all', async (event, path) => {
 
 const { Worker } = require('worker_threads');
 
-const { parseFile } = require('music-metadata')
+const { parseFile } = require('music-metadata');
 
 function hexToRgb(hex) {
   const bigint = parseInt(hex.slice(1), 16);
@@ -231,13 +231,17 @@ ipcMain.handle('get-color', async (event, filePath) => {
 ipcMain.handle('get-lyrics', async (event, filePath) => {
   try {
     const metadata = await parseFile(filePath);
-    let lyrics = [];
     if (metadata.common.lyrics) {
-      metadata.common.lyrics[0].syncText.forEach(element => {
-        lyrics.push({ time: element.timestamp, text: element.text });
-      })
+      if (metadata.common.lyrics[0].syncText) {
+        let lines = [];
+        metadata.common.lyrics[0].syncText.forEach(element => {
+          lines.push({ time: element.timestamp, text: element.text });
+        })
+        return { lyrics: lines, pureText: 0 };
+      }
+      return { lyrics: metadata.common.lyrics[0].text, pureText: 1 };
     }
-    return lyrics;
+    return null;
   } catch (error) {
     console.error('Error reading metadata:', error, filePath);
     return null;
