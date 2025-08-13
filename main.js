@@ -122,9 +122,16 @@ async function loadPlaylist() {
 
   mainWindow.webContents.send('reset-playlist');
   await Promise.all(workerPromises);
+
+  let resultsChunk = [];
   results.forEach(result => {
-    mainWindow.webContents.send('song-metadata', result);
+    resultsChunk.push(result);
+    if (resultsChunk.length == 10) {
+      mainWindow.webContents.send('song-metadata', resultsChunk);
+      resultsChunk = [];
+    }
   })
+  mainWindow.webContents.send('song-metadata', resultsChunk);
 
   mainWindow.webContents.send('unset-loading-playlist');
 }

@@ -4,15 +4,14 @@ import { formatTime } from "./shared.js";
 import { addSongToList } from "./songList.js";
 
 let metaIndex = 1;
-window.electronAPI.receiveSongMetadata((metadata) => {
-    if (!metadata) {
-        return;
-    }
-    let message = [
-        metaIndex++, metadata.title, metadata.artist, metadata.album,
-        formatTime(metadata.duration)
-    ];
-    addSongToList(message, metadata.coverDataUrl, metadata.filePath);
+window.electronAPI.receiveSongMetadata((metadatas) => {
+    metadatas.forEach(metadata => {
+        let message = [
+            metaIndex++, metadata.title, metadata.artist, metadata.album,
+            formatTime(metadata.duration)
+        ];
+        addSongToList(message, metadata.coverDataUrl, metadata.filePath);
+    });
 })
 
 window.electronAPI.resetPlaylist(() => {
