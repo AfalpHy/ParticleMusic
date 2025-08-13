@@ -228,3 +228,18 @@ ipcMain.handle('get-color', async (event, filePath) => {
   }
 })
 
+ipcMain.handle('get-lyrics', async (event, filePath) => {
+  try {
+    const metadata = await parseFile(filePath);
+    let lyrics = [];
+    if (metadata.common.lyrics) {
+      metadata.common.lyrics[0].syncText.forEach(element => {
+        lyrics.push({ time: element.timestamp, text: element.text });
+      })
+    }
+    return lyrics;
+  } catch (error) {
+    console.error('Error reading metadata:', error, filePath);
+    return null;
+  }
+})

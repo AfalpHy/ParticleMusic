@@ -41,6 +41,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   getColor: (filePath) => ipcRenderer.invoke('get-color', filePath),
 
+  getLyrics: (filePath) => ipcRenderer.invoke('get-lyrics', filePath),
+
   setDefaultCover: (callback) => {
     ipcRenderer.on('set-default-cover', (event, result) => callback(result))
   },

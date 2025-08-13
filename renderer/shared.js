@@ -25,25 +25,31 @@ class LyricsPlayer {
     }
 
     // Parse LRC file content
-    parseLyrics(lrcText) {
+    parseLyrics(lrcText, originText) {
         this.clear();
-        const lines = lrcText.split('\n');
-        this.lines = lines
-            .map(line => {
-                const timeMatch =
-                    line.match(/^\[(\d{2}):(\d{2})[:.](\d{2})\](.*)/);
-                if (timeMatch) {
-                    const minutes = parseInt(timeMatch[1]);
-                    const seconds = parseInt(timeMatch[2]);
-                    const hundredths = parseInt(timeMatch[3]);
-                    return {
-                        time: minutes * 60 + seconds + hundredths / 100,
-                        text: timeMatch[4].trim()
-                    };
-                }
-                return null;
+        if (originText) {
+            const lines = lrcText.split('\n');
+            this.lines = lines
+                .map(line => {
+                    const timeMatch =
+                        line.match(/^\[(\d{2}):(\d{2})[:.](\d{2})\](.*)/);
+                    if (timeMatch) {
+                        const minutes = parseInt(timeMatch[1]);
+                        const seconds = parseInt(timeMatch[2]);
+                        const hundredths = parseInt(timeMatch[3]);
+                        return {
+                            time: minutes * 60 + seconds + hundredths / 100,
+                            text: timeMatch[4].trim()
+                        };
+                    }
+                    return null;
+                })
+                .filter(line => line !== null);
+        } else {
+            lrcText.forEach(line => {
+                this.lines.push({ time: line.time / 1000, text: line.text });
             })
-            .filter(line => line !== null);
+        }
 
         for (let lineIndex = 0; lineIndex < this.lines.length; lineIndex++) {
             const lineElement = document.createElement('div');
@@ -108,9 +114,8 @@ async function loadLyricsForSong(lrcPath) {
         const response = await fetch(lrcPath);
         const lrcText = await response.text();
 
-        lyricsPlayer.parseLyrics(lrcText);
+        lyricsPlayer.parseLyrics(lrcText, true);
     } catch (error) {
-        console.error('Error loading lyrics:', error);
         lyricsContainer.textContent = 'Lyrics not available';
     }
 }
@@ -133,7 +138,13 @@ class PlaybackQueue {
         this.currentSong = playbackQueueSongs.children[this.currentIndex];
         let src = this.currentSong.filePath;
         audioPlayer.src = src;
-        loadLyricsForSong(src.replace(/\.[^/.]+$/, '.lrc'));
+        window.electronAPI.getLyrics(src).then((lycText) => {
+            if (lycText) {
+                lyricsPlayer.parseLyrics(lycText, false);
+            } else {
+                loadLyricsForSong(src.replace(/\.[^/.]+$/, '.lrc'));
+            }
+        });
         audioPlayer.currentTime = 0;
 
         window.electronAPI.getColor(src).then((color) => {
