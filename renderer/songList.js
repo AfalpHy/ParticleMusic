@@ -203,13 +203,20 @@ export function sortSongByDuration() {
     albumAscending = false;
 }
 
-export function addSongToList(message, coverDataUrl, filePath) {
+export function createSongListElements(size) {
+    // reset
+    const songs = songList.children;
+    let len = songs.length;
+    for (let i = len - 1; i >= 1; i--) {
+        songs[i].remove();
+    }
     const songLabelChidren = document.getElementById('song-label').children;
 
     const lineElement = document.createElement('div');
     lineElement.className = 'song-line';
+    lineElement.style.visibility = 'hidden';
 
-    for (let i = 0; i < message.length; i++) {
+    for (let i = 0; i < songLabelChidren.length; i++) {
         const columnElement = document.createElement('div');
         columnElement.className = songLabelChidren[i].className;
         columnElement.style.flex = songLabelChidren[i].style.flex;
@@ -220,22 +227,43 @@ export function addSongToList(message, coverDataUrl, filePath) {
             columnElementImg.style.height = "40px";
             columnElementImg.style.width = "40px";
             columnElementImg.style.borderRadius = "10%";
-            columnElementImg.src = coverDataUrl;
             columnElement.append(columnElementImg);
         }
         const columnElementText = document.createElement('div');
         columnElementText.className = 'song-line-column-text'
-        columnElementText.textContent = message[i];
         columnElement.append(columnElementText);
         lineElement.append(columnElement);
     }
-
     songList.append(lineElement);
-    lineElement.filePath = filePath;
     lineElement.addEventListener('dblclick', () => {
         dblclickSong(parseInt(lineElement.children[0].textContent) - 1);
     });
+
+    for (let i = 1; i < size; i++) {
+        const cloneLine = lineElement.cloneNode(true);
+        cloneLine.addEventListener('dblclick', () => {
+            dblclickSong(parseInt(cloneLine.children[0].textContent) - 1);
+        });
+        songList.append(cloneLine);
+    }
+
     playlistOrderChanged = true;
+}
+
+export function fillSongMetadata(message, coverDataUrl, filePath) {
+    const lineElement = songList.children[message[0]];
+    for (let i = 0; i < message.length; i++) {
+        const columnElement = lineElement.children[i];
+        if (i == 1) {
+            columnElement.children[0].src = coverDataUrl;
+            columnElement.children[1].textContent = message[i];
+        } else {
+            columnElement.children[0].textContent = message[i];
+        }
+    }
+
+    lineElement.filePath = filePath;
+    lineElement.style.visibility = 'visible';
 }
 
 function dblclickSong(index) {

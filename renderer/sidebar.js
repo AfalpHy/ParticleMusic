@@ -1,33 +1,24 @@
 import { shared, songList } from "./shared.js";
 import { formatTime } from "./shared.js";
 
-import { addSongToList } from "./songList.js";
+import { fillSongMetadata, createSongListElements } from "./songList.js";
 
-let metaIndex = 1;
-window.electronAPI.receiveSongMetadata((metadatas) => {
-    metadatas.forEach(metadata => {
-        let message = [
-            metaIndex++, metadata.title, metadata.artist, metadata.album,
-            formatTime(metadata.duration)
-        ];
-        addSongToList(message, metadata.coverDataUrl, metadata.filePath);
-    });
+window.electronAPI.receiveSongMetadata((metadata) => {
+    let message = [
+        metadata.index, metadata.title, metadata.artist, metadata.album,
+        formatTime(metadata.duration)
+    ];
+    fillSongMetadata(message, metadata.coverDataUrl, metadata.filePath);
 })
 
-window.electronAPI.resetPlaylist(() => {
-    // reset
-    const songs = songList.children;
-    let len = songs.length;
-    for (let i = len - 1; i >= 1; i--) {
-        songs[i].remove();
-    }
-    metaIndex = 1;
+window.electronAPI.resetPlaylist((size) => {
 
     if (document.getElementById('search').value != "") {
         // clear search
         document.getElementById('search').value = "";
         document.getElementById('search').dispatchEvent(new Event('input'));
     }
+    createSongListElements(size);
 })
 
 window.electronAPI.setLoadingPlaylist(() => {

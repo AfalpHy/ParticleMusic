@@ -23,7 +23,7 @@ contextBridge.exposeInMainWorld('electronAPI', {
   },
 
   resetPlaylist: (callback) => {
-    ipcRenderer.on('reset-playlist', (event) => callback())
+    ipcRenderer.on('reset-playlist', (event, size) => callback(size))
   },
 
   unsetLoadingPlaylist: (callback) => {

@@ -97,17 +97,16 @@ async function loadPlaylist() {
 
   let songPaths = await findSongs(musicDirectory);
 
+  mainWindow.webContents.send('reset-playlist', songPaths.length);
+
   let taskNum = 4;
-  let results = Array(songPaths.length);
   const workerPromises = [];
   for (let i = 0; i < taskNum; i++) {
     workerPromises.push(new Promise((resolve, reject) => {
       const worker = new Worker(path.join(__dirname, './worker.js'));
 
-      let index = i;
       worker.on('message', (result) => {
-        results[index] = result;
-        index += taskNum;
+        mainWindow.webContents.send('song-metadata', result);
       });
 
       worker.on('error', reject);
@@ -120,18 +119,7 @@ async function loadPlaylist() {
     }));
   }
 
-  mainWindow.webContents.send('reset-playlist');
   await Promise.all(workerPromises);
-
-  let resultsChunk = [];
-  results.forEach(result => {
-    resultsChunk.push(result);
-    if (resultsChunk.length == 10) {
-      mainWindow.webContents.send('song-metadata', resultsChunk);
-      resultsChunk = [];
-    }
-  })
-  mainWindow.webContents.send('song-metadata', resultsChunk);
 
   mainWindow.webContents.send('unset-loading-playlist');
 }
