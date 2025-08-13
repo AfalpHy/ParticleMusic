@@ -73,7 +73,7 @@
  }
 
  .play-controls button:hover {
-     background-color: rgba(0, 0, 0, 0.1);
+     background-color: rgba(0, 0, 0, 0.05);
  }
 
  .last-btn {
@@ -174,7 +174,7 @@
  }
 
  .play-mode-btn:hover {
-     background-color: rgba(0, 0, 0, 0.1);
+     background-color: rgba(0, 0, 0, 0.05);
  }
 
  .playback-queue-btn-container {
@@ -201,7 +201,7 @@
  }
 
  .playback-queue-btn:hover {
-     background-color: rgba(0, 0, 0, 0.1);
+     background-color: rgba(0, 0, 0, 0.05);
  }
 
  .volume-control {
@@ -229,7 +229,7 @@
  }
 
  .volume-icon:hover {
-     background-color: rgba(0, 0, 0, 0.1);
+     background-color: rgba(0, 0, 0, 0.05);
  }
 
  .volume {

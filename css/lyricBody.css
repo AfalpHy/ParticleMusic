@@ -62,7 +62,8 @@
  }
 
  .lyrics-line:hover {
-     color: black;
+     color: rgba(0, 0, 0, 0.5);
+     font-weight: 800;
  }
 
  .current-line {
