@@ -1,4 +1,4 @@
-import { lyricsBody } from './shared.js';
+import { lyricsPlane } from './shared.js';
 import { shared } from './shared.js';
 
 const pullBtn = document.getElementById('pull');
@@ -8,8 +8,8 @@ const customTitleBar = document.querySelectorAll('.custom-title-bar')[1];
 const viceMusicControls = document.getElementById('vice-music-controls');
 
 let timeOut;
-lyricsBody.addEventListener('mousemove', () => {
-    if (shared.lyricsBodyActive) {
+lyricsPlane.addEventListener('mousemove', () => {
+    if (shared.lyricsPlaneActive) {
         clearTimeout(timeOut);
         customTitleBar.classList.remove('hidden');
         viceMusicControls.classList.remove('hidden');
@@ -21,12 +21,12 @@ lyricsBody.addEventListener('mousemove', () => {
     }
 });
 
-export function pullLyricsBody() {
+export function pullLyricsPlane() {
     if (fullScreen) {
         return;
     }
-    shared.lyricsBodyActive = false;
-    lyricsBody.classList.remove('display');
+    shared.lyricsPlaneActive = false;
+    lyricsPlane.classList.remove('display');
     clearTimeout(timeOut);
 }
 
@@ -46,9 +46,9 @@ export function changeFullScreenMode() {
     }
 }
 
-export function activeLyricsBody() {
-    if (!shared.lyricsBodyActive) {
-        shared.lyricsBodyActive = true;
-        lyricsBody.classList.add('display');
+export function activeLyricsPlane() {
+    if (!shared.lyricsPlaneActive) {
+        shared.lyricsPlaneActive = true;
+        lyricsPlane.classList.add('display');
     }
 }

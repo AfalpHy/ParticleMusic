@@ -1,4 +1,4 @@
- #lyrics-body {
+ #lyrics-plane {
      position: absolute;
      height: 100%;
      width: 100%;
@@ -9,11 +9,11 @@
      z-index: 20;
  }
 
- #lyrics-body.display {
+ #lyrics-plane.display {
      transform: translateY(0);
  }
 
- #cover-art-bigger {
+ #lyrics-plane-cover-art {
      position: absolute;
      top: 50%;
      left: 45%;

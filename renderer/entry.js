@@ -1,12 +1,12 @@
 import './windowControls.js'
-import './lyricBodyControls.js'
+import './lyricPlaneControls.js'
 import './songList.js'
 import './sidebar.js'
 import './musicControls.js'
 import './playbackQueueControls.js'
 
 import { playbackQueue, shared } from './shared.js'
-import { activeLyricsBody, changeFullScreenMode, pullLyricsBody } from './lyricBodyControls.js'
+import { activeLyricsPlane, changeFullScreenMode, pullLyricsPlane } from './lyricPlaneControls.js'
 import { displayPlaybackQueue, hiddenPlaybackQueue, playbackQueueEvent } from './playbackQueueControls.js'
 import { displayCover, displaySongList } from './sidebar.js'
 import { switchMute } from './musicControls.js'
@@ -37,7 +37,7 @@ document.addEventListener('click', (e) => {
     } else if (className == 'close') {
         window.electronAPI.closeWindow();
     } else if (id == 'pull' || id == 'vice-music-controls') {
-        pullLyricsBody();
+        pullLyricsPlane();
     } else if (id == 'full-screen') {
         changeFullScreenMode();
     } else if (id == 'song-title-label') {
@@ -49,7 +49,7 @@ document.addEventListener('click', (e) => {
     } else if (id == 'duration-label') {
         sortSongByDuration();
     } else if (id == 'music-controls') {
-        activeLyricsBody();
+        activeLyricsPlane();
     } else if (className == 'last-btn') {
         if (!playbackQueue.empty) {
             playbackQueue.last();

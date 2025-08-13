@@ -3,7 +3,7 @@
      overflow: hidden;
  }
 
- #main-body {
+ #main-plane {
      position: absolute;
      height: calc(100% - 75px);
      width: calc(100% - 200px);

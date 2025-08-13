@@ -1,12 +1,12 @@
 export const audioPlayer = document.getElementById('audio-player');
-export const lyricsBody = document.getElementById('lyrics-body');
+export const lyricsPlane = document.getElementById('lyrics-plane');
 export const songList = document.getElementById('song-list');
 export const playbackQueueSongs = document.getElementById('playback-queue-songs');
 
 const lyricsContainer = document.getElementById('lyrics-container');
 
 export const shared = {
-    lyricsBodyActive: false,
+    lyricsPlaneActive: false,
     loadingPlaylist: false,
     playbackQueueDisplay: false
 }
@@ -105,7 +105,7 @@ class LyricsPlayer {
         currentLineElement = this.lineElements[this.currentLineIndex];
         currentLineElement.classList.add('current-line');
 
-        if (shared.lyricsBodyActive)
+        if (shared.lyricsPlaneActive)
             lyricsContainer.scrollTo({
                 top: currentLineElement.offsetTop - lyricsContainer.clientHeight / 2,
                 behavior: 'smooth'
@@ -288,8 +288,8 @@ export const playbackQueue = new PlaybackQueue();
 
 function setCover(result) {
     document.getElementById('cover-art').src = result.coverDataUrl;
-    document.getElementById('cover-art-bigger').src = result.coverDataUrl;
-    document.getElementById('lyrics-body').style.backgroundColor = result.color;
+    document.getElementById('lyrics-plane-cover-art').src = result.coverDataUrl;
+    document.getElementById('lyrics-plane').style.backgroundColor = result.color;
 }
 
 let defaultCover;
