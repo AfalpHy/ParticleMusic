@@ -28,6 +28,13 @@ search.addEventListener('input', (event) => {
                 lineClone.addEventListener('dblclick', () => {
                     dblclickSong(parseInt(line.children[0].textContent) - 1);
                 });
+                lineClone.children[0].addEventListener('mouseenter', () => {
+                    lineClone.children[0].textContent = line.children[0].textContent;
+                })
+                const currentIndex = index;
+                lineClone.children[0].addEventListener('mouseleave', () => {
+                    lineClone.children[0].textContent = currentIndex;
+                })
                 lineClone.children[0].textContent = index++;
                 searchList.appendChild(lineClone);
                 break;
