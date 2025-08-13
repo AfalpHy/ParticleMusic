@@ -171,6 +171,9 @@ class PlaybackQueue {
         document.getElementById('left-bottom-title').textContent = this.currentSong.children[0].children[1].textContent;
         document.getElementById('left-bottom-artist').textContent = this.currentSong.children[0].children[2].textContent;
 
+        document.getElementById('lyrics-plane-title').textContent = this.currentSong.children[0].children[1].textContent;
+        document.getElementById('lyrics-plane-artist').textContent = this.currentSong.children[0].children[2].textContent;
+
         document.querySelectorAll('.song-line').forEach(element => {
             if (element.filePath == src) {
                 element.style.background = 'rgba(220, 220, 220, 0.5)';

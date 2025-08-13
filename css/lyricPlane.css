@@ -26,13 +26,31 @@
      user-select: none;
  }
 
+ #lyrics-plane-title-artist {
+     position: absolute;
+     top: calc(25% - 100px);
+     left: 55%;
+     width: 40%;
+     user-select: none;
+     display: flex;
+     flex-direction: column;
+     gap: 10px;
+ }
+
+ #lyrics-plane-title {
+     font-size: 40px;
+ }
+
+ #lyrics-plane-artist {
+     font-size: 20px;
+ }
+
  #lyrics-container {
      position: absolute;
-     top: 50%;
+     top: 25%;
      left: 55%;
-     transform: translateY(-50%);
      width: 40%;
-     height: 70%;
+     height: 60%;
      overflow-y: auto;
      font-family: Arial, "宋体";
      scroll-behavior: smooth;
@@ -50,15 +68,12 @@
  }
 
  .lyrics-line {
-     margin: 20px;
+     margin: 12px 0;
      font-size: 25px;
      color: rgb(200, 200, 200);
      transition: all 0.3s ease;
      user-select: none;
      cursor: pointer;
-     display: flex;
-     align-items: center;
-     justify-content: start;
  }
 
  .lyrics-line:hover {
