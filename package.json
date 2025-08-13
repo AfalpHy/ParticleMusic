@@ -9,7 +9,7 @@
     "build-linux": "electron-builder --linux --x64",
     "build-windows": "electron-builder --win --x64",
     "dev": "nodemon --watch . --ext js,html,css --exec 'electron .'",
-    "dev-test": "nodemon --watch . --ext js,html,css --exec 'electron .'"
+    "dev-test": "nodemon --watch . --ext js,html,css --exec 'NODE_ENV=development electron .'"
   },
   "keywords": [],
   "author": "",
