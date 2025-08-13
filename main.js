@@ -100,13 +100,18 @@ async function loadPlaylist() {
   mainWindow.webContents.send('reset-playlist', songPaths.length);
 
   let taskNum = 4;
+  let metadatas = []
   const workerPromises = [];
   for (let i = 0; i < taskNum; i++) {
     workerPromises.push(new Promise((resolve, reject) => {
       const worker = new Worker(path.join(__dirname, './worker.js'));
 
       worker.on('message', (result) => {
-        mainWindow.webContents.send('song-metadata', result);
+        metadatas.push(result);
+        if (metadatas.length == 10) {
+          mainWindow.webContents.send('song-metadatas', metadatas);
+          metadatas = [];
+        }
       });
 
       worker.on('error', reject);
@@ -120,7 +125,7 @@ async function loadPlaylist() {
   }
 
   await Promise.all(workerPromises);
-
+  mainWindow.webContents.send('song-metadatas', metadatas);
   mainWindow.webContents.send('unset-loading-playlist');
 }
 

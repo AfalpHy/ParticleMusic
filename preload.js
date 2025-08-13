@@ -35,8 +35,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
   unmaximize:
     (callback) => { ipcRenderer.on('unmaximize', (event) => callback()) },
 
-  receiveSongMetadata: (callback) => {
-    ipcRenderer.on('song-metadata', (event, metadata) => callback(metadata))
+  receiveSongMetadatas: (callback) => {
+    ipcRenderer.on('song-metadatas', (event, metadatas) => callback(metadatas))
   },
 
   getColor: (filePath) => ipcRenderer.invoke('get-color', filePath),
