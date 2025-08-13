@@ -178,6 +178,13 @@ class PlaybackQueue {
                 element.style.background = '';
             }
         });
+        document.querySelectorAll('.playback-queue-song-line').forEach(element => {
+            if (element.filePath == src) {
+                element.style.background = 'rgba(220, 220, 220, 0.5)';
+            } else {
+                element.style.background = '';
+            }
+        });
     }
 
     last() {
