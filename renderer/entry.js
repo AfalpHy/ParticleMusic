@@ -76,18 +76,18 @@ document.addEventListener('click', (e) => {
 })
 
 document.addEventListener('dblclick', (e) => {
-    if (searchList.contains(e.target) && !searchList.firstChild.contains(e.target)) {
+    if (searchList.contains(e.target) && !searchList.children[0].contains(e.target)) {
         let tmp = e.target;
         while (tmp.className != 'song-line') {
             tmp = tmp.parentNode;
         }
         dblclickSong(tmp.originIndex - 1);
-    } else if (songList.contains(e.target) && !songList.firstChild.contains(e.target)) {
+    } else if (songList.contains(e.target) && !songList.children[0].contains(e.target)) {
         let tmp = e.target;
         while (tmp.className != 'song-line') {
             tmp = tmp.parentNode;
         }
-        dblclickSong(tmp.firstChild.textContent - 1);
+        dblclickSong(tmp.children[0].textContent - 1);
     }
 })
 

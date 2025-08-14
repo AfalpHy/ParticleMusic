@@ -28,7 +28,7 @@ search.addEventListener('input', (event) => {
                 lineClone.originIndex = line.children[0].textContent;
 
                 const currentIndex = index;
-                lineClone.firstChild.textContent = index++;
+                lineClone.children[0].textContent = index++;
 
                 lineClone.children[0].addEventListener('mouseenter', () => {
                     lineClone.children[0].textContent = lineClone.originIndex;
