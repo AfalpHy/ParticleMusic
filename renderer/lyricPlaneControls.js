@@ -7,27 +7,30 @@ const windowControls = document.querySelectorAll('.window-controls')[1];
 const customTitleBar = document.querySelectorAll('.custom-title-bar')[1];
 const viceMusicControls = document.getElementById('vice-music-controls');
 
-let timeOut;
+let timeout;
 lyricsPlane.addEventListener('mousemove', () => {
+    setControlsHiddenTimeout();
+});
+
+export function setControlsHiddenTimeout() {
     if (shared.lyricsPlaneActive) {
-        clearTimeout(timeOut);
+        clearTimeout(timeout);
         customTitleBar.classList.remove('hidden');
         viceMusicControls.classList.remove('hidden');
 
-        timeOut = setTimeout(() => {
+        timeout = setTimeout(() => {
             customTitleBar.classList.add('hidden');
             viceMusicControls.classList.add('hidden');
         }, 5000);
     }
-});
-
+}
 export function pullLyricsPlane() {
     if (fullScreen) {
         return;
     }
     shared.lyricsPlaneActive = false;
     lyricsPlane.classList.remove('display');
-    clearTimeout(timeOut);
+    clearTimeout(timeout);
 }
 
 let fullScreen = false;
@@ -50,5 +53,6 @@ export function activeLyricsPlane() {
     if (!shared.lyricsPlaneActive) {
         shared.lyricsPlaneActive = true;
         lyricsPlane.classList.add('display');
+        setControlsHiddenTimeout();
     }
 }

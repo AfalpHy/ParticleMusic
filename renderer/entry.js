@@ -5,8 +5,8 @@ import './sidebar.js'
 import './musicControls.js'
 import './playbackQueueControls.js'
 
-import { playbackQueue, shared } from './shared.js'
-import { activeLyricsPlane, changeFullScreenMode, pullLyricsPlane } from './lyricPlaneControls.js'
+import { lyricsPlane, playbackQueue, shared } from './shared.js'
+import { activeLyricsPlane, changeFullScreenMode, pullLyricsPlane, setControlsHiddenTimeout } from './lyricPlaneControls.js'
 import { displayPlaybackQueue, hiddenPlaybackQueue, playbackQueueEvent } from './playbackQueueControls.js'
 import { displayCover, displaySongList } from './sidebar.js'
 import { switchMute } from './musicControls.js'
@@ -25,6 +25,9 @@ document.addEventListener('click', (e) => {
         }
         hiddenPlaybackQueue();
         return;
+    }
+    if (lyricsPlane.contains(e.target)) {
+        setControlsHiddenTimeout();
     }
     if (id == 'title') {
         displayCover();
