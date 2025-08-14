@@ -89,6 +89,7 @@ class LyricsPlayer {
                 })
                 .filter(line => this.sync ? line.time >= 0 : true);
         } else {
+            this.sync = true;
             lyrics.forEach(line => {
                 this.lines.push({ time: line.time / 1000, text: line.text });
             })

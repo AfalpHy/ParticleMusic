@@ -28,9 +28,9 @@
 
  #lyrics-plane-title-artist {
      position: absolute;
-     top: calc(25% - 80px);
+     top: calc(25% - 100px);
      left: 55%;
-     height: 80px;
+     height: 100px;
      width: 40%;
      user-select: none;
      display: flex;
