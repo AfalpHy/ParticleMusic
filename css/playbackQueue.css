@@ -1,9 +1,9 @@
  #playback-queue {
      position: absolute;
-     top: 15%;
+     top: 100px;
      left: 100%;
      width: 400px;
-     height: calc(85% - 100px);
+     height: calc(100% - 200px);
      border-radius: 5px 0 0 5px;
      transform: translateX(10px);
      transition: transform 0.3s ease;
@@ -19,16 +19,17 @@
 
  #playback-queue-label {
      position: relative;
-     height: 50px;
+     height: 70px;
      display: flex;
      justify-content: center;
-     font-size: 25px;
+     font-size: 30px;
  }
 
  #clear-playback-queue {
      position: absolute;
-     top: 30px;
+     top: 35px;
      left: 80%;
+     font-size: 20px;
      border: none;
      cursor: pointer;
      background-color: rgba(0, 0, 0, 0.1);
@@ -41,11 +42,11 @@
 
  #playback-queue-songs {
      position: absolute;
-     top: 50px;
+     top: 70px;
      overflow-y: auto;
      scroll-behavior: smooth;
      left: 2%;
-     height: calc(100% - 50px);
+     height: calc(100% - 70px);
      width: 95%;
      user-select: none;
 
