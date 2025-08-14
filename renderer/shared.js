@@ -17,6 +17,42 @@ export function formatTime(seconds) {
     return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 
+let contrast;
+function getContrastRatio(color1, color2) {
+    const [r1, g1, b1] = hexToRgb(color1);
+    const [r2, g2, b2] = hexToRgb(color2);
+    const l1 = calculateLuminance(r1, g1, b1);
+    const l2 = calculateLuminance(r2, g2, b2);
+    return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
+}
+
+function hexToRgb(hex) {
+    hex = hex.replace(/^#/, '');
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    return [r, g, b];
+}
+
+function calculateLuminance(r, g, b) {
+    const [r1, g1, b1] = [r, g, b].map(v => {
+        v /= 255;
+        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
+    return 0.2126 * r1 + 0.7152 * g1 + 0.0722 * b1;
+}
+
+function calculateRequiredContrast(textColor, bgColor) {
+    const targetRatio = 4.5;
+    const currentRatio = getContrastRatio(textColor, bgColor);
+
+    if (currentRatio >= targetRatio) {
+        return 1;
+    }
+
+    return targetRatio / currentRatio;
+}
+
 class LyricsPlayer {
     constructor() {
         this.lines = [];
@@ -28,7 +64,7 @@ class LyricsPlayer {
     // Parse LRC file content
     parseLyrics(lyrics, pureText) {
         this.clear();
-        this.sync = true;
+        this.sync = false;
         if (pureText) {
             const lines = lyrics.split('\n');
             this.lines = lines
@@ -36,6 +72,7 @@ class LyricsPlayer {
                     const timeMatch =
                         line.match(/^\[(\d{2}):(\d{2})[:.](\d{2,3})\](.*)/);
                     if (timeMatch) {
+                        this.sync = true;
                         const minutes = parseInt(timeMatch[1]);
                         const seconds = parseInt(timeMatch[2]);
                         const hundredths = parseInt(timeMatch[3]);
@@ -44,17 +81,15 @@ class LyricsPlayer {
                             text: timeMatch[4].trim()
                         };
                     } else {
-                        this.sync = false;
                         return {
-                            time: 0,
+                            time: -1,
                             text: line
                         };
                     }
                 })
-                .filter(line => line !== null);
+                .filter(line => this.sync ? line.time >= 0 : true);
         } else {
             lyrics.forEach(line => {
-                console.log(line.time / 1000);
                 this.lines.push({ time: line.time / 1000, text: line.text });
             })
         }
@@ -63,8 +98,9 @@ class LyricsPlayer {
             const lineElement = document.createElement('div');
             lineElement.className = 'lyrics-line';
             lineElement.textContent = this.lines[lineIndex].text;
+            lineElement.style.filter = 'contrast(' + contrast + ')';
             lineElement.addEventListener('click', () => {
-                if (this.lines[lineIndex].time) {
+                if (this.sync) {
                     audioPlayer.currentTime = this.lines[lineIndex].time;
                 }
             });
@@ -129,7 +165,7 @@ async function loadLyricsForSong(lrcPath) {
 
         lyricsPlayer.parseLyrics(lrcText, true);
     } catch (error) {
-        lyricsContainer.textContent = 'Lyrics not available';
+        lyricsPlayer.parseLyrics('Lyrics not available', true);
     }
 }
 
@@ -151,21 +187,25 @@ class PlaybackQueue {
         this.currentSong = playbackQueueSongs.children[this.currentIndex];
         let src = this.currentSong.filePath;
         audioPlayer.src = src;
-        window.electronAPI.getLyrics(src).then((result) => {
-            if (result) {
-                lyricsPlayer.parseLyrics(result.lyrics, result.pureText);
-            } else {
-                loadLyricsForSong(src.replace(/\.[^/.]+$/, '.lrc'));
-            }
-        });
         audioPlayer.currentTime = 0;
 
         window.electronAPI.getColor(src).then((color) => {
             const coverDataUrl = this.currentSong.children[0].children[0].src;
-            if (color == null)
+            if (color == null) {
+                contrast = calculateRequiredContrast('#A0A0A0', defaultCover.color)
                 setCover({ coverDataUrl: coverDataUrl, color: defaultCover.color });
-            else
+            } else {
+                contrast = calculateRequiredContrast('#A0A0A0', color)
                 setCover({ coverDataUrl: coverDataUrl, color: color });
+            }
+
+            window.electronAPI.getLyrics(src).then((result) => {
+                if (result) {
+                    lyricsPlayer.parseLyrics(result.lyrics, result.pureText);
+                } else {
+                    loadLyricsForSong(src.replace(/\.[^/.]+$/, '.lrc'));
+                }
+            });
         })
 
         document.getElementById('left-bottom-title').textContent = this.currentSong.children[0].children[1].textContent;

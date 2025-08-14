@@ -28,8 +28,9 @@
 
  #lyrics-plane-title-artist {
      position: absolute;
-     top: calc(25% - 100px);
+     top: calc(25% - 80px);
      left: 55%;
+     height: 80px;
      width: 40%;
      user-select: none;
      display: flex;
@@ -38,10 +39,16 @@
  }
 
  #lyrics-plane-title {
-     font-size: 40px;
+     white-space: nowrap;
+     overflow: hidden;
+     text-overflow: ellipsis;
+     font-size: 35px;
  }
 
  #lyrics-plane-artist {
+     white-space: nowrap;
+     overflow: hidden;
+     text-overflow: ellipsis;
      font-size: 20px;
  }
 
@@ -68,9 +75,9 @@
  }
 
  .lyrics-line {
-     margin: 15px 0;
+     margin: 25px 0;
      font-size: 25px;
-     color: rgb(200, 200, 200);
+     color: rgb(160, 160, 160);
      transition: all 0.3s ease;
      user-select: none;
      cursor: pointer;
@@ -82,7 +89,7 @@
  }
 
  .current-line {
-     color: white;
-     font-size: 35px;
+     color: rgb(170, 170, 170);
+     font-size: 25px;
      font-weight: bold;
  }
