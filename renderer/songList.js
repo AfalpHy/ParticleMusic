@@ -3,7 +3,7 @@ import { shared, songList } from "./shared.js";
 import { playbackQueue } from "./shared.js";
 
 const search = document.getElementById('search');
-const searchList = songList.cloneNode(false);
+export const searchList = songList.cloneNode(false);
 
 searchList.appendChild(songList.children[0].cloneNode(true));
 songList.parentNode.append(searchList);
@@ -25,17 +25,17 @@ search.addEventListener('input', (event) => {
             if (line.children[j].textContent.includes(event.target.value)) {
                 const lineClone = line.cloneNode(true);
                 lineClone.filePath = line.filePath;
-                lineClone.addEventListener('dblclick', () => {
-                    dblclickSong(parseInt(line.children[0].textContent) - 1);
-                });
-                lineClone.children[0].addEventListener('mouseenter', () => {
-                    lineClone.children[0].textContent = line.children[0].textContent;
-                })
+                lineClone.originIndex = line.children[0].textContent;
+
                 const currentIndex = index;
+                lineClone.firstChild.textContent = index++;
+
+                lineClone.children[0].addEventListener('mouseenter', () => {
+                    lineClone.children[0].textContent = lineClone.originIndex;
+                })
                 lineClone.children[0].addEventListener('mouseleave', () => {
                     lineClone.children[0].textContent = currentIndex;
                 })
-                lineClone.children[0].textContent = index++;
                 searchList.appendChild(lineClone);
                 break;
             }
@@ -242,15 +242,9 @@ export function createSongListElements(size) {
         lineElement.append(columnElement);
     }
     songList.append(lineElement);
-    lineElement.addEventListener('dblclick', () => {
-        dblclickSong(parseInt(lineElement.children[0].textContent) - 1);
-    });
 
     for (let i = 1; i < size; i++) {
         const cloneLine = lineElement.cloneNode(true);
-        cloneLine.addEventListener('dblclick', () => {
-            dblclickSong(parseInt(cloneLine.children[0].textContent) - 1);
-        });
         songList.append(cloneLine);
     }
 
@@ -273,7 +267,7 @@ export function fillSongMetadata(message, coverDataUrl, filePath) {
     lineElement.style.visibility = 'visible';
 }
 
-function dblclickSong(index) {
+export function dblclickSong(index) {
     if (shared.loadingPlaylist) {
         return;
     }

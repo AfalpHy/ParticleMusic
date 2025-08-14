@@ -5,12 +5,12 @@ import './sidebar.js'
 import './musicControls.js'
 import './playbackQueueControls.js'
 
-import { lyricsPlane, playbackQueue, shared } from './shared.js'
+import { lyricsPlane, playbackQueue, shared, songList } from './shared.js'
 import { activeLyricsPlane, changeFullScreenMode, pullLyricsPlane, setControlsHiddenTimeout } from './lyricPlaneControls.js'
 import { displayPlaybackQueue, hiddenPlaybackQueue, playbackQueueEvent } from './playbackQueueControls.js'
 import { displayCover, displaySongList } from './sidebar.js'
 import { switchMute } from './musicControls.js'
-import { enableResizer1, enableResizer2, sortSongByAlbum, sortSongByArtist, sortSongByDuration, sortSongByTitle } from './songList.js'
+import { dblclickSong, enableResizer1, enableResizer2, searchList, sortSongByAlbum, sortSongByArtist, sortSongByDuration, sortSongByTitle } from './songList.js'
 
 const playbackQueuePlane = document.getElementById('playback-queue');
 
@@ -72,6 +72,22 @@ document.addEventListener('click', (e) => {
         displayPlaybackQueue();
     } else if (className == 'volume-icon') {
         switchMute();
+    }
+})
+
+document.addEventListener('dblclick', (e) => {
+    if (searchList.contains(e.target) && !searchList.firstChild.contains(e.target)) {
+        let tmp = e.target;
+        while (tmp.className != 'song-line') {
+            tmp = tmp.parentNode;
+        }
+        dblclickSong(tmp.originIndex - 1);
+    } else if (songList.contains(e.target) && !songList.firstChild.contains(e.target)) {
+        let tmp = e.target;
+        while (tmp.className != 'song-line') {
+            tmp = tmp.parentNode;
+        }
+        dblclickSong(tmp.firstChild.textContent - 1);
     }
 })
 
