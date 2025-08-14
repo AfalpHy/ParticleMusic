@@ -3,13 +3,11 @@
   "version": "1.0.0",
   "main": "main.js",
   "scripts": {
-    "start": "electron .",
-    "test": "NODE_ENV=development electron .",
-    "test-win": "chcp 65001 && electron .",
+    "start": "electron . --enable-logging",
+    "start-win": "chcp 65001 && electron . --enable-logging",
     "build-linux": "electron-builder --linux --x64",
     "build-windows": "electron-builder --win --x64",
-    "dev": "nodemon --watch . --ext js,html,css --exec 'electron .'",
-    "dev-test": "nodemon --watch . --ext js,html,css --exec 'NODE_ENV=development electron .'"
+    "dev": "nodemon --watch . --ext js,html,css --exec 'electron . --enable-logging'"
   },
   "keywords": [],
   "author": "",
