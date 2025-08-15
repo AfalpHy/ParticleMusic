@@ -1,0 +1,54 @@
+#song-menu {
+    position: absolute;
+    width: 150px;
+    height: 100px;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    visibility: hidden;
+    background-color: rgb(210, 210, 210);
+}
+
+#song-menu div {
+    cursor: pointer;
+    width: 95%;
+    height: 30%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+}
+
+#song-menu div:hover {
+    background: rgb(200, 200, 200);
+}
+
+#play-queue-song-menu {
+    position: absolute;
+    width: 150px;
+    height: 70px;
+    border-radius: 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    visibility: hidden;
+    background-color: rgb(210, 210, 210);
+    z-index: 30;
+}
+
+#play-queue-song-menu div {
+    cursor: pointer;
+    width: 95%;
+    height: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 5px;
+}
+
+#play-queue-song-menu div:hover {
+    background: rgb(200, 200, 200);
+}

@@ -30,6 +30,12 @@ export function pullLyricsPlane() {
     }
     shared.lyricsPlaneActive = false;
     lyricsPlane.classList.remove('display');
+
+    // prevent right-click events from accidentally triggering bottom drag-and-drop
+    setTimeout(() => {
+        customTitleBar.style.visibility = 'hidden';
+    }, 500)
+
     clearTimeout(timeout);
 }
 
@@ -53,6 +59,10 @@ export function activeLyricsPlane() {
     if (!shared.lyricsPlaneActive) {
         shared.lyricsPlaneActive = true;
         lyricsPlane.classList.add('display');
+
+        // prevent right-click events from accidentally triggering bottom drag-and-drop
+        customTitleBar.style.visibility = 'visible';
+
         setControlsHiddenTimeout();
     }
 }

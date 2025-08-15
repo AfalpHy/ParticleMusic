@@ -11,6 +11,8 @@
   <link rel="stylesheet" href="css/musicControls.css">
   <link rel="stylesheet" href="css/lyricPlane.css">
   <link rel="stylesheet" href="css/playbackQueue.css">
+  <link rel="stylesheet" href="css/customMemu.css">
+
 </head>
 
 <body>
@@ -64,7 +66,7 @@
 
       <input type="range" class="progress" min="0" max="100" value="0">
 
-      <div class="total-time"> 00:00</div>
+      <div class="total-time">00:00</div>
     </div>
 
     <div class="play-mode-btn-container">
@@ -114,7 +116,7 @@
 
         <input type="range" class="progress" min="0" max="100" value="0">
 
-        <div class="total-time"> 00:00</div>
+        <div class="total-time">00:00</div>
       </div>
 
       <div class="play-mode-btn-container">
@@ -133,12 +135,22 @@
   </div>
 
   <div id="playback-queue">
-    <div id="playback-queue-label"> playback queue
-      <button id="clear-playback-queue"> clear</button>
+    <div id="playback-queue-label">playback queue
+      <button id="clear-playback-queue">clear</button>
     </div>
     <div id="playback-queue-songs"></div>
   </div>
 
+  <div id="song-menu">
+    <div>play</div>
+    <div>play next</div>
+    <div>add to play queue</div>
+  </div>
+
+  <div id="play-queue-song-menu">
+    <div>remove</div>
+    <div>play next</div>
+  </div>
 
   <audio id="audio-player"></audio>
 

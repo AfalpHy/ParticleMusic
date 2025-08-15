@@ -2,13 +2,17 @@ export const audioPlayer = document.getElementById('audio-player');
 export const lyricsPlane = document.getElementById('lyrics-plane');
 export const songList = document.getElementById('song-list');
 export const playbackQueueSongs = document.getElementById('playback-queue-songs');
+export const songMemu = document.getElementById('song-menu');
+export const playQueueSongMenu = document.getElementById('play-queue-song-menu');
 
 const lyricsContainer = document.getElementById('lyrics-container');
 
 export const shared = {
     lyricsPlaneActive: false,
     loadingPlaylist: false,
-    playbackQueueDisplay: false
+    playbackQueueDisplay: false,
+    clickSongIndex: -1,
+    clickPlayQueueSongIndex: -1
 }
 
 export function formatTime(seconds) {

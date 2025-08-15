@@ -5,12 +5,12 @@ import './sidebar.js'
 import './musicControls.js'
 import './playbackQueueControls.js'
 
-import { lyricsPlane, playbackQueue, shared, songList } from './shared.js'
+import { lyricsPlane, playbackQueue, playbackQueueSongs, playQueueSongMenu, shared, songList, songMemu } from './shared.js'
 import { activeLyricsPlane, changeFullScreenMode, pullLyricsPlane, setControlsHiddenTimeout } from './lyricPlaneControls.js'
 import { displayPlaybackQueue, hiddenPlaybackQueue, playbackQueueEvent } from './playbackQueueControls.js'
 import { displayCover, displaySongList } from './sidebar.js'
 import { switchMute } from './musicControls.js'
-import { dblclickSong, enableResizer1, enableResizer2, searchList, sortSongByAlbum, sortSongByArtist, sortSongByDuration, sortSongByTitle } from './songList.js'
+import { dblclickSong, enableResizer1, enableResizer2, searchList, songMemuEvent, sortSongByAlbum, sortSongByArtist, sortSongByDuration, sortSongByTitle } from './songList.js'
 
 const playbackQueuePlane = document.getElementById('playback-queue');
 
@@ -19,6 +19,9 @@ document.addEventListener('click', (e) => {
     const id = e.target.id;
     // console.log(className, id);
     if (shared.playbackQueueDisplay) {
+        if (playQueueSongMenu.contains(e.target)) {
+            return;
+        }
         if (playbackQueuePlane.contains(e.target)) {
             playbackQueueEvent(e.target);
             return;
@@ -26,6 +29,10 @@ document.addEventListener('click', (e) => {
         hiddenPlaybackQueue();
         return;
     }
+
+    songMemu.style.visibility = 'hidden';
+    playQueueSongMenu.style.visibility = 'hidden';
+
     if (lyricsPlane.contains(e.target)) {
         setControlsHiddenTimeout();
     }
@@ -72,6 +79,8 @@ document.addEventListener('click', (e) => {
         displayPlaybackQueue();
     } else if (className == 'volume-icon') {
         switchMute();
+    } else if (songMemu.contains(e.target)) {
+        songMemuEvent(e.target);
     }
 })
 
@@ -95,6 +104,57 @@ document.addEventListener('mousedown', (e) => {
     const className = e.target.className;
     const id = e.target.id;
     // console.log(className, id);
+    if (e.button == 2) {
+        playQueueSongMenu.style.visibility = 'hidden';
+        songMemu.style.visibility = 'hidden';
+
+        if (shared.playbackQueueDisplay) {
+            if (playbackQueuePlane.contains(e.target)) {
+                if (playbackQueueSongs.contains(e.target)) {
+                    let tmp = e.target;
+                    while (tmp && tmp.className != 'playback-queue-song-line') {
+                        tmp = tmp.parentNode;
+                    }
+                    if (!tmp) {
+                        return;
+                    }
+                    let index = 0;
+                    while ((tmp = tmp.previousElementSibling) != null) {
+                        index++;
+                    }
+                    console.log(e.pageX, e.pageY, index)
+                    shared.clickPlayQueueSongIndex = index;
+                    playQueueSongMenu.style.visibility = 'visible';
+                    playQueueSongMenu.style.left = e.pageX + 'px';
+                    playQueueSongMenu.style.top = e.pageY + 'px';
+                }
+                return;
+            }
+            hiddenPlaybackQueue();
+            return;
+        }
+
+        if (searchList.contains(e.target) && !searchList.children[0].contains(e.target)) {
+            let tmp = e.target;
+            while (tmp.className != 'song-line') {
+                tmp = tmp.parentNode;
+            }
+            shared.clickSongIndex = tmp.originIndex - 1;
+            songMemu.style.visibility = 'visible';
+            songMemu.style.left = e.pageX + 'px';
+            songMemu.style.top = e.pageY + 'px';
+        } else if (songList.contains(e.target) && !songList.children[0].contains(e.target)) {
+            let tmp = e.target;
+            while (tmp.className != 'song-line') {
+                tmp = tmp.parentNode;
+            }
+            shared.clickSongIndex = tmp.children[0].textContent - 1;
+            songMemu.style.visibility = 'visible';
+            songMemu.style.left = e.pageX + 'px';
+            songMemu.style.top = e.pageY + 'px';
+        }
+        return;
+    }
     if (shared.playbackQueueDisplay) {
         return;
     }

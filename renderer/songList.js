@@ -284,3 +284,15 @@ export function dblclickSong(index) {
         playbackQueue.shuffle();
     }
 }
+
+export function songMemuEvent(element) {
+    let content = element.textContent;
+    console.log(content)
+    if (content == 'play') {
+        dblclickSong(shared.clickSongIndex);
+    } else if (content == 'play next') {
+
+    } else if (content == 'add song to play queue') {
+
+    }
+}
