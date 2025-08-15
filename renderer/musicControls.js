@@ -124,8 +124,8 @@ audioPlayer.addEventListener('timeupdate', updateProgressDisplay);
 audioPlayer.addEventListener('ended', () => {
     // repeat
     if (playQueue.playMode == 1) {
-        playQueue.load();
-        playQueue.playOrPause();
+        audioPlayer.currentTime = 0;
+        audioPlayer.play();
         return;
     }
     playQueue.next();
