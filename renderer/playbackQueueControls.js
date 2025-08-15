@@ -1,4 +1,4 @@
-import { audioPlayer, lyricsPlayer, playbackQueue, playbackQueueSongs, shared, songList } from "./shared.js";
+import { audioPlayer, lyricsPlayer, playbackQueue, playbackQueueSongs, playQueueSongMenu, shared, songList } from "./shared.js";
 
 export function displayPlaybackQueue() {
     shared.playbackQueueDisplay = true;
@@ -14,50 +14,55 @@ export function updatePlaybackQueue() {
     playbackQueueSongs.textContent = "";
     playbackQueue.songLines = [];
     for (let i = 1; i < songList.children.length; i++) {
-        const element = songList.children[i];
-        const lineElement = document.createElement('div');
-        lineElement.className = 'playback-queue-song-line';
-        lineElement.filePath = element.filePath;
-        {
-            const columnElement = document.createElement('div');
-            columnElement.className = 'playback-queue-song-line-main';
-
-            const columnElementImg = document.createElement('img');
-            columnElementImg.style.height = "50px";
-            columnElementImg.style.width = "50px";
-            columnElementImg.style.borderRadius = "10%";
-            columnElementImg.src = element.children[1].children[0].src;
-
-            const columnElementText1 = document.createElement('div');
-            columnElementText1.className = 'playback-queue-song-line-title'
-            columnElementText1.textContent = element.children[1].textContent;
-
-            const columnElementText2 = document.createElement('div');
-            columnElementText2.className = 'playback-queue-song-line-artist'
-            columnElementText2.textContent = element.children[2].textContent;
-
-            columnElement.append(columnElementImg);
-            columnElement.append(columnElementText1);
-            columnElement.append(columnElementText2);
-
-            lineElement.append(columnElement);
-        }
-
-        {
-            const columnElement = document.createElement('div');
-            columnElement.style.flex = '0 0 15%';
-            columnElement.style.overflow = 'hidden';
-
-            const columnElementText = document.createElement('div');
-            columnElementText.className = 'song-line-column-text'
-            columnElementText.textContent = element.children[4].textContent;
-            columnElement.append(columnElementText);
-            lineElement.append(columnElement);
-        }
-
-        playbackQueueSongs.append(lineElement);
-        playbackQueue.songLines.push(lineElement);
+        addSongToPlayQueue(i);
     }
+}
+
+export function addSongToPlayQueue(index) {
+    const element = songList.children[index];
+    const lineElement = document.createElement('div');
+    lineElement.className = 'playback-queue-song-line';
+    lineElement.filePath = element.filePath;
+    {
+        const columnElement = document.createElement('div');
+        columnElement.className = 'playback-queue-song-line-main';
+
+        const columnElementImg = document.createElement('img');
+        columnElementImg.style.height = "50px";
+        columnElementImg.style.width = "50px";
+        columnElementImg.style.borderRadius = "10%";
+        columnElementImg.src = element.children[1].children[0].src;
+
+        const columnElementText1 = document.createElement('div');
+        columnElementText1.className = 'playback-queue-song-line-title'
+        columnElementText1.textContent = element.children[1].textContent;
+
+        const columnElementText2 = document.createElement('div');
+        columnElementText2.className = 'playback-queue-song-line-artist'
+        columnElementText2.textContent = element.children[2].textContent;
+
+        columnElement.append(columnElementImg);
+        columnElement.append(columnElementText1);
+        columnElement.append(columnElementText2);
+
+        lineElement.append(columnElement);
+    }
+
+    {
+        const columnElement = document.createElement('div');
+        columnElement.style.flex = '0 0 15%';
+        columnElement.style.overflow = 'hidden';
+
+        const columnElementText = document.createElement('div');
+        columnElementText.className = 'song-line-column-text'
+        columnElementText.textContent = element.children[4].textContent;
+        columnElement.append(columnElementText);
+        lineElement.append(columnElement);
+    }
+
+    playbackQueueSongs.append(lineElement);
+    playbackQueue.songLines.push(lineElement);
+    playbackQueue.empty = false;
 }
 
 export function playbackQueueEvent(element) {
@@ -93,5 +98,17 @@ export function playbackQueueEvent(element) {
         playbackQueue.play = true;
         playbackQueue.playOrPause();
     }
+}
 
+export function playQueueSongMemuEvent(element) {
+    let content = element.textContent;
+    playQueueSongMenu.style.visibility = 'hidden';
+    if (content == 'remove') {
+        playbackQueueSongs.children[shared.clickPlayQueueSongIndex].remove();
+    } else if (content == 'play next') {
+    } else {
+        // if click blank area
+        playQueueSongMenu.style.visibility = 'visible';
+
+    }
 }

@@ -8,7 +8,8 @@
     align-items: center;
     justify-content: center;
     visibility: hidden;
-    background-color: rgb(210, 210, 210);
+    background-color: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
 }
 
 #song-menu div {
@@ -35,14 +36,15 @@
     align-items: center;
     justify-content: center;
     visibility: hidden;
-    background-color: rgb(210, 210, 210);
+    background-color: white;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
     z-index: 30;
 }
 
 #play-queue-song-menu div {
     cursor: pointer;
     width: 95%;
-    height: 50%;
+    height: 45%;
     display: flex;
     align-items: center;
     justify-content: center;

@@ -1,5 +1,5 @@
-import { updatePlaybackQueue } from "./playbackQueueControls.js";
-import { shared, songList } from "./shared.js";
+import { addSongToPlayQueue, updatePlaybackQueue } from "./playbackQueueControls.js";
+import { shared, songList, songMenu } from "./shared.js";
 import { playbackQueue } from "./shared.js";
 
 const search = document.getElementById('search');
@@ -273,7 +273,6 @@ export function dblclickSong(index) {
     }
     playbackQueue.currentIndex = index;
     if (playbackQueue.empty || playlistOrderChanged || playbackQueue.playMode == 2) {
-        playbackQueue.empty = false;
         playlistOrderChanged = false;
         updatePlaybackQueue();
     }
@@ -287,12 +286,14 @@ export function dblclickSong(index) {
 
 export function songMemuEvent(element) {
     let content = element.textContent;
-    console.log(content)
+    songMenu.style.visibility = 'hidden';
     if (content == 'play') {
-        dblclickSong(shared.clickSongIndex);
     } else if (content == 'play next') {
 
-    } else if (content == 'add song to play queue') {
-
+    } else if (content == 'add to play queue') {
+        addSongToPlayQueue(shared.clickSongIndex);
+    } else {
+        // if click blank area
+        songMenu.style.visibility = 'visible';
     }
 }

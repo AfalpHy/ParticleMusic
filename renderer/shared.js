@@ -2,7 +2,7 @@ export const audioPlayer = document.getElementById('audio-player');
 export const lyricsPlane = document.getElementById('lyrics-plane');
 export const songList = document.getElementById('song-list');
 export const playbackQueueSongs = document.getElementById('playback-queue-songs');
-export const songMemu = document.getElementById('song-menu');
+export const songMenu = document.getElementById('song-menu');
 export const playQueueSongMenu = document.getElementById('play-queue-song-menu');
 
 const lyricsContainer = document.getElementById('lyrics-container');

@@ -5,9 +5,9 @@ import './sidebar.js'
 import './musicControls.js'
 import './playbackQueueControls.js'
 
-import { lyricsPlane, playbackQueue, playbackQueueSongs, playQueueSongMenu, shared, songList, songMemu } from './shared.js'
+import { lyricsPlane, playbackQueue, playbackQueueSongs, playQueueSongMenu, shared, songList, songMenu } from './shared.js'
 import { activeLyricsPlane, changeFullScreenMode, pullLyricsPlane, setControlsHiddenTimeout } from './lyricPlaneControls.js'
-import { displayPlaybackQueue, hiddenPlaybackQueue, playbackQueueEvent } from './playbackQueueControls.js'
+import { displayPlaybackQueue, hiddenPlaybackQueue, playbackQueueEvent, playQueueSongMemuEvent } from './playbackQueueControls.js'
 import { displayCover, displaySongList } from './sidebar.js'
 import { switchMute } from './musicControls.js'
 import { dblclickSong, enableResizer1, enableResizer2, searchList, songMemuEvent, sortSongByAlbum, sortSongByArtist, sortSongByDuration, sortSongByTitle } from './songList.js'
@@ -18,10 +18,13 @@ document.addEventListener('click', (e) => {
     const className = e.target.className;
     const id = e.target.id;
     // console.log(className, id);
+
     if (shared.playbackQueueDisplay) {
         if (playQueueSongMenu.contains(e.target)) {
+            playQueueSongMemuEvent(e.target);
             return;
         }
+        playQueueSongMenu.style.visibility = 'hidden';
         if (playbackQueuePlane.contains(e.target)) {
             playbackQueueEvent(e.target);
             return;
@@ -30,12 +33,16 @@ document.addEventListener('click', (e) => {
         return;
     }
 
-    songMemu.style.visibility = 'hidden';
-    playQueueSongMenu.style.visibility = 'hidden';
+    if (songMenu.contains(e.target)) {
+        songMemuEvent(e.target);
+        return;
+    }
+    songMenu.style.visibility = 'hidden';
 
     if (lyricsPlane.contains(e.target)) {
         setControlsHiddenTimeout();
     }
+
     if (id == 'title') {
         displayCover();
     } else if (id == 'playlist') {
@@ -79,8 +86,6 @@ document.addEventListener('click', (e) => {
         displayPlaybackQueue();
     } else if (className == 'volume-icon') {
         switchMute();
-    } else if (songMemu.contains(e.target)) {
-        songMemuEvent(e.target);
     }
 })
 
@@ -105,10 +110,15 @@ document.addEventListener('mousedown', (e) => {
     const id = e.target.id;
     // console.log(className, id);
     if (e.button == 2) {
-        playQueueSongMenu.style.visibility = 'hidden';
-        songMemu.style.visibility = 'hidden';
-
+        if (!songMenu.contains(e.target)) {
+            songMenu.style.visibility = 'hidden';
+        }
         if (shared.playbackQueueDisplay) {
+            if (!playQueueSongMenu.contains(e.target)) {
+                playQueueSongMenu.style.visibility = 'hidden';
+            } else {
+                return;
+            }
             if (playbackQueuePlane.contains(e.target)) {
                 if (playbackQueueSongs.contains(e.target)) {
                     let tmp = e.target;
@@ -122,7 +132,6 @@ document.addEventListener('mousedown', (e) => {
                     while ((tmp = tmp.previousElementSibling) != null) {
                         index++;
                     }
-                    console.log(e.pageX, e.pageY, index)
                     shared.clickPlayQueueSongIndex = index;
                     playQueueSongMenu.style.visibility = 'visible';
                     playQueueSongMenu.style.left = e.pageX + 'px';
@@ -139,19 +148,19 @@ document.addEventListener('mousedown', (e) => {
             while (tmp.className != 'song-line') {
                 tmp = tmp.parentNode;
             }
-            shared.clickSongIndex = tmp.originIndex - 1;
-            songMemu.style.visibility = 'visible';
-            songMemu.style.left = e.pageX + 'px';
-            songMemu.style.top = e.pageY + 'px';
+            shared.clickSongIndex = tmp.originIndex;
+            songMenu.style.visibility = 'visible';
+            songMenu.style.left = e.pageX + 'px';
+            songMenu.style.top = e.pageY + 'px';
         } else if (songList.contains(e.target) && !songList.children[0].contains(e.target)) {
             let tmp = e.target;
             while (tmp.className != 'song-line') {
                 tmp = tmp.parentNode;
             }
-            shared.clickSongIndex = tmp.children[0].textContent - 1;
-            songMemu.style.visibility = 'visible';
-            songMemu.style.left = e.pageX + 'px';
-            songMemu.style.top = e.pageY + 'px';
+            shared.clickSongIndex = tmp.children[0].textContent;
+            songMenu.style.visibility = 'visible';
+            songMenu.style.left = e.pageX + 'px';
+            songMenu.style.top = e.pageY + 'px';
         }
         return;
     }
