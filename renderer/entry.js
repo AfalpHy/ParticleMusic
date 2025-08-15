@@ -3,33 +3,33 @@ import './lyricPlaneControls.js'
 import './songList.js'
 import './sidebar.js'
 import './musicControls.js'
-import './playbackQueueControls.js'
+import './playQueueControls.js'
 
-import { lyricsPlane, playbackQueue, playbackQueueSongs, playQueueSongMenu, shared, songList, songMenu } from './shared.js'
+import { lyricsPlane, playQueue, playQueueSongs, playQueueSongMenu, shared, songList, songMenu } from './shared.js'
 import { activeLyricsPlane, changeFullScreenMode, pullLyricsPlane, setControlsHiddenTimeout } from './lyricPlaneControls.js'
-import { displayPlaybackQueue, hiddenPlaybackQueue, playbackQueueEvent, playQueueSongMemuEvent } from './playbackQueueControls.js'
+import { displayPlayQueue, hiddenPlayQueue, playQueueEvent, playQueueSongMemuEvent } from './playQueueControls.js'
 import { displayCover, displaySongList } from './sidebar.js'
 import { switchMute } from './musicControls.js'
 import { dblclickSong, enableResizer1, enableResizer2, searchList, songMemuEvent, sortSongByAlbum, sortSongByArtist, sortSongByDuration, sortSongByTitle } from './songList.js'
 
-const playbackQueuePlane = document.getElementById('playback-queue');
+const playQueuePlane = document.getElementById('play-queue');
 
 document.addEventListener('click', (e) => {
     const className = e.target.className;
     const id = e.target.id;
     // console.log(className, id);
 
-    if (shared.playbackQueueDisplay) {
+    if (shared.playQueueDisplay) {
         if (playQueueSongMenu.contains(e.target)) {
             playQueueSongMemuEvent(e.target);
             return;
         }
         playQueueSongMenu.style.visibility = 'hidden';
-        if (playbackQueuePlane.contains(e.target)) {
-            playbackQueueEvent(e.target);
+        if (playQueuePlane.contains(e.target)) {
+            playQueueEvent(e.target);
             return;
         }
-        hiddenPlaybackQueue();
+        hiddenPlayQueue();
         return;
     }
 
@@ -68,22 +68,22 @@ document.addEventListener('click', (e) => {
     } else if (id == 'music-controls') {
         activeLyricsPlane();
     } else if (className == 'last-btn') {
-        if (!playbackQueue.empty) {
-            playbackQueue.last();
+        if (!playQueue.empty) {
+            playQueue.last();
         }
     } else if (className == 'play-pause-btn') {
-        if (!playbackQueue.empty) {
-            playbackQueue.play = !playbackQueue.play;
-            playbackQueue.playOrPause();
+        if (!playQueue.empty) {
+            playQueue.play = !playQueue.play;
+            playQueue.playOrPause();
         }
     } else if (className == 'next-btn') {
-        if (!playbackQueue.empty) {
-            playbackQueue.next();
+        if (!playQueue.empty) {
+            playQueue.next();
         }
     } else if (className == 'play-mode-btn') {
-        playbackQueue.switchPlayMode();
-    } else if (className == 'playback-queue-btn') {
-        displayPlaybackQueue();
+        playQueue.switchPlayMode();
+    } else if (className == 'play-queue-btn') {
+        displayPlayQueue();
     } else if (className == 'volume-icon') {
         switchMute();
     }
@@ -113,16 +113,16 @@ document.addEventListener('mousedown', (e) => {
         if (!songMenu.contains(e.target)) {
             songMenu.style.visibility = 'hidden';
         }
-        if (shared.playbackQueueDisplay) {
+        if (shared.playQueueDisplay) {
             if (!playQueueSongMenu.contains(e.target)) {
                 playQueueSongMenu.style.visibility = 'hidden';
             } else {
                 return;
             }
-            if (playbackQueuePlane.contains(e.target)) {
-                if (playbackQueueSongs.contains(e.target)) {
+            if (playQueuePlane.contains(e.target)) {
+                if (playQueueSongs.contains(e.target)) {
                     let tmp = e.target;
-                    while (tmp && tmp.className != 'playback-queue-song-line') {
+                    while (tmp && tmp.className != 'play-queue-song-line') {
                         tmp = tmp.parentNode;
                     }
                     if (!tmp) {
@@ -139,7 +139,7 @@ document.addEventListener('mousedown', (e) => {
                 }
                 return;
             }
-            hiddenPlaybackQueue();
+            hiddenPlayQueue();
             return;
         }
 
@@ -164,7 +164,7 @@ document.addEventListener('mousedown', (e) => {
         }
         return;
     }
-    if (shared.playbackQueueDisplay) {
+    if (shared.playQueueDisplay) {
         return;
     }
     if (id == 'resizer1') {

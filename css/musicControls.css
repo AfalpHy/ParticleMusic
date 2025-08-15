@@ -177,7 +177,7 @@
      background-color: rgba(0, 0, 0, 0.05);
  }
 
- .playback-queue-btn-container {
+ .play-queue-btn-container {
      position: absolute;
      top: 14px;
      left: calc(100% - 230px);
@@ -187,7 +187,7 @@
      display: flex;
  }
 
- .playback-queue-btn {
+ .play-queue-btn {
      position: absolute;
      height: 30px;
      width: 30px;
@@ -197,10 +197,10 @@
      cursor: pointer;
      background-color: rgba(0, 0, 0, 0);
      border-radius: 5px;
-     background-image: url('../pictures/playbackQueue.png');
+     background-image: url('../pictures/playQueue.png');
  }
 
- .playback-queue-btn:hover {
+ .play-queue-btn:hover {
      background-color: rgba(0, 0, 0, 0.05);
  }
 

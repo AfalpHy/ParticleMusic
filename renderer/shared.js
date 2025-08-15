@@ -1,7 +1,7 @@
 export const audioPlayer = document.getElementById('audio-player');
 export const lyricsPlane = document.getElementById('lyrics-plane');
 export const songList = document.getElementById('song-list');
-export const playbackQueueSongs = document.getElementById('playback-queue-songs');
+export const playQueueSongs = document.getElementById('play-queue-songs');
 export const songMenu = document.getElementById('song-menu');
 export const playQueueSongMenu = document.getElementById('play-queue-song-menu');
 
@@ -10,7 +10,7 @@ const lyricsContainer = document.getElementById('lyrics-container');
 export const shared = {
     lyricsPlaneActive: false,
     loadingPlaylist: false,
-    playbackQueueDisplay: false,
+    playQueueDisplay: false,
     clickSongIndex: -1,
     clickPlayQueueSongIndex: -1
 }
@@ -178,7 +178,7 @@ function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
-class PlaybackQueue {
+class PlayQueue {
     constructor() {
         this.play = false;
         this.empty = true;
@@ -189,7 +189,7 @@ class PlaybackQueue {
     }
 
     load() {
-        this.currentSong = playbackQueueSongs.children[this.currentIndex];
+        this.currentSong = playQueueSongs.children[this.currentIndex];
         let src = this.currentSong.filePath;
         audioPlayer.src = src;
         audioPlayer.currentTime = 0;
@@ -226,7 +226,7 @@ class PlaybackQueue {
                 element.style.background = '';
             }
         });
-        document.querySelectorAll('.playback-queue-song-line').forEach(element => {
+        document.querySelectorAll('.play-queue-song-line').forEach(element => {
             if (element.filePath == src) {
                 element.style.background = 'rgba(220, 220, 220, 0.5)';
             } else {
@@ -238,7 +238,7 @@ class PlaybackQueue {
     last() {
         audioPlayer.pause();
         if (this.currentIndex == 0)
-            this.currentIndex = playbackQueueSongs.children.length - 1;
+            this.currentIndex = playQueueSongs.children.length - 1;
         else
             this.currentIndex -= 1;
         this.load();
@@ -262,7 +262,7 @@ class PlaybackQueue {
 
     next() {
         audioPlayer.pause();
-        if (this.currentIndex == playbackQueueSongs.children.length - 1)
+        if (this.currentIndex == playQueueSongs.children.length - 1)
             this.currentIndex = 0;
         else
             this.currentIndex += 1;
@@ -277,7 +277,7 @@ class PlaybackQueue {
             case 0: {
                 if (!this.empty) {
                     this.songLines.forEach(line => {
-                        playbackQueueSongs.appendChild(line);
+                        playQueueSongs.appendChild(line);
                     })
                     for (let i = 1; i < songList.children.length; i++) {
                         if (songList.children[i].filePath == this.currentSong.filePath) {
@@ -312,11 +312,11 @@ class PlaybackQueue {
 
     shuffle() {
         if (!this.empty) {
-            playbackQueueSongs.appendChild(this.currentSong);
+            playQueueSongs.appendChild(this.currentSong);
             this.currentIndex = 0;
-            for (let i = 1; i < playbackQueueSongs.children.length; i++) {
-                const song = playbackQueueSongs.children[(getRandomInt(0, playbackQueueSongs.children.length - i - 1))];
-                playbackQueueSongs.appendChild(song);
+            for (let i = 1; i < playQueueSongs.children.length; i++) {
+                const song = playQueueSongs.children[(getRandomInt(0, playQueueSongs.children.length - i - 1))];
+                playQueueSongs.appendChild(song);
             }
         }
     }
@@ -332,7 +332,7 @@ class PlaybackQueue {
     }
 }
 
-export const playbackQueue = new PlaybackQueue();
+export const playQueue = new PlayQueue();
 
 function setCover(result) {
     document.getElementById('cover-art').src = result.coverDataUrl;

@@ -1,6 +1,6 @@
 import { audioPlayer } from "./shared.js";
 import { lyricsPlayer } from "./shared.js";
-import { playbackQueue } from "./shared.js";
+import { playQueue } from "./shared.js";
 import { formatTime } from "./shared.js";
 
 audioPlayer.volume = 0.3;
@@ -15,7 +15,7 @@ function mmssToSeconds(timeStr) {
 
 function updateProgressDisplay() {
     const currentTime = audioPlayer.currentTime;
-    const duration = mmssToSeconds(playbackQueue.currentSong.children[1].textContent);
+    const duration = mmssToSeconds(playQueue.currentSong.children[1].textContent);
     const currentTimeElements = document.querySelectorAll('.current-time');
     const totalTimeElements = document.querySelectorAll('.total-time');
     currentTimeElements.forEach(element => {
@@ -39,13 +39,13 @@ function updateProgressDisplay() {
 
 progressBarElements.forEach(element => {
     element.addEventListener('mouseenter', () => {
-        if (!playbackQueue.empty) element.classList.add('hover');
+        if (!playQueue.empty) element.classList.add('hover');
     });
 })
 
 progressBarElements.forEach(element => {
     element.addEventListener('mouseleave', () => {
-        if (!playbackQueue.empty) element.classList.remove('hover');
+        if (!playQueue.empty) element.classList.remove('hover');
     });
 })
 
@@ -58,9 +58,9 @@ progressBarElements.forEach(element => {
 progressBarElements.forEach(element => {
     element.addEventListener('mouseup', () => {
         isDraggingProcessBar = false;
-        if (!playbackQueue.empty) {
+        if (!playQueue.empty) {
             const seekTime =
-                (element.value / 100) * mmssToSeconds(playbackQueue.currentSong.children[1].textContent);
+                (element.value / 100) * mmssToSeconds(playQueue.currentSong.children[1].textContent);
             audioPlayer.currentTime = seekTime;
         }
     });
@@ -123,10 +123,10 @@ audioPlayer.addEventListener('timeupdate', updateProgressDisplay);
 
 audioPlayer.addEventListener('ended', () => {
     // repeat
-    if (playbackQueue.playMode == 1) {
-        playbackQueue.load();
-        playbackQueue.playOrPause();
+    if (playQueue.playMode == 1) {
+        playQueue.load();
+        playQueue.playOrPause();
         return;
     }
-    playbackQueue.next();
+    playQueue.next();
 })

@@ -1,6 +1,6 @@
-import { addSongToPlayQueue, updatePlaybackQueue } from "./playbackQueueControls.js";
+import { addSongToPlayQueue, updatePlayQueue } from "./playQueueControls.js";
 import { shared, songList, songMenu } from "./shared.js";
-import { playbackQueue } from "./shared.js";
+import { playQueue } from "./shared.js";
 
 const search = document.getElementById('search');
 export const searchList = songList.cloneNode(false);
@@ -271,16 +271,16 @@ export function dblclickSong(index) {
     if (shared.loadingPlaylist) {
         return;
     }
-    playbackQueue.currentIndex = index;
-    if (playbackQueue.empty || playlistOrderChanged || playbackQueue.playMode == 2) {
+    playQueue.currentIndex = index;
+    if (playQueue.empty || playlistOrderChanged || playQueue.playMode == 2) {
         playlistOrderChanged = false;
-        updatePlaybackQueue();
+        updatePlayQueue();
     }
-    playbackQueue.load();
-    playbackQueue.play = true;
-    playbackQueue.playOrPause();
-    if (playbackQueue.playMode == 2) {
-        playbackQueue.shuffle();
+    playQueue.load();
+    playQueue.play = true;
+    playQueue.playOrPause();
+    if (playQueue.playMode == 2) {
+        playQueue.shuffle();
     }
 }
 

@@ -1,4 +1,4 @@
- #playback-queue {
+ #play-queue {
      position: absolute;
      top: 100px;
      left: 100%;
@@ -13,11 +13,11 @@
      z-index: 30;
  }
 
- #playback-queue.display {
+ #play-queue.display {
      transform: translateX(-100%);
  }
 
- #playback-queue-label {
+ #play-queue-label {
      position: relative;
      height: 70px;
      display: flex;
@@ -25,7 +25,7 @@
      font-size: 30px;
  }
 
- #clear-playback-queue {
+ #clear-play-queue {
      position: absolute;
      top: 35px;
      left: 80%;
@@ -36,11 +36,11 @@
      border-radius: 5px;
  }
 
- #clear-playback-queue:hover {
+ #clear-play-queue:hover {
      background-color: rgba(0, 0, 0, 0.2);
  }
 
- #playback-queue-songs {
+ #play-queue-songs {
      position: absolute;
      top: 70px;
      overflow-y: auto;
@@ -65,7 +65,7 @@
      }
  }
 
- .playback-queue-song-line {
+ .play-queue-song-line {
      height: 60px;
      width: 100%;
      display: flex;
@@ -75,18 +75,18 @@
      border-radius: 10px;
  }
 
- .playback-queue-song-line:hover {
+ .play-queue-song-line:hover {
      background-color: rgba(0, 0, 0, 0.15);
  }
 
- .playback-queue-song-line-main {
+ .play-queue-song-line-main {
      flex: 0 0 80%;
      display: flex;
      align-items: center;
      position: relative;
  }
 
- .playback-queue-song-line-title {
+ .play-queue-song-line-title {
      position: absolute;
      top: 0;
      left: 55px;
@@ -97,7 +97,7 @@
      text-overflow: ellipsis;
  }
 
- .playback-queue-song-line-artist {
+ .play-queue-song-line-artist {
      position: absolute;
      top: 30px;
      left: 55px;
