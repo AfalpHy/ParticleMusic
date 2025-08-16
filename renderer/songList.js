@@ -283,8 +283,16 @@ export function dblclickSong(index) {
     }
 }
 
-function addSongToPlayQueueIfNeed(index) {
-    const selected = songList.children[index];
+export function songMemuEvent(element) {
+    let content = element.textContent;
+    songMenu.style.visibility = 'hidden';
+    if (element.id == 'song-menu') {
+        // if click blank area
+        songMenu.style.visibility = 'visible';
+        return;
+    }
+
+    const selected = songList.children[shared.clickSongIndex];
     let targetIndex = -1;
     for (let i = 0; i < playQueueSongs.children.length; i++) {
         if (selected.filePath == playQueueSongs.children[i].filePath) {
@@ -297,31 +305,18 @@ function addSongToPlayQueueIfNeed(index) {
         targetIndex = playQueueSongs.children.length - 1;
     }
 
-    return targetIndex;
-}
-
-export function songMemuEvent(element) {
-    let content = element.textContent;
-    songMenu.style.visibility = 'hidden';
-    if (element.id == 'song-menu') {
-        // if click blank area
-        songMenu.style.visibility = 'visible';
-        return;
-    }
-
-    const targetIndex = addSongToPlayQueueIfNeed(shared.clickSongIndex);
-
     if (content == 'add to play queue') {
         return;
     }
 
-    playQueue.playNext(targetIndex);
     if (content == 'play') {
-        playQueue.play = true;
-        if (targetIndex == playQueue.currentIndex) {
-            playQueue.playOrPause();
-        } else {
-            playQueue.next();
+        if (targetIndex != playQueue.currentIndex) {
+            playQueue.currentIndex = targetIndex;
+            playQueue.load();
         }
+        playQueue.play = true;
+        playQueue.playOrPause();
+    } else {
+        playQueue.insert2Next(targetIndex);
     }
 }

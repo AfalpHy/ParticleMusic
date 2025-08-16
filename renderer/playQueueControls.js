@@ -11,7 +11,6 @@ export function changePlayQueueDisplayStatus() {
 
 export function updatePlayQueue() {
     playQueueSongs.textContent = "";
-    playQueue.songLines = [];
     for (let i = 1; i < songList.children.length; i++) {
         addSongToPlayQueue(i);
     }
@@ -60,10 +59,13 @@ export function addSongToPlayQueue(index) {
 
         lineElement.append(columnElement);
     }
-    lineElement.index = playQueue.songLines.length;
+    if (playQueue.playMode == 2) {
+        lineElement.index = playQueue.songLines.length;
+        playQueue.songLines.push({ element: lineElement, valid: true });
+        console.log(playQueue.songLines[lineElement.index].element.filePath);
+    }
 
     playQueueSongs.append(lineElement);
-    playQueue.songLines.push({ element: lineElement, valid: true });
     playQueue.empty = false;
 }
 
@@ -101,7 +103,7 @@ export function playQueueSongMemuEvent(element) {
     if (content == 'remove') {
         playQueue.remove(shared.clickPlayQueueSongIndex);
     } else if (content == 'play next') {
-        playQueue.playNext(shared.clickPlayQueueSongIndex);
+        playQueue.insert2Next(shared.clickPlayQueueSongIndex);
     } else {
         // if click blank area
         playQueueSongMenu.style.visibility = 'visible';

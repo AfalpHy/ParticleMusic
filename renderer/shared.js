@@ -275,12 +275,13 @@ class PlayQueue {
         this.playMode %= 3;
         switch (this.playMode) {
             case 0: {
-                if (!this.empty) {
-                    this.songLines.forEach(line => {
-                        if (line.valid) {
-                            playQueueSongs.appendChild(line.element);
-                        }
-                    })
+                this.songLines.forEach(line => {
+                    if (line.valid) {
+                        playQueueSongs.appendChild(line.element);
+                    }
+                })
+                this.songLines = [];
+                if (this.currentSong) {
                     for (let i = 0; i < playQueueSongs.children.length; i++) {
                         if (playQueueSongs.children[i].filePath == this.currentSong.filePath) {
                             this.currentIndex = i;
@@ -314,9 +315,17 @@ class PlayQueue {
 
     shuffle() {
         if (!this.empty) {
-            playQueueSongs.appendChild(this.currentSong);
-            this.currentIndex = 0;
-            for (let i = 1; i < playQueueSongs.children.length; i++) {
+            for (let i = 0; i < playQueueSongs.children.length; i++) {
+                this.songLines.push({ element: playQueueSongs.children[i], valid: true });
+                playQueueSongs.children[i].index = i;
+            }
+            let i = 0;
+            if (this.currentSong) {
+                playQueueSongs.appendChild(this.currentSong);
+                this.currentIndex = 0;
+                i = 1;
+            }
+            for (; i < playQueueSongs.children.length; i++) {
                 const song = playQueueSongs.children[(getRandomInt(0, playQueueSongs.children.length - i - 1))];
                 playQueueSongs.appendChild(song);
             }
@@ -337,11 +346,13 @@ class PlayQueue {
         if (lt || eq) {
             playQueue.currentIndex -= 1;
         }
-        playQueue.songLines[selected.index].valid = false;
+        if (this.songLines.length) {
+            playQueue.songLines[selected.index].valid = false;
+        }
         selected.remove();
     }
 
-    playNext(index) {
+    insert2Next(index) {
         if (index == this.currentIndex) {
             return;
         }
