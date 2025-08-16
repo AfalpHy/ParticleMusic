@@ -1,3 +1,4 @@
+import { changePlayQueueDisplayStatus } from "./playQueueControls.js";
 import { shared, songList } from "./shared.js";
 import { formatTime } from "./shared.js";
 
@@ -37,6 +38,9 @@ export function displaySongList() {
         document.getElementById('cover').style.display = 'none';
         document.getElementById('song-list').style.display = 'block';
     }
+    if (shared.playQueueDisplay) {
+        changePlayQueueDisplayStatus();
+    }
 }
 
 export function displayCover() {
@@ -45,4 +49,7 @@ export function displayCover() {
     document.getElementById('search').dispatchEvent(new Event('input'));
     document.getElementById('cover').style.display = 'block';
     document.getElementById('song-list').style.display = 'none';
+    if (shared.playQueueDisplay) {
+        changePlayQueueDisplayStatus();
+    }
 }
