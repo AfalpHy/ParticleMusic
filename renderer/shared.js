@@ -344,7 +344,9 @@ class PlayQueue {
             this.next();
         }
         if (lt || eq) {
-            playQueue.currentIndex -= 1;
+            if (this.currentIndex > 0) {
+                playQueue.currentIndex -= 1;
+            }
         }
         if (this.songLines.length) {
             playQueue.songLines[selected.index].valid = false;
