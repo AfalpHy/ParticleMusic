@@ -12,13 +12,19 @@ import { displayCover, displaySongList } from './sidebar.js'
 import { switchMute } from './musicControls.js'
 import { dblclickSong, enableResizer1, enableResizer2, searchSongList, songMemuEvent, sortSongByAlbum, sortSongByArtist, sortSongByDuration, sortSongByTitle } from './songList.js'
 
+let searchTyping = false;
 document.addEventListener('click', (e) => {
     const className = e.target.className;
     const id = e.target.id;
     // console.log(className, id);
 
-    // remove focus
-    e.target.blur();
+    if (id == 'search') {
+        searchTyping = true;
+    } else {
+        searchTyping = false;
+        // remove focus
+        e.target.blur();
+    }
 
     if (songMenu.contains(e.target)) {
         songMemuEvent(e.target);
@@ -180,6 +186,9 @@ document.addEventListener('mousedown', (e) => {
 
 document.addEventListener('keydown', function (event) {
     if (event.key === ' ') {
+        if (searchTyping) {
+            return;
+        }
         event.preventDefault();
         if (player.currentSong) {
             player.play = !player.play;
