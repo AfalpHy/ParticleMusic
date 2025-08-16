@@ -1,13 +1,14 @@
-import { audioPlayer, lyricsPlayer, playQueue, playQueueSongs, playQueueSongMenu, shared, songList } from "./shared.js";
+import { playQueue, playQueueSongs, playQueueSongMenu, shared, songList } from "./shared.js";
 import { searchList } from "./songList.js";
 
-export function changePlayQueueDisplayStatus() {
-    shared.playQueueDisplay = !shared.playQueueDisplay;
-    if (shared.playQueueDisplay) {
-        document.getElementById('play-queue').classList.add('display');
-    } else {
-        document.getElementById('play-queue').classList.remove('display');
-    }
+export function displayPlayQueue() {
+    shared.playQueueDisplay = true;
+    document.getElementById('play-queue').classList.add('display');
+}
+
+export function hiddenPlayQueue() {
+    shared.playQueueDisplay = false;
+    document.getElementById('play-queue').classList.remove('display');
 }
 
 export function updatePlayQueue(isSongList) {

@@ -1,12 +1,9 @@
-import { changePlayQueueDisplayStatus } from './playQueueControls.js';
-import { lyricsPlane } from './shared.js';
+import { lyricPlaneCustomTitleBar, lyricsPlane, viceMusicControls } from './shared.js';
 import { shared } from './shared.js';
 
 const pullBtn = document.getElementById('pull');
 const fullScreenBtn = document.getElementById('full-screen');
 const windowControls = document.querySelectorAll('.window-controls')[1];
-const customTitleBar = document.querySelectorAll('.custom-title-bar')[1];
-const viceMusicControls = document.getElementById('vice-music-controls');
 
 let timeout;
 lyricsPlane.addEventListener('mousemove', () => {
@@ -16,15 +13,16 @@ lyricsPlane.addEventListener('mousemove', () => {
 export function setControlsHiddenTimeout() {
     if (shared.lyricsPlaneActive) {
         clearTimeout(timeout);
-        customTitleBar.classList.remove('hidden');
+        lyricPlaneCustomTitleBar.classList.remove('hidden');
         viceMusicControls.classList.remove('hidden');
 
         timeout = setTimeout(() => {
-            customTitleBar.classList.add('hidden');
+            lyricPlaneCustomTitleBar.classList.add('hidden');
             viceMusicControls.classList.add('hidden');
         }, 5000);
     }
 }
+
 export function pullLyricsPlane() {
     if (fullScreen) {
         return;
@@ -34,13 +32,10 @@ export function pullLyricsPlane() {
 
     // prevent right-click events from accidentally triggering bottom drag-and-drop
     setTimeout(() => {
-        customTitleBar.style.visibility = 'hidden';
+        lyricPlaneCustomTitleBar.style.visibility = 'hidden';
     }, 500)
 
     clearTimeout(timeout);
-    if (shared.playQueueDisplay) {
-        changePlayQueueDisplayStatus();
-    }
 }
 
 let fullScreen = false;
@@ -57,9 +52,6 @@ export function changeFullScreenMode() {
         windowControls.style.visibility = 'visible';
         window.electronAPI.leaveFullScreen();
     }
-    if (shared.playQueueDisplay) {
-        changePlayQueueDisplayStatus();
-    }
 }
 
 export function activeLyricsPlane() {
@@ -68,11 +60,8 @@ export function activeLyricsPlane() {
         lyricsPlane.classList.add('display');
 
         // prevent right-click events from accidentally triggering bottom drag-and-drop
-        customTitleBar.style.visibility = 'visible';
+        lyricPlaneCustomTitleBar.style.visibility = 'visible';
 
         setControlsHiddenTimeout();
-        if (shared.playQueueDisplay) {
-            changePlayQueueDisplayStatus();
-        }
     }
 }

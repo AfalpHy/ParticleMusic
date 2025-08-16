@@ -5,9 +5,9 @@ import './sidebar.js'
 import './musicControls.js'
 import './playQueueControls.js'
 
-import { lyricsPlane, playQueue, playQueueSongs, playQueueSongMenu, shared, songList, songMenu } from './shared.js'
+import { lyricsPlane, playQueue, playQueueSongs, playQueueSongMenu, shared, songList, songMenu, sideBar, viceMusicControls, lyricPlaneCustomTitleBar } from './shared.js'
 import { activeLyricsPlane, changeFullScreenMode, pullLyricsPlane, setControlsHiddenTimeout } from './lyricPlaneControls.js'
-import { changePlayQueueDisplayStatus, playQueueEvent, playQueueSongMemuEvent } from './playQueueControls.js'
+import { displayPlayQueue, hiddenPlayQueue, playQueueEvent, playQueueSongMemuEvent } from './playQueueControls.js'
 import { displayCover, displaySongList } from './sidebar.js'
 import { switchMute } from './musicControls.js'
 import { dblclickSong, enableResizer1, enableResizer2, searchList, songMemuEvent, sortSongByAlbum, sortSongByArtist, sortSongByDuration, sortSongByTitle } from './songList.js'
@@ -22,7 +22,9 @@ document.addEventListener('click', (e) => {
     if (songMenu.contains(e.target)) {
         songMemuEvent(e.target);
         return;
-    } if (playQueueSongMenu.contains(e.target)) {
+    }
+
+    if (playQueueSongMenu.contains(e.target)) {
         playQueueSongMemuEvent(e.target);
         return;
     }
@@ -34,6 +36,19 @@ document.addEventListener('click', (e) => {
 
     if (lyricsPlane.contains(e.target)) {
         setControlsHiddenTimeout();
+        if (shared.playQueueDisplay) {
+            if (!viceMusicControls.contains(e.target) && !lyricPlaneCustomTitleBar.contains(e.target)) {
+                hiddenPlayQueue();
+                return;
+            }
+        }
+    }
+
+    if (shared.playQueueDisplay) {
+        if (sideBar.contains(e.target) || id == 'music-controls' || id == 'pull' || id == 'full-screen' || id == 'vice-music-controls') {
+            hiddenPlayQueue();
+            return;
+        }
     }
 
     if (id == 'title') {
@@ -76,7 +91,11 @@ document.addEventListener('click', (e) => {
     } else if (className == 'play-mode-btn') {
         playQueue.switchPlayMode();
     } else if (className == 'play-queue-btn') {
-        changePlayQueueDisplayStatus();
+        if (shared.playQueueDisplay) {
+            hiddenPlayQueue();
+        } else {
+            displayPlayQueue();
+        }
     } else if (className == 'volume-icon') {
         switchMute();
     }

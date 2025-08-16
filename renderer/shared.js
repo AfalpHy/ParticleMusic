@@ -1,9 +1,12 @@
 export const audioPlayer = document.getElementById('audio-player');
+export const sideBar = document.getElementById('sidebar');
 export const lyricsPlane = document.getElementById('lyrics-plane');
 export const songList = document.getElementById('song-list');
 export const playQueueSongs = document.getElementById('play-queue-songs');
 export const songMenu = document.getElementById('song-menu');
 export const playQueueSongMenu = document.getElementById('play-queue-song-menu');
+export const viceMusicControls = document.getElementById('vice-music-controls');
+export const lyricPlaneCustomTitleBar = document.getElementById('lyrics-plane-custom-title-bar');
 
 const lyricsContainer = document.getElementById('lyrics-container');
 
