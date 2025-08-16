@@ -6,6 +6,7 @@
      display: flex;
      flex-direction: column;
      align-items: center;
+     user-select: none;
      gap: 20px;
  }
 
@@ -16,7 +17,6 @@
      font-family: Arial, "宋体";
      font-size: 36;
      font-weight: bold;
-     user-select: none;
      cursor: pointer;
  }
 

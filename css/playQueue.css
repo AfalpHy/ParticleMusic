@@ -22,6 +22,7 @@
      height: 70px;
      display: flex;
      justify-content: center;
+     user-select: none;
      font-size: 30px;
  }
 
