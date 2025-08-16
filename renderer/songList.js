@@ -267,11 +267,11 @@ export function fillSongMetadata(message, coverDataUrl, filePath) {
     lineElement.style.visibility = 'visible';
 }
 
-export function dblclickSong(index) {
+export function dblclickSong(index, isSongList) {
     if (shared.loadingPlaylist) {
         return;
     }
-    updatePlayQueue();
+    updatePlayQueue(isSongList);
 
     playQueue.currentIndex = index;
     playQueue.load();

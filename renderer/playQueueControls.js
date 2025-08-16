@@ -1,4 +1,5 @@
 import { audioPlayer, lyricsPlayer, playQueue, playQueueSongs, playQueueSongMenu, shared, songList } from "./shared.js";
+import { searchList } from "./songList.js";
 
 export function changePlayQueueDisplayStatus() {
     shared.playQueueDisplay = !shared.playQueueDisplay;
@@ -9,10 +10,16 @@ export function changePlayQueueDisplayStatus() {
     }
 }
 
-export function updatePlayQueue() {
+export function updatePlayQueue(isSongList) {
     playQueueSongs.textContent = "";
-    for (let i = 1; i < songList.children.length; i++) {
-        addSongToPlayQueue(i);
+    if (isSongList) {
+        for (let i = 1; i < songList.children.length; i++) {
+            addSongToPlayQueue(i);
+        }
+    } else {
+        for (let i = 1; i < searchList.children.length; i++) {
+            addSongToPlayQueue(searchList.children[i].originIndex);
+        }
     }
 }
 

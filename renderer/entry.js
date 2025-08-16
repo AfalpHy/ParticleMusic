@@ -88,13 +88,13 @@ document.addEventListener('dblclick', (e) => {
         while (tmp.className != 'song-line') {
             tmp = tmp.parentNode;
         }
-        dblclickSong(tmp.originIndex - 1);
+        dblclickSong(tmp.children[0].textContent - 1, false);
     } else if (songList.contains(e.target) && !songList.children[0].contains(e.target)) {
         let tmp = e.target;
         while (tmp.className != 'song-line') {
             tmp = tmp.parentNode;
         }
-        dblclickSong(tmp.children[0].textContent - 1);
+        dblclickSong(tmp.children[0].textContent - 1, true);
     }
 })
 
