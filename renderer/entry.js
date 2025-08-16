@@ -5,14 +5,12 @@ import './sidebar.js'
 import './musicControls.js'
 import './playQueueControls.js'
 
-import { lyricsPlane, playQueue, playQueueSongs, playQueueSongMenu, shared, songList, songMenu, sideBar, viceMusicControls, lyricPlaneCustomTitleBar } from './shared.js'
+import { lyricsPlane, player, playQueue, playQueueSongMenu, shared, songList, songMenu, sideBar, viceMusicControls, lyricPlaneCustomTitleBar, playQueuePlane } from './shared.js'
 import { activeLyricsPlane, changeFullScreenMode, pullLyricsPlane, setControlsHiddenTimeout } from './lyricPlaneControls.js'
-import { displayPlayQueue, hiddenPlayQueue, playQueueEvent, playQueueSongMemuEvent } from './playQueueControls.js'
+import { displayPlayQueuePlane, hiddenPlayQueuePlane, playQueueEvent, playQueueSongMemuEvent } from './playQueueControls.js'
 import { displayCover, displaySongList } from './sidebar.js'
 import { switchMute } from './musicControls.js'
-import { dblclickSong, enableResizer1, enableResizer2, searchList, songMemuEvent, sortSongByAlbum, sortSongByArtist, sortSongByDuration, sortSongByTitle } from './songList.js'
-
-const playQueuePlane = document.getElementById('play-queue');
+import { dblclickSong, enableResizer1, enableResizer2, searchSongList, songMemuEvent, sortSongByAlbum, sortSongByArtist, sortSongByDuration, sortSongByTitle } from './songList.js'
 
 document.addEventListener('click', (e) => {
     const className = e.target.className;
@@ -41,7 +39,7 @@ document.addEventListener('click', (e) => {
         setControlsHiddenTimeout();
         if (shared.playQueueDisplay) {
             if (!viceMusicControls.contains(e.target) && !lyricPlaneCustomTitleBar.contains(e.target)) {
-                hiddenPlayQueue();
+                hiddenPlayQueuePlane();
                 return;
             }
         }
@@ -49,7 +47,7 @@ document.addEventListener('click', (e) => {
 
     if (shared.playQueueDisplay) {
         if (sideBar.contains(e.target) || id == 'music-controls' || id == 'pull' || id == 'full-screen' || id == 'vice-music-controls') {
-            hiddenPlayQueue();
+            hiddenPlayQueuePlane();
             return;
         }
     }
@@ -79,33 +77,33 @@ document.addEventListener('click', (e) => {
     } else if (id == 'music-controls') {
         activeLyricsPlane();
     } else if (className == 'last-btn') {
-        if (!playQueue.empty) {
-            playQueue.last();
+        if (!player.empty) {
+            player.last();
         }
     } else if (className == 'play-pause-btn') {
-        if (playQueue.currentSong) {
-            playQueue.play = !playQueue.play;
-            playQueue.playOrPause();
+        if (player.currentSong) {
+            player.play = !player.play;
+            player.playOrPause();
         }
     } else if (className == 'next-btn') {
-        if (!playQueue.empty) {
-            playQueue.next();
+        if (!player.empty) {
+            player.next();
         }
     } else if (className == 'play-mode-btn') {
-        playQueue.switchPlayMode();
+        player.switchPlayMode();
     } else if (className == 'play-queue-btn') {
         if (shared.playQueueDisplay) {
-            hiddenPlayQueue();
+            hiddenPlayQueuePlane();
         } else {
-            displayPlayQueue();
+            displayPlayQueuePlane();
         }
-    } else if (className == 'volume-icon') {
+    } else if (className == 'speaker') {
         switchMute();
     }
 })
 
 document.addEventListener('dblclick', (e) => {
-    if (searchList.contains(e.target) && !searchList.children[0].contains(e.target)) {
+    if (searchSongList.contains(e.target) && !searchSongList.children[0].contains(e.target)) {
         let tmp = e.target;
         while (tmp.className != 'song-line') {
             tmp = tmp.parentNode;
@@ -133,9 +131,9 @@ document.addEventListener('mousedown', (e) => {
     }
 
     if (e.button == 2) {
-        if (playQueueSongs.contains(e.target)) {
+        if (playQueue.contains(e.target)) {
             let tmp = e.target;
-            while (tmp && tmp.className != 'play-queue-song-line') {
+            while (tmp && tmp.className != 'play-queue-line') {
                 tmp = tmp.parentNode;
             }
             if (!tmp) {
@@ -151,7 +149,7 @@ document.addEventListener('mousedown', (e) => {
             playQueueSongMenu.style.top = e.pageY + 'px';
         }
 
-        if (searchList.contains(e.target) && !searchList.children[0].contains(e.target)) {
+        if (searchSongList.contains(e.target) && !searchSongList.children[0].contains(e.target)) {
             let tmp = e.target;
             while (tmp.className != 'song-line') {
                 tmp = tmp.parentNode;
@@ -183,9 +181,9 @@ document.addEventListener('mousedown', (e) => {
 document.addEventListener('keydown', function (event) {
     if (event.key === ' ') {
         event.preventDefault();
-        if (playQueue.currentSong) {
-            playQueue.play = !playQueue.play;
-            playQueue.playOrPause();
+        if (player.currentSong) {
+            player.play = !player.play;
+            player.playOrPause();
         }
     }
 });

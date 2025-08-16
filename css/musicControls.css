@@ -216,7 +216,7 @@
      align-items: center;
  }
 
- .volume-icon {
+ .speaker {
      height: 30px;
      width: 30px;
      background-image: url('../pictures/speaker.png');
@@ -228,7 +228,7 @@
      border-radius: 5px;
  }
 
- .volume-icon:hover {
+ .speaker:hover {
      background-color: rgba(0, 0, 0, 0.05);
  }
 

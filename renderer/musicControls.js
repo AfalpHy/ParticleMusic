@@ -1,6 +1,6 @@
 import { audioPlayer } from "./shared.js";
 import { lyricsPlayer } from "./shared.js";
-import { playQueue } from "./shared.js";
+import { player } from "./shared.js";
 import { formatTime } from "./shared.js";
 
 audioPlayer.volume = 0.3;
@@ -15,7 +15,7 @@ function mmssToSeconds(timeStr) {
 
 function updateProgressDisplay() {
     const currentTime = audioPlayer.currentTime;
-    const duration = playQueue.currentSong ? mmssToSeconds(playQueue.currentSong.children[1].textContent) : 0;
+    const duration = player.currentSong ? mmssToSeconds(player.currentSong.children[1].textContent) : 0;
     const currentTimeElements = document.querySelectorAll('.current-time');
     const totalTimeElements = document.querySelectorAll('.total-time');
     currentTimeElements.forEach(element => {
@@ -39,13 +39,13 @@ function updateProgressDisplay() {
 
 progressBarElements.forEach(element => {
     element.addEventListener('mouseenter', () => {
-        if (!playQueue.empty) element.classList.add('hover');
+        if (!player.empty) element.classList.add('hover');
     });
 })
 
 progressBarElements.forEach(element => {
     element.addEventListener('mouseleave', () => {
-        if (!playQueue.empty) element.classList.remove('hover');
+        if (!player.empty) element.classList.remove('hover');
     });
 })
 
@@ -58,9 +58,9 @@ progressBarElements.forEach(element => {
 progressBarElements.forEach(element => {
     element.addEventListener('mouseup', () => {
         isDraggingProcessBar = false;
-        if (!playQueue.empty) {
+        if (!player.empty) {
             const seekTime =
-                (element.value / 100) * mmssToSeconds(playQueue.currentSong.children[1].textContent);
+                (element.value / 100) * mmssToSeconds(player.currentSong.children[1].textContent);
             audioPlayer.currentTime = seekTime;
         }
     });
@@ -88,11 +88,11 @@ volumeSlider.forEach(element => {
 
 function adjustVolume(value) {
     if (value) {
-        document.querySelectorAll('.volume-icon').forEach(element => {
+        document.querySelectorAll('.speaker').forEach(element => {
             element.style.backgroundImage = 'url(\'pictures/speaker.png\')';
         });
     } else {
-        document.querySelectorAll('.volume-icon').forEach(element => {
+        document.querySelectorAll('.speaker').forEach(element => {
             element.style.backgroundImage = 'url(\'pictures/speaker-mute.png\')';
         });
     }
@@ -123,10 +123,10 @@ audioPlayer.addEventListener('timeupdate', updateProgressDisplay);
 
 audioPlayer.addEventListener('ended', () => {
     // repeat
-    if (playQueue.playMode == 1) {
+    if (player.playMode == 1) {
         audioPlayer.currentTime = 0;
         audioPlayer.play();
         return;
     }
-    playQueue.next();
+    player.next();
 })

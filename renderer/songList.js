@@ -1,21 +1,21 @@
 import { addSongToPlayQueue, updatePlayQueue } from "./playQueueControls.js";
-import { playQueueSongs, shared, songList, songMenu } from "./shared.js";
-import { playQueue } from "./shared.js";
+import { playQueue, shared, songList, songMenu } from "./shared.js";
+import { player } from "./shared.js";
 
 const search = document.getElementById('search');
-export const searchList = songList.cloneNode(false);
+export const searchSongList = songList.cloneNode(false);
 
-searchList.appendChild(songList.children[0].cloneNode(true));
-songList.parentNode.append(searchList);
+searchSongList.appendChild(songList.children[0].cloneNode(true));
+songList.parentNode.append(searchSongList);
 
 search.addEventListener('input', (event) => {
-    for (let i = searchList.children.length - 1; i > 0; i--) {
-        searchList.removeChild(searchList.children[i]);
+    for (let i = searchSongList.children.length - 1; i > 0; i--) {
+        searchSongList.removeChild(searchSongList.children[i]);
     }
     document.getElementById('cover').style.display = 'none';
     if (event.target.value == "") {
         songList.style.display = "block";
-        searchList.style.display = "none";
+        searchSongList.style.display = "none";
         return;
     }
     let index = 1;
@@ -36,13 +36,13 @@ search.addEventListener('input', (event) => {
                 lineClone.children[0].addEventListener('mouseleave', () => {
                     lineClone.children[0].textContent = currentIndex;
                 })
-                searchList.appendChild(lineClone);
+                searchSongList.appendChild(lineClone);
                 break;
             }
         }
     }
     songList.style.display = "none";
-    searchList.style.display = "block";
+    searchSongList.style.display = "block";
 
     // repaint immediately to avoid shadows
     songList.style.transform = 'translateZ(0)';
@@ -62,8 +62,8 @@ export function enableResizer1() {
         songTtile = songList.children[0].children[1];
         artist = songList.children[0].children[2];
     } else {
-        songTtile = searchList.children[0].children[1];
-        artist = searchList.children[0].children[2];
+        songTtile = searchSongList.children[0].children[1];
+        artist = searchSongList.children[0].children[2];
     }
     totalWidth = songTtile.offsetWidth + artist.offsetWidth;
 }
@@ -74,8 +74,8 @@ export function enableResizer2() {
         artist = songList.children[0].children[2];
         album = songList.children[0].children[3];
     } else {
-        artist = searchList.children[0].children[2];
-        album = searchList.children[0].children[3];
+        artist = searchSongList.children[0].children[2];
+        album = searchSongList.children[0].children[3];
     }
     totalWidth = artist.offsetWidth + album.offsetWidth;
 }
@@ -273,13 +273,13 @@ export function dblclickSong(index, isSongList) {
     }
     updatePlayQueue(isSongList);
 
-    playQueue.currentIndex = index;
-    playQueue.load();
-    playQueue.play = true;
-    playQueue.playOrPause();
+    player.currentIndex = index;
+    player.load();
+    player.play = true;
+    player.playOrPause();
 
-    if (playQueue.playMode == 2) {
-        playQueue.shuffle();
+    if (player.playMode == 2) {
+        player.shuffle();
     }
 }
 
@@ -294,24 +294,24 @@ export function songMemuEvent(element) {
 
     const selected = songList.children[shared.clickSongIndex];
     let targetIndex = -1;
-    for (let i = 0; i < playQueueSongs.children.length; i++) {
-        if (selected.filePath == playQueueSongs.children[i].filePath) {
+    for (let i = 0; i < playQueue.children.length; i++) {
+        if (selected.filePath == playQueue.children[i].filePath) {
             targetIndex = i;
             break;
         }
     }
     if (targetIndex == -1) {
         addSongToPlayQueue(shared.clickSongIndex);
-        targetIndex = playQueueSongs.children.length - 1;
+        targetIndex = playQueue.children.length - 1;
     }
 
     if (content == 'add to play queue') {
         return;
     }
-    playQueue.insert2Next(targetIndex);
+    player.insert2Next(targetIndex);
 
     if (content == 'play') {
-        playQueue.play = true;
-        playQueue.next();
+        player.play = true;
+        player.next();
     }
 }

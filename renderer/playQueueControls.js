@@ -1,25 +1,25 @@
-import { playQueue, playQueueSongs, playQueueSongMenu, shared, songList } from "./shared.js";
-import { searchList } from "./songList.js";
+import { player, playQueue, playQueuePlane, playQueueSongMenu, shared, songList } from "./shared.js";
+import { searchSongList } from "./songList.js";
 
-export function displayPlayQueue() {
+export function displayPlayQueuePlane() {
     shared.playQueueDisplay = true;
-    document.getElementById('play-queue').classList.add('display');
+    playQueuePlane.classList.add('display');
 }
 
-export function hiddenPlayQueue() {
+export function hiddenPlayQueuePlane() {
     shared.playQueueDisplay = false;
-    document.getElementById('play-queue').classList.remove('display');
+    playQueuePlane.classList.remove('display');
 }
 
 export function updatePlayQueue(isSongList) {
-    playQueueSongs.textContent = "";
+    playQueue.textContent = "";
     if (isSongList) {
         for (let i = 1; i < songList.children.length; i++) {
             addSongToPlayQueue(i);
         }
     } else {
-        for (let i = 1; i < searchList.children.length; i++) {
-            addSongToPlayQueue(searchList.children[i].originIndex);
+        for (let i = 1; i < searchSongList.children.length; i++) {
+            addSongToPlayQueue(searchSongList.children[i].originIndex);
         }
     }
 }
@@ -27,11 +27,11 @@ export function updatePlayQueue(isSongList) {
 export function addSongToPlayQueue(index) {
     const element = songList.children[index];
     const lineElement = document.createElement('div');
-    lineElement.className = 'play-queue-song-line';
+    lineElement.className = 'play-queue-line';
     lineElement.filePath = element.filePath;
     {
         const columnElement = document.createElement('div');
-        columnElement.className = 'play-queue-song-line-main';
+        columnElement.className = 'play-queue-line-main';
 
         const columnElementImg = document.createElement('img');
         columnElementImg.style.height = "50px";
@@ -40,11 +40,11 @@ export function addSongToPlayQueue(index) {
         columnElementImg.src = element.children[1].children[0].src;
 
         const columnElementText1 = document.createElement('div');
-        columnElementText1.className = 'play-queue-song-line-title'
+        columnElementText1.className = 'play-queue-line-title'
         columnElementText1.textContent = element.children[1].textContent;
 
         const columnElementText2 = document.createElement('div');
-        columnElementText2.className = 'play-queue-song-line-artist'
+        columnElementText2.className = 'play-queue-line-artist'
         columnElementText2.textContent = element.children[2].textContent;
 
         columnElement.append(columnElementImg);
@@ -67,13 +67,13 @@ export function addSongToPlayQueue(index) {
 
         lineElement.append(columnElement);
     }
-    if (playQueue.playMode == 2) {
-        lineElement.index = playQueue.songLines.length;
-        playQueue.songLines.push({ element: lineElement, valid: true });
+    if (player.playMode == 2) {
+        lineElement.index = player.songLines.length;
+        player.songLines.push({ element: lineElement, valid: true });
     }
 
-    playQueueSongs.append(lineElement);
-    playQueue.empty = false;
+    playQueue.append(lineElement);
+    player.empty = false;
 }
 
 export function playQueueEvent(element) {
@@ -83,9 +83,9 @@ export function playQueueEvent(element) {
         return;
     }
     if (id == 'clear-play-queue') {
-        playQueue.clear();
+        player.clear();
     } else {
-        while (className != 'play-queue-song-line') {
+        while (className != 'play-queue-line') {
             element = element.parentNode;
             if (element) {
                 className = element.className;
@@ -97,10 +97,10 @@ export function playQueueEvent(element) {
         while ((element = element.previousElementSibling) != null) {
             index++;
         }
-        playQueue.currentIndex = index;
-        playQueue.load();
-        playQueue.play = true;
-        playQueue.playOrPause();
+        player.currentIndex = index;
+        player.load();
+        player.play = true;
+        player.playOrPause();
     }
 }
 
@@ -108,9 +108,9 @@ export function playQueueSongMemuEvent(element) {
     const content = element.textContent;
     playQueueSongMenu.style.visibility = 'hidden';
     if (content == 'remove') {
-        playQueue.remove(shared.clickPlayQueueSongIndex);
+        player.remove(shared.clickPlayQueueSongIndex);
     } else if (content == 'play next') {
-        playQueue.insert2Next(shared.clickPlayQueueSongIndex);
+        player.insert2Next(shared.clickPlayQueueSongIndex);
     } else {
         // if click blank area
         playQueueSongMenu.style.visibility = 'visible';
