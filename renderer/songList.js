@@ -308,15 +308,10 @@ export function songMemuEvent(element) {
     if (content == 'add to play queue') {
         return;
     }
+    playQueue.insert2Next(targetIndex);
 
     if (content == 'play') {
-        if (targetIndex != playQueue.currentIndex) {
-            playQueue.currentIndex = targetIndex;
-            playQueue.load();
-        }
         playQueue.play = true;
-        playQueue.playOrPause();
-    } else {
-        playQueue.insert2Next(targetIndex);
+        playQueue.next();
     }
 }
