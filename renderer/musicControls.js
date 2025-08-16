@@ -15,7 +15,7 @@ function mmssToSeconds(timeStr) {
 
 function updateProgressDisplay() {
     const currentTime = audioPlayer.currentTime;
-    const duration = mmssToSeconds(playQueue.currentSong.children[1].textContent);
+    const duration = playQueue.currentSong ? mmssToSeconds(playQueue.currentSong.children[1].textContent) : 0;
     const currentTimeElements = document.querySelectorAll('.current-time');
     const totalTimeElements = document.querySelectorAll('.total-time');
     currentTimeElements.forEach(element => {
@@ -26,7 +26,7 @@ function updateProgressDisplay() {
         element.textContent = `${formatTime(duration)}`;
     });
 
-    const progress = (currentTime / duration) * 100;
+    const progress = duration ? (currentTime / duration) * 100 : 0;
     if (!isDraggingProcessBar) {
         progressBarElements.forEach(element => {
             element.style.background = `linear-gradient(to right, black 0%, black ${progress}%, #d3d3d3 ${progress}%, #d3d3d3 100%)`;

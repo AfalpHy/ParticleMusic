@@ -1,5 +1,5 @@
 import { addSongToPlayQueue, updatePlayQueue } from "./playQueueControls.js";
-import { shared, songList, songMenu } from "./shared.js";
+import { playQueueSongs, shared, songList, songMenu } from "./shared.js";
 import { playQueue } from "./shared.js";
 
 const search = document.getElementById('search');
@@ -271,29 +271,57 @@ export function dblclickSong(index) {
     if (shared.loadingPlaylist) {
         return;
     }
+    updatePlayQueue();
+
     playQueue.currentIndex = index;
-    if (playQueue.empty || playlistOrderChanged || playQueue.playMode == 2) {
-        playlistOrderChanged = false;
-        updatePlayQueue();
-    }
     playQueue.load();
     playQueue.play = true;
     playQueue.playOrPause();
+
     if (playQueue.playMode == 2) {
         playQueue.shuffle();
     }
 }
 
+function addSongToPlayQueueIfNeed(index) {
+    const selected = songList.children[index];
+    let targetIndex = -1;
+    for (let i = 0; i < playQueueSongs.children.length; i++) {
+        if (selected.filePath == playQueueSongs.children[i].filePath) {
+            targetIndex = i;
+            break;
+        }
+    }
+    if (targetIndex == -1) {
+        addSongToPlayQueue(shared.clickSongIndex);
+        targetIndex = playQueueSongs.children.length - 1;
+    }
+
+    return targetIndex;
+}
+
 export function songMemuEvent(element) {
     let content = element.textContent;
     songMenu.style.visibility = 'hidden';
-    if (content == 'play') {
-    } else if (content == 'play next') {
-
-    } else if (content == 'add to play queue') {
-        addSongToPlayQueue(shared.clickSongIndex);
-    } else {
+    if (element.id == 'song-menu') {
         // if click blank area
         songMenu.style.visibility = 'visible';
+        return;
+    }
+
+    const targetIndex = addSongToPlayQueueIfNeed(shared.clickSongIndex);
+
+    if (content == 'add to play queue') {
+        return;
+    }
+
+    playQueue.playNext(targetIndex);
+    if (content == 'play') {
+        playQueue.play = true;
+        if (targetIndex == playQueue.currentIndex) {
+            playQueue.playOrPause();
+        } else {
+            playQueue.next();
+        }
     }
 }

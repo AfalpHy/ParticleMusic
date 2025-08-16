@@ -182,8 +182,8 @@ class PlayQueue {
     constructor() {
         this.play = false;
         this.empty = true;
-        this.currentSong;
-        this.currentIndex = 0;
+        this.currentSong = null;
+        this.currentIndex = -1;
         this.playMode = 0;
         this.songLines = [];
     }
@@ -277,11 +277,13 @@ class PlayQueue {
             case 0: {
                 if (!this.empty) {
                     this.songLines.forEach(line => {
-                        playQueueSongs.appendChild(line);
+                        if (line.valid) {
+                            playQueueSongs.appendChild(line.element);
+                        }
                     })
-                    for (let i = 1; i < songList.children.length; i++) {
-                        if (songList.children[i].filePath == this.currentSong.filePath) {
-                            this.currentIndex = i - 1;
+                    for (let i = 0; i < playQueueSongs.children.length; i++) {
+                        if (playQueueSongs.children[i].filePath == this.currentSong.filePath) {
+                            this.currentIndex = i;
                             break
                         }
                     }
@@ -321,14 +323,65 @@ class PlayQueue {
         }
     }
 
+    remove(index) {
+        const lt = index < this.currentIndex;
+        const eq = index == this.currentIndex
+        const selected = playQueueSongs.children[index];
+        if (playQueueSongs.children.length == 1) {
+            this.clear();
+            return;
+        }
+        if (eq) {
+            this.next();
+        }
+        if (lt || eq) {
+            playQueue.currentIndex -= 1;
+        }
+        playQueue.songLines[selected.index].valid = false;
+        selected.remove();
+    }
+
+    playNext(index) {
+        if (index == this.currentIndex) {
+            return;
+        }
+
+        const selected = playQueueSongs.children[index];
+        playQueueSongs.appendChild(selected);
+
+        let tmpIndex;
+        if (index < this.currentIndex) {
+            tmpIndex = playQueue.currentIndex;
+            playQueue.currentIndex -= 1;
+        } else {
+            tmpIndex = playQueue.currentIndex + 1;
+        }
+        for (let i = tmpIndex; i < playQueueSongs.children.length - 1; i++) {
+            playQueueSongs.appendChild(playQueueSongs.children[tmpIndex]);
+        }
+    }
+
     clear() {
+        audioPlayer.pause();
+        audioPlayer.currentTime = 0;
         this.play = false;
         this.empty = true;
-        this.currentIndex = 0;
+        this.currentSong = null;
+        this.currentIndex = -1;
+        this.songLines = [];
+
+        lyricsPlayer.clear();
+        playQueueSongs.textContent = "";
+
+        document.querySelectorAll('.play-pause-btn').forEach(element => {
+            element.style.backgroundImage = 'url(\'pictures/play.png\')';
+        });
 
         setCover(defaultCover);
         document.getElementById('left-bottom-title').textContent = 'Title';
-        document.getElementById('left-bottom-artist').textContent = "Artist";
+        document.getElementById('left-bottom-artist').textContent = 'Artist';
+        document.getElementById('lyrics-plane-title').textContent = 'Title';
+        document.getElementById('lyrics-plane-artist').textContent = 'Artist';
     }
 }
 

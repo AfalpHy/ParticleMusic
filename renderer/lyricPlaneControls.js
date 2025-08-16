@@ -1,3 +1,4 @@
+import { changePlayQueueDisplayStatus } from './playQueueControls.js';
 import { lyricsPlane } from './shared.js';
 import { shared } from './shared.js';
 
@@ -37,6 +38,9 @@ export function pullLyricsPlane() {
     }, 500)
 
     clearTimeout(timeout);
+    if (shared.playQueueDisplay) {
+        changePlayQueueDisplayStatus();
+    }
 }
 
 let fullScreen = false;
@@ -53,6 +57,9 @@ export function changeFullScreenMode() {
         windowControls.style.visibility = 'visible';
         window.electronAPI.leaveFullScreen();
     }
+    if (shared.playQueueDisplay) {
+        changePlayQueueDisplayStatus();
+    }
 }
 
 export function activeLyricsPlane() {
@@ -64,5 +71,8 @@ export function activeLyricsPlane() {
         customTitleBar.style.visibility = 'visible';
 
         setControlsHiddenTimeout();
+        if (shared.playQueueDisplay) {
+            changePlayQueueDisplayStatus();
+        }
     }
 }

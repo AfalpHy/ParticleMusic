@@ -7,7 +7,7 @@ import './playQueueControls.js'
 
 import { lyricsPlane, playQueue, playQueueSongs, playQueueSongMenu, shared, songList, songMenu } from './shared.js'
 import { activeLyricsPlane, changeFullScreenMode, pullLyricsPlane, setControlsHiddenTimeout } from './lyricPlaneControls.js'
-import { displayPlayQueue, hiddenPlayQueue, playQueueEvent, playQueueSongMemuEvent } from './playQueueControls.js'
+import { changePlayQueueDisplayStatus, playQueueEvent, playQueueSongMemuEvent } from './playQueueControls.js'
 import { displayCover, displaySongList } from './sidebar.js'
 import { switchMute } from './musicControls.js'
 import { dblclickSong, enableResizer1, enableResizer2, searchList, songMemuEvent, sortSongByAlbum, sortSongByArtist, sortSongByDuration, sortSongByTitle } from './songList.js'
@@ -19,25 +19,18 @@ document.addEventListener('click', (e) => {
     const id = e.target.id;
     // console.log(className, id);
 
-    if (shared.playQueueDisplay) {
-        if (playQueueSongMenu.contains(e.target)) {
-            playQueueSongMemuEvent(e.target);
-            return;
-        }
-        playQueueSongMenu.style.visibility = 'hidden';
-        if (playQueuePlane.contains(e.target)) {
-            playQueueEvent(e.target);
-            return;
-        }
-        hiddenPlayQueue();
-        return;
-    }
-
     if (songMenu.contains(e.target)) {
         songMemuEvent(e.target);
         return;
+    } if (playQueueSongMenu.contains(e.target)) {
+        playQueueSongMemuEvent(e.target);
+        return;
     }
-    songMenu.style.visibility = 'hidden';
+
+    if (playQueuePlane.contains(e.target)) {
+        playQueueEvent(e.target);
+        return;
+    }
 
     if (lyricsPlane.contains(e.target)) {
         setControlsHiddenTimeout();
@@ -72,7 +65,7 @@ document.addEventListener('click', (e) => {
             playQueue.last();
         }
     } else if (className == 'play-pause-btn') {
-        if (!playQueue.empty) {
+        if (playQueue.currentSong) {
             playQueue.play = !playQueue.play;
             playQueue.playOrPause();
         }
@@ -83,7 +76,7 @@ document.addEventListener('click', (e) => {
     } else if (className == 'play-mode-btn') {
         playQueue.switchPlayMode();
     } else if (className == 'play-queue-btn') {
-        displayPlayQueue();
+        changePlayQueueDisplayStatus();
     } else if (className == 'volume-icon') {
         switchMute();
     }
@@ -109,38 +102,31 @@ document.addEventListener('mousedown', (e) => {
     const className = e.target.className;
     const id = e.target.id;
     // console.log(className, id);
+    if (!songMenu.contains(e.target)) {
+        songMenu.style.visibility = 'hidden';
+    }
+
+    if (!playQueueSongMenu.contains(e.target)) {
+        playQueueSongMenu.style.visibility = 'hidden';
+    }
+
     if (e.button == 2) {
-        if (!songMenu.contains(e.target)) {
-            songMenu.style.visibility = 'hidden';
-        }
-        if (shared.playQueueDisplay) {
-            if (!playQueueSongMenu.contains(e.target)) {
-                playQueueSongMenu.style.visibility = 'hidden';
-            } else {
+        if (playQueueSongs.contains(e.target)) {
+            let tmp = e.target;
+            while (tmp && tmp.className != 'play-queue-song-line') {
+                tmp = tmp.parentNode;
+            }
+            if (!tmp) {
                 return;
             }
-            if (playQueuePlane.contains(e.target)) {
-                if (playQueueSongs.contains(e.target)) {
-                    let tmp = e.target;
-                    while (tmp && tmp.className != 'play-queue-song-line') {
-                        tmp = tmp.parentNode;
-                    }
-                    if (!tmp) {
-                        return;
-                    }
-                    let index = 0;
-                    while ((tmp = tmp.previousElementSibling) != null) {
-                        index++;
-                    }
-                    shared.clickPlayQueueSongIndex = index;
-                    playQueueSongMenu.style.visibility = 'visible';
-                    playQueueSongMenu.style.left = e.pageX + 'px';
-                    playQueueSongMenu.style.top = e.pageY + 'px';
-                }
-                return;
+            let index = 0;
+            while ((tmp = tmp.previousElementSibling) != null) {
+                index++;
             }
-            hiddenPlayQueue();
-            return;
+            shared.clickPlayQueueSongIndex = index;
+            playQueueSongMenu.style.visibility = 'visible';
+            playQueueSongMenu.style.left = e.pageX + 'px';
+            playQueueSongMenu.style.top = e.pageY + 'px';
         }
 
         if (searchList.contains(e.target) && !searchList.children[0].contains(e.target)) {
@@ -164,9 +150,7 @@ document.addEventListener('mousedown', (e) => {
         }
         return;
     }
-    if (shared.playQueueDisplay) {
-        return;
-    }
+
     if (id == 'resizer1') {
         enableResizer1();
     } else if (id == 'resizer2') {

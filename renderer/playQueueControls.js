@@ -1,13 +1,12 @@
 import { audioPlayer, lyricsPlayer, playQueue, playQueueSongs, playQueueSongMenu, shared, songList } from "./shared.js";
 
-export function displayPlayQueue() {
-    shared.playQueueDisplay = true;
-    document.getElementById('play-queue').classList.add('display');
-}
-
-export function hiddenPlayQueue() {
-    shared.playQueueDisplay = false;
-    document.getElementById('play-queue').classList.remove('display');
+export function changePlayQueueDisplayStatus() {
+    shared.playQueueDisplay = !shared.playQueueDisplay;
+    if (shared.playQueueDisplay) {
+        document.getElementById('play-queue').classList.add('display');
+    } else {
+        document.getElementById('play-queue').classList.remove('display');
+    }
 }
 
 export function updatePlayQueue() {
@@ -56,12 +55,15 @@ export function addSongToPlayQueue(index) {
         const columnElementText = document.createElement('div');
         columnElementText.className = 'song-line-column-text'
         columnElementText.textContent = element.children[4].textContent;
+
         columnElement.append(columnElementText);
+
         lineElement.append(columnElement);
     }
+    lineElement.index = playQueue.songLines.length;
 
     playQueueSongs.append(lineElement);
-    playQueue.songLines.push(lineElement);
+    playQueue.songLines.push({ element: lineElement, valid: true });
     playQueue.empty = false;
 }
 
@@ -72,14 +74,7 @@ export function playQueueEvent(element) {
         return;
     }
     if (id == 'clear-play-queue') {
-        audioPlayer.pause();
         playQueue.clear();
-        audioPlayer.currentTime = 0;
-        document.querySelectorAll('.play-pause-btn').forEach(element => {
-            element.style.backgroundImage = 'url(\'pictures/play.png\')';
-        });
-        playQueueSongs.textContent = "";
-        lyricsPlayer.clear();
     } else {
         while (className != 'play-queue-song-line') {
             element = element.parentNode;
@@ -101,14 +96,14 @@ export function playQueueEvent(element) {
 }
 
 export function playQueueSongMemuEvent(element) {
-    let content = element.textContent;
+    const content = element.textContent;
     playQueueSongMenu.style.visibility = 'hidden';
     if (content == 'remove') {
-        playQueueSongs.children[shared.clickPlayQueueSongIndex].remove();
+        playQueue.remove(shared.clickPlayQueueSongIndex);
     } else if (content == 'play next') {
+        playQueue.playNext(shared.clickPlayQueueSongIndex);
     } else {
         // if click blank area
         playQueueSongMenu.style.visibility = 'visible';
-
     }
 }
