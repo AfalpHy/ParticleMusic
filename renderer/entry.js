@@ -19,6 +19,9 @@ document.addEventListener('click', (e) => {
     const id = e.target.id;
     // console.log(className, id);
 
+    // remove focus
+    e.target.blur();
+
     if (songMenu.contains(e.target)) {
         songMemuEvent(e.target);
         return;
@@ -176,3 +179,14 @@ document.addEventListener('mousedown', (e) => {
         enableResizer2();
     }
 })
+
+document.addEventListener('keydown', function (event) {
+    if (event.key === ' ') {
+        event.preventDefault();
+        if (playQueue.currentSong) {
+            playQueue.play = !playQueue.play;
+            playQueue.playOrPause();
+        }
+    }
+});
+

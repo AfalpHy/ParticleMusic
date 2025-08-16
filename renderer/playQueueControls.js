@@ -70,7 +70,6 @@ export function addSongToPlayQueue(index) {
     if (playQueue.playMode == 2) {
         lineElement.index = playQueue.songLines.length;
         playQueue.songLines.push({ element: lineElement, valid: true });
-        console.log(playQueue.songLines[lineElement.index].element.filePath);
     }
 
     playQueueSongs.append(lineElement);
