@@ -11,13 +11,6 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   leaveFullScreen: () => ipcRenderer.send('window-leave-fullScreen'),
 
-  addDirectory: () => ipcRenderer.send('add-directory'),
-
-  displayDirectory: (callback) => {
-    ipcRenderer.on(
-      'display-directory', (event, filePath) => callback(filePath))
-  },
-
   setLoadingPlaylist: (callback) => {
     ipcRenderer.on('set-loading-playlist', (event) => callback())
   },
