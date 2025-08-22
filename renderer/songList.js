@@ -312,6 +312,10 @@ export function songMemuEvent(element) {
 
     if (content == 'play') {
         player.play = true;
-        player.next();
+        if (!player.currentSong || selected.filePath != player.currentSong.filePath) {
+            player.next();
+        } else {
+            player.playOrPause();
+        }
     }
 }
