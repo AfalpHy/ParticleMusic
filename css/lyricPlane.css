@@ -30,12 +30,11 @@
      position: absolute;
      top: calc(25% - 80px);
      left: 55%;
-     height: 80px;
+     height: 100px;
      width: 35%;
      user-select: none;
      display: flex;
      flex-direction: column;
-     gap: 10px;
  }
 
  #lyrics-plane-title {
@@ -75,7 +74,7 @@
  }
 
  .lyrics-line {
-     margin: 25px 0;
+     margin: 3vh 0;
      font-size: 25px;
      overflow-wrap: break-word;
      color: rgba(160, 160, 160, 0.5);
