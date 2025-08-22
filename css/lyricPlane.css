@@ -76,8 +76,9 @@
  .lyrics-line {
      margin: 3vh 0;
      font-size: 25px;
+     width: fit-content;
      overflow-wrap: break-word;
-     color: rgba(160, 160, 160, 0.5);
+     color: rgb(160, 160, 160);
      transition: all 0.3s ease;
      user-select: none;
      cursor: pointer;
@@ -89,7 +90,7 @@
  }
 
  .current-line {
-     color: rgb(160, 160, 160);
+     color: white;
      font-size: 25px;
      font-weight: bold;
  }

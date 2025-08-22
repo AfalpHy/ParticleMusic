@@ -146,9 +146,12 @@ class LyricsPlayer {
         let currentLineElement = lyricsContainer.querySelector('.current-line');
         if (currentLineElement) {
             currentLineElement.classList.remove('current-line');
+            currentLineElement.style.filter = 'contrast(' + contrast + ')';
         }
+
         currentLineElement = this.lineElements[this.currentLineIndex];
         currentLineElement.classList.add('current-line');
+        currentLineElement.style.filter = '';
 
         if (shared.lyricsPlaneActive)
             lyricsContainer.scrollTo({
