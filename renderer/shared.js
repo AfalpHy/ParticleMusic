@@ -25,42 +25,6 @@ export function formatTime(seconds) {
     return `${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 
-let contrast;
-function getContrastRatio(color1, color2) {
-    const [r1, g1, b1] = hexToRgb(color1);
-    const [r2, g2, b2] = hexToRgb(color2);
-    const l1 = calculateLuminance(r1, g1, b1);
-    const l2 = calculateLuminance(r2, g2, b2);
-    return (Math.max(l1, l2) + 0.05) / (Math.min(l1, l2) + 0.05);
-}
-
-function hexToRgb(hex) {
-    hex = hex.replace(/^#/, '');
-    const r = parseInt(hex.substring(0, 2), 16);
-    const g = parseInt(hex.substring(2, 4), 16);
-    const b = parseInt(hex.substring(4, 6), 16);
-    return [r, g, b];
-}
-
-function calculateLuminance(r, g, b) {
-    const [r1, g1, b1] = [r, g, b].map(v => {
-        v /= 255;
-        return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
-    });
-    return 0.2126 * r1 + 0.7152 * g1 + 0.0722 * b1;
-}
-
-function calculateRequiredContrast(textColor, bgColor) {
-    const targetRatio = 4.5;
-    const currentRatio = getContrastRatio(textColor, bgColor);
-
-    if (currentRatio >= targetRatio) {
-        return 1;
-    }
-
-    return targetRatio / currentRatio;
-}
-
 class LyricsPlayer {
     constructor() {
         this.lines = [];
@@ -107,7 +71,6 @@ class LyricsPlayer {
             const lineElement = document.createElement('div');
             lineElement.className = 'lyrics-line';
             lineElement.textContent = this.lines[lineIndex].text;
-            lineElement.style.filter = 'contrast(' + contrast + ')';
             lineElement.addEventListener('click', () => {
                 if (this.sync) {
                     audioPlayer.currentTime = this.lines[lineIndex].time;
@@ -146,12 +109,10 @@ class LyricsPlayer {
         let currentLineElement = lyricsContainer.querySelector('.current-line');
         if (currentLineElement) {
             currentLineElement.classList.remove('current-line');
-            currentLineElement.style.filter = 'contrast(' + contrast + ')';
         }
 
         currentLineElement = this.lineElements[this.currentLineIndex];
         currentLineElement.classList.add('current-line');
-        currentLineElement.style.filter = '';
 
         if (shared.lyricsPlaneActive)
             lyricsContainer.scrollTo({
@@ -204,21 +165,20 @@ class Player {
         window.electronAPI.getColor(src).then((color) => {
             const coverDataUrl = this.currentSong.children[0].children[0].src;
             if (color == null) {
-                contrast = calculateRequiredContrast('#A0A0A0', defaultCover.color)
                 setCover({ coverDataUrl: coverDataUrl, color: defaultCover.color });
             } else {
-                contrast = calculateRequiredContrast('#A0A0A0', color)
                 setCover({ coverDataUrl: coverDataUrl, color: color });
             }
-
-            window.electronAPI.getLyrics(src).then((result) => {
-                if (result) {
-                    lyricsPlayer.parseLyrics(result.lyrics, result.pureText);
-                } else {
-                    loadLyricsForSong(src.replace(/\.[^/.]+$/, '.lrc'));
-                }
-            });
         })
+
+        window.electronAPI.getLyrics(src).then((result) => {
+            if (result) {
+                lyricsPlayer.parseLyrics(result.lyrics, result.pureText);
+            } else {
+                loadLyricsForSong(src.replace(/\.[^/.]+$/, '.lrc'));
+            }
+        });
+
 
         document.getElementById('left-bottom-title').textContent = this.currentSong.children[0].children[1].textContent;
         document.getElementById('left-bottom-artist').textContent = this.currentSong.children[0].children[2].textContent;

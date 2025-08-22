@@ -28,13 +28,14 @@
 
  #lyrics-plane-title-artist {
      position: absolute;
-     top: calc(25% - 80px);
+     top: calc(25% - 100px);
      left: 55%;
-     height: 100px;
+     height: 120px;
      width: 35%;
      user-select: none;
      display: flex;
      flex-direction: column;
+     gap: 10px;
  }
 
  #lyrics-plane-title {
@@ -78,19 +79,19 @@
      font-size: 25px;
      width: fit-content;
      overflow-wrap: break-word;
-     color: rgb(160, 160, 160);
+     max-width: 100%;
+     color: rgba(0, 0, 0, 0.5);
      transition: all 0.3s ease;
      user-select: none;
      cursor: pointer;
  }
 
  .lyrics-line:hover {
-     color: rgba(0, 0, 0, 0.5);
-     font-weight: bold;
+     color: white;
+     font-size: 28px;
  }
 
  .current-line {
-     color: white;
-     font-size: 25px;
-     font-weight: bold;
+     color: black;
+     font-size: 28px;
  }
