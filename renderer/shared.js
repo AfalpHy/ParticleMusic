@@ -59,7 +59,7 @@ class LyricsPlayer {
                         };
                     }
                 })
-                .filter(line => this.sync ? line.time >= 0 : true);
+                .filter(line => (this.sync ? line.time >= 0 : true) && line.text != '');
         } else {
             this.sync = true;
             lyrics.forEach(line => {
