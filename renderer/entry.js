@@ -157,8 +157,11 @@ document.addEventListener('mousedown', (e) => {
 
         if (searchSongList.contains(e.target) && !searchSongList.children[0].contains(e.target)) {
             let tmp = e.target;
-            while (tmp.className != 'song-line') {
+            while (tmp && tmp.className != 'song-line') {
                 tmp = tmp.parentNode;
+            }
+            if (!tmp) {
+                return;
             }
             shared.clickSongIndex = tmp.originIndex;
             songMenu.style.visibility = 'visible';
@@ -166,8 +169,11 @@ document.addEventListener('mousedown', (e) => {
             songMenu.style.top = e.pageY + 'px';
         } else if (songList.contains(e.target) && !songList.children[0].contains(e.target)) {
             let tmp = e.target;
-            while (tmp.className != 'song-line') {
+            while (tmp && tmp.className != 'song-line') {
                 tmp = tmp.parentNode;
+            }
+            if (!tmp) {
+                return;
             }
             shared.clickSongIndex = tmp.children[0].textContent;
             songMenu.style.visibility = 'visible';
