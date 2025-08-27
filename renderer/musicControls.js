@@ -130,3 +130,20 @@ audioPlayer.addEventListener('ended', () => {
     }
     player.next();
 })
+
+window.electronAPI.controlMusicPlay((cmd) => {
+    if (cmd == 'last') {
+        if (!player.empty) {
+            player.last();
+        }
+    } else if (cmd == 'playOrPause') {
+        if (player.currentSong) {
+            player.play = !player.play;
+            player.playOrPause();
+        }
+    } else if (cmd == 'next') {
+        if (!player.empty) {
+            player.next();
+        }
+    }
+})

@@ -53,13 +53,31 @@ function createWindow() {
   const tray = new Tray(path.join(__dirname, 'pictures/icon.png'));
   const contextMenu = Menu.buildFromTemplate([
     {
-      label: 'Show',
+      label: 'last',
+      click: () => {
+        mainWindow.webContents.send('control-music-play', 'last');
+      },
+    },
+    {
+      label: 'play/pause',
+      click: () => {
+        mainWindow.webContents.send('control-music-play', 'playOrPause');
+      },
+    },
+    {
+      label: 'next',
+      click: () => {
+        mainWindow.webContents.send('control-music-play', 'next');
+      },
+    },
+    {
+      label: 'show',
       click: () => {
         mainWindow.show();
       },
     },
     {
-      label: 'Quit',
+      label: 'quit',
       click: () => {
         app.quit();
       },
@@ -67,6 +85,9 @@ function createWindow() {
   ]);
 
   tray.setContextMenu(contextMenu);
+  tray.addListener('click', () => {
+    mainWindow.show();
+  })
 }
 
 ipcMain.on('window-close', () => {

@@ -40,4 +40,8 @@ contextBridge.exposeInMainWorld('electronAPI', {
     ipcRenderer.on('set-default-cover', (event, result) => callback(result))
   },
 
+  controlMusicPlay: (callback) => {
+    ipcRenderer.on('control-music-play', (event, cmd) => callback(cmd))
+  }
+
 });
