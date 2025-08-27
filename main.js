@@ -1,4 +1,4 @@
-const { app, BrowserWindow, ipcMain } = require('electron');
+const { app, BrowserWindow, Tray, ipcMain, Menu } = require('electron');
 const os = require('os');
 const fs = require('fs');
 const path = require('path');
@@ -48,10 +48,29 @@ function createWindow() {
 
     await loadPlaylist();
   });
+
+  // Create tray icon
+  const tray = new Tray(path.join(__dirname, 'pictures/icon.png'));
+  const contextMenu = Menu.buildFromTemplate([
+    {
+      label: 'Show',
+      click: () => {
+        mainWindow.show();
+      },
+    },
+    {
+      label: 'Quit',
+      click: () => {
+        app.quit();
+      },
+    },
+  ]);
+
+  tray.setContextMenu(contextMenu);
 }
 
 ipcMain.on('window-close', () => {
-  mainWindow.close();
+  mainWindow.hide();
 })
 
 ipcMain.on('window-minimize', () => { mainWindow.minimize() })
