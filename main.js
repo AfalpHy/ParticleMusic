@@ -53,31 +53,31 @@ function createWindow() {
   const tray = new Tray(path.join(__dirname, 'pictures/icon.png'));
   const contextMenu = Menu.buildFromTemplate([
     {
-      label: 'last',
+      label: 'Last',
       click: () => {
         mainWindow.webContents.send('control-music-play', 'last');
       },
     },
     {
-      label: 'play/pause',
+      label: 'Play/Pause',
       click: () => {
         mainWindow.webContents.send('control-music-play', 'playOrPause');
       },
     },
     {
-      label: 'next',
+      label: 'Next',
       click: () => {
         mainWindow.webContents.send('control-music-play', 'next');
       },
     },
     {
-      label: 'show',
+      label: 'Show',
       click: () => {
         mainWindow.show();
       },
     },
     {
-      label: 'quit',
+      label: 'Quit',
       click: () => {
         app.quit();
       },
