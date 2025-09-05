@@ -2,9 +2,9 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
-import 'package:flutter_media_metadata/flutter_media_metadata.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 
 void main() {
   runApp(
@@ -17,7 +17,7 @@ void main() {
 // --------------------
 class PlayerModel extends ChangeNotifier {
   final AudioPlayer _player = AudioPlayer();
-  Metadata? currentSong;
+  AudioMetadata? currentSong;
   bool isPlaying = false;
 
   PlayerModel() {
@@ -30,15 +30,15 @@ class PlayerModel extends ChangeNotifier {
     });
   }
 
-  Future<void> playSong(Metadata song) async {
+  Future<void> playSong(AudioMetadata song) async {
     currentSong = song;
     try {
-      await _player.setFilePath(song.filePath!);
+      await _player.setFilePath(song.file.path);
       _player.play();
       isPlaying = true;
       notifyListeners();
     } catch (e) {
-      debugPrint("Error playing ${song.trackName}: $e");
+      debugPrint("Error playing ${song.title}: $e");
     }
   }
 
@@ -87,7 +87,7 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<Metadata> songs = [];
+  List<AudioMetadata> songs = [];
 
   @override
   void initState() {
@@ -104,7 +104,7 @@ class _HomePageState extends State<HomePage> {
     if (dirPath == null) return;
     final musicDir = Directory(dirPath);
 
-    List<Metadata> tempSongs = [];
+    List<AudioMetadata> tempSongs = [];
 
     // Read files recursively
     await for (var file in musicDir.list(recursive: true, followLinks: false)) {
@@ -113,7 +113,7 @@ class _HomePageState extends State<HomePage> {
               file.path.endsWith('.flac') ||
               file.path.endsWith('.m4a'))) {
         try {
-          final meta = await MetadataRetriever.fromFile(file);
+          final meta = readMetadata(file, getImage: true);
           tempSongs.add(meta);
         } catch (_) {
           continue; // skip unreadable files
@@ -129,7 +129,6 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final player = Provider.of<PlayerModel>(context, listen: false);
-
     return Scaffold(
       appBar: AppBar(title: const Text("Particle Music")),
       body: songs.isEmpty
@@ -139,13 +138,22 @@ class _HomePageState extends State<HomePage> {
               itemBuilder: (context, index) {
                 final song = songs[index];
                 return ListTile(
-                  leading: song.albumArt != null
-                      ? Image.memory(song.albumArt!, width: 50, height: 50)
-                      : const Icon(Icons.music_note, size: 40),
-                  title: Text(song.trackName ?? "Unknown Title"),
-                  subtitle: Text(
-                    song.trackArtistNames?.join("/") ?? "Unknown Artist",
-                  ),
+                  leading: (() {
+                    if (song.pictures.isNotEmpty) {
+                      return Image.memory(
+                        song.pictures.first.bytes,
+                        width: 50,
+                        height: 50,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Icon(Icons.music_note, size: 50);
+                        },
+                      );
+                    }
+                    return const Icon(Icons.music_note, size: 50);
+                  })(),
+                  title: Text(song.title ?? "Unknown Title"),
+                  subtitle: Text(song.artist ?? "Unknown Artist"),
                   onTap: () => player.playSong(song),
                 );
               },
@@ -172,9 +180,9 @@ class PlayerBar extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
           child: Row(
             children: [
-              if (player.currentSong!.albumArt != null)
+              if (player.currentSong!.title != null)
                 Image.memory(
-                  player.currentSong!.albumArt!,
+                  player.currentSong!.pictures.first.bytes!,
                   width: 50,
                   height: 50,
                 )
@@ -187,7 +195,7 @@ class PlayerBar extends StatelessWidget {
                   mainAxisSize: MainAxisSize.min,
                   children: [
                     Text(
-                      player.currentSong!.trackName ?? "Unknown Title",
+                      player.currentSong!.title ?? "Unknown Title",
                       style: const TextStyle(
                         color: Colors.white,
                         fontWeight: FontWeight.bold,
@@ -195,8 +203,7 @@ class PlayerBar extends StatelessWidget {
                       overflow: TextOverflow.ellipsis,
                     ),
                     Text(
-                      player.currentSong!.trackArtistNames?.join("/") ??
-                          "Unknown Artist",
+                      player.currentSong!.artist ?? "Unknown Artist",
                       style: const TextStyle(color: Colors.white70),
                       overflow: TextOverflow.ellipsis,
                     ),
