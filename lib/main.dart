@@ -96,27 +96,27 @@ class _HomePageState extends State<HomePage> {
   }
 
   Future<void> loadSongs() async {
-    // Request permissions
-    await Permission.audio.request();
-
-    // Let user pick a music directory
-    final dirPath = await FilePicker.platform.getDirectoryPath();
-    if (dirPath == null) return;
-    final musicDir = Directory(dirPath);
+    FilePickerResult? result = await FilePicker.platform.pickFiles(
+      allowMultiple: true,
+    );
 
     List<AudioMetadata> tempSongs = [];
+    if (result != null) {
+      List<File> files = result.files
+          .where((platformFile) => platformFile.path != null)
+          .map((platformFile) => File(platformFile.path!))
+          .toList();
 
-    // Read files recursively
-    await for (var file in musicDir.list(recursive: true, followLinks: false)) {
-      if (file is File &&
-          (file.path.endsWith('.mp3') ||
-              file.path.endsWith('.flac') ||
-              file.path.endsWith('.m4a'))) {
-        try {
-          final meta = readMetadata(file, getImage: true);
-          tempSongs.add(meta);
-        } catch (_) {
-          continue; // skip unreadable files
+      for (var file in files) {
+        if ((file.path.endsWith('.mp3') ||
+            file.path.endsWith('.flac') ||
+            file.path.endsWith('.m4a'))) {
+          try {
+            final meta = readMetadata(file, getImage: true);
+            tempSongs.add(meta);
+          } catch (_) {
+            continue; // skip unreadable files
+          }
         }
       }
     }
@@ -134,6 +134,9 @@ class _HomePageState extends State<HomePage> {
       body: songs.isEmpty
           ? const Center(child: Text("No songs found"))
           : ListView.builder(
+              physics: BouncingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics(),
+              ),
               itemCount: songs.length,
               itemBuilder: (context, index) {
                 final song = songs[index];
