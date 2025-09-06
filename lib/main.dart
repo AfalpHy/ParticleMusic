@@ -154,58 +154,63 @@ class _HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     final player = Provider.of<PlayerModel>(context, listen: false);
-    return Scaffold(
-      appBar: AppBar(title: const Text("Particle Music")),
-      body: songs.isEmpty
-          ? const Center(child: Text("No songs found"))
-          : ListView.builder(
-              physics: BouncingScrollPhysics(
-                parent: AlwaysScrollableScrollPhysics(),
-              ),
-              itemCount: songs.length,
-              itemBuilder: (context, index) {
-                final song = songs[index];
-                return ListTile(
-                  leading: (() {
-                    if (song.pictures.isNotEmpty) {
-                      return ClipRRect(
-                        clipBehavior: Clip.antiAlias,
-                        borderRadius: BorderRadius.circular(
-                          2,
-                        ), // same as you want
-                        child: Image.memory(
-                          song.pictures.first.bytes,
-                          width: 50,
-                          height: 50,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return const Icon(Icons.music_note, size: 50);
-                          },
-                        ),
-                      );
-                    }
-                    return ClipRRect(
-                      clipBehavior: Clip.antiAlias,
-                      borderRadius: BorderRadius.circular(2),
-                      child: const Icon(Icons.music_note, size: 50),
+    return Stack(
+      children: [
+        Scaffold(
+          appBar: AppBar(title: const Text("Particle Music")),
+          body: songs.isEmpty
+              ? const Center(child: Text("No songs found"))
+              : ListView.builder(
+                  physics: BouncingScrollPhysics(
+                    parent: AlwaysScrollableScrollPhysics(),
+                  ),
+                  itemCount: songs.length,
+                  itemBuilder: (context, index) {
+                    final song = songs[index];
+                    return ListTile(
+                      leading: (() {
+                        if (song.pictures.isNotEmpty) {
+                          return ClipRRect(
+                            clipBehavior: Clip.antiAlias,
+                            borderRadius: BorderRadius.circular(
+                              2,
+                            ), // same as you want
+                            child: Image.memory(
+                              song.pictures.first.bytes,
+                              width: 50,
+                              height: 50,
+                              fit: BoxFit.cover,
+                              errorBuilder: (context, error, stackTrace) {
+                                return const Icon(Icons.music_note, size: 50);
+                              },
+                            ),
+                          );
+                        }
+                        return ClipRRect(
+                          clipBehavior: Clip.antiAlias,
+                          borderRadius: BorderRadius.circular(2),
+                          child: const Icon(Icons.music_note, size: 50),
+                        );
+                      })(),
+                      title: Text(
+                        song.title ?? "Unknown Title",
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      subtitle: Text(
+                        song.artist ?? "Unknown Artist",
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                      onTap: () {
+                        player.setIndex(index);
+                        player.playSong();
+                      },
                     );
-                  })(),
-                  title: Text(
-                    song.title ?? "Unknown Title",
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  subtitle: Text(
-                    song.artist ?? "Unknown Artist",
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  onTap: () {
-                    player.setIndex(index);
-                    player.playSong();
                   },
-                );
-              },
-            ),
-      bottomNavigationBar: const PlayerBar(),
+                ),
+          bottomNavigationBar: SizedBox(height: 40),
+        ),
+        Positioned(left: 15, right: 15, bottom: 15, child: PlayerBar()),
+      ],
     );
   }
 }
@@ -222,107 +227,99 @@ class PlayerBar extends StatelessWidget {
       builder: (context, player, child) {
         if (player.currentSong == null) return const SizedBox.shrink();
 
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16), // gap from bottom
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(25), // rounded half-circle ends
-            child: Material(
-              color: Colors.white,
-              child: InkWell(
-                onTap: () {
-                  // Open lyrics page
-                  Navigator.of(
-                    context,
-                  ).push(MaterialPageRoute(builder: (_) => const LyricPage()));
-                },
+        return ClipRRect(
+          borderRadius: BorderRadius.circular(25), // rounded half-circle ends
+          child: Material(
+            child: InkWell(
+              onTap: () {
+                // Open lyrics page
+                Navigator.of(
+                  context,
+                ).push(MaterialPageRoute(builder: (_) => const LyricPage()));
+              },
 
-                child: Row(
-                  children: [
-                    // Album cover or icon
-                    if (player.currentSong!.pictures.isNotEmpty)
-                      ClipOval(
-                        child: Image.memory(
-                          player.currentSong!.pictures.first.bytes,
-                          width: 50,
-                          height: 50,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Icon(Icons.music_note, size: 50),
-                        ),
-                      )
-                    else
-                      ClipOval(child: const Icon(Icons.music_note, size: 50)),
-                    const SizedBox(width: 12),
+              child: Row(
+                children: [
+                  // Album cover or icon
+                  if (player.currentSong!.pictures.isNotEmpty)
+                    ClipOval(
+                      child: Image.memory(
+                        player.currentSong!.pictures.first.bytes,
+                        width: 50,
+                        height: 50,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) =>
+                            const Icon(Icons.music_note, size: 50),
+                      ),
+                    )
+                  else
+                    ClipOval(child: const Icon(Icons.music_note, size: 50)),
+                  const SizedBox(width: 12),
 
-                    // Title - Artist Marquee
-                    Expanded(
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          final text =
-                              "${player.currentSong!.title ?? 'Unknown Title'} - ${player.currentSong!.artist ?? 'Unknown Artist'}";
-                          final textPainter = TextPainter(
-                            text: TextSpan(
+                  // Title - Artist Marquee
+                  Expanded(
+                    child: LayoutBuilder(
+                      builder: (context, constraints) {
+                        final text =
+                            "${player.currentSong!.title ?? 'Unknown Title'} - ${player.currentSong!.artist ?? 'Unknown Artist'}";
+                        final textPainter = TextPainter(
+                          text: TextSpan(
+                            text: text,
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          maxLines: 1,
+                          textDirection: TextDirection.ltr,
+                        )..layout(maxWidth: double.infinity);
+
+                        if (textPainter.width > constraints.maxWidth) {
+                          // Text too long → use Marquee
+                          return SizedBox(
+                            height: 20,
+                            child: Marquee(
                               text: text,
                               style: const TextStyle(
                                 color: Colors.black,
                                 fontWeight: FontWeight.bold,
                               ),
+                              scrollAxis: Axis.horizontal,
+                              blankSpace: 20,
+                              velocity: 30.0,
+                              pauseAfterRound: const Duration(seconds: 1),
+                              startPadding: 10,
+                              accelerationDuration: const Duration(seconds: 1),
+                              accelerationCurve: Curves.linear,
+                              decelerationDuration: const Duration(seconds: 1),
+                              decelerationCurve: Curves.easeOut,
+                            ),
+                          );
+                        } else {
+                          // Text fits → use normal Text
+                          return Text(
+                            text,
+                            style: const TextStyle(
+                              color: Colors.black,
+                              fontWeight: FontWeight.bold,
                             ),
                             maxLines: 1,
-                            textDirection: TextDirection.ltr,
-                          )..layout(maxWidth: double.infinity);
-
-                          if (textPainter.width > constraints.maxWidth) {
-                            // Text too long → use Marquee
-                            return SizedBox(
-                              height: 20,
-                              child: Marquee(
-                                text: text,
-                                style: const TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                scrollAxis: Axis.horizontal,
-                                blankSpace: 20,
-                                velocity: 30.0,
-                                pauseAfterRound: const Duration(seconds: 1),
-                                startPadding: 10,
-                                accelerationDuration: const Duration(
-                                  seconds: 1,
-                                ),
-                                accelerationCurve: Curves.linear,
-                                decelerationDuration: const Duration(
-                                  seconds: 1,
-                                ),
-                                decelerationCurve: Curves.easeOut,
-                              ),
-                            );
-                          } else {
-                            // Text fits → use normal Text
-                            return Text(
-                              text,
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            );
-                          }
-                        },
-                      ),
+                            overflow: TextOverflow.ellipsis,
+                          );
+                        }
+                      },
                     ),
+                  ),
 
-                    // Play/Pause Button
-                    IconButton(
-                      icon: Icon(
-                        player.isPlaying ? Icons.pause : Icons.play_arrow,
-                        color: Colors.black,
-                      ),
-                      onPressed: () => player.togglePlayPause(),
+                  // Play/Pause Button
+                  IconButton(
+                    icon: Icon(
+                      player.isPlaying ? Icons.pause : Icons.play_arrow,
+                      color: Colors.black,
                     ),
-                  ],
-                ),
+                    onPressed: () => player.togglePlayPause(),
+                  ),
+                ],
               ),
             ),
           ),
