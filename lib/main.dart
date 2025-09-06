@@ -6,6 +6,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:marquee/marquee.dart';
 
+List<AudioMetadata> songs = [];
+
 void main() {
   runApp(
     ChangeNotifierProvider(create: (_) => PlayerModel(), child: const MyApp()),
@@ -19,7 +21,7 @@ class PlayerModel extends ChangeNotifier {
   final AudioPlayer _player = AudioPlayer();
   AudioMetadata? currentSong;
   bool isPlaying = false;
-
+  int currentIndex = -1;
   PlayerModel() {
     _player.playbackEventStream.listen((event) {
       // optional: handle events like completion
@@ -30,16 +32,41 @@ class PlayerModel extends ChangeNotifier {
     });
   }
 
-  Future<void> playSong(AudioMetadata song) async {
-    currentSong = song;
+  void setIndex(int index) {
+    currentIndex = index;
+  }
+
+  Future<void> playSong() async {
+    currentSong = songs[currentIndex];
+    if (currentSong == null) {
+      return;
+    }
     try {
-      await _player.setFilePath(song.file.path);
+      await _player.setFilePath(currentSong!.file.path);
       _player.play();
       isPlaying = true;
       notifyListeners();
     } catch (e) {
-      debugPrint("Error playing ${song.title}: $e");
+      debugPrint("Error playing ${currentSong!.title}: $e");
     }
+  }
+
+  Future<void> last() async {
+    if (currentIndex == 0) {
+      currentIndex = songs.length - 1;
+    } else {
+      currentIndex -= 1;
+    }
+    await playSong();
+  }
+
+  Future<void> next() async {
+    if (currentIndex == songs.length - 1) {
+      currentIndex = 0;
+    } else {
+      currentIndex += 1;
+    }
+    await playSong();
   }
 
   void togglePlayPause() {
@@ -87,8 +114,6 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  List<AudioMetadata> songs = [];
-
   @override
   void initState() {
     super.initState();
@@ -146,7 +171,7 @@ class _HomePageState extends State<HomePage> {
                       return ClipRRect(
                         clipBehavior: Clip.antiAlias,
                         borderRadius: BorderRadius.circular(
-                          5,
+                          2,
                         ), // same as you want
                         child: Image.memory(
                           song.pictures.first.bytes,
@@ -161,7 +186,7 @@ class _HomePageState extends State<HomePage> {
                     }
                     return ClipRRect(
                       clipBehavior: Clip.antiAlias,
-                      borderRadius: BorderRadius.circular(5),
+                      borderRadius: BorderRadius.circular(2),
                       child: const Icon(Icons.music_note, size: 50),
                     );
                   })(),
@@ -173,7 +198,10 @@ class _HomePageState extends State<HomePage> {
                     song.artist ?? "Unknown Artist",
                     overflow: TextOverflow.ellipsis,
                   ),
-                  onTap: () => player.playSong(song),
+                  onTap: () {
+                    player.setIndex(index);
+                    player.playSong();
+                  },
                 );
               },
             ),
@@ -342,11 +370,19 @@ class LyricPage extends StatelessWidget {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               IconButton(
+                icon: Icon(Icons.skip_previous, size: 48),
+                onPressed: player.last,
+              ),
+              IconButton(
                 icon: Icon(
                   player.isPlaying ? Icons.pause_circle : Icons.play_circle,
                   size: 48,
                 ),
                 onPressed: player.togglePlayPause,
+              ),
+              IconButton(
+                icon: Icon(Icons.skip_next, size: 48),
+                onPressed: player.next,
               ),
             ],
           ),
