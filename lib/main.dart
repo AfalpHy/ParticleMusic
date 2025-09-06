@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
-import 'package:permission_handler/permission_handler.dart';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
+import 'package:marquee/marquee.dart';
 
 void main() {
   runApp(
@@ -143,20 +143,36 @@ class _HomePageState extends State<HomePage> {
                 return ListTile(
                   leading: (() {
                     if (song.pictures.isNotEmpty) {
-                      return Image.memory(
-                        song.pictures.first.bytes,
-                        width: 50,
-                        height: 50,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Icon(Icons.music_note, size: 50);
-                        },
+                      return ClipRRect(
+                        clipBehavior: Clip.antiAlias,
+                        borderRadius: BorderRadius.circular(
+                          5,
+                        ), // same as you want
+                        child: Image.memory(
+                          song.pictures.first.bytes,
+                          width: 50,
+                          height: 50,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Icon(Icons.music_note, size: 50);
+                          },
+                        ),
                       );
                     }
-                    return const Icon(Icons.music_note, size: 50);
+                    return ClipRRect(
+                      clipBehavior: Clip.antiAlias,
+                      borderRadius: BorderRadius.circular(5),
+                      child: const Icon(Icons.music_note, size: 50),
+                    );
                   })(),
-                  title: Text(song.title ?? "Unknown Title"),
-                  subtitle: Text(song.artist ?? "Unknown Artist"),
+                  title: Text(
+                    song.title ?? "Unknown Title",
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  subtitle: Text(
+                    song.artist ?? "Unknown Artist",
+                    overflow: TextOverflow.ellipsis,
+                  ),
                   onTap: () => player.playSong(song),
                 );
               },
@@ -178,52 +194,164 @@ class PlayerBar extends StatelessWidget {
       builder: (context, player, child) {
         if (player.currentSong == null) return const SizedBox.shrink();
 
-        return Container(
-          color: Colors.grey[900],
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          child: Row(
-            children: [
-              if (player.currentSong!.title != null)
-                Image.memory(
-                  player.currentSong!.pictures.first.bytes!,
-                  width: 50,
-                  height: 50,
-                )
-              else
-                const Icon(Icons.music_note, size: 40),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisSize: MainAxisSize.min,
+        return Padding(
+          padding: const EdgeInsets.fromLTRB(16, 0, 16, 16), // gap from bottom
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(25), // rounded half-circle ends
+            child: Material(
+              color: Colors.white,
+              child: InkWell(
+                onTap: () {
+                  // Open lyrics page
+                  Navigator.of(
+                    context,
+                  ).push(MaterialPageRoute(builder: (_) => const LyricPage()));
+                },
+
+                child: Row(
                   children: [
-                    Text(
-                      player.currentSong!.title ?? "Unknown Title",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
+                    // Album cover or icon
+                    if (player.currentSong!.pictures.isNotEmpty)
+                      ClipOval(
+                        child: Image.memory(
+                          player.currentSong!.pictures.first.bytes,
+                          width: 50,
+                          height: 50,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) =>
+                              const Icon(Icons.music_note, size: 50),
+                        ),
+                      )
+                    else
+                      ClipOval(child: const Icon(Icons.music_note, size: 50)),
+                    const SizedBox(width: 12),
+
+                    // Title - Artist Marquee
+                    Expanded(
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final text =
+                              "${player.currentSong!.title ?? 'Unknown Title'} - ${player.currentSong!.artist ?? 'Unknown Artist'}";
+                          final textPainter = TextPainter(
+                            text: TextSpan(
+                              text: text,
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            maxLines: 1,
+                            textDirection: TextDirection.ltr,
+                          )..layout(maxWidth: double.infinity);
+
+                          if (textPainter.width > constraints.maxWidth) {
+                            // Text too long → use Marquee
+                            return SizedBox(
+                              height: 20,
+                              child: Marquee(
+                                text: text,
+                                style: const TextStyle(
+                                  color: Colors.black,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                                scrollAxis: Axis.horizontal,
+                                blankSpace: 20,
+                                velocity: 30.0,
+                                pauseAfterRound: const Duration(seconds: 1),
+                                startPadding: 10,
+                                accelerationDuration: const Duration(
+                                  seconds: 1,
+                                ),
+                                accelerationCurve: Curves.linear,
+                                decelerationDuration: const Duration(
+                                  seconds: 1,
+                                ),
+                                decelerationCurve: Curves.easeOut,
+                              ),
+                            );
+                          } else {
+                            // Text fits → use normal Text
+                            return Text(
+                              text,
+                              style: const TextStyle(
+                                color: Colors.black,
+                                fontWeight: FontWeight.bold,
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            );
+                          }
+                        },
                       ),
-                      overflow: TextOverflow.ellipsis,
                     ),
-                    Text(
-                      player.currentSong!.artist ?? "Unknown Artist",
-                      style: const TextStyle(color: Colors.white70),
-                      overflow: TextOverflow.ellipsis,
+
+                    // Play/Pause Button
+                    IconButton(
+                      icon: Icon(
+                        player.isPlaying ? Icons.pause : Icons.play_arrow,
+                        color: Colors.black,
+                      ),
+                      onPressed: () => player.togglePlayPause(),
                     ),
                   ],
                 ),
               ),
-              IconButton(
-                icon: Icon(
-                  player.isPlaying ? Icons.pause : Icons.play_arrow,
-                  color: Colors.white,
-                ),
-                onPressed: () => player.togglePlayPause(),
-              ),
-            ],
+            ),
           ),
         );
       },
+    );
+  }
+}
+
+class LyricPage extends StatelessWidget {
+  const LyricPage({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final player = Provider.of<PlayerModel>(context);
+
+    if (player.currentSong == null) {
+      return Scaffold(
+        appBar: AppBar(title: const Text("Lyrics")),
+        body: const Center(child: Text("No song playing")),
+      );
+    }
+
+    return Scaffold(
+      appBar: AppBar(title: Text(player.currentSong!.title ?? "Unknown Title")),
+      body: Column(
+        children: [
+          const SizedBox(height: 16),
+          ClipOval(
+            child: player.currentSong!.pictures.isNotEmpty
+                ? Image.memory(
+                    player.currentSong!.pictures.first.bytes,
+                    width: 200,
+                    height: 200,
+                    fit: BoxFit.cover,
+                    errorBuilder: (context, error, stackTrace) =>
+                        const Icon(Icons.music_note, size: 200),
+                  )
+                : const Icon(Icons.music_note, size: 200),
+          ),
+
+          const SizedBox(height: 24),
+          // Play Controls
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              IconButton(
+                icon: Icon(
+                  player.isPlaying ? Icons.pause_circle : Icons.play_circle,
+                  size: 48,
+                ),
+                onPressed: player.togglePlayPause,
+              ),
+            ],
+          ),
+        ],
+      ),
     );
   }
 }
