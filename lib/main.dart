@@ -198,6 +198,7 @@ class HomePageState extends State<HomePage> {
     return Stack(
       children: [
         Scaffold(
+          backgroundColor: Colors.white70,
           appBar: AppBar(title: const Text("Particle Music")),
           body: songs.isEmpty
               ? const Center(child: Text("No songs found"))
@@ -218,11 +219,11 @@ class HomePageState extends State<HomePage> {
                             ), // same as you want
                             child: Image.memory(
                               song.pictures.first.bytes,
-                              width: 50,
-                              height: 50,
+                              width: 40,
+                              height: 40,
                               fit: BoxFit.cover,
                               errorBuilder: (context, error, stackTrace) {
-                                return const Icon(Icons.music_note, size: 50);
+                                return const Icon(Icons.music_note, size: 40);
                               },
                             ),
                           );
@@ -230,7 +231,7 @@ class HomePageState extends State<HomePage> {
                         return ClipRRect(
                           clipBehavior: Clip.antiAlias,
                           borderRadius: BorderRadius.circular(2),
-                          child: const Icon(Icons.music_note, size: 50),
+                          child: const Icon(Icons.music_note, size: 40),
                         );
                       })(),
                       title: Text(
@@ -241,6 +242,10 @@ class HomePageState extends State<HomePage> {
                         song.artist ?? "Unknown Artist",
                         overflow: TextOverflow.ellipsis,
                       ),
+                      visualDensity: const VisualDensity(
+                        horizontal: 0,
+                        vertical: -4,
+                      ),
                       onTap: () {
                         audiohanlder.setIndex(index);
                         audiohanlder.load();
@@ -249,9 +254,9 @@ class HomePageState extends State<HomePage> {
                     );
                   },
                 ),
-          bottomNavigationBar: SizedBox(height: 40),
+          bottomNavigationBar: SizedBox(height: 50),
         ),
-        Positioned(left: 15, right: 15, bottom: 15, child: PlayerBar()),
+        Positioned(left: 15, right: 15, bottom: 30, child: PlayerBar()),
       ],
     );
   }
@@ -287,15 +292,15 @@ class PlayerBar extends StatelessWidget {
                     ClipOval(
                       child: Image.memory(
                         audioHandler.currentSong!.pictures.first.bytes,
-                        width: 50,
-                        height: 50,
+                        width: 40,
+                        height: 40,
                         fit: BoxFit.cover,
                         errorBuilder: (context, error, stackTrace) =>
-                            const Icon(Icons.music_note, size: 50),
+                            const Icon(Icons.music_note, size: 40),
                       ),
                     )
                   else
-                    ClipOval(child: const Icon(Icons.music_note, size: 50)),
+                    ClipOval(child: const Icon(Icons.music_note, size: 40)),
                   const SizedBox(width: 12),
 
                   // Title - Artist Marquee
