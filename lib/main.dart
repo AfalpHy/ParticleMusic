@@ -46,26 +46,27 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
   Future<void> load() async {
     if (currentIndex < 0 || currentIndex >= songs.length) return;
     currentSong = songs[currentIndex];
+    await player.pause();
     await player.setFilePath(currentSong!.file.path);
   }
 
   @override
   Future<void> play() async {
+    await player.play();
     isPlaying = true;
     notifyListeners();
-    player.play();
   }
 
   @override
   Future<void> pause() async {
+    await player.pause();
     isPlaying = false;
     notifyListeners();
-    player.pause();
   }
 
   @override
   Future<void> stop() async {
-    player.stop();
+    await player.stop();
     isPlaying = false;
     notifyListeners();
   }
@@ -74,22 +75,24 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
   Future<void> skipToNext() async {
     if (songs.isEmpty) return;
     currentIndex = (currentIndex == songs.length - 1) ? 0 : currentIndex + 1;
-    load();
-    notifyListeners();
-    // if (isPlaying) {
-    //   play();
-    // }
+    await load();
+    if (isPlaying) {
+      await play();
+    } else {
+      notifyListeners();
+    }
   }
 
   @override
   Future<void> skipToPrevious() async {
     if (songs.isEmpty) return;
     currentIndex = (currentIndex == 0) ? songs.length - 1 : currentIndex - 1;
-    load();
-    notifyListeners();
-    // if (isPlaying) {
-    //   play();
-    // }
+    await load();
+    if (isPlaying) {
+      await play();
+    } else {
+      notifyListeners();
+    }
   }
 }
 
