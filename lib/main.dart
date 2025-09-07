@@ -192,72 +192,113 @@ class HomePageState extends State<HomePage> {
     });
   }
 
+  bool isSearching = false;
+  String searchQuery = "";
+
   @override
   Widget build(BuildContext context) {
-    final audiohanlder = Provider.of<MyAudioHandler>(context, listen: false);
     return Stack(
       children: [
         Scaffold(
-          backgroundColor: Colors.white70,
-          appBar: AppBar(title: const Text("Particle Music")),
-          body: songs.isEmpty
-              ? const Center(child: Text("No songs found"))
-              : ListView.builder(
-                  physics: BouncingScrollPhysics(
-                    parent: AlwaysScrollableScrollPhysics(),
-                  ),
-                  itemCount: songs.length,
-                  itemBuilder: (context, index) {
-                    final song = songs[index];
-                    return ListTile(
-                      leading: (() {
-                        if (song.pictures.isNotEmpty) {
-                          return ClipRRect(
-                            clipBehavior: Clip.antiAlias,
-                            borderRadius: BorderRadius.circular(
-                              2,
-                            ), // same as you want
-                            child: Image.memory(
-                              song.pictures.first.bytes,
-                              width: 40,
-                              height: 40,
-                              fit: BoxFit.cover,
-                              errorBuilder: (context, error, stackTrace) {
-                                return const Icon(Icons.music_note, size: 40);
-                              },
-                            ),
-                          );
-                        }
-                        return ClipRRect(
-                          clipBehavior: Clip.antiAlias,
-                          borderRadius: BorderRadius.circular(2),
-                          child: const Icon(Icons.music_note, size: 40),
-                        );
-                      })(),
-                      title: Text(
-                        song.title ?? "Unknown Title",
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      subtitle: Text(
-                        song.artist ?? "Unknown Artist",
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                      visualDensity: const VisualDensity(
-                        horizontal: 0,
-                        vertical: -4,
-                      ),
-                      onTap: () {
-                        audiohanlder.setIndex(index);
-                        audiohanlder.load();
-                        audiohanlder.play();
-                      },
-                    );
-                  },
-                ),
+          appBar: AppBar(
+            title: isSearching
+                ? TextField(
+                    autofocus: true,
+                    decoration: const InputDecoration(
+                      hintText: "Search songs...",
+                      border: InputBorder.none,
+                      hintStyle: TextStyle(),
+                    ),
+                    style: const TextStyle(),
+                    onChanged: (value) {
+                      setState(() {
+                        searchQuery = value;
+                      });
+                    },
+                  )
+                : const Text("Particle Music"),
+            actions: [
+              IconButton(
+                icon: Icon(isSearching ? Icons.close : Icons.search),
+                onPressed: () {
+                  setState(() {
+                    if (isSearching) {
+                      isSearching = false;
+                      searchQuery = "";
+                    } else {
+                      isSearching = true;
+                    }
+                  });
+                },
+              ),
+            ],
+          ),
+          body: buildSongList(),
           bottomNavigationBar: SizedBox(height: 50),
         ),
         Positioned(left: 15, right: 15, bottom: 30, child: PlayerBar()),
       ],
+    );
+  }
+
+  Widget buildSongList() {
+    final audiohanlder = Provider.of<MyAudioHandler>(context, listen: false);
+
+    final filteredSongs = songs
+        .where(
+          (song) =>
+              (searchQuery.isEmpty) ||
+              (song.title?.toLowerCase().contains(searchQuery.toLowerCase()) ??
+                  false) ||
+              (song.artist?.toLowerCase().contains(searchQuery.toLowerCase()) ??
+                  false),
+        )
+        .toList();
+
+    return ListView.builder(
+      physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+      itemCount: filteredSongs.length,
+      itemBuilder: (context, index) {
+        final song = filteredSongs[index];
+        return ListTile(
+          leading: (() {
+            if (song.pictures.isNotEmpty) {
+              return ClipRRect(
+                clipBehavior: Clip.antiAlias,
+                borderRadius: BorderRadius.circular(2), // same as you want
+                child: Image.memory(
+                  song.pictures.first.bytes,
+                  width: 40,
+                  height: 40,
+                  fit: BoxFit.cover,
+                  errorBuilder: (context, error, stackTrace) {
+                    return const Icon(Icons.music_note, size: 40);
+                  },
+                ),
+              );
+            }
+            return ClipRRect(
+              clipBehavior: Clip.antiAlias,
+              borderRadius: BorderRadius.circular(2),
+              child: const Icon(Icons.music_note, size: 40),
+            );
+          })(),
+          title: Text(
+            song.title ?? "Unknown Title",
+            overflow: TextOverflow.ellipsis,
+          ),
+          subtitle: Text(
+            song.artist ?? "Unknown Artist",
+            overflow: TextOverflow.ellipsis,
+          ),
+          visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+          onTap: () {
+            audiohanlder.setIndex(songs.indexOf(filteredSongs[index]));
+            audiohanlder.load();
+            audiohanlder.play();
+          },
+        );
+      },
     );
   }
 }
