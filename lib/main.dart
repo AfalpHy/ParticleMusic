@@ -54,7 +54,16 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
     currentSong = songs[currentIndex];
     notifyListeners();
     await player.pause();
-    await player.setFilePath(currentSong!.file.path);
+    final audioSource = ProgressiveAudioSource(
+      Uri.file(currentSong!.file.path),
+      options: ProgressiveAudioSourceOptions(
+        darwinAssetOptions: DarwinAssetOptions(
+          preferPreciseDurationAndTiming: true,
+        ),
+      ),
+    );
+
+    await player.setAudioSource(audioSource);
   }
 
   @override
@@ -456,44 +465,58 @@ class SeekBarState extends State<SeekBar> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<Duration>(
-      stream: widget.player.positionStream,
-      builder: (context, snapshot) {
-        final position = snapshot.data ?? Duration.zero;
-        final sliderValue = dragValue ?? position.inMilliseconds.toDouble();
-        final durationMs = widget.duration.inMilliseconds.toDouble();
+    return StreamBuilder<Duration?>(
+      stream: widget.player.durationStream,
+      builder: (context, durationSnapshot) {
+        final duration = durationSnapshot.data ?? Duration.zero;
+        final durationMs = duration.inMilliseconds.toDouble();
 
-        return Column(
-          children: [
-            Slider(
-              min: 0.0,
-              max: durationMs,
-              value: sliderValue.clamp(0.0, durationMs),
-              onChanged: (value) {
-                setState(() {
-                  dragValue = value; // preview while dragging
-                });
-              },
-              onChangeEnd: (value) async {
-                await widget.player.seek(Duration(milliseconds: value.toInt()));
-                setState(() {
-                  dragValue = null; // reset preview
-                });
-              },
-            ),
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    formatDuration(Duration(milliseconds: sliderValue.toInt())),
+        return StreamBuilder<Duration>(
+          stream: widget.player.positionStream,
+          builder: (context, snapshot) {
+            final position = snapshot.data ?? Duration.zero;
+            final sliderValue = dragValue ?? position.inMilliseconds.toDouble();
+
+            return Column(
+              children: [
+                Slider(
+                  min: 0.0,
+                  max: durationMs > 0 ? durationMs : 1.0,
+                  value: sliderValue.clamp(
+                    0.0,
+                    durationMs > 0 ? durationMs : 1.0,
                   ),
-                  Text(formatDuration(widget.duration)),
-                ],
-              ),
-            ),
-          ],
+                  onChanged: (value) {
+                    setState(() {
+                      dragValue = value;
+                    });
+                  },
+                  onChangeEnd: (value) async {
+                    setState(() {
+                      dragValue = null;
+                    });
+                    await widget.player.seek(
+                      Duration(milliseconds: value.toInt()),
+                    );
+                  },
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        formatDuration(
+                          Duration(milliseconds: sliderValue.toInt()),
+                        ),
+                      ),
+                      Text(formatDuration(duration)),
+                    ],
+                  ),
+                ),
+              ],
+            );
+          },
         );
       },
     );
