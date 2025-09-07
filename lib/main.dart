@@ -5,83 +5,139 @@ import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:marquee/marquee.dart';
+import 'package:audio_service/audio_service.dart';
 
 List<AudioMetadata> songs = [];
 
-void main() {
+class MyAudioHandler extends BaseAudioHandler {
+  final _player = AudioPlayer();
+  PlayerModel? playerModel;
+  MyAudioHandler() {
+    _player.playbackEventStream.map(_transformEvent).pipe(playbackState);
+  }
+  void setPlayerModel(PlayerModel model) {
+    playerModel = model;
+  }
+
+  PlaybackState _transformEvent(PlaybackEvent event) {
+    return PlaybackState(
+      controls: [
+        MediaControl.skipToPrevious,
+        _player.playing ? MediaControl.pause : MediaControl.play,
+        MediaControl.skipToNext,
+        MediaControl.stop,
+      ],
+      playing: _player.playing,
+      processingState: {
+        ProcessingState.idle: AudioProcessingState.idle,
+        ProcessingState.loading: AudioProcessingState.loading,
+        ProcessingState.buffering: AudioProcessingState.buffering,
+        ProcessingState.ready: AudioProcessingState.ready,
+        ProcessingState.completed: AudioProcessingState.completed,
+      }[_player.processingState]!,
+      updatePosition: _player.position,
+    );
+  }
+
+  Future<void> playFile(String path) async {
+    await _player.setFilePath(path);
+    await _player.play();
+  }
+
+  @override
+  Future<void> play() async {
+    playerModel?.togglePlayPause();
+  }
+
+  @override
+  Future<void> pause() async {
+    playerModel?.togglePlayPause();
+  }
+
+  @override
+  Future<void> stop() async {
+    playerModel?.stop();
+  }
+
+  @override
+  Future<void> skipToNext() async {
+    playerModel?.next();
+  }
+
+  @override
+  Future<void> skipToPrevious() async {
+    playerModel?.last();
+  }
+}
+
+late MyAudioHandler audioHandler;
+
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  audioHandler = await AudioService.init(
+    builder: () => MyAudioHandler(),
+    config: const AudioServiceConfig(
+      androidNotificationChannelId: 'com.example.app.audio',
+      androidNotificationChannelName: 'Music Playback',
+      androidNotificationOngoing: true,
+    ),
+  );
+  final playerModel = PlayerModel(audioHandler);
+  audioHandler.setPlayerModel(playerModel); // <-- link handler -> model
   runApp(
-    ChangeNotifierProvider(create: (_) => PlayerModel(), child: const MyApp()),
+    ChangeNotifierProvider(create: (_) => playerModel, child: const MyApp()),
   );
 }
 
 // --------------------
 // Player Model
 // --------------------
+
 class PlayerModel extends ChangeNotifier {
-  final AudioPlayer _player = AudioPlayer();
+  final MyAudioHandler _audioHandler;
   AudioMetadata? currentSong;
-  bool isPlaying = false;
   int currentIndex = -1;
-  PlayerModel() {
-    _player.playbackEventStream.listen((event) {
-      // optional: handle events like completion
-      if (_player.processingState == ProcessingState.completed) {
-        isPlaying = false;
-        notifyListeners();
-      }
-    });
-  }
+  bool isPlaying = false;
+
+  PlayerModel(this._audioHandler);
 
   void setIndex(int index) {
     currentIndex = index;
   }
 
   Future<void> playSong() async {
+    if (currentIndex < 0 || currentIndex >= songs.length) return;
     currentSong = songs[currentIndex];
-    if (currentSong == null) {
-      return;
-    }
-    try {
-      await _player.setFilePath(currentSong!.file.path);
-      _player.play();
-      isPlaying = true;
-      notifyListeners();
-    } catch (e) {
-      debugPrint("Error playing ${currentSong!.title}: $e");
-    }
+    isPlaying = true;
+    notifyListeners();
+    await _audioHandler.playFile(currentSong!.file.path);
   }
 
   Future<void> last() async {
-    if (currentIndex == 0) {
-      currentIndex = songs.length - 1;
-    } else {
-      currentIndex -= 1;
-    }
+    if (songs.isEmpty) return;
+    currentIndex = (currentIndex == 0) ? songs.length - 1 : currentIndex - 1;
     await playSong();
   }
 
   Future<void> next() async {
-    if (currentIndex == songs.length - 1) {
-      currentIndex = 0;
-    } else {
-      currentIndex += 1;
-    }
+    if (songs.isEmpty) return;
+    currentIndex = (currentIndex == songs.length - 1) ? 0 : currentIndex + 1;
     await playSong();
   }
 
   void togglePlayPause() {
-    if (_player.playing) {
-      _player.pause();
+    if (isPlaying) {
+      _audioHandler.pause();
       isPlaying = false;
     } else {
-      _player.play();
+      _audioHandler.play();
       isPlaying = true;
     }
     notifyListeners();
   }
 
   Future<void> stop() async {
-    await _player.stop();
+    await _audioHandler.stop();
     isPlaying = false;
     notifyListeners();
   }
