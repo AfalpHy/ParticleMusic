@@ -17,6 +17,12 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
 
   MyAudioHandler() {
     player.playbackEventStream.map(_transformEvent).pipe(playbackState);
+
+    player.processingStateStream.listen((state) async {
+      if (state == ProcessingState.completed) {
+        await skipToNext(); // automatically go to next song
+      }
+    });
   }
 
   PlaybackState _transformEvent(PlaybackEvent event) {
@@ -46,29 +52,30 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
   Future<void> load() async {
     if (currentIndex < 0 || currentIndex >= songs.length) return;
     currentSong = songs[currentIndex];
+    notifyListeners();
     await player.pause();
     await player.setFilePath(currentSong!.file.path);
   }
 
   @override
   Future<void> play() async {
-    await player.play();
     isPlaying = true;
     notifyListeners();
+    await player.play();
   }
 
   @override
   Future<void> pause() async {
-    await player.pause();
     isPlaying = false;
     notifyListeners();
+    await player.pause();
   }
 
   @override
   Future<void> stop() async {
-    await player.stop();
     isPlaying = false;
     notifyListeners();
+    await player.stop();
   }
 
   @override
@@ -78,8 +85,6 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
     await load();
     if (isPlaying) {
       await play();
-    } else {
-      notifyListeners();
     }
   }
 
@@ -90,8 +95,6 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
     await load();
     if (isPlaying) {
       await play();
-    } else {
-      notifyListeners();
     }
   }
 }
@@ -139,10 +142,10 @@ class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() => _HomePageState();
+  State<HomePage> createState() => HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
@@ -367,14 +370,13 @@ class LyricPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final audioHandler = Provider.of<MyAudioHandler>(context);
-
     if (audioHandler.currentSong == null) {
       return Scaffold(
         appBar: AppBar(title: const Text("Lyrics")),
         body: const Center(child: Text("No song playing")),
       );
     }
-
+    final duration = audioHandler.player.duration ?? Duration.zero;
     return Scaffold(
       appBar: AppBar(
         title: Text(audioHandler.currentSong!.title ?? "Unknown Title"),
@@ -396,12 +398,17 @@ class LyricPage extends StatelessWidget {
           ),
 
           const SizedBox(height: 24),
-          // Play Controls
+
+          SeekBar(player: audioHandler.player, duration: duration),
+
+          const SizedBox(height: 16),
+
+          // -------- Play Controls --------
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               IconButton(
-                icon: Icon(Icons.skip_previous, size: 48),
+                icon: const Icon(Icons.skip_previous, size: 48),
                 onPressed: audioHandler.skipToPrevious,
               ),
               IconButton(
@@ -416,7 +423,7 @@ class LyricPage extends StatelessWidget {
                     : audioHandler.play(),
               ),
               IconButton(
-                icon: Icon(Icons.skip_next, size: 48),
+                icon: const Icon(Icons.skip_next, size: 48),
                 onPressed: audioHandler.skipToNext,
               ),
             ],
@@ -425,4 +432,77 @@ class LyricPage extends StatelessWidget {
       ),
     );
   }
+}
+
+class SeekBar extends StatefulWidget {
+  final AudioPlayer player;
+  final Duration duration;
+
+  const SeekBar({super.key, required this.player, required this.duration});
+
+  @override
+  State<SeekBar> createState() => SeekBarState();
+}
+
+class SeekBarState extends State<SeekBar> {
+  double? dragValue;
+
+  String formatDuration(Duration duration) {
+    String twoDigits(int n) => n.toString().padLeft(2, "0");
+    final minutes = twoDigits(duration.inMinutes.remainder(60));
+    final seconds = twoDigits(duration.inSeconds.remainder(60));
+    return "$minutes:$seconds";
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return StreamBuilder<Duration>(
+      stream: widget.player.positionStream,
+      builder: (context, snapshot) {
+        final position = snapshot.data ?? Duration.zero;
+        final sliderValue = dragValue ?? position.inMilliseconds.toDouble();
+        final durationMs = widget.duration.inMilliseconds.toDouble();
+
+        return Column(
+          children: [
+            Slider(
+              min: 0.0,
+              max: durationMs,
+              value: sliderValue.clamp(0.0, durationMs),
+              onChanged: (value) {
+                setState(() {
+                  dragValue = value; // preview while dragging
+                });
+              },
+              onChangeEnd: (value) async {
+                await widget.player.seek(Duration(milliseconds: value.toInt()));
+                setState(() {
+                  dragValue = null; // reset preview
+                });
+              },
+            ),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    formatDuration(Duration(milliseconds: sliderValue.toInt())),
+                  ),
+                  Text(formatDuration(widget.duration)),
+                ],
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+// Helper class for combined stream
+class PositionData {
+  final Duration position;
+  final Duration duration;
+  PositionData(this.position, this.duration);
 }
