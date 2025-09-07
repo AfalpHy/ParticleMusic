@@ -9,64 +9,87 @@ import 'package:audio_service/audio_service.dart';
 
 List<AudioMetadata> songs = [];
 
-class MyAudioHandler extends BaseAudioHandler {
-  final _player = AudioPlayer();
-  PlayerModel? playerModel;
+class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
+  final player = AudioPlayer();
+  AudioMetadata? currentSong;
+  int currentIndex = -1;
+  bool isPlaying = false;
+
   MyAudioHandler() {
-    _player.playbackEventStream.map(_transformEvent).pipe(playbackState);
-  }
-  void setPlayerModel(PlayerModel model) {
-    playerModel = model;
+    player.playbackEventStream.map(_transformEvent).pipe(playbackState);
   }
 
   PlaybackState _transformEvent(PlaybackEvent event) {
     return PlaybackState(
       controls: [
         MediaControl.skipToPrevious,
-        _player.playing ? MediaControl.pause : MediaControl.play,
+        player.playing ? MediaControl.pause : MediaControl.play,
         MediaControl.skipToNext,
         MediaControl.stop,
       ],
-      playing: _player.playing,
+      playing: player.playing,
       processingState: {
         ProcessingState.idle: AudioProcessingState.idle,
         ProcessingState.loading: AudioProcessingState.loading,
         ProcessingState.buffering: AudioProcessingState.buffering,
         ProcessingState.ready: AudioProcessingState.ready,
         ProcessingState.completed: AudioProcessingState.completed,
-      }[_player.processingState]!,
-      updatePosition: _player.position,
+      }[player.processingState]!,
+      updatePosition: player.position,
     );
   }
 
-  Future<void> playFile(String path) async {
-    await _player.setFilePath(path);
-    await _player.play();
+  void setIndex(int index) {
+    currentIndex = index;
+  }
+
+  Future<void> load() async {
+    if (currentIndex < 0 || currentIndex >= songs.length) return;
+    currentSong = songs[currentIndex];
+    await player.setFilePath(currentSong!.file.path);
   }
 
   @override
   Future<void> play() async {
-    playerModel?.togglePlayPause();
+    isPlaying = true;
+    notifyListeners();
+    player.play();
   }
 
   @override
   Future<void> pause() async {
-    playerModel?.togglePlayPause();
+    isPlaying = false;
+    notifyListeners();
+    player.pause();
   }
 
   @override
   Future<void> stop() async {
-    playerModel?.stop();
+    player.stop();
+    isPlaying = false;
+    notifyListeners();
   }
 
   @override
   Future<void> skipToNext() async {
-    playerModel?.next();
+    if (songs.isEmpty) return;
+    currentIndex = (currentIndex == songs.length - 1) ? 0 : currentIndex + 1;
+    load();
+    notifyListeners();
+    // if (isPlaying) {
+    //   play();
+    // }
   }
 
   @override
   Future<void> skipToPrevious() async {
-    playerModel?.last();
+    if (songs.isEmpty) return;
+    currentIndex = (currentIndex == 0) ? songs.length - 1 : currentIndex - 1;
+    load();
+    notifyListeners();
+    // if (isPlaying) {
+    //   play();
+    // }
   }
 }
 
@@ -82,65 +105,12 @@ Future<void> main() async {
       androidNotificationOngoing: true,
     ),
   );
-  final playerModel = PlayerModel(audioHandler);
-  audioHandler.setPlayerModel(playerModel); // <-- link handler -> model
   runApp(
-    ChangeNotifierProvider(create: (_) => playerModel, child: const MyApp()),
+    ChangeNotifierProvider.value(
+      value: audioHandler, // directly provide your handler
+      child: const MyApp(),
+    ),
   );
-}
-
-// --------------------
-// Player Model
-// --------------------
-
-class PlayerModel extends ChangeNotifier {
-  final MyAudioHandler _audioHandler;
-  AudioMetadata? currentSong;
-  int currentIndex = -1;
-  bool isPlaying = false;
-
-  PlayerModel(this._audioHandler);
-
-  void setIndex(int index) {
-    currentIndex = index;
-  }
-
-  Future<void> playSong() async {
-    if (currentIndex < 0 || currentIndex >= songs.length) return;
-    currentSong = songs[currentIndex];
-    isPlaying = true;
-    notifyListeners();
-    await _audioHandler.playFile(currentSong!.file.path);
-  }
-
-  Future<void> last() async {
-    if (songs.isEmpty) return;
-    currentIndex = (currentIndex == 0) ? songs.length - 1 : currentIndex - 1;
-    await playSong();
-  }
-
-  Future<void> next() async {
-    if (songs.isEmpty) return;
-    currentIndex = (currentIndex == songs.length - 1) ? 0 : currentIndex + 1;
-    await playSong();
-  }
-
-  void togglePlayPause() {
-    if (isPlaying) {
-      _audioHandler.pause();
-      isPlaying = false;
-    } else {
-      _audioHandler.play();
-      isPlaying = true;
-    }
-    notifyListeners();
-  }
-
-  Future<void> stop() async {
-    await _audioHandler.stop();
-    isPlaying = false;
-    notifyListeners();
-  }
 }
 
 // --------------------
@@ -209,7 +179,7 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    final player = Provider.of<PlayerModel>(context, listen: false);
+    final audiohanlder = Provider.of<MyAudioHandler>(context, listen: false);
     return Stack(
       children: [
         Scaffold(
@@ -257,8 +227,9 @@ class _HomePageState extends State<HomePage> {
                         overflow: TextOverflow.ellipsis,
                       ),
                       onTap: () {
-                        player.setIndex(index);
-                        player.playSong();
+                        audiohanlder.setIndex(index);
+                        audiohanlder.load();
+                        audiohanlder.play();
                       },
                     );
                   },
@@ -279,9 +250,9 @@ class PlayerBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<PlayerModel>(
-      builder: (context, player, child) {
-        if (player.currentSong == null) return const SizedBox.shrink();
+    return Consumer<MyAudioHandler>(
+      builder: (context, audioHandler, child) {
+        if (audioHandler.currentSong == null) return const SizedBox.shrink();
 
         return ClipRRect(
           borderRadius: BorderRadius.circular(25), // rounded half-circle ends
@@ -297,10 +268,10 @@ class PlayerBar extends StatelessWidget {
               child: Row(
                 children: [
                   // Album cover or icon
-                  if (player.currentSong!.pictures.isNotEmpty)
+                  if (audioHandler.currentSong!.pictures.isNotEmpty)
                     ClipOval(
                       child: Image.memory(
-                        player.currentSong!.pictures.first.bytes,
+                        audioHandler.currentSong!.pictures.first.bytes,
                         width: 50,
                         height: 50,
                         fit: BoxFit.cover,
@@ -317,7 +288,7 @@ class PlayerBar extends StatelessWidget {
                     child: LayoutBuilder(
                       builder: (context, constraints) {
                         final text =
-                            "${player.currentSong!.title ?? 'Unknown Title'} - ${player.currentSong!.artist ?? 'Unknown Artist'}";
+                            "${audioHandler.currentSong!.title ?? 'Unknown Title'} - ${audioHandler.currentSong!.artist ?? 'Unknown Artist'}";
                         final textPainter = TextPainter(
                           text: TextSpan(
                             text: text,
@@ -370,10 +341,12 @@ class PlayerBar extends StatelessWidget {
                   // Play/Pause Button
                   IconButton(
                     icon: Icon(
-                      player.isPlaying ? Icons.pause : Icons.play_arrow,
+                      audioHandler.isPlaying ? Icons.pause : Icons.play_arrow,
                       color: Colors.black,
                     ),
-                    onPressed: () => player.togglePlayPause(),
+                    onPressed: () => audioHandler.isPlaying
+                        ? audioHandler.pause()
+                        : audioHandler.play(),
                   ),
                 ],
               ),
@@ -390,9 +363,9 @@ class LyricPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final player = Provider.of<PlayerModel>(context);
+    final audioHandler = Provider.of<MyAudioHandler>(context);
 
-    if (player.currentSong == null) {
+    if (audioHandler.currentSong == null) {
       return Scaffold(
         appBar: AppBar(title: const Text("Lyrics")),
         body: const Center(child: Text("No song playing")),
@@ -400,14 +373,16 @@ class LyricPage extends StatelessWidget {
     }
 
     return Scaffold(
-      appBar: AppBar(title: Text(player.currentSong!.title ?? "Unknown Title")),
+      appBar: AppBar(
+        title: Text(audioHandler.currentSong!.title ?? "Unknown Title"),
+      ),
       body: Column(
         children: [
           const SizedBox(height: 16),
           ClipOval(
-            child: player.currentSong!.pictures.isNotEmpty
+            child: audioHandler.currentSong!.pictures.isNotEmpty
                 ? Image.memory(
-                    player.currentSong!.pictures.first.bytes,
+                    audioHandler.currentSong!.pictures.first.bytes,
                     width: 200,
                     height: 200,
                     fit: BoxFit.cover,
@@ -424,18 +399,22 @@ class LyricPage extends StatelessWidget {
             children: [
               IconButton(
                 icon: Icon(Icons.skip_previous, size: 48),
-                onPressed: player.last,
+                onPressed: audioHandler.skipToPrevious,
               ),
               IconButton(
                 icon: Icon(
-                  player.isPlaying ? Icons.pause_circle : Icons.play_circle,
+                  audioHandler.isPlaying
+                      ? Icons.pause_circle
+                      : Icons.play_circle,
                   size: 48,
                 ),
-                onPressed: player.togglePlayPause,
+                onPressed: () => audioHandler.isPlaying
+                    ? audioHandler.pause()
+                    : audioHandler.play(),
               ),
               IconButton(
                 icon: Icon(Icons.skip_next, size: 48),
-                onPressed: player.next,
+                onPressed: audioHandler.skipToNext,
               ),
             ],
           ),
