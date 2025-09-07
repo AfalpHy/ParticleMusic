@@ -35,6 +35,7 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
         MediaControl.skipToNext,
         MediaControl.stop,
       ],
+      systemActions: {MediaAction.seek},
       playing: player.playing,
       processingState: {
         ProcessingState.idle: AudioProcessingState.idle,
@@ -78,6 +79,7 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
         artist: currentSong!.artist,
         album: currentSong!.album,
         artUri: artUri, // file:// URI
+        duration: currentSong!.duration,
       ),
     );
     final audioSource = ProgressiveAudioSource(
@@ -125,6 +127,11 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
     if (songs.isEmpty) return;
     currentIndex = (currentIndex == 0) ? songs.length - 1 : currentIndex - 1;
     await load();
+  }
+
+  @override
+  Future<void> seek(Duration position) async {
+    await player.seek(position);
   }
 }
 
@@ -312,10 +319,10 @@ class HomePageState extends State<HomePage> {
             overflow: TextOverflow.ellipsis,
           ),
           visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-          onTap: () {
+          onTap: () async {
             audiohanlder.setIndex(songs.indexOf(filteredSongs[index]));
-            audiohanlder.load();
-            audiohanlder.play();
+            await audiohanlder.load();
+            await audiohanlder.play();
           },
         );
       },
