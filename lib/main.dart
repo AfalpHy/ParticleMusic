@@ -6,6 +6,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:marquee/marquee.dart';
 import 'package:audio_service/audio_service.dart';
+import 'dart:typed_data';
+import 'package:path_provider/path_provider.dart';
 
 List<AudioMetadata> songs = [];
 
@@ -49,11 +51,35 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
     currentIndex = index;
   }
 
+  Future<Uri> saveAlbumCover(Uint8List bytes) async {
+    final dir = await getTemporaryDirectory();
+
+    // Append timestamp to filename to avoid overwriting
+    final timestamp = DateTime.now().millisecondsSinceEpoch;
+    final file = File('${dir.path}/cover_$timestamp');
+
+    await file.writeAsBytes(bytes);
+    return file.uri;
+  }
+
   Future<void> load() async {
     if (currentIndex < 0 || currentIndex >= songs.length) return;
     currentSong = songs[currentIndex];
     notifyListeners();
-    await player.pause();
+
+    Uri? artUri;
+    if (currentSong!.pictures.isNotEmpty) {
+      artUri = await saveAlbumCover(currentSong!.pictures.first.bytes);
+    }
+    mediaItem.add(
+      MediaItem(
+        id: currentSong!.file.path,
+        title: currentSong!.title!,
+        artist: currentSong!.artist,
+        album: currentSong!.album,
+        artUri: artUri, // file:// URI
+      ),
+    );
     final audioSource = ProgressiveAudioSource(
       Uri.file(currentSong!.file.path),
       options: ProgressiveAudioSourceOptions(
@@ -92,9 +118,6 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
     if (songs.isEmpty) return;
     currentIndex = (currentIndex == songs.length - 1) ? 0 : currentIndex + 1;
     await load();
-    if (isPlaying) {
-      await play();
-    }
   }
 
   @override
@@ -102,9 +125,6 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
     if (songs.isEmpty) return;
     currentIndex = (currentIndex == 0) ? songs.length - 1 : currentIndex - 1;
     await load();
-    if (isPlaying) {
-      await play();
-    }
   }
 }
 

@@ -41,6 +41,7 @@ dependencies:
   audio_metadata_reader: ^1.4.2
   marquee: ^2.3.0
   audio_service: ^0.18.18
+  path_provider: ^2.1.5
 
 dev_dependencies:
   flutter_test:
