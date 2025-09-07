@@ -477,44 +477,59 @@ class SeekBarState extends State<SeekBar> {
             final position = snapshot.data ?? Duration.zero;
             final sliderValue = dragValue ?? position.inMilliseconds.toDouble();
 
-            return Column(
-              children: [
-                Slider(
-                  min: 0.0,
-                  max: durationMs > 0 ? durationMs : 1.0,
-                  value: sliderValue.clamp(
-                    0.0,
-                    durationMs > 0 ? durationMs : 1.0,
-                  ),
-                  onChanged: (value) {
-                    setState(() {
-                      dragValue = value;
-                    });
-                  },
-                  onChangeEnd: (value) async {
-                    setState(() {
-                      dragValue = null;
-                    });
-                    await widget.player.seek(
-                      Duration(milliseconds: value.toInt()),
-                    );
-                  },
-                ),
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 32.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        formatDuration(
-                          Duration(milliseconds: sliderValue.toInt()),
-                        ),
+            return Padding(
+              padding: EdgeInsets.fromLTRB(20, 50, 20, 0),
+              child: Column(
+                children: [
+                  SliderTheme(
+                    data: SliderTheme.of(context).copyWith(
+                      trackHeight: 6, // height of the progress bar
+                      thumbShape: RoundSliderThumbShape(
+                        enabledThumbRadius:
+                            3, // half of trackHeight, so they match
                       ),
-                      Text(formatDuration(duration)),
-                    ],
+                      overlayShape:
+                          SliderComponentShape.noOverlay, // remove glow effect
+                    ),
+
+                    child: Slider(
+                      min: 0.0,
+                      max: durationMs > 0 ? durationMs : 1.0,
+                      value: sliderValue.clamp(
+                        0.0,
+                        durationMs > 0 ? durationMs : 1.0,
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          dragValue = value;
+                        });
+                      },
+                      onChangeEnd: (value) async {
+                        setState(() {
+                          dragValue = null;
+                        });
+                        await widget.player.seek(
+                          Duration(milliseconds: value.toInt()),
+                        );
+                      },
+                    ),
                   ),
-                ),
-              ],
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(5, 20, 5, 0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text(
+                          formatDuration(
+                            Duration(milliseconds: sliderValue.toInt()),
+                          ),
+                        ),
+                        Text(formatDuration(duration)),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
             );
           },
         );
