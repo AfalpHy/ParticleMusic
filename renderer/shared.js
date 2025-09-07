@@ -114,11 +114,10 @@ class LyricsPlayer {
         currentLineElement = this.lineElements[this.currentLineIndex];
         currentLineElement.classList.add('current-line');
 
-        if (shared.lyricsPlaneActive)
-            lyricsContainer.scrollTo({
-                top: currentLineElement.offsetTop - lyricsContainer.clientHeight / 2,
-                behavior: 'smooth'
-            });
+        lyricsContainer.scrollTo({
+            top: currentLineElement.offsetTop - lyricsContainer.clientHeight / 2,
+            behavior: 'smooth'
+        });
     }
 
     clear() {
