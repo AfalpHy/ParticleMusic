@@ -75,8 +75,8 @@
  }
 
  .lyrics-line {
-     margin: 3vh 0;
-     font-size: 25px;
+     margin: 25px 0;
+     font-size: 24px;
      width: fit-content;
      overflow-wrap: break-word;
      max-width: 100%;
@@ -88,10 +88,10 @@
 
  .lyrics-line:hover {
      color: white;
-     font-size: 26px;
+     font-size: 25px;
  }
 
  .current-line {
      color: black;
-     font-size: 26px;
+     font-size: 25px;
  }
