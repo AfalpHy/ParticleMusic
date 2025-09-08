@@ -8,6 +8,8 @@ import 'package:marquee/marquee.dart';
 import 'package:audio_service/audio_service.dart';
 import 'dart:typed_data';
 import 'package:path_provider/path_provider.dart';
+import 'package:watcher/watcher.dart';
+import 'dart:async';
 
 List<AudioMetadata> songs = [];
 
@@ -182,34 +184,42 @@ class HomePage extends StatefulWidget {
 }
 
 class HomePageState extends State<HomePage> {
+  late Directory docs;
+  bool isChanged = false;
   @override
-  void initState() {
+  void initState() async {
     super.initState();
-    loadSongs();
+    docs = await getApplicationDocumentsDirectory();
+    await loadSongs();
+    final watcher = DirectoryWatcher(docs.path);
+
+    watcher.events.listen((event) {
+      isChanged = true;
+    });
+
+    // Check directory every 5 seconds
+    Timer.periodic(Duration(seconds: 5), (timer) async {
+      if (isChanged) {
+        isChanged = false;
+        await loadSongs();
+      }
+    });
   }
 
   Future<void> loadSongs() async {
-    FilePickerResult? result = await FilePicker.platform.pickFiles(
-      allowMultiple: true,
-    );
-
     List<AudioMetadata> tempSongs = [];
-    if (result != null) {
-      List<File> files = result.files
-          .where((platformFile) => platformFile.path != null)
-          .map((platformFile) => File(platformFile.path!))
-          .toList();
 
-      for (var file in files) {
-        if ((file.path.endsWith('.mp3') ||
-            file.path.endsWith('.flac') ||
-            file.path.endsWith('.m4a'))) {
-          try {
-            final meta = readMetadata(file, getImage: true);
-            tempSongs.add(meta);
-          } catch (_) {
-            continue; // skip unreadable files
-          }
+    final keepfile = File('${docs.path}/Particle Music.keep');
+    if (!(await keepfile.exists())) {
+      await keepfile.writeAsString("App initialized");
+    }
+    for (var file in docs.listSync()) {
+      if ((file.path.endsWith('.mp3') || file.path.endsWith('.flac'))) {
+        try {
+          final meta = readMetadata(File(file.path), getImage: true);
+          tempSongs.add(meta);
+        } catch (_) {
+          continue; // skip unreadable files
         }
       }
     }
@@ -278,6 +288,8 @@ class HomePageState extends State<HomePage> {
               (song.title?.toLowerCase().contains(searchQuery.toLowerCase()) ??
                   false) ||
               (song.artist?.toLowerCase().contains(searchQuery.toLowerCase()) ??
+                  false) ||
+              (song.album?.toLowerCase().contains(searchQuery.toLowerCase()) ??
                   false),
         )
         .toList();

@@ -42,6 +42,7 @@ dependencies:
   marquee: ^2.3.0
   audio_service: ^0.18.18
   path_provider: ^2.1.5
+  watcher: ^1.1.3
 
 dev_dependencies:
   flutter_test:
