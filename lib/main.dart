@@ -12,6 +12,7 @@ import 'package:watcher/watcher.dart';
 import 'dart:async';
 
 List<AudioMetadata> songs = [];
+List<LyricLine> lyrics = [];
 
 class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
   final player = AudioPlayer();
@@ -65,9 +66,43 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
     return file.uri;
   }
 
+  Future<void> parseLyricsFile(String path) async {
+    final file = File(path);
+    if (!file.existsSync()) {
+      lyrics = [];
+      return;
+    }
+    final lines = await file.readAsLines(); // read file line by line
+
+    final regex = RegExp(r'\[(\d+):(\d+)(?:\.(\d+))?\](.*)');
+
+    for (var line in lines) {
+      final match = regex.firstMatch(line);
+      if (match != null) {
+        final min = int.parse(match.group(1)!);
+        final sec = int.parse(match.group(2)!);
+        final ms = match.group(3) != null
+            ? int.parse(match.group(3)!.padRight(3, '0'))
+            : 0;
+        final text = match.group(4)!.trim();
+        if (text == '') {
+          continue;
+        }
+        lyrics.add(
+          LyricLine(
+            Duration(minutes: min, seconds: sec, milliseconds: ms),
+            text,
+          ),
+        );
+      }
+    }
+  }
+
   Future<void> load() async {
     if (currentIndex < 0 || currentIndex >= songs.length) return;
     currentSong = songs[currentIndex];
+    String path = currentSong!.file.path;
+    await parseLyricsFile("${path.substring(0, path.lastIndexOf('.'))}.lrc");
     notifyListeners();
 
     Uri? artUri;
@@ -469,12 +504,6 @@ class LyricPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final audioHandler = Provider.of<MyAudioHandler>(context);
-    if (audioHandler.currentSong == null) {
-      return Scaffold(
-        appBar: AppBar(title: const Text("Lyrics")),
-        body: const Center(child: Text("No song playing")),
-      );
-    }
     final duration = audioHandler.player.duration ?? Duration.zero;
     return Scaffold(
       appBar: AppBar(
@@ -483,6 +512,7 @@ class LyricPage extends StatelessWidget {
       body: Column(
         children: [
           const SizedBox(height: 30),
+
           ClipOval(
             child: audioHandler.currentSong!.pictures.isNotEmpty
                 ? Image.memory(
@@ -496,7 +526,16 @@ class LyricPage extends StatelessWidget {
                 : const Icon(Icons.music_note, size: 200),
           ),
 
-          const SizedBox(height: 280),
+          SizedBox(
+            height: 280,
+            child: StreamBuilder<Duration>(
+              stream: audioHandler.player.positionStream,
+              builder: (context, snapshot) {
+                final pos = snapshot.data ?? Duration.zero;
+                return LyricsListView(position: pos);
+              },
+            ),
+          ),
 
           SeekBar(player: audioHandler.player, duration: duration),
 
@@ -529,6 +568,45 @@ class LyricPage extends StatelessWidget {
       ),
     );
   }
+}
+
+class LyricsListView extends StatelessWidget {
+  final Duration position;
+
+  const LyricsListView({super.key, required this.position});
+
+  @override
+  Widget build(BuildContext context) {
+    // find the current line index
+    final currentIndex = lyrics.lastIndexWhere(
+      (line) => position >= line.timestamp,
+    );
+
+    return ListView.builder(
+      itemCount: lyrics.length,
+      itemBuilder: (context, index) {
+        final isActive = index == currentIndex;
+        return Padding(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          child: Text(
+            lyrics[index].text,
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: isActive ? 18 : 14,
+              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+              color: isActive ? Colors.black : Colors.grey,
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class LyricLine {
+  final Duration timestamp;
+  final String text;
+  LyricLine(this.timestamp, this.text);
 }
 
 class SeekBar extends StatefulWidget {
