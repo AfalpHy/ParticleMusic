@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
 import 'package:file_picker/file_picker.dart';
@@ -67,9 +68,9 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
   }
 
   Future<void> parseLyricsFile(String path) async {
+    lyrics = [];
     final file = File(path);
     if (!file.existsSync()) {
-      lyrics = [];
       return;
     }
     final lines = await file.readAsLines(); // read file line by line
@@ -276,7 +277,10 @@ class HomePageState extends State<HomePage> {
     return Stack(
       children: [
         Scaffold(
+          backgroundColor: Colors.blueGrey,
           appBar: AppBar(
+            backgroundColor: Colors.grey,
+
             title: isSearching
                 ? TextField(
                     autofocus: true,
@@ -339,7 +343,6 @@ class HomePageState extends State<HomePage> {
       itemBuilder: (context, index) {
         final song = filteredSongs[index];
         return ListTile(
-          tileColor: Colors.blueGrey,
           leading: (() {
             if (song.pictures.isNotEmpty) {
               return ClipRRect(
@@ -512,7 +515,6 @@ class LyricPage extends StatelessWidget {
       body: Column(
         children: [
           const SizedBox(height: 30),
-
           ClipOval(
             child: audioHandler.currentSong!.pictures.isNotEmpty
                 ? Image.memory(
@@ -525,15 +527,32 @@ class LyricPage extends StatelessWidget {
                   )
                 : const Icon(Icons.music_note, size: 200),
           ),
+          const SizedBox(height: 10),
 
           SizedBox(
-            height: 280,
-            child: StreamBuilder<Duration>(
-              stream: audioHandler.player.positionStream,
-              builder: (context, snapshot) {
-                final pos = snapshot.data ?? Duration.zero;
-                return LyricsListView(position: pos);
+            height: 320,
+            child: ShaderMask(
+              shaderCallback: (rect) {
+                return LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent, // fade out at top
+                    Colors.black, // fully visible
+                    Colors.black, // fully visible
+                    Colors.transparent, // fade out at bottom
+                  ],
+                  stops: [0.0, 0.1, 0.9, 1.0], // adjust fade height
+                ).createShader(rect);
               },
+              blendMode: BlendMode.dstIn,
+              child: StreamBuilder<Duration>(
+                stream: audioHandler.player.positionStream,
+                builder: (context, snapshot) {
+                  final pos = snapshot.data ?? Duration.zero;
+                  return LyricsListView(position: pos);
+                },
+              ),
             ),
           ),
 
@@ -570,35 +589,84 @@ class LyricPage extends StatelessWidget {
   }
 }
 
-class LyricsListView extends StatelessWidget {
+class LyricsListView extends StatefulWidget {
   final Duration position;
 
   const LyricsListView({super.key, required this.position});
 
   @override
-  Widget build(BuildContext context) {
-    // find the current line index
+  State<LyricsListView> createState() => LyricsListViewState();
+}
+
+class LyricsListViewState extends State<LyricsListView> {
+  final ScrollController scrollController = ScrollController();
+  bool userDragging = false;
+
+  @override
+  void didUpdateWidget(LyricsListView oldWidget) {
+    super.didUpdateWidget(oldWidget);
+
     final currentIndex = lyrics.lastIndexWhere(
-      (line) => position >= line.timestamp,
+      (line) => widget.position >= line.timestamp,
     );
 
-    return ListView.builder(
-      itemCount: lyrics.length,
-      itemBuilder: (context, index) {
-        final isActive = index == currentIndex;
-        return Padding(
-          padding: const EdgeInsets.symmetric(vertical: 6),
-          child: Text(
-            lyrics[index].text,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: isActive ? 18 : 14,
-              fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-              color: isActive ? Colors.black : Colors.grey,
-            ),
-          ),
+    // Only auto-scroll if user is not dragging
+    if (!userDragging && scrollController.hasClients && currentIndex >= 0) {
+      const double lineHeight = 40;
+      final double visibleHeight = 320;
+      final double offset =
+          currentIndex * lineHeight - (visibleHeight / 2) + (lineHeight / 2);
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        scrollController.animateTo(
+          offset.clamp(0.0, lyrics.length * lineHeight - visibleHeight),
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.linear,
         );
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final currentIndex = lyrics.lastIndexWhere(
+      (line) => widget.position >= line.timestamp,
+    );
+
+    return NotificationListener<UserScrollNotification>(
+      onNotification: (notification) {
+        if (notification.direction != ScrollDirection.idle) {
+          setState(() {
+            userDragging = true; // user started scrolling
+          });
+        } else {
+          // reset after scroll ends
+          Future.delayed(const Duration(milliseconds: 500), () {
+            setState(() {
+              userDragging = false;
+            });
+          });
+        }
+        return false;
       },
+      child: ListView.builder(
+        controller: scrollController,
+        itemCount: lyrics.length,
+        itemBuilder: (context, index) {
+          final bool isActive = index == currentIndex;
+          return SizedBox(
+            height: 40,
+            child: Text(
+              lyrics[index].text,
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: isActive ? 20 : 16,
+                fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+                color: isActive ? Colors.black : Colors.grey,
+              ),
+            ),
+          );
+        },
+      ),
     );
   }
 }
@@ -645,7 +713,7 @@ class SeekBarState extends State<SeekBar> {
             final sliderValue = dragValue ?? position.inMilliseconds.toDouble();
 
             return SizedBox(
-              height: 80, // expand gesture area for easier touch
+              height: 50, // expand gesture area for easier touch
               child: Stack(
                 alignment: Alignment.centerLeft,
                 children: [
@@ -653,7 +721,7 @@ class SeekBarState extends State<SeekBar> {
                   Positioned(
                     left: 30,
                     right: 30,
-                    bottom: 15,
+                    bottom: 0,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
