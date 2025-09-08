@@ -304,6 +304,7 @@ class HomePageState extends State<HomePage> {
       itemBuilder: (context, index) {
         final song = filteredSongs[index];
         return ListTile(
+          tileColor: Colors.blueGrey,
           leading: (() {
             if (song.pictures.isNotEmpty) {
               return ClipRRect(
@@ -481,7 +482,7 @@ class LyricPage extends StatelessWidget {
       ),
       body: Column(
         children: [
-          const SizedBox(height: 16),
+          const SizedBox(height: 30),
           ClipOval(
             child: audioHandler.currentSong!.pictures.isNotEmpty
                 ? Image.memory(
@@ -495,11 +496,9 @@ class LyricPage extends StatelessWidget {
                 : const Icon(Icons.music_note, size: 200),
           ),
 
-          const SizedBox(height: 24),
+          const SizedBox(height: 280),
 
           SeekBar(player: audioHandler.player, duration: duration),
-
-          const SizedBox(height: 16),
 
           // -------- Play Controls --------
           Row(
@@ -567,81 +566,16 @@ class SeekBarState extends State<SeekBar> {
             final position = snapshot.data ?? Duration.zero;
             final sliderValue = dragValue ?? position.inMilliseconds.toDouble();
 
-            return Padding(
-              padding: const EdgeInsets.fromLTRB(30, 50, 30, 0),
-              child: Column(
+            return SizedBox(
+              height: 80, // expand gesture area for easier touch
+              child: Stack(
+                alignment: Alignment.centerLeft,
                 children: [
-                  SizedBox(
-                    height: 40, // expand gesture area for easier touch
-                    child: Stack(
-                      alignment: Alignment.centerLeft,
-                      children: [
-                        // Slider visuals
-                        SliderTheme(
-                          data: SliderTheme.of(context).copyWith(
-                            trackHeight: isDragging ? 4 : 2,
-                            trackShape: const FullWidthTrackShape(),
-                            thumbShape: isDragging
-                                ? RoundSliderThumbShape(enabledThumbRadius: 4)
-                                : RoundSliderThumbShape(enabledThumbRadius: 2),
-                            overlayShape: SliderComponentShape.noOverlay,
-                            activeTrackColor: Colors.blue,
-                            inactiveTrackColor: Colors.grey.shade300,
-                          ),
-                          child: Slider(
-                            min: 0.0,
-                            max: durationMs,
-                            value: sliderValue.clamp(0.0, durationMs),
-                            onChanged: (value) {},
-                          ),
-                        ),
-
-                        // Full-track GestureDetector to capture touches anywhere on the track
-                        Positioned.fill(
-                          child: GestureDetector(
-                            behavior: HitTestBehavior.translucent,
-                            onTapDown: (details) {
-                              setState(() => isDragging = true);
-                            },
-                            onHorizontalDragUpdate: (details) {
-                              seekByTouch(
-                                details.globalPosition.dx,
-                                context,
-                                durationMs,
-                              );
-                            },
-                            onHorizontalDragEnd: (_) async {
-                              await widget.player.seek(
-                                Duration(milliseconds: dragValue!.toInt()),
-                              );
-                              setState(() {
-                                dragValue = null;
-                                isDragging = false;
-                              });
-                            },
-                            onTapUp: (details) async {
-                              seekByTouch(
-                                details.globalPosition.dx,
-                                context,
-                                durationMs,
-                              );
-                              await widget.player.seek(
-                                Duration(milliseconds: dragValue!.toInt()),
-                              );
-                              setState(() {
-                                dragValue = null;
-                                isDragging = false;
-                              });
-                            },
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-
                   // Duration labels
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(5, 20, 5, 0),
+                  Positioned(
+                    left: 30,
+                    right: 30,
+                    bottom: 15,
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -652,6 +586,72 @@ class SeekBarState extends State<SeekBar> {
                         ),
                         Text(formatDuration(duration)),
                       ],
+                    ),
+                  ),
+
+                  // Slider visuals
+                  SliderTheme(
+                    data: SliderTheme.of(context).copyWith(
+                      trackHeight: isDragging ? 4 : 2,
+                      trackShape: const FullWidthTrackShape(),
+                      thumbShape: isDragging
+                          ? RoundSliderThumbShape(enabledThumbRadius: 4)
+                          : RoundSliderThumbShape(enabledThumbRadius: 2),
+                      overlayShape: SliderComponentShape.noOverlay,
+                      activeTrackColor: Colors.grey.shade800,
+                      inactiveTrackColor: Colors.grey.shade300,
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 30),
+                      child: Slider(
+                        min: 0.0,
+                        max: durationMs,
+                        value: sliderValue.clamp(0.0, durationMs),
+                        onChanged: (value) {},
+                      ),
+                    ),
+                  ),
+
+                  // Full-track GestureDetector to capture touches anywhere on the track
+                  Positioned.fill(
+                    child: GestureDetector(
+                      behavior: HitTestBehavior.translucent,
+                      onTapDown: (_) {
+                        setState(() => isDragging = true);
+                      },
+                      onHorizontalDragStart: (_) {
+                        setState(() => isDragging = true);
+                      },
+                      onHorizontalDragUpdate: (details) {
+                        seekByTouch(
+                          details.localPosition.dx,
+                          context,
+                          durationMs,
+                        );
+                      },
+                      onHorizontalDragEnd: (_) async {
+                        await widget.player.seek(
+                          Duration(milliseconds: dragValue!.toInt()),
+                        );
+                        setState(() {
+                          dragValue = null;
+                          isDragging = false;
+                        });
+                      },
+                      onTapUp: (details) async {
+                        seekByTouch(
+                          details.localPosition.dx,
+                          context,
+                          durationMs,
+                        );
+                        await widget.player.seek(
+                          Duration(milliseconds: dragValue!.toInt()),
+                        );
+                        setState(() {
+                          dragValue = null;
+                          isDragging = false;
+                        });
+                      },
                     ),
                   ),
                 ],
@@ -667,7 +667,7 @@ class SeekBarState extends State<SeekBar> {
   void seekByTouch(double dx, BuildContext context, double durationMs) {
     final box = context.findRenderObject() as RenderBox;
 
-    double relative = dx / box.size.width;
+    double relative = (dx - 30) / (box.size.width - 60);
     relative = relative.clamp(0.0, 1.0);
     setState(() {
       dragValue = relative * durationMs;
@@ -745,11 +745,4 @@ class FullWidthTrackShape extends SliderTrackShape {
     context.canvas.drawRRect(activeTrackRect, activePaint);
     context.canvas.drawRRect(inactiveTrackRect, inactivePaint);
   }
-}
-
-// Helper class for combined stream
-class PositionData {
-  final Duration position;
-  final Duration duration;
-  PositionData(this.position, this.duration);
 }
