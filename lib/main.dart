@@ -20,7 +20,7 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
   bool isPlaying = false;
 
   MyAudioHandler() {
-    player.playbackEventStream.map(_transformEvent).pipe(playbackState);
+    player.playbackEventStream.map(transformEvent).pipe(playbackState);
 
     player.processingStateStream.listen((state) async {
       if (state == ProcessingState.completed) {
@@ -29,7 +29,7 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
     });
   }
 
-  PlaybackState _transformEvent(PlaybackEvent event) {
+  PlaybackState transformEvent(PlaybackEvent event) {
     return PlaybackState(
       controls: [
         MediaControl.skipToPrevious,
