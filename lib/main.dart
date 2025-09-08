@@ -315,7 +315,7 @@ class HomePageState extends State<HomePage> {
             overflow: TextOverflow.ellipsis,
           ),
           subtitle: Text(
-            song.artist ?? "Unknown Artist",
+            "${song.artist ?? "Unknown Artist"} - ${song.album ?? "Unknown Album"}",
             overflow: TextOverflow.ellipsis,
           ),
           visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
