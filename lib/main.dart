@@ -187,8 +187,12 @@ class HomePageState extends State<HomePage> {
   late Directory docs;
   bool isChanged = false;
   @override
-  void initState() async {
+  void initState() {
     super.initState();
+    loadAndWatch();
+  }
+
+  Future<void> loadAndWatch() async {
     docs = await getApplicationDocumentsDirectory();
     await loadSongs();
     final watcher = DirectoryWatcher(docs.path);
@@ -540,6 +544,7 @@ class SeekBar extends StatefulWidget {
 
 class SeekBarState extends State<SeekBar> {
   double? dragValue;
+  bool isDragging = false; // track if user is touching the thumb
 
   String formatDuration(Duration duration) {
     String twoDigits(int n) => n.toString().padLeft(2, "0");
@@ -563,42 +568,78 @@ class SeekBarState extends State<SeekBar> {
             final sliderValue = dragValue ?? position.inMilliseconds.toDouble();
 
             return Padding(
-              padding: EdgeInsets.fromLTRB(20, 50, 20, 0),
+              padding: const EdgeInsets.fromLTRB(30, 50, 30, 0),
               child: Column(
                 children: [
-                  SliderTheme(
-                    data: SliderTheme.of(context).copyWith(
-                      trackHeight: 6, // height of the progress bar
-                      thumbShape: RoundSliderThumbShape(
-                        enabledThumbRadius:
-                            3, // half of trackHeight, so they match
-                      ),
-                      overlayShape:
-                          SliderComponentShape.noOverlay, // remove glow effect
-                    ),
+                  SizedBox(
+                    height: 40, // expand gesture area for easier touch
+                    child: Stack(
+                      alignment: Alignment.centerLeft,
+                      children: [
+                        // Slider visuals
+                        SliderTheme(
+                          data: SliderTheme.of(context).copyWith(
+                            trackHeight: isDragging ? 4 : 2,
+                            trackShape: const FullWidthTrackShape(),
+                            thumbShape: isDragging
+                                ? RoundSliderThumbShape(enabledThumbRadius: 4)
+                                : RoundSliderThumbShape(enabledThumbRadius: 2),
+                            overlayShape: SliderComponentShape.noOverlay,
+                            activeTrackColor: Colors.blue,
+                            inactiveTrackColor: Colors.grey.shade300,
+                          ),
+                          child: Slider(
+                            min: 0.0,
+                            max: durationMs,
+                            value: sliderValue.clamp(0.0, durationMs),
+                            onChanged: (value) {},
+                          ),
+                        ),
 
-                    child: Slider(
-                      min: 0.0,
-                      max: durationMs > 0 ? durationMs : 1.0,
-                      value: sliderValue.clamp(
-                        0.0,
-                        durationMs > 0 ? durationMs : 1.0,
-                      ),
-                      onChanged: (value) {
-                        setState(() {
-                          dragValue = value;
-                        });
-                      },
-                      onChangeEnd: (value) async {
-                        setState(() {
-                          dragValue = null;
-                        });
-                        await widget.player.seek(
-                          Duration(milliseconds: value.toInt()),
-                        );
-                      },
+                        // Full-track GestureDetector to capture touches anywhere on the track
+                        Positioned.fill(
+                          child: GestureDetector(
+                            behavior: HitTestBehavior.translucent,
+                            onTapDown: (details) {
+                              setState(() => isDragging = true);
+                            },
+                            onHorizontalDragUpdate: (details) {
+                              seekByTouch(
+                                details.globalPosition.dx,
+                                context,
+                                durationMs,
+                              );
+                            },
+                            onHorizontalDragEnd: (_) async {
+                              await widget.player.seek(
+                                Duration(milliseconds: dragValue!.toInt()),
+                              );
+                              setState(() {
+                                dragValue = null;
+                                isDragging = false;
+                              });
+                            },
+                            onTapUp: (details) async {
+                              seekByTouch(
+                                details.globalPosition.dx,
+                                context,
+                                durationMs,
+                              );
+                              await widget.player.seek(
+                                Duration(milliseconds: dragValue!.toInt()),
+                              );
+                              setState(() {
+                                dragValue = null;
+                                isDragging = false;
+                              });
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                   ),
+
+                  // Duration labels
                   Padding(
                     padding: const EdgeInsets.fromLTRB(5, 20, 5, 0),
                     child: Row(
@@ -620,6 +661,89 @@ class SeekBarState extends State<SeekBar> {
         );
       },
     );
+  }
+
+  /// Map horizontal touch to slider value
+  void seekByTouch(double dx, BuildContext context, double durationMs) {
+    final box = context.findRenderObject() as RenderBox;
+
+    double relative = dx / box.size.width;
+    relative = relative.clamp(0.0, 1.0);
+    setState(() {
+      dragValue = relative * durationMs;
+    });
+  }
+}
+
+/// Full-width rounded track
+class FullWidthTrackShape extends SliderTrackShape {
+  const FullWidthTrackShape();
+
+  @override
+  Rect getPreferredRect({
+    required RenderBox parentBox,
+    Offset offset = Offset.zero,
+    required SliderThemeData sliderTheme,
+    bool isEnabled = false,
+    bool isDiscrete = false,
+  }) {
+    final trackHeight = sliderTheme.trackHeight ?? 4.0;
+    final trackTop = offset.dy + (parentBox.size.height - trackHeight) / 2;
+    final trackLeft = offset.dx;
+    final trackWidth = parentBox.size.width;
+
+    return Rect.fromLTWH(trackLeft, trackTop, trackWidth, trackHeight);
+  }
+
+  @override
+  void paint(
+    PaintingContext context,
+    Offset offset, {
+    required RenderBox parentBox,
+    required SliderThemeData sliderTheme,
+    required Animation<double> enableAnimation,
+    required TextDirection textDirection,
+    required Offset thumbCenter,
+    Offset? secondaryOffset,
+    bool isEnabled = false,
+    bool isDiscrete = false,
+  }) {
+    final trackRect = getPreferredRect(
+      parentBox: parentBox,
+      offset: offset,
+      sliderTheme: sliderTheme,
+      isEnabled: isEnabled,
+      isDiscrete: isDiscrete,
+    );
+
+    final radius = Radius.circular(trackRect.height / 2);
+
+    final activeTrackRect = RRect.fromLTRBR(
+      trackRect.left,
+      trackRect.top,
+      thumbCenter.dx,
+      trackRect.bottom,
+      radius,
+    );
+
+    final inactiveTrackRect = RRect.fromLTRBR(
+      thumbCenter.dx,
+      trackRect.top,
+      trackRect.right,
+      trackRect.bottom,
+      radius,
+    );
+
+    final activePaint = Paint()
+      ..color = sliderTheme.activeTrackColor!
+      ..style = PaintingStyle.fill;
+
+    final inactivePaint = Paint()
+      ..color = sliderTheme.inactiveTrackColor!
+      ..style = PaintingStyle.fill;
+
+    context.canvas.drawRRect(activeTrackRect, activePaint);
+    context.canvas.drawRRect(inactiveTrackRect, inactivePaint);
   }
 }
 
