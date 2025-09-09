@@ -533,8 +533,7 @@ class LyricPage extends StatelessWidget {
           ),
           const SizedBox(height: 10),
 
-          SizedBox(
-            height: 320,
+          Expanded(
             child: ShaderMask(
               shaderCallback: (rect) {
                 return LinearGradient(
@@ -563,29 +562,32 @@ class LyricPage extends StatelessWidget {
           SeekBar(player: audioHandler.player, duration: duration),
 
           // -------- Play Controls --------
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.skip_previous, size: 48),
-                onPressed: audioHandler.skipToPrevious,
-              ),
-              IconButton(
-                icon: Icon(
-                  audioHandler.player.playing
-                      ? Icons.pause_circle
-                      : Icons.play_circle,
-                  size: 48,
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.skip_previous, size: 48),
+                  onPressed: audioHandler.skipToPrevious,
                 ),
-                onPressed: () => audioHandler.player.playing
-                    ? audioHandler.pause()
-                    : audioHandler.play(),
-              ),
-              IconButton(
-                icon: const Icon(Icons.skip_next, size: 48),
-                onPressed: audioHandler.skipToNext,
-              ),
-            ],
+                IconButton(
+                  icon: Icon(
+                    audioHandler.player.playing
+                        ? Icons.pause_circle
+                        : Icons.play_circle,
+                    size: 48,
+                  ),
+                  onPressed: () => audioHandler.player.playing
+                      ? audioHandler.pause()
+                      : audioHandler.play(),
+                ),
+                IconButton(
+                  icon: const Icon(Icons.skip_next, size: 48),
+                  onPressed: audioHandler.skipToNext,
+                ),
+              ],
+            ),
           ),
         ],
       ),
@@ -659,7 +661,7 @@ class LyricsListViewState extends State<LyricsListView> {
           return Container(
             key: lineKeys[index],
             alignment: Alignment.center,
-            padding: const EdgeInsets.symmetric(vertical: 8),
+            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 50),
             child: Text(
               lyrics[index].text,
               textAlign: TextAlign.center,
