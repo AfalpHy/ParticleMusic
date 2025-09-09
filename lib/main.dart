@@ -627,25 +627,11 @@ class LyricsListViewState extends State<LyricsListView> {
         final key = lineKeys[currentIndex];
         final context = key.currentContext;
         if (context != null) {
-          final box = context.findRenderObject() as RenderBox;
-          final scrollableBox =
-              scrollController.position.context.storageContext
-                      .findRenderObject()
-                  as RenderBox;
-          final offset = box
-              .localToGlobal(Offset.zero, ancestor: scrollableBox)
-              .dy;
-
-          final scrollOffset =
-              scrollController.offset +
-              offset -
-              scrollController.position.viewportDimension / 2 +
-              box.size.height / 2;
-
-          scrollController.animateTo(
-            scrollOffset.clamp(0.0, scrollController.position.maxScrollExtent),
-            duration: const Duration(milliseconds: 300),
+          Scrollable.ensureVisible(
+            context,
+            duration: Duration(milliseconds: 300), // smooth animation
             curve: Curves.linear,
+            alignment: 0.5,
           );
         }
       });
