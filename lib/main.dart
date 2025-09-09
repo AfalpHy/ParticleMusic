@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:provider/provider.dart';
-import 'package:file_picker/file_picker.dart';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:marquee/marquee.dart';
 import 'package:audio_service/audio_service.dart';
@@ -19,7 +18,6 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
   final player = AudioPlayer();
   AudioMetadata? currentSong;
   int currentIndex = -1;
-  bool isPlaying = false;
 
   MyAudioHandler() {
     player.playbackEventStream.map(transformEvent).pipe(playbackState);
@@ -28,6 +26,10 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
       if (state == ProcessingState.completed) {
         await skipToNext(); // automatically go to next song
       }
+    });
+
+    player.playingStream.listen((isPlaying) {
+      notifyListeners();
     });
   }
 
@@ -133,25 +135,13 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
   }
 
   @override
-  Future<void> play() async {
-    isPlaying = true;
-    notifyListeners();
-    await player.play();
-  }
+  Future<void> play() => player.play();
 
   @override
-  Future<void> pause() async {
-    isPlaying = false;
-    notifyListeners();
-    await player.pause();
-  }
+  Future<void> pause() => player.pause();
 
   @override
-  Future<void> stop() async {
-    isPlaying = false;
-    notifyListeners();
-    await player.stop();
-  }
+  Future<void> stop() => player.stop();
 
   @override
   Future<void> skipToNext() async {
@@ -168,9 +158,7 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
   }
 
   @override
-  Future<void> seek(Duration position) async {
-    await player.seek(position);
-  }
+  Future<void> seek(Duration position) => player.seek(position);
 }
 
 late MyAudioHandler audioHandler;
@@ -377,7 +365,7 @@ class HomePageState extends State<HomePage> {
           onTap: () async {
             audiohanlder.setIndex(songs.indexOf(filteredSongs[index]));
             await audiohanlder.load();
-            await audiohanlder.play();
+            audiohanlder.play();
           },
         );
       },
@@ -484,12 +472,18 @@ class PlayerBar extends StatelessWidget {
                   // Play/Pause Button
                   IconButton(
                     icon: Icon(
-                      audioHandler.isPlaying ? Icons.pause : Icons.play_arrow,
+                      audioHandler.player.playing
+                          ? Icons.pause
+                          : Icons.play_arrow,
                       color: Colors.black,
                     ),
-                    onPressed: () => audioHandler.isPlaying
-                        ? audioHandler.pause()
-                        : audioHandler.play(),
+                    onPressed: () {
+                      if (audioHandler.player.playing) {
+                        audioHandler.pause();
+                      } else {
+                        audioHandler.play();
+                      }
+                    },
                   ),
                 ],
               ),
@@ -568,12 +562,12 @@ class LyricPage extends StatelessWidget {
               ),
               IconButton(
                 icon: Icon(
-                  audioHandler.isPlaying
+                  audioHandler.player.playing
                       ? Icons.pause_circle
                       : Icons.play_circle,
                   size: 48,
                 ),
-                onPressed: () => audioHandler.isPlaying
+                onPressed: () => audioHandler.player.playing
                     ? audioHandler.pause()
                     : audioHandler.play(),
               ),
