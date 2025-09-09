@@ -11,9 +11,13 @@ import 'dart:typed_data';
 import 'package:path_provider/path_provider.dart';
 import 'package:watcher/watcher.dart';
 import 'dart:async';
+import 'package:palette_generator/palette_generator.dart';
 
 List<AudioMetadata> songs = [];
 List<LyricLine> lyrics = [];
+late Color? artMixedColor;
+// Create a GlobalKey for each line
+List<GlobalKey> lineKeys = [];
 
 class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
   final player = AudioPlayer();
@@ -100,6 +104,46 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
         );
       }
     }
+    lineKeys = List.generate(lyrics.length, (_) => GlobalKey());
+  }
+
+  Color mixColorsWeighted(List<Color> colors, List<double> weights) {
+    double r = 0, g = 0, b = 0, a = 0;
+    double totalWeight = 0;
+
+    for (int i = 0; i < colors.length; i++) {
+      double w = weights[i];
+      r += ((colors[i].r * 255.0).round() & 0xff) * w;
+      g += ((colors[i].g * 255.0).round() & 0xff) * w;
+      b += ((colors[i].b * 255.0).round() & 0xff) * w;
+      a += ((colors[i].a * 255.0).round() & 0xff) * w;
+      totalWeight += w;
+    }
+
+    return Color.fromARGB(
+      (a / totalWeight).round(),
+      (r / totalWeight).round(),
+      (g / totalWeight).round(),
+      (b / totalWeight).round(),
+    );
+  }
+
+  Future<Color?> getDominantColorFromFileUri(Uri? fileUri) async {
+    if (fileUri == null) {
+      return null;
+    }
+    final file = File.fromUri(fileUri); // convert URI to File
+    if (!file.existsSync()) return null;
+
+    final imageProvider = FileImage(file); // ImageProvider from file
+
+    final palette = await PaletteGenerator.fromImageProvider(
+      imageProvider,
+      maximumColorCount: 5,
+    );
+
+    final weights = [0.6, 0.1, 0.1, 0.1, 0.1];
+    return mixColorsWeighted(palette.colors.toList(), weights);
   }
 
   Future<void> load() async {
@@ -107,12 +151,15 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
     currentSong = songs[currentIndex];
     String path = currentSong!.file.path;
     await parseLyricsFile("${path.substring(0, path.lastIndexOf('.'))}.lrc");
-    notifyListeners();
 
     Uri? artUri;
     if (currentSong!.pictures.isNotEmpty) {
       artUri = await saveAlbumCover(currentSong!.pictures.first.bytes);
     }
+
+    artMixedColor = await getDominantColorFromFileUri(artUri);
+    notifyListeners();
+
     mediaItem.add(
       MediaItem(
         id: currentSong!.file.path,
@@ -513,6 +560,7 @@ class LyricPage extends StatelessWidget {
     final audioHandler = Provider.of<MyAudioHandler>(context);
     final duration = audioHandler.player.duration ?? Duration.zero;
     return Scaffold(
+      backgroundColor: artMixedColor,
       appBar: AppBar(
         title: Text(audioHandler.currentSong!.title ?? "Unknown Title"),
       ),
@@ -609,12 +657,6 @@ class LyricsListViewState extends State<LyricsListView> {
   bool userDragging = false;
   int currentIndex = -1;
 
-  // Create a GlobalKey for each line
-  final List<GlobalKey> lineKeys = List.generate(
-    lyrics.length,
-    (_) => GlobalKey(),
-  );
-
   @override
   void didUpdateWidget(LyricsListView oldWidget) {
     super.didUpdateWidget(oldWidget);
@@ -668,7 +710,7 @@ class LyricsListViewState extends State<LyricsListView> {
               style: TextStyle(
                 fontSize: isActive ? 20 : 16,
                 fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-                color: isActive ? Colors.black : Colors.grey,
+                color: isActive ? Colors.black : Color.fromARGB(128, 0, 0, 0),
               ),
             ),
           );
