@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:marquee/marquee.dart';
@@ -217,7 +218,14 @@ class HomePageState extends State<HomePage> {
   }
 
   Future<void> loadAndWatch() async {
-    docs = await getApplicationDocumentsDirectory();
+    if (Platform.isAndroid) {
+      await Permission.audio.request();
+      final dir = await getExternalStorageDirectories();
+      docs = Directory("${dir!.first.parent.parent.parent.parent.path}/Music");
+    } else {
+      docs = await getApplicationDocumentsDirectory();
+    }
+
     await loadSongs();
     final watcher = DirectoryWatcher(docs.path);
 
@@ -237,9 +245,11 @@ class HomePageState extends State<HomePage> {
   Future<void> loadSongs() async {
     List<AudioMetadata> tempSongs = [];
 
-    final keepfile = File('${docs.path}/Particle Music.keep');
-    if (!(await keepfile.exists())) {
-      await keepfile.writeAsString("App initialized");
+    if (Platform.isIOS) {
+      final keepfile = File('${docs.path}/Particle Music.keep');
+      if (!(await keepfile.exists())) {
+        await keepfile.writeAsString("App initialized");
+      }
     }
     for (var file in docs.listSync()) {
       if ((file.path.endsWith('.mp3') || file.path.endsWith('.flac'))) {
@@ -595,49 +605,62 @@ class LyricsListView extends StatefulWidget {
 class LyricsListViewState extends State<LyricsListView> {
   final ScrollController scrollController = ScrollController();
   bool userDragging = false;
+  int currentIndex = -1;
+
+  // Create a GlobalKey for each line
+  final List<GlobalKey> lineKeys = List.generate(
+    lyrics.length,
+    (_) => GlobalKey(),
+  );
 
   @override
   void didUpdateWidget(LyricsListView oldWidget) {
     super.didUpdateWidget(oldWidget);
 
-    final currentIndex = lyrics.lastIndexWhere(
+    currentIndex = lyrics.lastIndexWhere(
       (line) => widget.position >= line.timestamp,
     );
 
     // Only auto-scroll if user is not dragging
     if (!userDragging && scrollController.hasClients && currentIndex >= 0) {
-      const double lineHeight = 40;
-      final double visibleHeight = 320;
-      final double offset =
-          currentIndex * lineHeight - (visibleHeight / 2) + (lineHeight / 2);
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        scrollController.animateTo(
-          offset.clamp(0.0, lyrics.length * lineHeight - visibleHeight),
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.linear,
-        );
+        final key = lineKeys[currentIndex];
+        final context = key.currentContext;
+        if (context != null) {
+          final box = context.findRenderObject() as RenderBox;
+          final scrollableBox =
+              scrollController.position.context.storageContext
+                      .findRenderObject()
+                  as RenderBox;
+          final offset = box
+              .localToGlobal(Offset.zero, ancestor: scrollableBox)
+              .dy;
+
+          final scrollOffset =
+              scrollController.offset +
+              offset -
+              scrollController.position.viewportDimension / 2 +
+              box.size.height / 2;
+
+          scrollController.animateTo(
+            scrollOffset.clamp(0.0, scrollController.position.maxScrollExtent),
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.linear,
+          );
+        }
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final currentIndex = lyrics.lastIndexWhere(
-      (line) => widget.position >= line.timestamp,
-    );
-
     return NotificationListener<UserScrollNotification>(
       onNotification: (notification) {
         if (notification.direction != ScrollDirection.idle) {
-          setState(() {
-            userDragging = true; // user started scrolling
-          });
+          userDragging = true;
         } else {
-          // reset after scroll ends
           Future.delayed(const Duration(milliseconds: 500), () {
-            setState(() {
-              userDragging = false;
-            });
+            userDragging = false;
           });
         }
         return false;
@@ -647,8 +670,10 @@ class LyricsListViewState extends State<LyricsListView> {
         itemCount: lyrics.length,
         itemBuilder: (context, index) {
           final bool isActive = index == currentIndex;
-          return SizedBox(
-            height: 40,
+          return Container(
+            key: lineKeys[index],
+            alignment: Alignment.center,
+            padding: const EdgeInsets.symmetric(vertical: 8),
             child: Text(
               lyrics[index].text,
               textAlign: TextAlign.center,

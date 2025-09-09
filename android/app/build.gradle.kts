@@ -40,7 +40,6 @@ android {
 
     configurations.all {
         resolutionStrategy {
-            force("androidx.core:core:1.12.0")
             force("androidx.appcompat:appcompat:1.6.1")
             force("androidx.fragment:fragment:1.6.2")
         }
