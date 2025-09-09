@@ -11,7 +11,7 @@ import 'dart:typed_data';
 import 'package:path_provider/path_provider.dart';
 import 'package:watcher/watcher.dart';
 import 'dart:async';
-import 'package:palette_generator/palette_generator.dart';
+import 'package:image/image.dart' as img;
 
 List<AudioMetadata> songs = [];
 List<LyricLine> lyrics = [];
@@ -127,21 +127,33 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
     return Color.fromARGB(a.round(), r.round(), g.round(), b.round());
   }
 
-  Future<Color?> getDominantColorFromFileUri(Uri? fileUri) async {
-    if (fileUri == null) {
-      return null;
+  Color computeMixedColor(Uint8List bytes) {
+    final decoded = img.decodeImage(bytes);
+    if (decoded == null) return Colors.grey;
+
+    // simple average of top pixels
+    double r = 0, g = 0, b = 0, count = 0;
+    for (int y = 0; y < decoded.height; y += 5) {
+      for (int x = 0; x < decoded.width; x += 5) {
+        final pixel = decoded.getPixel(x, y);
+
+        r += pixel.r.toDouble();
+        g += pixel.g.toDouble();
+        b += pixel.b.toDouble();
+        count++;
+      }
     }
-    final file = File.fromUri(fileUri); // convert URI to File
-    if (!file.existsSync()) return null;
+    r /= count;
+    g /= count;
+    b /= count;
+    int luminance = img.getLuminanceRgb(r, g, b).toInt();
+    if (luminance < 90) {
+      r += 90 - luminance;
+      g += 90 - luminance;
+      b += 90 - luminance;
+    }
 
-    final imageProvider = FileImage(file); // ImageProvider from file
-
-    final palette = await PaletteGenerator.fromImageProvider(
-      imageProvider,
-      maximumColorCount: 5,
-    );
-
-    return mixColorsWeighted(palette.colors.toList());
+    return Color.fromARGB(255, r.toInt(), g.toInt(), b.toInt());
   }
 
   Future<void> load() async {
@@ -149,14 +161,13 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
     currentSong = songs[currentIndex];
     String path = currentSong!.file.path;
     await parseLyricsFile("${path.substring(0, path.lastIndexOf('.'))}.lrc");
+    artMixedColor = computeMixedColor(currentSong!.pictures.first.bytes);
+    notifyListeners();
 
     Uri? artUri;
     if (currentSong!.pictures.isNotEmpty) {
       artUri = await saveAlbumCover(currentSong!.pictures.first.bytes);
     }
-
-    artMixedColor = await getDominantColorFromFileUri(artUri);
-    notifyListeners();
 
     mediaItem.add(
       MediaItem(
