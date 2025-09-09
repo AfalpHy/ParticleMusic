@@ -271,6 +271,7 @@ class HomePageState extends State<HomePage> {
 
   Future<void> loadAndWatch() async {
     if (Platform.isAndroid) {
+      await Permission.storage.request();
       await Permission.audio.request();
       final dir = await getExternalStorageDirectories();
       docs = Directory("${dir!.first.parent.parent.parent.parent.path}/Music");
