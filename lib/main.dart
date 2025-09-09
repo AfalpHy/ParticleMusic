@@ -107,25 +107,24 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
     lineKeys = List.generate(lyrics.length, (_) => GlobalKey());
   }
 
-  Color mixColorsWeighted(List<Color> colors, List<double> weights) {
+  Color mixColorsWeighted(List<Color> colors) {
     double r = 0, g = 0, b = 0, a = 0;
-    double totalWeight = 0;
 
-    for (int i = 0; i < colors.length; i++) {
-      double w = weights[i];
-      r += ((colors[i].r * 255.0).round() & 0xff) * w;
-      g += ((colors[i].g * 255.0).round() & 0xff) * w;
-      b += ((colors[i].b * 255.0).round() & 0xff) * w;
-      a += ((colors[i].a * 255.0).round() & 0xff) * w;
-      totalWeight += w;
+    for (int i = 0; i < 5; i++) {
+      if (i >= colors.length) {
+        r += 255 * 0.2;
+        g += 255 * 0.2;
+        b += 255 * 0.2;
+        a += 255 * 0.2;
+        continue;
+      }
+      r += ((colors[i].r * 255.0).round() & 0xff) * 0.2;
+      g += ((colors[i].g * 255.0).round() & 0xff) * 0.2;
+      b += ((colors[i].b * 255.0).round() & 0xff) * 0.2;
+      a += ((colors[i].a * 255.0).round() & 0xff) * 0.2;
     }
 
-    return Color.fromARGB(
-      (a / totalWeight).round(),
-      (r / totalWeight).round(),
-      (g / totalWeight).round(),
-      (b / totalWeight).round(),
-    );
+    return Color.fromARGB(a.round(), r.round(), g.round(), b.round());
   }
 
   Future<Color?> getDominantColorFromFileUri(Uri? fileUri) async {
@@ -142,8 +141,7 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
       maximumColorCount: 5,
     );
 
-    final weights = [0.6, 0.1, 0.1, 0.1, 0.1];
-    return mixColorsWeighted(palette.colors.toList(), weights);
+    return mixColorsWeighted(palette.colors.toList());
   }
 
   Future<void> load() async {
@@ -237,11 +235,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Particle Music',
-      theme: ThemeData(primarySwatch: Colors.red),
-      home: const HomePage(),
-    );
+    return MaterialApp(title: 'Particle Music', home: const HomePage());
   }
 }
 
@@ -322,7 +316,7 @@ class HomePageState extends State<HomePage> {
     return Stack(
       children: [
         Scaffold(
-          backgroundColor: Colors.blueGrey,
+          backgroundColor: Colors.grey,
           appBar: AppBar(
             backgroundColor: Colors.grey,
 
@@ -562,6 +556,7 @@ class LyricPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: artMixedColor,
       appBar: AppBar(
+        backgroundColor: artMixedColor,
         title: Text(audioHandler.currentSong!.title ?? "Unknown Title"),
       ),
       body: Column(
@@ -612,14 +607,17 @@ class LyricPage extends StatelessWidget {
           // -------- Play Controls --------
           Padding(
             padding: const EdgeInsets.fromLTRB(0, 0, 0, 20),
+
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 IconButton(
+                  color: Colors.black,
                   icon: const Icon(Icons.skip_previous, size: 48),
                   onPressed: audioHandler.skipToPrevious,
                 ),
                 IconButton(
+                  color: Colors.black,
                   icon: Icon(
                     audioHandler.player.playing
                         ? Icons.pause_circle
@@ -631,6 +629,7 @@ class LyricPage extends StatelessWidget {
                       : audioHandler.play(),
                 ),
                 IconButton(
+                  color: Colors.black,
                   icon: const Icon(Icons.skip_next, size: 48),
                   onPressed: audioHandler.skipToNext,
                 ),
@@ -787,13 +786,14 @@ class SeekBarState extends State<SeekBar> {
                   // Slider visuals
                   SliderTheme(
                     data: SliderTheme.of(context).copyWith(
+                      thumbColor: Colors.black,
                       trackHeight: isDragging ? 4 : 2,
                       trackShape: const FullWidthTrackShape(),
                       thumbShape: isDragging
                           ? RoundSliderThumbShape(enabledThumbRadius: 4)
                           : RoundSliderThumbShape(enabledThumbRadius: 2),
                       overlayShape: SliderComponentShape.noOverlay,
-                      activeTrackColor: Colors.grey.shade800,
+                      activeTrackColor: Colors.black,
                       inactiveTrackColor: Colors.grey.shade300,
                     ),
                     child: Padding(
