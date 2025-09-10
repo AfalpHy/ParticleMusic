@@ -323,6 +323,15 @@ class HomePageState extends State<HomePage> {
     }
 
     setState(() {
+      tempSongs.sort((a, b) {
+        // First, compare artist
+        int artistComparison = a.artist!.compareTo(b.artist!);
+        if (artistComparison != 0) {
+          return artistComparison; // if different, use this
+        }
+        // If artist is the same, compare album
+        return a.album!.compareTo(b.album!);
+      });
       songs = tempSongs;
     });
   }
