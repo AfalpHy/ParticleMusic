@@ -68,9 +68,7 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
   Future<Uri> saveAlbumCover(Uint8List bytes) async {
     final dir = await getTemporaryDirectory();
 
-    // Append timestamp to filename to avoid overwriting
-    final timestamp = DateTime.now().millisecondsSinceEpoch;
-    final file = File('${dir.path}/cover_$timestamp');
+    final file = File('${dir.path}/cover');
 
     await file.writeAsBytes(bytes);
     return file.uri;
@@ -324,13 +322,17 @@ class HomePageState extends State<HomePage> {
 
     setState(() {
       tempSongs.sort((a, b) {
-        // First, compare artist
-        int artistComparison = a.artist!.compareTo(b.artist!);
-        if (artistComparison != 0) {
-          return artistComparison; // if different, use this
+        // First, compare album
+        int comparison = a.album!.compareTo(b.album!);
+        if (comparison != 0) {
+          return comparison; // if different, use this
         }
-        // If artist is the same, compare album
-        return a.album!.compareTo(b.album!);
+        // If album is the same, compare artist
+        comparison = a.artist!.compareTo(b.artist!);
+        if (comparison != 0) {
+          return comparison; // if different, use this
+        }
+        return a.title!.compareTo(b.title!);
       });
       songs = tempSongs;
     });
