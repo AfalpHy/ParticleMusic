@@ -323,16 +323,23 @@ class HomePageState extends State<HomePage> {
     setState(() {
       tempSongs.sort((a, b) {
         // First, compare album
-        int comparison = a.album!.compareTo(b.album!);
+        int comparison = (a.album ?? "Unknown Album").compareTo(
+          b.album ?? "Unknown Album",
+        );
         if (comparison != 0) {
           return comparison; // if different, use this
         }
         // If album is the same, compare artist
-        comparison = a.artist!.compareTo(b.artist!);
+        comparison = (a.artist ?? "Unknown Artist").compareTo(
+          b.artist ?? "Unknown Artist",
+        );
+
         if (comparison != 0) {
           return comparison; // if different, use this
         }
-        return a.title!.compareTo(b.title!);
+        return (a.title ?? "Unknown Title").compareTo(
+          b.title ?? "Unknown Title",
+        );
       });
       songs = tempSongs;
     });
