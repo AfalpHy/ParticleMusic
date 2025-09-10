@@ -14,6 +14,8 @@ import 'dart:async';
 import 'package:image/image.dart' as img;
 
 List<AudioMetadata> songs = [];
+List<AudioMetadata> playQueue = [];
+List<AudioMetadata> filteredSongs = [];
 List<LyricLine> lyrics = [];
 late Color? artMixedColor;
 // Create a GlobalKey for each line
@@ -157,8 +159,8 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
   }
 
   Future<void> load() async {
-    if (currentIndex < 0 || currentIndex >= songs.length) return;
-    currentSong = songs[currentIndex];
+    if (currentIndex < 0 || currentIndex >= playQueue.length) return;
+    currentSong = playQueue[currentIndex];
     String path = currentSong!.file.path;
     await parseLyricsFile("${path.substring(0, path.lastIndexOf('.'))}.lrc");
     artMixedColor = computeMixedColor(currentSong!.pictures.first.bytes);
@@ -202,15 +204,19 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
 
   @override
   Future<void> skipToNext() async {
-    if (songs.isEmpty) return;
-    currentIndex = (currentIndex == songs.length - 1) ? 0 : currentIndex + 1;
+    if (playQueue.isEmpty) return;
+    currentIndex = (currentIndex == playQueue.length - 1)
+        ? 0
+        : currentIndex + 1;
     await load();
   }
 
   @override
   Future<void> skipToPrevious() async {
-    if (songs.isEmpty) return;
-    currentIndex = (currentIndex == 0) ? songs.length - 1 : currentIndex - 1;
+    if (playQueue.isEmpty) return;
+    currentIndex = (currentIndex == 0)
+        ? playQueue.length - 1
+        : currentIndex - 1;
     await load();
   }
 
@@ -263,6 +269,7 @@ class HomePage extends StatefulWidget {
 class HomePageState extends State<HomePage> {
   late Directory docs;
   bool isChanged = false;
+  bool displayLibrary = true;
   @override
   void initState() {
     super.initState();
@@ -364,10 +371,48 @@ class HomePageState extends State<HomePage> {
               ),
             ],
           ),
-          body: buildSongList(),
-          bottomNavigationBar: SizedBox(height: 50),
+          body: displayLibrary ? buildSongList() : buildPlaylists(),
+          bottomNavigationBar: SizedBox(
+            height: 80,
+            child: Row(
+              children: [
+                Expanded(
+                  child: InkWell(
+                    onTap: () => setState(() {
+                      displayLibrary = true;
+                    }),
+                    child: Container(
+                      height: double.infinity,
+                      alignment: Alignment.center,
+                      child: Text('Library'),
+                    ),
+                  ),
+                ),
+
+                Expanded(
+                  child: InkWell(
+                    onTap: () => setState(() {
+                      displayLibrary = false;
+                    }),
+                    child: Container(
+                      height: double.infinity,
+                      alignment: Alignment.center,
+                      child: Text('Playlists'),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
         ),
-        Positioned(left: 15, right: 15, bottom: 30, child: PlayerBar()),
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 80,
+          child: Container(height: 20, color: Colors.grey),
+        ),
+
+        Positioned(left: 15, right: 15, bottom: 80, child: PlayerBar()),
       ],
     );
   }
@@ -375,7 +420,7 @@ class HomePageState extends State<HomePage> {
   Widget buildSongList() {
     final audiohanlder = Provider.of<MyAudioHandler>(context, listen: false);
 
-    final filteredSongs = songs
+    filteredSongs = songs
         .where(
           (song) =>
               (searchQuery.isEmpty) ||
@@ -426,13 +471,18 @@ class HomePageState extends State<HomePage> {
           ),
           visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
           onTap: () async {
-            audiohanlder.setIndex(songs.indexOf(filteredSongs[index]));
+            audiohanlder.setIndex(index);
+            playQueue = filteredSongs;
             await audiohanlder.load();
             audiohanlder.play();
           },
         );
       },
     );
+  }
+
+  Widget buildPlaylists() {
+    return SizedBox();
   }
 }
 
@@ -555,6 +605,60 @@ class PlayerBar extends StatelessWidget {
                         } else {
                           audioHandler.play();
                         }
+                      },
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.queue_music, color: Colors.black),
+                      onPressed: () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true, // allows full-height
+
+                          builder: (context) => SizedBox(
+                            height: 500,
+                            child: Column(
+                              children: [
+                                // Optional drag handle
+                                Container(
+                                  margin: EdgeInsets.symmetric(vertical: 20),
+                                  width: 50,
+                                  height: 5,
+                                  decoration: BoxDecoration(
+                                    color: Colors.black,
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: ListView.builder(
+                                    physics: BouncingScrollPhysics(
+                                      parent: AlwaysScrollableScrollPhysics(),
+                                    ),
+                                    itemCount: playQueue.length,
+                                    itemBuilder: (context, index) {
+                                      final song = playQueue[index];
+                                      return ListTile(
+                                        title: Text(
+                                          "${song.title ?? "Unknown Title"} - ${song.artist ?? "Unknown Artist"}",
+                                          overflow: TextOverflow.ellipsis,
+                                        ),
+
+                                        visualDensity: const VisualDensity(
+                                          horizontal: 0,
+                                          vertical: -4,
+                                        ),
+                                        onTap: () async {
+                                          audioHandler.setIndex(index);
+                                          await audioHandler.load();
+                                          audioHandler.play();
+                                        },
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
                       },
                     ),
                   ],
