@@ -396,27 +396,56 @@ class HomePageState extends State<HomePage> {
             child: Row(
               children: [
                 Expanded(
-                  child: InkWell(
+                  child: GestureDetector(
                     onTap: () => setState(() {
                       displayLibrary = true;
                     }),
-                    child: Container(
-                      height: double.infinity,
-                      alignment: Alignment.center,
-                      child: Text('Library'),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.library_music_rounded,
+                          size: 28,
+                          color: displayLibrary ? Colors.black : Colors.black54,
+                        ),
+
+                        Text(
+                          "Library",
+                          style: TextStyle(
+                            color: displayLibrary
+                                ? Colors.black
+                                : Colors.black54,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
-
                 Expanded(
-                  child: InkWell(
+                  child: GestureDetector(
                     onTap: () => setState(() {
                       displayLibrary = false;
                     }),
-                    child: Container(
-                      height: double.infinity,
-                      alignment: Alignment.center,
-                      child: Text('Playlists'),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.library_add_rounded,
+                          size: 28,
+                          color: !displayLibrary
+                              ? Colors.black
+                              : Colors.black54,
+                        ),
+
+                        Text(
+                          "Playlists",
+                          style: TextStyle(
+                            color: !displayLibrary
+                                ? Colors.black
+                                : Colors.black54,
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ),
