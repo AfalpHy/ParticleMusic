@@ -83,7 +83,7 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
     }
     final lines = await file.readAsLines(); // read file line by line
 
-    final regex = RegExp(r'\[(\d+):(\d+)(?:\.(\d+))?\](.*)');
+    final regex = RegExp(r'\[(\d{2}):(\d{2})(?::(\d{2})|.(\d{2}))\](.*)');
 
     for (var line in lines) {
       final match = regex.firstMatch(line);
@@ -92,8 +92,8 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
         final sec = int.parse(match.group(2)!);
         final ms = match.group(3) != null
             ? int.parse(match.group(3)!.padRight(3, '0'))
-            : 0;
-        final text = match.group(4)!.trim();
+            : int.parse(match.group(4)!.padRight(3, '0'));
+        final text = match.group(5)!.trim();
         if (text == '') {
           continue;
         }
