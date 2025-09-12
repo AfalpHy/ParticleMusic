@@ -554,6 +554,7 @@ class PlayerBar extends StatelessWidget {
                       child: AutoSizeText(
                         "${audioHandler.currentSong!.title ?? 'Unknown Title'} - ${audioHandler.currentSong!.artist ?? 'Unknown Artist'}",
                         maxLines: 1,
+                        minFontSize: 16,
                         overflowReplacement: Marquee(
                           text:
                               "${audioHandler.currentSong!.title ?? 'Unknown Title'} - ${audioHandler.currentSong!.artist ?? 'Unknown Artist'}",
@@ -578,8 +579,8 @@ class PlayerBar extends StatelessWidget {
                     IconButton(
                       icon: Icon(
                         audioHandler.player.playing
-                            ? Icons.pause
-                            : Icons.play_arrow,
+                            ? Icons.pause_rounded
+                            : Icons.play_arrow_rounded,
                         color: Colors.black,
                       ),
                       onPressed: () {
@@ -591,7 +592,10 @@ class PlayerBar extends StatelessWidget {
                       },
                     ),
                     IconButton(
-                      icon: Icon(Icons.queue_music, color: Colors.black),
+                      icon: Icon(
+                        Icons.queue_music_rounded,
+                        color: Colors.black,
+                      ),
                       onPressed: () {
                         showModalBottomSheet(
                           context: context,
@@ -665,31 +669,27 @@ class LyricPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: artMixedColor,
       appBar: AppBar(
+        automaticallyImplyLeading: false,
         backgroundColor: artMixedColor,
-        title: SizedBox(
-          height: 20,
-          width: double.infinity, // <-- important, provides finite width
-          child: Stack(
-            children: [
-              AutoSizeText(
-                "${audioHandler.currentSong!.title ?? 'Unknown Title'} - ${audioHandler.currentSong!.artist ?? 'Unknown Artist'}",
-                maxLines: 1,
-                style: TextStyle(fontSize: 16),
-                overflowReplacement: Marquee(
-                  text:
-                      "${audioHandler.currentSong!.title ?? 'Unknown Title'} - ${audioHandler.currentSong!.artist ?? 'Unknown Artist'}",
-                  style: TextStyle(fontSize: 16),
-                  scrollAxis: Axis.horizontal,
-                  blankSpace: 20,
-                  velocity: 30.0,
-                  pauseAfterRound: const Duration(seconds: 1),
-                  accelerationDuration: const Duration(milliseconds: 500),
-                  accelerationCurve: Curves.linear,
-                  decelerationDuration: const Duration(milliseconds: 500),
-                  decelerationCurve: Curves.linear,
-                ),
-              ),
-            ],
+        title: AutoSizeText(
+          "${audioHandler.currentSong!.title ?? 'Unknown Title'} - ${audioHandler.currentSong!.artist ?? 'Unknown Artist'}",
+          maxLines: 1,
+          minFontSize: 20,
+          overflowReplacement: SizedBox(
+            height: kToolbarHeight, // finite height
+            width: double.infinity, // takes whatever width AppBar gives
+            child: Marquee(
+              text:
+                  "${audioHandler.currentSong?.title ?? 'Unknown Title'} - ${audioHandler.currentSong?.artist ?? 'Unknown Artist'}",
+              scrollAxis: Axis.horizontal,
+              blankSpace: 20,
+              velocity: 30.0,
+              pauseAfterRound: const Duration(seconds: 1),
+              accelerationDuration: const Duration(milliseconds: 500),
+              accelerationCurve: Curves.linear,
+              decelerationDuration: const Duration(milliseconds: 500),
+              decelerationCurve: Curves.linear,
+            ),
           ),
         ),
       ),
@@ -747,15 +747,15 @@ class LyricPage extends StatelessWidget {
               children: [
                 IconButton(
                   color: Colors.black,
-                  icon: const Icon(Icons.skip_previous, size: 48),
+                  icon: const Icon(Icons.skip_previous_rounded, size: 48),
                   onPressed: audioHandler.skipToPrevious,
                 ),
                 IconButton(
                   color: Colors.black,
                   icon: Icon(
                     audioHandler.player.playing
-                        ? Icons.pause_circle
-                        : Icons.play_circle,
+                        ? Icons.pause_rounded
+                        : Icons.play_arrow_rounded,
                     size: 48,
                   ),
                   onPressed: () => audioHandler.player.playing
@@ -764,7 +764,7 @@ class LyricPage extends StatelessWidget {
                 ),
                 IconButton(
                   color: Colors.black,
-                  icon: const Icon(Icons.skip_next, size: 48),
+                  icon: const Icon(Icons.skip_next_rounded, size: 48),
                   onPressed: audioHandler.skipToNext,
                 ),
               ],
