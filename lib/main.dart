@@ -796,6 +796,13 @@ class LyricPage extends StatelessWidget {
               children: [
                 IconButton(
                   color: Colors.black,
+                  icon: const Icon(Icons.loop_rounded, size: 30),
+                  onPressed: () => {
+                    // TODO:
+                  },
+                ),
+                IconButton(
+                  color: Colors.black,
                   icon: const Icon(Icons.skip_previous_rounded, size: 48),
                   onPressed: audioHandler.skipToPrevious,
                 ),
@@ -815,6 +822,64 @@ class LyricPage extends StatelessWidget {
                   color: Colors.black,
                   icon: const Icon(Icons.skip_next_rounded, size: 48),
                   onPressed: audioHandler.skipToNext,
+                ),
+                IconButton(
+                  icon: Icon(
+                    Icons.queue_music_rounded,
+                    size: 30,
+                    color: Colors.black,
+                  ),
+                  onPressed: () {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true, // allows full-height
+
+                      builder: (context) => SizedBox(
+                        height: 500,
+                        child: Column(
+                          children: [
+                            // Optional drag handle
+                            Container(
+                              margin: EdgeInsets.symmetric(vertical: 20),
+                              width: 50,
+                              height: 5,
+                              decoration: BoxDecoration(
+                                color: Colors.black,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                            ),
+                            Expanded(
+                              child: ListView.builder(
+                                physics: BouncingScrollPhysics(
+                                  parent: AlwaysScrollableScrollPhysics(),
+                                ),
+                                itemCount: playQueue.length,
+                                itemBuilder: (context, index) {
+                                  final song = playQueue[index];
+                                  return ListTile(
+                                    title: Text(
+                                      "${song.title ?? "Unknown Title"} - ${song.artist ?? "Unknown Artist"}",
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+
+                                    visualDensity: const VisualDensity(
+                                      horizontal: 0,
+                                      vertical: -4,
+                                    ),
+                                    onTap: () async {
+                                      audioHandler.setIndex(index);
+                                      await audioHandler.load();
+                                      audioHandler.play();
+                                    },
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
                 ),
               ],
             ),
