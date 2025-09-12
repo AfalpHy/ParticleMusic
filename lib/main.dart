@@ -424,14 +424,8 @@ class HomePageState extends State<HomePage> {
             ),
           ),
         ),
-        Positioned(
-          left: 0,
-          right: 0,
-          bottom: 80,
-          child: Container(height: 20, color: Colors.grey),
-        ),
 
-        Positioned(left: 15, right: 15, bottom: 80, child: PlayerBar()),
+        Positioned(left: 0, right: 0, bottom: 80, child: PlayerBar()),
       ],
     );
   }
@@ -515,143 +509,169 @@ class PlayerBar extends StatelessWidget {
   Widget build(BuildContext context) {
     return Consumer<MyAudioHandler>(
       builder: (context, audioHandler, child) {
-        if (audioHandler.currentSong == null) return const SizedBox.shrink();
+        if (playQueue.isEmpty) return const SizedBox.shrink();
 
         return SizedBox(
           height: 40,
-          child: ClipRRect(
-            borderRadius: BorderRadius.circular(20), // rounded half-circle ends
+          child: Stack(
+            children: [
+              Positioned(
+                left: 0,
+                right: 0,
+                bottom: 0,
+                child: Container(height: 20, color: Colors.grey),
+              ),
+              Positioned(
+                left: 15,
+                right: 15,
+                bottom: 0,
+                height: 40,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(
+                    20,
+                  ), // rounded half-circle ends
 
-            child: Material(
-              color: artMixedColor,
-              child: InkWell(
-                onTap: () {
-                  // Open lyrics page
-                  Navigator.of(
-                    context,
-                  ).push(MaterialPageRoute(builder: (_) => const LyricPage()));
-                },
-
-                child: Row(
-                  children: [
-                    // Album cover or icon
-                    if (audioHandler.currentSong!.pictures.isNotEmpty)
-                      ClipOval(
-                        child: Image.memory(
-                          audioHandler.currentSong!.pictures.first.bytes,
-                          width: 40,
-                          height: 40,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) =>
-                              const Icon(Icons.music_note, size: 40),
-                        ),
-                      )
-                    else
-                      ClipOval(child: const Icon(Icons.music_note, size: 40)),
-
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: AutoSizeText(
-                        "${audioHandler.currentSong!.title ?? 'Unknown Title'} - ${audioHandler.currentSong!.artist ?? 'Unknown Artist'}",
-                        maxLines: 1,
-                        minFontSize: 16,
-                        overflowReplacement: Marquee(
-                          text:
-                              "${audioHandler.currentSong!.title ?? 'Unknown Title'} - ${audioHandler.currentSong!.artist ?? 'Unknown Artist'}",
-                          scrollAxis: Axis.horizontal,
-                          blankSpace: 20,
-                          velocity: 30.0,
-                          pauseAfterRound: const Duration(seconds: 1),
-                          accelerationDuration: const Duration(
-                            milliseconds: 500,
-                          ),
-                          accelerationCurve: Curves.linear,
-                          decelerationDuration: const Duration(
-                            milliseconds: 500,
-                          ),
-                          decelerationCurve: Curves.linear,
-                        ),
-                      ),
-                    ),
-                    // Title - Artist Marquee
-
-                    // Play/Pause Button
-                    IconButton(
-                      icon: Icon(
-                        audioHandler.player.playing
-                            ? Icons.pause_rounded
-                            : Icons.play_arrow_rounded,
-                        color: Colors.black,
-                      ),
-                      onPressed: () {
-                        if (audioHandler.player.playing) {
-                          audioHandler.pause();
-                        } else {
-                          audioHandler.play();
-                        }
-                      },
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        Icons.queue_music_rounded,
-                        color: Colors.black,
-                      ),
-                      onPressed: () {
-                        showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true, // allows full-height
-
-                          builder: (context) => SizedBox(
-                            height: 500,
-                            child: Column(
-                              children: [
-                                // Optional drag handle
-                                Container(
-                                  margin: EdgeInsets.symmetric(vertical: 20),
-                                  width: 50,
-                                  height: 5,
-                                  decoration: BoxDecoration(
-                                    color: Colors.black,
-                                    borderRadius: BorderRadius.circular(10),
-                                  ),
-                                ),
-                                Expanded(
-                                  child: ListView.builder(
-                                    physics: BouncingScrollPhysics(
-                                      parent: AlwaysScrollableScrollPhysics(),
-                                    ),
-                                    itemCount: playQueue.length,
-                                    itemBuilder: (context, index) {
-                                      final song = playQueue[index];
-                                      return ListTile(
-                                        title: Text(
-                                          "${song.title ?? "Unknown Title"} - ${song.artist ?? "Unknown Artist"}",
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
-
-                                        visualDensity: const VisualDensity(
-                                          horizontal: 0,
-                                          vertical: -4,
-                                        ),
-                                        onTap: () async {
-                                          audioHandler.setIndex(index);
-                                          await audioHandler.load();
-                                          audioHandler.play();
-                                        },
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
+                  child: Material(
+                    color: artMixedColor,
+                    child: InkWell(
+                      onTap: () {
+                        // Open lyrics page
+                        Navigator.of(context).push(
+                          MaterialPageRoute(builder: (_) => const LyricPage()),
                         );
                       },
+
+                      child: Row(
+                        children: [
+                          // Album cover or icon
+                          if (audioHandler.currentSong!.pictures.isNotEmpty)
+                            ClipOval(
+                              child: Image.memory(
+                                audioHandler.currentSong!.pictures.first.bytes,
+                                width: 40,
+                                height: 40,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) =>
+                                    const Icon(Icons.music_note, size: 40),
+                              ),
+                            )
+                          else
+                            ClipOval(
+                              child: const Icon(Icons.music_note, size: 40),
+                            ),
+
+                          const SizedBox(width: 12),
+                          Expanded(
+                            child: AutoSizeText(
+                              "${audioHandler.currentSong!.title ?? 'Unknown Title'} - ${audioHandler.currentSong!.artist ?? 'Unknown Artist'}",
+                              maxLines: 1,
+                              minFontSize: 16,
+                              overflowReplacement: Marquee(
+                                text:
+                                    "${audioHandler.currentSong!.title ?? 'Unknown Title'} - ${audioHandler.currentSong!.artist ?? 'Unknown Artist'}",
+                                scrollAxis: Axis.horizontal,
+                                blankSpace: 20,
+                                velocity: 30.0,
+                                pauseAfterRound: const Duration(seconds: 1),
+                                accelerationDuration: const Duration(
+                                  milliseconds: 500,
+                                ),
+                                accelerationCurve: Curves.linear,
+                                decelerationDuration: const Duration(
+                                  milliseconds: 500,
+                                ),
+                                decelerationCurve: Curves.linear,
+                              ),
+                            ),
+                          ),
+                          // Title - Artist Marquee
+
+                          // Play/Pause Button
+                          IconButton(
+                            icon: Icon(
+                              audioHandler.player.playing
+                                  ? Icons.pause_rounded
+                                  : Icons.play_arrow_rounded,
+                              color: Colors.black,
+                            ),
+                            onPressed: () {
+                              if (audioHandler.player.playing) {
+                                audioHandler.pause();
+                              } else {
+                                audioHandler.play();
+                              }
+                            },
+                          ),
+                          IconButton(
+                            icon: Icon(
+                              Icons.queue_music_rounded,
+                              color: Colors.black,
+                            ),
+                            onPressed: () {
+                              showModalBottomSheet(
+                                context: context,
+                                isScrollControlled: true, // allows full-height
+
+                                builder: (context) => SizedBox(
+                                  height: 500,
+                                  child: Column(
+                                    children: [
+                                      // Optional drag handle
+                                      Container(
+                                        margin: EdgeInsets.symmetric(
+                                          vertical: 20,
+                                        ),
+                                        width: 50,
+                                        height: 5,
+                                        decoration: BoxDecoration(
+                                          color: Colors.black,
+                                          borderRadius: BorderRadius.circular(
+                                            10,
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: ListView.builder(
+                                          physics: BouncingScrollPhysics(
+                                            parent:
+                                                AlwaysScrollableScrollPhysics(),
+                                          ),
+                                          itemCount: playQueue.length,
+                                          itemBuilder: (context, index) {
+                                            final song = playQueue[index];
+                                            return ListTile(
+                                              title: Text(
+                                                "${song.title ?? "Unknown Title"} - ${song.artist ?? "Unknown Artist"}",
+                                                overflow: TextOverflow.ellipsis,
+                                              ),
+
+                                              visualDensity:
+                                                  const VisualDensity(
+                                                    horizontal: 0,
+                                                    vertical: -4,
+                                                  ),
+                                              onTap: () async {
+                                                audioHandler.setIndex(index);
+                                                await audioHandler.load();
+                                                audioHandler.play();
+                                              },
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          ),
+                        ],
+                      ),
                     ),
-                  ],
+                  ),
                 ),
               ),
-            ),
+            ],
           ),
         );
       },
