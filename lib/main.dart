@@ -12,6 +12,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:watcher/watcher.dart';
 import 'dart:async';
 import 'package:image/image.dart' as img;
+import 'package:auto_size_text/auto_size_text.dart';
 
 List<AudioMetadata> songs = [];
 List<AudioMetadata> playQueue = [];
@@ -549,65 +550,29 @@ class PlayerBar extends StatelessWidget {
                       ClipOval(child: const Icon(Icons.music_note, size: 40)),
 
                     const SizedBox(width: 12),
-
-                    // Title - Artist Marquee
                     Expanded(
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          final text =
-                              "${audioHandler.currentSong!.title ?? 'Unknown Title'} - ${audioHandler.currentSong!.artist ?? 'Unknown Artist'}";
-                          final textPainter = TextPainter(
-                            text: TextSpan(
-                              text: text,
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                            maxLines: 1,
-                            textDirection: TextDirection.ltr,
-                          )..layout(maxWidth: double.infinity);
-
-                          if (textPainter.width > constraints.maxWidth) {
-                            // Text too long → use Marquee
-                            return SizedBox(
-                              height: 20,
-                              child: Marquee(
-                                text: text,
-                                style: const TextStyle(
-                                  color: Colors.black,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                                scrollAxis: Axis.horizontal,
-                                blankSpace: 20,
-                                velocity: 30.0,
-                                pauseAfterRound: const Duration(seconds: 1),
-                                startPadding: 10,
-                                accelerationDuration: const Duration(
-                                  seconds: 1,
-                                ),
-                                accelerationCurve: Curves.linear,
-                                decelerationDuration: const Duration(
-                                  seconds: 1,
-                                ),
-                                decelerationCurve: Curves.easeOut,
-                              ),
-                            );
-                          } else {
-                            // Text fits → use normal Text
-                            return Text(
-                              text,
-                              style: const TextStyle(
-                                color: Colors.black,
-                                fontWeight: FontWeight.bold,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            );
-                          }
-                        },
+                      child: AutoSizeText(
+                        "${audioHandler.currentSong!.title ?? 'Unknown Title'} - ${audioHandler.currentSong!.artist ?? 'Unknown Artist'}",
+                        maxLines: 1,
+                        overflowReplacement: Marquee(
+                          text:
+                              "${audioHandler.currentSong!.title ?? 'Unknown Title'} - ${audioHandler.currentSong!.artist ?? 'Unknown Artist'}",
+                          scrollAxis: Axis.horizontal,
+                          blankSpace: 20,
+                          velocity: 30.0,
+                          pauseAfterRound: const Duration(seconds: 1),
+                          accelerationDuration: const Duration(
+                            milliseconds: 500,
+                          ),
+                          accelerationCurve: Curves.linear,
+                          decelerationDuration: const Duration(
+                            milliseconds: 500,
+                          ),
+                          decelerationCurve: Curves.linear,
+                        ),
                       ),
                     ),
+                    // Title - Artist Marquee
 
                     // Play/Pause Button
                     IconButton(
@@ -701,7 +666,32 @@ class LyricPage extends StatelessWidget {
       backgroundColor: artMixedColor,
       appBar: AppBar(
         backgroundColor: artMixedColor,
-        title: Text(audioHandler.currentSong!.title ?? "Unknown Title"),
+        title: SizedBox(
+          height: 20,
+          width: double.infinity, // <-- important, provides finite width
+          child: Stack(
+            children: [
+              AutoSizeText(
+                "${audioHandler.currentSong!.title ?? 'Unknown Title'} - ${audioHandler.currentSong!.artist ?? 'Unknown Artist'}",
+                maxLines: 1,
+                style: TextStyle(fontSize: 16),
+                overflowReplacement: Marquee(
+                  text:
+                      "${audioHandler.currentSong!.title ?? 'Unknown Title'} - ${audioHandler.currentSong!.artist ?? 'Unknown Artist'}",
+                  style: TextStyle(fontSize: 16),
+                  scrollAxis: Axis.horizontal,
+                  blankSpace: 20,
+                  velocity: 30.0,
+                  pauseAfterRound: const Duration(seconds: 1),
+                  accelerationDuration: const Duration(milliseconds: 500),
+                  accelerationCurve: Curves.linear,
+                  decelerationDuration: const Duration(milliseconds: 500),
+                  decelerationCurve: Curves.linear,
+                ),
+              ),
+            ],
+          ),
+        ),
       ),
       body: Column(
         children: [
