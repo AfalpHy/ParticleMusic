@@ -162,13 +162,15 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
     currentSong = playQueue[currentIndex];
     String path = currentSong!.file.path;
     await parseLyricsFile("${path.substring(0, path.lastIndexOf('.'))}.lrc");
-    artMixedColor = computeMixedColor(currentSong!.pictures.first.bytes);
-    notifyListeners();
 
     Uri? artUri;
     if (currentSong!.pictures.isNotEmpty) {
+      artMixedColor = computeMixedColor(currentSong!.pictures.first.bytes);
       artUri = await saveAlbumCover(currentSong!.pictures.first.bytes);
+    } else {
+      artMixedColor = Colors.grey;
     }
+    notifyListeners();
 
     mediaItem.add(
       MediaItem(
