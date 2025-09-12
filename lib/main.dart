@@ -7,12 +7,12 @@ import 'package:provider/provider.dart';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:marquee/marquee.dart';
 import 'package:audio_service/audio_service.dart';
-import 'dart:typed_data';
 import 'package:path_provider/path_provider.dart';
 import 'package:watcher/watcher.dart';
 import 'dart:async';
 import 'package:image/image.dart' as img;
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:flutter/services.dart';
 
 List<AudioMetadata> songs = [];
 List<AudioMetadata> playQueue = [];
@@ -235,6 +235,9 @@ Future<void> main() async {
       androidNotificationOngoing: true,
     ),
   );
+  await SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp, // only allow portrait
+  ]);
   runApp(
     ChangeNotifierProvider.value(
       value: audioHandler, // directly provide your handler
