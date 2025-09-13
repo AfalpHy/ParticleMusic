@@ -26,13 +26,20 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
   final player = AudioPlayer();
   AudioMetadata? currentSong;
   int currentIndex = -1;
+  int playMode = 0;
+  List<AudioMetadata> playQueueTmp = [];
 
   MyAudioHandler() {
     player.playbackEventStream.map(transformEvent).pipe(playbackState);
 
     player.processingStateStream.listen((state) async {
       if (state == ProcessingState.completed) {
-        await skipToNext(); // automatically go to next song
+        if (playMode == 1) {
+          // repeat
+          await load();
+        } else {
+          await skipToNext(); // automatically go to next song
+        }
       }
     });
 
@@ -66,11 +73,80 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
     currentIndex = index;
   }
 
+  bool insert2Next(int index) {
+    final tmp = filteredSongs[index];
+    int tmpIndex = playQueue.indexOf(tmp);
+    if (tmpIndex != -1) {
+      if (tmpIndex == currentIndex) {
+        return false;
+      }
+      if (tmpIndex < currentIndex) {
+        playQueue.removeAt(tmpIndex);
+        playQueue.insert(currentIndex, tmp);
+        currentIndex -= 1;
+      } else {
+        playQueue.removeAt(tmpIndex);
+        playQueue.insert(currentIndex + 1, tmp);
+      }
+    } else {
+      playQueue.insert(currentIndex + 1, tmp);
+      if (playQueueTmp.isNotEmpty) {
+        playQueueTmp.add(tmp);
+      }
+    }
+    return true;
+  }
+
+  void singlePlay(int index) async {
+    if (insert2Next(index)) {
+      await skipToNext();
+      player.play();
+    }
+  }
+
+  void shuffle() {
+    if (playQueue.isEmpty) {
+      return;
+    }
+    playQueueTmp = List.from(playQueue);
+    final others = List.of(playQueue)..removeAt(currentIndex);
+    others.shuffle();
+    if (currentSong == null) {
+      playQueue = [playQueue[0], ...others];
+    } else {
+      playQueue = [currentSong!, ...others];
+    }
+
+    currentIndex = 0;
+  }
+
+  void switchPlayMode() {
+    playMode += 1;
+    playMode %= 3;
+    if (playMode == 0) {
+      playQueue = List.from(playQueueTmp);
+      playQueueTmp = [];
+      currentIndex = playQueue.indexOf(currentSong!);
+    } else if (playMode == 2) {
+      shuffle();
+    }
+  }
+
+  void delete(index) {
+    AudioMetadata tmp = playQueue[index];
+    if (playQueueTmp.isNotEmpty) {
+      playQueueTmp.remove(tmp);
+    }
+    playQueue.removeAt(index);
+  }
+
   void clear() {
     player.stop();
+    playQueue = [];
+    playQueueTmp = [];
+    lyrics = [];
     currentIndex = -1;
     currentSong = null;
-    lyrics = [];
   }
 
   Future<Uri> saveAlbumCover(Uint8List bytes) async {
@@ -491,6 +567,7 @@ class HomePageState extends State<HomePage> {
       itemBuilder: (context, index) {
         final song = filteredSongs[index];
         return ListTile(
+          contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
           leading: (() {
             if (song.pictures.isNotEmpty) {
               return ClipRRect(
@@ -525,9 +602,55 @@ class HomePageState extends State<HomePage> {
           onTap: () async {
             audioHandler.setIndex(index);
             playQueue = List.from(filteredSongs);
+            if (audioHandler.playMode == 2) {
+              audioHandler.shuffle();
+            }
             await audioHandler.load();
             audioHandler.play();
           },
+          trailing: IconButton(
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true, // allows full-height
+
+                builder: (context) {
+                  return SizedBox(
+                    height: 500,
+                    child: ListView(
+                      physics: BouncingScrollPhysics(
+                        parent: AlwaysScrollableScrollPhysics(),
+                      ),
+
+                      children: [
+                        ListTile(
+                          title: Text('play'),
+                          visualDensity: const VisualDensity(
+                            horizontal: 0,
+                            vertical: -4,
+                          ),
+                          onTap: () {
+                            audioHandler.singlePlay(index);
+                          },
+                        ),
+                        ListTile(
+                          title: Text('play next'),
+                          visualDensity: const VisualDensity(
+                            horizontal: 0,
+                            vertical: -4,
+                          ),
+                          onTap: () {
+                            audioHandler.insert2Next(index);
+                          },
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              );
+            },
+            icon: Icon(Icons.more_vert, size: 15),
+          ),
         );
       },
     );
@@ -705,7 +828,9 @@ class PlayQueuePageState extends State<PlayQueuePage> {
               onPressed: () {
                 playQueue = [];
                 audioHandler.clear();
-                Navigator.pop(context);
+                while (Navigator.canPop(context)) {
+                  Navigator.pop(context);
+                }
               },
               icon: Icon(Icons.delete_rounded, color: Colors.black, size: 15),
             ),
@@ -754,13 +879,15 @@ class PlayQueuePageState extends State<PlayQueuePage> {
 
                   trailing: IconButton(
                     onPressed: () {
-                      playQueue.removeAt(index);
+                      audioHandler.delete(index);
                       if (index < audioHandler.currentIndex) {
                         audioHandler.currentIndex -= 1;
                       } else if (index == audioHandler.currentIndex) {
                         if (playQueue.isEmpty) {
                           audioHandler.clear();
-                          Navigator.pop(context);
+                          while (Navigator.canPop(context)) {
+                            Navigator.pop(context);
+                          }
                         } else {
                           audioHandler.load();
                         }
@@ -866,13 +993,26 @@ class LyricsPage extends StatelessWidget {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                IconButton(
-                  color: Colors.black,
-                  icon: const Icon(Icons.loop_rounded, size: 30),
-                  onPressed: () => {
-                    // TODO:
+                StatefulBuilder(
+                  builder: (context, setState) {
+                    return IconButton(
+                      color: Colors.black,
+                      icon: Icon(
+                        audioHandler.playMode == 0
+                            ? Icons.loop_rounded
+                            : audioHandler.playMode == 1
+                            ? Icons.repeat_rounded
+                            : Icons.shuffle_rounded,
+                        size: 30,
+                      ),
+                      onPressed: () {
+                        audioHandler.switchPlayMode();
+                        setState(() {});
+                      },
+                    );
                   },
                 ),
+
                 IconButton(
                   color: Colors.black,
                   icon: const Icon(Icons.skip_previous_rounded, size: 48),
