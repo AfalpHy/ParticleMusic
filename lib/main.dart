@@ -618,13 +618,53 @@ class HomePageState extends State<HomePage> {
                   return SizedBox(
                     height: 500,
                     child: ListView(
-                      physics: BouncingScrollPhysics(
-                        parent: AlwaysScrollableScrollPhysics(),
-                      ),
-
+                      physics: const ClampingScrollPhysics(),
                       children: [
                         ListTile(
-                          title: Text('play'),
+                          leading: (() {
+                            if (song.pictures.isNotEmpty) {
+                              return ClipRRect(
+                                clipBehavior: Clip.antiAlias,
+                                borderRadius: BorderRadius.circular(
+                                  2,
+                                ), // same as you want
+                                child: Image.memory(
+                                  song.pictures.first.bytes,
+                                  width: 40,
+                                  height: 40,
+                                  fit: BoxFit.cover,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Icon(
+                                      Icons.music_note,
+                                      size: 40,
+                                    );
+                                  },
+                                ),
+                              );
+                            }
+                            return ClipRRect(
+                              clipBehavior: Clip.antiAlias,
+                              borderRadius: BorderRadius.circular(2),
+                              child: const Icon(Icons.music_note, size: 40),
+                            );
+                          })(),
+                          title: Text(
+                            song.title ?? "Unknown Title",
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          subtitle: Text(
+                            "${song.artist ?? "Unknown Artist"} - ${song.album ?? "Unknown Album"}",
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        ListTile(
+                          title: Text(
+                            'play',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
                           visualDensity: const VisualDensity(
                             horizontal: 0,
                             vertical: -4,
@@ -634,7 +674,13 @@ class HomePageState extends State<HomePage> {
                           },
                         ),
                         ListTile(
-                          title: Text('play next'),
+                          title: Text(
+                            'play next',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
+                            ),
+                          ),
                           visualDensity: const VisualDensity(
                             horizontal: 0,
                             vertical: -4,
