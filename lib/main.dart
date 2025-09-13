@@ -711,14 +711,31 @@ class PlayQueuePageState extends State<PlayQueuePage> {
             ),
           ),
           Expanded(
-            child: ListView.builder(
+            child: ReorderableListView(
               physics: BouncingScrollPhysics(
                 parent: AlwaysScrollableScrollPhysics(),
               ),
-              itemCount: playQueue.length,
-              itemBuilder: (context, index) {
+
+              onReorder: (oldIndex, newIndex) {
+                setState(() {
+                  if (newIndex > oldIndex) newIndex -= 1;
+                  if (oldIndex == audioHandler.currentIndex) {
+                    audioHandler.currentIndex = newIndex;
+                  } else if (oldIndex < audioHandler.currentIndex &&
+                      newIndex >= audioHandler.currentIndex) {
+                    audioHandler.currentIndex -= 1;
+                  } else if (oldIndex > audioHandler.currentIndex &&
+                      newIndex <= audioHandler.currentIndex) {
+                    audioHandler.currentIndex += 1;
+                  }
+                  final item = playQueue.removeAt(oldIndex);
+                  playQueue.insert(newIndex, item);
+                });
+              },
+              children: List.generate(playQueue.length, (index) {
                 final song = playQueue[index];
                 return ListTile(
+                  key: ValueKey(index),
                   contentPadding: EdgeInsets.fromLTRB(15, 0, 0, 0),
                   title: Text(
                     "${song.title ?? "Unknown Title"} - ${song.artist ?? "Unknown Artist"}",
@@ -757,7 +774,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                     ),
                   ),
                 );
-              },
+              }),
             ),
           ),
         ],
