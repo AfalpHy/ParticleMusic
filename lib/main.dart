@@ -465,8 +465,6 @@ class HomePageState extends State<HomePage> {
   }
 
   Widget buildSongList() {
-    final audiohanlder = Provider.of<MyAudioHandler>(context, listen: false);
-
     filteredSongs = songs
         .where(
           (song) =>
@@ -518,10 +516,10 @@ class HomePageState extends State<HomePage> {
           ),
           visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
           onTap: () async {
-            audiohanlder.setIndex(index);
+            audioHandler.setIndex(index);
             playQueue = filteredSongs;
-            await audiohanlder.load();
-            audiohanlder.play();
+            await audioHandler.load();
+            audioHandler.play();
           },
         );
       },
@@ -719,7 +717,6 @@ class LyricsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final audioHandler = Provider.of<MyAudioHandler>(context);
-    final duration = audioHandler.player.duration ?? Duration.zero;
     return Scaffold(
       backgroundColor: artMixedColor,
       appBar: AppBar(
@@ -784,7 +781,7 @@ class LyricsPage extends StatelessWidget {
             ),
           ),
 
-          SeekBar(player: audioHandler.player, duration: duration),
+          SeekBar(),
 
           // -------- Play Controls --------
           Padding(
@@ -957,6 +954,7 @@ class LyricsListViewState extends State<LyricsListView> {
                     currentIndexNotifier: currentIndexNotifier,
                   );
                 }),
+                SizedBox(height: parentHeight / 2),
               ],
             ),
           ),
@@ -1027,10 +1025,7 @@ class LyricLine {
 }
 
 class SeekBar extends StatefulWidget {
-  final AudioPlayer player;
-  final Duration duration;
-
-  const SeekBar({super.key, required this.player, required this.duration});
+  const SeekBar({super.key});
 
   @override
   State<SeekBar> createState() => SeekBarState();
@@ -1050,13 +1045,13 @@ class SeekBarState extends State<SeekBar> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<Duration?>(
-      stream: widget.player.durationStream,
+      stream: audioHandler.player.durationStream,
       builder: (context, durationSnapshot) {
         final duration = durationSnapshot.data ?? Duration.zero;
         final durationMs = duration.inMilliseconds.toDouble();
 
         return StreamBuilder<Duration>(
-          stream: widget.player.positionStream,
+          stream: audioHandler.player.positionStream,
           builder: (context, snapshot) {
             final position = snapshot.data ?? Duration.zero;
             final sliderValue = dragValue ?? position.inMilliseconds.toDouble();
@@ -1126,7 +1121,7 @@ class SeekBarState extends State<SeekBar> {
                         );
                       },
                       onHorizontalDragEnd: (_) async {
-                        await widget.player.seek(
+                        await audioHandler.player.seek(
                           Duration(milliseconds: dragValue!.toInt()),
                         );
                         setState(() {
@@ -1140,7 +1135,7 @@ class SeekBarState extends State<SeekBar> {
                           context,
                           durationMs,
                         );
-                        await widget.player.seek(
+                        await audioHandler.player.seek(
                           Duration(milliseconds: dragValue!.toInt()),
                         );
                         setState(() {
