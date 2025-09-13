@@ -571,7 +571,7 @@ class PlayerBar extends StatelessWidget {
                       onTap: () {
                         // Open lyrics page
                         Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const LyricPage()),
+                          MaterialPageRoute(builder: (_) => const LyricsPage()),
                         );
                       },
 
@@ -713,8 +713,8 @@ class PlayerBar extends StatelessWidget {
   }
 }
 
-class LyricPage extends StatelessWidget {
-  const LyricPage({super.key});
+class LyricsPage extends StatelessWidget {
+  const LyricsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -780,13 +780,7 @@ class LyricPage extends StatelessWidget {
                 ).createShader(rect);
               },
               blendMode: BlendMode.dstIn,
-              child: StreamBuilder<Duration>(
-                stream: audioHandler.player.positionStream,
-                builder: (context, snapshot) {
-                  final pos = snapshot.data ?? Duration.zero;
-                  return LyricsListView(position: pos);
-                },
-              ),
+              child: LyricsListView(),
             ),
           ),
 
@@ -896,9 +890,7 @@ class LyricPage extends StatelessWidget {
 }
 
 class LyricsListView extends StatefulWidget {
-  final Duration position;
-
-  const LyricsListView({super.key, required this.position});
+  const LyricsListView({super.key});
 
   @override
   State<LyricsListView> createState() => LyricsListViewState();
@@ -906,67 +898,123 @@ class LyricsListView extends StatefulWidget {
 
 class LyricsListViewState extends State<LyricsListView> {
   final ScrollController scrollController = ScrollController();
+  ValueNotifier<int> currentIndexNotifier = ValueNotifier<int>(-1);
   bool userDragging = false;
-  int currentIndex = -1;
 
   @override
-  void didUpdateWidget(LyricsListView oldWidget) {
-    super.didUpdateWidget(oldWidget);
+  void initState() {
+    super.initState();
+    audioHandler.player.positionStream.listen((position) {
+      currentIndexNotifier.value = lyrics.lastIndexWhere(
+        (line) => position >= line.timestamp,
+      );
 
-    currentIndex = lyrics.lastIndexWhere(
-      (line) => widget.position >= line.timestamp,
+      if (!userDragging &&
+          scrollController.hasClients &&
+          currentIndexNotifier.value >= 0) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          final key = lineKeys[currentIndexNotifier.value];
+          final context = key.currentContext;
+          if (context != null) {
+            Scrollable.ensureVisible(
+              context,
+              duration: Duration(milliseconds: 300), // smooth animation
+              curve: Curves.linear,
+              alignment: 0.5,
+            );
+          }
+        });
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final parentHeight = constraints.maxHeight; // height of the parent
+        return NotificationListener<UserScrollNotification>(
+          onNotification: (notification) {
+            if (notification.direction != ScrollDirection.idle) {
+              userDragging = true;
+            } else {
+              Future.delayed(const Duration(milliseconds: 1000), () {
+                userDragging = false;
+              });
+            }
+            return false;
+          },
+          child: SingleChildScrollView(
+            controller: scrollController,
+            child: Column(
+              children: [
+                SizedBox(height: parentHeight / 2),
+                ...List.generate(lyrics.length, (index) {
+                  return LyricLineWidget(
+                    key: lineKeys[index],
+                    text: lyrics[index].text,
+                    index: index,
+                    currentIndexNotifier: currentIndexNotifier,
+                  );
+                }),
+              ],
+            ),
+          ),
+        );
+      },
     );
+  }
+}
 
-    // Only auto-scroll if user is not dragging
-    if (!userDragging && scrollController.hasClients && currentIndex >= 0) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        final key = lineKeys[currentIndex];
-        final context = key.currentContext;
-        if (context != null) {
-          Scrollable.ensureVisible(
-            context,
-            duration: Duration(milliseconds: 300), // smooth animation
-            curve: Curves.linear,
-            alignment: 0.5,
-          );
-        }
+/// Each lyric line listens to currentIndexNotifier
+class LyricLineWidget extends StatefulWidget {
+  final String text;
+  final int index;
+  final ValueNotifier<int> currentIndexNotifier;
+
+  const LyricLineWidget({
+    super.key,
+    required this.text,
+    required this.index,
+    required this.currentIndexNotifier,
+  });
+
+  @override
+  State<LyricLineWidget> createState() => LyricLineWidgetState();
+}
+
+class LyricLineWidgetState extends State<LyricLineWidget> {
+  late bool isActive;
+
+  @override
+  void initState() {
+    super.initState();
+    isActive = widget.index == widget.currentIndexNotifier.value;
+    widget.currentIndexNotifier.addListener(onIndexChanged);
+  }
+
+  void onIndexChanged() {
+    final newActive = widget.index == widget.currentIndexNotifier.value;
+    if (newActive != isActive && mounted) {
+      setState(() {
+        isActive = newActive;
       });
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return NotificationListener<UserScrollNotification>(
-      onNotification: (notification) {
-        if (notification.direction != ScrollDirection.idle) {
-          userDragging = true;
-        } else {
-          Future.delayed(const Duration(milliseconds: 500), () {
-            userDragging = false;
-          });
-        }
-        return false;
-      },
-      child: ListView.builder(
-        controller: scrollController,
-        itemCount: lyrics.length,
-        itemBuilder: (context, index) {
-          final bool isActive = index == currentIndex;
-          return Container(
-            key: lineKeys[index],
-            alignment: Alignment.center,
-            padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 50),
-            child: Text(
-              lyrics[index].text,
-              textAlign: TextAlign.center,
-              style: TextStyle(
-                fontSize: isActive ? 20 : 16,
-                fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-                color: isActive ? Colors.black : Color.fromARGB(128, 0, 0, 0),
-              ),
-            ),
-          );
-        },
+    return Container(
+      alignment: Alignment.center,
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 50),
+      child: Text(
+        widget.text,
+        textAlign: TextAlign.center,
+        style: TextStyle(
+          fontSize: isActive ? 20 : 16,
+          fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+          color: isActive ? Colors.black : const Color.fromARGB(128, 0, 0, 0),
+        ),
       ),
     );
   }
