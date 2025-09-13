@@ -66,6 +66,13 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
     currentIndex = index;
   }
 
+  void clear() {
+    player.stop();
+    currentIndex = -1;
+    currentSong = null;
+    lyrics = [];
+  }
+
   Future<Uri> saveAlbumCover(Uint8List bytes) async {
     final dir = await getTemporaryDirectory();
 
@@ -517,7 +524,7 @@ class HomePageState extends State<HomePage> {
           visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
           onTap: () async {
             audioHandler.setIndex(index);
-            playQueue = filteredSongs;
+            playQueue = List.from(filteredSongs);
             await audioHandler.load();
             audioHandler.play();
           },
@@ -644,56 +651,9 @@ class PlayerBar extends StatelessWidget {
                                 context: context,
                                 isScrollControlled: true, // allows full-height
 
-                                builder: (context) => SizedBox(
-                                  height: 500,
-                                  child: Column(
-                                    children: [
-                                      // Optional drag handle
-                                      Container(
-                                        margin: EdgeInsets.symmetric(
-                                          vertical: 20,
-                                        ),
-                                        width: 50,
-                                        height: 5,
-                                        decoration: BoxDecoration(
-                                          color: Colors.black,
-                                          borderRadius: BorderRadius.circular(
-                                            10,
-                                          ),
-                                        ),
-                                      ),
-                                      Expanded(
-                                        child: ListView.builder(
-                                          physics: BouncingScrollPhysics(
-                                            parent:
-                                                AlwaysScrollableScrollPhysics(),
-                                          ),
-                                          itemCount: playQueue.length,
-                                          itemBuilder: (context, index) {
-                                            final song = playQueue[index];
-                                            return ListTile(
-                                              title: Text(
-                                                "${song.title ?? "Unknown Title"} - ${song.artist ?? "Unknown Artist"}",
-                                                overflow: TextOverflow.ellipsis,
-                                              ),
-
-                                              visualDensity:
-                                                  const VisualDensity(
-                                                    horizontal: 0,
-                                                    vertical: -4,
-                                                  ),
-                                              onTap: () async {
-                                                audioHandler.setIndex(index);
-                                                await audioHandler.load();
-                                                audioHandler.play();
-                                              },
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
+                                builder: (context) {
+                                  return PlayQueuePage();
+                                },
                               );
                             },
                           ),
@@ -711,6 +671,96 @@ class PlayerBar extends StatelessWidget {
   }
 }
 
+class PlayQueuePage extends StatefulWidget {
+  const PlayQueuePage({super.key});
+
+  @override
+  State<StatefulWidget> createState() => PlayQueuePageState();
+}
+
+class PlayQueuePageState extends State<PlayQueuePage> {
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      height: 500,
+      child: Column(
+        children: [
+          // Optional drag handle
+          Container(
+            margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
+            width: 50,
+            height: 5,
+            decoration: BoxDecoration(
+              color: Colors.black,
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+          ListTile(
+            title: Text('Play Queue'),
+            trailing: IconButton(
+              onPressed: () {
+                playQueue = [];
+                audioHandler.clear();
+                Navigator.pop(context);
+              },
+              icon: Icon(Icons.delete_rounded, color: Colors.black, size: 15),
+            ),
+          ),
+          Expanded(
+            child: ListView.builder(
+              physics: BouncingScrollPhysics(
+                parent: AlwaysScrollableScrollPhysics(),
+              ),
+              itemCount: playQueue.length,
+              itemBuilder: (context, index) {
+                final song = playQueue[index];
+                return ListTile(
+                  title: Text(
+                    "${song.title ?? "Unknown Title"} - ${song.artist ?? "Unknown Artist"}",
+                    overflow: TextOverflow.ellipsis,
+                  ),
+
+                  visualDensity: const VisualDensity(
+                    horizontal: 0,
+                    vertical: -4,
+                  ),
+                  onTap: () async {
+                    audioHandler.setIndex(index);
+                    await audioHandler.load();
+                    audioHandler.play();
+                  },
+
+                  trailing: IconButton(
+                    onPressed: () {
+                      playQueue.removeAt(index);
+                      if (index < audioHandler.currentIndex) {
+                        audioHandler.currentIndex -= 1;
+                      } else if (index == audioHandler.currentIndex) {
+                        if (playQueue.isEmpty) {
+                          audioHandler.clear();
+                          Navigator.pop(context);
+                        } else {
+                          audioHandler.load();
+                        }
+                      }
+                      setState(() {});
+                    },
+                    icon: Icon(
+                      Icons.clear_rounded,
+                      color: Colors.black,
+                      size: 15,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class LyricsPage extends StatelessWidget {
   const LyricsPage({super.key});
 
@@ -722,33 +772,37 @@ class LyricsPage extends StatelessWidget {
       appBar: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: artMixedColor,
-        title: AutoSizeText(
-          "${audioHandler.currentSong!.title ?? 'Unknown Title'} - ${audioHandler.currentSong!.artist ?? 'Unknown Artist'}",
-          maxLines: 1,
-          minFontSize: 20,
-          overflowReplacement: SizedBox(
-            height: kToolbarHeight, // finite height
-            width: double.infinity, // takes whatever width AppBar gives
-            child: Marquee(
-              text:
-                  "${audioHandler.currentSong?.title ?? 'Unknown Title'} - ${audioHandler.currentSong?.artist ?? 'Unknown Artist'}",
-              scrollAxis: Axis.horizontal,
-              blankSpace: 20,
-              velocity: 30.0,
-              pauseAfterRound: const Duration(seconds: 1),
-              accelerationDuration: const Duration(milliseconds: 500),
-              accelerationCurve: Curves.linear,
-              decelerationDuration: const Duration(milliseconds: 500),
-              decelerationCurve: Curves.linear,
-            ),
-          ),
-        ),
+        title: audioHandler.currentSong == null
+            ? null
+            : AutoSizeText(
+                "${audioHandler.currentSong?.title ?? 'Unknown Title'} - ${audioHandler.currentSong?.artist ?? 'Unknown Artist'}",
+                maxLines: 1,
+                minFontSize: 20,
+                overflowReplacement: SizedBox(
+                  height: kToolbarHeight, // finite height
+                  width: double.infinity, // takes whatever width AppBar gives
+                  child: Marquee(
+                    text:
+                        "${audioHandler.currentSong?.title ?? 'Unknown Title'} - ${audioHandler.currentSong?.artist ?? 'Unknown Artist'}",
+                    scrollAxis: Axis.horizontal,
+                    blankSpace: 20,
+                    velocity: 30.0,
+                    pauseAfterRound: const Duration(seconds: 1),
+                    accelerationDuration: const Duration(milliseconds: 500),
+                    accelerationCurve: Curves.linear,
+                    decelerationDuration: const Duration(milliseconds: 500),
+                    decelerationCurve: Curves.linear,
+                  ),
+                ),
+              ),
       ),
       body: Column(
         children: [
           const SizedBox(height: 30),
           ClipOval(
-            child: audioHandler.currentSong!.pictures.isNotEmpty
+            child:
+                audioHandler.currentSong != null &&
+                    audioHandler.currentSong!.pictures.isNotEmpty
                 ? Image.memory(
                     audioHandler.currentSong!.pictures.first.bytes,
                     width: 200,
@@ -830,50 +884,9 @@ class LyricsPage extends StatelessWidget {
                       context: context,
                       isScrollControlled: true, // allows full-height
 
-                      builder: (context) => SizedBox(
-                        height: 500,
-                        child: Column(
-                          children: [
-                            // Optional drag handle
-                            Container(
-                              margin: EdgeInsets.symmetric(vertical: 20),
-                              width: 50,
-                              height: 5,
-                              decoration: BoxDecoration(
-                                color: Colors.black,
-                                borderRadius: BorderRadius.circular(10),
-                              ),
-                            ),
-                            Expanded(
-                              child: ListView.builder(
-                                physics: BouncingScrollPhysics(
-                                  parent: AlwaysScrollableScrollPhysics(),
-                                ),
-                                itemCount: playQueue.length,
-                                itemBuilder: (context, index) {
-                                  final song = playQueue[index];
-                                  return ListTile(
-                                    title: Text(
-                                      "${song.title ?? "Unknown Title"} - ${song.artist ?? "Unknown Artist"}",
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-
-                                    visualDensity: const VisualDensity(
-                                      horizontal: 0,
-                                      vertical: -4,
-                                    ),
-                                    onTap: () async {
-                                      audioHandler.setIndex(index);
-                                      await audioHandler.load();
-                                      audioHandler.play();
-                                    },
-                                  );
-                                },
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
+                      builder: (context) {
+                        return PlayQueuePage();
+                      },
                     );
                   },
                 ),
