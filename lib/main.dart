@@ -696,7 +696,11 @@ class PlayQueuePageState extends State<PlayQueuePage> {
             ),
           ),
           ListTile(
-            title: Text('Play Queue'),
+            title: Text(
+              'Play Queue',
+              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+            ),
+            contentPadding: EdgeInsets.fromLTRB(15, 0, 0, 0),
             trailing: IconButton(
               onPressed: () {
                 playQueue = [];
@@ -715,6 +719,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
               itemBuilder: (context, index) {
                 final song = playQueue[index];
                 return ListTile(
+                  contentPadding: EdgeInsets.fromLTRB(15, 0, 0, 0),
                   title: Text(
                     "${song.title ?? "Unknown Title"} - ${song.artist ?? "Unknown Artist"}",
                     overflow: TextOverflow.ellipsis,
