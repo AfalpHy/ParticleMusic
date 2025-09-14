@@ -61,6 +61,8 @@ class HomePageState extends State<HomePage> {
   late Directory docs;
   bool isChanged = false;
   bool displayLibrary = true;
+  final ScrollController scrollController = ScrollController();
+  late double bodyHeight;
 
   @override
   void initState() {
@@ -183,7 +185,12 @@ class HomePageState extends State<HomePage> {
               ),
             ],
           ),
-          body: displayLibrary ? buildSongList() : buildPlaylists(),
+          body: LayoutBuilder(
+            builder: (context, constraints) {
+              bodyHeight = constraints.maxHeight;
+              return displayLibrary ? buildSongList() : buildPlaylists();
+            },
+          ),
           bottomNavigationBar: SizedBox(
             height: 80,
             child: Row(
@@ -248,6 +255,47 @@ class HomePageState extends State<HomePage> {
         ),
 
         Positioned(left: 0, right: 0, bottom: 80, child: PlayerBar()),
+
+        Positioned(
+          left: 0,
+          right: 0,
+          bottom: 120,
+          child: SizedBox(
+            child: Row(
+              children: [
+                Spacer(),
+                IconButton(
+                  onPressed: () {
+                    if (audioHandler.currentSong != null) {
+                      for (int i = 0; i < filteredSongs.length; i++) {
+                        if (filteredSongs[i].file.path ==
+                            audioHandler.currentSong!.file.path) {
+                          double offet = 61.2 * i;
+                          if (offet < bodyHeight) {
+                            offet = 0;
+                          } else {
+                            double maxHeight =
+                                61.2 * filteredSongs.length + 40 - bodyHeight;
+                            if (offet > maxHeight) {
+                              offet = maxHeight;
+                            }
+                          }
+                          scrollController.animateTo(
+                            offet, // pixel offset
+                            duration: Duration(milliseconds: 300),
+                            curve: Curves.linear,
+                          );
+                        }
+                      }
+                    }
+                  },
+                  icon: Icon(Icons.my_location),
+                ),
+                SizedBox(width: 30),
+              ],
+            ),
+          ),
+        ),
       ],
     );
   }
@@ -267,151 +315,163 @@ class HomePageState extends State<HomePage> {
         .toList();
 
     return ListView.builder(
+      controller: scrollController,
       physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
-      itemCount: filteredSongs.length,
+      itemCount: filteredSongs.length + 1,
       itemBuilder: (context, index) {
-        final song = filteredSongs[index];
-        return Selector<MyAudioHandler, String?>(
-          selector: (_, audioHandeler) => audioHandeler.currentSong?.file.path,
-          builder: (_, currentFilePath, _) {
-            final isCurrentSong = song.file.path == currentFilePath;
-            return ListTile(
-              contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
-              tileColor: isCurrentSong ? Colors.white24 : null,
-              leading: (() {
-                if (song.pictures.isNotEmpty) {
+        if (index < filteredSongs.length) {
+          final song = filteredSongs[index];
+          return Selector<MyAudioHandler, String?>(
+            selector: (_, audioHandeler) =>
+                audioHandeler.currentSong?.file.path,
+            builder: (_, currentFilePath, _) {
+              final isCurrentSong = song.file.path == currentFilePath;
+
+              return ListTile(
+                contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
+                tileColor: isCurrentSong ? Colors.white24 : null,
+                leading: (() {
+                  if (song.pictures.isNotEmpty) {
+                    return ClipRRect(
+                      clipBehavior: Clip.antiAlias,
+                      borderRadius: BorderRadius.circular(
+                        2,
+                      ), // same as you want
+                      child: Image.memory(
+                        song.pictures.first.bytes,
+                        width: 40,
+                        height: 40,
+                        fit: BoxFit.cover,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Icon(Icons.music_note, size: 40);
+                        },
+                      ),
+                    );
+                  }
                   return ClipRRect(
                     clipBehavior: Clip.antiAlias,
-                    borderRadius: BorderRadius.circular(2), // same as you want
-                    child: Image.memory(
-                      song.pictures.first.bytes,
-                      width: 40,
-                      height: 40,
-                      fit: BoxFit.cover,
-                      errorBuilder: (context, error, stackTrace) {
-                        return const Icon(Icons.music_note, size: 40);
-                      },
-                    ),
+                    borderRadius: BorderRadius.circular(2),
+                    child: const Icon(Icons.music_note, size: 40),
                   );
-                }
-                return ClipRRect(
-                  clipBehavior: Clip.antiAlias,
-                  borderRadius: BorderRadius.circular(2),
-                  child: const Icon(Icons.music_note, size: 40),
-                );
-              })(),
-              title: Text(
-                song.title ?? "Unknown Title",
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(color: isCurrentSong ? Colors.brown : null),
-              ),
-              subtitle: Text(
-                "${song.artist ?? "Unknown Artist"} - ${song.album ?? "Unknown Album"}",
-                overflow: TextOverflow.ellipsis,
-              ),
-              visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-              onTap: () async {
-                audioHandler.setIndex(index);
-                playQueue = List.from(filteredSongs);
-                if (audioHandler.playMode == 2) {
-                  audioHandler.shuffle();
-                }
-                await audioHandler.load();
-                audioHandler.play();
-              },
-              trailing: IconButton(
-                onPressed: () {
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true, // allows full-height
+                })(),
+                title: Text(
+                  song.title ?? "Unknown Title",
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(color: isCurrentSong ? Colors.brown : null),
+                ),
+                subtitle: Text(
+                  "${song.artist ?? "Unknown Artist"} - ${song.album ?? "Unknown Album"}",
+                  overflow: TextOverflow.ellipsis,
+                ),
+                visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+                onTap: () async {
+                  audioHandler.setIndex(index);
+                  playQueue = List.from(filteredSongs);
+                  if (audioHandler.playMode == 2) {
+                    audioHandler.shuffle();
+                  }
+                  await audioHandler.load();
+                  audioHandler.play();
+                },
+                trailing: IconButton(
+                  onPressed: () {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true, // allows full-height
 
-                    builder: (context) {
-                      return SizedBox(
-                        height: 500,
-                        child: ListView(
-                          physics: const ClampingScrollPhysics(),
-                          children: [
-                            ListTile(
-                              leading: (() {
-                                if (song.pictures.isNotEmpty) {
+                      builder: (context) {
+                        return SizedBox(
+                          height: 500,
+                          child: ListView(
+                            physics: const ClampingScrollPhysics(),
+                            children: [
+                              ListTile(
+                                leading: (() {
+                                  if (song.pictures.isNotEmpty) {
+                                    return ClipRRect(
+                                      clipBehavior: Clip.antiAlias,
+                                      borderRadius: BorderRadius.circular(
+                                        2,
+                                      ), // same as you want
+                                      child: Image.memory(
+                                        song.pictures.first.bytes,
+                                        width: 40,
+                                        height: 40,
+                                        fit: BoxFit.cover,
+                                        errorBuilder:
+                                            (context, error, stackTrace) {
+                                              return const Icon(
+                                                Icons.music_note,
+                                                size: 40,
+                                              );
+                                            },
+                                      ),
+                                    );
+                                  }
                                   return ClipRRect(
                                     clipBehavior: Clip.antiAlias,
-                                    borderRadius: BorderRadius.circular(
-                                      2,
-                                    ), // same as you want
-                                    child: Image.memory(
-                                      song.pictures.first.bytes,
-                                      width: 40,
-                                      height: 40,
-                                      fit: BoxFit.cover,
-                                      errorBuilder:
-                                          (context, error, stackTrace) {
-                                            return const Icon(
-                                              Icons.music_note,
-                                              size: 40,
-                                            );
-                                          },
+                                    borderRadius: BorderRadius.circular(2),
+                                    child: const Icon(
+                                      Icons.music_note,
+                                      size: 40,
                                     ),
                                   );
-                                }
-                                return ClipRRect(
-                                  clipBehavior: Clip.antiAlias,
-                                  borderRadius: BorderRadius.circular(2),
-                                  child: const Icon(Icons.music_note, size: 40),
-                                );
-                              })(),
-                              title: Text(
-                                song.title ?? "Unknown Title",
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                              subtitle: Text(
-                                "${song.artist ?? "Unknown Artist"} - ${song.album ?? "Unknown Album"}",
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            ListTile(
-                              title: Text(
-                                'Play',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
+                                })(),
+                                title: Text(
+                                  song.title ?? "Unknown Title",
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                                subtitle: Text(
+                                  "${song.artist ?? "Unknown Artist"} - ${song.album ?? "Unknown Album"}",
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              visualDensity: const VisualDensity(
-                                horizontal: 0,
-                                vertical: -4,
-                              ),
-                              onTap: () {
-                                audioHandler.singlePlay(index);
-                              },
-                            ),
-                            ListTile(
-                              title: Text(
-                                'Play next',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
+                              ListTile(
+                                title: Text(
+                                  'Play',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                  ),
                                 ),
+                                visualDensity: const VisualDensity(
+                                  horizontal: 0,
+                                  vertical: -4,
+                                ),
+                                onTap: () {
+                                  audioHandler.singlePlay(index);
+                                },
                               ),
-                              visualDensity: const VisualDensity(
-                                horizontal: 0,
-                                vertical: -4,
+                              ListTile(
+                                title: Text(
+                                  'Play next',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                                visualDensity: const VisualDensity(
+                                  horizontal: 0,
+                                  vertical: -4,
+                                ),
+                                onTap: () {
+                                  audioHandler.insert2Next(index);
+                                },
                               ),
-                              onTap: () {
-                                audioHandler.insert2Next(index);
-                              },
-                            ),
-                          ],
-                        ),
-                      );
-                    },
-                  );
-                },
-                icon: Icon(Icons.more_vert, size: 15),
-              ),
-            );
-          },
-        );
+                            ],
+                          ),
+                        );
+                      },
+                    );
+                  },
+                  icon: Icon(Icons.more_vert, size: 15),
+                ),
+              );
+            },
+          );
+        } else {
+          return SizedBox(height: 40);
+        }
       },
     );
   }
