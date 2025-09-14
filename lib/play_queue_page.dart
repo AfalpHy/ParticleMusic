@@ -102,7 +102,6 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                     final isCurrentSong = index == currentIndex;
                     return ListTile(
                       contentPadding: EdgeInsets.fromLTRB(15, 0, 0, 0),
-                      tileColor: isCurrentSong ? Colors.white54 : null,
                       title: Text(
                         "${song.title ?? "Unknown Title"} - ${song.artist ?? "Unknown Artist"}",
                         overflow: TextOverflow.ellipsis,
