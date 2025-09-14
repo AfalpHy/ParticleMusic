@@ -21,8 +21,6 @@ List<AudioMetadata> playQueue = [];
 List<AudioMetadata> filteredSongs = [];
 List<LyricLine> lyrics = [];
 Color artMixedColor = Colors.grey;
-// Create a GlobalKey for each line
-List<GlobalKey> lineKeys = [];
 
 class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
   final player = AudioPlayer();
@@ -186,7 +184,6 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
         );
       }
     }
-    lineKeys = List.generate(lyrics.length, (_) => GlobalKey());
   }
 
   Color mixColorsWeighted(List<Color> colors) {

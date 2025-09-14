@@ -5,6 +5,7 @@ import 'package:provider/provider.dart';
 import 'package:marquee/marquee.dart';
 import 'dart:async';
 import 'package:auto_size_text/auto_size_text.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'audio_handler.dart';
 import 'play_queue_page.dart';
 
@@ -178,37 +179,39 @@ class LyricsListView extends StatefulWidget {
 }
 
 class LyricsListViewState extends State<LyricsListView> {
-  final ScrollController scrollController = ScrollController();
-  ValueNotifier<int> currentIndexNotifier = ValueNotifier<int>(0);
+  final ItemScrollController itemScrollController = ItemScrollController();
+  ValueNotifier<int> currentIndexNotifier = ValueNotifier<int>(-1);
+  StreamSubscription<Duration>? positionSub;
   bool userDragging = false;
 
   @override
   void initState() {
     super.initState();
-    audioHandler.player.positionStream.listen((position) {
+    positionSub = audioHandler.player.positionStream.listen((position) {
       if (lyrics.isNotEmpty) {
         currentIndexNotifier.value = lyrics.lastIndexWhere(
           (line) => position >= line.timestamp,
         );
 
-        if (!userDragging &&
-            scrollController.hasClients &&
-            currentIndexNotifier.value >= 0) {
+        if (!userDragging && currentIndexNotifier.value >= 0) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            final key = lineKeys[currentIndexNotifier.value];
-            final context = key.currentContext;
-            if (context != null) {
-              Scrollable.ensureVisible(
-                context,
-                duration: Duration(milliseconds: 300), // smooth animation
-                curve: Curves.linear,
-                alignment: 0.5,
-              );
-            }
+            itemScrollController.scrollTo(
+              index: currentIndexNotifier.value + 1,
+              duration: Duration(milliseconds: 300), // smooth animation
+              curve: Curves.linear,
+              alignment: 0.5,
+            );
           });
         }
       }
     });
+  }
+
+  @override
+  void dispose() {
+    // Stop listening when lyrics page is closed
+    positionSub?.cancel();
+    super.dispose();
   }
 
   @override
@@ -222,27 +225,26 @@ class LyricsListViewState extends State<LyricsListView> {
               userDragging = true;
             } else {
               Future.delayed(const Duration(milliseconds: 1000), () {
-                userDragging = false;
+                if (mounted) {
+                  userDragging = false;
+                }
               });
             }
             return false;
           },
-          child: SingleChildScrollView(
-            controller: scrollController,
-            child: Column(
-              children: [
-                SizedBox(height: parentHeight / 2),
-                ...List.generate(lyrics.length, (index) {
-                  return LyricLineWidget(
-                    key: lineKeys[index],
-                    text: lyrics[index].text,
-                    index: index,
-                    currentIndexNotifier: currentIndexNotifier,
-                  );
-                }),
-                SizedBox(height: parentHeight / 2),
-              ],
-            ),
+          child: ScrollablePositionedList.builder(
+            itemCount: lyrics.length + 2,
+            itemScrollController: itemScrollController,
+            itemBuilder: (context, index) {
+              if (index == 0 || index == lyrics.length + 1) {
+                return SizedBox(height: parentHeight / 2);
+              }
+              return LyricLineWidget(
+                text: lyrics[index - 1].text,
+                index: index - 1,
+                currentIndexNotifier: currentIndexNotifier,
+              );
+            },
           ),
         );
       },
