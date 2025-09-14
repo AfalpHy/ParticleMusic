@@ -13,6 +13,7 @@ import 'package:flutter/services.dart';
 import 'audio_handler.dart';
 import 'lyrics_page.dart';
 import 'play_queue_page.dart';
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -43,7 +44,13 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(title: 'Particle Music', home: const HomePage());
+    return MaterialApp(
+      title: 'Particle Music',
+      scrollBehavior: ScrollConfiguration.of(
+        context,
+      ).copyWith(overscroll: false),
+      home: const HomePage(),
+    );
   }
 }
 
@@ -61,8 +68,7 @@ class HomePageState extends State<HomePage> {
   late Directory docs;
   bool isChanged = false;
   bool displayLibrary = true;
-  final ScrollController scrollController = ScrollController();
-  late double bodyHeight;
+  final ItemScrollController itemScrollController = ItemScrollController();
 
   @override
   void initState() {
@@ -185,12 +191,8 @@ class HomePageState extends State<HomePage> {
               ),
             ],
           ),
-          body: LayoutBuilder(
-            builder: (context, constraints) {
-              bodyHeight = constraints.maxHeight;
-              return displayLibrary ? buildSongList() : buildPlaylists();
-            },
-          ),
+          body: displayLibrary ? buildSongList() : buildPlaylists(),
+
           bottomNavigationBar: SizedBox(
             height: 80,
             child: Row(
@@ -270,18 +272,8 @@ class HomePageState extends State<HomePage> {
                       for (int i = 0; i < filteredSongs.length; i++) {
                         if (filteredSongs[i].file.path ==
                             audioHandler.currentSong!.file.path) {
-                          double offet = 61.2 * i;
-                          if (offet < bodyHeight) {
-                            offet = 0;
-                          } else {
-                            double maxHeight =
-                                61.2 * filteredSongs.length + 40 - bodyHeight;
-                            if (offet > maxHeight) {
-                              offet = maxHeight;
-                            }
-                          }
-                          scrollController.animateTo(
-                            offet, // pixel offset
+                          itemScrollController.scrollTo(
+                            index: i,
                             duration: Duration(milliseconds: 300),
                             curve: Curves.linear,
                           );
@@ -314,9 +306,9 @@ class HomePageState extends State<HomePage> {
         )
         .toList();
 
-    return ListView.builder(
-      controller: scrollController,
-      physics: BouncingScrollPhysics(parent: AlwaysScrollableScrollPhysics()),
+    return ScrollablePositionedList.builder(
+      itemScrollController: itemScrollController,
+      physics: ClampingScrollPhysics(),
       itemCount: filteredSongs.length + 1,
       itemBuilder: (context, index) {
         if (index < filteredSongs.length) {

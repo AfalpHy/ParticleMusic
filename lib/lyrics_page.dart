@@ -179,7 +179,7 @@ class LyricsListView extends StatefulWidget {
 
 class LyricsListViewState extends State<LyricsListView> {
   final ScrollController scrollController = ScrollController();
-  ValueNotifier<int> currentIndexNotifier = ValueNotifier<int>(-1);
+  ValueNotifier<int> currentIndexNotifier = ValueNotifier<int>(0);
   bool userDragging = false;
 
   @override

@@ -75,9 +75,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
 
           Expanded(
             child: ReorderableListView(
-              physics: BouncingScrollPhysics(
-                parent: AlwaysScrollableScrollPhysics(),
-              ),
+              physics: ClampingScrollPhysics(),
 
               onReorder: (oldIndex, newIndex) {
                 setState(() {
