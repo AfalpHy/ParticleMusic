@@ -113,12 +113,7 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
     playQueueTmp = List.from(playQueue);
     final others = List.of(playQueue)..removeAt(currentIndex);
     others.shuffle();
-    if (currentSong == null) {
-      playQueue = [playQueue[0], ...others];
-    } else {
-      playQueue = [currentSong!, ...others];
-    }
-
+    playQueue = [playQueue[currentIndex], ...others];
     currentIndex = 0;
   }
 
