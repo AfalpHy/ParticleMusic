@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'audio_handler.dart';
 
+List<GlobalKey> playQueueGlobalKeys = [];
+
 class PlayQueuePage extends StatefulWidget {
   const PlayQueuePage({super.key});
 
@@ -10,6 +12,26 @@ class PlayQueuePage extends StatefulWidget {
 }
 
 class PlayQueuePageState extends State<PlayQueuePage> {
+  final scrollController = ScrollController();
+  @override
+  void initState() {
+    super.initState();
+    playQueueGlobalKeys = List.generate(playQueue.length, (_) => GlobalKey());
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      double height =
+          (playQueueGlobalKeys[0].currentContext!.findRenderObject()
+                  as RenderBox)
+              .size
+              .height;
+
+      scrollController.animateTo(
+        height * audioHandler.currentIndex,
+        duration: Duration(milliseconds: 300), // smooth animation
+        curve: Curves.linear,
+      );
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return SizedBox(
@@ -75,6 +97,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
 
           Expanded(
             child: ReorderableListView(
+              scrollController: scrollController,
               physics: ClampingScrollPhysics(),
 
               onReorder: (oldIndex, newIndex) {
@@ -96,7 +119,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
               children: List.generate(playQueue.length, (index) {
                 final song = playQueue[index];
                 return Selector<MyAudioHandler, int>(
-                  key: ValueKey(index),
+                  key: playQueueGlobalKeys[index],
                   selector: (_, audioHandeler) => audioHandeler.currentIndex,
                   builder: (_, currentIndex, _) {
                     final isCurrentSong = index == currentIndex;
