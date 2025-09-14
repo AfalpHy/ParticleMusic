@@ -26,23 +26,53 @@ class PlayQueuePageState extends State<PlayQueuePage> {
               borderRadius: BorderRadius.circular(10),
             ),
           ),
-          ListTile(
-            title: Text(
-              'Play Queue',
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            contentPadding: EdgeInsets.fromLTRB(15, 0, 0, 0),
-            trailing: IconButton(
-              onPressed: () {
-                playQueue = [];
-                audioHandler.clear();
-                while (Navigator.canPop(context)) {
-                  Navigator.pop(context);
-                }
-              },
-              icon: Icon(Icons.delete_rounded, color: Colors.black, size: 15),
+          SizedBox(
+            child: Row(
+              children: [
+                SizedBox(width: 15),
+                Text(
+                  'Play Queue',
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                Spacer(),
+                Selector<MyAudioHandler, int>(
+                  selector: (_, audioHandeler) => audioHandeler.playMode,
+                  builder: (_, playMode, _) {
+                    return IconButton(
+                      color: Colors.black,
+                      icon: Icon(
+                        playMode == 0
+                            ? Icons.loop_rounded
+                            : playMode == 1
+                            ? Icons.repeat_rounded
+                            : Icons.shuffle_rounded,
+                        size: 15,
+                      ),
+                      onPressed: () {
+                        audioHandler.switchPlayMode();
+                        setState(() {});
+                      },
+                    );
+                  },
+                ),
+                IconButton(
+                  onPressed: () {
+                    playQueue = [];
+                    audioHandler.clear();
+                    while (Navigator.canPop(context)) {
+                      Navigator.pop(context);
+                    }
+                  },
+                  icon: Icon(
+                    Icons.delete_rounded,
+                    color: Colors.black,
+                    size: 15,
+                  ),
+                ),
+              ],
             ),
           ),
+
           Expanded(
             child: ReorderableListView(
               physics: BouncingScrollPhysics(
