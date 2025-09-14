@@ -349,7 +349,10 @@ class HomePageState extends State<HomePage> {
                 title: Text(
                   song.title ?? "Unknown Title",
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(color: isCurrentSong ? Colors.brown : null),
+                  style: TextStyle(
+                    color: isCurrentSong ? Colors.brown : null,
+                    fontWeight: isCurrentSong ? FontWeight.bold : null,
+                  ),
                 ),
                 subtitle: Text(
                   "${song.artist ?? "Unknown Artist"} - ${song.album ?? "Unknown Album"}",

@@ -107,6 +107,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: isCurrentSong ? Colors.brown : null,
+                          fontWeight: isCurrentSong ? FontWeight.bold : null,
                         ),
                       ),
 
