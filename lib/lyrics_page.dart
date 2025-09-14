@@ -90,7 +90,7 @@ class LyricsPage extends StatelessWidget {
 
               // -------- Play Controls --------
               Padding(
-                padding: const EdgeInsets.fromLTRB(0, 0, 0, 50),
+                padding: const EdgeInsets.fromLTRB(0, 0, 0, 40),
 
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -199,7 +199,7 @@ class LyricsListViewState extends State<LyricsListView> {
               index: currentIndexNotifier.value + 1,
               duration: Duration(milliseconds: 300), // smooth animation
               curve: Curves.linear,
-              alignment: 0.45,
+              alignment: 0.4,
             );
           });
         }
