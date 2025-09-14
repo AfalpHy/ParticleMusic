@@ -90,7 +90,7 @@ class LyricsPage extends StatelessWidget {
 
               // -------- Play Controls --------
               Padding(
-                padding: const EdgeInsets.fromLTRB(0, 0, 0, 30),
+                padding: const EdgeInsets.fromLTRB(0, 0, 0, 50),
 
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -199,7 +199,7 @@ class LyricsListViewState extends State<LyricsListView> {
               index: currentIndexNotifier.value + 1,
               duration: Duration(milliseconds: 300), // smooth animation
               curve: Curves.linear,
-              alignment: 0.5,
+              alignment: 0.45,
             );
           });
         }
@@ -290,16 +290,21 @@ class LyricLineWidgetState extends State<LyricLineWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      alignment: Alignment.center,
-      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 50),
-      child: Text(
-        widget.text,
-        textAlign: TextAlign.center,
-        style: TextStyle(
-          fontSize: isActive ? 20 : 16,
-          fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
-          color: isActive ? Colors.black : const Color.fromARGB(128, 0, 0, 0),
+    return InkWell(
+      onTap: () {
+        audioHandler.seek(lyrics[widget.index].timestamp);
+      },
+      child: Container(
+        alignment: Alignment.center,
+        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 50),
+        child: Text(
+          widget.text,
+          textAlign: TextAlign.center,
+          style: TextStyle(
+            fontSize: isActive ? 20 : 16,
+            fontWeight: isActive ? FontWeight.bold : FontWeight.normal,
+            color: isActive ? Colors.black : const Color.fromARGB(128, 0, 0, 0),
+          ),
         ),
       ),
     );
