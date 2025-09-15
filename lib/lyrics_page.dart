@@ -24,26 +24,66 @@ class LyricsPage extends StatelessWidget {
             backgroundColor: artMixedColor,
             title: audioHandler.currentSong == null
                 ? null
-                : AutoSizeText(
-                    "${audioHandler.currentSong?.title ?? 'Unknown Title'} - ${audioHandler.currentSong?.artist ?? 'Unknown Artist'}",
-                    maxLines: 1,
-                    minFontSize: 20,
-                    overflowReplacement: SizedBox(
-                      height: kToolbarHeight, // finite height
-                      width:
-                          double.infinity, // takes whatever width AppBar gives
-                      child: Marquee(
-                        text:
-                            "${audioHandler.currentSong?.title ?? 'Unknown Title'} - ${audioHandler.currentSong?.artist ?? 'Unknown Artist'}",
-                        scrollAxis: Axis.horizontal,
-                        blankSpace: 20,
-                        velocity: 30.0,
-                        pauseAfterRound: const Duration(seconds: 1),
-                        accelerationDuration: const Duration(milliseconds: 500),
-                        accelerationCurve: Curves.linear,
-                        decelerationDuration: const Duration(milliseconds: 500),
-                        decelerationCurve: Curves.linear,
-                      ),
+                : Center(
+                    child: Column(
+                      children: [
+                        AutoSizeText(
+                          audioHandler.currentSong?.title ?? 'Unknown Title',
+                          maxLines: 1,
+                          maxFontSize: 20,
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                          overflowReplacement: SizedBox(
+                            height: kToolbarHeight / 2, // finite height
+                            width: double
+                                .infinity, // takes whatever width AppBar gives
+                            child: Marquee(
+                              text:
+                                  audioHandler.currentSong?.title ??
+                                  'Unknown Title',
+                              scrollAxis: Axis.horizontal,
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                              blankSpace: 20,
+                              velocity: 30.0,
+                              pauseAfterRound: const Duration(seconds: 1),
+                              accelerationDuration: const Duration(
+                                milliseconds: 500,
+                              ),
+                              accelerationCurve: Curves.linear,
+                              decelerationDuration: const Duration(
+                                milliseconds: 500,
+                              ),
+                              decelerationCurve: Curves.linear,
+                            ),
+                          ),
+                        ),
+                        AutoSizeText(
+                          audioHandler.currentSong?.artist ?? 'Unknown Artist',
+                          maxLines: 1,
+                          maxFontSize: 14,
+                          overflowReplacement: SizedBox(
+                            height: kToolbarHeight / 2, // finite height
+                            width: double
+                                .infinity, // takes whatever width AppBar gives
+                            child: Marquee(
+                              text:
+                                  audioHandler.currentSong?.artist ??
+                                  'Unknown Artist',
+                              scrollAxis: Axis.horizontal,
+                              blankSpace: 20,
+                              velocity: 30.0,
+                              pauseAfterRound: const Duration(seconds: 1),
+                              accelerationDuration: const Duration(
+                                milliseconds: 500,
+                              ),
+                              accelerationCurve: Curves.linear,
+                              decelerationDuration: const Duration(
+                                milliseconds: 500,
+                              ),
+                              decelerationCurve: Curves.linear,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
           ),
