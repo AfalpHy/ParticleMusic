@@ -193,7 +193,6 @@ class LyricsPage extends StatelessWidget {
                         showModalBottomSheet(
                           context: context,
                           isScrollControlled: true, // allows full-height
-                          backgroundColor: Color.fromARGB(255, 250, 250, 250),
                           builder: (context) {
                             return PlayQueuePage();
                           },
@@ -223,6 +222,7 @@ class LyricsListViewState extends State<LyricsListView> {
   ValueNotifier<int> currentIndexNotifier = ValueNotifier<int>(-1);
   StreamSubscription<Duration>? positionSub;
   bool userDragging = false;
+  bool userDragged = false;
 
   Timer? timer;
 
@@ -231,18 +231,24 @@ class LyricsListViewState extends State<LyricsListView> {
     super.initState();
     positionSub = audioHandler.player.positionStream.listen((position) {
       if (lyrics.isNotEmpty) {
+        int tmp = currentIndexNotifier.value;
         currentIndexNotifier.value = lyrics.lastIndexWhere(
           (line) => position >= line.timestamp,
         );
 
-        if (!userDragging && currentIndexNotifier.value >= 0) {
+        if (!userDragging &&
+            currentIndexNotifier.value >= 0 &&
+            (tmp != currentIndexNotifier.value || userDragged)) {
+          userDragged = false;
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            itemScrollController.scrollTo(
-              index: currentIndexNotifier.value + 1,
-              duration: Duration(milliseconds: 300), // smooth animation
-              curve: Curves.linear,
-              alignment: 0.4,
-            );
+            if (mounted) {
+              itemScrollController.scrollTo(
+                index: currentIndexNotifier.value + 1,
+                duration: Duration(milliseconds: 300), // smooth animation
+                curve: Curves.linear,
+                alignment: 0.4,
+              );
+            }
           });
         }
       }
@@ -265,6 +271,7 @@ class LyricsListViewState extends State<LyricsListView> {
           onNotification: (notification) {
             if (notification.direction != ScrollDirection.idle) {
               userDragging = true;
+              userDragged = true;
               if (timer != null) {
                 timer!.cancel();
                 timer = null;

@@ -126,16 +126,14 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                   builder: (_, currentIndex, _) {
                     final isCurrentSong = index == currentIndex;
                     return Container(
-                      color: isCurrentSong
-                          ? Color.fromARGB(255, 235, 235, 235)
-                          : null,
+                      color: isCurrentSong ? Color.fromARGB(15, 0, 0, 0) : null,
                       child: ListTile(
                         contentPadding: EdgeInsets.fromLTRB(15, 0, 0, 0),
                         title: Text(
                           "${song.title ?? "Unknown Title"} - ${song.artist ?? "Unknown Artist"}",
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            color: isCurrentSong ? Colors.brown : null,
+                            color: isCurrentSong ? Colors.red : null,
                             fontWeight: isCurrentSong ? FontWeight.bold : null,
                           ),
                         ),

@@ -158,10 +158,7 @@ class HomePageState extends State<HomePage> {
     return Stack(
       children: [
         Scaffold(
-          backgroundColor: Colors.grey,
           appBar: AppBar(
-            backgroundColor: Colors.grey,
-
             title: isSearching
                 ? TextField(
                     autofocus: true,
@@ -323,7 +320,8 @@ class HomePageState extends State<HomePage> {
               final isCurrentSong = song.file.path == currentFilePath;
 
               return Container(
-                color: isCurrentSong ? Colors.white24 : null,
+                color: isCurrentSong ? Color.fromARGB(15, 0, 0, 0) : null,
+
                 child: ListTile(
                   contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
                   leading: (() {
@@ -354,7 +352,7 @@ class HomePageState extends State<HomePage> {
                     song.title ?? "Unknown Title",
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: isCurrentSong ? Colors.brown : null,
+                      color: isCurrentSong ? Colors.red : null,
                       fontWeight: isCurrentSong ? FontWeight.bold : null,
                     ),
                   ),
@@ -585,7 +583,10 @@ class PlayerBar extends StatelessWidget {
                 left: 0,
                 right: 0,
                 bottom: 0,
-                child: Container(height: 20, color: Colors.grey),
+                child: Container(
+                  height: 20,
+                  color: Theme.of(context).scaffoldBackgroundColor,
+                ),
               ),
               Positioned(
                 left: 15,
@@ -684,12 +685,6 @@ class PlayerBar extends StatelessWidget {
                               showModalBottomSheet(
                                 context: context,
                                 isScrollControlled: true, // allows full-height
-                                backgroundColor: Color.fromARGB(
-                                  255,
-                                  250,
-                                  250,
-                                  250,
-                                ),
                                 builder: (context) {
                                   return PlayQueuePage();
                                 },
