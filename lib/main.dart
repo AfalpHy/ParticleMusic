@@ -197,10 +197,12 @@ class HomePageState extends State<HomePage> {
           body: NotificationListener<UserScrollNotification>(
             onNotification: (notification) {
               if (notification.direction != ScrollDirection.idle) {
-                listIsScrolling.value = true;
-                if (timer != null) {
-                  timer!.cancel();
-                  timer = null;
+                if (playQueue.isNotEmpty) {
+                  listIsScrolling.value = true;
+                  if (timer != null) {
+                    timer!.cancel();
+                    timer = null;
+                  }
                 }
               } else {
                 if (listIsScrolling.value) {
