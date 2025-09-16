@@ -68,7 +68,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                             : playMode == 1
                             ? Icons.repeat_rounded
                             : Icons.shuffle_rounded,
-                        size: 15,
+                        size: 20,
                       ),
                       onPressed: () {
                         audioHandler.switchPlayMode();
@@ -88,7 +88,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                   icon: Icon(
                     Icons.delete_rounded,
                     color: Colors.black,
-                    size: 15,
+                    size: 20,
                   ),
                 ),
               ],
@@ -164,7 +164,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                         icon: Icon(
                           Icons.clear_rounded,
                           color: Colors.black,
-                          size: 15,
+                          size: 20,
                         ),
                       ),
                     );

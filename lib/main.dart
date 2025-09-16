@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
@@ -68,7 +69,9 @@ class HomePageState extends State<HomePage> {
   late Directory docs;
   bool isChanged = false;
   bool displayLibrary = true;
+  final ValueNotifier<bool> listIsScrolling = ValueNotifier(false);
   final ItemScrollController itemScrollController = ItemScrollController();
+  Timer? timer;
 
   @override
   void initState() {
@@ -191,7 +194,26 @@ class HomePageState extends State<HomePage> {
               ),
             ],
           ),
-          body: displayLibrary ? buildSongList() : buildPlaylists(),
+          body: NotificationListener<UserScrollNotification>(
+            onNotification: (notification) {
+              if (notification.direction != ScrollDirection.idle) {
+                listIsScrolling.value = true;
+                if (timer != null) {
+                  timer!.cancel();
+                  timer = null;
+                }
+              } else {
+                if (listIsScrolling.value) {
+                  timer ??= Timer(const Duration(milliseconds: 3000), () {
+                    listIsScrolling.value = false;
+                    timer = null;
+                  });
+                }
+              }
+              return false;
+            },
+            child: displayLibrary ? buildSongList() : buildPlaylists(),
+          ),
 
           bottomNavigationBar: SizedBox(
             height: 80,
@@ -261,31 +283,10 @@ class HomePageState extends State<HomePage> {
         Positioned(
           left: 0,
           right: 0,
-          bottom: 120,
-          child: SizedBox(
-            child: Row(
-              children: [
-                Spacer(),
-                IconButton(
-                  onPressed: () {
-                    if (audioHandler.currentSong != null) {
-                      for (int i = 0; i < filteredSongs.length; i++) {
-                        if (filteredSongs[i].file.path ==
-                            audioHandler.currentSong!.file.path) {
-                          itemScrollController.scrollTo(
-                            index: i,
-                            duration: Duration(milliseconds: 300),
-                            curve: Curves.linear,
-                          );
-                        }
-                      }
-                    }
-                  },
-                  icon: Icon(Icons.my_location),
-                ),
-                SizedBox(width: 30),
-              ],
-            ),
+          bottom: 150,
+          child: MyLocation(
+            itemScrollController: itemScrollController,
+            listIsScrolling: listIsScrolling,
           ),
         ),
       ],
@@ -472,7 +473,68 @@ class HomePageState extends State<HomePage> {
   }
 
   Widget buildPlaylists() {
+    filteredSongs = [];
     return SizedBox();
+  }
+}
+
+class MyLocation extends StatefulWidget {
+  final ItemScrollController itemScrollController;
+  final ValueNotifier<bool> listIsScrolling;
+
+  const MyLocation({
+    super.key,
+    required this.itemScrollController,
+    required this.listIsScrolling,
+  });
+
+  @override
+  State<MyLocation> createState() => MyLocationState();
+}
+
+class MyLocationState extends State<MyLocation> {
+  bool userDragging = false;
+
+  @override
+  void initState() {
+    super.initState();
+    widget.listIsScrolling.addListener(() => setState(() {}));
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Selector<MyAudioHandler, AudioMetadata?>(
+      selector: (_, audioHandeler) => audioHandeler.currentSong,
+      builder: (_, currentSong, _) {
+        return currentSong != null &&
+                filteredSongs.isNotEmpty &&
+                widget.listIsScrolling.value
+            ? Row(
+                children: [
+                  Spacer(),
+                  IconButton(
+                    onPressed: () {
+                      if (audioHandler.currentSong != null) {
+                        for (int i = 0; i < filteredSongs.length; i++) {
+                          if (filteredSongs[i].file.path ==
+                              audioHandler.currentSong!.file.path) {
+                            widget.itemScrollController.scrollTo(
+                              index: i,
+                              duration: Duration(milliseconds: 300),
+                              curve: Curves.linear,
+                            );
+                          }
+                        }
+                      }
+                    },
+                    icon: Icon(Icons.my_location),
+                  ),
+                  SizedBox(width: 40),
+                ],
+              )
+            : SizedBox();
+      },
+    );
   }
 }
 

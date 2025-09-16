@@ -224,6 +224,8 @@ class LyricsListViewState extends State<LyricsListView> {
   StreamSubscription<Duration>? positionSub;
   bool userDragging = false;
 
+  Timer? timer;
+
   @override
   void initState() {
     super.initState();
@@ -263,11 +265,14 @@ class LyricsListViewState extends State<LyricsListView> {
           onNotification: (notification) {
             if (notification.direction != ScrollDirection.idle) {
               userDragging = true;
+              if (timer != null) {
+                timer!.cancel();
+                timer = null;
+              }
             } else {
-              Future.delayed(const Duration(milliseconds: 1000), () {
-                if (mounted) {
-                  userDragging = false;
-                }
+              timer ??= Timer(const Duration(milliseconds: 1000), () {
+                userDragging = false;
+                timer = null;
               });
             }
             return false;
