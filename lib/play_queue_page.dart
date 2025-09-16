@@ -40,11 +40,11 @@ class PlayQueuePageState extends State<PlayQueuePage> {
         children: [
           // Optional drag handle
           Container(
-            margin: EdgeInsets.fromLTRB(0, 20, 0, 0),
+            margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
             width: 50,
-            height: 5,
+            height: 3,
             decoration: BoxDecoration(
-              color: Colors.black,
+              color: Colors.grey,
               borderRadius: BorderRadius.circular(10),
             ),
           ),
@@ -94,6 +94,8 @@ class PlayQueuePageState extends State<PlayQueuePage> {
               ],
             ),
           ),
+
+          Divider(color: Colors.grey),
 
           Expanded(
             child: ReorderableListView(

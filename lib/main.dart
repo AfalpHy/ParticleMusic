@@ -380,8 +380,7 @@ class HomePageState extends State<HomePage> {
                       builder: (context) {
                         return SizedBox(
                           height: 500,
-                          child: ListView(
-                            physics: const ClampingScrollPhysics(),
+                          child: Column(
                             children: [
                               ListTile(
                                 leading: (() {
@@ -424,37 +423,53 @@ class HomePageState extends State<HomePage> {
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              ListTile(
-                                title: Text(
-                                  'Play',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18,
-                                  ),
+
+                              Divider(color: Colors.grey),
+
+                              Expanded(
+                                child: ListView(
+                                  physics: const ClampingScrollPhysics(),
+                                  children: [
+                                    ListTile(
+                                      title: Text(
+                                        'Play',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 18,
+                                        ),
+                                      ),
+                                      visualDensity: const VisualDensity(
+                                        horizontal: 0,
+                                        vertical: -4,
+                                      ),
+                                      onTap: () {
+                                        audioHandler.singlePlay(index);
+                                        Navigator.pop(context);
+                                      },
+                                    ),
+                                    ListTile(
+                                      title: Text(
+                                        'Play next',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 18,
+                                        ),
+                                      ),
+                                      visualDensity: const VisualDensity(
+                                        horizontal: 0,
+                                        vertical: -4,
+                                      ),
+                                      onTap: () {
+                                        if (playQueue.isEmpty) {
+                                          audioHandler.singlePlay(index);
+                                        } else {
+                                          audioHandler.insert2Next(index);
+                                        }
+                                        Navigator.pop(context);
+                                      },
+                                    ),
+                                  ],
                                 ),
-                                visualDensity: const VisualDensity(
-                                  horizontal: 0,
-                                  vertical: -4,
-                                ),
-                                onTap: () {
-                                  audioHandler.singlePlay(index);
-                                },
-                              ),
-                              ListTile(
-                                title: Text(
-                                  'Play next',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18,
-                                  ),
-                                ),
-                                visualDensity: const VisualDensity(
-                                  horizontal: 0,
-                                  vertical: -4,
-                                ),
-                                onTap: () {
-                                  audioHandler.insert2Next(index);
-                                },
                               ),
                             ],
                           ),
