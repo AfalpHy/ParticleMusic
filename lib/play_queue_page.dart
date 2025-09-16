@@ -95,7 +95,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
             ),
           ),
 
-          Divider(color: Colors.grey),
+          Divider(color: Colors.grey, thickness: 0.5, height: 1),
 
           Expanded(
             child: ReorderableListView(
@@ -125,48 +125,53 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                   selector: (_, audioHandeler) => audioHandeler.currentIndex,
                   builder: (_, currentIndex, _) {
                     final isCurrentSong = index == currentIndex;
-                    return ListTile(
-                      contentPadding: EdgeInsets.fromLTRB(15, 0, 0, 0),
-                      title: Text(
-                        "${song.title ?? "Unknown Title"} - ${song.artist ?? "Unknown Artist"}",
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          color: isCurrentSong ? Colors.brown : null,
-                          fontWeight: isCurrentSong ? FontWeight.bold : null,
+                    return Container(
+                      color: isCurrentSong
+                          ? Color.fromARGB(255, 235, 235, 235)
+                          : null,
+                      child: ListTile(
+                        contentPadding: EdgeInsets.fromLTRB(15, 0, 0, 0),
+                        title: Text(
+                          "${song.title ?? "Unknown Title"} - ${song.artist ?? "Unknown Artist"}",
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: isCurrentSong ? Colors.brown : null,
+                            fontWeight: isCurrentSong ? FontWeight.bold : null,
+                          ),
                         ),
-                      ),
 
-                      visualDensity: const VisualDensity(
-                        horizontal: 0,
-                        vertical: -4,
-                      ),
-                      onTap: () async {
-                        audioHandler.setIndex(index);
-                        await audioHandler.load();
-                        audioHandler.play();
-                      },
-
-                      trailing: IconButton(
-                        onPressed: () {
-                          audioHandler.delete(index);
-                          if (index < audioHandler.currentIndex) {
-                            audioHandler.currentIndex -= 1;
-                          } else if (index == audioHandler.currentIndex) {
-                            if (playQueue.isEmpty) {
-                              audioHandler.clear();
-                              while (Navigator.canPop(context)) {
-                                Navigator.pop(context);
-                              }
-                            } else {
-                              audioHandler.load();
-                            }
-                          }
-                          setState(() {});
+                        visualDensity: const VisualDensity(
+                          horizontal: 0,
+                          vertical: -4,
+                        ),
+                        onTap: () async {
+                          audioHandler.setIndex(index);
+                          await audioHandler.load();
+                          audioHandler.play();
                         },
-                        icon: Icon(
-                          Icons.clear_rounded,
-                          color: Colors.black,
-                          size: 20,
+
+                        trailing: IconButton(
+                          onPressed: () {
+                            audioHandler.delete(index);
+                            if (index < audioHandler.currentIndex) {
+                              audioHandler.currentIndex -= 1;
+                            } else if (index == audioHandler.currentIndex) {
+                              if (playQueue.isEmpty) {
+                                audioHandler.clear();
+                                while (Navigator.canPop(context)) {
+                                  Navigator.pop(context);
+                                }
+                              } else {
+                                audioHandler.load();
+                              }
+                            }
+                            setState(() {});
+                          },
+                          icon: Icon(
+                            Icons.clear_rounded,
+                            color: Colors.black,
+                            size: 20,
+                          ),
                         ),
                       ),
                     );

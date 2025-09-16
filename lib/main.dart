@@ -322,162 +322,171 @@ class HomePageState extends State<HomePage> {
             builder: (_, currentFilePath, _) {
               final isCurrentSong = song.file.path == currentFilePath;
 
-              return ListTile(
-                contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
-                tileColor: isCurrentSong ? Colors.white24 : null,
-                leading: (() {
-                  if (song.pictures.isNotEmpty) {
+              return Container(
+                color: isCurrentSong ? Colors.white24 : null,
+                child: ListTile(
+                  contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
+                  leading: (() {
+                    if (song.pictures.isNotEmpty) {
+                      return ClipRRect(
+                        clipBehavior: Clip.antiAlias,
+                        borderRadius: BorderRadius.circular(
+                          2,
+                        ), // same as you want
+                        child: Image.memory(
+                          song.pictures.first.bytes,
+                          width: 40,
+                          height: 40,
+                          fit: BoxFit.cover,
+                          errorBuilder: (context, error, stackTrace) {
+                            return const Icon(Icons.music_note, size: 40);
+                          },
+                        ),
+                      );
+                    }
                     return ClipRRect(
                       clipBehavior: Clip.antiAlias,
-                      borderRadius: BorderRadius.circular(
-                        2,
-                      ), // same as you want
-                      child: Image.memory(
-                        song.pictures.first.bytes,
-                        width: 40,
-                        height: 40,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) {
-                          return const Icon(Icons.music_note, size: 40);
-                        },
-                      ),
+                      borderRadius: BorderRadius.circular(2),
+                      child: const Icon(Icons.music_note, size: 40),
                     );
-                  }
-                  return ClipRRect(
-                    clipBehavior: Clip.antiAlias,
-                    borderRadius: BorderRadius.circular(2),
-                    child: const Icon(Icons.music_note, size: 40),
-                  );
-                })(),
-                title: Text(
-                  song.title ?? "Unknown Title",
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: isCurrentSong ? Colors.brown : null,
-                    fontWeight: isCurrentSong ? FontWeight.bold : null,
+                  })(),
+                  title: Text(
+                    song.title ?? "Unknown Title",
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: isCurrentSong ? Colors.brown : null,
+                      fontWeight: isCurrentSong ? FontWeight.bold : null,
+                    ),
                   ),
-                ),
-                subtitle: Text(
-                  "${song.artist ?? "Unknown Artist"} - ${song.album ?? "Unknown Album"}",
-                  overflow: TextOverflow.ellipsis,
-                ),
-                visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-                onTap: () async {
-                  audioHandler.setIndex(index);
-                  playQueue = List.from(filteredSongs);
-                  if (audioHandler.playMode == 2) {
-                    audioHandler.shuffle();
-                  }
-                  await audioHandler.load();
-                  audioHandler.play();
-                },
-                trailing: IconButton(
-                  onPressed: () {
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true, // allows full-height
+                  subtitle: Text(
+                    "${song.artist ?? "Unknown Artist"} - ${song.album ?? "Unknown Album"}",
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  visualDensity: const VisualDensity(
+                    horizontal: 0,
+                    vertical: -4,
+                  ),
+                  onTap: () async {
+                    audioHandler.setIndex(index);
+                    playQueue = List.from(filteredSongs);
+                    if (audioHandler.playMode == 2) {
+                      audioHandler.shuffle();
+                    }
+                    await audioHandler.load();
+                    audioHandler.play();
+                  },
+                  trailing: IconButton(
+                    onPressed: () {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true, // allows full-height
 
-                      builder: (context) {
-                        return SizedBox(
-                          height: 500,
-                          child: Column(
-                            children: [
-                              ListTile(
-                                leading: (() {
-                                  if (song.pictures.isNotEmpty) {
+                        builder: (context) {
+                          return SizedBox(
+                            height: 500,
+                            child: Column(
+                              children: [
+                                ListTile(
+                                  leading: (() {
+                                    if (song.pictures.isNotEmpty) {
+                                      return ClipRRect(
+                                        clipBehavior: Clip.antiAlias,
+                                        borderRadius: BorderRadius.circular(
+                                          2,
+                                        ), // same as you want
+                                        child: Image.memory(
+                                          song.pictures.first.bytes,
+                                          width: 40,
+                                          height: 40,
+                                          fit: BoxFit.cover,
+                                          errorBuilder:
+                                              (context, error, stackTrace) {
+                                                return const Icon(
+                                                  Icons.music_note,
+                                                  size: 40,
+                                                );
+                                              },
+                                        ),
+                                      );
+                                    }
                                     return ClipRRect(
                                       clipBehavior: Clip.antiAlias,
-                                      borderRadius: BorderRadius.circular(
-                                        2,
-                                      ), // same as you want
-                                      child: Image.memory(
-                                        song.pictures.first.bytes,
-                                        width: 40,
-                                        height: 40,
-                                        fit: BoxFit.cover,
-                                        errorBuilder:
-                                            (context, error, stackTrace) {
-                                              return const Icon(
-                                                Icons.music_note,
-                                                size: 40,
-                                              );
-                                            },
+                                      borderRadius: BorderRadius.circular(2),
+                                      child: const Icon(
+                                        Icons.music_note,
+                                        size: 40,
                                       ),
                                     );
-                                  }
-                                  return ClipRRect(
-                                    clipBehavior: Clip.antiAlias,
-                                    borderRadius: BorderRadius.circular(2),
-                                    child: const Icon(
-                                      Icons.music_note,
-                                      size: 40,
-                                    ),
-                                  );
-                                })(),
-                                title: Text(
-                                  song.title ?? "Unknown Title",
-                                  overflow: TextOverflow.ellipsis,
+                                  })(),
+                                  title: Text(
+                                    song.title ?? "Unknown Title",
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                  subtitle: Text(
+                                    "${song.artist ?? "Unknown Artist"} - ${song.album ?? "Unknown Album"}",
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
                                 ),
-                                subtitle: Text(
-                                  "${song.artist ?? "Unknown Artist"} - ${song.album ?? "Unknown Album"}",
-                                  overflow: TextOverflow.ellipsis,
+
+                                Divider(
+                                  color: Colors.grey,
+                                  thickness: 0.5,
+                                  height: 1,
                                 ),
-                              ),
 
-                              Divider(color: Colors.grey),
-
-                              Expanded(
-                                child: ListView(
-                                  physics: const ClampingScrollPhysics(),
-                                  children: [
-                                    ListTile(
-                                      title: Text(
-                                        'Play',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 18,
+                                Expanded(
+                                  child: ListView(
+                                    physics: const ClampingScrollPhysics(),
+                                    children: [
+                                      ListTile(
+                                        title: Text(
+                                          'Play',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 18,
+                                          ),
                                         ),
-                                      ),
-                                      visualDensity: const VisualDensity(
-                                        horizontal: 0,
-                                        vertical: -4,
-                                      ),
-                                      onTap: () {
-                                        audioHandler.singlePlay(index);
-                                        Navigator.pop(context);
-                                      },
-                                    ),
-                                    ListTile(
-                                      title: Text(
-                                        'Play next',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 18,
+                                        visualDensity: const VisualDensity(
+                                          horizontal: 0,
+                                          vertical: -4,
                                         ),
-                                      ),
-                                      visualDensity: const VisualDensity(
-                                        horizontal: 0,
-                                        vertical: -4,
-                                      ),
-                                      onTap: () {
-                                        if (playQueue.isEmpty) {
+                                        onTap: () {
                                           audioHandler.singlePlay(index);
-                                        } else {
-                                          audioHandler.insert2Next(index);
-                                        }
-                                        Navigator.pop(context);
-                                      },
-                                    ),
-                                  ],
+                                          Navigator.pop(context);
+                                        },
+                                      ),
+                                      ListTile(
+                                        title: Text(
+                                          'Play next',
+                                          style: TextStyle(
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 18,
+                                          ),
+                                        ),
+                                        visualDensity: const VisualDensity(
+                                          horizontal: 0,
+                                          vertical: -4,
+                                        ),
+                                        onTap: () {
+                                          if (playQueue.isEmpty) {
+                                            audioHandler.singlePlay(index);
+                                          } else {
+                                            audioHandler.insert2Next(index);
+                                          }
+                                          Navigator.pop(context);
+                                        },
+                                      ),
+                                    ],
+                                  ),
                                 ),
-                              ),
-                            ],
-                          ),
-                        );
-                      },
-                    );
-                  },
-                  icon: Icon(Icons.more_vert, size: 15),
+                              ],
+                            ),
+                          );
+                        },
+                      );
+                    },
+                    icon: Icon(Icons.more_vert, size: 15),
+                  ),
                 ),
               );
             },
@@ -675,7 +684,12 @@ class PlayerBar extends StatelessWidget {
                               showModalBottomSheet(
                                 context: context,
                                 isScrollControlled: true, // allows full-height
-
+                                backgroundColor: Color.fromARGB(
+                                  255,
+                                  250,
+                                  250,
+                                  250,
+                                ),
                                 builder: (context) {
                                   return PlayQueuePage();
                                 },
