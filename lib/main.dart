@@ -372,7 +372,7 @@ class HomePageState extends State<HomePage> {
                     color: isCurrentSong
                         ? Color.fromARGB(255, 75, 210, 210)
                         : null,
-                    fontWeight: isCurrentSong ? FontWeight.w500 : null,
+                    fontWeight: isCurrentSong ? FontWeight.bold : null,
                   ),
                 ),
                 subtitle: Text(
@@ -382,7 +382,6 @@ class HomePageState extends State<HomePage> {
                     color: isCurrentSong
                         ? Color.fromARGB(255, 75, 210, 210)
                         : null,
-                    fontWeight: isCurrentSong ? FontWeight.w400 : null,
                   ),
                 ),
                 visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
@@ -514,35 +513,6 @@ class HomePageState extends State<HomePage> {
   Widget buildSetting() {
     filteredSongs = [];
     return SizedBox();
-  }
-}
-
-class ArtWidget extends StatelessWidget {
-  final double size;
-  final Picture? source;
-
-  const ArtWidget({super.key, required this.size, required this.source});
-
-  @override
-  Widget build(BuildContext context) {
-    if (source == null) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(size / 10),
-        child: Icon(Icons.music_note, size: size),
-      );
-    }
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(size / 10), // same as you want
-      child: Image.memory(
-        source!.bytes,
-        width: size,
-        height: size,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return Icon(Icons.music_note, size: size);
-        },
-      ),
-    );
   }
 }
 

@@ -9,6 +9,35 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'audio_handler.dart';
 import 'play_queue_page.dart';
 
+class ArtWidget extends StatelessWidget {
+  final double size;
+  final Picture? source;
+
+  const ArtWidget({super.key, required this.size, required this.source});
+
+  @override
+  Widget build(BuildContext context) {
+    if (source == null) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(size / 20),
+        child: Icon(Icons.music_note, size: size),
+      );
+    }
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(size / 20), // same as you want
+      child: Image.memory(
+        source!.bytes,
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Icon(Icons.music_note, size: size);
+        },
+      ),
+    );
+  }
+}
+
 class LyricsPage extends StatelessWidget {
   const LyricsPage({super.key});
 
@@ -86,18 +115,13 @@ class LyricsPage extends StatelessWidget {
           body: Column(
             children: [
               const SizedBox(height: 30),
-              ClipOval(
-                child: currentSong != null && currentSong.pictures.isNotEmpty
-                    ? Image.memory(
-                        currentSong.pictures.first.bytes,
-                        width: 200,
-                        height: 200,
-                        fit: BoxFit.cover,
-                        errorBuilder: (context, error, stackTrace) =>
-                            const Icon(Icons.music_note, size: 200),
-                      )
-                    : const Icon(Icons.music_note, size: 200),
+              ArtWidget(
+                size: MediaQuery.widthOf(context) * 0.85,
+                source: currentSong!.pictures.isNotEmpty
+                    ? currentSong.pictures.first
+                    : null,
               ),
+
               const SizedBox(height: 10),
 
               Expanded(
@@ -342,7 +366,7 @@ class LyricLineWidgetState extends State<LyricLineWidget> {
       },
       child: Container(
         alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 50),
+        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 50),
         child: Text(
           widget.text,
           textAlign: TextAlign.center,

@@ -150,7 +150,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                             color: isCurrentSong
                                 ? Color.fromARGB(255, 75, 210, 210)
                                 : null,
-                            fontWeight: isCurrentSong ? FontWeight.w500 : null,
+                            fontWeight: isCurrentSong ? FontWeight.bold : null,
                           ),
                         ),
 
