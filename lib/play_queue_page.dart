@@ -2,8 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'audio_handler.dart';
 
-List<GlobalKey> playQueueGlobalKeys = [];
-
 class PlayQueuePage extends StatefulWidget {
   const PlayQueuePage({super.key});
 
@@ -12,20 +10,23 @@ class PlayQueuePage extends StatefulWidget {
 }
 
 class PlayQueuePageState extends State<PlayQueuePage> {
+  List<GlobalKey> playQueueGlobalKeys = [];
   final scrollController = ScrollController();
+  double lineHeight = 0;
+
   @override
   void initState() {
     super.initState();
     playQueueGlobalKeys = List.generate(playQueue.length, (_) => GlobalKey());
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      double height =
+      lineHeight =
           (playQueueGlobalKeys[0].currentContext!.findRenderObject()
                   as RenderBox)
               .size
               .height;
 
       scrollController.animateTo(
-        height * audioHandler.currentIndex,
+        lineHeight * audioHandler.currentIndex,
         duration: Duration(milliseconds: 300), // smooth animation
         curve: Curves.linear,
       );
@@ -58,7 +59,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                 ),
                 Spacer(),
                 Selector<MyAudioHandler, int>(
-                  selector: (_, audioHandeler) => audioHandeler.playMode,
+                  selector: (_, audioHandler) => audioHandler.playMode,
                   builder: (_, playMode, _) {
                     return IconButton(
                       color: Colors.black,
@@ -72,7 +73,19 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                       ),
                       onPressed: () {
                         audioHandler.switchPlayMode();
-                        setState(() {});
+                        setState(() {
+                          if (audioHandler.playMode != 1) {
+                            WidgetsBinding.instance.addPostFrameCallback((_) {
+                              scrollController.animateTo(
+                                lineHeight * audioHandler.currentIndex,
+                                duration: Duration(
+                                  milliseconds: 300,
+                                ), // smooth animation
+                                curve: Curves.linear,
+                              );
+                            });
+                          }
+                        });
                       },
                     );
                   },
@@ -122,7 +135,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                 final song = playQueue[index];
                 return Selector<MyAudioHandler, int>(
                   key: playQueueGlobalKeys[index],
-                  selector: (_, audioHandeler) => audioHandeler.currentIndex,
+                  selector: (_, audioHandler) => audioHandler.currentIndex,
                   builder: (_, currentIndex, _) {
                     final isCurrentSong = index == currentIndex;
                     return Container(

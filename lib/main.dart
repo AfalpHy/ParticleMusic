@@ -277,7 +277,7 @@ class HomePageState extends State<HomePage> {
           ),
         ),
 
-        Positioned(left: 0, right: 0, bottom: 80, child: PlayerBar()),
+        Positioned(left: 15, right: 15, bottom: 90, child: PlayerBar()),
 
         Positioned(
           left: 0,
@@ -314,8 +314,7 @@ class HomePageState extends State<HomePage> {
         if (index < filteredSongs.length) {
           final song = filteredSongs[index];
           return Selector<MyAudioHandler, String?>(
-            selector: (_, audioHandeler) =>
-                audioHandeler.currentSong?.file.path,
+            selector: (_, audioHandler) => audioHandler.currentSong?.file.path,
             builder: (_, currentFilePath, _) {
               final isCurrentSong = song.file.path == currentFilePath;
 
@@ -324,30 +323,10 @@ class HomePageState extends State<HomePage> {
 
                 child: ListTile(
                   contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
-                  leading: (() {
-                    if (song.pictures.isNotEmpty) {
-                      return ClipRRect(
-                        clipBehavior: Clip.antiAlias,
-                        borderRadius: BorderRadius.circular(
-                          2,
-                        ), // same as you want
-                        child: Image.memory(
-                          song.pictures.first.bytes,
-                          width: 40,
-                          height: 40,
-                          fit: BoxFit.cover,
-                          errorBuilder: (context, error, stackTrace) {
-                            return const Icon(Icons.music_note, size: 40);
-                          },
-                        ),
-                      );
-                    }
-                    return ClipRRect(
-                      clipBehavior: Clip.antiAlias,
-                      borderRadius: BorderRadius.circular(2),
-                      child: const Icon(Icons.music_note, size: 40),
-                    );
-                  })(),
+                  leading: ArtWidget(
+                    size: 40,
+                    source: song.pictures.isEmpty ? null : song.pictures.first,
+                  ),
                   title: Text(
                     song.title ?? "Unknown Title",
                     overflow: TextOverflow.ellipsis,
@@ -385,37 +364,12 @@ class HomePageState extends State<HomePage> {
                             child: Column(
                               children: [
                                 ListTile(
-                                  leading: (() {
-                                    if (song.pictures.isNotEmpty) {
-                                      return ClipRRect(
-                                        clipBehavior: Clip.antiAlias,
-                                        borderRadius: BorderRadius.circular(
-                                          2,
-                                        ), // same as you want
-                                        child: Image.memory(
-                                          song.pictures.first.bytes,
-                                          width: 40,
-                                          height: 40,
-                                          fit: BoxFit.cover,
-                                          errorBuilder:
-                                              (context, error, stackTrace) {
-                                                return const Icon(
-                                                  Icons.music_note,
-                                                  size: 40,
-                                                );
-                                              },
-                                        ),
-                                      );
-                                    }
-                                    return ClipRRect(
-                                      clipBehavior: Clip.antiAlias,
-                                      borderRadius: BorderRadius.circular(2),
-                                      child: const Icon(
-                                        Icons.music_note,
-                                        size: 40,
-                                      ),
-                                    );
-                                  })(),
+                                  leading: ArtWidget(
+                                    size: 50,
+                                    source: song.pictures.isEmpty
+                                        ? null
+                                        : song.pictures.first,
+                                  ),
                                   title: Text(
                                     song.title ?? "Unknown Title",
                                     overflow: TextOverflow.ellipsis,
@@ -437,6 +391,10 @@ class HomePageState extends State<HomePage> {
                                     physics: const ClampingScrollPhysics(),
                                     children: [
                                       ListTile(
+                                        leading: Icon(
+                                          Icons.play_circle_outline,
+                                          size: 25,
+                                        ),
                                         title: Text(
                                           'Play',
                                           style: TextStyle(
@@ -454,6 +412,10 @@ class HomePageState extends State<HomePage> {
                                         },
                                       ),
                                       ListTile(
+                                        leading: Icon(
+                                          Icons.playlist_add_circle_outlined,
+                                          size: 25,
+                                        ),
                                         title: Text(
                                           'Play next',
                                           style: TextStyle(
@@ -490,7 +452,7 @@ class HomePageState extends State<HomePage> {
             },
           );
         } else {
-          return SizedBox(height: 40);
+          return SizedBox(height: 60);
         }
       },
     );
@@ -499,6 +461,35 @@ class HomePageState extends State<HomePage> {
   Widget buildPlaylists() {
     filteredSongs = [];
     return SizedBox();
+  }
+}
+
+class ArtWidget extends StatelessWidget {
+  final double size;
+  final Picture? source;
+
+  const ArtWidget({super.key, required this.size, required this.source});
+
+  @override
+  Widget build(BuildContext context) {
+    if (source == null) {
+      return ClipRRect(
+        borderRadius: BorderRadius.circular(size / 10),
+        child: Icon(Icons.music_note, size: size),
+      );
+    }
+    return ClipRRect(
+      borderRadius: BorderRadius.circular(size / 10), // same as you want
+      child: Image.memory(
+        source!.bytes,
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return Icon(Icons.music_note, size: size);
+        },
+      ),
+    );
   }
 }
 
@@ -528,7 +519,7 @@ class MyLocationState extends State<MyLocation> {
   @override
   Widget build(BuildContext context) {
     return Selector<MyAudioHandler, AudioMetadata?>(
-      selector: (_, audioHandeler) => audioHandeler.currentSong,
+      selector: (_, audioHandler) => audioHandler.currentSong,
       builder: (_, currentSong, _) {
         return currentSong != null &&
                 filteredSongs.isNotEmpty &&
@@ -551,7 +542,7 @@ class MyLocationState extends State<MyLocation> {
                         }
                       }
                     },
-                    icon: Icon(Icons.my_location),
+                    icon: Icon(Icons.my_location_rounded),
                   ),
                   SizedBox(width: 40),
                 ],
@@ -571,133 +562,103 @@ class PlayerBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Selector<MyAudioHandler, AudioMetadata?>(
-      selector: (_, audioHandeler) => audioHandeler.currentSong,
+      selector: (_, audioHandler) => audioHandler.currentSong,
       builder: (_, currentSong, _) {
         if (currentSong == null) return const SizedBox.shrink();
 
         return SizedBox(
-          height: 40,
-          child: Stack(
-            children: [
-              Positioned(
-                left: 0,
-                right: 0,
-                bottom: 0,
-                child: Container(
-                  height: 20,
-                  color: Theme.of(context).scaffoldBackgroundColor,
-                ),
-              ),
-              Positioned(
-                left: 15,
-                right: 15,
-                bottom: 0,
-                height: 40,
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(
-                    20,
-                  ), // rounded half-circle ends
+          height: 50,
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(25), // rounded half-circle ends
 
-                  child: Material(
-                    color: artMixedColor,
-                    child: InkWell(
-                      onTap: () {
-                        // Open lyrics page
-                        Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const LyricsPage()),
-                        );
-                      },
+            child: Material(
+              color: Colors.white70,
+              child: InkWell(
+                onTap: () {
+                  // Open lyrics page
+                  Navigator.of(
+                    context,
+                  ).push(MaterialPageRoute(builder: (_) => const LyricsPage()));
+                },
 
-                      child: Row(
-                        children: [
-                          // Album cover or icon
-                          if (audioHandler.currentSong!.pictures.isNotEmpty)
-                            ClipOval(
-                              child: Image.memory(
-                                audioHandler.currentSong!.pictures.first.bytes,
-                                width: 40,
-                                height: 40,
-                                fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) =>
-                                    const Icon(Icons.music_note, size: 40),
-                              ),
-                            )
-                          else
-                            ClipOval(
-                              child: const Icon(Icons.music_note, size: 40),
-                            ),
+                child: Row(
+                  children: [
+                    const SizedBox(width: 20),
+                    ArtWidget(
+                      size: 30,
+                      source: currentSong.pictures.isEmpty
+                          ? null
+                          : currentSong.pictures.first,
+                    ),
 
-                          const SizedBox(width: 12),
-                          Expanded(
-                            child: AutoSizeText(
-                              "${audioHandler.currentSong!.title ?? 'Unknown Title'} - ${audioHandler.currentSong!.artist ?? 'Unknown Artist'}",
-                              maxLines: 1,
-                              minFontSize: 16,
-                              overflowReplacement: Marquee(
-                                text:
-                                    "${audioHandler.currentSong!.title ?? 'Unknown Title'} - ${audioHandler.currentSong!.artist ?? 'Unknown Artist'}",
-                                scrollAxis: Axis.horizontal,
-                                blankSpace: 20,
-                                velocity: 30.0,
-                                pauseAfterRound: const Duration(seconds: 1),
-                                accelerationDuration: const Duration(
-                                  milliseconds: 500,
-                                ),
-                                accelerationCurve: Curves.linear,
-                                decelerationDuration: const Duration(
-                                  milliseconds: 500,
-                                ),
-                                decelerationCurve: Curves.linear,
-                              ),
-                            ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: AutoSizeText(
+                        "${currentSong.title ?? 'Unknown Title'} - ${currentSong.artist ?? 'Unknown Artist'}",
+                        maxLines: 1,
+                        minFontSize: 16,
+                        overflowReplacement: Marquee(
+                          text:
+                              "${currentSong.title ?? 'Unknown Title'} - ${currentSong.artist ?? 'Unknown Artist'}",
+                          scrollAxis: Axis.horizontal,
+                          blankSpace: 20,
+                          velocity: 30.0,
+                          pauseAfterRound: const Duration(seconds: 1),
+                          accelerationDuration: const Duration(
+                            milliseconds: 500,
                           ),
-                          // Title - Artist Marquee
-
-                          // Play/Pause Button
-                          IconButton(
-                            icon: Selector<MyAudioHandler, bool>(
-                              selector: (_, audioHandeler) =>
-                                  audioHandeler.player.playing,
-                              builder: (_, playing, _) {
-                                return Icon(
-                                  playing
-                                      ? Icons.pause_rounded
-                                      : Icons.play_arrow_rounded,
-                                  color: Colors.black,
-                                );
-                              },
-                            ),
-
-                            onPressed: () {
-                              if (audioHandler.player.playing) {
-                                audioHandler.pause();
-                              } else {
-                                audioHandler.play();
-                              }
-                            },
+                          accelerationCurve: Curves.linear,
+                          decelerationDuration: const Duration(
+                            milliseconds: 500,
                           ),
-                          IconButton(
-                            icon: Icon(
-                              Icons.queue_music_rounded,
-                              color: Colors.black,
-                            ),
-                            onPressed: () {
-                              showModalBottomSheet(
-                                context: context,
-                                isScrollControlled: true, // allows full-height
-                                builder: (context) {
-                                  return PlayQueuePage();
-                                },
-                              );
-                            },
-                          ),
-                        ],
+                          decelerationCurve: Curves.linear,
+                        ),
                       ),
                     ),
-                  ),
+                    // Title - Artist Marquee
+
+                    // Play/Pause Button
+                    IconButton(
+                      icon: Selector<MyAudioHandler, bool>(
+                        selector: (_, audioHandler) =>
+                            audioHandler.player.playing,
+                        builder: (_, playing, _) {
+                          return Icon(
+                            playing
+                                ? Icons.pause_circle_outline_rounded
+                                : Icons.play_circle_outline_rounded,
+                            color: Colors.black,
+                          );
+                        },
+                      ),
+
+                      onPressed: () {
+                        if (audioHandler.player.playing) {
+                          audioHandler.pause();
+                        } else {
+                          audioHandler.play();
+                        }
+                      },
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        Icons.queue_music_rounded,
+                        color: Colors.black,
+                      ),
+                      onPressed: () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true, // allows full-height
+                          builder: (context) {
+                            return PlayQueuePage();
+                          },
+                        );
+                      },
+                    ),
+                  ],
                 ),
               ),
-            ],
+            ),
           ),
         );
       },

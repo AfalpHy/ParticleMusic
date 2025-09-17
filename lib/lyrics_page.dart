@@ -15,20 +15,20 @@ class LyricsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Selector<MyAudioHandler, AudioMetadata?>(
-      selector: (_, audioHandeler) => audioHandeler.currentSong,
+      selector: (_, audioHandler) => audioHandler.currentSong,
       builder: (_, currentSong, _) {
         return Scaffold(
           backgroundColor: artMixedColor,
           appBar: AppBar(
             automaticallyImplyLeading: false,
             backgroundColor: artMixedColor,
-            title: audioHandler.currentSong == null
+            title: currentSong == null
                 ? null
                 : Center(
                     child: Column(
                       children: [
                         AutoSizeText(
-                          audioHandler.currentSong?.title ?? 'Unknown Title',
+                          currentSong.title ?? 'Unknown Title',
                           maxLines: 1,
                           maxFontSize: 20,
                           style: TextStyle(fontWeight: FontWeight.bold),
@@ -37,9 +37,7 @@ class LyricsPage extends StatelessWidget {
                             width: double
                                 .infinity, // takes whatever width AppBar gives
                             child: Marquee(
-                              text:
-                                  audioHandler.currentSong?.title ??
-                                  'Unknown Title',
+                              text: currentSong.title ?? 'Unknown Title',
                               scrollAxis: Axis.horizontal,
                               style: TextStyle(fontWeight: FontWeight.bold),
                               blankSpace: 20,
@@ -57,7 +55,7 @@ class LyricsPage extends StatelessWidget {
                           ),
                         ),
                         AutoSizeText(
-                          audioHandler.currentSong?.artist ?? 'Unknown Artist',
+                          currentSong.artist ?? 'Unknown Artist',
                           maxLines: 1,
                           maxFontSize: 14,
                           overflowReplacement: SizedBox(
@@ -65,9 +63,7 @@ class LyricsPage extends StatelessWidget {
                             width: double
                                 .infinity, // takes whatever width AppBar gives
                             child: Marquee(
-                              text:
-                                  audioHandler.currentSong?.artist ??
-                                  'Unknown Artist',
+                              text: currentSong.artist ?? 'Unknown Artist',
                               scrollAxis: Axis.horizontal,
                               blankSpace: 20,
                               velocity: 30.0,
@@ -91,11 +87,9 @@ class LyricsPage extends StatelessWidget {
             children: [
               const SizedBox(height: 30),
               ClipOval(
-                child:
-                    audioHandler.currentSong != null &&
-                        audioHandler.currentSong!.pictures.isNotEmpty
+                child: currentSong != null && currentSong.pictures.isNotEmpty
                     ? Image.memory(
-                        audioHandler.currentSong!.pictures.first.bytes,
+                        currentSong.pictures.first.bytes,
                         width: 200,
                         height: 200,
                         fit: BoxFit.cover,
@@ -136,7 +130,7 @@ class LyricsPage extends StatelessWidget {
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     Selector<MyAudioHandler, int>(
-                      selector: (_, audioHandeler) => audioHandeler.playMode,
+                      selector: (_, audioHandler) => audioHandler.playMode,
                       builder: (_, playMode, _) {
                         return IconButton(
                           color: Colors.black,
@@ -163,8 +157,8 @@ class LyricsPage extends StatelessWidget {
                     IconButton(
                       color: Colors.black,
                       icon: Selector<MyAudioHandler, bool>(
-                        selector: (_, audioHandeler) =>
-                            audioHandeler.player.playing,
+                        selector: (_, audioHandler) =>
+                            audioHandler.player.playing,
                         builder: (_, playing, _) {
                           return Icon(
                             playing
