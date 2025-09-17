@@ -68,7 +68,7 @@ class HomePage extends StatefulWidget {
 class HomePageState extends State<HomePage> {
   late Directory docs;
   bool isChanged = false;
-  bool displayLibrary = true;
+  int displayPage = 1;
   final ValueNotifier<bool> listIsScrolling = ValueNotifier(false);
   final ItemScrollController itemScrollController = ItemScrollController();
   Timer? timer;
@@ -158,7 +158,9 @@ class HomePageState extends State<HomePage> {
     return Stack(
       children: [
         Scaffold(
+          backgroundColor: Colors.white,
           appBar: AppBar(
+            backgroundColor: Colors.white,
             title: isSearching
                 ? TextField(
                     autofocus: true,
@@ -211,7 +213,11 @@ class HomePageState extends State<HomePage> {
               }
               return false;
             },
-            child: displayLibrary ? buildSongList() : buildPlaylists(),
+            child: displayPage == 1
+                ? buildSongList()
+                : displayPage == 2
+                ? buildPlaylists()
+                : buildSetting(),
           ),
 
           bottomNavigationBar: SizedBox(
@@ -221,21 +227,23 @@ class HomePageState extends State<HomePage> {
                 Expanded(
                   child: GestureDetector(
                     onTap: () => setState(() {
-                      displayLibrary = true;
+                      displayPage = 1;
                     }),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          Icons.library_music_rounded,
+                          Icons.library_music_outlined,
                           size: 28,
-                          color: displayLibrary ? Colors.black : Colors.black54,
+                          color: displayPage == 1
+                              ? Colors.black
+                              : Colors.black54,
                         ),
 
                         Text(
                           "Library",
                           style: TextStyle(
-                            color: displayLibrary
+                            color: displayPage == 1
                                 ? Colors.black
                                 : Colors.black54,
                           ),
@@ -247,15 +255,15 @@ class HomePageState extends State<HomePage> {
                 Expanded(
                   child: GestureDetector(
                     onTap: () => setState(() {
-                      displayLibrary = false;
+                      displayPage = 2;
                     }),
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          Icons.library_add_rounded,
+                          Icons.library_add_outlined,
                           size: 28,
-                          color: !displayLibrary
+                          color: displayPage == 2
                               ? Colors.black
                               : Colors.black54,
                         ),
@@ -263,7 +271,35 @@ class HomePageState extends State<HomePage> {
                         Text(
                           "Playlists",
                           style: TextStyle(
-                            color: !displayLibrary
+                            color: displayPage == 2
+                                ? Colors.black
+                                : Colors.black54,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () => setState(() {
+                      displayPage = 3;
+                    }),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.settings_outlined,
+                          size: 28,
+                          color: displayPage == 3
+                              ? Colors.black
+                              : Colors.black54,
+                        ),
+
+                        Text(
+                          "Settings",
+                          style: TextStyle(
+                            color: displayPage == 3
                                 ? Colors.black
                                 : Colors.black54,
                           ),
@@ -277,12 +313,17 @@ class HomePageState extends State<HomePage> {
           ),
         ),
 
-        Positioned(left: 15, right: 15, bottom: 90, child: PlayerBar()),
+        Positioned(
+          left: 15,
+          right: 15,
+          bottom: 90,
+          child: displayPage != 3 ? PlayerBar() : SizedBox(),
+        ),
 
         Positioned(
           left: 0,
           right: 0,
-          bottom: 150,
+          bottom: 180,
           child: MyLocation(
             itemScrollController: itemScrollController,
             listIsScrolling: listIsScrolling,
@@ -318,49 +359,56 @@ class HomePageState extends State<HomePage> {
             builder: (_, currentFilePath, _) {
               final isCurrentSong = song.file.path == currentFilePath;
 
-              return Container(
-                color: isCurrentSong ? Color.fromARGB(15, 0, 0, 0) : null,
+              return ListTile(
+                contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
+                leading: ArtWidget(
+                  size: 40,
+                  source: song.pictures.isEmpty ? null : song.pictures.first,
+                ),
+                title: Text(
+                  song.title ?? "Unknown Title",
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: isCurrentSong
+                        ? Color.fromARGB(255, 75, 210, 210)
+                        : null,
+                    fontWeight: isCurrentSong ? FontWeight.w500 : null,
+                  ),
+                ),
+                subtitle: Text(
+                  "${song.artist ?? "Unknown Artist"} - ${song.album ?? "Unknown Album"}",
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: isCurrentSong
+                        ? Color.fromARGB(255, 75, 210, 210)
+                        : null,
+                    fontWeight: isCurrentSong ? FontWeight.w400 : null,
+                  ),
+                ),
+                visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+                onTap: () async {
+                  audioHandler.setIndex(index);
+                  playQueue = List.from(filteredSongs);
+                  if (audioHandler.playMode == 2) {
+                    audioHandler.shuffle();
+                  }
+                  await audioHandler.load();
+                  audioHandler.play();
+                },
+                trailing: IconButton(
+                  onPressed: () {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true, // allows full-height
 
-                child: ListTile(
-                  contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
-                  leading: ArtWidget(
-                    size: 40,
-                    source: song.pictures.isEmpty ? null : song.pictures.first,
-                  ),
-                  title: Text(
-                    song.title ?? "Unknown Title",
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(
-                      color: isCurrentSong ? Colors.red : null,
-                      fontWeight: isCurrentSong ? FontWeight.bold : null,
-                    ),
-                  ),
-                  subtitle: Text(
-                    "${song.artist ?? "Unknown Artist"} - ${song.album ?? "Unknown Album"}",
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                  visualDensity: const VisualDensity(
-                    horizontal: 0,
-                    vertical: -4,
-                  ),
-                  onTap: () async {
-                    audioHandler.setIndex(index);
-                    playQueue = List.from(filteredSongs);
-                    if (audioHandler.playMode == 2) {
-                      audioHandler.shuffle();
-                    }
-                    await audioHandler.load();
-                    audioHandler.play();
-                  },
-                  trailing: IconButton(
-                    onPressed: () {
-                      showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true, // allows full-height
-
-                        builder: (context) {
-                          return SizedBox(
+                      builder: (context) {
+                        return ClipRRect(
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(10),
+                          ),
+                          child: Container(
                             height: 500,
+                            color: Colors.white,
                             child: Column(
                               children: [
                                 ListTile(
@@ -417,7 +465,7 @@ class HomePageState extends State<HomePage> {
                                           size: 25,
                                         ),
                                         title: Text(
-                                          'Play next',
+                                          'Play Next',
                                           style: TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 18,
@@ -441,12 +489,12 @@ class HomePageState extends State<HomePage> {
                                 ),
                               ],
                             ),
-                          );
-                        },
-                      );
-                    },
-                    icon: Icon(Icons.more_vert, size: 15),
-                  ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                  icon: Icon(Icons.more_vert, size: 15),
                 ),
               );
             },
@@ -459,6 +507,11 @@ class HomePageState extends State<HomePage> {
   }
 
   Widget buildPlaylists() {
+    filteredSongs = [];
+    return SizedBox();
+  }
+
+  Widget buildSetting() {
     filteredSongs = [];
     return SizedBox();
   }
@@ -572,7 +625,7 @@ class PlayerBar extends StatelessWidget {
             borderRadius: BorderRadius.circular(25), // rounded half-circle ends
 
             child: Material(
-              color: Colors.white70,
+              color: Color.fromARGB(230, 230, 255, 255),
               child: InkWell(
                 onTap: () {
                   // Open lyrics page
@@ -583,7 +636,7 @@ class PlayerBar extends StatelessWidget {
 
                 child: Row(
                   children: [
-                    const SizedBox(width: 20),
+                    const SizedBox(width: 15),
                     ArtWidget(
                       size: 30,
                       source: currentSong.pictures.isEmpty
@@ -591,7 +644,7 @@ class PlayerBar extends StatelessWidget {
                           : currentSong.pictures.first,
                     ),
 
-                    const SizedBox(width: 12),
+                    const SizedBox(width: 10),
                     Expanded(
                       child: AutoSizeText(
                         "${currentSong.title ?? 'Unknown Title'} - ${currentSong.artist ?? 'Unknown Artist'}",
@@ -655,6 +708,7 @@ class PlayerBar extends StatelessWidget {
                         );
                       },
                     ),
+                    const SizedBox(width: 10),
                   ],
                 ),
               ),

@@ -35,119 +35,122 @@ class PlayQueuePageState extends State<PlayQueuePage> {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 500,
-      child: Column(
-        children: [
-          // Optional drag handle
-          Container(
-            margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
-            width: 50,
-            height: 3,
-            decoration: BoxDecoration(
-              color: Colors.grey,
-              borderRadius: BorderRadius.circular(10),
+    return ClipRRect(
+      borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
+      child: Container(
+        height: 500,
+        color: Colors.white,
+        child: Column(
+          children: [
+            // Optional drag handle
+            Container(
+              margin: EdgeInsets.fromLTRB(0, 10, 0, 0),
+              width: 50,
+              height: 3,
+              decoration: BoxDecoration(
+                color: Colors.grey,
+                borderRadius: BorderRadius.circular(10),
+              ),
             ),
-          ),
-          SizedBox(
-            child: Row(
-              children: [
-                SizedBox(width: 15),
-                Text(
-                  'Play Queue',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                Spacer(),
-                Selector<MyAudioHandler, int>(
-                  selector: (_, audioHandler) => audioHandler.playMode,
-                  builder: (_, playMode, _) {
-                    return IconButton(
-                      color: Colors.black,
-                      icon: Icon(
-                        playMode == 0
-                            ? Icons.loop_rounded
-                            : playMode == 1
-                            ? Icons.repeat_rounded
-                            : Icons.shuffle_rounded,
-                        size: 20,
-                      ),
-                      onPressed: () {
-                        audioHandler.switchPlayMode();
-                        setState(() {
-                          if (audioHandler.playMode != 1) {
-                            WidgetsBinding.instance.addPostFrameCallback((_) {
-                              scrollController.animateTo(
-                                lineHeight * audioHandler.currentIndex,
-                                duration: Duration(
-                                  milliseconds: 300,
-                                ), // smooth animation
-                                curve: Curves.linear,
-                              );
-                            });
-                          }
-                        });
-                      },
-                    );
-                  },
-                ),
-                IconButton(
-                  onPressed: () {
-                    playQueue = [];
-                    audioHandler.clear();
-                    while (Navigator.canPop(context)) {
-                      Navigator.pop(context);
-                    }
-                  },
-                  icon: Icon(
-                    Icons.delete_rounded,
-                    color: Colors.black,
-                    size: 20,
+            SizedBox(
+              child: Row(
+                children: [
+                  SizedBox(width: 15),
+                  Text(
+                    'Play Queue',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
-                ),
-              ],
+                  Spacer(),
+                  Selector<MyAudioHandler, int>(
+                    selector: (_, audioHandler) => audioHandler.playMode,
+                    builder: (_, playMode, _) {
+                      return IconButton(
+                        color: Colors.black,
+                        icon: Icon(
+                          playMode == 0
+                              ? Icons.loop_rounded
+                              : playMode == 1
+                              ? Icons.repeat_rounded
+                              : Icons.shuffle_rounded,
+                          size: 20,
+                        ),
+                        onPressed: () {
+                          audioHandler.switchPlayMode();
+                          setState(() {
+                            if (audioHandler.playMode != 1) {
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                                scrollController.animateTo(
+                                  lineHeight * audioHandler.currentIndex,
+                                  duration: Duration(
+                                    milliseconds: 300,
+                                  ), // smooth animation
+                                  curve: Curves.linear,
+                                );
+                              });
+                            }
+                          });
+                        },
+                      );
+                    },
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      playQueue = [];
+                      audioHandler.clear();
+                      while (Navigator.canPop(context)) {
+                        Navigator.pop(context);
+                      }
+                    },
+                    icon: Icon(
+                      Icons.delete_rounded,
+                      color: Colors.black,
+                      size: 20,
+                    ),
+                  ),
+                ],
+              ),
             ),
-          ),
 
-          Divider(color: Colors.grey, thickness: 0.5, height: 1),
+            Divider(color: Colors.grey, thickness: 0.5, height: 1),
 
-          Expanded(
-            child: ReorderableListView(
-              scrollController: scrollController,
-              physics: ClampingScrollPhysics(),
+            Expanded(
+              child: ReorderableListView(
+                scrollController: scrollController,
+                physics: ClampingScrollPhysics(),
 
-              onReorder: (oldIndex, newIndex) {
-                setState(() {
-                  if (newIndex > oldIndex) newIndex -= 1;
-                  if (oldIndex == audioHandler.currentIndex) {
-                    audioHandler.currentIndex = newIndex;
-                  } else if (oldIndex < audioHandler.currentIndex &&
-                      newIndex >= audioHandler.currentIndex) {
-                    audioHandler.currentIndex -= 1;
-                  } else if (oldIndex > audioHandler.currentIndex &&
-                      newIndex <= audioHandler.currentIndex) {
-                    audioHandler.currentIndex += 1;
-                  }
-                  final item = playQueue.removeAt(oldIndex);
-                  playQueue.insert(newIndex, item);
-                });
-              },
-              children: List.generate(playQueue.length, (index) {
-                final song = playQueue[index];
-                return Selector<MyAudioHandler, int>(
-                  key: playQueueGlobalKeys[index],
-                  selector: (_, audioHandler) => audioHandler.currentIndex,
-                  builder: (_, currentIndex, _) {
-                    final isCurrentSong = index == currentIndex;
-                    return Container(
-                      color: isCurrentSong ? Color.fromARGB(15, 0, 0, 0) : null,
-                      child: ListTile(
+                onReorder: (oldIndex, newIndex) {
+                  setState(() {
+                    if (newIndex > oldIndex) newIndex -= 1;
+                    if (oldIndex == audioHandler.currentIndex) {
+                      audioHandler.currentIndex = newIndex;
+                    } else if (oldIndex < audioHandler.currentIndex &&
+                        newIndex >= audioHandler.currentIndex) {
+                      audioHandler.currentIndex -= 1;
+                    } else if (oldIndex > audioHandler.currentIndex &&
+                        newIndex <= audioHandler.currentIndex) {
+                      audioHandler.currentIndex += 1;
+                    }
+                    final item = playQueue.removeAt(oldIndex);
+                    playQueue.insert(newIndex, item);
+                  });
+                },
+                children: List.generate(playQueue.length, (index) {
+                  final song = playQueue[index];
+                  return Selector<MyAudioHandler, int>(
+                    key: playQueueGlobalKeys[index],
+                    selector: (_, audioHandler) => audioHandler.currentIndex,
+                    builder: (_, currentIndex, _) {
+                      final isCurrentSong = index == currentIndex;
+                      return ListTile(
                         contentPadding: EdgeInsets.fromLTRB(15, 0, 0, 0),
                         title: Text(
                           "${song.title ?? "Unknown Title"} - ${song.artist ?? "Unknown Artist"}",
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            color: isCurrentSong ? Colors.red : null,
-                            fontWeight: isCurrentSong ? FontWeight.bold : null,
+                            color: isCurrentSong
+                                ? Color.fromARGB(255, 75, 210, 210)
+                                : null,
+                            fontWeight: isCurrentSong ? FontWeight.w500 : null,
                           ),
                         ),
 
@@ -184,14 +187,14 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                             size: 20,
                           ),
                         ),
-                      ),
-                    );
-                  },
-                );
-              }),
+                      );
+                    },
+                  );
+                }),
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
