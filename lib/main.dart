@@ -161,6 +161,7 @@ class HomePageState extends State<HomePage> {
           backgroundColor: Colors.white,
           appBar: AppBar(
             backgroundColor: Colors.white,
+            scrolledUnderElevation: 0,
             title: isSearching
                 ? TextField(
                     autofocus: true,

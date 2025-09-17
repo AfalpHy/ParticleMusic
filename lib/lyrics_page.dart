@@ -51,6 +51,7 @@ class LyricsPage extends StatelessWidget {
           appBar: AppBar(
             automaticallyImplyLeading: false,
             backgroundColor: artMixedColor,
+            scrolledUnderElevation: 0,
             title: currentSong == null
                 ? null
                 : Center(
@@ -114,7 +115,7 @@ class LyricsPage extends StatelessWidget {
           ),
           body: Column(
             children: [
-              const SizedBox(height: 30),
+              const SizedBox(height: 10),
               ArtWidget(
                 size: MediaQuery.widthOf(context) * 0.85,
                 source: currentSong!.pictures.isNotEmpty
