@@ -116,11 +116,18 @@ class LyricsPage extends StatelessWidget {
           body: Column(
             children: [
               const SizedBox(height: 10),
-              ArtWidget(
-                size: MediaQuery.widthOf(context) * 0.85,
-                source: currentSong!.pictures.isNotEmpty
-                    ? currentSong.pictures.first
-                    : null,
+              Material(
+                elevation: 15,
+                color: artMixedColor,
+                borderRadius: BorderRadius.circular(
+                  MediaQuery.widthOf(context) * 0.84 / 20,
+                ),
+                child: ArtWidget(
+                  size: MediaQuery.widthOf(context) * 0.84,
+                  source: currentSong!.pictures.isNotEmpty
+                      ? currentSong.pictures.first
+                      : null,
+                ),
               ),
 
               const SizedBox(height: 10),
@@ -149,74 +156,83 @@ class LyricsPage extends StatelessWidget {
 
               // -------- Play Controls --------
               Padding(
-                padding: const EdgeInsets.fromLTRB(0, 0, 0, 40),
+                padding: const EdgeInsets.fromLTRB(10, 0, 10, 40),
 
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    Selector<MyAudioHandler, int>(
-                      selector: (_, audioHandler) => audioHandler.playMode,
-                      builder: (_, playMode, _) {
-                        return IconButton(
-                          color: Colors.black,
-                          icon: Icon(
-                            playMode == 0
-                                ? Icons.loop_rounded
-                                : playMode == 1
-                                ? Icons.repeat_rounded
-                                : Icons.shuffle_rounded,
-                            size: 30,
-                          ),
-                          onPressed: () {
-                            audioHandler.switchPlayMode();
-                          },
-                        );
-                      },
-                    ),
-
-                    IconButton(
-                      color: Colors.black,
-                      icon: const Icon(Icons.skip_previous_rounded, size: 48),
-                      onPressed: audioHandler.skipToPrevious,
-                    ),
-                    IconButton(
-                      color: Colors.black,
-                      icon: Selector<MyAudioHandler, bool>(
-                        selector: (_, audioHandler) =>
-                            audioHandler.player.playing,
-                        builder: (_, playing, _) {
-                          return Icon(
-                            playing
-                                ? Icons.pause_rounded
-                                : Icons.play_arrow_rounded,
-                            size: 48,
+                    Expanded(
+                      child: Selector<MyAudioHandler, int>(
+                        selector: (_, audioHandler) => audioHandler.playMode,
+                        builder: (_, playMode, _) {
+                          return IconButton(
+                            color: Colors.black,
+                            icon: Icon(
+                              playMode == 0
+                                  ? Icons.loop_rounded
+                                  : playMode == 1
+                                  ? Icons.repeat_rounded
+                                  : Icons.shuffle_rounded,
+                              size: 30,
+                            ),
+                            onPressed: () {
+                              audioHandler.switchPlayMode();
+                            },
                           );
                         },
                       ),
-                      onPressed: () => audioHandler.player.playing
-                          ? audioHandler.pause()
-                          : audioHandler.play(),
                     ),
-                    IconButton(
-                      color: Colors.black,
-                      icon: const Icon(Icons.skip_next_rounded, size: 48),
-                      onPressed: audioHandler.skipToNext,
-                    ),
-                    IconButton(
-                      icon: Icon(
-                        Icons.queue_music_rounded,
-                        size: 30,
+
+                    Expanded(
+                      child: IconButton(
                         color: Colors.black,
+                        icon: const Icon(Icons.skip_previous_rounded, size: 48),
+                        onPressed: audioHandler.skipToPrevious,
                       ),
-                      onPressed: () {
-                        showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true, // allows full-height
-                          builder: (context) {
-                            return PlayQueuePage();
+                    ),
+                    Expanded(
+                      child: IconButton(
+                        color: Colors.black,
+                        icon: Selector<MyAudioHandler, bool>(
+                          selector: (_, audioHandler) =>
+                              audioHandler.player.playing,
+                          builder: (_, playing, _) {
+                            return Icon(
+                              playing
+                                  ? Icons.pause_rounded
+                                  : Icons.play_arrow_rounded,
+                              size: 48,
+                            );
                           },
-                        );
-                      },
+                        ),
+                        onPressed: () => audioHandler.player.playing
+                            ? audioHandler.pause()
+                            : audioHandler.play(),
+                      ),
+                    ),
+                    Expanded(
+                      child: IconButton(
+                        color: Colors.black,
+                        icon: const Icon(Icons.skip_next_rounded, size: 48),
+                        onPressed: audioHandler.skipToNext,
+                      ),
+                    ),
+                    Expanded(
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.queue_music_rounded,
+                          size: 30,
+                          color: Colors.black,
+                        ),
+                        onPressed: () {
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true, // allows full-height
+                            builder: (context) {
+                              return PlayQueuePage();
+                            },
+                          );
+                        },
+                      ),
                     ),
                   ],
                 ),
@@ -361,13 +377,14 @@ class LyricLineWidgetState extends State<LyricLineWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
-      onTap: () {
-        audioHandler.seek(lyrics[widget.index].timestamp);
-      },
-      child: Container(
-        alignment: Alignment.center,
-        padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 50),
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 30),
+      child: InkWell(
+        borderRadius: BorderRadius.all(Radius.circular(10)),
+
+        onTap: () {
+          audioHandler.seek(lyrics[widget.index].timestamp);
+        },
         child: Text(
           widget.text,
           textAlign: TextAlign.center,
@@ -384,7 +401,6 @@ class LyricLineWidgetState extends State<LyricLineWidget> {
 
 class SeekBar extends StatefulWidget {
   const SeekBar({super.key});
-
   @override
   State<SeekBar> createState() => SeekBarState();
 }
@@ -415,7 +431,7 @@ class SeekBarState extends State<SeekBar> {
             final sliderValue = dragValue ?? position.inMilliseconds.toDouble();
 
             return SizedBox(
-              height: 50, // expand gesture area for easier touch
+              height: 60, // expand gesture area for easier touch
               child: Stack(
                 alignment: Alignment.centerLeft,
                 children: [
@@ -444,11 +460,11 @@ class SeekBarState extends State<SeekBar> {
                       trackHeight: isDragging ? 4 : 2,
                       trackShape: const FullWidthTrackShape(),
                       thumbShape: isDragging
-                          ? RoundSliderThumbShape(enabledThumbRadius: 4)
-                          : RoundSliderThumbShape(enabledThumbRadius: 2),
+                          ? RoundSliderThumbShape(enabledThumbRadius: 8)
+                          : RoundSliderThumbShape(enabledThumbRadius: 4),
                       overlayShape: SliderComponentShape.noOverlay,
                       activeTrackColor: Colors.black,
-                      inactiveTrackColor: Colors.grey.shade300,
+                      inactiveTrackColor: Colors.grey.shade500,
                     ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 30),
