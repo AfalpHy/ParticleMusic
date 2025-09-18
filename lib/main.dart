@@ -116,8 +116,8 @@ class HomePageState extends State<HomePage> {
       }
     }
 
-    final documentDir = await getApplicationDocumentsDirectory();
-    favoriteFile = File("${documentDir.path}/favorite");
+    final appSupportDir = await getApplicationSupportDirectory();
+    favoriteFile = File("${appSupportDir.path}/favorite.json");
     if (!favoriteFile.existsSync()) {
       favoriteFile.create();
     } else {
