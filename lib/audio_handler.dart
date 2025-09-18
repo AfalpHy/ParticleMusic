@@ -143,6 +143,7 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
     lyrics = [];
     currentIndex = -1;
     currentSong = null;
+    notifyListeners();
   }
 
   Future<Uri> saveAlbumCover(Uint8List bytes) async {
