@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -114,11 +115,25 @@ class HomePageState extends State<HomePage> {
         await keepfile.writeAsString("App initialized");
       }
     }
+
+    final documentDir = await getApplicationDocumentsDirectory();
+    favoriteFile = File("${documentDir.path}/favorite");
+    if (!favoriteFile.existsSync()) {
+      favoriteFile.create();
+    } else {
+      final contents = await favoriteFile.readAsString();
+      List<dynamic> decoded = jsonDecode(contents);
+      favoritePaths = List.from(decoded);
+    }
+
     for (var file in docs.listSync()) {
       if ((file.path.endsWith('.mp3') || file.path.endsWith('.flac'))) {
         try {
           final meta = readMetadata(File(file.path), getImage: true);
           tempSongs.add(meta);
+          if (favoritePaths.isNotEmpty && favoritePaths.contains(file.path)) {
+            favorite.add(meta);
+          }
         } catch (_) {
           continue; // skip unreadable files
         }
@@ -508,7 +523,234 @@ class HomePageState extends State<HomePage> {
 
   Widget buildPlaylists() {
     filteredSongs = [];
-    return SizedBox();
+    return ListView(
+      children: [
+        ListTile(
+          contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
+          leading: Icon(Icons.favorite_outline_outlined, size: 40),
+          title: Text('Favorite'),
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) {
+                  return Stack(
+                    children: [
+                      Scaffold(
+                        backgroundColor: Colors.white,
+                        appBar: AppBar(
+                          title: Text('Favorite'),
+                          backgroundColor: Colors.white,
+                          scrolledUnderElevation: 0,
+                        ),
+
+                        body: ListView.builder(
+                          itemCount: favorite.length,
+                          itemBuilder: (_, index) {
+                            final song = favorite[index];
+                            return Selector<MyAudioHandler, String?>(
+                              selector: (_, audioHandler) =>
+                                  audioHandler.currentSong?.file.path,
+                              builder: (_, currentFilePath, _) {
+                                final isCurrentSong =
+                                    song.file.path == currentFilePath;
+                                return ListTile(
+                                  contentPadding: EdgeInsets.fromLTRB(
+                                    20,
+                                    0,
+                                    0,
+                                    0,
+                                  ),
+                                  leading: ArtWidget(
+                                    size: 40,
+                                    source: song.pictures.isEmpty
+                                        ? null
+                                        : song.pictures.first,
+                                  ),
+                                  title: Text(
+                                    song.title ?? "Unknown Title",
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: isCurrentSong
+                                          ? Color.fromARGB(255, 75, 210, 210)
+                                          : null,
+                                      fontWeight: isCurrentSong
+                                          ? FontWeight.bold
+                                          : null,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    "${song.artist ?? "Unknown Artist"} - ${song.album ?? "Unknown Album"}",
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: isCurrentSong
+                                          ? Color.fromARGB(255, 75, 210, 210)
+                                          : null,
+                                    ),
+                                  ),
+                                  visualDensity: const VisualDensity(
+                                    horizontal: 0,
+                                    vertical: -4,
+                                  ),
+                                  onTap: () async {
+                                    audioHandler.setIndex(index);
+                                    playQueue = List.from(favorite);
+                                    if (audioHandler.playMode == 2) {
+                                      audioHandler.shuffle();
+                                    }
+                                    await audioHandler.load();
+                                    audioHandler.play();
+                                  },
+                                  trailing: IconButton(
+                                    onPressed: () {
+                                      showModalBottomSheet(
+                                        context: context,
+                                        isScrollControlled:
+                                            true, // allows full-height
+
+                                        builder: (context) {
+                                          return ClipRRect(
+                                            borderRadius: BorderRadius.vertical(
+                                              top: Radius.circular(10),
+                                            ),
+                                            child: Container(
+                                              height: 500,
+                                              color: Colors.white,
+                                              child: Column(
+                                                children: [
+                                                  ListTile(
+                                                    leading: ArtWidget(
+                                                      size: 50,
+                                                      source:
+                                                          song.pictures.isEmpty
+                                                          ? null
+                                                          : song.pictures.first,
+                                                    ),
+                                                    title: Text(
+                                                      song.title ??
+                                                          "Unknown Title",
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
+                                                    subtitle: Text(
+                                                      "${song.artist ?? "Unknown Artist"} - ${song.album ?? "Unknown Album"}",
+                                                      overflow:
+                                                          TextOverflow.ellipsis,
+                                                    ),
+                                                  ),
+
+                                                  Divider(
+                                                    color: Colors.grey,
+                                                    thickness: 0.5,
+                                                    height: 1,
+                                                  ),
+
+                                                  Expanded(
+                                                    child: ListView(
+                                                      physics:
+                                                          const ClampingScrollPhysics(),
+                                                      children: [
+                                                        ListTile(
+                                                          leading: Icon(
+                                                            Icons
+                                                                .play_circle_outline,
+                                                            size: 25,
+                                                          ),
+                                                          title: Text(
+                                                            'Play',
+                                                            style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              fontSize: 18,
+                                                            ),
+                                                          ),
+                                                          visualDensity:
+                                                              const VisualDensity(
+                                                                horizontal: 0,
+                                                                vertical: -4,
+                                                              ),
+                                                          onTap: () {
+                                                            audioHandler
+                                                                .singlePlay(
+                                                                  index,
+                                                                );
+                                                            Navigator.pop(
+                                                              context,
+                                                            );
+                                                          },
+                                                        ),
+                                                        ListTile(
+                                                          leading: Icon(
+                                                            Icons
+                                                                .playlist_add_circle_outlined,
+                                                            size: 25,
+                                                          ),
+                                                          title: Text(
+                                                            'Play Next',
+                                                            style: TextStyle(
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                              fontSize: 18,
+                                                            ),
+                                                          ),
+                                                          visualDensity:
+                                                              const VisualDensity(
+                                                                horizontal: 0,
+                                                                vertical: -4,
+                                                              ),
+                                                          onTap: () {
+                                                            if (playQueue
+                                                                .isEmpty) {
+                                                              audioHandler
+                                                                  .singlePlay(
+                                                                    index,
+                                                                  );
+                                                            } else {
+                                                              audioHandler
+                                                                  .insert2Next(
+                                                                    index,
+                                                                  );
+                                                            }
+                                                            Navigator.pop(
+                                                              context,
+                                                            );
+                                                          },
+                                                        ),
+                                                      ],
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      );
+                                    },
+                                    icon: Icon(Icons.more_vert, size: 15),
+                                  ),
+                                );
+                              },
+                            );
+                          },
+                        ),
+                      ),
+                      Positioned(
+                        left: 15,
+                        right: 15,
+                        bottom: 40,
+                        child: PlayerBar(),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            );
+          },
+          trailing: IconButton(onPressed: () {}, icon: Icon(Icons.more_vert)),
+        ),
+      ],
+    );
   }
 
   Widget buildSetting() {

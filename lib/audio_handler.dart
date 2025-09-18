@@ -9,6 +9,7 @@ import 'package:image/image.dart' as image;
 import 'package:flutter/services.dart';
 
 late MyAudioHandler audioHandler;
+late File favoriteFile;
 
 class LyricLine {
   final Duration timestamp;
@@ -17,6 +18,8 @@ class LyricLine {
 }
 
 List<AudioMetadata> librarySongs = [];
+List<AudioMetadata> favorite = [];
+List<String> favoritePaths = [];
 List<AudioMetadata> playQueue = [];
 List<AudioMetadata> filteredSongs = [];
 List<LyricLine> lyrics = [];

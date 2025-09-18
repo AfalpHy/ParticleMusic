@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -155,7 +157,7 @@ class LyricsPage extends StatelessWidget {
               Row(
                 children: [
                   Spacer(),
-                  Icon(Icons.favorite_outline),
+                  FavoriteButton(),
                   SizedBox(width: 20),
                   Icon(Icons.more_vert),
                   SizedBox(width: 30),
@@ -250,6 +252,44 @@ class LyricsPage extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+}
+
+class FavoriteButton extends StatefulWidget {
+  const FavoriteButton({super.key});
+
+  @override
+  State<FavoriteButton> createState() => FavoriteButtonState();
+}
+
+class FavoriteButtonState extends State<FavoriteButton> {
+  late bool isFavorite;
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    isFavorite = favoritePaths.contains(audioHandler.currentSong?.file.path);
+    return IconButton(
+      onPressed: () {
+        if (!isFavorite) {
+          favoritePaths.insert(0, audioHandler.currentSong!.file.path);
+          favorite.insert(0, audioHandler.currentSong!);
+        } else {
+          favoritePaths.remove(audioHandler.currentSong!.file.path);
+          favorite.remove(audioHandler.currentSong!);
+        }
+        favoriteFile.writeAsString(jsonEncode(favoritePaths));
+
+        setState(() {});
+      },
+      icon: Icon(
+        isFavorite ? Icons.favorite : Icons.favorite_outline,
+        color: isFavorite ? Colors.red : null,
+      ),
     );
   }
 }
