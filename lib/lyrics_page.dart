@@ -130,7 +130,7 @@ class LyricsPage extends StatelessWidget {
                 ),
               ),
 
-              const SizedBox(height: 10),
+              const SizedBox(height: 30),
 
               Expanded(
                 child: ShaderMask(
@@ -144,7 +144,7 @@ class LyricsPage extends StatelessWidget {
                         Colors.black, // fully visible
                         Colors.transparent, // fade out at bottom
                       ],
-                      stops: [0.0, 0.1, 0.9, 1.0], // adjust fade height
+                      stops: [0.0, 0.1, 0.8, 1.0], // adjust fade height
                     ).createShader(rect);
                   },
                   blendMode: BlendMode.dstIn,
@@ -152,6 +152,15 @@ class LyricsPage extends StatelessWidget {
                 ),
               ),
 
+              Row(
+                children: [
+                  Spacer(),
+                  Icon(Icons.favorite_outline),
+                  SizedBox(width: 20),
+                  Icon(Icons.more_vert),
+                  SizedBox(width: 30),
+                ],
+              ),
               SeekBar(),
 
               // -------- Play Controls --------
