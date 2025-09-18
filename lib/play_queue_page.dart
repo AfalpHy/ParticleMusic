@@ -111,8 +111,6 @@ class PlayQueuePageState extends State<PlayQueuePage> {
               ),
             ),
 
-            Divider(color: Colors.grey, thickness: 0.5, height: 1),
-
             Expanded(
               child: ReorderableListView(
                 scrollController: scrollController,
