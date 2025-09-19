@@ -237,7 +237,6 @@ class FavoriteButton extends StatefulWidget {
 }
 
 class FavoriteButtonState extends State<FavoriteButton> {
-  late bool isFavorite;
   @override
   void initState() {
     super.initState();
@@ -245,23 +244,27 @@ class FavoriteButtonState extends State<FavoriteButton> {
 
   @override
   Widget build(BuildContext context) {
-    isFavorite = favoritePaths.contains(audioHandler.currentSong?.file.path);
+    final isFavorite = songIsFavorite[audioHandler.currentSong!.file.path]!;
     return IconButton(
       onPressed: () {
-        if (!isFavorite) {
-          favoritePaths.insert(0, audioHandler.currentSong!.file.path);
-          favorite.insert(0, audioHandler.currentSong!);
-        } else {
+        if (isFavorite.value) {
           favoritePaths.remove(audioHandler.currentSong!.file.path);
           favorite.remove(audioHandler.currentSong!);
+        } else {
+          favoritePaths.insert(0, audioHandler.currentSong!.file.path);
+          favorite.insert(0, audioHandler.currentSong!);
         }
         favoriteFile.writeAsString(jsonEncode(favoritePaths));
 
+        notifier.value++;
+
+        isFavorite.value = !isFavorite.value;
+        notifier.value++;
         setState(() {});
       },
       icon: Icon(
-        isFavorite ? Icons.favorite : Icons.favorite_outline,
-        color: isFavorite ? Colors.red : null,
+        isFavorite.value ? Icons.favorite : Icons.favorite_outline,
+        color: isFavorite.value ? Colors.red : Colors.black,
       ),
     );
   }
@@ -486,7 +489,7 @@ class SeekBarState extends State<SeekBar> {
                           : RoundSliderThumbShape(enabledThumbRadius: 4),
                       overlayShape: SliderComponentShape.noOverlay,
                       activeTrackColor: Colors.black,
-                      inactiveTrackColor: Colors.grey.shade500,
+                      inactiveTrackColor: Colors.grey.shade300,
                     ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 30),

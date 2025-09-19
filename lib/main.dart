@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:particle_music/playlist_song_list.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
@@ -144,6 +145,9 @@ class HomePageState extends State<HomePage> {
           final favoriteIndex = favoritePaths.indexOf(file.path);
           if (favoriteIndex >= 0) {
             favoriteTmp[favoriteIndex] = meta;
+            songIsFavorite[file.path] = ValueNotifier(true);
+          } else {
+            songIsFavorite[file.path] = ValueNotifier(false);
           }
         } catch (_) {
           continue; // skip unreadable files
@@ -416,20 +420,9 @@ class HomePageState extends State<HomePage> {
                           scrolledUnderElevation: 0,
                         ),
 
-                        body: ListView.builder(
-                          itemCount: favorite.length,
-                          itemBuilder: (_, index) {
-                            return Selector<MyAudioHandler, AudioMetadata?>(
-                              selector: (_, audioHandler) =>
-                                  audioHandler.currentSong,
-                              builder: (_, _, _) {
-                                return SongListTile(
-                                  index: index,
-                                  source: favorite,
-                                );
-                              },
-                            );
-                          },
+                        body: PlaylistSongList(
+                          source: favorite,
+                          notifier: notifier,
                         ),
                       ),
                     ],

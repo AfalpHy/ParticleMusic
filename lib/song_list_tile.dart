@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'audio_handler.dart';
@@ -12,6 +14,7 @@ class SongListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final song = source[index];
+    final isFavorite = songIsFavorite[song.file.path]!;
     final isCurrentSong = song.file.path == audioHandler.currentSong?.file.path;
     return ListTile(
       contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
@@ -28,12 +31,20 @@ class SongListTile extends StatelessWidget {
           fontWeight: isCurrentSong ? FontWeight.bold : null,
         ),
       ),
-      subtitle: Text(
-        "${song.artist ?? "Unknown Artist"} - ${song.album ?? "Unknown Album"}",
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          color: isCurrentSong ? Color.fromARGB(255, 75, 210, 210) : null,
-        ),
+      subtitle: Row(
+        children: [
+          FavoriteLabel(isFavorite: isFavorite),
+          Expanded(
+            child: Text(
+              "${song.artist ?? "Unknown Artist"} - ${song.album ?? "Unknown Album"}",
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                color: isCurrentSong ? Color.fromARGB(255, 75, 210, 210) : null,
+              ),
+            ),
+          ),
+          Spacer(),
+        ],
       ),
       visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
       onTap: () async {
@@ -77,12 +88,52 @@ class SongListTile extends StatelessWidget {
                         ),
                       ),
 
-                      Divider(color: Colors.grey, thickness: 0.5, height: 1),
+                      Divider(
+                        color: Colors.grey.shade300,
+                        thickness: 0.5,
+                        height: 1,
+                      ),
 
                       Expanded(
                         child: ListView(
                           physics: const ClampingScrollPhysics(),
                           children: [
+                            ListTile(
+                              leading: Icon(
+                                isFavorite.value
+                                    ? Icons.playlist_remove_outlined
+                                    : Icons.playlist_add_outlined,
+                                size: 25,
+                              ),
+                              title: Text(
+                                isFavorite.value
+                                    ? 'Remove from Favorite'
+                                    : 'Add to Favorite',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                ),
+                              ),
+                              visualDensity: const VisualDensity(
+                                horizontal: 0,
+                                vertical: -4,
+                              ),
+                              onTap: () {
+                                if (isFavorite.value) {
+                                  favoritePaths.remove(song.file.path);
+                                  favorite.remove(song);
+                                } else {
+                                  favoritePaths.insert(0, song.file.path);
+                                  favorite.insert(0, song);
+                                }
+                                favoriteFile.writeAsString(
+                                  jsonEncode(favoritePaths),
+                                );
+                                isFavorite.value = !isFavorite.value;
+                                notifier.value++;
+                                Navigator.pop(context);
+                              },
+                            ),
                             ListTile(
                               leading: Icon(
                                 Icons.play_circle_outline,
@@ -140,6 +191,31 @@ class SongListTile extends StatelessWidget {
           );
         },
       ),
+    );
+  }
+}
+
+class FavoriteLabel extends StatefulWidget {
+  final ValueNotifier<bool> isFavorite;
+  const FavoriteLabel({super.key, required this.isFavorite});
+
+  @override
+  State<StatefulWidget> createState() => FavoriteLabelState();
+}
+
+class FavoriteLabelState extends State<FavoriteLabel> {
+  @override
+  Widget build(BuildContext context) {
+    return ValueListenableBuilder(
+      valueListenable: widget.isFavorite,
+      builder: (_, value, _) {
+        return value
+            ? SizedBox(
+                width: 20,
+                child: Icon(Icons.favorite, color: Colors.red, size: 15),
+              )
+            : SizedBox();
+      },
     );
   }
 }

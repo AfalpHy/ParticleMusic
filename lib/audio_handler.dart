@@ -24,6 +24,8 @@ List<AudioMetadata> playQueue = [];
 List<AudioMetadata> filteredSongs = [];
 List<LyricLine> lyrics = [];
 Color artMixedColor = Colors.grey;
+Map<String, ValueNotifier<bool>> songIsFavorite = {};
+ValueNotifier<int> notifier = ValueNotifier(0);
 
 class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
   final player = AudioPlayer();
