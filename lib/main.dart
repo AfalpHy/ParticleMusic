@@ -16,6 +16,8 @@ import 'audio_handler.dart';
 import 'lyrics_page.dart';
 import 'play_queue_page.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'song_list_tile.dart';
+import 'art_widget.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -116,14 +118,22 @@ class HomePageState extends State<HomePage> {
       }
     }
 
+    List<AudioMetadata?> favoriteTmp = [];
     final appSupportDir = await getApplicationSupportDirectory();
     favoriteFile = File("${appSupportDir.path}/favorite.json");
     if (!favoriteFile.existsSync()) {
       favoriteFile.create();
     } else {
       final contents = await favoriteFile.readAsString();
-      List<dynamic> decoded = jsonDecode(contents);
-      favoritePaths = List.from(decoded);
+      if (contents != "") {
+        List<dynamic> decoded = jsonDecode(contents);
+        favoritePaths = List.from(decoded);
+        favoriteTmp = List<AudioMetadata?>.filled(
+          favoritePaths.length,
+          null,
+          growable: true,
+        );
+      }
     }
 
     for (var file in docs.listSync()) {
@@ -131,8 +141,9 @@ class HomePageState extends State<HomePage> {
         try {
           final meta = readMetadata(File(file.path), getImage: true);
           tempSongs.add(meta);
-          if (favoritePaths.isNotEmpty && favoritePaths.contains(file.path)) {
-            favorite.add(meta);
+          final favoriteIndex = favoritePaths.indexOf(file.path);
+          if (favoriteIndex >= 0) {
+            favoriteTmp[favoriteIndex] = meta;
           }
         } catch (_) {
           continue; // skip unreadable files
@@ -141,6 +152,7 @@ class HomePageState extends State<HomePage> {
     }
 
     setState(() {
+      favorite = favoriteTmp.cast();
       tempSongs.sort((a, b) {
         // First, compare album
         int comparison = (a.album ?? "Unknown Album").compareTo(
@@ -332,7 +344,7 @@ class HomePageState extends State<HomePage> {
         Positioned(
           left: 15,
           right: 15,
-          bottom: 90,
+          bottom: 80,
           child: displayPage != 3 ? PlayerBar() : SizedBox(),
         ),
 
@@ -369,149 +381,10 @@ class HomePageState extends State<HomePage> {
       itemCount: filteredSongs.length + 1,
       itemBuilder: (context, index) {
         if (index < filteredSongs.length) {
-          final song = filteredSongs[index];
-          return Selector<MyAudioHandler, String?>(
-            selector: (_, audioHandler) => audioHandler.currentSong?.file.path,
-            builder: (_, currentFilePath, _) {
-              final isCurrentSong = song.file.path == currentFilePath;
-
-              return ListTile(
-                contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
-                leading: ArtWidget(
-                  size: 40,
-                  source: song.pictures.isEmpty ? null : song.pictures.first,
-                ),
-                title: Text(
-                  song.title ?? "Unknown Title",
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: isCurrentSong
-                        ? Color.fromARGB(255, 75, 210, 210)
-                        : null,
-                    fontWeight: isCurrentSong ? FontWeight.bold : null,
-                  ),
-                ),
-                subtitle: Text(
-                  "${song.artist ?? "Unknown Artist"} - ${song.album ?? "Unknown Album"}",
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: isCurrentSong
-                        ? Color.fromARGB(255, 75, 210, 210)
-                        : null,
-                  ),
-                ),
-                visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-                onTap: () async {
-                  audioHandler.setIndex(index);
-                  playQueue = List.from(filteredSongs);
-                  if (audioHandler.playMode == 2) {
-                    audioHandler.shuffle();
-                  }
-                  await audioHandler.load();
-                  audioHandler.play();
-                },
-                trailing: IconButton(
-                  onPressed: () {
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true, // allows full-height
-
-                      builder: (context) {
-                        return ClipRRect(
-                          borderRadius: BorderRadius.vertical(
-                            top: Radius.circular(10),
-                          ),
-                          child: Container(
-                            height: 500,
-                            color: Colors.white,
-                            child: Column(
-                              children: [
-                                ListTile(
-                                  leading: ArtWidget(
-                                    size: 50,
-                                    source: song.pictures.isEmpty
-                                        ? null
-                                        : song.pictures.first,
-                                  ),
-                                  title: Text(
-                                    song.title ?? "Unknown Title",
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  subtitle: Text(
-                                    "${song.artist ?? "Unknown Artist"} - ${song.album ?? "Unknown Album"}",
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-
-                                Divider(
-                                  color: Colors.grey,
-                                  thickness: 0.5,
-                                  height: 1,
-                                ),
-
-                                Expanded(
-                                  child: ListView(
-                                    physics: const ClampingScrollPhysics(),
-                                    children: [
-                                      ListTile(
-                                        leading: Icon(
-                                          Icons.play_circle_outline,
-                                          size: 25,
-                                        ),
-                                        title: Text(
-                                          'Play',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 18,
-                                          ),
-                                        ),
-                                        visualDensity: const VisualDensity(
-                                          horizontal: 0,
-                                          vertical: -4,
-                                        ),
-                                        onTap: () {
-                                          audioHandler.singlePlay(index);
-                                          Navigator.pop(context);
-                                        },
-                                      ),
-                                      ListTile(
-                                        leading: Icon(
-                                          Icons.playlist_add_circle_outlined,
-                                          size: 25,
-                                        ),
-                                        title: Text(
-                                          'Play Next',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 18,
-                                          ),
-                                        ),
-                                        visualDensity: const VisualDensity(
-                                          horizontal: 0,
-                                          vertical: -4,
-                                        ),
-                                        onTap: () {
-                                          if (playQueue.isEmpty) {
-                                            audioHandler.singlePlay(index);
-                                          } else {
-                                            audioHandler.insert2Next(index);
-                                          }
-                                          Navigator.pop(context);
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        );
-                      },
-                    );
-                  },
-                  icon: Icon(Icons.more_vert, size: 15),
-                ),
-              );
+          return Selector<MyAudioHandler, AudioMetadata?>(
+            selector: (_, audioHandler) => audioHandler.currentSong,
+            builder: (_, _, _) {
+              return SongListTile(index: index, source: filteredSongs);
             },
           );
         } else {
@@ -546,200 +419,18 @@ class HomePageState extends State<HomePage> {
                         body: ListView.builder(
                           itemCount: favorite.length,
                           itemBuilder: (_, index) {
-                            final song = favorite[index];
-                            return Selector<MyAudioHandler, String?>(
+                            return Selector<MyAudioHandler, AudioMetadata?>(
                               selector: (_, audioHandler) =>
-                                  audioHandler.currentSong?.file.path,
-                              builder: (_, currentFilePath, _) {
-                                final isCurrentSong =
-                                    song.file.path == currentFilePath;
-                                return ListTile(
-                                  contentPadding: EdgeInsets.fromLTRB(
-                                    20,
-                                    0,
-                                    0,
-                                    0,
-                                  ),
-                                  leading: ArtWidget(
-                                    size: 40,
-                                    source: song.pictures.isEmpty
-                                        ? null
-                                        : song.pictures.first,
-                                  ),
-                                  title: Text(
-                                    song.title ?? "Unknown Title",
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      color: isCurrentSong
-                                          ? Color.fromARGB(255, 75, 210, 210)
-                                          : null,
-                                      fontWeight: isCurrentSong
-                                          ? FontWeight.bold
-                                          : null,
-                                    ),
-                                  ),
-                                  subtitle: Text(
-                                    "${song.artist ?? "Unknown Artist"} - ${song.album ?? "Unknown Album"}",
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      color: isCurrentSong
-                                          ? Color.fromARGB(255, 75, 210, 210)
-                                          : null,
-                                    ),
-                                  ),
-                                  visualDensity: const VisualDensity(
-                                    horizontal: 0,
-                                    vertical: -4,
-                                  ),
-                                  onTap: () async {
-                                    audioHandler.setIndex(index);
-                                    playQueue = List.from(favorite);
-                                    if (audioHandler.playMode == 2) {
-                                      audioHandler.shuffle();
-                                    }
-                                    await audioHandler.load();
-                                    audioHandler.play();
-                                  },
-                                  trailing: IconButton(
-                                    onPressed: () {
-                                      showModalBottomSheet(
-                                        context: context,
-                                        isScrollControlled:
-                                            true, // allows full-height
-
-                                        builder: (context) {
-                                          return ClipRRect(
-                                            borderRadius: BorderRadius.vertical(
-                                              top: Radius.circular(10),
-                                            ),
-                                            child: Container(
-                                              height: 500,
-                                              color: Colors.white,
-                                              child: Column(
-                                                children: [
-                                                  ListTile(
-                                                    leading: ArtWidget(
-                                                      size: 50,
-                                                      source:
-                                                          song.pictures.isEmpty
-                                                          ? null
-                                                          : song.pictures.first,
-                                                    ),
-                                                    title: Text(
-                                                      song.title ??
-                                                          "Unknown Title",
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                    ),
-                                                    subtitle: Text(
-                                                      "${song.artist ?? "Unknown Artist"} - ${song.album ?? "Unknown Album"}",
-                                                      overflow:
-                                                          TextOverflow.ellipsis,
-                                                    ),
-                                                  ),
-
-                                                  Divider(
-                                                    color: Colors.grey,
-                                                    thickness: 0.5,
-                                                    height: 1,
-                                                  ),
-
-                                                  Expanded(
-                                                    child: ListView(
-                                                      physics:
-                                                          const ClampingScrollPhysics(),
-                                                      children: [
-                                                        ListTile(
-                                                          leading: Icon(
-                                                            Icons
-                                                                .play_circle_outline,
-                                                            size: 25,
-                                                          ),
-                                                          title: Text(
-                                                            'Play',
-                                                            style: TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              fontSize: 18,
-                                                            ),
-                                                          ),
-                                                          visualDensity:
-                                                              const VisualDensity(
-                                                                horizontal: 0,
-                                                                vertical: -4,
-                                                              ),
-                                                          onTap: () {
-                                                            audioHandler
-                                                                .singlePlay(
-                                                                  index,
-                                                                );
-                                                            Navigator.pop(
-                                                              context,
-                                                            );
-                                                          },
-                                                        ),
-                                                        ListTile(
-                                                          leading: Icon(
-                                                            Icons
-                                                                .playlist_add_circle_outlined,
-                                                            size: 25,
-                                                          ),
-                                                          title: Text(
-                                                            'Play Next',
-                                                            style: TextStyle(
-                                                              fontWeight:
-                                                                  FontWeight
-                                                                      .bold,
-                                                              fontSize: 18,
-                                                            ),
-                                                          ),
-                                                          visualDensity:
-                                                              const VisualDensity(
-                                                                horizontal: 0,
-                                                                vertical: -4,
-                                                              ),
-                                                          onTap: () {
-                                                            if (playQueue
-                                                                .isEmpty) {
-                                                              audioHandler
-                                                                  .singlePlay(
-                                                                    index,
-                                                                  );
-                                                            } else {
-                                                              audioHandler
-                                                                  .insert2Next(
-                                                                    index,
-                                                                  );
-                                                            }
-                                                            Navigator.pop(
-                                                              context,
-                                                            );
-                                                          },
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          );
-                                        },
-                                      );
-                                    },
-                                    icon: Icon(Icons.more_vert, size: 15),
-                                  ),
+                                  audioHandler.currentSong,
+                              builder: (_, _, _) {
+                                return SongListTile(
+                                  index: index,
+                                  source: favorite,
                                 );
                               },
                             );
                           },
                         ),
-                      ),
-                      Positioned(
-                        left: 15,
-                        right: 15,
-                        bottom: 40,
-                        child: PlayerBar(),
                       ),
                     ],
                   );
@@ -852,6 +543,7 @@ class PlayerBar extends StatelessWidget {
                     const SizedBox(width: 15),
                     ArtWidget(
                       size: 30,
+                      borderRadius: 1,
                       source: currentSong.pictures.isEmpty
                           ? null
                           : currentSong.pictures.first,

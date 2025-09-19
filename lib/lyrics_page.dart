@@ -10,35 +10,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'audio_handler.dart';
 import 'play_queue_page.dart';
-
-class ArtWidget extends StatelessWidget {
-  final double size;
-  final Picture? source;
-
-  const ArtWidget({super.key, required this.size, required this.source});
-
-  @override
-  Widget build(BuildContext context) {
-    if (source == null) {
-      return ClipRRect(
-        borderRadius: BorderRadius.circular(size / 20),
-        child: Icon(Icons.music_note, size: size),
-      );
-    }
-    return ClipRRect(
-      borderRadius: BorderRadius.circular(size / 20), // same as you want
-      child: Image.memory(
-        source!.bytes,
-        width: size,
-        height: size,
-        fit: BoxFit.cover,
-        errorBuilder: (context, error, stackTrace) {
-          return Icon(Icons.music_note, size: size);
-        },
-      ),
-    );
-  }
-}
+import 'art_widget.dart';
 
 class LyricsPage extends StatelessWidget {
   const LyricsPage({super.key});

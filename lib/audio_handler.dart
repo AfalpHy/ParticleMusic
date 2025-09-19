@@ -76,8 +76,8 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
     currentIndex = index;
   }
 
-  bool insert2Next(int index) {
-    final tmp = filteredSongs[index];
+  bool insert2Next(int index, List<AudioMetadata> source) {
+    final tmp = source[index];
     int tmpIndex = playQueue.indexOf(tmp);
     if (tmpIndex != -1) {
       if (tmpIndex == currentIndex) {
@@ -100,8 +100,8 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
     return true;
   }
 
-  void singlePlay(int index) async {
-    if (insert2Next(index)) {
+  void singlePlay(int index, List<AudioMetadata> source) async {
+    if (insert2Next(index, source)) {
       await skipToNext();
       player.play();
     }
