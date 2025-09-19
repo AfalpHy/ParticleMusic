@@ -11,6 +11,7 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'audio_handler.dart';
 import 'play_queue_page.dart';
 import 'art_widget.dart';
+import 'package:path/path.dart' as p;
 
 class LyricsPage extends StatelessWidget {
   const LyricsPage({super.key});
@@ -244,17 +245,18 @@ class FavoriteButtonState extends State<FavoriteButton> {
 
   @override
   Widget build(BuildContext context) {
-    final isFavorite = songIsFavorite[audioHandler.currentSong!.file.path]!;
+    final currentBasename = p.basename(audioHandler.currentSong!.file.path);
+    final isFavorite = songIsFavorite[currentBasename]!;
     return IconButton(
       onPressed: () {
         if (isFavorite.value) {
-          favoritePaths.remove(audioHandler.currentSong!.file.path);
+          favoriteBasenames.remove(currentBasename);
           favorite.remove(audioHandler.currentSong!);
         } else {
-          favoritePaths.insert(0, audioHandler.currentSong!.file.path);
+          favoriteBasenames.insert(0, currentBasename);
           favorite.insert(0, audioHandler.currentSong!);
         }
-        favoriteFile.writeAsStringSync(jsonEncode(favoritePaths));
+        favoriteFile.writeAsStringSync(jsonEncode(favoriteBasenames));
 
         notifier.value++;
 

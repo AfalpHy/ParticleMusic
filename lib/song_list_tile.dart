@@ -4,6 +4,7 @@ import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'audio_handler.dart';
 import 'art_widget.dart';
+import 'package:path/path.dart' as p;
 
 class SongListTile extends StatelessWidget {
   final int index;
@@ -14,7 +15,8 @@ class SongListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final song = source[index];
-    final isFavorite = songIsFavorite[song.file.path]!;
+    final songBasename = p.basename(song.file.path);
+    final isFavorite = songIsFavorite[songBasename]!;
     final isCurrentSong = song.file.path == audioHandler.currentSong?.file.path;
     return ListTile(
       contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
@@ -120,14 +122,14 @@ class SongListTile extends StatelessWidget {
                               ),
                               onTap: () {
                                 if (isFavorite.value) {
-                                  favoritePaths.remove(song.file.path);
+                                  favoriteBasenames.remove(songBasename);
                                   favorite.remove(song);
                                 } else {
-                                  favoritePaths.insert(0, song.file.path);
+                                  favoriteBasenames.insert(0, songBasename);
                                   favorite.insert(0, song);
                                 }
                                 favoriteFile.writeAsStringSync(
-                                  jsonEncode(favoritePaths),
+                                  jsonEncode(favoriteBasenames),
                                 );
                                 isFavorite.value = !isFavorite.value;
                                 notifier.value++;

@@ -46,6 +46,7 @@ dependencies:
   image: ^4.5.4
   auto_size_text: ^3.0.0
   scrollable_positioned_list: ^0.3.8
+  path: ^1.9.1
 
 dev_dependencies:
   flutter_test:

@@ -19,6 +19,7 @@ import 'play_queue_page.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'song_list_tile.dart';
 import 'art_widget.dart';
+import 'package:path/path.dart' as p;
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -128,9 +129,9 @@ class HomePageState extends State<HomePage> {
       final contents = await favoriteFile.readAsString();
       if (contents != "") {
         List<dynamic> decoded = jsonDecode(contents);
-        favoritePaths = List.from(decoded);
+        favoriteBasenames = List.from(decoded);
         favoriteTmp = List<AudioMetadata?>.filled(
-          favoritePaths.length,
+          favoriteBasenames.length,
           null,
           growable: true,
         );
@@ -142,12 +143,13 @@ class HomePageState extends State<HomePage> {
         try {
           final meta = readMetadata(File(file.path), getImage: true);
           tempSongs.add(meta);
-          final favoriteIndex = favoritePaths.indexOf(file.path);
+          final songBasename = p.basename(file.path);
+          final favoriteIndex = favoriteBasenames.indexOf(songBasename);
           if (favoriteIndex >= 0) {
             favoriteTmp[favoriteIndex] = meta;
-            songIsFavorite[file.path] = ValueNotifier(true);
+            songIsFavorite[songBasename] = ValueNotifier(true);
           } else {
-            songIsFavorite[file.path] = ValueNotifier(false);
+            songIsFavorite[songBasename] = ValueNotifier(false);
           }
         } catch (_) {
           continue; // skip unreadable files

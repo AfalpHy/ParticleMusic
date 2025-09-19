@@ -19,7 +19,7 @@ class LyricLine {
 
 List<AudioMetadata> librarySongs = [];
 List<AudioMetadata> favorite = [];
-List<String> favoritePaths = [];
+List<String> favoriteBasenames = [];
 List<AudioMetadata> playQueue = [];
 List<AudioMetadata> filteredSongs = [];
 List<LyricLine> lyrics = [];
