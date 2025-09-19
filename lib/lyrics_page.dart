@@ -254,7 +254,7 @@ class FavoriteButtonState extends State<FavoriteButton> {
           favoritePaths.insert(0, audioHandler.currentSong!.file.path);
           favorite.insert(0, audioHandler.currentSong!);
         }
-        favoriteFile.writeAsString(jsonEncode(favoritePaths));
+        favoriteFile.writeAsStringSync(jsonEncode(favoritePaths));
 
         notifier.value++;
 

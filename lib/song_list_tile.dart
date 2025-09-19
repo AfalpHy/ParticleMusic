@@ -126,7 +126,7 @@ class SongListTile extends StatelessWidget {
                                   favoritePaths.insert(0, song.file.path);
                                   favorite.insert(0, song);
                                 }
-                                favoriteFile.writeAsString(
+                                favoriteFile.writeAsStringSync(
                                   jsonEncode(favoritePaths),
                                 );
                                 isFavorite.value = !isFavorite.value;
