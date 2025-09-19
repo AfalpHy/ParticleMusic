@@ -98,6 +98,7 @@ class LyricsPage extends StatelessWidget {
                 ),
                 child: ArtWidget(
                   size: MediaQuery.widthOf(context) * 0.84,
+                  borderRadius: MediaQuery.widthOf(context) * 0.84 / 20,
                   source: currentSong!.pictures.isNotEmpty
                       ? currentSong.pictures.first
                       : null,
