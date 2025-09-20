@@ -191,9 +191,10 @@ class HomePageState extends State<HomePage> {
     return Stack(
       children: [
         Scaffold(
-          backgroundColor: Colors.white,
+          backgroundColor: Colors.grey.shade100,
           appBar: AppBar(
-            backgroundColor: Colors.white,
+            backgroundColor: Colors.grey.shade100,
+            elevation: 0,
             scrolledUnderElevation: 0,
             title: isSearching
                 ? TextField(
@@ -350,7 +351,7 @@ class HomePageState extends State<HomePage> {
         Positioned(
           left: 15,
           right: 15,
-          bottom: 80,
+          bottom: 90,
           child: displayPage != 3 ? PlayerBar() : SizedBox(),
         ),
 
@@ -524,7 +525,7 @@ class PlayerBar extends StatelessWidget {
             borderRadius: BorderRadius.circular(25), // rounded half-circle ends
 
             child: Material(
-              color: Color.fromARGB(230, 230, 255, 255),
+              color: Color.fromARGB(210, 240, 255, 255),
               child: InkWell(
                 onTap: () {
                   // Open lyrics page
@@ -537,7 +538,7 @@ class PlayerBar extends StatelessWidget {
                   children: [
                     const SizedBox(width: 15),
                     ArtWidget(
-                      size: 30,
+                      size: 35,
                       borderRadius: 1,
                       source: currentSong.pictures.isEmpty
                           ? null

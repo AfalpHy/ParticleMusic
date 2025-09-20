@@ -29,7 +29,7 @@ class SongListTile extends StatelessWidget {
         song.title ?? "Unknown Title",
         overflow: TextOverflow.ellipsis,
         style: TextStyle(
-          color: isCurrentSong ? Color.fromARGB(255, 75, 210, 210) : null,
+          color: isCurrentSong ? Color.fromARGB(255, 75, 200, 200) : null,
           fontWeight: isCurrentSong ? FontWeight.bold : null,
         ),
       ),
@@ -41,7 +41,7 @@ class SongListTile extends StatelessWidget {
               "${song.artist ?? "Unknown Artist"} - ${song.album ?? "Unknown Album"}",
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
-                color: isCurrentSong ? Color.fromARGB(255, 75, 210, 210) : null,
+                color: isCurrentSong ? Color.fromARGB(255, 75, 200, 200) : null,
               ),
             ),
           ),
@@ -70,7 +70,7 @@ class SongListTile extends StatelessWidget {
                 borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
                 child: Container(
                   height: 500,
-                  color: Colors.white,
+                  color: Colors.grey.shade100,
                   child: Column(
                     children: [
                       ListTile(

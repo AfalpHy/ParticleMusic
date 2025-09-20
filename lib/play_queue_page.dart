@@ -39,7 +39,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
       borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
       child: Container(
         height: 500,
-        color: Colors.white,
+        color: Colors.grey.shade100,
         child: Column(
           children: [
             // Optional drag handle
