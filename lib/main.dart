@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:particle_music/playlist_song_list.dart';
+import 'package:particle_music/playlists.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';

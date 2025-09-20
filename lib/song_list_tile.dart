@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
+import 'package:particle_music/playlists.dart';
 import 'audio_handler.dart';
 import 'art_widget.dart';
 import 'package:path/path.dart' as p;
@@ -134,6 +135,35 @@ class SongListTile extends StatelessWidget {
                                 isFavorite.value = !isFavorite.value;
                                 notifier.value++;
                                 Navigator.pop(context);
+                              },
+                            ),
+                            ListTile(
+                              leading: Icon(
+                                Icons.playlist_add_outlined,
+                                size: 25,
+                              ),
+                              title: Text(
+                                'Add to Playlists',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
+                                ),
+                              ),
+                              visualDensity: const VisualDensity(
+                                horizontal: 0,
+                                vertical: -4,
+                              ),
+                              onTap: () {
+                                Navigator.pop(context);
+
+                                showModalBottomSheet(
+                                  context: context,
+                                  isScrollControlled:
+                                      true, // allows full-height
+                                  builder: (_) {
+                                    return PlaylistsSheet();
+                                  },
+                                );
                               },
                             ),
                             ListTile(
