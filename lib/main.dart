@@ -102,10 +102,10 @@ class MyApp extends StatelessWidget {
           ValueListenableBuilder<double>(
             valueListenable: swipeProgressNotifier,
             builder: (context, progress, _) {
-              final double bottom = 80 - (60 * progress);
+              final double bottom = 80 - (50 * progress);
               return AnimatedPositioned(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
+                duration: const Duration(milliseconds: 0),
+                curve: Curves.linear,
                 left: 20,
                 right: 20,
                 bottom: bottom,
