@@ -46,7 +46,6 @@ class SongListTile extends StatelessWidget {
               ),
             ),
           ),
-          Spacer(),
         ],
       ),
       visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
