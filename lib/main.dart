@@ -23,6 +23,7 @@ import 'package:path/path.dart' as p;
 
 final GlobalKey<NavigatorState> homeNavigatorKey = GlobalKey<NavigatorState>();
 final ValueNotifier<double> swipeProgressNotifier = ValueNotifier<double>(0.0);
+final ValueNotifier<int> homeBody = ValueNotifier<int>(1);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -102,14 +103,122 @@ class MyApp extends StatelessWidget {
           ValueListenableBuilder<double>(
             valueListenable: swipeProgressNotifier,
             builder: (context, progress, _) {
-              final double bottom = 80 - (50 * progress);
+              final double bottom = 80 - (40 * progress);
               return AnimatedPositioned(
-                duration: const Duration(milliseconds: 0),
+                duration: const Duration(milliseconds: 8),
                 curve: Curves.linear,
                 left: 20,
                 right: 20,
                 bottom: bottom,
                 child: const PlayerBar(),
+              );
+            },
+          ),
+
+          ValueListenableBuilder<double>(
+            valueListenable: swipeProgressNotifier,
+            builder: (context, progress, _) {
+              final double bottom = -80 * progress;
+
+              return AnimatedPositioned(
+                duration: const Duration(milliseconds: 8),
+                curve: Curves.linear,
+                left: 0,
+                right: 0,
+                bottom: bottom,
+                child: ValueListenableBuilder<int>(
+                  valueListenable: homeBody,
+                  builder: (context, which, _) {
+                    // must use Material to avoid layout problem
+                    return Material(
+                      child: Container(
+                        color: Colors.grey.shade100,
+                        height: 80,
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () => homeBody.value = 1,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  children: [
+                                    Icon(
+                                      Icons.library_music_outlined,
+                                      color: which == 1
+                                          ? Colors.black
+                                          : Colors.black54,
+                                    ),
+
+                                    Text(
+                                      "Library",
+                                      style: TextStyle(
+                                        color: which == 1
+                                            ? Colors.black
+                                            : Colors.black54,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () => homeBody.value = 2,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+
+                                  children: [
+                                    Icon(
+                                      Icons.library_add_outlined,
+                                      color: which == 2
+                                          ? Colors.black
+                                          : Colors.black54,
+                                    ),
+
+                                    Text(
+                                      "Playlists",
+                                      style: TextStyle(
+                                        color: which == 2
+                                            ? Colors.black
+                                            : Colors.black54,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                            Expanded(
+                              child: GestureDetector(
+                                onTap: () => homeBody.value = 3,
+                                child: Column(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+
+                                  children: [
+                                    Icon(
+                                      Icons.settings_outlined,
+                                      color: which == 3
+                                          ? Colors.black
+                                          : Colors.black54,
+                                    ),
+
+                                    Text(
+                                      "Settings",
+                                      style: TextStyle(
+                                        color: which == 3
+                                            ? Colors.black
+                                            : Colors.black54,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    );
+                  },
+                ),
               );
             },
           ),
@@ -132,7 +241,6 @@ class HomePage extends StatefulWidget {
 class HomePageState extends State<HomePage> {
   late Directory docs;
   bool isChanged = false;
-  int displayPage = 1;
   final ValueNotifier<bool> listIsScrolling = ValueNotifier(false);
   final ItemScrollController itemScrollController = ItemScrollController();
   Timer? timer;
@@ -307,102 +415,17 @@ class HomePageState extends State<HomePage> {
               }
               return false;
             },
-            child: displayPage == 1
-                ? buildSongList()
-                : displayPage == 2
-                ? buildPlaylists()
-                : buildSetting(),
-          ),
-
-          bottomNavigationBar: SizedBox(
-            height: 80,
-            child: Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => setState(() {
-                      displayPage = 1;
-                    }),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.library_music_outlined,
-                          size: 28,
-                          color: displayPage == 1
-                              ? Colors.black
-                              : Colors.black54,
-                        ),
-
-                        Text(
-                          "Library",
-                          style: TextStyle(
-                            color: displayPage == 1
-                                ? Colors.black
-                                : Colors.black54,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => setState(() {
-                      displayPage = 2;
-                    }),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.library_add_outlined,
-                          size: 28,
-                          color: displayPage == 2
-                              ? Colors.black
-                              : Colors.black54,
-                        ),
-
-                        Text(
-                          "Playlists",
-                          style: TextStyle(
-                            color: displayPage == 2
-                                ? Colors.black
-                                : Colors.black54,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () => setState(() {
-                      displayPage = 3;
-                    }),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.settings_outlined,
-                          size: 28,
-                          color: displayPage == 3
-                              ? Colors.black
-                              : Colors.black54,
-                        ),
-
-                        Text(
-                          "Settings",
-                          style: TextStyle(
-                            color: displayPage == 3
-                                ? Colors.black
-                                : Colors.black54,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ],
+            child: ValueListenableBuilder<int>(
+              valueListenable: homeBody,
+              builder: (context, which, _) {
+                if (which == 1) {
+                  return buildSongList();
+                } else if (which == 2) {
+                  return buildPlaylists();
+                } else {
+                  return buildSetting();
+                }
+              },
             ),
           ),
         ),
@@ -410,7 +433,7 @@ class HomePageState extends State<HomePage> {
         Positioned(
           left: 0,
           right: 0,
-          bottom: 180,
+          bottom: 150,
           child: MyLocation(
             itemScrollController: itemScrollController,
             listIsScrolling: listIsScrolling,
@@ -447,7 +470,7 @@ class HomePageState extends State<HomePage> {
             },
           );
         } else {
-          return SizedBox(height: 60);
+          return SizedBox(height: 130);
         }
       },
     );
@@ -539,7 +562,7 @@ class MyLocationState extends State<MyLocation> {
                     },
                     icon: Icon(Icons.my_location_rounded),
                   ),
-                  SizedBox(width: 40),
+                  SizedBox(width: 30),
                 ],
               )
             : SizedBox();

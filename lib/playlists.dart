@@ -85,7 +85,7 @@ class PlaylistSongListState extends State<PlaylistSongList> {
                 },
               );
             } else {
-              return SizedBox(height: 50);
+              return SizedBox(height: 60);
             }
           },
         );
