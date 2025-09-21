@@ -442,22 +442,18 @@ class HomePageState extends State<HomePage> {
             await Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (_) {
-                  return Stack(
-                    children: [
-                      Scaffold(
-                        backgroundColor: Colors.white,
-                        appBar: AppBar(
-                          title: Text('Favorite'),
-                          backgroundColor: Colors.white,
-                          scrolledUnderElevation: 0,
-                        ),
+                  return Scaffold(
+                    backgroundColor: Colors.white,
+                    appBar: AppBar(
+                      title: Text('Favorite'),
+                      backgroundColor: Colors.white,
+                      scrolledUnderElevation: 0,
+                    ),
 
-                        body: PlaylistSongList(
-                          source: favorite,
-                          notifier: notifier,
-                        ),
-                      ),
-                    ],
+                    body: PlaylistSongList(
+                      source: favorite,
+                      notifier: notifier,
+                    ),
                   );
                 },
               ),
