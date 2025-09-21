@@ -22,7 +22,7 @@ import 'art_widget.dart';
 import 'package:path/path.dart' as p;
 
 final GlobalKey<NavigatorState> homeNavigatorKey = GlobalKey<NavigatorState>();
-final ValueNotifier<bool> moveDownNotifier = ValueNotifier(false);
+final ValueNotifier<double> swipeProgressNotifier = ValueNotifier<double>(0.0);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,6 +44,26 @@ Future<void> main() async {
     ),
   );
 }
+
+class SwipeObserver extends NavigatorObserver {
+  @override
+  void didPush(Route route, Route? previousRoute) {
+    if (route is PageRoute) {
+      route.animation?.addListener(() {
+        swipeProgressNotifier.value = route.animation!.value;
+      });
+    }
+    super.didPush(route, previousRoute);
+  }
+
+  @override
+  void didPop(Route route, Route? previousRoute) {
+    swipeProgressNotifier.value = 0;
+    super.didPop(route, previousRoute);
+  }
+}
+
+final swipeObserver = SwipeObserver();
 
 // --------------------
 // App Root
@@ -71,20 +91,22 @@ class MyApp extends StatelessWidget {
             },
             child: Navigator(
               key: homeNavigatorKey,
+              observers: [swipeObserver],
               onGenerateRoute: (settings) {
                 return MaterialPageRoute(builder: (_) => const HomePage());
               },
             ),
           ),
-          ValueListenableBuilder<bool>(
-            valueListenable: moveDownNotifier,
-            builder: (context, moveDown, _) {
+          ValueListenableBuilder<double>(
+            valueListenable: swipeProgressNotifier,
+            builder: (context, progress, _) {
+              final double bottom = 80 - (60 * progress);
               return AnimatedPositioned(
                 duration: const Duration(milliseconds: 300),
                 curve: Curves.easeInOut,
                 left: 20,
                 right: 20,
-                bottom: moveDown ? 30 : 90, // move down 30px when true
+                bottom: bottom,
                 child: const PlayerBar(),
               );
             },
@@ -437,28 +459,20 @@ class HomePageState extends State<HomePage> {
           contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
           leading: Icon(Icons.favorite_outline_outlined, size: 40),
           title: Text('Favorite'),
-          onTap: () async {
-            moveDownNotifier.value = true;
-            await Navigator.of(context).push(
+          onTap: () {
+            Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (_) {
-                  return Scaffold(
-                    backgroundColor: Colors.white,
-                    appBar: AppBar(
-                      title: Text('Favorite'),
-                      backgroundColor: Colors.white,
-                      scrolledUnderElevation: 0,
-                    ),
-
-                    body: PlaylistSongList(
-                      source: favorite,
-                      notifier: notifier,
-                    ),
-                  );
-                },
+                builder: (_) => Scaffold(
+                  backgroundColor: Colors.grey.shade100,
+                  appBar: AppBar(
+                    title: const Text('Favorite'),
+                    backgroundColor: Colors.grey.shade100,
+                    scrolledUnderElevation: 0,
+                  ),
+                  body: PlaylistSongList(source: favorite, notifier: notifier),
+                ),
               ),
             );
-            moveDownNotifier.value = false;
           },
           trailing: IconButton(onPressed: () {}, icon: Icon(Icons.more_vert)),
         ),
