@@ -46,13 +46,15 @@ Future<void> main() async {
 }
 
 class SwipeObserver extends NavigatorObserver {
+  bool first = true;
   @override
   void didPush(Route route, Route? previousRoute) {
-    if (route is PageRoute) {
+    if (route is PageRoute && !first) {
       route.animation?.addListener(() {
         swipeProgressNotifier.value = route.animation!.value;
       });
     }
+    first = false;
     super.didPush(route, previousRoute);
   }
 
