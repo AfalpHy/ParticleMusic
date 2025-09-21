@@ -75,14 +75,18 @@ class PlaylistSongListState extends State<PlaylistSongList> {
       valueListenable: widget.notifier,
       builder: (_, _, _) {
         return ListView.builder(
-          itemCount: widget.source.length,
+          itemCount: widget.source.length + 1,
           itemBuilder: (_, index) {
-            return Selector<MyAudioHandler, AudioMetadata?>(
-              selector: (_, audioHandler) => audioHandler.currentSong,
-              builder: (_, _, _) {
-                return SongListTile(index: index, source: favorite);
-              },
-            );
+            if (index < widget.source.length) {
+              return Selector<MyAudioHandler, AudioMetadata?>(
+                selector: (_, audioHandler) => audioHandler.currentSong,
+                builder: (_, _, _) {
+                  return SongListTile(index: index, source: favorite);
+                },
+              );
+            } else {
+              SizedBox(height: 90);
+            }
           },
         );
       },

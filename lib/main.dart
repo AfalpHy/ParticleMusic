@@ -21,6 +21,9 @@ import 'song_list_tile.dart';
 import 'art_widget.dart';
 import 'package:path/path.dart' as p;
 
+final GlobalKey<NavigatorState> homeNavigatorKey = GlobalKey<NavigatorState>();
+final ValueNotifier<bool> moveDownNotifier = ValueNotifier(false);
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   audioHandler = await AudioService.init(
@@ -55,7 +58,39 @@ class MyApp extends StatelessWidget {
       scrollBehavior: ScrollConfiguration.of(
         context,
       ).copyWith(overscroll: false),
-      home: const HomePage(),
+      home: Stack(
+        children: [
+          // Navigator for normal pages (PlayerBar stays above)
+          WillPopScope(
+            onWillPop: () async {
+              if (homeNavigatorKey.currentState!.canPop()) {
+                homeNavigatorKey.currentState!.pop();
+                return false; // prevent app from exiting
+              }
+              return true; // exit app if root
+            },
+            child: Navigator(
+              key: homeNavigatorKey,
+              onGenerateRoute: (settings) {
+                return MaterialPageRoute(builder: (_) => const HomePage());
+              },
+            ),
+          ),
+          ValueListenableBuilder<bool>(
+            valueListenable: moveDownNotifier,
+            builder: (context, moveDown, _) {
+              return AnimatedPositioned(
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.easeInOut,
+                left: 20,
+                right: 20,
+                bottom: moveDown ? 30 : 90, // move down 30px when true
+                child: const PlayerBar(),
+              );
+            },
+          ),
+        ],
+      ),
     );
   }
 }
@@ -349,13 +384,6 @@ class HomePageState extends State<HomePage> {
         ),
 
         Positioned(
-          left: 15,
-          right: 15,
-          bottom: 90,
-          child: displayPage != 3 ? PlayerBar() : SizedBox(),
-        ),
-
-        Positioned(
           left: 0,
           right: 0,
           bottom: 180,
@@ -409,8 +437,9 @@ class HomePageState extends State<HomePage> {
           contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
           leading: Icon(Icons.favorite_outline_outlined, size: 40),
           title: Text('Favorite'),
-          onTap: () {
-            Navigator.of(context).push(
+          onTap: () async {
+            moveDownNotifier.value = true;
+            await Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (_) {
                   return Stack(
@@ -433,6 +462,7 @@ class HomePageState extends State<HomePage> {
                 },
               ),
             );
+            moveDownNotifier.value = false;
           },
           trailing: IconButton(onPressed: () {}, icon: Icon(Icons.more_vert)),
         ),

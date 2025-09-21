@@ -64,7 +64,7 @@ class SongListTile extends StatelessWidget {
           showModalBottomSheet(
             context: context,
             isScrollControlled: true, // allows full-height
-
+            useRootNavigator: true,
             builder: (context) {
               return ClipRRect(
                 borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
