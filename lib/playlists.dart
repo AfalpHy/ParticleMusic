@@ -1,17 +1,39 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
-import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/song_list_tile.dart';
-import 'package:provider/provider.dart';
+import 'package:path/path.dart' as p;
+
+late File favoriteFile;
 
 class Playlist {
   String name;
-  List<AudioMetadata> songs;
+  List<AudioMetadata> songs = [];
 
-  Playlist({required this.name, required this.songs});
+  Playlist({required this.name});
 }
 
 List<Playlist> playlists = [];
+Map<String, Playlist> playlistMap = {};
+Map<AudioMetadata, ValueNotifier<bool>> songIsFavorite = {};
+ValueNotifier<int> favoriteChangeNotifier = ValueNotifier(0);
+
+void changeFavoriteState(AudioMetadata song) {
+  final favorite = playlistMap['Favorite']!;
+  final isFavorite = songIsFavorite[song]!;
+  if (isFavorite.value) {
+    favorite.songs.remove(song);
+  } else {
+    favorite.songs.insert(0, song);
+  }
+  favoriteFile.writeAsStringSync(
+    jsonEncode(favorite.songs.map((s) => p.basename(s.file.path)).toList()),
+  );
+  isFavorite.value = !isFavorite.value;
+  favoriteChangeNotifier.value++;
+}
 
 class PlaylistsSheet extends StatefulWidget {
   const PlaylistsSheet({super.key});
@@ -55,9 +77,9 @@ class PlaylistsSheetState extends State<PlaylistsSheet> {
   }
 }
 
-class PlaylistSongList extends StatefulWidget {
+class PlaylistSongList extends StatelessWidget {
   final List<AudioMetadata> source;
-  final ValueNotifier<int> notifier;
+  final ValueNotifier<void> notifier;
   const PlaylistSongList({
     super.key,
     required this.source,
@@ -65,25 +87,15 @@ class PlaylistSongList extends StatefulWidget {
   });
 
   @override
-  State<StatefulWidget> createState() => PlaylistSongListState();
-}
-
-class PlaylistSongListState extends State<PlaylistSongList> {
-  @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: widget.notifier,
+      valueListenable: notifier,
       builder: (_, _, _) {
         return ListView.builder(
-          itemCount: widget.source.length + 1,
+          itemCount: source.length + 1,
           itemBuilder: (_, index) {
-            if (index < widget.source.length) {
-              return Selector<MyAudioHandler, AudioMetadata?>(
-                selector: (_, audioHandler) => audioHandler.currentSong,
-                builder: (_, _, _) {
-                  return SongListTile(index: index, source: favorite);
-                },
-              );
+            if (index < source.length) {
+              return SongListTile(index: index, source: source);
             } else {
               return SizedBox(height: 60);
             }

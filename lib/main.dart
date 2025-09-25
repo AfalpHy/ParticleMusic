@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:permission_handler/permission_handler.dart';
-import 'package:provider/provider.dart';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:marquee/marquee.dart';
 import 'package:audio_service/audio_service.dart';
@@ -38,12 +37,7 @@ Future<void> main() async {
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp, // only allow portrait
   ]);
-  runApp(
-    ChangeNotifierProvider.value(
-      value: audioHandler, // directly provide your handler
-      child: const MyApp(),
-    ),
-  );
+  runApp(MyApp());
 }
 
 class SwipeObserver extends NavigatorObserver {
@@ -288,8 +282,11 @@ class HomePageState extends State<HomePage> {
     }
 
     List<AudioMetadata?> favoriteTmp = [];
+    List<String> favoriteBasenames = [];
     final appSupportDir = await getApplicationSupportDirectory();
     favoriteFile = File("${appSupportDir.path}/favorite.json");
+    playlists.add(Playlist(name: 'Favorite'));
+    playlistMap['Favorite'] = playlists[0];
     if (!favoriteFile.existsSync()) {
       favoriteFile.create();
     } else {
@@ -314,9 +311,9 @@ class HomePageState extends State<HomePage> {
           final favoriteIndex = favoriteBasenames.indexOf(songBasename);
           if (favoriteIndex >= 0) {
             favoriteTmp[favoriteIndex] = meta;
-            songIsFavorite[songBasename] = ValueNotifier(true);
+            songIsFavorite[meta] = ValueNotifier(true);
           } else {
-            songIsFavorite[songBasename] = ValueNotifier(false);
+            songIsFavorite[meta] = ValueNotifier(false);
           }
         } catch (_) {
           continue; // skip unreadable files
@@ -325,7 +322,7 @@ class HomePageState extends State<HomePage> {
     }
 
     setState(() {
-      favorite = favoriteTmp.cast();
+      playlistMap['Favorite']!.songs = favoriteTmp.cast();
       tempSongs.sort((a, b) {
         // First, compare album
         int comparison = (a.album ?? "Unknown Album").compareTo(
@@ -463,12 +460,7 @@ class HomePageState extends State<HomePage> {
       itemCount: filteredSongs.length + 1,
       itemBuilder: (context, index) {
         if (index < filteredSongs.length) {
-          return Selector<MyAudioHandler, AudioMetadata?>(
-            selector: (_, audioHandler) => audioHandler.currentSong,
-            builder: (_, _, _) {
-              return SongListTile(index: index, source: filteredSongs);
-            },
-          );
+          return SongListTile(index: index, source: filteredSongs);
         } else {
           return SizedBox(height: 130);
         }
@@ -494,7 +486,10 @@ class HomePageState extends State<HomePage> {
                     backgroundColor: Colors.grey.shade100,
                     scrolledUnderElevation: 0,
                   ),
-                  body: PlaylistSongList(source: favorite, notifier: notifier),
+                  body: PlaylistSongList(
+                    source: playlistMap['Favorite']!.songs,
+                    notifier: favoriteChangeNotifier,
+                  ),
                 ),
               ),
             );
@@ -536,8 +531,8 @@ class MyLocationState extends State<MyLocation> {
 
   @override
   Widget build(BuildContext context) {
-    return Selector<MyAudioHandler, AudioMetadata?>(
-      selector: (_, audioHandler) => audioHandler.currentSong,
+    return ValueListenableBuilder(
+      valueListenable: currentSongNotifier,
       builder: (_, currentSong, _) {
         return currentSong != null &&
                 filteredSongs.isNotEmpty &&
@@ -547,10 +542,9 @@ class MyLocationState extends State<MyLocation> {
                   Spacer(),
                   IconButton(
                     onPressed: () {
-                      if (audioHandler.currentSong != null) {
+                      if (currentSongNotifier.value != null) {
                         for (int i = 0; i < filteredSongs.length; i++) {
-                          if (filteredSongs[i].file.path ==
-                              audioHandler.currentSong!.file.path) {
+                          if (filteredSongs[i] == currentSongNotifier.value) {
                             widget.itemScrollController.scrollTo(
                               index: i,
                               duration: Duration(milliseconds: 300),
@@ -579,8 +573,8 @@ class PlayerBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Selector<MyAudioHandler, AudioMetadata?>(
-      selector: (_, audioHandler) => audioHandler.currentSong,
+    return ValueListenableBuilder(
+      valueListenable: currentSongNotifier,
       builder: (_, currentSong, _) {
         if (currentSong == null) return const SizedBox.shrink();
 
@@ -638,12 +632,11 @@ class PlayerBar extends StatelessWidget {
 
                     // Play/Pause Button
                     IconButton(
-                      icon: Selector<MyAudioHandler, bool>(
-                        selector: (_, audioHandler) =>
-                            audioHandler.player.playing,
-                        builder: (_, playing, _) {
+                      icon: ValueListenableBuilder(
+                        valueListenable: isPlayingNotifier,
+                        builder: (_, isPlaying, _) {
                           return Icon(
-                            playing
+                            isPlaying
                                 ? Icons.pause_circle_outline_rounded
                                 : Icons.play_circle_outline_rounded,
                             color: Colors.black,

@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'audio_handler.dart';
 
 class PlayQueuePage extends StatefulWidget {
@@ -61,36 +60,31 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                     style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
                   Spacer(),
-                  Selector<MyAudioHandler, int>(
-                    selector: (_, audioHandler) => audioHandler.playMode,
-                    builder: (_, playMode, _) {
-                      return IconButton(
-                        color: Colors.black,
-                        icon: Icon(
-                          playMode == 0
-                              ? Icons.loop_rounded
-                              : playMode == 1
-                              ? Icons.repeat_rounded
-                              : Icons.shuffle_rounded,
-                          size: 20,
-                        ),
-                        onPressed: () {
-                          audioHandler.switchPlayMode();
-                          setState(() {
-                            if (audioHandler.playMode != 1) {
-                              WidgetsBinding.instance.addPostFrameCallback((_) {
-                                scrollController.animateTo(
-                                  lineHeight * audioHandler.currentIndex,
-                                  duration: Duration(
-                                    milliseconds: 300,
-                                  ), // smooth animation
-                                  curve: Curves.linear,
-                                );
-                              });
-                            }
+                  IconButton(
+                    color: Colors.black,
+                    icon: Icon(
+                      playModeNotifier.value == 0
+                          ? Icons.loop_rounded
+                          : playModeNotifier.value == 1
+                          ? Icons.repeat_rounded
+                          : Icons.shuffle_rounded,
+                      size: 20,
+                    ),
+                    onPressed: () {
+                      audioHandler.switchPlayMode();
+                      setState(() {
+                        if (playModeNotifier.value != 1) {
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            scrollController.animateTo(
+                              lineHeight * audioHandler.currentIndex,
+                              duration: Duration(
+                                milliseconds: 300,
+                              ), // smooth animation
+                              curve: Curves.linear,
+                            );
                           });
-                        },
-                      );
+                        }
+                      });
                     },
                   ),
                   IconButton(
@@ -112,7 +106,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
             ),
 
             Expanded(
-              child: ReorderableListView(
+              child: ReorderableListView.builder(
                 scrollController: scrollController,
                 physics: ClampingScrollPhysics(),
 
@@ -132,63 +126,65 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                     playQueue.insert(newIndex, item);
                   });
                 },
-                children: List.generate(playQueue.length, (index) {
+                itemCount: playQueue.length,
+                itemBuilder: (_, index) {
                   final song = playQueue[index];
-                  return Selector<MyAudioHandler, int>(
+                  return ListTile(
                     key: playQueueGlobalKeys[index],
-                    selector: (_, audioHandler) => audioHandler.currentIndex,
-                    builder: (_, currentIndex, _) {
-                      final isCurrentSong = index == currentIndex;
-                      return ListTile(
-                        contentPadding: EdgeInsets.fromLTRB(15, 0, 0, 0),
-                        title: Text(
+                    contentPadding: EdgeInsets.fromLTRB(15, 0, 0, 0),
+                    title: ValueListenableBuilder(
+                      valueListenable: currentSongNotifier,
+                      builder: (_, currentSong, _) {
+                        return Text(
                           "${song.title ?? "Unknown Title"} - ${song.artist ?? "Unknown Artist"}",
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            color: isCurrentSong
+                            color: song == currentSong
                                 ? Color.fromARGB(255, 75, 210, 210)
                                 : null,
-                            fontWeight: isCurrentSong ? FontWeight.bold : null,
+                            fontWeight: song == currentSong
+                                ? FontWeight.bold
+                                : null,
                           ),
-                        ),
+                        );
+                      },
+                    ),
 
-                        visualDensity: const VisualDensity(
-                          horizontal: 0,
-                          vertical: -4,
-                        ),
-                        onTap: () async {
-                          audioHandler.setIndex(index);
-                          await audioHandler.load();
-                          audioHandler.play();
-                        },
-
-                        trailing: IconButton(
-                          onPressed: () {
-                            audioHandler.delete(index);
-                            if (index < audioHandler.currentIndex) {
-                              audioHandler.currentIndex -= 1;
-                            } else if (index == audioHandler.currentIndex) {
-                              if (playQueue.isEmpty) {
-                                audioHandler.clear();
-                                while (Navigator.canPop(context)) {
-                                  Navigator.pop(context);
-                                }
-                              } else {
-                                audioHandler.load();
-                              }
-                            }
-                            setState(() {});
-                          },
-                          icon: Icon(
-                            Icons.clear_rounded,
-                            color: Colors.black,
-                            size: 20,
-                          ),
-                        ),
-                      );
+                    visualDensity: const VisualDensity(
+                      horizontal: 0,
+                      vertical: -4,
+                    ),
+                    onTap: () async {
+                      audioHandler.setIndex(index);
+                      await audioHandler.load();
+                      await audioHandler.play();
                     },
+
+                    trailing: IconButton(
+                      onPressed: () async {
+                        audioHandler.delete(index);
+                        if (index < audioHandler.currentIndex) {
+                          audioHandler.currentIndex -= 1;
+                        } else if (index == audioHandler.currentIndex) {
+                          if (playQueue.isEmpty) {
+                            audioHandler.clear();
+                            while (Navigator.canPop(context)) {
+                              Navigator.pop(context);
+                            }
+                          } else {
+                            await audioHandler.load();
+                          }
+                        }
+                        setState(() {});
+                      },
+                      icon: Icon(
+                        Icons.clear_rounded,
+                        color: Colors.black,
+                        size: 20,
+                      ),
+                    ),
                   );
-                }),
+                },
               ),
             ),
           ],

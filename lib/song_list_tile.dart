@@ -1,11 +1,8 @@
-import 'dart:convert';
-
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/playlists.dart';
 import 'audio_handler.dart';
 import 'art_widget.dart';
-import 'package:path/path.dart' as p;
 
 class SongListTile extends StatelessWidget {
   final int index;
@@ -16,9 +13,7 @@ class SongListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final song = source[index];
-    final songBasename = p.basename(song.file.path);
-    final isFavorite = songIsFavorite[songBasename]!;
-    final isCurrentSong = song.file.path == audioHandler.currentSong?.file.path;
+    final isFavorite = songIsFavorite[song]!;
     return ListTile(
       contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
       leading: ArtWidget(
@@ -26,24 +21,39 @@ class SongListTile extends StatelessWidget {
         borderRadius: 2,
         source: song.pictures.isEmpty ? null : song.pictures.first,
       ),
-      title: Text(
-        song.title ?? "Unknown Title",
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          color: isCurrentSong ? Color.fromARGB(255, 75, 200, 200) : null,
-          fontWeight: isCurrentSong ? FontWeight.bold : null,
-        ),
+      title: ValueListenableBuilder(
+        valueListenable: currentSongNotifier,
+        builder: (_, currentSong, _) {
+          return Text(
+            song.title ?? "Unknown Title",
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: song == currentSong
+                  ? Color.fromARGB(255, 75, 200, 200)
+                  : null,
+              fontWeight: song == currentSong ? FontWeight.bold : null,
+            ),
+          );
+        },
       ),
+
       subtitle: Row(
         children: [
-          FavoriteLabel(isFavorite: isFavorite),
+          ValueListenableBuilder(
+            valueListenable: isFavorite,
+            builder: (_, value, _) {
+              return value
+                  ? SizedBox(
+                      width: 20,
+                      child: Icon(Icons.favorite, color: Colors.red, size: 15),
+                    )
+                  : SizedBox();
+            },
+          ),
           Expanded(
             child: Text(
               "${song.artist ?? "Unknown Artist"} - ${song.album ?? "Unknown Album"}",
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: isCurrentSong ? Color.fromARGB(255, 75, 200, 200) : null,
-              ),
             ),
           ),
         ],
@@ -52,11 +62,11 @@ class SongListTile extends StatelessWidget {
       onTap: () async {
         audioHandler.setIndex(index);
         playQueue = List.from(source);
-        if (audioHandler.playMode == 2) {
+        if (playModeNotifier.value == 2) {
           audioHandler.shuffle();
         }
         await audioHandler.load();
-        audioHandler.play();
+        await audioHandler.play();
       },
       trailing: IconButton(
         icon: Icon(Icons.more_vert, size: 15),
@@ -121,18 +131,7 @@ class SongListTile extends StatelessWidget {
                                 vertical: -4,
                               ),
                               onTap: () {
-                                if (isFavorite.value) {
-                                  favoriteBasenames.remove(songBasename);
-                                  favorite.remove(song);
-                                } else {
-                                  favoriteBasenames.insert(0, songBasename);
-                                  favorite.insert(0, song);
-                                }
-                                favoriteFile.writeAsStringSync(
-                                  jsonEncode(favoriteBasenames),
-                                );
-                                isFavorite.value = !isFavorite.value;
-                                notifier.value++;
+                                changeFavoriteState(song);
                                 Navigator.pop(context);
                               },
                             ),
@@ -222,31 +221,6 @@ class SongListTile extends StatelessWidget {
           );
         },
       ),
-    );
-  }
-}
-
-class FavoriteLabel extends StatefulWidget {
-  final ValueNotifier<bool> isFavorite;
-  const FavoriteLabel({super.key, required this.isFavorite});
-
-  @override
-  State<StatefulWidget> createState() => FavoriteLabelState();
-}
-
-class FavoriteLabelState extends State<FavoriteLabel> {
-  @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: widget.isFavorite,
-      builder: (_, value, _) {
-        return value
-            ? SizedBox(
-                width: 20,
-                child: Icon(Icons.favorite, color: Colors.red, size: 15),
-              )
-            : SizedBox();
-      },
     );
   }
 }

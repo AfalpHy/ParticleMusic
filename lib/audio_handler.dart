@@ -9,7 +9,6 @@ import 'package:image/image.dart' as image;
 import 'package:flutter/services.dart';
 
 late MyAudioHandler audioHandler;
-late File favoriteFile;
 
 class LyricLine {
   final Duration timestamp;
@@ -18,20 +17,18 @@ class LyricLine {
 }
 
 List<AudioMetadata> librarySongs = [];
-List<AudioMetadata> favorite = [];
-List<String> favoriteBasenames = [];
 List<AudioMetadata> playQueue = [];
 List<AudioMetadata> filteredSongs = [];
 List<LyricLine> lyrics = [];
-Color artMixedColor = Colors.grey;
-Map<String, ValueNotifier<bool>> songIsFavorite = {};
-ValueNotifier<int> notifier = ValueNotifier(0);
+Color artAverageColor = Colors.grey;
+
+ValueNotifier<AudioMetadata?> currentSongNotifier = ValueNotifier(null);
+ValueNotifier<bool> isPlayingNotifier = ValueNotifier(false);
+ValueNotifier<int> playModeNotifier = ValueNotifier(0);
 
 class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
   final player = AudioPlayer();
-  AudioMetadata? currentSong;
   int currentIndex = -1;
-  int playMode = 0;
   List<AudioMetadata> playQueueTmp = [];
 
   MyAudioHandler() {
@@ -39,7 +36,7 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
 
     player.processingStateStream.listen((state) async {
       if (state == ProcessingState.completed) {
-        if (playMode == 1) {
+        if (playModeNotifier.value == 1) {
           // repeat
           await load();
         } else {
@@ -49,7 +46,7 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
     });
 
     player.playingStream.listen((isPlaying) {
-      notifyListeners();
+      isPlayingNotifier.value = isPlaying;
     });
   }
 
@@ -121,16 +118,17 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
   }
 
   void switchPlayMode() {
+    int playMode = playModeNotifier.value;
     playMode += 1;
     playMode %= 3;
+    playModeNotifier.value = playMode;
     if (playMode == 0) {
       playQueue = List.from(playQueueTmp);
       playQueueTmp = [];
-      currentIndex = playQueue.indexOf(currentSong!);
+      currentIndex = playQueue.indexOf(currentSongNotifier.value!);
     } else if (playMode == 2) {
       shuffle();
     }
-    notifyListeners();
   }
 
   void delete(index) {
@@ -147,8 +145,7 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
     playQueueTmp = [];
     lyrics = [];
     currentIndex = -1;
-    currentSong = null;
-    notifyListeners();
+    currentSongNotifier.value = null;
   }
 
   Future<Uri> saveAlbumCover(Uint8List bytes) async {
@@ -192,26 +189,6 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
     }
   }
 
-  Color mixColorsWeighted(List<Color> colors) {
-    double r = 0, g = 0, b = 0, a = 0;
-
-    for (int i = 0; i < 5; i++) {
-      if (i >= colors.length) {
-        r += 255 * 0.2;
-        g += 255 * 0.2;
-        b += 255 * 0.2;
-        a += 255 * 0.2;
-        continue;
-      }
-      r += ((colors[i].r * 255.0).round() & 0xff) * 0.2;
-      g += ((colors[i].g * 255.0).round() & 0xff) * 0.2;
-      b += ((colors[i].b * 255.0).round() & 0xff) * 0.2;
-      a += ((colors[i].a * 255.0).round() & 0xff) * 0.2;
-    }
-
-    return Color.fromARGB(a.round(), r.round(), g.round(), b.round());
-  }
-
   Color computeMixedColor(Uint8List bytes) {
     final decoded = image.decodeImage(bytes);
     if (decoded == null) return Colors.grey;
@@ -244,31 +221,31 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
 
   Future<void> load() async {
     if (currentIndex < 0 || currentIndex >= playQueue.length) return;
-    currentSong = playQueue[currentIndex];
-    String path = currentSong!.file.path;
+    final currentSong = playQueue[currentIndex];
+    String path = currentSong.file.path;
     await parseLyricsFile("${path.substring(0, path.lastIndexOf('.'))}.lrc");
 
     Uri? artUri;
-    if (currentSong!.pictures.isNotEmpty) {
-      artMixedColor = computeMixedColor(currentSong!.pictures.first.bytes);
-      artUri = await saveAlbumCover(currentSong!.pictures.first.bytes);
+    if (currentSong.pictures.isNotEmpty) {
+      artAverageColor = computeMixedColor(currentSong.pictures.first.bytes);
+      artUri = await saveAlbumCover(currentSong.pictures.first.bytes);
     } else {
-      artMixedColor = Colors.grey;
+      artAverageColor = Colors.grey;
     }
-    notifyListeners();
+    currentSongNotifier.value = currentSong;
 
     mediaItem.add(
       MediaItem(
-        id: currentSong!.file.path,
-        title: currentSong!.title!,
-        artist: currentSong!.artist,
-        album: currentSong!.album,
+        id: currentSong.file.path,
+        title: currentSong.title!,
+        artist: currentSong.artist,
+        album: currentSong.album,
         artUri: artUri, // file:// URI
-        duration: currentSong!.duration,
+        duration: currentSong.duration,
       ),
     );
     final audioSource = ProgressiveAudioSource(
-      Uri.file(currentSong!.file.path),
+      Uri.file(currentSong.file.path),
       options: ProgressiveAudioSourceOptions(
         darwinAssetOptions: DarwinAssetOptions(
           preferPreciseDurationAndTiming: true,
@@ -280,13 +257,13 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
   }
 
   @override
-  Future<void> play() => player.play();
+  Future<void> play() async => await player.play();
 
   @override
-  Future<void> pause() => player.pause();
+  Future<void> pause() async => await player.pause();
 
   @override
-  Future<void> stop() => player.stop();
+  Future<void> stop() async => await player.stop();
 
   @override
   Future<void> skipToNext() async {
@@ -307,5 +284,5 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
   }
 
   @override
-  Future<void> seek(Duration position) => player.seek(position);
+  Future<void> seek(Duration position) async => await player.seek(position);
 }
