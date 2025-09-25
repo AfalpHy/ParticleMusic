@@ -42,7 +42,7 @@ class Playlist {
     : playlistFile = File("${allPlaylistsFile.parent.path}/$name.json") {
     playlistMap[name] = this;
     if (!playlistFile.existsSync()) {
-      playlistFile.create();
+      playlistFile.createSync();
     }
   }
 
@@ -137,7 +137,7 @@ class PlaylistsSheetState extends State<PlaylistsSheet> {
                               Padding(
                                 padding: const EdgeInsets.fromLTRB(
                                   30,
-                                  50,
+                                  30,
                                   30,
                                   0,
                                 ),
@@ -149,7 +149,7 @@ class PlaylistsSheetState extends State<PlaylistsSheet> {
                                   ),
                                 ),
                               ),
-                              const SizedBox(height: 20),
+                              const SizedBox(height: 10),
                               ElevatedButton(
                                 onPressed: () {
                                   Navigator.pop(
@@ -166,8 +166,10 @@ class PlaylistsSheetState extends State<PlaylistsSheet> {
                     );
                   },
                 ).then((name) {
-                  newPlaylist(name);
-                  setState(() {});
+                  if (name != null) {
+                    newPlaylist(name);
+                    setState(() {});
+                  }
                 });
               },
             ),
