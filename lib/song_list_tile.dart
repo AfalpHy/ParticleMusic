@@ -159,7 +159,7 @@ class SongListTile extends StatelessWidget {
                                   isScrollControlled:
                                       true, // allows full-height
                                   builder: (_) {
-                                    return PlaylistsSheet();
+                                    return PlaylistsSheet(song: song);
                                   },
                                 );
                               },

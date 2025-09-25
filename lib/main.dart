@@ -281,48 +281,49 @@ class HomePageState extends State<HomePage> {
       }
     }
 
-    List<AudioMetadata?> favoriteTmp = [];
-    List<String> favoriteBasenames = [];
-    final appSupportDir = await getApplicationSupportDirectory();
-    favoriteFile = File("${appSupportDir.path}/favorite.json");
-    playlists.add(Playlist(name: 'Favorite'));
-    playlistMap['Favorite'] = playlists[0];
-    if (!favoriteFile.existsSync()) {
-      favoriteFile.create();
-    } else {
-      final contents = await favoriteFile.readAsString();
-      if (contents != "") {
-        List<dynamic> decoded = jsonDecode(contents);
-        favoriteBasenames = List.from(decoded);
-        favoriteTmp = List<AudioMetadata?>.filled(
-          favoriteBasenames.length,
-          null,
-          growable: true,
-        );
-      }
-    }
-
+    Map<String, AudioMetadata> basename2Meta = {};
     for (var file in docs.listSync()) {
       if ((file.path.endsWith('.mp3') || file.path.endsWith('.flac'))) {
         try {
           final meta = readMetadata(File(file.path), getImage: true);
           tempSongs.add(meta);
-          final songBasename = p.basename(file.path);
-          final favoriteIndex = favoriteBasenames.indexOf(songBasename);
-          if (favoriteIndex >= 0) {
-            favoriteTmp[favoriteIndex] = meta;
-            songIsFavorite[meta] = ValueNotifier(true);
-          } else {
-            songIsFavorite[meta] = ValueNotifier(false);
-          }
+          basename2Meta[p.basename(file.path)] = meta;
+          songIsFavorite[meta] = ValueNotifier(false);
         } catch (_) {
           continue; // skip unreadable files
         }
       }
     }
 
+    final appSupportDir = await getApplicationSupportDirectory();
+    allPlaylistsFile = File("${appSupportDir.path}/allPlaylists.txt");
+    if (!(await allPlaylistsFile.exists())) {
+      List<String> tmp = ['Favorite'];
+      await allPlaylistsFile.writeAsString(jsonEncode(tmp));
+    }
+
+    List<dynamic> allPlaylists = jsonDecode(
+      await allPlaylistsFile.readAsString(),
+    );
+
+    for (String name in allPlaylists) {
+      final tmp = Playlist(name: name);
+      playlists.add(tmp);
+
+      final contents = await tmp.playlistFile.readAsString();
+      if (contents != "") {
+        List<dynamic> decoded = jsonDecode(contents);
+        for (String basename in decoded) {
+          AudioMetadata meta = basename2Meta[basename]!;
+          tmp.songs.add(meta);
+          if (name == 'Favorite') {
+            songIsFavorite[meta]!.value = true;
+          }
+        }
+      }
+    }
+
     setState(() {
-      playlistMap['Favorite']!.songs = favoriteTmp.cast();
       tempSongs.sort((a, b) {
         // First, compare album
         int comparison = (a.album ?? "Unknown Album").compareTo(
@@ -470,33 +471,69 @@ class HomePageState extends State<HomePage> {
 
   Widget buildPlaylists() {
     filteredSongs = [];
-    return ListView(
-      children: [
-        ListTile(
+    return ListView.builder(
+      itemCount: playlists.length,
+      itemBuilder: (_, index) {
+        final playlist = playlists[index];
+        return ListTile(
           contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
-          leading: Icon(Icons.favorite_outline_outlined, size: 40),
-          title: Text('Favorite'),
+          leading: Icon(Icons.music_note, size: 40),
+          title: Text(playlist.name),
           onTap: () {
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (_) => Scaffold(
                   backgroundColor: Colors.grey.shade100,
                   appBar: AppBar(
-                    title: const Text('Favorite'),
+                    title: Text(playlist.name),
                     backgroundColor: Colors.grey.shade100,
                     scrolledUnderElevation: 0,
                   ),
                   body: PlaylistSongList(
-                    source: playlistMap['Favorite']!.songs,
-                    notifier: favoriteChangeNotifier,
+                    source: playlist.songs,
+                    notifier: playlist.changeNotifier,
                   ),
                 ),
               ),
             );
           },
-          trailing: IconButton(onPressed: () {}, icon: Icon(Icons.more_vert)),
-        ),
-      ],
+          trailing: playlist.name != 'Favorite'
+              ? IconButton(
+                  onPressed: () {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true, // allows full-height
+                      builder: (_) {
+                        return ClipRRect(
+                          borderRadius: BorderRadius.vertical(
+                            top: Radius.circular(10),
+                          ),
+                          child: Container(
+                            height: 500,
+                            color: Colors.grey.shade100,
+                            child: Column(
+                              children: [
+                                ListTile(
+                                  leading: Icon(Icons.delete),
+                                  title: Text('Delete'),
+                                  onTap: () {
+                                    deletePlaylist(index);
+                                    Navigator.pop(context);
+                                    setState(() {});
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        );
+                      },
+                    );
+                  },
+                  icon: Icon(Icons.more_vert),
+                )
+              : null,
+        );
+      },
     );
   }
 

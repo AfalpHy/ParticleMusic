@@ -6,37 +6,92 @@ import 'package:flutter/material.dart';
 import 'package:particle_music/song_list_tile.dart';
 import 'package:path/path.dart' as p;
 
-late File favoriteFile;
+late File allPlaylistsFile;
+List<Playlist> playlists = [];
+Map<String, Playlist> playlistMap = {};
+
+void newPlaylist(String name) {
+  for (Playlist playlist in playlists) {
+    // check whether the name exists
+    if (name == playlist.name) {
+      return;
+    }
+  }
+  playlists.add(Playlist(name: name));
+
+  allPlaylistsFile.writeAsString(
+    jsonEncode(playlists.map((pl) => pl.name).toList()),
+  );
+}
+
+void deletePlaylist(int index) {
+  playlists[index].delete();
+  playlists.removeAt(index);
+  allPlaylistsFile.writeAsString(
+    jsonEncode(playlists.map((pl) => pl.name).toList()),
+  );
+}
 
 class Playlist {
   String name;
   List<AudioMetadata> songs = [];
+  File playlistFile;
+  ValueNotifier<int> changeNotifier = ValueNotifier(0);
 
-  Playlist({required this.name});
+  Playlist({required this.name})
+    : playlistFile = File("${allPlaylistsFile.parent.path}/$name.json") {
+    playlistMap[name] = this;
+    if (!playlistFile.existsSync()) {
+      playlistFile.create();
+    }
+  }
+
+  void add(AudioMetadata song) {
+    if (songs.contains(song)) {
+      return;
+    }
+    songs.insert(0, song);
+    playlistFile.writeAsStringSync(
+      jsonEncode(songs.map((s) => p.basename(s.file.path)).toList()),
+    );
+    changeNotifier.value++;
+    if (name == 'Favorite') {
+      songIsFavorite[song]!.value = true;
+    }
+  }
+
+  void remove(AudioMetadata song) {
+    songs.remove(song);
+    playlistFile.writeAsStringSync(
+      jsonEncode(songs.map((s) => p.basename(s.file.path)).toList()),
+    );
+    changeNotifier.value++;
+    if (name == 'Favorite') {
+      songIsFavorite[song]!.value = false;
+    }
+  }
+
+  void delete() {
+    playlistFile.deleteSync();
+    playlistMap.remove(name);
+  }
 }
 
-List<Playlist> playlists = [];
-Map<String, Playlist> playlistMap = {};
 Map<AudioMetadata, ValueNotifier<bool>> songIsFavorite = {};
-ValueNotifier<int> favoriteChangeNotifier = ValueNotifier(0);
 
 void changeFavoriteState(AudioMetadata song) {
   final favorite = playlistMap['Favorite']!;
   final isFavorite = songIsFavorite[song]!;
   if (isFavorite.value) {
-    favorite.songs.remove(song);
+    favorite.remove(song);
   } else {
-    favorite.songs.insert(0, song);
+    favorite.add(song);
   }
-  favoriteFile.writeAsStringSync(
-    jsonEncode(favorite.songs.map((s) => p.basename(s.file.path)).toList()),
-  );
-  isFavorite.value = !isFavorite.value;
-  favoriteChangeNotifier.value++;
 }
 
 class PlaylistsSheet extends StatefulWidget {
-  const PlaylistsSheet({super.key});
+  final AudioMetadata song;
+  const PlaylistsSheet({super.key, required this.song});
 
   @override
   State<StatefulWidget> createState() => PlaylistsSheetState();
@@ -57,7 +112,66 @@ class PlaylistsSheetState extends State<PlaylistsSheet> {
         color: Colors.grey.shade100,
         child: Column(
           children: [
-            ListTile(leading: Icon(Icons.add), title: Text('New Playlist')),
+            ListTile(
+              leading: Icon(Icons.add),
+              title: Text('New Playlist'),
+              onTap: () {
+                final controller = TextEditingController();
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true, // allows full-height
+                  builder: (_) {
+                    return ClipRRect(
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(10),
+                      ),
+                      child: Container(
+                        height: 500,
+                        color: Colors.grey.shade100,
+                        child: SizedBox(
+                          height: 250, // fixed height
+                          child: Column(
+                            mainAxisAlignment:
+                                MainAxisAlignment.start, // center vertically
+                            children: [
+                              Padding(
+                                padding: const EdgeInsets.fromLTRB(
+                                  30,
+                                  50,
+                                  30,
+                                  0,
+                                ),
+                                child: TextField(
+                                  controller: controller,
+                                  decoration: const InputDecoration(
+                                    border: OutlineInputBorder(),
+                                    labelText: "Playlist Name",
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 20),
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pop(
+                                    context,
+                                    controller.text,
+                                  ); // close with value
+                                },
+                                child: const Text("Complete"),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ).then((name) {
+                  newPlaylist(name);
+                  setState(() {});
+                });
+              },
+            ),
+            Divider(thickness: 0.5, height: 1, color: Colors.grey.shade300),
             Expanded(
               child: ListView.builder(
                 itemCount: playlists.length,
@@ -66,6 +180,10 @@ class PlaylistsSheetState extends State<PlaylistsSheet> {
                   return ListTile(
                     leading: Icon(Icons.music_note),
                     title: Text(playlist.name),
+                    onTap: () {
+                      playlist.add(widget.song);
+                      Navigator.pop(context);
+                    },
                   );
                 },
               ),
