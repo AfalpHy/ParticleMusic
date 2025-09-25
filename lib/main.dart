@@ -471,67 +471,72 @@ class HomePageState extends State<HomePage> {
 
   Widget buildPlaylists() {
     filteredSongs = [];
-    return ListView.builder(
-      itemCount: playlists.length,
-      itemBuilder: (_, index) {
-        final playlist = playlists[index];
-        return ListTile(
-          contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
-          leading: Icon(Icons.music_note, size: 40),
-          title: Text(playlist.name),
-          onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => Scaffold(
-                  backgroundColor: Colors.grey.shade100,
-                  appBar: AppBar(
-                    title: Text(playlist.name),
-                    backgroundColor: Colors.grey.shade100,
-                    scrolledUnderElevation: 0,
+    return ValueListenableBuilder(
+      valueListenable: playlistsChangeNotifier,
+      builder: (_, _, _) {
+        return ListView.builder(
+          itemCount: playlists.length,
+          itemBuilder: (_, index) {
+            final playlist = playlists[index];
+            return ListTile(
+              contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
+              leading: Icon(Icons.music_note, size: 40),
+              title: Text(playlist.name),
+              onTap: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (_) => Scaffold(
+                      backgroundColor: Colors.grey.shade100,
+                      appBar: AppBar(
+                        title: Text(playlist.name),
+                        backgroundColor: Colors.grey.shade100,
+                        scrolledUnderElevation: 0,
+                      ),
+                      body: PlaylistSongList(
+                        source: playlist.songs,
+                        notifier: playlist.changeNotifier,
+                      ),
+                    ),
                   ),
-                  body: PlaylistSongList(
-                    source: playlist.songs,
-                    notifier: playlist.changeNotifier,
-                  ),
-                ),
-              ),
-            );
-          },
-          trailing: playlist.name != 'Favorite'
-              ? IconButton(
-                  onPressed: () {
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true, // allows full-height
-                      builder: (_) {
-                        return ClipRRect(
-                          borderRadius: BorderRadius.vertical(
-                            top: Radius.circular(10),
-                          ),
-                          child: Container(
-                            height: 500,
-                            color: Colors.grey.shade100,
-                            child: Column(
-                              children: [
-                                ListTile(
-                                  leading: Icon(Icons.delete),
-                                  title: Text('Delete'),
-                                  onTap: () {
-                                    deletePlaylist(index);
-                                    Navigator.pop(context);
-                                    setState(() {});
-                                  },
+                );
+              },
+              trailing: playlist.name != 'Favorite'
+                  ? IconButton(
+                      onPressed: () {
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true, // allows full-height
+                          builder: (_) {
+                            return ClipRRect(
+                              borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(10),
+                              ),
+                              child: Container(
+                                height: 500,
+                                color: Colors.grey.shade100,
+                                child: Column(
+                                  children: [
+                                    ListTile(
+                                      leading: Icon(Icons.delete),
+                                      title: Text('Delete'),
+                                      onTap: () {
+                                        deletePlaylist(index);
+                                        Navigator.pop(context);
+                                        setState(() {});
+                                      },
+                                    ),
+                                  ],
                                 ),
-                              ],
-                            ),
-                          ),
+                              ),
+                            );
+                          },
                         );
                       },
-                    );
-                  },
-                  icon: Icon(Icons.more_vert),
-                )
-              : null,
+                      icon: Icon(Icons.more_vert),
+                    )
+                  : null,
+            );
+          },
         );
       },
     );

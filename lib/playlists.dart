@@ -9,6 +9,7 @@ import 'package:path/path.dart' as p;
 late File allPlaylistsFile;
 List<Playlist> playlists = [];
 Map<String, Playlist> playlistMap = {};
+ValueNotifier<int> playlistsChangeNotifier = ValueNotifier(0);
 
 void newPlaylist(String name) {
   for (Playlist playlist in playlists) {
@@ -22,6 +23,7 @@ void newPlaylist(String name) {
   allPlaylistsFile.writeAsString(
     jsonEncode(playlists.map((pl) => pl.name).toList()),
   );
+  playlistsChangeNotifier.value++;
 }
 
 void deletePlaylist(int index) {
@@ -30,6 +32,7 @@ void deletePlaylist(int index) {
   allPlaylistsFile.writeAsString(
     jsonEncode(playlists.map((pl) => pl.name).toList()),
   );
+  playlistsChangeNotifier.value++;
 }
 
 class Playlist {
