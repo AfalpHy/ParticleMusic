@@ -233,17 +233,21 @@ class FavoriteButton extends StatefulWidget {
 class FavoriteButtonState extends State<FavoriteButton> {
   @override
   Widget build(BuildContext context) {
-    final song = currentSongNotifier.value;
-    final isFavorite = songIsFavorite[song]!;
-    return IconButton(
-      onPressed: () {
-        changeFavoriteState(song!);
-        setState(() {});
+    return ValueListenableBuilder(
+      valueListenable: currentSongNotifier,
+      builder: (_, currentSong, _) {
+        final isFavorite = songIsFavorite[currentSong]!;
+        return IconButton(
+          onPressed: () {
+            changeFavoriteState(currentSong!);
+            setState(() {});
+          },
+          icon: Icon(
+            isFavorite.value ? Icons.favorite : Icons.favorite_outline,
+            color: isFavorite.value ? Colors.red : Colors.black,
+          ),
+        );
       },
-      icon: Icon(
-        isFavorite.value ? Icons.favorite : Icons.favorite_outline,
-        color: isFavorite.value ? Colors.red : Colors.black,
-      ),
     );
   }
 }
