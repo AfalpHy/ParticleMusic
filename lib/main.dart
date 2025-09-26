@@ -1,5 +1,4 @@
 import 'dart:convert';
-import 'dart:ffi';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -349,7 +348,6 @@ class HomePageState extends State<HomePage> {
     });
   }
 
-  bool isSearching = false;
   String searchQuery = "";
 
   @override
@@ -362,51 +360,7 @@ class HomePageState extends State<HomePage> {
             backgroundColor: Colors.grey.shade100,
             elevation: 0,
             scrolledUnderElevation: 0,
-            title: ValueListenableBuilder(
-              valueListenable: homeBody,
-              builder: (context, which, child) {
-                searchQuery = '';
-                return isSearching && which == 1
-                    ? TextField(
-                        autofocus: true,
-                        decoration: const InputDecoration(
-                          hintText: "Search songs...",
-                          border: InputBorder.none,
-                          hintStyle: TextStyle(),
-                        ),
-                        style: const TextStyle(),
-                        onChanged: (value) {
-                          setState(() {
-                            searchQuery = value;
-                          });
-                        },
-                      )
-                    : const Text("Particle Music");
-              },
-            ),
-            actions: [
-              ValueListenableBuilder(
-                valueListenable: homeBody,
-                builder: (context, which, child) {
-                  if (which != 1) {
-                    return SizedBox();
-                  }
-                  return IconButton(
-                    icon: Icon(isSearching ? Icons.close : Icons.search),
-                    onPressed: () {
-                      setState(() {
-                        if (isSearching) {
-                          isSearching = false;
-                          searchQuery = "";
-                        } else {
-                          isSearching = true;
-                        }
-                      });
-                    },
-                  );
-                },
-              ),
-            ],
+            title: const Text("Particle Music"),
           ),
           body: NotificationListener<UserScrollNotification>(
             onNotification: (notification) {
@@ -470,22 +424,51 @@ class HomePageState extends State<HomePage> {
         )
         .toList();
 
-    return ScrollablePositionedList.builder(
-      itemScrollController: itemScrollController,
-      physics: ClampingScrollPhysics(),
-      itemCount: filteredSongs.length + 1,
-      itemBuilder: (context, index) {
-        if (index < filteredSongs.length) {
-          return SongListTile(index: index, source: filteredSongs);
-        } else {
-          return SizedBox(height: 130);
-        }
-      },
+    return Column(
+      children: [
+        Row(
+          children: [
+            SizedBox(width: 20),
+            Icon(Icons.search),
+            SizedBox(width: 10),
+
+            Expanded(
+              child: TextField(
+                decoration: const InputDecoration(
+                  hintText: "Search songs...",
+                  border: InputBorder.none,
+                  hintStyle: TextStyle(),
+                ),
+                style: const TextStyle(),
+                onChanged: (value) {
+                  setState(() {
+                    searchQuery = value;
+                  });
+                },
+              ),
+            ),
+          ],
+        ),
+        Expanded(
+          child: ScrollablePositionedList.builder(
+            itemScrollController: itemScrollController,
+            physics: ClampingScrollPhysics(),
+            itemCount: filteredSongs.length + 1,
+            itemBuilder: (context, index) {
+              if (index < filteredSongs.length) {
+                return SongListTile(index: index, source: filteredSongs);
+              } else {
+                return SizedBox(height: 130);
+              }
+            },
+          ),
+        ),
+      ],
     );
   }
 
   Widget buildPlaylists() {
-    filteredSongs = [];
+    searchQuery = '';
     return ValueListenableBuilder(
       valueListenable: playlistsChangeNotifier,
       builder: (_, _, _) {
@@ -495,7 +478,6 @@ class HomePageState extends State<HomePage> {
             final playlist = playlists[index];
             return ListTile(
               contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
-              visualDensity: const VisualDensity(horizontal: 0, vertical: 2),
               leading: ValueListenableBuilder(
                 valueListenable: playlist.changeNotifier,
                 builder: (_, _, _) {
@@ -618,7 +600,7 @@ class HomePageState extends State<HomePage> {
   }
 
   Widget buildSetting() {
-    filteredSongs = [];
+    searchQuery = '';
     return SizedBox();
   }
 }
@@ -651,32 +633,38 @@ class MyLocationState extends State<MyLocation> {
     return ValueListenableBuilder(
       valueListenable: currentSongNotifier,
       builder: (_, currentSong, _) {
-        return currentSong != null &&
-                filteredSongs.isNotEmpty &&
-                widget.listIsScrolling.value
-            ? Row(
-                children: [
-                  Spacer(),
-                  IconButton(
-                    onPressed: () {
-                      if (currentSongNotifier.value != null) {
-                        for (int i = 0; i < filteredSongs.length; i++) {
-                          if (filteredSongs[i] == currentSongNotifier.value) {
-                            widget.itemScrollController.scrollTo(
-                              index: i,
-                              duration: Duration(milliseconds: 300),
-                              curve: Curves.linear,
-                            );
+        return ValueListenableBuilder(
+          valueListenable: homeBody,
+          builder: (_, value, _) {
+            return currentSong != null &&
+                    value == 1 &&
+                    widget.listIsScrolling.value
+                ? Row(
+                    children: [
+                      Spacer(),
+                      IconButton(
+                        onPressed: () {
+                          if (currentSongNotifier.value != null) {
+                            for (int i = 0; i < filteredSongs.length; i++) {
+                              if (filteredSongs[i] ==
+                                  currentSongNotifier.value) {
+                                widget.itemScrollController.scrollTo(
+                                  index: i,
+                                  duration: Duration(milliseconds: 300),
+                                  curve: Curves.linear,
+                                );
+                              }
+                            }
                           }
-                        }
-                      }
-                    },
-                    icon: Icon(Icons.my_location_rounded),
-                  ),
-                  SizedBox(width: 30),
-                ],
-              )
-            : SizedBox();
+                        },
+                        icon: Icon(Icons.my_location_rounded),
+                      ),
+                      SizedBox(width: 30),
+                    ],
+                  )
+                : SizedBox();
+          },
+        );
       },
     );
   }
