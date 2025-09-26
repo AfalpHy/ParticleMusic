@@ -14,238 +14,240 @@ class LyricsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: artAverageColor,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: artAverageColor,
-        scrolledUnderElevation: 0,
-        title: ValueListenableBuilder(
-          valueListenable: currentSongNotifier,
-          builder: (_, currentSong, _) {
-            if (currentSong == null) {
-              return SizedBox();
-            }
-            return Center(
-              child: Column(
-                children: [
-                  AutoSizeText(
-                    currentSong.title ?? 'Unknown Title',
-                    maxLines: 1,
-                    maxFontSize: 20,
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                    overflowReplacement: SizedBox(
-                      height: kToolbarHeight / 2, // finite height
-                      width:
-                          double.infinity, // takes whatever width AppBar gives
-                      child: Marquee(
-                        text: currentSong.title ?? 'Unknown Title',
-                        scrollAxis: Axis.horizontal,
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                        blankSpace: 20,
-                        velocity: 30.0,
-                        pauseAfterRound: const Duration(seconds: 1),
-                        accelerationDuration: const Duration(milliseconds: 500),
-                        accelerationCurve: Curves.linear,
-                        decelerationDuration: const Duration(milliseconds: 500),
-                        decelerationCurve: Curves.linear,
-                      ),
+    return ValueListenableBuilder(
+      valueListenable: currentSongNotifier,
+      builder: (_, currentSong, _) {
+        return Scaffold(
+          backgroundColor: artAverageColor,
+          appBar: AppBar(
+            automaticallyImplyLeading: false,
+            backgroundColor: artAverageColor,
+            scrolledUnderElevation: 0,
+            title: currentSong == null
+                ? null
+                : Center(
+                    child: Column(
+                      children: [
+                        AutoSizeText(
+                          currentSong.title ?? 'Unknown Title',
+                          maxLines: 1,
+                          maxFontSize: 20,
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                          overflowReplacement: SizedBox(
+                            height: kToolbarHeight / 2, // finite height
+                            width: double
+                                .infinity, // takes whatever width AppBar gives
+                            child: Marquee(
+                              text: currentSong.title ?? 'Unknown Title',
+                              scrollAxis: Axis.horizontal,
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                              blankSpace: 20,
+                              velocity: 30.0,
+                              pauseAfterRound: const Duration(seconds: 1),
+                              accelerationDuration: const Duration(
+                                milliseconds: 500,
+                              ),
+                              accelerationCurve: Curves.linear,
+                              decelerationDuration: const Duration(
+                                milliseconds: 500,
+                              ),
+                              decelerationCurve: Curves.linear,
+                            ),
+                          ),
+                        ),
+                        AutoSizeText(
+                          currentSong.artist ?? 'Unknown Artist',
+                          maxLines: 1,
+                          maxFontSize: 14,
+                          overflowReplacement: SizedBox(
+                            height: kToolbarHeight / 2, // finite height
+                            width: double
+                                .infinity, // takes whatever width AppBar gives
+                            child: Marquee(
+                              text: currentSong.artist ?? 'Unknown Artist',
+                              scrollAxis: Axis.horizontal,
+                              blankSpace: 20,
+                              velocity: 30.0,
+                              pauseAfterRound: const Duration(seconds: 1),
+                              accelerationDuration: const Duration(
+                                milliseconds: 500,
+                              ),
+                              accelerationCurve: Curves.linear,
+                              decelerationDuration: const Duration(
+                                milliseconds: 500,
+                              ),
+                              decelerationCurve: Curves.linear,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
                   ),
-                  AutoSizeText(
-                    currentSong.artist ?? 'Unknown Artist',
-                    maxLines: 1,
-                    maxFontSize: 14,
-                    overflowReplacement: SizedBox(
-                      height: kToolbarHeight / 2, // finite height
-                      width:
-                          double.infinity, // takes whatever width AppBar gives
-                      child: Marquee(
-                        text: currentSong.artist ?? 'Unknown Artist',
-                        scrollAxis: Axis.horizontal,
-                        blankSpace: 20,
-                        velocity: 30.0,
-                        pauseAfterRound: const Duration(seconds: 1),
-                        accelerationDuration: const Duration(milliseconds: 500),
-                        accelerationCurve: Curves.linear,
-                        decelerationDuration: const Duration(milliseconds: 500),
-                        decelerationCurve: Curves.linear,
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        ),
-      ),
-      body: Column(
-        children: [
-          const SizedBox(height: 10),
-          Material(
-            elevation: 15,
-            color: artAverageColor,
-            borderRadius: BorderRadius.circular(
-              MediaQuery.widthOf(context) * 0.84 / 20,
-            ),
-            child: ValueListenableBuilder(
-              valueListenable: currentSongNotifier,
-              builder: (context, currentSong, child) {
-                return ArtWidget(
+          ),
+          body: Column(
+            children: [
+              const SizedBox(height: 10),
+              Material(
+                elevation: 15,
+                color: artAverageColor,
+                borderRadius: BorderRadius.circular(
+                  MediaQuery.widthOf(context) * 0.84 / 20,
+                ),
+                child: ArtWidget(
                   size: MediaQuery.widthOf(context) * 0.84,
                   borderRadius: MediaQuery.widthOf(context) * 0.84 / 20,
                   source: currentSong != null && currentSong.pictures.isNotEmpty
                       ? currentSong.pictures.first
                       : null,
-                );
-              },
-            ),
-          ),
+                ),
+              ),
 
-          const SizedBox(height: 30),
+              const SizedBox(height: 30),
 
-          Expanded(
-            child: ShaderMask(
-              shaderCallback: (rect) {
-                return LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent, // fade out at top
-                    Colors.black, // fully visible
-                    Colors.black, // fully visible
-                    Colors.transparent, // fade out at bottom
-                  ],
-                  stops: [0.0, 0.1, 0.8, 1.0], // adjust fade height
-                ).createShader(rect);
-              },
-              blendMode: BlendMode.dstIn,
-              child: LyricsListView(),
-            ),
-          ),
+              Expanded(
+                child: ShaderMask(
+                  shaderCallback: (rect) {
+                    return LinearGradient(
+                      begin: Alignment.topCenter,
+                      end: Alignment.bottomCenter,
+                      colors: [
+                        Colors.transparent, // fade out at top
+                        Colors.black, // fully visible
+                        Colors.black, // fully visible
+                        Colors.transparent, // fade out at bottom
+                      ],
+                      stops: [0.0, 0.1, 0.8, 1.0], // adjust fade height
+                    ).createShader(rect);
+                  },
+                  blendMode: BlendMode.dstIn,
+                  child: LyricsListView(),
+                ),
+              ),
 
-          Row(
-            children: [
-              Spacer(),
-              FavoriteButton(),
-              SizedBox(width: 20),
-              Icon(Icons.more_vert),
-              SizedBox(width: 30),
-            ],
-          ),
-          SeekBar(),
+              Row(
+                children: [
+                  Spacer(),
+                  FavoriteButton(),
+                  SizedBox(width: 20),
+                  Icon(Icons.more_vert),
+                  SizedBox(width: 30),
+                ],
+              ),
+              SeekBar(),
 
-          // -------- Play Controls --------
-          Padding(
-            padding: const EdgeInsets.fromLTRB(10, 0, 10, 40),
+              // -------- Play Controls --------
+              Padding(
+                padding: const EdgeInsets.fromLTRB(10, 0, 10, 40),
 
-            child: Row(
-              children: [
-                Expanded(
-                  child: ValueListenableBuilder(
-                    valueListenable: playModeNotifier,
-                    builder: (_, playMode, _) {
-                      return IconButton(
+                child: Row(
+                  children: [
+                    Expanded(
+                      child: ValueListenableBuilder(
+                        valueListenable: playModeNotifier,
+                        builder: (_, playMode, _) {
+                          return IconButton(
+                            color: Colors.black,
+                            icon: Icon(
+                              playMode == 0
+                                  ? Icons.loop_rounded
+                                  : playMode == 1
+                                  ? Icons.repeat_rounded
+                                  : Icons.shuffle_rounded,
+                              size: 30,
+                            ),
+                            onPressed: () {
+                              audioHandler.switchPlayMode();
+                            },
+                          );
+                        },
+                      ),
+                    ),
+
+                    Expanded(
+                      child: IconButton(
                         color: Colors.black,
+                        icon: const Icon(Icons.skip_previous_rounded, size: 48),
+                        onPressed: audioHandler.skipToPrevious,
+                      ),
+                    ),
+                    Expanded(
+                      child: IconButton(
+                        color: Colors.black,
+                        icon: ValueListenableBuilder(
+                          valueListenable: isPlayingNotifier,
+                          builder: (_, isPlaying, _) {
+                            return Icon(
+                              isPlaying
+                                  ? Icons.pause_rounded
+                                  : Icons.play_arrow_rounded,
+                              size: 48,
+                            );
+                          },
+                        ),
+                        onPressed: () async => audioHandler.player.playing
+                            ? await audioHandler.pause()
+                            : await audioHandler.play(),
+                      ),
+                    ),
+                    Expanded(
+                      child: IconButton(
+                        color: Colors.black,
+                        icon: const Icon(Icons.skip_next_rounded, size: 48),
+                        onPressed: audioHandler.skipToNext,
+                      ),
+                    ),
+                    Expanded(
+                      child: IconButton(
                         icon: Icon(
-                          playMode == 0
-                              ? Icons.loop_rounded
-                              : playMode == 1
-                              ? Icons.repeat_rounded
-                              : Icons.shuffle_rounded,
+                          Icons.queue_music_rounded,
                           size: 30,
+                          color: Colors.black,
                         ),
                         onPressed: () {
-                          audioHandler.switchPlayMode();
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true, // allows full-height
+                            builder: (context) {
+                              return PlayQueuePage();
+                            },
+                          );
                         },
-                      );
-                    },
-                  ),
-                ),
-
-                Expanded(
-                  child: IconButton(
-                    color: Colors.black,
-                    icon: const Icon(Icons.skip_previous_rounded, size: 48),
-                    onPressed: audioHandler.skipToPrevious,
-                  ),
-                ),
-                Expanded(
-                  child: IconButton(
-                    color: Colors.black,
-                    icon: ValueListenableBuilder(
-                      valueListenable: isPlayingNotifier,
-                      builder: (_, isPlaying, _) {
-                        return Icon(
-                          isPlaying
-                              ? Icons.pause_rounded
-                              : Icons.play_arrow_rounded,
-                          size: 48,
-                        );
-                      },
+                      ),
                     ),
-                    onPressed: () async => audioHandler.player.playing
-                        ? await audioHandler.pause()
-                        : await audioHandler.play(),
-                  ),
+                  ],
                 ),
-                Expanded(
-                  child: IconButton(
-                    color: Colors.black,
-                    icon: const Icon(Icons.skip_next_rounded, size: 48),
-                    onPressed: audioHandler.skipToNext,
-                  ),
-                ),
-                Expanded(
-                  child: IconButton(
-                    icon: Icon(
-                      Icons.queue_music_rounded,
-                      size: 30,
-                      color: Colors.black,
-                    ),
-                    onPressed: () {
-                      showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true, // allows full-height
-                        builder: (context) {
-                          return PlayQueuePage();
-                        },
-                      );
-                    },
-                  ),
-                ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 }
 
-class FavoriteButton extends StatefulWidget {
+class FavoriteButton extends StatelessWidget {
   const FavoriteButton({super.key});
 
-  @override
-  State<FavoriteButton> createState() => FavoriteButtonState();
-}
-
-class FavoriteButtonState extends State<FavoriteButton> {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
       valueListenable: currentSongNotifier,
       builder: (_, currentSong, _) {
+        if (currentSong == null) return SizedBox();
         final isFavorite = songIsFavorite[currentSong]!;
-        return IconButton(
-          onPressed: () {
-            changeFavoriteState(currentSong!);
-            setState(() {});
+        return ValueListenableBuilder(
+          valueListenable: isFavorite,
+          builder: (_, value, _) {
+            return IconButton(
+              onPressed: () {
+                changeFavoriteState(currentSong);
+              },
+              icon: Icon(
+                isFavorite.value ? Icons.favorite : Icons.favorite_outline,
+                color: isFavorite.value ? Colors.red : Colors.black,
+              ),
+            );
           },
-          icon: Icon(
-            isFavorite.value ? Icons.favorite : Icons.favorite_outline,
-            color: isFavorite.value ? Colors.red : Colors.black,
-          ),
         );
       },
     );
@@ -326,22 +328,17 @@ class LyricsListViewState extends State<LyricsListView> {
             }
             return false;
           },
-          child: ValueListenableBuilder(
-            valueListenable: currentSongNotifier,
-            builder: (_, _, _) {
-              return ScrollablePositionedList.builder(
-                itemCount: lyrics.length + 2,
-                itemScrollController: itemScrollController,
-                itemBuilder: (context, index) {
-                  if (index == 0 || index == lyrics.length + 1) {
-                    return SizedBox(height: parentHeight / 2);
-                  }
-                  return LyricLineWidget(
-                    text: lyrics[index - 1].text,
-                    index: index - 1,
-                    currentIndexNotifier: currentIndexNotifier,
-                  );
-                },
+          child: ScrollablePositionedList.builder(
+            itemCount: lyrics.length + 2,
+            itemScrollController: itemScrollController,
+            itemBuilder: (context, index) {
+              if (index == 0 || index == lyrics.length + 1) {
+                return SizedBox(height: parentHeight / 2);
+              }
+              return LyricLineWidget(
+                text: lyrics[index - 1].text,
+                index: index - 1,
+                currentIndexNotifier: currentIndexNotifier,
               );
             },
           ),
