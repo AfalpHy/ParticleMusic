@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:audio_service/audio_service.dart';
-import 'package:particle_music/playlists.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:async';
 import 'package:image/image.dart' as image;
@@ -51,30 +50,9 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
     });
   }
 
-  @override
-  Future customAction(String name, [Map<String, dynamic>? extras]) async {
-    if (name == 'favorite_toggle') {
-      toggleFavoriteState(currentSongNotifier.value!);
-    }
-  }
-
   PlaybackState transformEvent(PlaybackEvent event) {
-    final MediaControl favoriteOn = MediaControl.custom(
-      androidIcon: 'drawable/ic_star', // filled star drawable
-      label: 'Unfavorite',
-      name: 'favorite_toggle',
-    );
-
-    final MediaControl favoriteOff = MediaControl.custom(
-      androidIcon: 'drawable/ic_star_border', // outlined star drawable
-      label: 'Favorite',
-      name: 'favorite_toggle',
-    );
     return PlaybackState(
       controls: [
-        songIsFavorite[currentSongNotifier.value]!.value
-            ? favoriteOn
-            : favoriteOff,
         MediaControl.skipToPrevious,
         player.playing ? MediaControl.pause : MediaControl.play,
         MediaControl.skipToNext,
