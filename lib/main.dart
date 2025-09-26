@@ -530,8 +530,8 @@ class HomePageState extends State<HomePage> {
                               SizedBox(width: 20),
 
                               ArtWidget(
-                                size: 100,
-                                borderRadius: 8,
+                                size: 120,
+                                borderRadius: 6,
                                 source:
                                     (playlist.songs.isNotEmpty &&
                                         playlist
@@ -571,41 +571,6 @@ class HomePageState extends State<HomePage> {
                   ),
                 );
               },
-              trailing: playlist.name != 'Favorite'
-                  ? IconButton(
-                      onPressed: () {
-                        showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true, // allows full-height
-                          builder: (_) {
-                            return ClipRRect(
-                              borderRadius: BorderRadius.vertical(
-                                top: Radius.circular(10),
-                              ),
-                              child: Container(
-                                height: 500,
-                                color: Colors.grey.shade100,
-                                child: Column(
-                                  children: [
-                                    ListTile(
-                                      leading: Icon(Icons.delete),
-                                      title: Text('Delete'),
-                                      onTap: () {
-                                        deletePlaylist(index);
-                                        Navigator.pop(context);
-                                        setState(() {});
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        );
-                      },
-                      icon: Icon(Icons.more_vert),
-                    )
-                  : null,
             );
           },
         );
