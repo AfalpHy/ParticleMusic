@@ -83,7 +83,7 @@ class Playlist {
 
 Map<AudioMetadata, ValueNotifier<bool>> songIsFavorite = {};
 
-void changeFavoriteState(AudioMetadata song) {
+void toggleFavoriteState(AudioMetadata song) {
   final favorite = playlistMap['Favorite']!;
   final isFavorite = songIsFavorite[song]!;
   if (isFavorite.value) {

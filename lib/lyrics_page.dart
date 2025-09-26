@@ -240,7 +240,7 @@ class FavoriteButton extends StatelessWidget {
           builder: (_, value, _) {
             return IconButton(
               onPressed: () {
-                changeFavoriteState(currentSong);
+                toggleFavoriteState(currentSong);
               },
               icon: Icon(
                 isFavorite.value ? Icons.favorite : Icons.favorite_outline,

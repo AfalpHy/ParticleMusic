@@ -131,7 +131,7 @@ class SongListTile extends StatelessWidget {
                                 vertical: -4,
                               ),
                               onTap: () {
-                                changeFavoriteState(song);
+                                toggleFavoriteState(song);
                                 Navigator.pop(context);
                               },
                             ),
