@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:ffi';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -361,34 +362,48 @@ class HomePageState extends State<HomePage> {
             backgroundColor: Colors.grey.shade100,
             elevation: 0,
             scrolledUnderElevation: 0,
-            title: isSearching
-                ? TextField(
-                    autofocus: true,
-                    decoration: const InputDecoration(
-                      hintText: "Search songs...",
-                      border: InputBorder.none,
-                      hintStyle: TextStyle(),
-                    ),
-                    style: const TextStyle(),
-                    onChanged: (value) {
+            title: ValueListenableBuilder(
+              valueListenable: homeBody,
+              builder: (context, which, child) {
+                searchQuery = '';
+                return isSearching && which == 1
+                    ? TextField(
+                        autofocus: true,
+                        decoration: const InputDecoration(
+                          hintText: "Search songs...",
+                          border: InputBorder.none,
+                          hintStyle: TextStyle(),
+                        ),
+                        style: const TextStyle(),
+                        onChanged: (value) {
+                          setState(() {
+                            searchQuery = value;
+                          });
+                        },
+                      )
+                    : const Text("Particle Music");
+              },
+            ),
+            actions: [
+              ValueListenableBuilder(
+                valueListenable: homeBody,
+                builder: (context, which, child) {
+                  if (which != 1) {
+                    return SizedBox();
+                  }
+                  return IconButton(
+                    icon: Icon(isSearching ? Icons.close : Icons.search),
+                    onPressed: () {
                       setState(() {
-                        searchQuery = value;
+                        if (isSearching) {
+                          isSearching = false;
+                          searchQuery = "";
+                        } else {
+                          isSearching = true;
+                        }
                       });
                     },
-                  )
-                : const Text("Particle Music"),
-            actions: [
-              IconButton(
-                icon: Icon(isSearching ? Icons.close : Icons.search),
-                onPressed: () {
-                  setState(() {
-                    if (isSearching) {
-                      isSearching = false;
-                      searchQuery = "";
-                    } else {
-                      isSearching = true;
-                    }
-                  });
+                  );
                 },
               ),
             ],
@@ -480,21 +495,81 @@ class HomePageState extends State<HomePage> {
             final playlist = playlists[index];
             return ListTile(
               contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
-              leading: Icon(Icons.music_note, size: 40),
+              visualDensity: const VisualDensity(horizontal: 0, vertical: 2),
+              leading: ValueListenableBuilder(
+                valueListenable: playlist.changeNotifier,
+                builder: (_, _, _) {
+                  if (playlist.songs.isNotEmpty) {
+                    return ArtWidget(
+                      size: 50,
+                      borderRadius: 5,
+                      source: playlist.songs.first.pictures.isEmpty
+                          ? null
+                          : playlist.songs.first.pictures.first,
+                    );
+                  }
+                  return Icon(Icons.music_note, size: 50);
+                },
+              ),
               title: Text(playlist.name),
+              subtitle: ValueListenableBuilder(
+                valueListenable: playlist.changeNotifier,
+                builder: (_, _, _) {
+                  return Text("${playlist.songs.length} songs");
+                },
+              ),
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (_) => Scaffold(
                       backgroundColor: Colors.grey.shade100,
                       appBar: AppBar(
-                        title: Text(playlist.name),
                         backgroundColor: Colors.grey.shade100,
                         scrolledUnderElevation: 0,
                       ),
-                      body: PlaylistSongList(
-                        source: playlist.songs,
-                        notifier: playlist.changeNotifier,
+                      body: Column(
+                        children: [
+                          Row(
+                            children: [
+                              SizedBox(width: 20),
+
+                              ArtWidget(
+                                size: 100,
+                                borderRadius: 8,
+                                source:
+                                    (playlist.songs.isNotEmpty &&
+                                        playlist
+                                            .songs
+                                            .first
+                                            .pictures
+                                            .isNotEmpty)
+                                    ? playlist.songs.first.pictures.first
+                                    : null,
+                              ),
+                              Expanded(
+                                child: ListTile(
+                                  title: Text(
+                                    playlist.name,
+                                    style: TextStyle(
+                                      fontSize: 25,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  subtitle: Text(
+                                    "${playlist.songs.length} songs",
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          SizedBox(height: 30),
+                          Expanded(
+                            child: PlaylistSongList(
+                              source: playlist.songs,
+                              notifier: playlist.changeNotifier,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),

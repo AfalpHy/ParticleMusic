@@ -5,6 +5,7 @@ import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/song_list_tile.dart';
 import 'package:path/path.dart' as p;
+import 'art_widget.dart';
 
 late File allPlaylistsFile;
 List<Playlist> playlists = [];
@@ -116,7 +117,7 @@ class PlaylistsSheetState extends State<PlaylistsSheet> {
         child: Column(
           children: [
             ListTile(
-              leading: Icon(Icons.add),
+              leading: Icon(Icons.add, size: 40),
               title: Text('New Playlist'),
               onTap: () {
                 final controller = TextEditingController();
@@ -169,7 +170,7 @@ class PlaylistsSheetState extends State<PlaylistsSheet> {
                     );
                   },
                 ).then((name) {
-                  if (name != null) {
+                  if (name != '') {
                     newPlaylist(name);
                     setState(() {});
                   }
@@ -183,8 +184,20 @@ class PlaylistsSheetState extends State<PlaylistsSheet> {
                 itemBuilder: (_, index) {
                   final playlist = playlists[index];
                   return ListTile(
-                    leading: Icon(Icons.music_note),
+                    leading: (() {
+                      if (playlist.songs.isNotEmpty) {
+                        return ArtWidget(
+                          size: 40,
+                          borderRadius: 1,
+                          source: playlist.songs.first.pictures.isEmpty
+                              ? null
+                              : playlist.songs.first.pictures.first,
+                        );
+                      }
+                      return Icon(Icons.music_note, size: 40);
+                    })(),
                     title: Text(playlist.name),
+
                     onTap: () {
                       playlist.add(widget.song);
                       Navigator.pop(context);
