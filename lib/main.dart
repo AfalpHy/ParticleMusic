@@ -256,19 +256,19 @@ class HomePageState extends State<HomePage> {
     }
 
     await loadSongs();
-    final watcher = DirectoryWatcher(docs.path);
+    // final watcher = DirectoryWatcher(docs.path);
 
-    watcher.events.listen((event) {
-      isChanged = true;
-    });
+    // watcher.events.listen((event) {
+    //   isChanged = true;
+    // });
 
-    // Check directory every 5 seconds
-    Timer.periodic(Duration(seconds: 5), (timer) async {
-      if (isChanged) {
-        isChanged = false;
-        await loadSongs();
-      }
-    });
+    // // Check directory every 5 seconds
+    // Timer.periodic(Duration(seconds: 5), (timer) async {
+    //   if (isChanged) {
+    //     isChanged = false;
+    //     await loadSongs();
+    //   }
+    // });
   }
 
   Future<void> loadSongs() async {
