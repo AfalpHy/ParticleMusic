@@ -125,13 +125,15 @@ class MyApp extends StatelessWidget {
                   builder: (context, which, _) {
                     // must use Material to avoid layout problem
                     return Material(
-                      child: Container(
-                        color: Colors.grey.shade100,
-                        height: 80,
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: GestureDetector(
+                      child: Row(
+                        children: [
+                          Expanded(
+                            child: Container(
+                              height: 80,
+                              color: Colors.grey.shade100,
+                              child: InkWell(
+                                splashColor: Colors.transparent,
+                                highlightColor: Colors.transparent,
                                 onTap: () => homeBody.value = 1,
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -155,8 +157,14 @@ class MyApp extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            Expanded(
-                              child: GestureDetector(
+                          ),
+                          Expanded(
+                            child: Container(
+                              height: 80,
+                              color: Colors.grey.shade100,
+                              child: InkWell(
+                                splashColor: Colors.transparent,
+                                highlightColor: Colors.transparent,
                                 onTap: () => homeBody.value = 2,
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -181,8 +189,14 @@ class MyApp extends StatelessWidget {
                                 ),
                               ),
                             ),
-                            Expanded(
-                              child: GestureDetector(
+                          ),
+                          Expanded(
+                            child: Container(
+                              height: 80,
+                              color: Colors.grey.shade100,
+                              child: InkWell(
+                                splashColor: Colors.transparent,
+                                highlightColor: Colors.transparent,
                                 onTap: () => homeBody.value = 3,
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
@@ -207,8 +221,8 @@ class MyApp extends StatelessWidget {
                                 ),
                               ),
                             ),
-                          ],
-                        ),
+                          ),
+                        ],
                       ),
                     );
                   },
