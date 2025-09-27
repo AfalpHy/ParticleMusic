@@ -40,7 +40,10 @@ class LyricsPage extends StatelessWidget {
                             child: Marquee(
                               text: currentSong.title ?? 'Unknown Title',
                               scrollAxis: Axis.horizontal,
-                              style: TextStyle(fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20,
+                              ),
                               blankSpace: 20,
                               velocity: 30.0,
                               pauseAfterRound: const Duration(seconds: 1),
@@ -65,6 +68,7 @@ class LyricsPage extends StatelessWidget {
                                 .infinity, // takes whatever width AppBar gives
                             child: Marquee(
                               text: currentSong.artist ?? 'Unknown Artist',
+                              style: TextStyle(fontSize: 14),
                               scrollAxis: Axis.horizontal,
                               blankSpace: 20,
                               velocity: 30.0,
