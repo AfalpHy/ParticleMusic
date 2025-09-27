@@ -12,6 +12,7 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:async';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/services.dart';
+import 'package:searchfield/searchfield.dart';
 import 'audio_handler.dart';
 import 'lyrics_page.dart';
 import 'play_queue_page.dart';
@@ -130,7 +131,7 @@ class MyApp extends StatelessWidget {
                           Expanded(
                             child: Container(
                               height: 80,
-                              color: Colors.grey.shade100,
+                              color: Colors.white,
                               child: InkWell(
                                 splashColor: Colors.transparent,
                                 highlightColor: Colors.transparent,
@@ -161,7 +162,7 @@ class MyApp extends StatelessWidget {
                           Expanded(
                             child: Container(
                               height: 80,
-                              color: Colors.grey.shade100,
+                              color: Colors.white,
                               child: InkWell(
                                 splashColor: Colors.transparent,
                                 highlightColor: Colors.transparent,
@@ -193,7 +194,7 @@ class MyApp extends StatelessWidget {
                           Expanded(
                             child: Container(
                               height: 80,
-                              color: Colors.grey.shade100,
+                              color: Colors.white,
                               child: InkWell(
                                 splashColor: Colors.transparent,
                                 highlightColor: Colors.transparent,
@@ -254,6 +255,8 @@ class HomePageState extends State<HomePage> {
   Timer? timer;
 
   List<String> librarySongBasenames = [];
+  final TextEditingController textController = TextEditingController();
+  final FocusNode focusNode = FocusNode();
 
   @override
   void initState() {
@@ -448,9 +451,9 @@ class HomePageState extends State<HomePage> {
     return Stack(
       children: [
         Scaffold(
-          backgroundColor: Colors.grey.shade100,
+          backgroundColor: Colors.white,
           appBar: AppBar(
-            backgroundColor: Colors.grey.shade100,
+            backgroundColor: Colors.white,
             elevation: 0,
             scrolledUnderElevation: 0,
             title: const Text("Particle Music"),
@@ -516,29 +519,52 @@ class HomePageState extends State<HomePage> {
                   false),
         )
         .toList();
-
     return Column(
       children: [
         Row(
           children: [
             SizedBox(width: 20),
-            Icon(Icons.search),
-            SizedBox(width: 10),
 
             Expanded(
-              child: TextField(
-                decoration: const InputDecoration(
-                  hintText: "Search songs...",
-                  border: InputBorder.none,
+              child: SizedBox(
+                height: 30,
+                child: SearchField(
+                  autofocus: false,
+                  focusNode: focusNode,
+                  controller: textController,
+                  suggestions: [],
+                  searchInputDecoration: SearchInputDecoration(
+                    hintText: 'Search songs',
+                    prefixIcon: Icon(Icons.search),
+                    suffixIcon: searchQuery.isNotEmpty
+                        ? IconButton(
+                            onPressed: () => setState(() {
+                              searchQuery = '';
+                              textController.clear();
+                              focusNode.unfocus();
+                            }),
+                            icon: Icon(Icons.clear),
+                            padding: EdgeInsets.zero,
+                          )
+                        : null,
+                    filled: true,
+                    fillColor: Colors.grey.shade100,
+                    contentPadding: EdgeInsets.zero,
+                    isDense: true,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(15),
+                      borderSide: BorderSide.none,
+                    ),
+                  ),
+                  onSearchTextChanged: (value) {
+                    setState(() {
+                      searchQuery = value;
+                    });
+                  },
                 ),
-
-                onChanged: (value) {
-                  setState(() {
-                    searchQuery = value;
-                  });
-                },
               ),
             ),
+
             IconButton(
               onPressed: () {
                 reloadSongs();
@@ -603,9 +629,9 @@ class HomePageState extends State<HomePage> {
                 Navigator.of(context).push(
                   MaterialPageRoute(
                     builder: (_) => Scaffold(
-                      backgroundColor: Colors.grey.shade100,
+                      backgroundColor: Colors.white,
                       appBar: AppBar(
-                        backgroundColor: Colors.grey.shade100,
+                        backgroundColor: Colors.white,
                         scrolledUnderElevation: 0,
                         actions: [
                           IconButton(
@@ -622,7 +648,7 @@ class HomePageState extends State<HomePage> {
                                     ),
                                     child: Container(
                                       height: 500,
-                                      color: Colors.grey.shade100,
+                                      color: Colors.white,
                                       child: Column(
                                         children: [
                                           ListTile(

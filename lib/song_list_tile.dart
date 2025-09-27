@@ -86,7 +86,7 @@ class SongListTile extends StatelessWidget {
                 borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
                 child: Container(
                   height: 500,
-                  color: Colors.grey.shade100,
+                  color: Colors.white,
                   child: Column(
                     children: [
                       ListTile(

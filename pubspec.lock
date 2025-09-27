@@ -536,6 +536,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.3.8"
+  searchfield:
+    dependency: "direct main"
+    description:
+      name: searchfield
+      sha256: c06d4e7b916472c60926a2b79656e0c55480d60a06aef542d1e8708567da90ad
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.3.5"
   sky_engine:
     dependency: transitive
     description: flutter

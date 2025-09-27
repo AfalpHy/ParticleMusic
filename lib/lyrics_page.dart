@@ -144,7 +144,7 @@ class LyricsPage extends StatelessWidget {
                             ),
                             child: Container(
                               height: 500,
-                              color: Colors.grey.shade100,
+                              color: Colors.white,
                               child: Column(
                                 children: [
                                   ListTile(
