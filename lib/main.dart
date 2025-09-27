@@ -732,7 +732,7 @@ class MyLocationState extends State<MyLocation> {
                             }
                           }
                         },
-                        icon: Icon(Icons.my_location_rounded),
+                        icon: Icon(Icons.my_location_rounded, size: 20),
                       ),
                       SizedBox(width: 30),
                     ],

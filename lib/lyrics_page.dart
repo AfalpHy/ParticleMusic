@@ -212,9 +212,9 @@ class LyricsPage extends StatelessWidget {
                         },
                       );
                     },
-                    icon: Icon(Icons.more_vert),
+                    icon: Icon(Icons.more_vert, color: Colors.black),
                   ),
-                  SizedBox(width: 30),
+                  SizedBox(width: 25),
                 ],
               ),
               SeekBar(),
