@@ -17,7 +17,9 @@ class LyricLine {
 }
 
 List<AudioMetadata> librarySongs = [];
+Map<String, AudioMetadata> basename2LibrarySongs = {};
 List<AudioMetadata> playQueue = [];
+List<AudioMetadata> playQueueTmp = [];
 List<AudioMetadata> filteredSongs = [];
 List<LyricLine> lyrics = [];
 Color artAverageColor = Colors.grey;
@@ -29,7 +31,6 @@ ValueNotifier<int> playModeNotifier = ValueNotifier(0);
 class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
   final player = AudioPlayer();
   int currentIndex = -1;
-  List<AudioMetadata> playQueueTmp = [];
 
   MyAudioHandler() {
     player.playbackEventStream.map(transformEvent).pipe(playbackState);

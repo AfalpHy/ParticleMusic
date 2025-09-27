@@ -253,6 +253,8 @@ class HomePageState extends State<HomePage> {
   final ItemScrollController itemScrollController = ItemScrollController();
   Timer? timer;
 
+  List<String> librarySongBasenames = [];
+
   @override
   void initState() {
     super.initState();
@@ -267,6 +269,17 @@ class HomePageState extends State<HomePage> {
       docs = Directory("${dir!.first.parent.parent.parent.parent.path}/Music");
     } else {
       docs = await getApplicationDocumentsDirectory();
+      final keepfile = File('${docs.path}/Particle Music.keep');
+      if (!(await keepfile.exists())) {
+        await keepfile.writeAsString("App initialized");
+      }
+    }
+
+    final appSupportDir = await getApplicationSupportDirectory();
+    allPlaylistsFile = File("${appSupportDir.path}/allPlaylists.txt");
+    if (!(await allPlaylistsFile.exists())) {
+      List<String> tmp = ['Favorite'];
+      await allPlaylistsFile.writeAsString(jsonEncode(tmp));
     }
 
     await loadSongs();
@@ -288,32 +301,19 @@ class HomePageState extends State<HomePage> {
   Future<void> loadSongs() async {
     List<AudioMetadata> tempSongs = [];
 
-    if (Platform.isIOS) {
-      final keepfile = File('${docs.path}/Particle Music.keep');
-      if (!(await keepfile.exists())) {
-        await keepfile.writeAsString("App initialized");
-      }
-    }
-
-    Map<String, AudioMetadata> basename2Meta = {};
     for (var file in docs.listSync()) {
       if ((file.path.endsWith('.mp3') || file.path.endsWith('.flac'))) {
         try {
           final meta = readMetadata(File(file.path), getImage: true);
           tempSongs.add(meta);
-          basename2Meta[p.basename(file.path)] = meta;
+          final basename = p.basename(file.path);
+          librarySongBasenames.add(basename);
+          basename2LibrarySongs[basename] = meta;
           songIsFavorite[meta] = ValueNotifier(false);
         } catch (_) {
           continue; // skip unreadable files
         }
       }
-    }
-
-    final appSupportDir = await getApplicationSupportDirectory();
-    allPlaylistsFile = File("${appSupportDir.path}/allPlaylists.txt");
-    if (!(await allPlaylistsFile.exists())) {
-      List<String> tmp = ['Favorite'];
-      await allPlaylistsFile.writeAsString(jsonEncode(tmp));
     }
 
     List<dynamic> allPlaylists = jsonDecode(
@@ -328,10 +328,12 @@ class HomePageState extends State<HomePage> {
       if (contents != "") {
         List<dynamic> decoded = jsonDecode(contents);
         for (String basename in decoded) {
-          AudioMetadata meta = basename2Meta[basename]!;
-          tmp.songs.add(meta);
-          if (name == 'Favorite') {
-            songIsFavorite[meta]!.value = true;
+          AudioMetadata? meta = basename2LibrarySongs[basename];
+          if (meta != null) {
+            tmp.songs.add(meta);
+            if (name == 'Favorite') {
+              songIsFavorite[meta]!.value = true;
+            }
           }
         }
       }
@@ -360,6 +362,83 @@ class HomePageState extends State<HomePage> {
       });
       librarySongs = tempSongs;
     });
+  }
+
+  Future<void> reloadSongs() async {
+    final currentDocsList = docs.listSync();
+    int j = 0;
+    bool needReload = false;
+    for (int i = 0; i < currentDocsList.length; i++) {
+      final file = currentDocsList[i];
+      if ((file.path.endsWith('.mp3') || file.path.endsWith('.flac'))) {
+        final basename = p.basename(file.path);
+
+        if (j >= librarySongBasenames.length ||
+            basename != librarySongBasenames[j++]) {
+          needReload = true;
+          break;
+        }
+      }
+    }
+    if (!needReload) {
+      return;
+    }
+
+    bool isPlaying = audioHandler.player.playing;
+    if (isPlaying) {
+      await audioHandler.pause();
+    }
+    basename2LibrarySongs = {};
+    librarySongBasenames = [];
+    playlists = [];
+    playlistMap = {};
+    songIsFavorite = {};
+
+    await loadSongs();
+
+    // update play queue meta
+    if (playQueue.isNotEmpty) {
+      List<AudioMetadata> tmp = [];
+
+      for (AudioMetadata meta in playQueue) {
+        final tmpMeta = basename2LibrarySongs[p.basename(meta.file.path)];
+        if (tmpMeta != null) {
+          tmp.add(tmpMeta);
+        }
+      }
+      playQueue = tmp;
+
+      // update current song meta
+      final tmpMeta =
+          basename2LibrarySongs[p.basename(
+            currentSongNotifier.value!.file.path,
+          )];
+      if (tmpMeta == null) {
+        if (playQueue.isNotEmpty) {
+          audioHandler.currentIndex = 0;
+          await audioHandler.load();
+        } else {
+          currentSongNotifier.value = null;
+        }
+      } else {
+        audioHandler.currentIndex = playQueue.indexOf(tmpMeta);
+        currentSongNotifier.value = tmpMeta;
+        if (isPlaying) {
+          audioHandler.play();
+        }
+      }
+    }
+
+    if (playQueueTmp.isNotEmpty) {
+      List<AudioMetadata> tmp = [];
+      for (AudioMetadata meta in playQueueTmp) {
+        final tmpMeta = basename2LibrarySongs[p.basename(meta.file.path)];
+        if (tmpMeta != null) {
+          tmp.add(tmpMeta);
+        }
+      }
+      playQueueTmp = tmp;
+    }
   }
 
   String searchQuery = "";
@@ -451,15 +530,20 @@ class HomePageState extends State<HomePage> {
                 decoration: const InputDecoration(
                   hintText: "Search songs...",
                   border: InputBorder.none,
-                  hintStyle: TextStyle(),
                 ),
-                style: const TextStyle(),
+
                 onChanged: (value) {
                   setState(() {
                     searchQuery = value;
                   });
                 },
               ),
+            ),
+            IconButton(
+              onPressed: () {
+                reloadSongs();
+              },
+              icon: Icon(Icons.refresh),
             ),
           ],
         ),
