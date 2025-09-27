@@ -607,7 +607,77 @@ class HomePageState extends State<HomePage> {
                       appBar: AppBar(
                         backgroundColor: Colors.grey.shade100,
                         scrolledUnderElevation: 0,
+                        actions: [
+                          IconButton(
+                            icon: Icon(Icons.more_vert),
+                            onPressed: () {
+                              showModalBottomSheet(
+                                context: context,
+                                isScrollControlled: true, // allows full-height
+                                useRootNavigator: true,
+                                builder: (context) {
+                                  return ClipRRect(
+                                    borderRadius: BorderRadius.vertical(
+                                      top: Radius.circular(10),
+                                    ),
+                                    child: Container(
+                                      height: 500,
+                                      color: Colors.grey.shade100,
+                                      child: Column(
+                                        children: [
+                                          ListTile(
+                                            title: Text(
+                                              "Playlist: ${playlist.name}",
+                                            ),
+                                          ),
+                                          Divider(
+                                            thickness: 0.5,
+                                            height: 1,
+                                            color: Colors.grey.shade300,
+                                          ),
+                                          playlist.name != 'Favorite'
+                                              ? ListTile(
+                                                  leading: Icon(
+                                                    Icons.delete_rounded,
+                                                    size: 25,
+                                                  ),
+                                                  title: Text(
+                                                    'Delete',
+                                                    style: TextStyle(
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                      fontSize: 18,
+                                                    ),
+                                                  ),
+                                                  visualDensity:
+                                                      const VisualDensity(
+                                                        horizontal: 0,
+                                                        vertical: -4,
+                                                      ),
+                                                  onTap: () {
+                                                    deletePlaylist(index);
+                                                    Navigator.pop(
+                                                      context,
+                                                      true,
+                                                    );
+                                                  },
+                                                )
+                                              : SizedBox(),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ).then((value) {
+                                if (value == true && mounted) {
+                                  Navigator.pop(context);
+                                }
+                              });
+                            },
+                          ),
+                        ],
                       ),
+
                       body: Column(
                         children: [
                           ValueListenableBuilder(
