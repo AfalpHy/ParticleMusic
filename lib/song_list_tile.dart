@@ -86,6 +86,7 @@ class SongListTile extends StatelessWidget {
                       ListTile(
                         leading: ArtWidget(
                           size: 50,
+                          borderRadius: 3,
                           source: song.pictures.isEmpty
                               ? null
                               : song.pictures.first,

@@ -127,8 +127,93 @@ class LyricsPage extends StatelessWidget {
                 children: [
                   Spacer(),
                   FavoriteButton(),
-                  SizedBox(width: 20),
-                  Icon(Icons.more_vert),
+                  IconButton(
+                    onPressed: () {
+                      showModalBottomSheet(
+                        context: context,
+                        isScrollControlled: true, // allows full-height
+                        useRootNavigator: true,
+                        builder: (context) {
+                          return ClipRRect(
+                            borderRadius: BorderRadius.vertical(
+                              top: Radius.circular(10),
+                            ),
+                            child: Container(
+                              height: 500,
+                              color: Colors.grey.shade100,
+                              child: Column(
+                                children: [
+                                  ListTile(
+                                    leading: ArtWidget(
+                                      size: 50,
+                                      borderRadius: 3,
+                                      source: currentSong!.pictures.isNotEmpty
+                                          ? currentSong.pictures.first
+                                          : null,
+                                    ),
+                                    title: Text(
+                                      currentSong.title ?? "Unknown Title",
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                    subtitle: Text(
+                                      "${currentSong.artist ?? "Unknown Artist"} - ${currentSong.album ?? "Unknown Album"}",
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+
+                                  Divider(
+                                    color: Colors.grey.shade300,
+                                    thickness: 0.5,
+                                    height: 1,
+                                  ),
+
+                                  Expanded(
+                                    child: ListView(
+                                      physics: const ClampingScrollPhysics(),
+                                      children: [
+                                        ListTile(
+                                          leading: Icon(
+                                            Icons.playlist_add_outlined,
+                                            size: 25,
+                                          ),
+                                          title: Text(
+                                            'Add to Playlists',
+                                            style: TextStyle(
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 18,
+                                            ),
+                                          ),
+                                          visualDensity: const VisualDensity(
+                                            horizontal: 0,
+                                            vertical: -4,
+                                          ),
+                                          onTap: () {
+                                            Navigator.pop(context);
+
+                                            showModalBottomSheet(
+                                              context: context,
+                                              isScrollControlled:
+                                                  true, // allows full-height
+                                              builder: (_) {
+                                                return PlaylistsSheet(
+                                                  song: currentSong,
+                                                );
+                                              },
+                                            );
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                    icon: Icon(Icons.more_vert),
+                  ),
                   SizedBox(width: 30),
                 ],
               ),
