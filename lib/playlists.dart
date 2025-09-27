@@ -170,7 +170,7 @@ class PlaylistsSheetState extends State<PlaylistsSheet> {
                     );
                   },
                 ).then((name) {
-                  if (name != '') {
+                  if (name != null && name != '') {
                     newPlaylist(name);
                     setState(() {});
                   }
