@@ -527,7 +527,7 @@ class HomePageState extends State<HomePage> {
 
             Expanded(
               child: SizedBox(
-                height: 30,
+                height: 40,
                 child: SearchField(
                   autofocus: false,
                   focusNode: focusNode,
@@ -552,7 +552,7 @@ class HomePageState extends State<HomePage> {
                     contentPadding: EdgeInsets.zero,
                     isDense: true,
                     border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(15),
+                      borderRadius: BorderRadius.circular(20),
                       borderSide: BorderSide.none,
                     ),
                   ),
