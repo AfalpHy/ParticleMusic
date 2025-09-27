@@ -211,11 +211,11 @@ class PlaylistsSheetState extends State<PlaylistsSheet> {
 }
 
 class PlaylistSongList extends StatelessWidget {
-  final List<AudioMetadata> source;
+  final Playlist playlist;
   final ValueNotifier<void> notifier;
   const PlaylistSongList({
     super.key,
-    required this.source,
+    required this.playlist,
     required this.notifier,
   });
 
@@ -225,10 +225,14 @@ class PlaylistSongList extends StatelessWidget {
       valueListenable: notifier,
       builder: (_, _, _) {
         return ListView.builder(
-          itemCount: source.length + 1,
+          itemCount: playlist.songs.length + 1,
           itemBuilder: (_, index) {
-            if (index < source.length) {
-              return SongListTile(index: index, source: source);
+            if (index < playlist.songs.length) {
+              return SongListTile(
+                index: index,
+                source: playlist.songs,
+                playlist: playlist,
+              );
             } else {
               return SizedBox(height: 60);
             }

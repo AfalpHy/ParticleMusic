@@ -7,8 +7,14 @@ import 'art_widget.dart';
 class SongListTile extends StatelessWidget {
   final int index;
   final List<AudioMetadata> source;
+  final Playlist? playlist;
 
-  const SongListTile({super.key, required this.index, required this.source});
+  const SongListTile({
+    super.key,
+    required this.index,
+    required this.source,
+    this.playlist,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -113,31 +119,6 @@ class SongListTile extends StatelessWidget {
                           children: [
                             ListTile(
                               leading: Icon(
-                                isFavorite.value
-                                    ? Icons.playlist_remove_outlined
-                                    : Icons.playlist_add_outlined,
-                                size: 25,
-                              ),
-                              title: Text(
-                                isFavorite.value
-                                    ? 'Remove from Favorite'
-                                    : 'Add to Favorite',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                ),
-                              ),
-                              visualDensity: const VisualDensity(
-                                horizontal: 0,
-                                vertical: -4,
-                              ),
-                              onTap: () {
-                                toggleFavoriteState(song);
-                                Navigator.pop(context);
-                              },
-                            ),
-                            ListTile(
-                              leading: Icon(
                                 Icons.playlist_add_outlined,
                                 size: 25,
                               ),
@@ -211,6 +192,26 @@ class SongListTile extends StatelessWidget {
                                 Navigator.pop(context);
                               },
                             ),
+                            playlist != null
+                                ? ListTile(
+                                    leading: Icon(Icons.delete, size: 25),
+                                    title: Text(
+                                      'Delete',
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 18,
+                                      ),
+                                    ),
+                                    visualDensity: const VisualDensity(
+                                      horizontal: 0,
+                                      vertical: -4,
+                                    ),
+                                    onTap: () {
+                                      playlist!.remove(song);
+                                      Navigator.pop(context);
+                                    },
+                                  )
+                                : SizedBox(),
                           ],
                         ),
                       ),

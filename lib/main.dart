@@ -311,7 +311,6 @@ class HomePageState extends State<HomePage> {
           basename2LibrarySongs[basename] = meta;
           songIsFavorite[meta] = ValueNotifier(false);
         } catch (error) {
-          print(error.toString());
           continue; // skip unreadable files
         }
       }
@@ -657,7 +656,7 @@ class HomePageState extends State<HomePage> {
                           SizedBox(height: 30),
                           Expanded(
                             child: PlaylistSongList(
-                              source: playlist.songs,
+                              playlist: playlist,
                               notifier: playlist.changeNotifier,
                             ),
                           ),
