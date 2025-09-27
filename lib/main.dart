@@ -492,6 +492,8 @@ class HomePageState extends State<HomePage> {
             final playlist = playlists[index];
             return ListTile(
               contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
+              visualDensity: const VisualDensity(horizontal: 0, vertical: -1),
+
               leading: ValueListenableBuilder(
                 valueListenable: playlist.changeNotifier,
                 builder: (_, _, _) {
@@ -712,46 +714,51 @@ class PlayerBar extends StatelessWidget {
                         ),
                       ),
                     ),
-                    // Title - Artist Marquee
 
                     // Play/Pause Button
-                    IconButton(
-                      icon: ValueListenableBuilder(
-                        valueListenable: isPlayingNotifier,
-                        builder: (_, isPlaying, _) {
-                          return Icon(
-                            isPlaying
-                                ? Icons.pause_circle_outline_rounded
-                                : Icons.play_circle_outline_rounded,
-                            color: Colors.black,
+                    SizedBox(
+                      width: 40,
+                      child: IconButton(
+                        icon: ValueListenableBuilder(
+                          valueListenable: isPlayingNotifier,
+                          builder: (_, isPlaying, _) {
+                            return Icon(
+                              isPlaying
+                                  ? Icons.pause_circle_outline_rounded
+                                  : Icons.play_circle_outline_rounded,
+                              color: Colors.black,
+                            );
+                          },
+                        ),
+
+                        onPressed: () {
+                          if (audioHandler.player.playing) {
+                            audioHandler.pause();
+                          } else {
+                            audioHandler.play();
+                          }
+                        },
+                      ),
+                    ),
+                    SizedBox(
+                      width: 35,
+                      child: IconButton(
+                        icon: Icon(
+                          Icons.queue_music_rounded,
+                          color: Colors.black,
+                        ),
+                        onPressed: () {
+                          showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true, // allows full-height
+                            builder: (context) {
+                              return PlayQueuePage();
+                            },
                           );
                         },
                       ),
-
-                      onPressed: () {
-                        if (audioHandler.player.playing) {
-                          audioHandler.pause();
-                        } else {
-                          audioHandler.play();
-                        }
-                      },
                     ),
-                    IconButton(
-                      icon: Icon(
-                        Icons.queue_music_rounded,
-                        color: Colors.black,
-                      ),
-                      onPressed: () {
-                        showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true, // allows full-height
-                          builder: (context) {
-                            return PlayQueuePage();
-                          },
-                        );
-                      },
-                    ),
-                    const SizedBox(width: 10),
+                    const SizedBox(width: 20),
                   ],
                 ),
               ),
