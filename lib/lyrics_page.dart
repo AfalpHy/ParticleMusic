@@ -89,7 +89,6 @@ class LyricsPage extends StatelessWidget {
               const SizedBox(height: 10),
               Material(
                 elevation: 15,
-                color: artAverageColor,
                 borderRadius: BorderRadius.circular(
                   MediaQuery.widthOf(context) * 0.84 / 20,
                 ),

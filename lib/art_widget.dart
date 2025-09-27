@@ -18,7 +18,10 @@ class ArtWidget extends StatelessWidget {
     if (source == null) {
       return ClipRRect(
         borderRadius: BorderRadius.circular(borderRadius),
-        child: Icon(Icons.music_note, size: size),
+        child: Container(
+          color: Colors.grey,
+          child: Icon(Icons.music_note, size: size),
+        ),
       );
     }
     return ClipRRect(
@@ -29,7 +32,10 @@ class ArtWidget extends StatelessWidget {
         height: size,
         fit: BoxFit.cover,
         errorBuilder: (context, error, stackTrace) {
-          return Icon(Icons.music_note, size: size);
+          return Container(
+            color: Colors.grey,
+            child: Icon(Icons.music_note, size: size),
+          );
         },
       ),
     );

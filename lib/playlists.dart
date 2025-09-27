@@ -184,18 +184,15 @@ class PlaylistsSheetState extends State<PlaylistsSheet> {
                 itemBuilder: (_, index) {
                   final playlist = playlists[index];
                   return ListTile(
-                    leading: (() {
-                      if (playlist.songs.isNotEmpty) {
-                        return ArtWidget(
-                          size: 40,
-                          borderRadius: 1,
-                          source: playlist.songs.first.pictures.isEmpty
-                              ? null
-                              : playlist.songs.first.pictures.first,
-                        );
-                      }
-                      return Icon(Icons.music_note, size: 40);
-                    })(),
+                    leading: ArtWidget(
+                      size: 40,
+                      borderRadius: 2,
+                      source:
+                          playlist.songs.isNotEmpty &&
+                              playlist.songs.first.pictures.isNotEmpty
+                          ? playlist.songs.first.pictures.first
+                          : null,
+                    ),
                     title: Text(playlist.name),
 
                     onTap: () {

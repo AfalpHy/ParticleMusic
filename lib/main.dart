@@ -497,16 +497,15 @@ class HomePageState extends State<HomePage> {
               leading: ValueListenableBuilder(
                 valueListenable: playlist.changeNotifier,
                 builder: (_, _, _) {
-                  if (playlist.songs.isNotEmpty) {
-                    return ArtWidget(
-                      size: 50,
-                      borderRadius: 5,
-                      source: playlist.songs.first.pictures.isEmpty
-                          ? null
-                          : playlist.songs.first.pictures.first,
-                    );
-                  }
-                  return Icon(Icons.music_note, size: 50);
+                  return ArtWidget(
+                    size: 50,
+                    borderRadius: 3,
+                    source:
+                        playlist.songs.isNotEmpty &&
+                            playlist.songs.first.pictures.isNotEmpty
+                        ? playlist.songs.first.pictures.first
+                        : null,
+                  );
                 },
               ),
               title: Text(playlist.name),
@@ -531,19 +530,24 @@ class HomePageState extends State<HomePage> {
                             children: [
                               SizedBox(width: 20),
 
-                              ArtWidget(
-                                size: 120,
-                                borderRadius: 6,
-                                source:
-                                    (playlist.songs.isNotEmpty &&
-                                        playlist
-                                            .songs
-                                            .first
-                                            .pictures
-                                            .isNotEmpty)
-                                    ? playlist.songs.first.pictures.first
-                                    : null,
+                              Material(
+                                elevation: 5,
+                                borderRadius: BorderRadius.circular(6),
+                                child: ArtWidget(
+                                  size: 120,
+                                  borderRadius: 6,
+                                  source:
+                                      (playlist.songs.isNotEmpty &&
+                                          playlist
+                                              .songs
+                                              .first
+                                              .pictures
+                                              .isNotEmpty)
+                                      ? playlist.songs.first.pictures.first
+                                      : null,
+                                ),
                               ),
+
                               Expanded(
                                 child: ListTile(
                                   title: Text(
