@@ -303,14 +303,15 @@ class HomePageState extends State<HomePage> {
 
     for (var file in docs.listSync()) {
       if ((file.path.endsWith('.mp3') || file.path.endsWith('.flac'))) {
+        final basename = p.basename(file.path);
         try {
           final meta = readMetadata(File(file.path), getImage: true);
           tempSongs.add(meta);
-          final basename = p.basename(file.path);
           librarySongBasenames.add(basename);
           basename2LibrarySongs[basename] = meta;
           songIsFavorite[meta] = ValueNotifier(false);
-        } catch (_) {
+        } catch (error) {
+          print(error.toString());
           continue; // skip unreadable files
         }
       }
