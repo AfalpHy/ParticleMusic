@@ -256,7 +256,6 @@ class HomePageState extends State<HomePage> {
 
   List<String> librarySongBasenames = [];
   final TextEditingController textController = TextEditingController();
-  final FocusNode focusNode = FocusNode();
 
   @override
   void initState() {
@@ -519,6 +518,7 @@ class HomePageState extends State<HomePage> {
                   false),
         )
         .toList();
+
     return Column(
       children: [
         Row(
@@ -530,7 +530,6 @@ class HomePageState extends State<HomePage> {
                 height: 40,
                 child: SearchField(
                   autofocus: false,
-                  focusNode: focusNode,
                   controller: textController,
                   suggestions: [],
                   searchInputDecoration: SearchInputDecoration(
@@ -541,7 +540,7 @@ class HomePageState extends State<HomePage> {
                             onPressed: () => setState(() {
                               searchQuery = '';
                               textController.clear();
-                              focusNode.unfocus();
+                              FocusScope.of(context).unfocus();
                             }),
                             icon: Icon(Icons.clear),
                             padding: EdgeInsets.zero,
@@ -560,6 +559,7 @@ class HomePageState extends State<HomePage> {
                     setState(() {
                       searchQuery = value;
                     });
+                    return null;
                   },
                 ),
               ),
@@ -593,6 +593,7 @@ class HomePageState extends State<HomePage> {
 
   Widget buildPlaylists() {
     searchQuery = '';
+    textController.clear();
     return ValueListenableBuilder(
       valueListenable: playlistsChangeNotifier,
       builder: (_, _, _) {
@@ -771,6 +772,7 @@ class HomePageState extends State<HomePage> {
 
   Widget buildSetting() {
     searchQuery = '';
+    textController.clear();
     return SizedBox();
   }
 }
