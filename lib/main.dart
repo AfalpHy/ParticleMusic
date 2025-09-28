@@ -561,6 +561,7 @@ class HomePageState extends State<HomePage> {
                   onSearchTextChanged: (value) {
                     setState(() {
                       searchQuery = value;
+                      itemScrollController.jumpTo(index: 0);
                     });
                     return null;
                   },
@@ -811,9 +812,9 @@ class MyLocationState extends State<MyLocation> {
         return ValueListenableBuilder(
           valueListenable: homeBody,
           builder: (_, value, _) {
-            return currentSong != null &&
-                    value == 1 &&
-                    widget.listIsScrolling.value
+            return value == 1 &&
+                    widget.listIsScrolling.value &&
+                    filteredSongs.contains(currentSong)
                 ? Row(
                     children: [
                       Spacer(),
