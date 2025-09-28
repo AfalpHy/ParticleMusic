@@ -163,6 +163,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                     trailing: IconButton(
                       onPressed: () async {
                         audioHandler.delete(index);
+                        setState(() {});
                         if (index < audioHandler.currentIndex) {
                           audioHandler.currentIndex -= 1;
                         } else if (index == audioHandler.currentIndex) {
@@ -175,7 +176,6 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                             await audioHandler.load();
                           }
                         }
-                        setState(() {});
                       },
                       icon: Icon(
                         Icons.clear_rounded,
