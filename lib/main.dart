@@ -79,13 +79,16 @@ class MyApp extends StatelessWidget {
       home: Stack(
         children: [
           // Navigator for normal pages (PlayerBar stays above)
-          WillPopScope(
-            onWillPop: () async {
+          PopScope(
+            canPop: false, // we control when popping is allowed
+            onPopInvokedWithResult: (didPop, result) {
+              if (didPop) return; // already handled by system / parent
+
               if (homeNavigatorKey.currentState!.canPop()) {
                 homeNavigatorKey.currentState!.pop();
-                return false; // prevent app from exiting
+              } else {
+                Navigator.of(context).maybePop(); // fallback to root
               }
-              return true; // exit app if root
             },
             child: Navigator(
               key: homeNavigatorKey,
