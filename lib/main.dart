@@ -1,7 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
@@ -133,12 +132,13 @@ class MyApp extends StatelessWidget {
                   builder: (context, which, _) {
                     // must use Material to avoid layout problem
                     return Material(
+                      color: Colors.transparent,
+
                       child: Row(
                         children: [
                           Expanded(
-                            child: Container(
+                            child: SizedBox(
                               height: 80,
-                              color: Colors.white,
                               child: InkWell(
                                 splashColor: Colors.transparent,
                                 highlightColor: Colors.transparent,
@@ -167,9 +167,8 @@ class MyApp extends StatelessWidget {
                             ),
                           ),
                           Expanded(
-                            child: Container(
+                            child: SizedBox(
                               height: 80,
-                              color: Colors.white,
                               child: InkWell(
                                 splashColor: Colors.transparent,
                                 highlightColor: Colors.transparent,
@@ -439,7 +438,7 @@ class HomePageState extends State<HomePage> {
             children: [
               ListTile(
                 leading: Icon(
-                  Icons.queue_music,
+                  Icons.queue_music_outlined,
                   size: 40,
                   color: Color.fromARGB(255, 120, 240, 240),
                 ),
@@ -453,7 +452,10 @@ class HomePageState extends State<HomePage> {
                           backgroundColor: Colors.white,
                           elevation: 0,
                           scrolledUnderElevation: 0,
-                          title: const Text("Playlists"),
+                          title: const Text(
+                            "Playlists",
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
                         ),
                         body: buildPlaylists(),
                       ),
@@ -463,7 +465,7 @@ class HomePageState extends State<HomePage> {
               ),
               ListTile(
                 leading: Icon(
-                  Icons.mic,
+                  Icons.mic_none,
                   size: 40,
                   color: Color.fromARGB(255, 120, 240, 240),
                 ),
@@ -472,7 +474,7 @@ class HomePageState extends State<HomePage> {
               ),
               ListTile(
                 leading: Icon(
-                  Icons.album_rounded,
+                  Icons.album_outlined,
                   size: 40,
                   color: Color.fromARGB(255, 120, 240, 240),
                 ),
