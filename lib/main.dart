@@ -621,6 +621,9 @@ class HomePageState extends State<HomePage> {
 
                       IconButton(
                         onPressed: () {
+                          if (hasVibration) {
+                            Vibration.vibrate(duration: 5);
+                          }
                           reloadSongs();
                         },
                         icon: Icon(Icons.refresh),
