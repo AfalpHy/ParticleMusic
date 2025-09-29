@@ -701,59 +701,9 @@ class HomePageState extends State<HomePage> {
                         ],
                       ),
 
-                      body: Column(
-                        children: [
-                          ValueListenableBuilder(
-                            valueListenable: playlist.changeNotifier,
-                            builder: (context, value, child) {
-                              return Row(
-                                children: [
-                                  SizedBox(width: 20),
-
-                                  Material(
-                                    elevation: 5,
-                                    borderRadius: BorderRadius.circular(6),
-                                    child: ArtWidget(
-                                      size: 120,
-                                      borderRadius: 6,
-                                      source:
-                                          (playlist.songs.isNotEmpty &&
-                                              playlist
-                                                  .songs
-                                                  .first
-                                                  .pictures
-                                                  .isNotEmpty)
-                                          ? playlist.songs.first.pictures.first
-                                          : null,
-                                    ),
-                                  ),
-
-                                  Expanded(
-                                    child: ListTile(
-                                      title: Text(
-                                        playlist.name,
-                                        style: TextStyle(
-                                          fontSize: 25,
-                                          fontWeight: FontWeight.bold,
-                                        ),
-                                      ),
-                                      subtitle: Text(
-                                        "${playlist.songs.length} songs",
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            },
-                          ),
-                          SizedBox(height: 30),
-                          Expanded(
-                            child: PlaylistSongList(
-                              playlist: playlist,
-                              notifier: playlist.changeNotifier,
-                            ),
-                          ),
-                        ],
+                      body: PlaylistSongList(
+                        playlist: playlist,
+                        notifier: playlist.changeNotifier,
                       ),
                     ),
                   ),

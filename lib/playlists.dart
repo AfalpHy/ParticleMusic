@@ -226,11 +226,51 @@ class PlaylistSongList extends StatelessWidget {
       valueListenable: notifier,
       builder: (_, _, _) {
         return ScrollablePositionedList.builder(
-          itemCount: playlist.songs.length + 1,
+          itemCount: playlist.songs.length + 2,
           itemBuilder: (_, index) {
-            if (index < playlist.songs.length) {
+            if (index == 0) {
+              return Column(
+                children: [
+                  SizedBox(height: 10),
+                  Row(
+                    children: [
+                      SizedBox(width: 20),
+
+                      Material(
+                        elevation: 5,
+                        borderRadius: BorderRadius.circular(6),
+                        child: ArtWidget(
+                          size: 120,
+                          borderRadius: 6,
+                          source:
+                              (playlist.songs.isNotEmpty &&
+                                  playlist.songs.first.pictures.isNotEmpty)
+                              ? playlist.songs.first.pictures.first
+                              : null,
+                        ),
+                      ),
+
+                      Expanded(
+                        child: ListTile(
+                          title: Text(
+                            playlist.name,
+                            style: TextStyle(
+                              fontSize: 25,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          subtitle: Text("${playlist.songs.length} songs"),
+                        ),
+                      ),
+                    ],
+                  ),
+                  SizedBox(height: 20),
+                ],
+              );
+            }
+            if (index < playlist.songs.length + 1) {
               return SongListTile(
-                index: index,
+                index: index - 1,
                 source: playlist.songs,
                 playlist: playlist,
               );
