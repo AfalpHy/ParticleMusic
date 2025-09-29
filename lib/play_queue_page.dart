@@ -110,7 +110,6 @@ class PlayQueuePageState extends State<PlayQueuePage> {
             Expanded(
               child: ReorderableListView.builder(
                 scrollController: scrollController,
-                physics: ClampingScrollPhysics(),
 
                 onReorder: (oldIndex, newIndex) {
                   setState(() {

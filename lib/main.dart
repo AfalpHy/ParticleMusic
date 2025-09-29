@@ -79,9 +79,6 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Particle Music',
-      scrollBehavior: ScrollConfiguration.of(
-        context,
-      ).copyWith(overscroll: false),
       home: Stack(
         children: [
           // Navigator for normal pages (PlayerBar stays above)
@@ -445,6 +442,7 @@ class HomePageState extends State<HomePage> {
             ),
           ),
           body: ListView(
+            physics: ClampingScrollPhysics(),
             children: [
               ListTile(
                 leading: const ImageIcon(
@@ -592,7 +590,6 @@ class HomePageState extends State<HomePage> {
                                         textController.clear();
                                         // hide my location button immediately
                                         listIsScrolling.value = false;
-                                        itemScrollController.jumpTo(index: 0);
                                         FocusScope.of(context).unfocus();
                                       },
                                       icon: Icon(Icons.clear),
@@ -612,7 +609,6 @@ class HomePageState extends State<HomePage> {
                               searchQuery.value = value;
                               // hide my location button immediately
                               listIsScrolling.value = false;
-                              itemScrollController.jumpTo(index: 0);
 
                               return null;
                             },
@@ -634,7 +630,6 @@ class HomePageState extends State<HomePage> {
                   Expanded(
                     child: ScrollablePositionedList.builder(
                       itemScrollController: itemScrollController,
-                      physics: ClampingScrollPhysics(),
                       itemCount: filteredSongs.length + 1,
                       itemBuilder: (context, index) {
                         if (index < filteredSongs.length) {
