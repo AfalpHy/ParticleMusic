@@ -152,7 +152,7 @@ class SongListTile extends StatelessWidget {
                                 size: 25,
                               ),
                               title: Text(
-                                'Play',
+                                'Play Now',
                                 style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 18,

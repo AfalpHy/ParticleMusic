@@ -132,7 +132,7 @@ class MyApp extends StatelessWidget {
                   builder: (context, which, _) {
                     // must use Material to avoid layout problem
                     return Material(
-                      color: Colors.transparent,
+                      color: Colors.white,
 
                       child: Row(
                         children: [
