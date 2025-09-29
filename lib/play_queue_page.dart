@@ -62,13 +62,13 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                   Spacer(),
                   IconButton(
                     color: Colors.black,
-                    icon: Icon(
+                    icon: ImageIcon(
                       playModeNotifier.value == 0
-                          ? Icons.loop_rounded
+                          ? AssetImage("assets/images/loop.png")
                           : playModeNotifier.value == 1
-                          ? Icons.repeat_rounded
-                          : Icons.shuffle_rounded,
-                      size: 20,
+                          ? AssetImage("assets/images/repeat.png")
+                          : AssetImage("assets/images/shuffle.png"),
+                      size: 25,
                     ),
                     onPressed: () {
                       audioHandler.switchPlayMode();

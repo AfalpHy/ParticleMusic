@@ -240,13 +240,13 @@ class LyricsPage extends StatelessWidget {
                         builder: (_, playMode, _) {
                           return IconButton(
                             color: Colors.black,
-                            icon: Icon(
+                            icon: ImageIcon(
                               playMode == 0
-                                  ? Icons.loop_rounded
+                                  ? AssetImage("assets/images/loop.png")
                                   : playMode == 1
-                                  ? Icons.repeat_rounded
-                                  : Icons.shuffle_rounded,
-                              size: 30,
+                                  ? AssetImage("assets/images/repeat.png")
+                                  : AssetImage("assets/images/shuffle.png"),
+                              size: 35,
                             ),
                             onPressed: () {
                               audioHandler.switchPlayMode();
@@ -259,7 +259,10 @@ class LyricsPage extends StatelessWidget {
                     Expanded(
                       child: IconButton(
                         color: Colors.black,
-                        icon: const Icon(Icons.skip_previous_rounded, size: 48),
+                        icon: const ImageIcon(
+                          AssetImage("assets/images/previous_button.png"),
+                          size: 35,
+                        ),
                         onPressed: audioHandler.skipToPrevious,
                       ),
                     ),
@@ -285,7 +288,10 @@ class LyricsPage extends StatelessWidget {
                     Expanded(
                       child: IconButton(
                         color: Colors.black,
-                        icon: const Icon(Icons.skip_next_rounded, size: 48),
+                        icon: const ImageIcon(
+                          AssetImage("assets/images/next_button.png"),
+                          size: 35,
+                        ),
                         onPressed: audioHandler.skipToNext,
                       ),
                     ),
@@ -293,7 +299,7 @@ class LyricsPage extends StatelessWidget {
                       child: IconButton(
                         icon: Icon(
                           Icons.queue_music_rounded,
-                          size: 30,
+                          size: 35,
                           color: Colors.black,
                         ),
                         onPressed: () {

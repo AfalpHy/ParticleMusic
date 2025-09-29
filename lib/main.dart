@@ -489,8 +489,8 @@ class HomePageState extends State<HomePage> {
                 onTap: () {},
               ),
               ListTile(
-                leading: Icon(
-                  Icons.music_note,
+                leading: const ImageIcon(
+                  AssetImage("assets/images/music_note.png"),
                   size: 30,
                   color: Color.fromARGB(255, 120, 240, 240),
                 ),
