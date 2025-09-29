@@ -298,7 +298,7 @@ class LyricsPage extends StatelessWidget {
                     Expanded(
                       child: IconButton(
                         icon: Icon(
-                          Icons.queue_music_rounded,
+                          Icons.playlist_play_rounded,
                           size: 35,
                           color: Colors.black,
                         ),

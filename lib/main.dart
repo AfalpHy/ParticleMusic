@@ -447,8 +447,8 @@ class HomePageState extends State<HomePage> {
           body: ListView(
             children: [
               ListTile(
-                leading: Icon(
-                  Icons.queue_music_outlined,
+                leading: const ImageIcon(
+                  AssetImage("assets/images/playlists.png"),
                   size: 30,
                   color: Color.fromARGB(255, 120, 240, 240),
                 ),
@@ -471,8 +471,8 @@ class HomePageState extends State<HomePage> {
                 },
               ),
               ListTile(
-                leading: Icon(
-                  Icons.mic_none,
+                leading: const ImageIcon(
+                  AssetImage("assets/images/artist.png"),
                   size: 30,
                   color: Color.fromARGB(255, 120, 240, 240),
                 ),
@@ -480,8 +480,8 @@ class HomePageState extends State<HomePage> {
                 onTap: () {},
               ),
               ListTile(
-                leading: Icon(
-                  Icons.album_outlined,
+                leading: const ImageIcon(
+                  AssetImage("assets/images/album.png"),
                   size: 30,
                   color: Color.fromARGB(255, 120, 240, 240),
                 ),
@@ -860,6 +860,7 @@ class PlayerBar extends StatelessWidget {
                                   ? Icons.pause_circle_outline_rounded
                                   : Icons.play_circle_outline_rounded,
                               color: Colors.black,
+                              size: 25,
                             );
                           },
                         ),
@@ -877,11 +878,12 @@ class PlayerBar extends StatelessWidget {
                       ),
                     ),
                     SizedBox(
-                      width: 35,
+                      width: 40,
                       child: IconButton(
                         icon: Icon(
-                          Icons.queue_music_rounded,
+                          Icons.playlist_play_rounded,
                           color: Colors.black,
+                          size: 30,
                         ),
                         onPressed: () {
                           if (hasVibration) {
@@ -897,7 +899,7 @@ class PlayerBar extends StatelessWidget {
                         },
                       ),
                     ),
-                    const SizedBox(width: 20),
+                    const SizedBox(width: 15),
                   ],
                 ),
               ),
