@@ -80,7 +80,7 @@ class SongListTile extends StatelessWidget {
         icon: Icon(Icons.more_vert, size: 15),
         onPressed: () {
           if (hasVibration) {
-            Vibration.vibrate(duration: 10);
+            Vibration.vibrate(duration: 5);
           }
           showModalBottomSheet(
             context: context,

@@ -147,7 +147,7 @@ class MyApp extends StatelessWidget {
                                 highlightColor: Colors.transparent,
                                 onTap: () {
                                   if (hasVibration) {
-                                    Vibration.vibrate(duration: 10);
+                                    Vibration.vibrate(duration: 5);
                                   }
                                   homeBody.value = 1;
                                 },
@@ -183,7 +183,7 @@ class MyApp extends StatelessWidget {
                                 highlightColor: Colors.transparent,
                                 onTap: () {
                                   if (hasVibration) {
-                                    Vibration.vibrate(duration: 10);
+                                    Vibration.vibrate(duration: 5);
                                   }
                                   homeBody.value = 3;
                                 },
@@ -863,7 +863,7 @@ class PlayerBar extends StatelessWidget {
 
                         onPressed: () {
                           if (hasVibration) {
-                            Vibration.vibrate(duration: 10);
+                            Vibration.vibrate(duration: 5);
                           }
                           if (audioHandler.player.playing) {
                             audioHandler.pause();
@@ -882,7 +882,7 @@ class PlayerBar extends StatelessWidget {
                         ),
                         onPressed: () {
                           if (hasVibration) {
-                            Vibration.vibrate(duration: 10);
+                            Vibration.vibrate(duration: 5);
                           }
                           showModalBottomSheet(
                             context: context,

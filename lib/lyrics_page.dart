@@ -136,7 +136,7 @@ class LyricsPage extends StatelessWidget {
                   IconButton(
                     onPressed: () {
                       if (hasVibration) {
-                        Vibration.vibrate(duration: 10);
+                        Vibration.vibrate(duration: 5);
                       }
                       showModalBottomSheet(
                         context: context,
@@ -298,7 +298,7 @@ class LyricsPage extends StatelessWidget {
                         ),
                         onPressed: () {
                           if (hasVibration) {
-                            Vibration.vibrate(duration: 10);
+                            Vibration.vibrate(duration: 5);
                           }
                           showModalBottomSheet(
                             context: context,
@@ -337,7 +337,7 @@ class FavoriteButton extends StatelessWidget {
             return IconButton(
               onPressed: () {
                 if (hasVibration) {
-                  Vibration.vibrate(duration: 10);
+                  Vibration.vibrate(duration: 5);
                 }
                 toggleFavoriteState(currentSong);
               },
