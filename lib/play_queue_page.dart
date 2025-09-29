@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:particle_music/common.dart';
+import 'package:vibration/vibration.dart';
 import 'audio_handler.dart';
 
 class PlayQueuePage extends StatefulWidget {
@@ -126,6 +128,24 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                     playQueue.insert(newIndex, item);
                   });
                 },
+                onReorderStart: (_) {
+                  if (hasVibration) {
+                    Vibration.vibrate(duration: 5);
+                  }
+                },
+                onReorderEnd: (_) {
+                  if (hasVibration) {
+                    Vibration.vibrate(duration: 5);
+                  }
+                },
+                proxyDecorator:
+                    (Widget child, int index, Animation<double> animation) {
+                      return Material(
+                        elevation: 1,
+                        color: Colors.white, // background color while moving
+                        child: child,
+                      );
+                    },
                 itemCount: playQueue.length,
                 itemBuilder: (_, index) {
                   final song = playQueue[index];
