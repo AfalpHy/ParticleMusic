@@ -42,21 +42,24 @@ Future<void> main() async {
 }
 
 class SwipeObserver extends NavigatorObserver {
-  bool first = true;
+  int deep = 0;
   @override
   void didPush(Route route, Route? previousRoute) {
-    if (route is PageRoute && !first) {
+    if (route is PageRoute && deep == 1) {
       route.animation?.addListener(() {
         swipeProgressNotifier.value = route.animation!.value;
       });
     }
-    first = false;
+    deep++;
     super.didPush(route, previousRoute);
   }
 
   @override
   void didPop(Route route, Route? previousRoute) {
-    swipeProgressNotifier.value = 0;
+    if (deep == 1) {
+      swipeProgressNotifier.value = 0;
+    }
+    deep--;
     super.didPop(route, previousRoute);
   }
 }
@@ -153,38 +156,6 @@ class MyApp extends StatelessWidget {
                                       "Library",
                                       style: TextStyle(
                                         color: which == 1
-                                            ? Colors.black
-                                            : Colors.black54,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: Container(
-                              height: 80,
-                              color: Colors.white,
-                              child: InkWell(
-                                splashColor: Colors.transparent,
-                                highlightColor: Colors.transparent,
-                                onTap: () => homeBody.value = 2,
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-
-                                  children: [
-                                    Icon(
-                                      Icons.library_add_outlined,
-                                      color: which == 2
-                                          ? Colors.black
-                                          : Colors.black54,
-                                    ),
-
-                                    Text(
-                                      "Playlists",
-                                      style: TextStyle(
-                                        color: which == 2
                                             ? Colors.black
                                             : Colors.black54,
                                       ),
@@ -460,38 +431,59 @@ class HomePageState extends State<HomePage> {
             scrolledUnderElevation: 0,
             title: const Text("Particle Music"),
           ),
-          body: NotificationListener<UserScrollNotification>(
-            onNotification: (notification) {
-              if (notification.direction != ScrollDirection.idle) {
-                if (playQueue.isNotEmpty) {
-                  listIsScrolling.value = true;
-                  if (timer != null) {
-                    timer!.cancel();
-                    timer = null;
-                  }
-                }
-              } else {
-                if (listIsScrolling.value) {
-                  timer ??= Timer(const Duration(milliseconds: 3000), () {
-                    listIsScrolling.value = false;
-                    timer = null;
-                  });
-                }
-              }
-              return false;
-            },
-            child: ValueListenableBuilder<int>(
-              valueListenable: homeBody,
-              builder: (context, which, _) {
-                if (which == 1) {
-                  return buildSongList();
-                } else if (which == 2) {
-                  return buildPlaylists();
-                } else {
-                  return buildSetting();
-                }
-              },
-            ),
+          body: ListView(
+            children: [
+              ListTile(
+                leading: Icon(Icons.queue_music, size: 40),
+                title: Text('Playlists'),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => Scaffold(
+                        backgroundColor: Colors.white,
+                        appBar: AppBar(
+                          backgroundColor: Colors.white,
+                          elevation: 0,
+                          scrolledUnderElevation: 0,
+                          title: const Text("Playlists"),
+                        ),
+                        body: buildPlaylists(),
+                      ),
+                    ),
+                  );
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.mic, size: 40),
+                title: Text('Artists'),
+                onTap: () {},
+              ),
+              ListTile(
+                leading: Icon(Icons.album_rounded, size: 40),
+                title: Text('Albums'),
+                onTap: () {},
+              ),
+              ListTile(
+                leading: Icon(Icons.music_note, size: 40),
+                title: Text('Songs'),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => Scaffold(
+                        backgroundColor: Colors.white,
+                        appBar: AppBar(
+                          backgroundColor: Colors.white,
+                          elevation: 0,
+                          scrolledUnderElevation: 0,
+                          title: const Text("Songs"),
+                        ),
+                        body: buildSongList(),
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ],
           ),
         ),
 
@@ -586,7 +578,7 @@ class HomePageState extends State<HomePage> {
               if (index < filteredSongs.length) {
                 return SongListTile(index: index, source: filteredSongs);
               } else {
-                return SizedBox(height: 130);
+                return SizedBox(height: 90);
               }
             },
           ),

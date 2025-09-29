@@ -5,6 +5,7 @@ import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/song_list_tile.dart';
 import 'package:path/path.dart' as p;
+import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'art_widget.dart';
 
 late File allPlaylistsFile;
@@ -224,7 +225,7 @@ class PlaylistSongList extends StatelessWidget {
     return ValueListenableBuilder(
       valueListenable: notifier,
       builder: (_, _, _) {
-        return ListView.builder(
+        return ScrollablePositionedList.builder(
           itemCount: playlist.songs.length + 1,
           itemBuilder: (_, index) {
             if (index < playlist.songs.length) {
@@ -234,7 +235,7 @@ class PlaylistSongList extends StatelessWidget {
                 playlist: playlist,
               );
             } else {
-              return SizedBox(height: 60);
+              return SizedBox(height: 90);
             }
           },
         );
