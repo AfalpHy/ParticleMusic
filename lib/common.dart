@@ -1,0 +1,1 @@
+late bool hasVibration;

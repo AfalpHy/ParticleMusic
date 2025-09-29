@@ -13,6 +13,7 @@ import 'dart:async';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/services.dart';
 import 'package:searchfield/searchfield.dart';
+import 'package:vibration/vibration.dart';
 import 'audio_handler.dart';
 import 'lyrics_page.dart';
 import 'play_queue_page.dart';
@@ -20,6 +21,7 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'song_list_tile.dart';
 import 'art_widget.dart';
 import 'package:path/path.dart' as p;
+import 'common.dart';
 
 final GlobalKey<NavigatorState> homeNavigatorKey = GlobalKey<NavigatorState>();
 final ValueNotifier<double> swipeProgressNotifier = ValueNotifier<double>(0.0);
@@ -38,6 +40,7 @@ Future<void> main() async {
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp, // only allow portrait
   ]);
+  hasVibration = await Vibration.hasVibrator();
   runApp(MyApp());
 }
 
@@ -142,7 +145,13 @@ class MyApp extends StatelessWidget {
                               child: InkWell(
                                 splashColor: Colors.transparent,
                                 highlightColor: Colors.transparent,
-                                onTap: () => homeBody.value = 1,
+                                onTap: () {
+                                  if (hasVibration) {
+                                    Vibration.vibrate(duration: 10);
+                                  }
+                                  homeBody.value = 1;
+                                },
+
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
@@ -172,7 +181,12 @@ class MyApp extends StatelessWidget {
                               child: InkWell(
                                 splashColor: Colors.transparent,
                                 highlightColor: Colors.transparent,
-                                onTap: () => homeBody.value = 3,
+                                onTap: () {
+                                  if (hasVibration) {
+                                    Vibration.vibrate(duration: 10);
+                                  }
+                                  homeBody.value = 3;
+                                },
                                 child: Column(
                                   mainAxisAlignment: MainAxisAlignment.center,
 
@@ -435,7 +449,7 @@ class HomePageState extends State<HomePage> {
               ListTile(
                 leading: Icon(
                   Icons.queue_music_outlined,
-                  size: 40,
+                  size: 30,
                   color: Color.fromARGB(255, 120, 240, 240),
                 ),
                 title: Text('Playlists'),
@@ -448,10 +462,7 @@ class HomePageState extends State<HomePage> {
                           backgroundColor: Colors.white,
                           elevation: 0,
                           scrolledUnderElevation: 0,
-                          title: const Text(
-                            "Playlists",
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
+                          title: const Text("Playlists"),
                         ),
                         body: buildPlaylists(),
                       ),
@@ -462,7 +473,7 @@ class HomePageState extends State<HomePage> {
               ListTile(
                 leading: Icon(
                   Icons.mic_none,
-                  size: 40,
+                  size: 30,
                   color: Color.fromARGB(255, 120, 240, 240),
                 ),
                 title: Text('Artists'),
@@ -471,7 +482,7 @@ class HomePageState extends State<HomePage> {
               ListTile(
                 leading: Icon(
                   Icons.album_outlined,
-                  size: 40,
+                  size: 30,
                   color: Color.fromARGB(255, 120, 240, 240),
                 ),
                 title: Text('Albums'),
@@ -480,7 +491,7 @@ class HomePageState extends State<HomePage> {
               ListTile(
                 leading: Icon(
                   Icons.music_note,
-                  size: 40,
+                  size: 30,
                   color: Color.fromARGB(255, 120, 240, 240),
                 ),
                 title: Text('Songs'),
@@ -851,6 +862,9 @@ class PlayerBar extends StatelessWidget {
                         ),
 
                         onPressed: () {
+                          if (hasVibration) {
+                            Vibration.vibrate(duration: 10);
+                          }
                           if (audioHandler.player.playing) {
                             audioHandler.pause();
                           } else {
@@ -867,6 +881,9 @@ class PlayerBar extends StatelessWidget {
                           color: Colors.black,
                         ),
                         onPressed: () {
+                          if (hasVibration) {
+                            Vibration.vibrate(duration: 10);
+                          }
                           showModalBottomSheet(
                             context: context,
                             isScrollControlled: true, // allows full-height
