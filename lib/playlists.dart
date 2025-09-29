@@ -410,6 +410,7 @@ class PlaylistScaffold extends StatelessWidget {
     TextEditingController textController = TextEditingController();
     return Scaffold(
       backgroundColor: Colors.white,
+      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         backgroundColor: Colors.white,
         scrolledUnderElevation: 0,

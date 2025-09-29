@@ -489,6 +489,7 @@ class HomePageState extends State<HomePage> {
                     MaterialPageRoute(
                       builder: (_) => Scaffold(
                         backgroundColor: Colors.white,
+                        resizeToAvoidBottomInset: false,
                         appBar: AppBar(
                           backgroundColor: Colors.white,
                           elevation: 0,
