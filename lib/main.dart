@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
@@ -75,7 +76,6 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Particle Music',
-
       scrollBehavior: ScrollConfiguration.of(
         context,
       ).copyWith(overscroll: false),
@@ -224,12 +224,10 @@ class HomePage extends StatefulWidget {
 class HomePageState extends State<HomePage> {
   late Directory docs;
   bool isChanged = false;
-  final ValueNotifier<bool> listIsScrolling = ValueNotifier(false);
-  final ItemScrollController itemScrollController = ItemScrollController();
+
   Timer? timer;
 
   List<String> librarySongBasenames = [];
-  final TextEditingController textController = TextEditingController();
 
   @override
   void initState() {
@@ -417,8 +415,6 @@ class HomePageState extends State<HomePage> {
     }
   }
 
-  String searchQuery = "";
-
   @override
   Widget build(BuildContext context) {
     return Stack(
@@ -508,11 +504,139 @@ class HomePageState extends State<HomePage> {
             ],
           ),
         ),
+      ],
+    );
+  }
 
+  Widget buildSongList() {
+    final searchQuery = ValueNotifier('');
+    final listIsScrolling = ValueNotifier(false);
+    final itemScrollController = ItemScrollController();
+    final textController = TextEditingController();
+
+    return Stack(
+      children: [
+        NotificationListener<UserScrollNotification>(
+          onNotification: (notification) {
+            if (notification.direction != ScrollDirection.idle) {
+              if (playQueue.isNotEmpty) {
+                listIsScrolling.value = true;
+                if (timer != null) {
+                  timer!.cancel();
+                  timer = null;
+                }
+              }
+            } else {
+              if (listIsScrolling.value) {
+                timer ??= Timer(const Duration(milliseconds: 3000), () {
+                  listIsScrolling.value = false;
+                  timer = null;
+                });
+              }
+            }
+            return false;
+          },
+          child: ValueListenableBuilder(
+            valueListenable: searchQuery,
+            builder: (context, value, child) {
+              filteredSongs = librarySongs
+                  .where(
+                    (song) =>
+                        (value.isEmpty) ||
+                        (song.title?.toLowerCase().contains(
+                              value.toLowerCase(),
+                            ) ??
+                            false) ||
+                        (song.artist?.toLowerCase().contains(
+                              value.toLowerCase(),
+                            ) ??
+                            false) ||
+                        (song.album?.toLowerCase().contains(
+                              value.toLowerCase(),
+                            ) ??
+                            false),
+                  )
+                  .toList();
+              return Column(
+                children: [
+                  Row(
+                    children: [
+                      SizedBox(width: 20),
+
+                      Expanded(
+                        child: SizedBox(
+                          height: 40,
+                          child: SearchField(
+                            autofocus: false,
+                            controller: textController,
+                            suggestions: [],
+                            searchInputDecoration: SearchInputDecoration(
+                              hintText: 'Search songs',
+                              prefixIcon: Icon(Icons.search),
+                              suffixIcon: value.isNotEmpty
+                                  ? IconButton(
+                                      onPressed: () {
+                                        searchQuery.value = '';
+                                        textController.clear();
+                                        FocusScope.of(context).unfocus();
+                                      },
+                                      icon: Icon(Icons.clear),
+                                      padding: EdgeInsets.zero,
+                                    )
+                                  : null,
+                              filled: true,
+                              fillColor: Colors.grey.shade100,
+                              contentPadding: EdgeInsets.zero,
+                              isDense: true,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                            onSearchTextChanged: (value) {
+                              searchQuery.value = value;
+                              itemScrollController.jumpTo(index: 0);
+
+                              return null;
+                            },
+                          ),
+                        ),
+                      ),
+
+                      IconButton(
+                        onPressed: () {
+                          reloadSongs();
+                        },
+                        icon: Icon(Icons.refresh),
+                      ),
+                    ],
+                  ),
+                  Expanded(
+                    child: ScrollablePositionedList.builder(
+                      itemScrollController: itemScrollController,
+                      physics: ClampingScrollPhysics(),
+                      itemCount: filteredSongs.length + 1,
+                      itemBuilder: (context, index) {
+                        if (index < filteredSongs.length) {
+                          return SongListTile(
+                            index: index,
+                            source: filteredSongs,
+                          );
+                        } else {
+                          return SizedBox(height: 90);
+                        }
+                      },
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        ),
         Positioned(
           left: 0,
           right: 0,
-          bottom: 150,
+          bottom: 120,
           child: MyLocation(
             itemScrollController: itemScrollController,
             listIsScrolling: listIsScrolling,
@@ -522,96 +646,7 @@ class HomePageState extends State<HomePage> {
     );
   }
 
-  Widget buildSongList() {
-    filteredSongs = librarySongs
-        .where(
-          (song) =>
-              (searchQuery.isEmpty) ||
-              (song.title?.toLowerCase().contains(searchQuery.toLowerCase()) ??
-                  false) ||
-              (song.artist?.toLowerCase().contains(searchQuery.toLowerCase()) ??
-                  false) ||
-              (song.album?.toLowerCase().contains(searchQuery.toLowerCase()) ??
-                  false),
-        )
-        .toList();
-
-    return Column(
-      children: [
-        Row(
-          children: [
-            SizedBox(width: 20),
-
-            Expanded(
-              child: SizedBox(
-                height: 40,
-                child: SearchField(
-                  autofocus: false,
-                  controller: textController,
-                  suggestions: [],
-                  searchInputDecoration: SearchInputDecoration(
-                    hintText: 'Search songs',
-                    prefixIcon: Icon(Icons.search),
-                    suffixIcon: searchQuery.isNotEmpty
-                        ? IconButton(
-                            onPressed: () => setState(() {
-                              searchQuery = '';
-                              textController.clear();
-                              FocusScope.of(context).unfocus();
-                            }),
-                            icon: Icon(Icons.clear),
-                            padding: EdgeInsets.zero,
-                          )
-                        : null,
-                    filled: true,
-                    fillColor: Colors.grey.shade100,
-                    contentPadding: EdgeInsets.zero,
-                    isDense: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(20),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                  onSearchTextChanged: (value) {
-                    setState(() {
-                      searchQuery = value;
-                      itemScrollController.jumpTo(index: 0);
-                    });
-                    return null;
-                  },
-                ),
-              ),
-            ),
-
-            IconButton(
-              onPressed: () {
-                reloadSongs();
-              },
-              icon: Icon(Icons.refresh),
-            ),
-          ],
-        ),
-        Expanded(
-          child: ScrollablePositionedList.builder(
-            itemScrollController: itemScrollController,
-            physics: ClampingScrollPhysics(),
-            itemCount: filteredSongs.length + 1,
-            itemBuilder: (context, index) {
-              if (index < filteredSongs.length) {
-                return SongListTile(index: index, source: filteredSongs);
-              } else {
-                return SizedBox(height: 90);
-              }
-            },
-          ),
-        ),
-      ],
-    );
-  }
-
   Widget buildPlaylists() {
-    searchQuery = '';
-    textController.clear();
     return ValueListenableBuilder(
       valueListenable: playlistsChangeNotifier,
       builder: (_, _, _) {
@@ -647,87 +682,7 @@ class HomePageState extends State<HomePage> {
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (_) => Scaffold(
-                      backgroundColor: Colors.white,
-                      appBar: AppBar(
-                        backgroundColor: Colors.white,
-                        scrolledUnderElevation: 0,
-                        actions: [
-                          IconButton(
-                            icon: Icon(Icons.more_vert),
-                            onPressed: () {
-                              showModalBottomSheet(
-                                context: context,
-                                isScrollControlled: true, // allows full-height
-                                useRootNavigator: true,
-                                builder: (context) {
-                                  return ClipRRect(
-                                    borderRadius: BorderRadius.vertical(
-                                      top: Radius.circular(10),
-                                    ),
-                                    child: Container(
-                                      height: 500,
-                                      color: Colors.white,
-                                      child: Column(
-                                        children: [
-                                          ListTile(
-                                            title: Text(
-                                              "Playlist: ${playlist.name}",
-                                            ),
-                                          ),
-                                          Divider(
-                                            thickness: 0.5,
-                                            height: 1,
-                                            color: Colors.grey.shade300,
-                                          ),
-                                          playlist.name != 'Favorite'
-                                              ? ListTile(
-                                                  leading: Icon(
-                                                    Icons.delete_rounded,
-                                                    size: 25,
-                                                  ),
-                                                  title: Text(
-                                                    'Delete',
-                                                    style: TextStyle(
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                      fontSize: 18,
-                                                    ),
-                                                  ),
-                                                  visualDensity:
-                                                      const VisualDensity(
-                                                        horizontal: 0,
-                                                        vertical: -4,
-                                                      ),
-                                                  onTap: () {
-                                                    deletePlaylist(index);
-                                                    Navigator.pop(
-                                                      context,
-                                                      true,
-                                                    );
-                                                  },
-                                                )
-                                              : SizedBox(),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                },
-                              ).then((value) {
-                                if (value == true && mounted) {
-                                  Navigator.pop(context);
-                                }
-                              });
-                            },
-                          ),
-                        ],
-                      ),
-
-                      body: PlaylistSongList(
-                        playlist: playlist,
-                        notifier: playlist.changeNotifier,
-                      ),
-                    ),
+                    builder: (_) => PlaylistScaffold(index: index),
                   ),
                 );
               },
@@ -739,74 +694,7 @@ class HomePageState extends State<HomePage> {
   }
 
   Widget buildSetting() {
-    searchQuery = '';
-    textController.clear();
     return SizedBox();
-  }
-}
-
-class MyLocation extends StatefulWidget {
-  final ItemScrollController itemScrollController;
-  final ValueNotifier<bool> listIsScrolling;
-
-  const MyLocation({
-    super.key,
-    required this.itemScrollController,
-    required this.listIsScrolling,
-  });
-
-  @override
-  State<MyLocation> createState() => MyLocationState();
-}
-
-class MyLocationState extends State<MyLocation> {
-  bool userDragging = false;
-
-  @override
-  void initState() {
-    super.initState();
-    widget.listIsScrolling.addListener(() => setState(() {}));
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: currentSongNotifier,
-      builder: (_, currentSong, _) {
-        return ValueListenableBuilder(
-          valueListenable: homeBody,
-          builder: (_, value, _) {
-            return value == 1 &&
-                    widget.listIsScrolling.value &&
-                    filteredSongs.contains(currentSong)
-                ? Row(
-                    children: [
-                      Spacer(),
-                      IconButton(
-                        onPressed: () {
-                          if (currentSongNotifier.value != null) {
-                            for (int i = 0; i < filteredSongs.length; i++) {
-                              if (filteredSongs[i] ==
-                                  currentSongNotifier.value) {
-                                widget.itemScrollController.scrollTo(
-                                  index: i,
-                                  duration: Duration(milliseconds: 300),
-                                  curve: Curves.linear,
-                                );
-                              }
-                            }
-                          }
-                        },
-                        icon: Icon(Icons.my_location_rounded, size: 20),
-                      ),
-                      SizedBox(width: 30),
-                    ],
-                  )
-                : SizedBox();
-          },
-        );
-      },
-    );
   }
 }
 
