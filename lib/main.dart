@@ -579,6 +579,8 @@ class HomePageState extends State<HomePage> {
                                       onPressed: () {
                                         searchQuery.value = '';
                                         textController.clear();
+                                        // hide my location button immediately
+                                        listIsScrolling.value = false;
                                         FocusScope.of(context).unfocus();
                                       },
                                       icon: Icon(Icons.clear),
@@ -596,6 +598,8 @@ class HomePageState extends State<HomePage> {
                             ),
                             onSearchTextChanged: (value) {
                               searchQuery.value = value;
+                              // hide my location button immediately
+                              listIsScrolling.value = false;
                               itemScrollController.jumpTo(index: 0);
 
                               return null;
