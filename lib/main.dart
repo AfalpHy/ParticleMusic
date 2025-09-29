@@ -592,6 +592,7 @@ class HomePageState extends State<HomePage> {
                                         textController.clear();
                                         // hide my location button immediately
                                         listIsScrolling.value = false;
+                                        itemScrollController.jumpTo(index: 0);
                                         FocusScope.of(context).unfocus();
                                       },
                                       icon: Icon(Icons.clear),
