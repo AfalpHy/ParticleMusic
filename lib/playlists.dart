@@ -231,18 +231,7 @@ class PlaylistSongList extends StatelessWidget {
     final ValueNotifier<bool> listIsScrolling = ValueNotifier(false);
     final ItemScrollController itemScrollController = ItemScrollController();
     Timer? timer;
-    filteredSongs = playlist.songs
-        .where(
-          (song) =>
-              (searchQuery.isEmpty) ||
-              (song.title?.toLowerCase().contains(searchQuery.toLowerCase()) ??
-                  false) ||
-              (song.artist?.toLowerCase().contains(searchQuery.toLowerCase()) ??
-                  false) ||
-              (song.album?.toLowerCase().contains(searchQuery.toLowerCase()) ??
-                  false),
-        )
-        .toList();
+
     return Stack(
       children: [
         NotificationListener<UserScrollNotification>(
@@ -268,6 +257,24 @@ class PlaylistSongList extends StatelessWidget {
           child: ValueListenableBuilder(
             valueListenable: notifier,
             builder: (_, _, _) {
+              filteredSongs = playlist.songs
+                  .where(
+                    (song) =>
+                        (searchQuery.isEmpty) ||
+                        (song.title?.toLowerCase().contains(
+                              searchQuery.toLowerCase(),
+                            ) ??
+                            false) ||
+                        (song.artist?.toLowerCase().contains(
+                              searchQuery.toLowerCase(),
+                            ) ??
+                            false) ||
+                        (song.album?.toLowerCase().contains(
+                              searchQuery.toLowerCase(),
+                            ) ??
+                            false),
+                  )
+                  .toList();
               return ScrollablePositionedList.builder(
                 itemScrollController: itemScrollController,
                 itemCount: filteredSongs.length + 2,
