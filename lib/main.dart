@@ -76,6 +76,7 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Particle Music',
+
       scrollBehavior: ScrollConfiguration.of(
         context,
       ).copyWith(overscroll: false),
@@ -148,7 +149,7 @@ class MyApp extends StatelessWidget {
                                     Icon(
                                       Icons.library_music_outlined,
                                       color: which == 1
-                                          ? Colors.black
+                                          ? Color.fromARGB(255, 120, 240, 240)
                                           : Colors.black54,
                                     ),
 
@@ -156,7 +157,7 @@ class MyApp extends StatelessWidget {
                                       "Library",
                                       style: TextStyle(
                                         color: which == 1
-                                            ? Colors.black
+                                            ? Color.fromARGB(255, 120, 240, 240)
                                             : Colors.black54,
                                       ),
                                     ),
@@ -180,7 +181,7 @@ class MyApp extends StatelessWidget {
                                     Icon(
                                       Icons.settings_outlined,
                                       color: which == 3
-                                          ? Colors.black
+                                          ? Color.fromARGB(255, 120, 240, 240)
                                           : Colors.black54,
                                     ),
 
@@ -188,7 +189,7 @@ class MyApp extends StatelessWidget {
                                       "Settings",
                                       style: TextStyle(
                                         color: which == 3
-                                            ? Colors.black
+                                            ? Color.fromARGB(255, 120, 240, 240)
                                             : Colors.black54,
                                       ),
                                     ),
@@ -429,12 +430,19 @@ class HomePageState extends State<HomePage> {
             backgroundColor: Colors.white,
             elevation: 0,
             scrolledUnderElevation: 0,
-            title: const Text("Particle Music"),
+            title: const Text(
+              "Particle Music",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
           ),
           body: ListView(
             children: [
               ListTile(
-                leading: Icon(Icons.queue_music, size: 40),
+                leading: Icon(
+                  Icons.queue_music,
+                  size: 40,
+                  color: Color.fromARGB(255, 120, 240, 240),
+                ),
                 title: Text('Playlists'),
                 onTap: () {
                   Navigator.of(context).push(
@@ -454,17 +462,29 @@ class HomePageState extends State<HomePage> {
                 },
               ),
               ListTile(
-                leading: Icon(Icons.mic, size: 40),
+                leading: Icon(
+                  Icons.mic,
+                  size: 40,
+                  color: Color.fromARGB(255, 120, 240, 240),
+                ),
                 title: Text('Artists'),
                 onTap: () {},
               ),
               ListTile(
-                leading: Icon(Icons.album_rounded, size: 40),
+                leading: Icon(
+                  Icons.album_rounded,
+                  size: 40,
+                  color: Color.fromARGB(255, 120, 240, 240),
+                ),
                 title: Text('Albums'),
                 onTap: () {},
               ),
               ListTile(
-                leading: Icon(Icons.music_note, size: 40),
+                leading: Icon(
+                  Icons.music_note,
+                  size: 40,
+                  color: Color.fromARGB(255, 120, 240, 240),
+                ),
                 title: Text('Songs'),
                 onTap: () {
                   Navigator.of(context).push(
