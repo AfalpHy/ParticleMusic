@@ -122,7 +122,7 @@ class PlaylistsSheetState extends State<PlaylistsSheet> {
         child: Column(
           children: [
             ListTile(
-              leading: Icon(Icons.add, size: 40),
+              leading: Material(child: Icon(Icons.add, size: 40)),
               title: Text('New Playlist'),
               onTap: () {
                 final controller = TextEditingController();

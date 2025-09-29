@@ -652,8 +652,71 @@ class HomePageState extends State<HomePage> {
       valueListenable: playlistsChangeNotifier,
       builder: (_, _, _) {
         return ListView.builder(
-          itemCount: playlists.length,
+          itemCount: playlists.length + 1,
           itemBuilder: (_, index) {
+            if (index == playlists.length) {
+              return ListTile(
+                leading: Material(child: Icon(Icons.add, size: 50)),
+                title: Text('New Playlist'),
+                onTap: () {
+                  final controller = TextEditingController();
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true, // allows full-height
+                    useRootNavigator: true,
+                    builder: (context) {
+                      return ClipRRect(
+                        borderRadius: BorderRadius.vertical(
+                          top: Radius.circular(10),
+                        ),
+                        child: Container(
+                          height: 500,
+                          color: Colors.white,
+                          child: SizedBox(
+                            height: 250, // fixed height
+                            child: Column(
+                              mainAxisAlignment:
+                                  MainAxisAlignment.start, // center vertically
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.fromLTRB(
+                                    30,
+                                    30,
+                                    30,
+                                    0,
+                                  ),
+                                  child: TextField(
+                                    controller: controller,
+                                    decoration: const InputDecoration(
+                                      border: OutlineInputBorder(),
+                                      labelText: "Playlist Name",
+                                    ),
+                                  ),
+                                ),
+                                const SizedBox(height: 10),
+                                ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.pop(
+                                      context,
+                                      controller.text,
+                                    ); // close with value
+                                  },
+                                  child: const Text("Complete"),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
+                  ).then((name) {
+                    if (name != null && name != '') {
+                      newPlaylist(name);
+                    }
+                  });
+                },
+              );
+            }
             final playlist = playlists[index];
             return ListTile(
               contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
