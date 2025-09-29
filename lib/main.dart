@@ -656,7 +656,11 @@ class HomePageState extends State<HomePage> {
           itemBuilder: (_, index) {
             if (index == playlists.length) {
               return ListTile(
-                leading: Material(child: Icon(Icons.add, size: 50)),
+                contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
+                leading: Material(
+                  borderRadius: BorderRadius.circular(3),
+                  child: Icon(Icons.add, size: 50),
+                ),
                 title: Text('New Playlist'),
                 onTap: () {
                   final controller = TextEditingController();
