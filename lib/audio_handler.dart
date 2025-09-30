@@ -38,17 +38,28 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
 
     player.processingStateStream.listen((state) async {
       if (state == ProcessingState.completed) {
+        bool needPauseTmp = needPause;
+
         if (playModeNotifier.value == 1) {
           // repeat
           await load();
         } else {
           await skipToNext(); // automatically go to next song
         }
+
+        if (needPauseTmp) {
+          await pause();
+        }
       }
     });
 
     player.playingStream.listen((isPlaying) {
+      needPause = false;
       isPlayingNotifier.value = isPlaying;
+    });
+
+    currentSongNotifier.addListener(() {
+      needPause = false;
     });
   }
 

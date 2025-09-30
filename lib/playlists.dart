@@ -128,7 +128,7 @@ class PlaylistsSheetState extends State<PlaylistsSheet> {
                 final controller = TextEditingController();
                 showModalBottomSheet(
                   context: context,
-                  isScrollControlled: true, // allows full-height
+                  isScrollControlled: true,
                   builder: (_) {
                     return ClipRRect(
                       borderRadius: BorderRadius.vertical(
@@ -477,7 +477,7 @@ class PlaylistScaffold extends StatelessWidget {
             onPressed: () {
               showModalBottomSheet(
                 context: context,
-                isScrollControlled: true, // allows full-height
+                isScrollControlled: true,
                 useRootNavigator: true,
                 builder: (context) {
                   return ClipRRect(
@@ -521,7 +521,7 @@ class PlaylistScaffold extends StatelessWidget {
                   );
                 },
               ).then((value) {
-                if (value == true) {
+                if (value == true && context.mounted) {
                   Navigator.pop(context);
                 }
               });

@@ -3,6 +3,8 @@ import 'dart:async';
 import 'package:flutter/widgets.dart';
 
 late bool hasVibration;
-ValueNotifier<bool> timedShutdown = ValueNotifier(false);
+ValueNotifier<bool> timedPause = ValueNotifier(false);
 ValueNotifier<int> remainTimes = ValueNotifier(0);
-Timer? shutDownTimer;
+ValueNotifier<bool> pauseAfterCompleted = ValueNotifier(false);
+bool needPause = false;
+Timer? pauseTimer;

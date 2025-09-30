@@ -140,7 +140,7 @@ class LyricsPage extends StatelessWidget {
                       }
                       showModalBottomSheet(
                         context: context,
-                        isScrollControlled: true, // allows full-height
+                        isScrollControlled: true,
                         useRootNavigator: true,
                         builder: (context) {
                           return ClipRRect(
@@ -201,8 +201,7 @@ class LyricsPage extends StatelessWidget {
 
                                             showModalBottomSheet(
                                               context: context,
-                                              isScrollControlled:
-                                                  true, // allows full-height
+                                              isScrollControlled: true,
                                               builder: (_) {
                                                 return PlaylistsSheet(
                                                   song: currentSong,
@@ -308,7 +307,7 @@ class LyricsPage extends StatelessWidget {
                           }
                           showModalBottomSheet(
                             context: context,
-                            isScrollControlled: true, // allows full-height
+                            isScrollControlled: true,
                             builder: (context) {
                               return PlayQueuePage();
                             },

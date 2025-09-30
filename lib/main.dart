@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:particle_music/playlists.dart';
+import 'package:particle_music/setting.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:marquee/marquee.dart';
@@ -22,6 +22,7 @@ import 'song_list_tile.dart';
 import 'art_widget.dart';
 import 'package:path/path.dart' as p;
 import 'common.dart';
+import 'package:flutter_switch/flutter_switch.dart';
 
 final GlobalKey<NavigatorState> homeNavigatorKey = GlobalKey<NavigatorState>();
 final ValueNotifier<double> swipeProgressNotifier = ValueNotifier<double>(0.0);
@@ -680,7 +681,7 @@ class HomePageState extends State<HomePage> {
                   final controller = TextEditingController();
                   showModalBottomSheet(
                     context: context,
-                    isScrollControlled: true, // allows full-height
+                    isScrollControlled: true,
                     useRootNavigator: true,
                     builder: (context) {
                       return ClipRRect(
@@ -780,9 +781,11 @@ class HomePageState extends State<HomePage> {
       physics: ClampingScrollPhysics(),
       children: [
         ListTile(
-          leading: Icon(Icons.timer_outlined),
-          title: Text('Timed Shutdown'),
-
+          leading: Icon(
+            Icons.timer_outlined,
+            color: Color.fromARGB(255, 120, 240, 240),
+          ),
+          title: Text('Timed Pause'),
           trailing: SizedBox(
             width: 150,
             child: Row(
@@ -797,116 +800,33 @@ class HomePageState extends State<HomePage> {
                       '0',
                     );
                     final secs = (value % 60).toString().padLeft(2, '0');
-                    return value > 0
-                        ? Text('$hours:$minutes:$secs')
-                        : SizedBox();
+                    return ValueListenableBuilder(
+                      valueListenable: timedPause,
+                      builder: (context, on, child) {
+                        return value > 0 || on
+                            ? Text('$hours:$minutes:$secs')
+                            : SizedBox();
+                      },
+                    );
                   },
                 ),
                 SizedBox(width: 10),
                 ValueListenableBuilder(
-                  valueListenable: timedShutdown,
+                  valueListenable: timedPause,
                   builder: (context, value, child) {
-                    return CupertinoSwitch(
-                      activeTrackColor: Color.fromARGB(255, 120, 240, 240),
+                    return FlutterSwitch(
+                      width: 45,
+                      height: 20,
+                      toggleSize: 15,
+                      activeColor: Color.fromARGB(255, 120, 240, 240),
                       value: value,
-                      onChanged: (value) async {
-                        timedShutdown.value = value;
+                      onToggle: (value) async {
+                        timedPause.value = value;
                         if (value) {
-                          await showModalBottomSheet(
-                            context: context,
-                            isScrollControlled: true, // allows full-height
-                            useRootNavigator: true,
-                            builder: (context) {
-                              Duration currentDuration = Duration();
-
-                              return ClipRRect(
-                                borderRadius: BorderRadius.vertical(
-                                  top: Radius.circular(10),
-                                ),
-                                child: Container(
-                                  height: 400,
-                                  color: Colors.white,
-                                  child: Center(
-                                    child: Column(
-                                      children: [
-                                        Spacer(),
-                                        CupertinoTimerPicker(
-                                          mode: CupertinoTimerPickerMode
-                                              .hms, // hours, minutes, seconds
-                                          onTimerDurationChanged:
-                                              (Duration newDuration) {
-                                                currentDuration = newDuration;
-                                              },
-                                        ),
-                                        SizedBox(height: 10),
-                                        Row(
-                                          children: [
-                                            Spacer(),
-                                            ElevatedButton(
-                                              onPressed: () {
-                                                timedShutdown.value = false;
-                                                Navigator.pop(context);
-                                              },
-                                              child: const Text("Cancel"),
-                                            ),
-                                            SizedBox(width: 30),
-                                            ElevatedButton(
-                                              onPressed: () {
-                                                int time = 0;
-                                                time +=
-                                                    currentDuration.inHours *
-                                                    3600;
-                                                time +=
-                                                    currentDuration.inMinutes %
-                                                    60 *
-                                                    60;
-                                                time +=
-                                                    currentDuration.inSeconds %
-                                                    60;
-                                                remainTimes.value = time;
-
-                                                shutDownTimer?.cancel();
-
-                                                shutDownTimer = Timer.periodic(
-                                                  const Duration(seconds: 1),
-                                                  (_) {
-                                                    if (remainTimes.value > 0) {
-                                                      remainTimes.value--;
-                                                    }
-                                                    if (remainTimes.value ==
-                                                        0) {
-                                                      shutDownTimer!.cancel();
-                                                      shutDownTimer = null;
-                                                      timedShutdown.value =
-                                                          false;
-
-                                                      audioHandler.pause();
-                                                    }
-                                                  },
-                                                );
-
-                                                Navigator.pop(context);
-                                              },
-                                              child: const Text("Confirm"),
-                                            ),
-
-                                            Spacer(),
-                                          ],
-                                        ),
-                                        Spacer(),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-                          if (remainTimes.value == 0) {
-                            timedShutdown.value = false;
-                          }
+                          displayTimedPauseSetting(context);
                         } else {
-                          shutDownTimer?.cancel();
-                          shutDownTimer = null;
+                          pauseTimer?.cancel();
+                          pauseTimer = null;
                           remainTimes.value = 0;
                         }
                       },
@@ -916,6 +836,40 @@ class HomePageState extends State<HomePage> {
               ],
             ),
           ),
+        ),
+        ValueListenableBuilder(
+          valueListenable: timedPause,
+          builder: (_, value, _) {
+            return value
+                ? ListTile(
+                    trailing: SizedBox(
+                      width: 200,
+                      child: Row(
+                        children: [
+                          Spacer(),
+                          Text('Pause After Compelete'),
+                          SizedBox(width: 10),
+                          ValueListenableBuilder(
+                            valueListenable: pauseAfterCompleted,
+                            builder: (_, value, _) {
+                              return FlutterSwitch(
+                                width: 45,
+                                height: 20,
+                                toggleSize: 15,
+                                activeColor: Color.fromARGB(255, 120, 240, 240),
+                                value: value,
+                                onToggle: (value) {
+                                  pauseAfterCompleted.value = value;
+                                },
+                              );
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  )
+                : SizedBox();
+          },
         ),
       ],
     );
@@ -1029,7 +983,7 @@ class PlayerBar extends StatelessWidget {
                           }
                           showModalBottomSheet(
                             context: context,
-                            isScrollControlled: true, // allows full-height
+                            isScrollControlled: true,
                             builder: (context) {
                               return PlayQueuePage();
                             },
