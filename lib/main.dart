@@ -807,6 +807,7 @@ class HomePageState extends State<HomePage> {
                   valueListenable: timedShutdown,
                   builder: (context, value, child) {
                     return CupertinoSwitch(
+                      activeTrackColor: Color.fromARGB(255, 120, 240, 240),
                       value: value,
                       onChanged: (value) async {
                         timedShutdown.value = value;
