@@ -819,8 +819,12 @@ class HomePageState extends State<HomePage> {
                       height: 20,
                       toggleSize: 15,
                       activeColor: Color.fromARGB(255, 120, 240, 240),
+                      inactiveColor: Colors.grey.shade300,
                       value: value,
                       onToggle: (value) async {
+                        if (hasVibration) {
+                          Vibration.vibrate(duration: 5);
+                        }
                         timedPause.value = value;
                         if (value) {
                           displayTimedPauseSetting(context);
@@ -857,8 +861,12 @@ class HomePageState extends State<HomePage> {
                                 height: 20,
                                 toggleSize: 15,
                                 activeColor: Color.fromARGB(255, 120, 240, 240),
+                                inactiveColor: Colors.grey.shade300,
                                 value: value,
                                 onToggle: (value) {
+                                  if (hasVibration) {
+                                    Vibration.vibrate(duration: 5);
+                                  }
                                   pauseAfterCompleted.value = value;
                                 },
                               );
