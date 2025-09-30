@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:particle_music/playlists.dart';
@@ -8,7 +9,6 @@ import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:marquee/marquee.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:path_provider/path_provider.dart';
-// import 'package:watcher/watcher.dart';
 import 'dart:async';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/services.dart';
@@ -127,92 +127,7 @@ class MyApp extends StatelessWidget {
                 left: 0,
                 right: 0,
                 bottom: bottom,
-                child: ValueListenableBuilder<int>(
-                  valueListenable: homeBody,
-                  builder: (context, which, _) {
-                    // must use Material to avoid layout problem
-                    return Material(
-                      color: Colors.white,
-
-                      child: Row(
-                        children: [
-                          Expanded(
-                            child: SizedBox(
-                              height: 80,
-                              child: InkWell(
-                                splashColor: Colors.transparent,
-                                highlightColor: Colors.transparent,
-                                onTap: () {
-                                  if (hasVibration) {
-                                    Vibration.vibrate(duration: 5);
-                                  }
-                                  homeBody.value = 1;
-                                },
-
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    Icon(
-                                      Icons.library_music_outlined,
-                                      color: which == 1
-                                          ? Color.fromARGB(255, 120, 240, 240)
-                                          : Colors.black54,
-                                    ),
-
-                                    Text(
-                                      "Library",
-                                      style: TextStyle(
-                                        color: which == 1
-                                            ? Color.fromARGB(255, 120, 240, 240)
-                                            : Colors.black54,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                          Expanded(
-                            child: SizedBox(
-                              height: 80,
-                              child: InkWell(
-                                splashColor: Colors.transparent,
-                                highlightColor: Colors.transparent,
-                                onTap: () {
-                                  if (hasVibration) {
-                                    Vibration.vibrate(duration: 5);
-                                  }
-                                  homeBody.value = 3;
-                                },
-                                child: Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-
-                                  children: [
-                                    Icon(
-                                      Icons.settings_outlined,
-                                      color: which == 3
-                                          ? Color.fromARGB(255, 120, 240, 240)
-                                          : Colors.black54,
-                                    ),
-
-                                    Text(
-                                      "Settings",
-                                      style: TextStyle(
-                                        color: which == 3
-                                            ? Color.fromARGB(255, 120, 240, 240)
-                                            : Colors.black54,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                    );
-                  },
-                ),
+                child: bottomNavigator(),
               );
             },
           ),
@@ -220,6 +135,95 @@ class MyApp extends StatelessWidget {
       ),
     );
   }
+}
+
+Widget bottomNavigator() {
+  return ValueListenableBuilder<int>(
+    valueListenable: homeBody,
+    builder: (context, which, _) {
+      // must use Material to avoid layout problem
+      return Material(
+        color: Colors.white,
+
+        child: Row(
+          children: [
+            Expanded(
+              child: SizedBox(
+                height: 80,
+                child: InkWell(
+                  splashColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                  onTap: () {
+                    if (hasVibration) {
+                      Vibration.vibrate(duration: 5);
+                    }
+                    homeBody.value = 1;
+                  },
+
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Icon(
+                        Icons.library_music_outlined,
+                        color: which == 1
+                            ? Color.fromARGB(255, 120, 240, 240)
+                            : Colors.black54,
+                      ),
+
+                      Text(
+                        "Library",
+                        style: TextStyle(
+                          color: which == 1
+                              ? Color.fromARGB(255, 120, 240, 240)
+                              : Colors.black54,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+            Expanded(
+              child: SizedBox(
+                height: 80,
+                child: InkWell(
+                  splashColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                  onTap: () {
+                    if (hasVibration) {
+                      Vibration.vibrate(duration: 5);
+                    }
+                    homeBody.value = 3;
+                  },
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+
+                    children: [
+                      Icon(
+                        Icons.settings_outlined,
+                        color: which == 3
+                            ? Color.fromARGB(255, 120, 240, 240)
+                            : Colors.black54,
+                      ),
+
+                      Text(
+                        "Settings",
+                        style: TextStyle(
+                          color: which == 3
+                              ? Color.fromARGB(255, 120, 240, 240)
+                              : Colors.black54,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+  );
 }
 
 // --------------------
@@ -243,10 +247,10 @@ class HomePageState extends State<HomePage> {
   @override
   void initState() {
     super.initState();
-    loadAndWatch();
+    initial();
   }
 
-  Future<void> loadAndWatch() async {
+  Future<void> initial() async {
     if (Platform.isAndroid) {
       await Permission.storage.request();
       await Permission.audio.request();
@@ -268,19 +272,6 @@ class HomePageState extends State<HomePage> {
     }
 
     await loadSongs();
-    // final watcher = DirectoryWatcher(docs.path);
-
-    // watcher.events.listen((event) {
-    //   isChanged = true;
-    // });
-
-    // // Check directory every 5 seconds
-    // Timer.periodic(Duration(seconds: 5), (timer) async {
-    //   if (isChanged) {
-    //     isChanged = false;
-    //     await loadSongs();
-    //   }
-    // });
   }
 
   Future<void> loadSongs() async {
@@ -441,78 +432,87 @@ class HomePageState extends State<HomePage> {
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
           ),
-          body: ListView(
-            physics: ClampingScrollPhysics(),
-            children: [
-              ListTile(
-                leading: const ImageIcon(
-                  AssetImage("assets/images/playlists.png"),
-                  size: 30,
-                  color: Color.fromARGB(255, 120, 240, 240),
-                ),
-                title: Text('Playlists'),
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => Scaffold(
-                        backgroundColor: Colors.white,
-                        appBar: AppBar(
-                          backgroundColor: Colors.white,
-                          elevation: 0,
-                          scrolledUnderElevation: 0,
-                          title: const Text("Playlists"),
-                        ),
-                        body: buildPlaylists(),
-                      ),
-                    ),
-                  );
-                },
-              ),
-              ListTile(
-                leading: const ImageIcon(
-                  AssetImage("assets/images/artist.png"),
-                  size: 30,
-                  color: Color.fromARGB(255, 120, 240, 240),
-                ),
-                title: Text('Artists'),
-                onTap: () {},
-              ),
-              ListTile(
-                leading: const ImageIcon(
-                  AssetImage("assets/images/album.png"),
-                  size: 30,
-                  color: Color.fromARGB(255, 120, 240, 240),
-                ),
-                title: Text('Albums'),
-                onTap: () {},
-              ),
-              ListTile(
-                leading: const ImageIcon(
-                  AssetImage("assets/images/music_note.png"),
-                  size: 30,
-                  color: Color.fromARGB(255, 120, 240, 240),
-                ),
-                title: Text('Songs'),
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => Scaffold(
-                        backgroundColor: Colors.white,
-                        resizeToAvoidBottomInset: false,
-                        appBar: AppBar(
-                          backgroundColor: Colors.white,
-                          elevation: 0,
-                          scrolledUnderElevation: 0,
-                          title: const Text("Songs"),
-                        ),
-                        body: buildSongList(),
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ],
+          body: ValueListenableBuilder(
+            valueListenable: homeBody,
+            builder: (context, value, child) {
+              return value == 1 ? buildLibrary() : buildSetting();
+            },
           ),
+        ),
+      ],
+    );
+  }
+
+  Widget buildLibrary() {
+    return ListView(
+      physics: ClampingScrollPhysics(),
+      children: [
+        ListTile(
+          leading: const ImageIcon(
+            AssetImage("assets/images/playlists.png"),
+            size: 30,
+            color: Color.fromARGB(255, 120, 240, 240),
+          ),
+          title: Text('Playlists'),
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => Scaffold(
+                  backgroundColor: Colors.white,
+                  appBar: AppBar(
+                    backgroundColor: Colors.white,
+                    elevation: 0,
+                    scrolledUnderElevation: 0,
+                    title: const Text("Playlists"),
+                  ),
+                  body: buildPlaylists(),
+                ),
+              ),
+            );
+          },
+        ),
+        ListTile(
+          leading: const ImageIcon(
+            AssetImage("assets/images/artist.png"),
+            size: 30,
+            color: Color.fromARGB(255, 120, 240, 240),
+          ),
+          title: Text('Artists'),
+          onTap: () {},
+        ),
+        ListTile(
+          leading: const ImageIcon(
+            AssetImage("assets/images/album.png"),
+            size: 30,
+            color: Color.fromARGB(255, 120, 240, 240),
+          ),
+          title: Text('Albums'),
+          onTap: () {},
+        ),
+        ListTile(
+          leading: const ImageIcon(
+            AssetImage("assets/images/music_note.png"),
+            size: 30,
+            color: Color.fromARGB(255, 120, 240, 240),
+          ),
+          title: Text('Songs'),
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => Scaffold(
+                  backgroundColor: Colors.white,
+                  resizeToAvoidBottomInset: false,
+                  appBar: AppBar(
+                    backgroundColor: Colors.white,
+                    elevation: 0,
+                    scrolledUnderElevation: 0,
+                    title: const Text("Songs"),
+                  ),
+                  body: buildSongList(),
+                ),
+              ),
+            );
+          },
         ),
       ],
     );
@@ -776,7 +776,148 @@ class HomePageState extends State<HomePage> {
   }
 
   Widget buildSetting() {
-    return SizedBox();
+    return ListView(
+      physics: ClampingScrollPhysics(),
+      children: [
+        ListTile(
+          leading: Icon(Icons.timer_outlined),
+          title: Text('Timed Shutdown'),
+
+          trailing: SizedBox(
+            width: 150,
+            child: Row(
+              children: [
+                Spacer(),
+                ValueListenableBuilder(
+                  valueListenable: remainTimes,
+                  builder: (context, value, child) {
+                    final hours = (value ~/ 3600).toString().padLeft(2, '0');
+                    final minutes = ((value % 3600) ~/ 60).toString().padLeft(
+                      2,
+                      '0',
+                    );
+                    final secs = (value % 60).toString().padLeft(2, '0');
+                    return value > 0
+                        ? Text('$hours:$minutes:$secs')
+                        : SizedBox();
+                  },
+                ),
+                SizedBox(width: 10),
+                ValueListenableBuilder(
+                  valueListenable: timedShutdown,
+                  builder: (context, value, child) {
+                    return CupertinoSwitch(
+                      value: value,
+                      onChanged: (value) async {
+                        timedShutdown.value = value;
+                        if (value) {
+                          await showModalBottomSheet(
+                            context: context,
+                            isScrollControlled: true, // allows full-height
+                            useRootNavigator: true,
+                            builder: (context) {
+                              Duration currentDuration = Duration();
+
+                              return ClipRRect(
+                                borderRadius: BorderRadius.vertical(
+                                  top: Radius.circular(10),
+                                ),
+                                child: Container(
+                                  height: 400,
+                                  color: Colors.white,
+                                  child: Center(
+                                    child: Column(
+                                      children: [
+                                        Spacer(),
+                                        CupertinoTimerPicker(
+                                          mode: CupertinoTimerPickerMode
+                                              .hms, // hours, minutes, seconds
+                                          onTimerDurationChanged:
+                                              (Duration newDuration) {
+                                                currentDuration = newDuration;
+                                              },
+                                        ),
+                                        SizedBox(height: 10),
+                                        Row(
+                                          children: [
+                                            Spacer(),
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                timedShutdown.value = false;
+                                                Navigator.pop(context);
+                                              },
+                                              child: const Text("Cancel"),
+                                            ),
+                                            SizedBox(width: 30),
+                                            ElevatedButton(
+                                              onPressed: () {
+                                                int time = 0;
+                                                time +=
+                                                    currentDuration.inHours *
+                                                    3600;
+                                                time +=
+                                                    currentDuration.inMinutes %
+                                                    60 *
+                                                    60;
+                                                time +=
+                                                    currentDuration.inSeconds %
+                                                    60;
+                                                remainTimes.value = time;
+
+                                                shutDownTimer?.cancel();
+
+                                                shutDownTimer = Timer.periodic(
+                                                  const Duration(seconds: 1),
+                                                  (_) {
+                                                    if (remainTimes.value > 0) {
+                                                      remainTimes.value--;
+                                                    }
+                                                    if (remainTimes.value ==
+                                                        0) {
+                                                      shutDownTimer!.cancel();
+                                                      shutDownTimer = null;
+                                                      timedShutdown.value =
+                                                          false;
+
+                                                      audioHandler.pause();
+                                                    }
+                                                  },
+                                                );
+
+                                                Navigator.pop(context);
+                                              },
+                                              child: const Text("Confirm"),
+                                            ),
+
+                                            Spacer(),
+                                          ],
+                                        ),
+                                        Spacer(),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                          if (remainTimes.value == 0) {
+                            timedShutdown.value = false;
+                          }
+                        } else {
+                          shutDownTimer?.cancel();
+                          shutDownTimer = null;
+                          remainTimes.value = 0;
+                        }
+                      },
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
   }
 }
 
