@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:particle_music/artist_album_page.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/setting.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -283,6 +284,16 @@ class HomePageState extends State<HomePage> {
         final basename = p.basename(file.path);
         try {
           final meta = readMetadata(File(file.path), getImage: true);
+          if (artist2SongList[meta.artist ?? "Unkown"] == null) {
+            artist2SongList[meta.artist ?? "Unkown"] = [];
+          }
+          artist2SongList[meta.artist ?? "Unkown"]!.add(meta);
+
+          if (album2SongList[meta.album ?? "Unkown"] == null) {
+            album2SongList[meta.album ?? "Unkown"] = [];
+          }
+          album2SongList[meta.album ?? "Unkown"]!.add(meta);
+
           tempSongs.add(meta);
           librarySongBasenames.add(basename);
           basename2LibrarySongs[basename] = meta;
@@ -479,7 +490,11 @@ class HomePageState extends State<HomePage> {
             color: Color.fromARGB(255, 120, 240, 240),
           ),
           title: Text('Artists'),
-          onTap: () {},
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => artistAlbumScaffold(true)),
+            );
+          },
         ),
         ListTile(
           leading: const ImageIcon(
@@ -488,7 +503,11 @@ class HomePageState extends State<HomePage> {
             color: Color.fromARGB(255, 120, 240, 240),
           ),
           title: Text('Albums'),
-          onTap: () {},
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => artistAlbumScaffold(false)),
+            );
+          },
         ),
         ListTile(
           leading: const ImageIcon(
