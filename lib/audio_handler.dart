@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:audio_service/audio_service.dart';
-import 'package:particle_music/common.dart';
+import 'package:particle_music/setting.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:async';
 import 'package:image/image.dart' as image;
@@ -21,7 +21,6 @@ List<AudioMetadata> librarySongs = [];
 Map<String, AudioMetadata> basename2LibrarySongs = {};
 List<AudioMetadata> playQueue = [];
 List<AudioMetadata> playQueueTmp = [];
-List<AudioMetadata> filteredSongs = [];
 List<LyricLine> lyrics = [];
 Color artAverageColor = Colors.grey;
 

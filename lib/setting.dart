@@ -3,7 +3,12 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/audio_handler.dart';
-import 'package:particle_music/common.dart';
+
+ValueNotifier<bool> timedPause = ValueNotifier(false);
+ValueNotifier<int> remainTimes = ValueNotifier(0);
+ValueNotifier<bool> pauseAfterCompleted = ValueNotifier(false);
+bool needPause = false;
+Timer? pauseTimer;
 
 void displayTimedPauseSetting(BuildContext context) {
   showModalBottomSheet(

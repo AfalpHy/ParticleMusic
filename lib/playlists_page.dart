@@ -5,68 +5,82 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:particle_music/art_widget.dart';
 import 'package:particle_music/my_location.dart';
+import 'package:particle_music/playlists.dart';
 import 'package:particle_music/song_list_tile.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:searchfield/searchfield.dart';
 
-Map<String, List<AudioMetadata>> artist2SongList = {};
-Map<String, List<AudioMetadata>> album2SongList = {};
-
-class ArtistAlbumScaffold extends StatelessWidget {
-  final bool isArtist;
-  const ArtistAlbumScaffold({super.key, required this.isArtist});
+class PlaylistsScaffold extends StatelessWidget {
+  const PlaylistsScaffold({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final songListMap = isArtist ? artist2SongList : album2SongList;
     return Scaffold(
       backgroundColor: Colors.white,
-      resizeToAvoidBottomInset: false,
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
         scrolledUnderElevation: 0,
-        title: Text(isArtist ? "Artists" : "Albums"),
+        title: const Text("Playlists"),
       ),
-      body: GridView.builder(
-        padding: EdgeInsets.symmetric(horizontal: 16),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 0.88,
-        ),
-        itemCount: songListMap.length,
-        itemBuilder: (context, index) {
-          final key = songListMap.keys.elementAt(index);
-          final songList = songListMap[key];
-          return Column(
-            children: [
-              InkWell(
-                borderRadius: BorderRadius.circular(
-                  MediaQuery.widthOf(context) * 0.4 / 20,
-                ),
+      body: ValueListenableBuilder(
+        valueListenable: playlistsChangeNotifier,
+        builder: (context, _, _) {
+          return ListView.builder(
+            itemCount: playlists.length + 1,
+            itemBuilder: (_, index) {
+              if (index < playlists.length) {
+                final playlist = playlists[index];
+                return ListTile(
+                  contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
+                  visualDensity: const VisualDensity(
+                    horizontal: 0,
+                    vertical: -1,
+                  ),
 
-                child: ArtWidget(
-                  size: MediaQuery.widthOf(context) * 0.4,
-                  borderRadius: MediaQuery.widthOf(context) * 0.4 / 20,
-                  source: songList!.first.pictures.isNotEmpty
-                      ? songList.first.pictures.first
-                      : null,
-                ),
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => SingleArtistAlbumScaffold(
-                        songList: songList,
-                        title: key,
-                        isArtist: isArtist,
+                  leading: ValueListenableBuilder(
+                    valueListenable: playlist.changeNotifier,
+                    builder: (_, _, _) {
+                      return ArtWidget(
+                        size: 50,
+                        borderRadius: 3,
+                        source:
+                            playlist.songs.isNotEmpty &&
+                                playlist.songs.first.pictures.isNotEmpty
+                            ? playlist.songs.first.pictures.first
+                            : null,
+                      );
+                    },
+                  ),
+                  title: Text(playlist.name),
+                  subtitle: ValueListenableBuilder(
+                    valueListenable: playlist.changeNotifier,
+                    builder: (_, _, _) {
+                      return Text("${playlist.songs.length} songs");
+                    },
+                  ),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => SinglePlaylistScaffold(index: index),
                       ),
-                    ),
-                  );
+                    );
+                  },
+                );
+              }
+
+              return ListTile(
+                contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
+                leading: Material(
+                  borderRadius: BorderRadius.circular(3),
+                  child: Icon(Icons.add, size: 50),
+                ),
+                title: Text('Create Playlist'),
+                onTap: () {
+                  showCreatePlaylistSheet(context);
                 },
-              ),
-              SizedBox(height: 10),
-              Text(key, style: TextStyle(overflow: TextOverflow.ellipsis)),
-            ],
+              );
+            },
           );
         },
       ),
@@ -74,20 +88,18 @@ class ArtistAlbumScaffold extends StatelessWidget {
   }
 }
 
-class SingleArtistAlbumScaffold extends StatelessWidget {
+class SinglePlaylistScaffold extends StatelessWidget {
+  final int index;
   final listIsScrollingNotifier = ValueNotifier(false);
   final songListNotifer = ValueNotifier<List<AudioMetadata>>([]);
-  final List<AudioMetadata> songList;
+
   final itemScrollController = ItemScrollController();
-  final String title;
-  final bool isArtist;
-  SingleArtistAlbumScaffold({
-    super.key,
-    required this.songList,
-    required this.title,
-    required this.isArtist,
-  }) {
-    songListNotifer.value = songList;
+
+  final Playlist playlist;
+
+  SinglePlaylistScaffold({super.key, required this.index})
+    : playlist = playlists[index] {
+    songListNotifer.value = playlist.songs;
   }
 
   @override
@@ -119,10 +131,10 @@ class SingleArtistAlbumScaffold extends StatelessWidget {
             },
             child: ValueListenableBuilder(
               valueListenable: songListNotifer,
-              builder: (context, currentSongList, child) {
+              builder: (context, songList, child) {
                 return ScrollablePositionedList.builder(
                   itemScrollController: itemScrollController,
-                  itemCount: currentSongList.length + 2,
+                  itemCount: songList.length + 2,
                   itemBuilder: (context, index) {
                     if (index == 0) {
                       return Column(
@@ -138,8 +150,14 @@ class SingleArtistAlbumScaffold extends StatelessWidget {
                                 child: ArtWidget(
                                   size: 120,
                                   borderRadius: 6,
-                                  source: songList.first.pictures.isNotEmpty
-                                      ? songList.first.pictures.first
+                                  source:
+                                      (playlist.songs.isNotEmpty &&
+                                          playlist
+                                              .songs
+                                              .first
+                                              .pictures
+                                              .isNotEmpty)
+                                      ? playlist.songs.first.pictures.first
                                       : null,
                                 ),
                               ),
@@ -147,13 +165,15 @@ class SingleArtistAlbumScaffold extends StatelessWidget {
                               Expanded(
                                 child: ListTile(
                                   title: Text(
-                                    title,
+                                    playlist.name,
                                     style: TextStyle(
                                       fontSize: 25,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
-                                  subtitle: Text("${songList.length} songs"),
+                                  subtitle: Text(
+                                    "${playlist.songs.length} songs",
+                                  ),
                                 ),
                               ),
                             ],
@@ -163,10 +183,11 @@ class SingleArtistAlbumScaffold extends StatelessWidget {
                       );
                     }
 
-                    if (index < currentSongList.length + 1) {
+                    if (index < songList.length + 1) {
                       return SongListTile(
                         index: index - 1,
-                        source: currentSongList,
+                        source: songList,
+                        playlist: playlist,
                       );
                     } else {
                       return SizedBox(height: 90);
@@ -217,7 +238,7 @@ class SingleArtistAlbumScaffold extends StatelessWidget {
                       suffixIcon: IconButton(
                         onPressed: () {
                           isSearch.value = false;
-                          songListNotifer.value = songList;
+                          songListNotifer.value = playlist.songs;
                           textController.clear();
                           FocusScope.of(context).unfocus();
                         },
@@ -234,7 +255,7 @@ class SingleArtistAlbumScaffold extends StatelessWidget {
                       ),
                     ),
                     onSearchTextChanged: (value) {
-                      songListNotifer.value = songList
+                      songListNotifer.value = playlist.songs
                           .where(
                             (song) =>
                                 (value.isEmpty) ||
@@ -281,17 +302,42 @@ class SingleArtistAlbumScaffold extends StatelessWidget {
                     color: Colors.white,
                     child: Column(
                       children: [
-                        ListTile(
-                          title: Text(
-                            (isArtist ? 'Artist: ' : 'Album: ') + title,
-                          ),
+                        ListTile(title: Text("Playlist: ${playlist.name}")),
+                        Divider(
+                          thickness: 0.5,
+                          height: 1,
+                          color: Colors.grey.shade300,
                         ),
+                        playlist.name != 'Favorite'
+                            ? ListTile(
+                                leading: Icon(Icons.delete_rounded, size: 25),
+                                title: Text(
+                                  'Delete',
+                                  style: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 18,
+                                  ),
+                                ),
+                                visualDensity: const VisualDensity(
+                                  horizontal: 0,
+                                  vertical: -4,
+                                ),
+                                onTap: () {
+                                  deletePlaylist(index);
+                                  Navigator.pop(context, true);
+                                },
+                              )
+                            : SizedBox(),
                       ],
                     ),
                   ),
                 );
               },
-            );
+            ).then((value) {
+              if (value == true && context.mounted) {
+                Navigator.pop(context);
+              }
+            });
           },
         ),
       ],
