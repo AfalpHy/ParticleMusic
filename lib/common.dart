@@ -6,17 +6,20 @@ late bool hasVibration;
 
 class MyAutoSizeText extends AutoSizeText {
   final String content;
+  final double fontsize;
   MyAutoSizeText(
     this.content, {
     super.key,
     super.maxLines,
-    super.minFontSize,
-    super.maxFontSize,
     super.style,
+    required this.fontsize,
   }) : super(
          content,
+         minFontSize: fontsize,
+         maxFontSize: fontsize,
          overflowReplacement: Marquee(
            text: content,
+           style: TextStyle(fontSize: fontsize),
            scrollAxis: Axis.horizontal,
            blankSpace: 20,
            velocity: 30,

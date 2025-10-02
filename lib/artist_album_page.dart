@@ -382,8 +382,7 @@ class SingleArtistAlbumScaffold extends StatelessWidget {
                                   child: MyAutoSizeText(
                                     title,
                                     maxLines: 1,
-                                    minFontSize: 15,
-                                    maxFontSize: 15,
+                                    fontsize: 15,
                                   ),
                                 ),
                               ],
