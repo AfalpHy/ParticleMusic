@@ -238,7 +238,7 @@ class SinglePlaylistScaffold extends StatelessWidget {
             if (value) {
               return Expanded(
                 child: SizedBox(
-                  height: 40,
+                  height: 35,
                   child: SearchField(
                     autofocus: true,
                     controller: textController,

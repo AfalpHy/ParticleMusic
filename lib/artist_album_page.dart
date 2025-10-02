@@ -32,6 +32,7 @@ class ArtistAlbumScaffold extends StatelessWidget {
         elevation: 0,
         scrolledUnderElevation: 0,
         title: Text(isArtist ? "Artists" : "Albums"),
+        centerTitle: true,
         actions: [
           SizedBox(width: 50),
           ValueListenableBuilder(
@@ -39,46 +40,53 @@ class ArtistAlbumScaffold extends StatelessWidget {
             builder: (context, value, child) {
               if (value) {
                 return Expanded(
-                  child: SizedBox(
-                    height: 40,
-                    child: SearchField(
-                      autofocus: true,
-                      controller: textController,
-                      suggestions: [],
-                      searchInputDecoration: SearchInputDecoration(
-                        hintText: 'Search songs',
-                        prefixIcon: Icon(Icons.search),
-                        suffixIcon: IconButton(
-                          onPressed: () {
-                            isSearch.value = false;
-                            songListMapNotifer.value = songListMap;
-                            textController.clear();
-                            FocusScope.of(context).unfocus();
-                          },
-                          icon: Icon(Icons.clear),
-                          padding: EdgeInsets.zero,
-                        ),
-                        filled: true,
-                        fillColor: Colors.grey.shade100,
-                        contentPadding: EdgeInsets.zero,
-                        isDense: true,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(20),
-                          borderSide: BorderSide.none,
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: SizedBox(
+                          height: 35,
+                          child: SearchField(
+                            autofocus: true,
+                            controller: textController,
+                            suggestions: [],
+                            searchInputDecoration: SearchInputDecoration(
+                              hintText: 'Search songs',
+                              prefixIcon: Icon(Icons.search),
+                              suffixIcon: IconButton(
+                                onPressed: () {
+                                  isSearch.value = false;
+                                  songListMapNotifer.value = songListMap;
+                                  textController.clear();
+                                  FocusScope.of(context).unfocus();
+                                },
+                                icon: Icon(Icons.clear),
+                                padding: EdgeInsets.zero,
+                              ),
+                              filled: true,
+                              fillColor: Colors.grey.shade100,
+                              contentPadding: EdgeInsets.zero,
+                              isDense: true,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(20),
+                                borderSide: BorderSide.none,
+                              ),
+                            ),
+                            onSearchTextChanged: (value) {
+                              songListMapNotifer.value = Map.fromEntries(
+                                songListMap.entries.where(
+                                  (e) => (e.key.toLowerCase().contains(
+                                    value.toLowerCase(),
+                                  )),
+                                ),
+                              );
+
+                              return null;
+                            },
+                          ),
                         ),
                       ),
-                      onSearchTextChanged: (value) {
-                        songListMapNotifer.value = Map.fromEntries(
-                          songListMap.entries.where(
-                            (e) => (e.key.toLowerCase().contains(
-                              value.toLowerCase(),
-                            )),
-                          ),
-                        );
-
-                        return null;
-                      },
-                    ),
+                      SizedBox(width: 20),
+                    ],
                   ),
                 );
               }
