@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:particle_music/art_widget.dart';
+import 'package:particle_music/common.dart';
 import 'package:particle_music/my_location.dart';
 import 'package:particle_music/song_list_tile.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -40,32 +42,47 @@ class ArtistAlbumScaffold extends StatelessWidget {
           final songList = songListMap[key];
           return Column(
             children: [
-              InkWell(
+              Material(
+                elevation: 1,
                 borderRadius: BorderRadius.circular(
                   MediaQuery.widthOf(context) * 0.4 / 20,
                 ),
-
-                child: ArtWidget(
-                  size: MediaQuery.widthOf(context) * 0.4,
-                  borderRadius: MediaQuery.widthOf(context) * 0.4 / 20,
-                  source: songList!.first.pictures.isNotEmpty
-                      ? songList.first.pictures.first
-                      : null,
-                ),
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => SingleArtistAlbumScaffold(
-                        songList: songList,
-                        title: key,
-                        isArtist: isArtist,
+                child: InkWell(
+                  splashColor: Colors.transparent,
+                  highlightColor: Colors.transparent,
+                  child: ArtWidget(
+                    size: MediaQuery.widthOf(context) * 0.4,
+                    borderRadius: MediaQuery.widthOf(context) * 0.4 / 20,
+                    source: songList!.first.pictures.isNotEmpty
+                        ? songList.first.pictures.first
+                        : null,
+                  ),
+                  onTap: () {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => SingleArtistAlbumScaffold(
+                          songList: songList,
+                          title: key,
+                          isArtist: isArtist,
+                        ),
                       ),
-                    ),
-                  );
-                },
+                    );
+                  },
+                ),
               ),
               SizedBox(height: 10),
-              Text(key, style: TextStyle(overflow: TextOverflow.ellipsis)),
+              Row(
+                children: [
+                  SizedBox(width: 15),
+                  Expanded(
+                    child: Text(
+                      key,
+                      style: TextStyle(overflow: TextOverflow.ellipsis),
+                    ),
+                  ),
+                  SizedBox(width: 10),
+                ],
+              ),
             ],
           );
         },
@@ -146,10 +163,13 @@ class SingleArtistAlbumScaffold extends StatelessWidget {
 
                               Expanded(
                                 child: ListTile(
-                                  title: Text(
+                                  title: AutoSizeText(
                                     title,
+                                    maxLines: 1,
+                                    minFontSize: 20,
+                                    maxFontSize: 20,
+                                    overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                      fontSize: 25,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -282,8 +302,25 @@ class SingleArtistAlbumScaffold extends StatelessWidget {
                     child: Column(
                       children: [
                         ListTile(
-                          title: Text(
-                            (isArtist ? 'Artist: ' : 'Album: ') + title,
+                          title: SizedBox(
+                            height: 40,
+                            width: MediaQuery.of(context).size.width * 0.9,
+                            child: Row(
+                              children: [
+                                Text(
+                                  (isArtist ? 'Artist: ' : 'Album: '),
+                                  style: TextStyle(fontSize: 15),
+                                ),
+                                Expanded(
+                                  child: MyAutoSizeText(
+                                    title,
+                                    maxLines: 1,
+                                    minFontSize: 15,
+                                    maxFontSize: 15,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ],

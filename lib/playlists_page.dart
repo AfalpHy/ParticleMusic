@@ -1,9 +1,11 @@
 import 'dart:async';
 
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
+import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:particle_music/art_widget.dart';
+import 'package:particle_music/common.dart';
 import 'package:particle_music/my_location.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/song_list_tile.dart';
@@ -32,7 +34,7 @@ class PlaylistsScaffold extends StatelessWidget {
               if (index < playlists.length) {
                 final playlist = playlists[index];
                 return ListTile(
-                  contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
+                  contentPadding: EdgeInsets.fromLTRB(20, 0, 20, 0),
                   visualDensity: const VisualDensity(
                     horizontal: 0,
                     vertical: -1,
@@ -52,7 +54,13 @@ class PlaylistsScaffold extends StatelessWidget {
                       );
                     },
                   ),
-                  title: Text(playlist.name),
+                  title: AutoSizeText(
+                    playlist.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    minFontSize: 15,
+                    maxFontSize: 15,
+                  ),
                   subtitle: ValueListenableBuilder(
                     valueListenable: playlist.changeNotifier,
                     builder: (_, _, _) {
@@ -164,10 +172,13 @@ class SinglePlaylistScaffold extends StatelessWidget {
 
                               Expanded(
                                 child: ListTile(
-                                  title: Text(
+                                  title: AutoSizeText(
                                     playlist.name,
+                                    maxLines: 1,
+                                    minFontSize: 20,
+                                    maxFontSize: 20,
+                                    overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                      fontSize: 25,
                                       fontWeight: FontWeight.bold,
                                     ),
                                   ),
@@ -302,7 +313,28 @@ class SinglePlaylistScaffold extends StatelessWidget {
                     color: Colors.white,
                     child: Column(
                       children: [
-                        ListTile(title: Text("Playlist: ${playlist.name}")),
+                        ListTile(
+                          title: SizedBox(
+                            height: 40,
+                            width: MediaQuery.of(context).size.width * 0.9,
+                            child: Row(
+                              children: [
+                                Text(
+                                  'Playlist: ',
+                                  style: TextStyle(fontSize: 15),
+                                ),
+                                Expanded(
+                                  child: MyAutoSizeText(
+                                    playlist.name,
+                                    maxLines: 1,
+                                    minFontSize: 15,
+                                    maxFontSize: 15,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
                         Divider(
                           thickness: 0.5,
                           height: 1,

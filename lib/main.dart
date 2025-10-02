@@ -668,26 +668,10 @@ class PlayerBar extends StatelessWidget {
 
                     const SizedBox(width: 10),
                     Expanded(
-                      child: AutoSizeText(
+                      child: MyAutoSizeText(
                         "${currentSong.title ?? 'Unknown Title'} - ${currentSong.artist ?? 'Unknown Artist'}",
                         maxLines: 1,
                         minFontSize: 16,
-                        overflowReplacement: Marquee(
-                          text:
-                              "${currentSong.title ?? 'Unknown Title'} - ${currentSong.artist ?? 'Unknown Artist'}",
-                          scrollAxis: Axis.horizontal,
-                          blankSpace: 20,
-                          velocity: 30.0,
-                          pauseAfterRound: const Duration(seconds: 1),
-                          accelerationDuration: const Duration(
-                            milliseconds: 500,
-                          ),
-                          accelerationCurve: Curves.linear,
-                          decelerationDuration: const Duration(
-                            milliseconds: 500,
-                          ),
-                          decelerationCurve: Curves.linear,
-                        ),
                       ),
                     ),
 
