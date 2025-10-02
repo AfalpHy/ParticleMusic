@@ -282,10 +282,14 @@ class HomePageState extends State<HomePage> {
         final basename = p.basename(file.path);
         try {
           final meta = readMetadata(File(file.path), getImage: true);
-          if (artist2SongList[meta.artist ?? "Unkown"] == null) {
-            artist2SongList[meta.artist ?? "Unkown"] = [];
+          for (String artist in (meta.artist ?? "Unkown").split(
+            RegExp(r'[/&,]'),
+          )) {
+            if (artist2SongList[artist] == null) {
+              artist2SongList[artist] = [];
+            }
+            artist2SongList[artist]!.add(meta);
           }
-          artist2SongList[meta.artist ?? "Unkown"]!.add(meta);
 
           if (album2SongList[meta.album ?? "Unkown"] == null) {
             album2SongList[meta.album ?? "Unkown"] = [];
