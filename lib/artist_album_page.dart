@@ -21,6 +21,9 @@ class ArtistAlbumScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final songListMap = isArtist ? artist2SongList : album2SongList;
+    final songListMapNotifer = ValueNotifier(songListMap);
+    final textController = TextEditingController();
+    final ValueNotifier<bool> isSearch = ValueNotifier(false);
     return Scaffold(
       backgroundColor: Colors.white,
       resizeToAvoidBottomInset: false,
@@ -29,61 +32,125 @@ class ArtistAlbumScaffold extends StatelessWidget {
         elevation: 0,
         scrolledUnderElevation: 0,
         title: Text(isArtist ? "Artists" : "Albums"),
-      ),
-      body: GridView.builder(
-        padding: EdgeInsets.symmetric(horizontal: 16),
-        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 2,
-          childAspectRatio: 0.88,
-        ),
-        itemCount: songListMap.length,
-        itemBuilder: (context, index) {
-          final key = songListMap.keys.elementAt(index);
-          final songList = songListMap[key];
-          return Column(
-            children: [
-              Material(
-                elevation: 1,
-                borderRadius: BorderRadius.circular(
-                  MediaQuery.widthOf(context) * 0.4 / 20,
-                ),
-                child: InkWell(
-                  splashColor: Colors.transparent,
-                  highlightColor: Colors.transparent,
-                  child: ArtWidget(
-                    size: MediaQuery.widthOf(context) * 0.4,
-                    borderRadius: MediaQuery.widthOf(context) * 0.4 / 20,
-                    source: songList!.first.pictures.isNotEmpty
-                        ? songList.first.pictures.first
-                        : null,
-                  ),
-                  onTap: () {
-                    Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => SingleArtistAlbumScaffold(
-                          songList: songList,
-                          title: key,
-                          isArtist: isArtist,
+        actions: [
+          SizedBox(width: 50),
+          ValueListenableBuilder(
+            valueListenable: isSearch,
+            builder: (context, value, child) {
+              if (value) {
+                return Expanded(
+                  child: SizedBox(
+                    height: 40,
+                    child: SearchField(
+                      autofocus: true,
+                      controller: textController,
+                      suggestions: [],
+                      searchInputDecoration: SearchInputDecoration(
+                        hintText: 'Search songs',
+                        prefixIcon: Icon(Icons.search),
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            isSearch.value = false;
+                            songListMapNotifer.value = songListMap;
+                            textController.clear();
+                            FocusScope.of(context).unfocus();
+                          },
+                          icon: Icon(Icons.clear),
+                          padding: EdgeInsets.zero,
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey.shade100,
+                        contentPadding: EdgeInsets.zero,
+                        isDense: true,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(20),
+                          borderSide: BorderSide.none,
                         ),
                       ),
-                    );
-                  },
-                ),
-              ),
-              SizedBox(height: 10),
-              Row(
-                children: [
-                  SizedBox(width: 15),
-                  Expanded(
-                    child: Text(
-                      key,
-                      style: TextStyle(overflow: TextOverflow.ellipsis),
+                      onSearchTextChanged: (value) {
+                        songListMapNotifer.value = Map.fromEntries(
+                          songListMap.entries.where(
+                            (e) => (e.key.toLowerCase().contains(
+                              value.toLowerCase(),
+                            )),
+                          ),
+                        );
+
+                        return null;
+                      },
                     ),
                   ),
-                  SizedBox(width: 10),
+                );
+              }
+              return IconButton(
+                onPressed: () {
+                  isSearch.value = true;
+                },
+                icon: Icon(Icons.search),
+              );
+            },
+          ),
+        ],
+      ),
+      body: ValueListenableBuilder(
+        valueListenable: songListMapNotifer,
+        builder: (context, currentSongListMap, child) {
+          return GridView.builder(
+            padding: EdgeInsets.symmetric(horizontal: 16),
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 2,
+              childAspectRatio: 0.88,
+            ),
+            itemCount: currentSongListMap.length,
+            itemBuilder: (context, index) {
+              final key = currentSongListMap.keys.elementAt(index);
+              final songList = currentSongListMap[key];
+              return Column(
+                children: [
+                  Material(
+                    elevation: 1,
+                    borderRadius: BorderRadius.circular(
+                      MediaQuery.widthOf(context) * 0.4 / 20,
+                    ),
+                    child: InkWell(
+                      splashColor: Colors.transparent,
+                      highlightColor: Colors.transparent,
+                      child: ArtWidget(
+                        size: MediaQuery.widthOf(context) * 0.4,
+                        borderRadius: MediaQuery.widthOf(context) * 0.4 / 20,
+                        source: songList!.first.pictures.isNotEmpty
+                            ? songList.first.pictures.first
+                            : null,
+                      ),
+                      onTap: () {
+                        Navigator.of(context).push(
+                          MaterialPageRoute(
+                            builder: (_) => SingleArtistAlbumScaffold(
+                              songList: songList,
+                              title: key,
+                              isArtist: isArtist,
+                            ),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  SizedBox(height: 10),
+                  Row(
+                    children: [
+                      SizedBox(width: 15),
+                      Expanded(
+                        child: Text(
+                          key,
+                          style: TextStyle(overflow: TextOverflow.ellipsis),
+                        ),
+                      ),
+                      SizedBox(width: 10),
+                    ],
+                  ),
                 ],
-              ),
-            ],
+              );
+            },
           );
         },
       ),
