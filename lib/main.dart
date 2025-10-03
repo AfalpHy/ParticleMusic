@@ -236,11 +236,6 @@ class HomePage extends StatefulWidget {
 
 class HomePageState extends State<HomePage> {
   late Directory docs;
-  bool isChanged = false;
-
-  Timer? timer;
-
-  List<String> librarySongBasenames = [];
 
   @override
   void initState() {
@@ -273,8 +268,6 @@ class HomePageState extends State<HomePage> {
   }
 
   Future<void> loadSongs() async {
-    List<AudioMetadata> tempSongs = [];
-
     for (var file in docs.listSync()) {
       if ((file.path.endsWith('.mp3') || file.path.endsWith('.flac'))) {
         final basename = p.basename(file.path);
@@ -294,9 +287,8 @@ class HomePageState extends State<HomePage> {
           }
           album2SongList[meta.album ?? "Unkown"]!.add(meta);
 
-          tempSongs.add(meta);
-          librarySongBasenames.add(basename);
-          basename2LibrarySongs[basename] = meta;
+          librarySongs.add(meta);
+          basename2LibrarySong[basename] = meta;
           songIsFavorite[meta] = ValueNotifier(false);
         } catch (error) {
           continue; // skip unreadable files
@@ -309,16 +301,16 @@ class HomePageState extends State<HomePage> {
     );
 
     for (String name in allPlaylists) {
-      final tmp = Playlist(name: name);
-      playlists.add(tmp);
+      final playlist = Playlist(name: name);
+      playlists.add(playlist);
 
-      final contents = await tmp.playlistFile.readAsString();
+      final contents = await playlist.file.readAsString();
       if (contents != "") {
         List<dynamic> decoded = jsonDecode(contents);
         for (String basename in decoded) {
-          AudioMetadata? meta = basename2LibrarySongs[basename];
+          AudioMetadata? meta = basename2LibrarySong[basename];
           if (meta != null) {
-            tmp.songs.add(meta);
+            playlist.songs.add(meta);
             if (name == 'Favorite') {
               songIsFavorite[meta]!.value = true;
             }
@@ -327,106 +319,18 @@ class HomePageState extends State<HomePage> {
       }
     }
 
-    setState(() {
-      tempSongs.sort((a, b) {
-        // First, compare album
-        int comparison = (a.album ?? "Unknown Album").compareTo(
-          b.album ?? "Unknown Album",
-        );
-        if (comparison != 0) {
-          return comparison; // if different, use this
-        }
-        // If album is the same, compare artist
-        comparison = (a.artist ?? "Unknown Artist").compareTo(
-          b.artist ?? "Unknown Artist",
-        );
-
-        if (comparison != 0) {
-          return comparison; // if different, use this
-        }
-        return (a.title ?? "Unknown Title").compareTo(
-          b.title ?? "Unknown Title",
-        );
-      });
-      librarySongs = tempSongs;
-    });
+    setState(() {});
   }
 
   Future<void> reloadSongs() async {
-    final currentDocsList = docs.listSync();
-    int j = 0;
-    bool needReload = false;
-    for (int i = 0; i < currentDocsList.length; i++) {
-      final file = currentDocsList[i];
-      if ((file.path.endsWith('.mp3') || file.path.endsWith('.flac'))) {
-        final basename = p.basename(file.path);
-
-        if (j >= librarySongBasenames.length ||
-            basename != librarySongBasenames[j++]) {
-          needReload = true;
-          break;
-        }
-      }
-    }
-    if (!needReload) {
-      return;
-    }
-
-    bool isPlaying = audioHandler.player.playing;
-    if (isPlaying) {
-      await audioHandler.pause();
-    }
-    basename2LibrarySongs = {};
-    librarySongBasenames = [];
+    audioHandler.clear();
+    librarySongs = [];
+    basename2LibrarySong = {};
     playlists = [];
-    playlistMap = {};
+    playlistsMap = {};
     songIsFavorite = {};
 
     await loadSongs();
-
-    // update play queue meta
-    if (playQueue.isNotEmpty) {
-      List<AudioMetadata> tmp = [];
-
-      for (AudioMetadata meta in playQueue) {
-        final tmpMeta = basename2LibrarySongs[p.basename(meta.file.path)];
-        if (tmpMeta != null) {
-          tmp.add(tmpMeta);
-        }
-      }
-      playQueue = tmp;
-
-      // update current song meta
-      final tmpMeta =
-          basename2LibrarySongs[p.basename(
-            currentSongNotifier.value!.file.path,
-          )];
-      if (tmpMeta == null) {
-        if (playQueue.isNotEmpty) {
-          audioHandler.currentIndex = 0;
-          await audioHandler.load();
-        } else {
-          currentSongNotifier.value = null;
-        }
-      } else {
-        audioHandler.currentIndex = playQueue.indexOf(tmpMeta);
-        currentSongNotifier.value = tmpMeta;
-        if (isPlaying) {
-          audioHandler.play();
-        }
-      }
-    }
-
-    if (playQueueTmp.isNotEmpty) {
-      List<AudioMetadata> tmp = [];
-      for (AudioMetadata meta in playQueueTmp) {
-        final tmpMeta = basename2LibrarySongs[p.basename(meta.file.path)];
-        if (tmpMeta != null) {
-          tmp.add(tmpMeta);
-        }
-      }
-      playQueueTmp = tmp;
-    }
   }
 
   @override
@@ -512,7 +416,7 @@ class HomePageState extends State<HomePage> {
           onTap: () {
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (_) => SongsScaffold(callback: reloadSongs),
+                builder: (_) => SongsScaffold(reload: reloadSongs),
               ),
             );
           },

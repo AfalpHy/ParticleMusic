@@ -18,7 +18,7 @@ class LyricLine {
 }
 
 List<AudioMetadata> librarySongs = [];
-Map<String, AudioMetadata> basename2LibrarySongs = {};
+Map<String, AudioMetadata> basename2LibrarySong = {};
 List<AudioMetadata> playQueue = [];
 List<AudioMetadata> playQueueTmp = [];
 List<LyricLine> lyrics = [];

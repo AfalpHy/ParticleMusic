@@ -4,12 +4,10 @@ import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:particle_music/audio_handler.dart';
-import 'package:particle_music/common.dart';
 import 'package:particle_music/my_location.dart';
 import 'package:particle_music/song_list_tile.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:searchfield/searchfield.dart';
-import 'package:vibration/vibration.dart';
 
 class SongsScaffold extends StatelessWidget {
   final listIsScrollingNotifier = ValueNotifier(false);
@@ -17,9 +15,9 @@ class SongsScaffold extends StatelessWidget {
 
   final itemScrollController = ItemScrollController();
 
-  final Future<void> Function() callback;
+  final Future<void> Function() reload;
 
-  SongsScaffold({super.key, required this.callback});
+  SongsScaffold({super.key, required this.reload});
 
   @override
   Widget build(BuildContext context) {
@@ -32,6 +30,63 @@ class SongsScaffold extends StatelessWidget {
         elevation: 0,
         scrolledUnderElevation: 0,
         title: const Text("Songs"),
+        centerTitle: true,
+        actions: [
+          IconButton(
+            icon: Icon(Icons.more_vert),
+            onPressed: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                useRootNavigator: true,
+                builder: (context) {
+                  return ClipRRect(
+                    borderRadius: BorderRadius.vertical(
+                      top: Radius.circular(10),
+                    ),
+                    child: Container(
+                      height: 500,
+                      color: Colors.white,
+                      child: Column(
+                        children: [
+                          ListTile(
+                            title: Text(
+                              'Library',
+                              style: TextStyle(fontSize: 15),
+                            ),
+                          ),
+                          Divider(
+                            color: Colors.grey.shade300,
+                            thickness: 0.5,
+                            height: 1,
+                          ),
+
+                          ListTile(
+                            leading: Icon(Icons.refresh_rounded),
+                            title: Text(
+                              'Reload Library',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
+                              ),
+                            ),
+                            onTap: () async {
+                              await reload();
+                              songListNotifer.value = librarySongs;
+                              if (context.mounted) {
+                                Navigator.of(context).pop();
+                              }
+                            },
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              );
+            },
+          ),
+        ],
       ),
       body: Stack(
         children: [
@@ -103,9 +158,8 @@ class SongsScaffold extends StatelessWidget {
 
         Expanded(
           child: SizedBox(
-            height: 40,
+            height: 35,
             child: SearchField(
-              autofocus: false,
               controller: textController,
               suggestions: [],
               searchInputDecoration: SearchInputDecoration(
@@ -162,16 +216,7 @@ class SongsScaffold extends StatelessWidget {
             ),
           ),
         ),
-
-        IconButton(
-          onPressed: () {
-            if (hasVibration) {
-              Vibration.vibrate(duration: 5);
-            }
-            callback();
-          },
-          icon: Icon(Icons.refresh),
-        ),
+        SizedBox(width: 20),
       ],
     );
   }

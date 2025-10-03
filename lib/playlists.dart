@@ -9,7 +9,7 @@ import 'art_widget.dart';
 
 late File allPlaylistsFile;
 List<Playlist> playlists = [];
-Map<String, Playlist> playlistMap = {};
+Map<String, Playlist> playlistsMap = {};
 ValueNotifier<int> playlistsChangeNotifier = ValueNotifier(0);
 
 void newPlaylist(String name) {
@@ -39,14 +39,14 @@ void deletePlaylist(int index) {
 class Playlist {
   String name;
   List<AudioMetadata> songs = [];
-  File playlistFile;
+  File file;
   ValueNotifier<int> changeNotifier = ValueNotifier(0);
 
   Playlist({required this.name})
-    : playlistFile = File("${allPlaylistsFile.parent.path}/$name.json") {
-    playlistMap[name] = this;
-    if (!playlistFile.existsSync()) {
-      playlistFile.createSync();
+    : file = File("${allPlaylistsFile.parent.path}/$name.json") {
+    playlistsMap[name] = this;
+    if (!file.existsSync()) {
+      file.createSync();
     }
   }
 
@@ -55,7 +55,7 @@ class Playlist {
       return;
     }
     songs.insert(0, song);
-    playlistFile.writeAsStringSync(
+    file.writeAsStringSync(
       jsonEncode(songs.map((s) => p.basename(s.file.path)).toList()),
     );
     changeNotifier.value++;
@@ -66,7 +66,7 @@ class Playlist {
 
   void remove(AudioMetadata song) {
     songs.remove(song);
-    playlistFile.writeAsStringSync(
+    file.writeAsStringSync(
       jsonEncode(songs.map((s) => p.basename(s.file.path)).toList()),
     );
     changeNotifier.value++;
@@ -76,15 +76,15 @@ class Playlist {
   }
 
   void delete() {
-    playlistFile.deleteSync();
-    playlistMap.remove(name);
+    file.deleteSync();
+    playlistsMap.remove(name);
   }
 }
 
 Map<AudioMetadata, ValueNotifier<bool>> songIsFavorite = {};
 
 void toggleFavoriteState(AudioMetadata song) {
-  final favorite = playlistMap['Favorite']!;
+  final favorite = playlistsMap['Favorite']!;
   final isFavorite = songIsFavorite[song]!;
   if (isFavorite.value) {
     favorite.remove(song);
