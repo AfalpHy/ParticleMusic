@@ -326,6 +326,8 @@ class HomePageState extends State<HomePage> {
     librarySongs = [];
     basename2LibrarySong = {};
     playlistsManager.clear();
+    artist2SongList = {};
+    album2SongList = {};
     songIsFavorite = {};
 
     await loadSongs();
