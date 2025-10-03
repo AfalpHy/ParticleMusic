@@ -10,6 +10,7 @@ import 'package:particle_music/my_location.dart';
 import 'package:particle_music/song_list_tile.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:searchfield/searchfield.dart';
+import 'package:smooth_corner/smooth_corner.dart';
 
 Map<String, List<AudioMetadata>> artist2SongList = {};
 Map<String, List<AudioMetadata>> album2SongList = {};
@@ -117,15 +118,18 @@ class ArtistAlbumScaffold extends StatelessWidget {
                 children: [
                   Material(
                     elevation: 1,
-                    borderRadius: BorderRadius.circular(
-                      MediaQuery.widthOf(context) * 0.4 / 20,
+                    shape: SmoothRectangleBorder(
+                      smoothness: 0.6,
+                      borderRadius: BorderRadius.circular(
+                        MediaQuery.widthOf(context) * 0.4 / 10,
+                      ),
                     ),
                     child: InkWell(
                       splashColor: Colors.transparent,
                       highlightColor: Colors.transparent,
                       child: ArtWidget(
                         size: MediaQuery.widthOf(context) * 0.4,
-                        borderRadius: MediaQuery.widthOf(context) * 0.4 / 20,
+                        borderRadius: MediaQuery.widthOf(context) * 0.4 / 10,
                         source: songList!.first.pictures.isNotEmpty
                             ? songList.first.pictures.first
                             : null,
@@ -226,10 +230,13 @@ class SingleArtistAlbumScaffold extends StatelessWidget {
 
                               Material(
                                 elevation: 5,
-                                borderRadius: BorderRadius.circular(6),
+                                shape: SmoothRectangleBorder(
+                                  smoothness: 0.6,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
                                 child: ArtWidget(
                                   size: 120,
-                                  borderRadius: 6,
+                                  borderRadius: 12,
                                   source: songList.first.pictures.isNotEmpty
                                       ? songList.first.pictures.first
                                       : null,

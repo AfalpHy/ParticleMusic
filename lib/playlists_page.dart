@@ -11,6 +11,7 @@ import 'package:particle_music/playlists.dart';
 import 'package:particle_music/song_list_tile.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:searchfield/searchfield.dart';
+import 'package:smooth_corner/smooth_corner.dart';
 
 class PlaylistsScaffold extends StatelessWidget {
   const PlaylistsScaffold({super.key});
@@ -172,10 +173,13 @@ class SinglePlaylistScaffold extends StatelessWidget {
 
                               Material(
                                 elevation: 5,
-                                borderRadius: BorderRadius.circular(6),
+                                shape: SmoothRectangleBorder(
+                                  smoothness: 0.6,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
                                 child: ArtWidget(
                                   size: 120,
-                                  borderRadius: 6,
+                                  borderRadius: 12,
                                   source:
                                       (playlist.songs.isNotEmpty &&
                                           playlist

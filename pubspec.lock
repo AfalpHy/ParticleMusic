@@ -573,6 +573,14 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  smooth_corner:
+    dependency: "direct main"
+    description:
+      name: smooth_corner
+      sha256: "112d7331f82ead81ec870c5d1eb0624f2e7e367eccd166c2fffe4c11d4f87c4f"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.1.1"
   source_span:
     dependency: transitive
     description:

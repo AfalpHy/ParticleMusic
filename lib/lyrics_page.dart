@@ -4,6 +4,7 @@ import 'package:marquee/marquee.dart';
 import 'dart:async';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:smooth_corner/smooth_corner.dart';
 import 'package:vibration/vibration.dart';
 import 'audio_handler.dart';
 import 'play_queue_page.dart';
@@ -95,8 +96,11 @@ class LyricsPage extends StatelessWidget {
               const SizedBox(height: 10),
               Material(
                 elevation: 15,
-                borderRadius: BorderRadius.circular(
-                  MediaQuery.widthOf(context) * 0.84 / 20,
+                shape: SmoothRectangleBorder(
+                  smoothness: 0.6,
+                  borderRadius: BorderRadius.circular(
+                    MediaQuery.widthOf(context) * 0.84 / 20,
+                  ),
                 ),
                 child: ArtWidget(
                   size: MediaQuery.widthOf(context) * 0.84,

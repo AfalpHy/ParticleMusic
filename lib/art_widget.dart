@@ -1,5 +1,6 @@
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
+import 'package:smooth_corner/smooth_corner.dart';
 
 class ArtWidget extends StatelessWidget {
   final double size;
@@ -16,7 +17,7 @@ class ArtWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     if (source == null) {
-      return ClipRRect(
+      return SmoothClipRRect(
         borderRadius: BorderRadius.circular(borderRadius),
         child: Container(
           color: Colors.grey,
@@ -24,7 +25,7 @@ class ArtWidget extends StatelessWidget {
         ),
       );
     }
-    return ClipRRect(
+    return SmoothClipRRect(
       borderRadius: BorderRadius.circular(borderRadius),
       child: Image.memory(
         source!.bytes,

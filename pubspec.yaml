@@ -49,6 +49,7 @@ dependencies:
   searchfield: ^1.3.5
   vibration: ^3.1.4
   flutter_switch: ^0.3.2
+  smooth_corner: ^1.1.1
 
 dev_dependencies:
   flutter_test:
