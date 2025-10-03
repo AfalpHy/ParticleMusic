@@ -47,7 +47,7 @@ class PlaylistsScaffold extends StatelessWidget {
                     builder: (_, _, _) {
                       return ArtWidget(
                         size: 50,
-                        borderRadius: 3,
+                        borderRadius: 5,
                         source:
                             playlist.songs.isNotEmpty &&
                                 playlist.songs.first.pictures.isNotEmpty
@@ -174,12 +174,12 @@ class SinglePlaylistScaffold extends StatelessWidget {
                               Material(
                                 elevation: 5,
                                 shape: SmoothRectangleBorder(
-                                  smoothness: 0.6,
-                                  borderRadius: BorderRadius.circular(12),
+                                  smoothness: 1,
+                                  borderRadius: BorderRadius.circular(9),
                                 ),
                                 child: ArtWidget(
                                   size: 120,
-                                  borderRadius: 12,
+                                  borderRadius: 9,
                                   source:
                                       (playlist.songs.isNotEmpty &&
                                           playlist

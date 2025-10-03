@@ -26,6 +26,7 @@ class ArtWidget extends StatelessWidget {
       );
     }
     return SmoothClipRRect(
+      smoothness: 1,
       borderRadius: BorderRadius.circular(borderRadius),
       child: Image.memory(
         source!.bytes,

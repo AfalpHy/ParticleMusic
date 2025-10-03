@@ -164,7 +164,7 @@ class PlaylistsSheetState extends State<PlaylistsSheet> {
                   return ListTile(
                     leading: ArtWidget(
                       size: 40,
-                      borderRadius: 2,
+                      borderRadius: 4,
                       source:
                           playlist.songs.isNotEmpty &&
                               playlist.songs.first.pictures.isNotEmpty

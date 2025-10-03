@@ -26,7 +26,7 @@ class SongListTile extends StatelessWidget {
       contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
       leading: ArtWidget(
         size: 40,
-        borderRadius: 2,
+        borderRadius: 4,
         source: song.pictures.isEmpty ? null : song.pictures.first,
       ),
       title: ValueListenableBuilder(
@@ -97,7 +97,7 @@ class SongListTile extends StatelessWidget {
                       ListTile(
                         leading: ArtWidget(
                           size: 50,
-                          borderRadius: 3,
+                          borderRadius: 5,
                           source: song.pictures.isEmpty
                               ? null
                               : song.pictures.first,

@@ -566,7 +566,7 @@ class PlayerBar extends StatelessWidget {
                     const SizedBox(width: 15),
                     ArtWidget(
                       size: 35,
-                      borderRadius: 1,
+                      borderRadius: 3,
                       source: currentSong.pictures.isEmpty
                           ? null
                           : currentSong.pictures.first,

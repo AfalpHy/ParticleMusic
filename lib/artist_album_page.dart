@@ -119,9 +119,9 @@ class ArtistAlbumScaffold extends StatelessWidget {
                   Material(
                     elevation: 1,
                     shape: SmoothRectangleBorder(
-                      smoothness: 0.6,
+                      smoothness: 1,
                       borderRadius: BorderRadius.circular(
-                        MediaQuery.widthOf(context) * 0.4 / 10,
+                        MediaQuery.widthOf(context) * 0.4 / 15,
                       ),
                     ),
                     child: InkWell(
@@ -129,7 +129,7 @@ class ArtistAlbumScaffold extends StatelessWidget {
                       highlightColor: Colors.transparent,
                       child: ArtWidget(
                         size: MediaQuery.widthOf(context) * 0.4,
-                        borderRadius: MediaQuery.widthOf(context) * 0.4 / 10,
+                        borderRadius: MediaQuery.widthOf(context) * 0.4 / 15,
                         source: songList!.first.pictures.isNotEmpty
                             ? songList.first.pictures.first
                             : null,
@@ -231,12 +231,12 @@ class SingleArtistAlbumScaffold extends StatelessWidget {
                               Material(
                                 elevation: 5,
                                 shape: SmoothRectangleBorder(
-                                  smoothness: 0.6,
-                                  borderRadius: BorderRadius.circular(12),
+                                  smoothness: 1,
+                                  borderRadius: BorderRadius.circular(9),
                                 ),
                                 child: ArtWidget(
                                   size: 120,
-                                  borderRadius: 12,
+                                  borderRadius: 9,
                                   source: songList.first.pictures.isNotEmpty
                                       ? songList.first.pictures.first
                                       : null,

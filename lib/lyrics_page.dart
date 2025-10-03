@@ -97,7 +97,7 @@ class LyricsPage extends StatelessWidget {
               Material(
                 elevation: 15,
                 shape: SmoothRectangleBorder(
-                  smoothness: 0.6,
+                  smoothness: 1,
                   borderRadius: BorderRadius.circular(
                     MediaQuery.widthOf(context) * 0.84 / 20,
                   ),
@@ -159,7 +159,7 @@ class LyricsPage extends StatelessWidget {
                                   ListTile(
                                     leading: ArtWidget(
                                       size: 50,
-                                      borderRadius: 3,
+                                      borderRadius: 5,
                                       source: currentSong!.pictures.isNotEmpty
                                           ? currentSong.pictures.first
                                           : null,
