@@ -34,7 +34,6 @@ class ArtistAlbumScaffold extends StatelessWidget {
         title: Text(isArtist ? "Artists" : "Albums"),
         centerTitle: true,
         actions: [
-          SizedBox(width: 50),
           ValueListenableBuilder(
             valueListenable: isSearch,
             builder: (context, value, child) {
@@ -42,6 +41,7 @@ class ArtistAlbumScaffold extends StatelessWidget {
                 return Expanded(
                   child: Row(
                     children: [
+                      SizedBox(width: 20),
                       Expanded(
                         child: SizedBox(
                           height: 35,

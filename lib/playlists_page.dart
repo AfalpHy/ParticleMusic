@@ -24,6 +24,7 @@ class PlaylistsScaffold extends StatelessWidget {
         elevation: 0,
         scrolledUnderElevation: 0,
         title: const Text("Playlists"),
+        centerTitle: true,
       ),
       body: ValueListenableBuilder(
         valueListenable: playlistsManager.changeNotifier,
