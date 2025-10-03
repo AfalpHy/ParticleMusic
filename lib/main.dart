@@ -236,7 +236,7 @@ class HomePage extends StatefulWidget {
 
 class HomePageState extends State<HomePage> {
   late Directory docs;
-
+  late Directory appSupportDir;
   @override
   void initState() {
     super.initState();
@@ -257,12 +257,10 @@ class HomePageState extends State<HomePage> {
       }
     }
 
-    final appSupportDir = await getApplicationSupportDirectory();
-    allPlaylistsFile = File("${appSupportDir.path}/allPlaylists.txt");
-    if (!(await allPlaylistsFile.exists())) {
-      List<String> tmp = ['Favorite'];
-      await allPlaylistsFile.writeAsString(jsonEncode(tmp));
-    }
+    appSupportDir = await getApplicationSupportDirectory();
+    playlistsManager = PlaylistsManager(
+      File("${appSupportDir.path}/allPlaylists.txt"),
+    );
 
     await loadSongs();
   }
@@ -296,13 +294,14 @@ class HomePageState extends State<HomePage> {
       }
     }
 
-    List<dynamic> allPlaylists = jsonDecode(
-      await allPlaylistsFile.readAsString(),
-    );
+    List<dynamic> allPlaylists = await playlistsManager.getAllPlaylists();
 
     for (String name in allPlaylists) {
-      final playlist = Playlist(name: name);
-      playlists.add(playlist);
+      final playlist = Playlist(
+        name: name,
+        file: File("${appSupportDir.path}/$name.json"),
+      );
+      playlistsManager.addPlaylist(playlist);
 
       final contents = await playlist.file.readAsString();
       if (contents != "") {
@@ -326,8 +325,7 @@ class HomePageState extends State<HomePage> {
     audioHandler.clear();
     librarySongs = [];
     basename2LibrarySong = {};
-    playlists = [];
-    playlistsMap = {};
+    playlistsManager.clear();
     songIsFavorite = {};
 
     await loadSongs();

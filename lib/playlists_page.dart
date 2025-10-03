@@ -26,13 +26,13 @@ class PlaylistsScaffold extends StatelessWidget {
         title: const Text("Playlists"),
       ),
       body: ValueListenableBuilder(
-        valueListenable: playlistsChangeNotifier,
+        valueListenable: playlistsManager.changeNotifier,
         builder: (context, _, _) {
           return ListView.builder(
-            itemCount: playlists.length + 1,
+            itemCount: playlistsManager.length() + 1,
             itemBuilder: (_, index) {
-              if (index < playlists.length) {
-                final playlist = playlists[index];
+              if (index < playlistsManager.length()) {
+                final playlist = playlistsManager.getPlaylistByIndex(index);
                 return ListTile(
                   contentPadding: EdgeInsets.fromLTRB(20, 0, 20, 0),
                   visualDensity: const VisualDensity(
@@ -105,9 +105,26 @@ class SinglePlaylistScaffold extends StatelessWidget {
 
   final Playlist playlist;
 
+  final textController = TextEditingController();
+
   SinglePlaylistScaffold({super.key, required this.index})
-    : playlist = playlists[index] {
+    : playlist = playlistsManager.getPlaylistByIndex(index) {
     songListNotifer.value = playlist.songs;
+    playlist.changeNotifier.addListener(() {
+      final value = textController.text;
+      songListNotifer.value = playlist.songs
+          .where(
+            (song) =>
+                (value.isEmpty) ||
+                (song.title?.toLowerCase().contains(value.toLowerCase()) ??
+                    false) ||
+                (song.artist?.toLowerCase().contains(value.toLowerCase()) ??
+                    false) ||
+                (song.album?.toLowerCase().contains(value.toLowerCase()) ??
+                    false),
+          )
+          .toList();
+    });
   }
 
   @override
@@ -225,7 +242,6 @@ class SinglePlaylistScaffold extends StatelessWidget {
   }
 
   PreferredSizeWidget appBar(BuildContext context) {
-    final textController = TextEditingController();
     final ValueNotifier<bool> isSearch = ValueNotifier(false);
     return AppBar(
       backgroundColor: Colors.white,
@@ -354,7 +370,7 @@ class SinglePlaylistScaffold extends StatelessWidget {
                                   vertical: -4,
                                 ),
                                 onTap: () {
-                                  deletePlaylist(index);
+                                  playlistsManager.deletePlaylist(index);
                                   Navigator.pop(context, true);
                                 },
                               )

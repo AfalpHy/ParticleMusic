@@ -7,33 +7,70 @@ import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
 import 'art_widget.dart';
 
-late File allPlaylistsFile;
-List<Playlist> playlists = [];
-Map<String, Playlist> playlistsMap = {};
-ValueNotifier<int> playlistsChangeNotifier = ValueNotifier(0);
+late PlaylistsManager playlistsManager;
 
-void newPlaylist(String name) {
-  for (Playlist playlist in playlists) {
-    // check whether the name exists
-    if (name == playlist.name) {
-      return;
+class PlaylistsManager {
+  final File file;
+  List<Playlist> playlists = [];
+  Map<String, Playlist> playlistsMap = {};
+  ValueNotifier<int> changeNotifier = ValueNotifier(0);
+
+  PlaylistsManager(this.file) {
+    if (!(file.existsSync())) {
+      file.writeAsStringSync(jsonEncode(['Favorite']));
     }
   }
-  playlists.add(Playlist(name: name));
 
-  allPlaylistsFile.writeAsString(
-    jsonEncode(playlists.map((pl) => pl.name).toList()),
-  );
-  playlistsChangeNotifier.value++;
-}
+  Future<List<dynamic>> getAllPlaylists() async {
+    return jsonDecode(await file.readAsString());
+  }
 
-void deletePlaylist(int index) {
-  playlists[index].delete();
-  playlists.removeAt(index);
-  allPlaylistsFile.writeAsString(
-    jsonEncode(playlists.map((pl) => pl.name).toList()),
-  );
-  playlistsChangeNotifier.value++;
+  int length() {
+    return playlists.length;
+  }
+
+  Playlist getPlaylistByIndex(int index) {
+    assert(index >= 0 && index < playlists.length);
+    return playlists[index];
+  }
+
+  Playlist? getPlaylistByName(String name) {
+    return playlistsMap[name];
+  }
+
+  void addPlaylist(Playlist playlist) {
+    playlists.add(playlist);
+    playlistsMap[playlist.name] = playlist;
+  }
+
+  void createPlaylist(String name) {
+    for (Playlist playlist in playlists) {
+      // check whether the name exists
+      if (name == playlist.name) {
+        return;
+      }
+    }
+
+    File playlistFile = File("${file.parent.path}/$name.json");
+    addPlaylist(Playlist(name: name, file: playlistFile));
+
+    file.writeAsString(jsonEncode(playlists.map((pl) => pl.name).toList()));
+    changeNotifier.value++;
+  }
+
+  void deletePlaylist(int index) {
+    final playlist = playlists[index];
+    playlistsMap.remove(playlist.name);
+    playlist.file.deleteSync();
+    playlists.removeAt(index);
+    file.writeAsString(jsonEncode(playlists.map((pl) => pl.name).toList()));
+    changeNotifier.value++;
+  }
+
+  void clear() {
+    playlists = [];
+    playlistsMap = {};
+  }
 }
 
 class Playlist {
@@ -42,9 +79,7 @@ class Playlist {
   File file;
   ValueNotifier<int> changeNotifier = ValueNotifier(0);
 
-  Playlist({required this.name})
-    : file = File("${allPlaylistsFile.parent.path}/$name.json") {
-    playlistsMap[name] = this;
+  Playlist({required this.name, required this.file}) {
     if (!file.existsSync()) {
       file.createSync();
     }
@@ -74,17 +109,12 @@ class Playlist {
       songIsFavorite[song]!.value = false;
     }
   }
-
-  void delete() {
-    file.deleteSync();
-    playlistsMap.remove(name);
-  }
 }
 
 Map<AudioMetadata, ValueNotifier<bool>> songIsFavorite = {};
 
 void toggleFavoriteState(AudioMetadata song) {
-  final favorite = playlistsMap['Favorite']!;
+  final favorite = playlistsManager.getPlaylistByName('Favorite')!;
   final isFavorite = songIsFavorite[song]!;
   if (isFavorite.value) {
     favorite.remove(song);
@@ -128,9 +158,9 @@ class PlaylistsSheetState extends State<PlaylistsSheet> {
             Divider(thickness: 0.5, height: 1, color: Colors.grey.shade300),
             Expanded(
               child: ListView.builder(
-                itemCount: playlists.length,
+                itemCount: playlistsManager.length(),
                 itemBuilder: (_, index) {
-                  final playlist = playlists[index];
+                  final playlist = playlistsManager.getPlaylistByIndex(index);
                   return ListTile(
                     leading: ArtWidget(
                       size: 40,
@@ -200,7 +230,7 @@ Future<bool> showCreatePlaylistSheet(BuildContext context) async {
     },
   );
   if (name != null && name != '') {
-    newPlaylist(name);
+    playlistsManager.createPlaylist(name);
     return true;
   }
   return false;
