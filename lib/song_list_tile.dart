@@ -2,7 +2,6 @@ import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/playlists.dart';
-import 'package:smooth_corner/smooth_corner.dart';
 import 'package:vibration/vibration.dart';
 import 'audio_handler.dart';
 import 'art_widget.dart';
@@ -88,141 +87,132 @@ class SongListTile extends StatelessWidget {
             isScrollControlled: true,
             useRootNavigator: true,
             builder: (context) {
-              return SmoothClipRRect(
-                smoothness: 1,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
-                child: Container(
-                  height: 500,
-                  color: Colors.white,
-                  child: Column(
-                    children: [
-                      ListTile(
-                        leading: ArtWidget(
-                          size: 50,
-                          borderRadius: 5,
-                          source: song.pictures.isEmpty
-                              ? null
-                              : song.pictures.first,
-                        ),
-                        title: Text(
-                          song.title ?? "Unknown Title",
-                          overflow: TextOverflow.ellipsis,
-                        ),
-                        subtitle: Text(
-                          "${song.artist ?? "Unknown Artist"} - ${song.album ?? "Unknown Album"}",
-                          overflow: TextOverflow.ellipsis,
-                        ),
+              return mySheet(
+                Column(
+                  children: [
+                    ListTile(
+                      leading: ArtWidget(
+                        size: 50,
+                        borderRadius: 5,
+                        source: song.pictures.isEmpty
+                            ? null
+                            : song.pictures.first,
                       ),
-
-                      Divider(
-                        color: Colors.grey.shade300,
-                        thickness: 0.5,
-                        height: 1,
+                      title: Text(
+                        song.title ?? "Unknown Title",
+                        overflow: TextOverflow.ellipsis,
                       ),
+                      subtitle: Text(
+                        "${song.artist ?? "Unknown Artist"} - ${song.album ?? "Unknown Album"}",
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
 
-                      Expanded(
-                        child: ListView(
-                          physics: const ClampingScrollPhysics(),
-                          children: [
-                            ListTile(
-                              leading: Icon(
-                                Icons.playlist_add_outlined,
-                                size: 25,
-                              ),
-                              title: Text(
-                                'Add to Playlists',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                ),
-                              ),
-                              visualDensity: const VisualDensity(
-                                horizontal: 0,
-                                vertical: -4,
-                              ),
-                              onTap: () {
-                                Navigator.pop(context);
+                    Divider(
+                      color: Colors.grey.shade300,
+                      thickness: 0.5,
+                      height: 1,
+                    ),
 
-                                showModalBottomSheet(
-                                  context: context,
-                                  isScrollControlled: true,
-                                  builder: (_) {
-                                    return PlaylistsSheet(song: song);
-                                  },
-                                );
-                              },
+                    Expanded(
+                      child: ListView(
+                        physics: const ClampingScrollPhysics(),
+                        children: [
+                          ListTile(
+                            leading: Icon(
+                              Icons.playlist_add_outlined,
+                              size: 25,
                             ),
-                            ListTile(
-                              leading: Icon(
-                                Icons.play_circle_outline,
-                                size: 25,
+                            title: Text(
+                              'Add to Playlists',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
                               ),
-                              title: Text(
-                                'Play Now',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                ),
+                            ),
+                            visualDensity: const VisualDensity(
+                              horizontal: 0,
+                              vertical: -4,
+                            ),
+                            onTap: () {
+                              Navigator.pop(context);
+
+                              showModalBottomSheet(
+                                context: context,
+                                isScrollControlled: true,
+                                builder: (_) {
+                                  return PlaylistsSheet(song: song);
+                                },
+                              );
+                            },
+                          ),
+                          ListTile(
+                            leading: Icon(Icons.play_circle_outline, size: 25),
+                            title: Text(
+                              'Play Now',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
                               ),
-                              visualDensity: const VisualDensity(
-                                horizontal: 0,
-                                vertical: -4,
+                            ),
+                            visualDensity: const VisualDensity(
+                              horizontal: 0,
+                              vertical: -4,
+                            ),
+                            onTap: () {
+                              audioHandler.singlePlay(index, source);
+                              Navigator.pop(context);
+                            },
+                          ),
+                          ListTile(
+                            leading: Icon(
+                              Icons.playlist_add_circle_outlined,
+                              size: 25,
+                            ),
+                            title: Text(
+                              'Play Next',
+                              style: TextStyle(
+                                fontWeight: FontWeight.bold,
+                                fontSize: 18,
                               ),
-                              onTap: () {
+                            ),
+                            visualDensity: const VisualDensity(
+                              horizontal: 0,
+                              vertical: -4,
+                            ),
+                            onTap: () {
+                              if (playQueue.isEmpty) {
                                 audioHandler.singlePlay(index, source);
-                                Navigator.pop(context);
-                              },
-                            ),
-                            ListTile(
-                              leading: Icon(
-                                Icons.playlist_add_circle_outlined,
-                                size: 25,
-                              ),
-                              title: Text(
-                                'Play Next',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                ),
-                              ),
-                              visualDensity: const VisualDensity(
-                                horizontal: 0,
-                                vertical: -4,
-                              ),
-                              onTap: () {
-                                if (playQueue.isEmpty) {
-                                  audioHandler.singlePlay(index, source);
-                                } else {
-                                  audioHandler.insert2Next(index, source);
-                                }
-                                Navigator.pop(context);
-                              },
-                            ),
-                            playlist != null
-                                ? ListTile(
-                                    leading: Icon(Icons.delete, size: 25),
-                                    title: Text(
-                                      'Delete',
-                                      style: TextStyle(
-                                        fontWeight: FontWeight.bold,
-                                        fontSize: 18,
-                                      ),
+                              } else {
+                                audioHandler.insert2Next(index, source);
+                              }
+                              Navigator.pop(context);
+                            },
+                          ),
+                          playlist != null
+                              ? ListTile(
+                                  leading: Icon(Icons.delete, size: 25),
+                                  title: Text(
+                                    'Delete',
+                                    style: TextStyle(
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
                                     ),
-                                    visualDensity: const VisualDensity(
-                                      horizontal: 0,
-                                      vertical: -4,
-                                    ),
-                                    onTap: () {
-                                      playlist!.remove(song);
-                                      Navigator.pop(context);
-                                    },
-                                  )
-                                : SizedBox(),
-                          ],
-                        ),
+                                  ),
+                                  visualDensity: const VisualDensity(
+                                    horizontal: 0,
+                                    vertical: -4,
+                                  ),
+                                  onTap: () {
+                                    playlist!.remove(song);
+                                    Navigator.pop(context);
+                                  },
+                                )
+                              : SizedBox(),
+                        ],
                       ),
-                    ],
-                  ),
+                    ),
+                  ],
                 ),
               );
             },

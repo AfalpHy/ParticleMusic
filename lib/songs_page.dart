@@ -4,11 +4,11 @@ import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:particle_music/audio_handler.dart';
+import 'package:particle_music/common.dart';
 import 'package:particle_music/my_location.dart';
 import 'package:particle_music/song_list_tile.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:searchfield/searchfield.dart';
-import 'package:smooth_corner/smooth_corner.dart';
 
 class SongsScaffold extends StatelessWidget {
   final listIsScrollingNotifier = ValueNotifier(false);
@@ -41,47 +41,39 @@ class SongsScaffold extends StatelessWidget {
                 isScrollControlled: true,
                 useRootNavigator: true,
                 builder: (context) {
-                  return SmoothClipRRect(
-                    smoothness: 1,
-                    borderRadius: BorderRadius.vertical(
-                      top: Radius.circular(10),
-                    ),
-                    child: Container(
-                      height: 500,
-                      color: Colors.white,
-                      child: Column(
-                        children: [
-                          ListTile(
-                            title: Text(
-                              'Library',
-                              style: TextStyle(fontSize: 15),
-                            ),
+                  return mySheet(
+                    Column(
+                      children: [
+                        ListTile(
+                          title: Text(
+                            'Library',
+                            style: TextStyle(fontSize: 15),
                           ),
-                          Divider(
-                            color: Colors.grey.shade300,
-                            thickness: 0.5,
-                            height: 1,
-                          ),
+                        ),
+                        Divider(
+                          color: Colors.grey.shade300,
+                          thickness: 0.5,
+                          height: 1,
+                        ),
 
-                          ListTile(
-                            leading: Icon(Icons.refresh_rounded),
-                            title: Text(
-                              'Reload Library',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                              ),
+                        ListTile(
+                          leading: Icon(Icons.refresh_rounded),
+                          title: Text(
+                            'Reload Library',
+                            style: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 18,
                             ),
-                            onTap: () async {
-                              await reload();
-                              songListNotifer.value = librarySongs;
-                              if (context.mounted) {
-                                Navigator.of(context).pop();
-                              }
-                            },
                           ),
-                        ],
-                      ),
+                          onTap: () async {
+                            await reload();
+                            songListNotifer.value = librarySongs;
+                            if (context.mounted) {
+                              Navigator.of(context).pop();
+                            }
+                          },
+                        ),
+                      ],
                     ),
                   );
                 },

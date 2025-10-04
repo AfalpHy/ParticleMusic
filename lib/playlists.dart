@@ -4,8 +4,8 @@ import 'dart:io';
 
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
+import 'package:particle_music/common.dart';
 import 'package:path/path.dart' as p;
-import 'package:smooth_corner/smooth_corner.dart';
 import 'art_widget.dart';
 
 late PlaylistsManager playlistsManager;
@@ -140,51 +140,45 @@ class PlaylistsSheetState extends State<PlaylistsSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return SmoothClipRRect(
-      smoothness: 1,
-      borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
-      child: Container(
-        height: 500,
-        color: Colors.white,
-        child: Column(
-          children: [
-            ListTile(
-              leading: Material(child: Icon(Icons.add, size: 40)),
-              title: Text('Create Playlist'),
-              onTap: () async {
-                if (await showCreatePlaylistSheet(context)) {
-                  setState(() {});
-                }
+    return mySheet(
+      Column(
+        children: [
+          ListTile(
+            leading: Material(child: Icon(Icons.add, size: 40)),
+            title: Text('Create Playlist'),
+            onTap: () async {
+              if (await showCreatePlaylistSheet(context)) {
+                setState(() {});
+              }
+            },
+          ),
+          Divider(thickness: 0.5, height: 1, color: Colors.grey.shade300),
+          Expanded(
+            child: ListView.builder(
+              itemCount: playlistsManager.length(),
+              itemBuilder: (_, index) {
+                final playlist = playlistsManager.getPlaylistByIndex(index);
+                return ListTile(
+                  leading: ArtWidget(
+                    size: 40,
+                    borderRadius: 4,
+                    source:
+                        playlist.songs.isNotEmpty &&
+                            playlist.songs.first.pictures.isNotEmpty
+                        ? playlist.songs.first.pictures.first
+                        : null,
+                  ),
+                  title: Text(playlist.name),
+
+                  onTap: () {
+                    playlist.add(widget.song);
+                    Navigator.pop(context);
+                  },
+                );
               },
             ),
-            Divider(thickness: 0.5, height: 1, color: Colors.grey.shade300),
-            Expanded(
-              child: ListView.builder(
-                itemCount: playlistsManager.length(),
-                itemBuilder: (_, index) {
-                  final playlist = playlistsManager.getPlaylistByIndex(index);
-                  return ListTile(
-                    leading: ArtWidget(
-                      size: 40,
-                      borderRadius: 4,
-                      source:
-                          playlist.songs.isNotEmpty &&
-                              playlist.songs.first.pictures.isNotEmpty
-                          ? playlist.songs.first.pictures.first
-                          : null,
-                    ),
-                    title: Text(playlist.name),
-
-                    onTap: () {
-                      playlist.add(widget.song);
-                      Navigator.pop(context);
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }
@@ -197,36 +191,30 @@ Future<bool> showCreatePlaylistSheet(BuildContext context) async {
     isScrollControlled: true,
     useRootNavigator: true,
     builder: (context) {
-      return SmoothClipRRect(
-        smoothness: 1,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
-        child: Container(
-          height: 500,
-          color: Colors.white,
-          child: SizedBox(
-            height: 250, // fixed height
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.start, // center vertically
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(30, 30, 30, 0),
-                  child: TextField(
-                    controller: controller,
-                    decoration: const InputDecoration(
-                      border: OutlineInputBorder(),
-                      labelText: "Playlist Name",
-                    ),
+      return mySheet(
+        SizedBox(
+          height: 250, // fixed height
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start, // center vertically
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(30, 30, 30, 0),
+                child: TextField(
+                  controller: controller,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: "Playlist Name",
                   ),
                 ),
-                const SizedBox(height: 10),
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context, controller.text); // close with value
-                  },
-                  child: const Text("Complete"),
-                ),
-              ],
-            ),
+              ),
+              const SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context, controller.text); // close with value
+                },
+                child: const Text("Complete"),
+              ),
+            ],
           ),
         ),
       );

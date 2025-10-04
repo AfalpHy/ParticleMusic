@@ -3,7 +3,7 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/audio_handler.dart';
-import 'package:smooth_corner/smooth_corner.dart';
+import 'package:particle_music/common.dart';
 
 ValueNotifier<bool> timedPause = ValueNotifier(false);
 ValueNotifier<int> remainTimes = ValueNotifier(0);
@@ -19,73 +19,68 @@ void displayTimedPauseSetting(BuildContext context) {
     builder: (context) {
       Duration currentDuration = Duration();
 
-      return SmoothClipRRect(
-        smoothness: 1,
-        borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
-        child: Container(
-          height: 400,
-          color: Colors.white,
-          child: Center(
-            child: Column(
-              children: [
-                Spacer(),
-                CupertinoTimerPicker(
-                  mode: CupertinoTimerPickerMode.hms, // hours, minutes, seconds
-                  onTimerDurationChanged: (Duration newDuration) {
-                    currentDuration = newDuration;
-                  },
-                ),
-                SizedBox(height: 10),
-                Row(
-                  children: [
-                    Spacer(),
-                    ElevatedButton(
-                      onPressed: () {
-                        timedPause.value = false;
-                        Navigator.pop(context);
-                      },
-                      child: const Text("Cancel"),
-                    ),
-                    SizedBox(width: 30),
-                    ElevatedButton(
-                      onPressed: () {
-                        int time = 0;
-                        time += currentDuration.inHours * 3600;
-                        time += currentDuration.inMinutes % 60 * 60;
-                        time += currentDuration.inSeconds % 60;
-                        remainTimes.value = time;
+      return mySheet(
+        height: 400,
+        Center(
+          child: Column(
+            children: [
+              Spacer(),
+              CupertinoTimerPicker(
+                mode: CupertinoTimerPickerMode.hms, // hours, minutes, seconds
+                onTimerDurationChanged: (Duration newDuration) {
+                  currentDuration = newDuration;
+                },
+              ),
+              SizedBox(height: 10),
+              Row(
+                children: [
+                  Spacer(),
+                  ElevatedButton(
+                    onPressed: () {
+                      timedPause.value = false;
+                      Navigator.pop(context);
+                    },
+                    child: const Text("Cancel"),
+                  ),
+                  SizedBox(width: 30),
+                  ElevatedButton(
+                    onPressed: () {
+                      int time = 0;
+                      time += currentDuration.inHours * 3600;
+                      time += currentDuration.inMinutes % 60 * 60;
+                      time += currentDuration.inSeconds % 60;
+                      remainTimes.value = time;
 
-                        pauseTimer ??= Timer.periodic(
-                          const Duration(seconds: 1),
-                          (_) {
-                            if (remainTimes.value > 0) {
-                              remainTimes.value--;
+                      pauseTimer ??= Timer.periodic(
+                        const Duration(seconds: 1),
+                        (_) {
+                          if (remainTimes.value > 0) {
+                            remainTimes.value--;
+                          }
+                          if (remainTimes.value == 0) {
+                            pauseTimer!.cancel();
+                            pauseTimer = null;
+                            timedPause.value = false;
+
+                            if (pauseAfterCompleted.value) {
+                              needPause = true;
+                            } else {
+                              audioHandler.pause();
                             }
-                            if (remainTimes.value == 0) {
-                              pauseTimer!.cancel();
-                              pauseTimer = null;
-                              timedPause.value = false;
+                          }
+                        },
+                      );
 
-                              if (pauseAfterCompleted.value) {
-                                needPause = true;
-                              } else {
-                                audioHandler.pause();
-                              }
-                            }
-                          },
-                        );
+                      Navigator.pop(context);
+                    },
+                    child: const Text("Confirm"),
+                  ),
 
-                        Navigator.pop(context);
-                      },
-                      child: const Text("Confirm"),
-                    ),
-
-                    Spacer(),
-                  ],
-                ),
-                Spacer(),
-              ],
-            ),
+                  Spacer(),
+                ],
+              ),
+              Spacer(),
+            ],
           ),
         ),
       );

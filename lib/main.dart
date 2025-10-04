@@ -16,7 +16,7 @@ import 'package:smooth_corner/smooth_corner.dart';
 import 'package:vibration/vibration.dart';
 import 'audio_handler.dart';
 import 'lyrics_page.dart';
-import 'play_queue_page.dart';
+import 'play_queue_sheet.dart';
 import 'art_widget.dart';
 import 'package:path/path.dart' as p;
 import 'common.dart';
@@ -628,7 +628,7 @@ class PlayerBar extends StatelessWidget {
                             context: context,
                             isScrollControlled: true,
                             builder: (context) {
-                              return PlayQueuePage();
+                              return PlayQueueSheet();
                             },
                           );
                         },

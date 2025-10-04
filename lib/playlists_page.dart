@@ -327,62 +327,56 @@ class SinglePlaylistScaffold extends StatelessWidget {
               isScrollControlled: true,
               useRootNavigator: true,
               builder: (context) {
-                return SmoothClipRRect(
-                  smoothness: 1,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
-                  child: Container(
-                    height: 500,
-                    color: Colors.white,
-                    child: Column(
-                      children: [
-                        ListTile(
-                          title: SizedBox(
-                            height: 40,
-                            width: MediaQuery.of(context).size.width * 0.9,
-                            child: Row(
-                              children: [
-                                Text(
-                                  'Playlist: ',
-                                  style: TextStyle(fontSize: 15),
+                return mySheet(
+                  Column(
+                    children: [
+                      ListTile(
+                        title: SizedBox(
+                          height: 40,
+                          width: MediaQuery.of(context).size.width * 0.9,
+                          child: Row(
+                            children: [
+                              Text(
+                                'Playlist: ',
+                                style: TextStyle(fontSize: 15),
+                              ),
+                              Expanded(
+                                child: MyAutoSizeText(
+                                  playlist.name,
+                                  maxLines: 1,
+                                  fontsize: 15,
                                 ),
-                                Expanded(
-                                  child: MyAutoSizeText(
-                                    playlist.name,
-                                    maxLines: 1,
-                                    fontsize: 15,
-                                  ),
-                                ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
-                        Divider(
-                          thickness: 0.5,
-                          height: 1,
-                          color: Colors.grey.shade300,
-                        ),
-                        playlist.name != 'Favorite'
-                            ? ListTile(
-                                leading: Icon(Icons.delete_rounded, size: 25),
-                                title: Text(
-                                  'Delete',
-                                  style: TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 18,
-                                  ),
+                      ),
+                      Divider(
+                        thickness: 0.5,
+                        height: 1,
+                        color: Colors.grey.shade300,
+                      ),
+                      playlist.name != 'Favorite'
+                          ? ListTile(
+                              leading: Icon(Icons.delete_rounded, size: 25),
+                              title: Text(
+                                'Delete',
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 18,
                                 ),
-                                visualDensity: const VisualDensity(
-                                  horizontal: 0,
-                                  vertical: -4,
-                                ),
-                                onTap: () {
-                                  playlistsManager.deletePlaylist(index);
-                                  Navigator.pop(context, true);
-                                },
-                              )
-                            : SizedBox(),
-                      ],
-                    ),
+                              ),
+                              visualDensity: const VisualDensity(
+                                horizontal: 0,
+                                vertical: -4,
+                              ),
+                              onTap: () {
+                                playlistsManager.deletePlaylist(index);
+                                Navigator.pop(context, true);
+                              },
+                            )
+                          : SizedBox(),
+                    ],
                   ),
                 );
               },

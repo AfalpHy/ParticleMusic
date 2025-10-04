@@ -377,37 +377,31 @@ class SingleArtistAlbumScaffold extends StatelessWidget {
               isScrollControlled: true,
               useRootNavigator: true,
               builder: (context) {
-                return SmoothClipRRect(
-                  smoothness: 1,
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
-                  child: Container(
-                    height: 500,
-                    color: Colors.white,
-                    child: Column(
-                      children: [
-                        ListTile(
-                          title: SizedBox(
-                            height: 40,
-                            width: MediaQuery.of(context).size.width * 0.9,
-                            child: Row(
-                              children: [
-                                Text(
-                                  (isArtist ? 'Artist: ' : 'Album: '),
-                                  style: TextStyle(fontSize: 15),
+                return mySheet(
+                  Column(
+                    children: [
+                      ListTile(
+                        title: SizedBox(
+                          height: 40,
+                          width: MediaQuery.of(context).size.width * 0.9,
+                          child: Row(
+                            children: [
+                              Text(
+                                (isArtist ? 'Artist: ' : 'Album: '),
+                                style: TextStyle(fontSize: 15),
+                              ),
+                              Expanded(
+                                child: MyAutoSizeText(
+                                  title,
+                                  maxLines: 1,
+                                  fontsize: 15,
                                 ),
-                                Expanded(
-                                  child: MyAutoSizeText(
-                                    title,
-                                    maxLines: 1,
-                                    fontsize: 15,
-                                  ),
-                                ),
-                              ],
-                            ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   ),
                 );
               },
