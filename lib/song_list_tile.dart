@@ -2,6 +2,7 @@ import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/playlists.dart';
+import 'package:smooth_corner/smooth_corner.dart';
 import 'package:vibration/vibration.dart';
 import 'audio_handler.dart';
 import 'art_widget.dart';
@@ -87,7 +88,8 @@ class SongListTile extends StatelessWidget {
             isScrollControlled: true,
             useRootNavigator: true,
             builder: (context) {
-              return ClipRRect(
+              return SmoothClipRRect(
+                smoothness: 1,
                 borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
                 child: Container(
                   height: 500,

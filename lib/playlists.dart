@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:path/path.dart' as p;
+import 'package:smooth_corner/smooth_corner.dart';
 import 'art_widget.dart';
 
 late PlaylistsManager playlistsManager;
@@ -139,7 +140,8 @@ class PlaylistsSheetState extends State<PlaylistsSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
+    return SmoothClipRRect(
+      smoothness: 1,
       borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
       child: Container(
         height: 500,
@@ -195,7 +197,8 @@ Future<bool> showCreatePlaylistSheet(BuildContext context) async {
     isScrollControlled: true,
     useRootNavigator: true,
     builder: (context) {
-      return ClipRRect(
+      return SmoothClipRRect(
+        smoothness: 1,
         borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
         child: Container(
           height: 500,

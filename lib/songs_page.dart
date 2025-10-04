@@ -8,6 +8,7 @@ import 'package:particle_music/my_location.dart';
 import 'package:particle_music/song_list_tile.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:searchfield/searchfield.dart';
+import 'package:smooth_corner/smooth_corner.dart';
 
 class SongsScaffold extends StatelessWidget {
   final listIsScrollingNotifier = ValueNotifier(false);
@@ -40,7 +41,8 @@ class SongsScaffold extends StatelessWidget {
                 isScrollControlled: true,
                 useRootNavigator: true,
                 builder: (context) {
-                  return ClipRRect(
+                  return SmoothClipRRect(
+                    smoothness: 1,
                     borderRadius: BorderRadius.vertical(
                       top: Radius.circular(10),
                     ),

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
+import 'package:smooth_corner/smooth_corner.dart';
 import 'package:vibration/vibration.dart';
 import 'audio_handler.dart';
 
@@ -36,7 +37,8 @@ class PlayQueuePageState extends State<PlayQueuePage> {
 
   @override
   Widget build(BuildContext context) {
-    return ClipRRect(
+    return SmoothClipRRect(
+      smoothness: 1,
       borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
       child: Container(
         height: 500,

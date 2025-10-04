@@ -327,7 +327,8 @@ class SinglePlaylistScaffold extends StatelessWidget {
               isScrollControlled: true,
               useRootNavigator: true,
               builder: (context) {
-                return ClipRRect(
+                return SmoothClipRRect(
+                  smoothness: 1,
                   borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
                   child: Container(
                     height: 500,

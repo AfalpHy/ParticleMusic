@@ -18,6 +18,7 @@ class ArtWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     if (source == null) {
       return SmoothClipRRect(
+        smoothness: 1,
         borderRadius: BorderRadius.circular(borderRadius),
         child: Container(
           color: Colors.grey,

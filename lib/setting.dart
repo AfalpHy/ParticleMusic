@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/audio_handler.dart';
+import 'package:smooth_corner/smooth_corner.dart';
 
 ValueNotifier<bool> timedPause = ValueNotifier(false);
 ValueNotifier<int> remainTimes = ValueNotifier(0);
@@ -18,7 +19,8 @@ void displayTimedPauseSetting(BuildContext context) {
     builder: (context) {
       Duration currentDuration = Duration();
 
-      return ClipRRect(
+      return SmoothClipRRect(
+        smoothness: 1,
         borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
         child: Container(
           height: 400,

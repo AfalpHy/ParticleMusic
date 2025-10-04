@@ -12,6 +12,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:async';
 import 'package:flutter/services.dart';
+import 'package:smooth_corner/smooth_corner.dart';
 import 'package:vibration/vibration.dart';
 import 'audio_handler.dart';
 import 'lyrics_page.dart';
@@ -548,7 +549,8 @@ class PlayerBar extends StatelessWidget {
 
         return SizedBox(
           height: 50,
-          child: ClipRRect(
+          child: SmoothClipRRect(
+            smoothness: 1,
             borderRadius: BorderRadius.circular(25), // rounded half-circle ends
 
             child: Material(
