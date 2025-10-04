@@ -51,7 +51,8 @@ class ArtistAlbumScaffold extends StatelessWidget {
                             controller: textController,
                             suggestions: [],
                             searchInputDecoration: SearchInputDecoration(
-                              hintText: 'Search songs',
+                              hintText:
+                                  'Search ${isArtist ? "Artists" : "Albums"}',
                               prefixIcon: Icon(Icons.search),
                               suffixIcon: IconButton(
                                 onPressed: () {
