@@ -168,8 +168,6 @@ class SongListScaffold extends StatelessWidget {
     return AppBar(
       backgroundColor: Colors.white,
       scrolledUnderElevation: 0,
-      title: name != null ? null : Text('Songs'),
-      centerTitle: true,
       actions: [
         SizedBox(width: 50),
         searchField(),
