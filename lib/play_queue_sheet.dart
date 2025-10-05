@@ -136,8 +136,9 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
               proxyDecorator:
                   (Widget child, int index, Animation<double> animation) {
                     return Material(
-                      elevation: 1,
-                      color: Colors.white, // background color while moving
+                      elevation: 0.1,
+                      color:
+                          Colors.grey.shade100, // background color while moving
                       child: child,
                     );
                   },
