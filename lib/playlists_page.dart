@@ -135,7 +135,7 @@ class SinglePlaylistScaffold extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.white,
       resizeToAvoidBottomInset: false,
-      appBar: appBar(context),
+      appBar: searchAndMore(context),
       body: Stack(
         children: [
           NotificationListener<UserScrollNotification>(
@@ -246,79 +246,13 @@ class SinglePlaylistScaffold extends StatelessWidget {
     );
   }
 
-  PreferredSizeWidget appBar(BuildContext context) {
-    final ValueNotifier<bool> isSearch = ValueNotifier(false);
+  PreferredSizeWidget searchAndMore(BuildContext context) {
     return AppBar(
       backgroundColor: Colors.white,
       scrolledUnderElevation: 0,
       actions: [
         SizedBox(width: 50),
-        ValueListenableBuilder(
-          valueListenable: isSearch,
-          builder: (context, value, child) {
-            if (value) {
-              return Expanded(
-                child: SizedBox(
-                  height: 35,
-                  child: SearchField(
-                    autofocus: true,
-                    controller: textController,
-                    suggestions: [],
-                    searchInputDecoration: SearchInputDecoration(
-                      hintText: 'Search songs',
-                      prefixIcon: Icon(Icons.search),
-                      suffixIcon: IconButton(
-                        onPressed: () {
-                          isSearch.value = false;
-                          songListNotifer.value = playlist.songs;
-                          textController.clear();
-                          FocusScope.of(context).unfocus();
-                        },
-                        icon: Icon(Icons.clear),
-                        padding: EdgeInsets.zero,
-                      ),
-                      filled: true,
-                      fillColor: Colors.grey.shade100,
-                      contentPadding: EdgeInsets.zero,
-                      isDense: true,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                    onSearchTextChanged: (value) {
-                      songListNotifer.value = playlist.songs
-                          .where(
-                            (song) =>
-                                (value.isEmpty) ||
-                                (song.title?.toLowerCase().contains(
-                                      value.toLowerCase(),
-                                    ) ??
-                                    false) ||
-                                (song.artist?.toLowerCase().contains(
-                                      value.toLowerCase(),
-                                    ) ??
-                                    false) ||
-                                (song.album?.toLowerCase().contains(
-                                      value.toLowerCase(),
-                                    ) ??
-                                    false),
-                          )
-                          .toList();
-                      return null;
-                    },
-                  ),
-                ),
-              );
-            }
-            return IconButton(
-              onPressed: () {
-                isSearch.value = true;
-              },
-              icon: Icon(Icons.search),
-            );
-          },
-        ),
+        searchField(),
         IconButton(
           icon: Icon(Icons.more_vert),
           onPressed: () {
@@ -327,58 +261,7 @@ class SinglePlaylistScaffold extends StatelessWidget {
               isScrollControlled: true,
               useRootNavigator: true,
               builder: (context) {
-                return mySheet(
-                  Column(
-                    children: [
-                      ListTile(
-                        title: SizedBox(
-                          height: 40,
-                          width: MediaQuery.of(context).size.width * 0.9,
-                          child: Row(
-                            children: [
-                              Text(
-                                'Playlist: ',
-                                style: TextStyle(fontSize: 15),
-                              ),
-                              Expanded(
-                                child: MyAutoSizeText(
-                                  playlist.name,
-                                  maxLines: 1,
-                                  fontsize: 15,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ),
-                      Divider(
-                        thickness: 0.5,
-                        height: 1,
-                        color: Colors.grey.shade300,
-                      ),
-                      playlist.name != 'Favorite'
-                          ? ListTile(
-                              leading: Icon(Icons.delete_rounded, size: 25),
-                              title: Text(
-                                'Delete',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 18,
-                                ),
-                              ),
-                              visualDensity: const VisualDensity(
-                                horizontal: 0,
-                                vertical: -4,
-                              ),
-                              onTap: () {
-                                playlistsManager.deletePlaylist(index);
-                                Navigator.pop(context, true);
-                              },
-                            )
-                          : SizedBox(),
-                    ],
-                  ),
-                );
+                return moreSheet(context);
               },
             ).then((value) {
               if (value == true && context.mounted) {
@@ -388,6 +271,121 @@ class SinglePlaylistScaffold extends StatelessWidget {
           },
         ),
       ],
+    );
+  }
+
+  Widget searchField() {
+    final ValueNotifier<bool> isSearch = ValueNotifier(false);
+    return ValueListenableBuilder(
+      valueListenable: isSearch,
+      builder: (context, value, child) {
+        if (value) {
+          return Expanded(
+            child: SizedBox(
+              height: 35,
+              child: SearchField(
+                autofocus: true,
+                controller: textController,
+                suggestions: [],
+                searchInputDecoration: SearchInputDecoration(
+                  hintText: 'Search songs',
+                  prefixIcon: Icon(Icons.search),
+                  suffixIcon: IconButton(
+                    onPressed: () {
+                      isSearch.value = false;
+                      songListNotifer.value = playlist.songs;
+                      textController.clear();
+                      FocusScope.of(context).unfocus();
+                    },
+                    icon: Icon(Icons.clear),
+                    padding: EdgeInsets.zero,
+                  ),
+                  filled: true,
+                  fillColor: Colors.grey.shade100,
+                  contentPadding: EdgeInsets.zero,
+                  isDense: true,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(20),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+                onSearchTextChanged: (value) {
+                  songListNotifer.value = playlist.songs
+                      .where(
+                        (song) =>
+                            (value.isEmpty) ||
+                            (song.title?.toLowerCase().contains(
+                                  value.toLowerCase(),
+                                ) ??
+                                false) ||
+                            (song.artist?.toLowerCase().contains(
+                                  value.toLowerCase(),
+                                ) ??
+                                false) ||
+                            (song.album?.toLowerCase().contains(
+                                  value.toLowerCase(),
+                                ) ??
+                                false),
+                      )
+                      .toList();
+                  return null;
+                },
+              ),
+            ),
+          );
+        }
+        return IconButton(
+          onPressed: () {
+            isSearch.value = true;
+          },
+          icon: Icon(Icons.search),
+        );
+      },
+    );
+  }
+
+  Widget moreSheet(BuildContext context) {
+    return mySheet(
+      Column(
+        children: [
+          ListTile(
+            title: SizedBox(
+              height: 40,
+              width: MediaQuery.of(context).size.width * 0.9,
+              child: Row(
+                children: [
+                  Text('Playlist: ', style: TextStyle(fontSize: 15)),
+                  Expanded(
+                    child: MyAutoSizeText(
+                      playlist.name,
+                      maxLines: 1,
+                      fontsize: 15,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Divider(thickness: 0.5, height: 1, color: Colors.grey.shade300),
+          playlist.name != 'Favorite'
+              ? ListTile(
+                  leading: Icon(Icons.delete_rounded, size: 25),
+                  title: Text(
+                    'Delete',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  ),
+                  visualDensity: const VisualDensity(
+                    horizontal: 0,
+                    vertical: -4,
+                  ),
+                  onTap: () {
+                    playlistsManager.deletePlaylist(index);
+                    Navigator.pop(context, true);
+                  },
+                )
+              : SizedBox(),
+        ],
+      ),
     );
   }
 }
