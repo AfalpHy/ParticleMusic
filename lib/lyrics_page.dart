@@ -125,7 +125,25 @@ class LyricsPage extends StatelessWidget {
 
         const SizedBox(height: 30),
 
-        Expanded(child: LyricsListView(expanded: false)),
+        Expanded(
+          child: ShaderMask(
+            shaderCallback: (rect) {
+              return LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.transparent, // fade out at top
+                  Colors.black, // fully visible
+                  Colors.black, // fully visible
+                  Colors.transparent, // fade out at bottom
+                ],
+                stops: [0.0, 0.1, 0.8, 1.0], // adjust fade height
+              ).createShader(rect);
+            },
+            blendMode: BlendMode.dstIn,
+            child: LyricsListView(expanded: false),
+          ),
+        ),
 
         Row(
           children: [
@@ -475,8 +493,7 @@ class LyricsListViewState extends State<LyricsListView> {
           (line) => position >= line.timestamp,
         );
 
-        if (widget.expanded &&
-            !userDragging &&
+        if (!userDragging &&
             currentIndexNotifier.value >= 0 &&
             (tmp != currentIndexNotifier.value || userDragged)) {
           userDragged = false;
@@ -486,7 +503,7 @@ class LyricsListViewState extends State<LyricsListView> {
               index: currentIndexNotifier.value + 1,
               duration: Duration(milliseconds: 300), // smooth animation
               curve: Curves.linear,
-              alignment: 0.35,
+              alignment: widget.expanded ? 0.35 : 0.4,
             );
           }
         }
@@ -503,64 +520,48 @@ class LyricsListViewState extends State<LyricsListView> {
 
   @override
   Widget build(BuildContext context) {
-    if (widget.expanded) {
-      return LayoutBuilder(
-        builder: (context, constraints) {
-          final parentHeight = constraints.maxHeight; // height of the parent
-          return NotificationListener<UserScrollNotification>(
-            onNotification: (notification) {
-              if (notification.direction != ScrollDirection.idle) {
-                userDragging = true;
-                userDragged = true;
-                if (timer != null) {
-                  timer!.cancel();
-                  timer = null;
-                }
-              } else {
-                timer ??= Timer(const Duration(milliseconds: 1000), () {
-                  userDragging = false;
-                  timer = null;
-                });
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final parentHeight = constraints.maxHeight; // height of the parent
+        return NotificationListener<UserScrollNotification>(
+          onNotification: (notification) {
+            if (notification.direction != ScrollDirection.idle) {
+              userDragging = true;
+              userDragged = true;
+              if (timer != null) {
+                timer!.cancel();
+                timer = null;
               }
-              return false;
-            },
-            child: ScrollablePositionedList.builder(
-              itemCount: lyrics.length + 2,
-              itemScrollController: itemScrollController,
-              itemBuilder: (context, index) {
-                if (index == 0) {
-                  return SizedBox(height: parentHeight / 3);
-                } else if (index == lyrics.length + 1) {
-                  return SizedBox(height: parentHeight / 1.5);
-                }
-                return LyricLineWidget(
-                  text: lyrics[index - 1].text,
-                  index: index - 1,
-                  currentIndexNotifier: currentIndexNotifier,
+            } else {
+              timer ??= Timer(const Duration(milliseconds: 1000), () {
+                userDragging = false;
+                timer = null;
+              });
+            }
+            return false;
+          },
+          child: ScrollablePositionedList.builder(
+            itemCount: lyrics.length + 2,
+            itemScrollController: itemScrollController,
+            itemBuilder: (context, index) {
+              if (index == 0) {
+                return SizedBox(
+                  height: widget.expanded ? parentHeight / 3 : parentHeight / 2,
                 );
-              },
-            ),
-          );
-        },
-      );
-    }
-
-    return ValueListenableBuilder(
-      valueListenable: currentIndexNotifier,
-      builder: (context, index, child) {
-        if (index < 0) {
-          return SizedBox();
-        }
-        return Center(
-          child: Text(
-            lyrics[index].text,
-            textAlign: TextAlign.center,
-            style: TextStyle(
-              fontSize: 20,
-              fontWeight: FontWeight.bold,
-
-              color: Colors.black,
-            ),
+              } else if (index == lyrics.length + 1) {
+                return SizedBox(
+                  height: widget.expanded
+                      ? parentHeight / 1.5
+                      : parentHeight / 2,
+                );
+              }
+              return LyricLineWidget(
+                text: lyrics[index - 1].text,
+                index: index - 1,
+                currentIndexNotifier: currentIndexNotifier,
+                expanded: widget.expanded,
+              );
+            },
           ),
         );
       },
@@ -573,19 +574,22 @@ class LyricLineWidget extends StatelessWidget {
   final String text;
   final int index;
   final ValueNotifier<int> currentIndexNotifier;
+  final bool expanded;
 
   const LyricLineWidget({
     super.key,
     required this.text,
     required this.index,
     required this.currentIndexNotifier,
+    required this.expanded,
   });
 
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.fromLTRB(30, 5, 0, 5),
-
+      padding: expanded
+          ? const EdgeInsets.fromLTRB(30, 5, 0, 5)
+          : const EdgeInsets.symmetric(vertical: 5, horizontal: 30),
       child: InkWell(
         borderRadius: BorderRadius.all(Radius.circular(10)),
 
@@ -597,9 +601,11 @@ class LyricLineWidget extends StatelessWidget {
           builder: (context, value, child) {
             return Text(
               text,
-              textAlign: TextAlign.left,
+              textAlign: expanded ? TextAlign.left : TextAlign.center,
               style: TextStyle(
-                fontSize: value == index ? 24 : 20,
+                fontSize: value == index
+                    ? (expanded ? 24 : 20)
+                    : (expanded ? 20 : 16),
                 fontWeight: value == index
                     ? FontWeight.bold
                     : FontWeight.normal,
