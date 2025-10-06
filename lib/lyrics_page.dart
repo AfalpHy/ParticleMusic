@@ -494,16 +494,15 @@ class LyricsListViewState extends State<LyricsListView> {
             currentIndexNotifier.value >= 0 &&
             (tmp != currentIndexNotifier.value || userDragged)) {
           userDragged = false;
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            if (mounted) {
-              itemScrollController.scrollTo(
-                index: currentIndexNotifier.value + 1,
-                duration: Duration(milliseconds: 300), // smooth animation
-                curve: Curves.linear,
-                alignment: widget.expanded ? 0.35 : 0.4,
-              );
-            }
-          });
+
+          if (mounted) {
+            itemScrollController.scrollTo(
+              index: currentIndexNotifier.value + 1,
+              duration: Duration(milliseconds: 300), // smooth animation
+              curve: Curves.linear,
+              alignment: widget.expanded ? 0.35 : 0.4,
+            );
+          }
         }
       }
     });
