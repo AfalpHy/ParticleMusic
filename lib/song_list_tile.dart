@@ -70,7 +70,8 @@ class SongListTile extends StatelessWidget {
       onTap: () async {
         audioHandler.setIndex(index);
         playQueue = List.from(source);
-        if (playModeNotifier.value == 1) {
+        if (playModeNotifier.value == 1 ||
+            (playModeNotifier.value == 2 && audioHandler.tmpPlayMode == 1)) {
           audioHandler.shuffle();
         }
         await audioHandler.load();
