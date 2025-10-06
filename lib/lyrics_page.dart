@@ -585,7 +585,9 @@ class LyricLineWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 30),
+      padding: expanded
+          ? const EdgeInsets.fromLTRB(30, 5, 0, 5)
+          : const EdgeInsets.symmetric(vertical: 5, horizontal: 30),
       child: InkWell(
         borderRadius: BorderRadius.all(Radius.circular(10)),
 
@@ -599,7 +601,9 @@ class LyricLineWidget extends StatelessWidget {
               text,
               textAlign: expanded ? TextAlign.left : TextAlign.center,
               style: TextStyle(
-                fontSize: value == index ? 20 : 16,
+                fontSize: value == index
+                    ? (expanded ? 24 : 20)
+                    : (expanded ? 20 : 16),
                 fontWeight: value == index
                     ? FontWeight.bold
                     : FontWeight.normal,
