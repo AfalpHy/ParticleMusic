@@ -232,7 +232,7 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
     g /= count;
     b /= count;
     int luminance = image.getLuminanceRgb(r, g, b).toInt();
-    int minLuminace = 50;
+    int minLuminace = 80;
     if (luminance < minLuminace) {
       r += minLuminace - luminance;
       g += minLuminace - luminance;
