@@ -17,6 +17,7 @@ class LyricsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    ValueNotifier<bool> expandLyricsNotifier = ValueNotifier(false);
     return ValueListenableBuilder(
       valueListenable: currentSongNotifier,
       builder: (_, currentSong, _) {
@@ -93,25 +94,39 @@ class LyricsPage extends StatelessWidget {
           ),
           body: Column(
             children: [
-              const SizedBox(height: 10),
-              Material(
-                elevation: 15,
-                shape: SmoothRectangleBorder(
-                  smoothness: 1,
-                  borderRadius: BorderRadius.circular(
-                    MediaQuery.widthOf(context) * 0.84 / 20,
-                  ),
-                ),
-                child: ArtWidget(
-                  size: MediaQuery.widthOf(context) * 0.84,
-                  borderRadius: MediaQuery.widthOf(context) * 0.84 / 20,
-                  source: currentSong != null && currentSong.pictures.isNotEmpty
-                      ? currentSong.pictures.first
-                      : null,
-                ),
-              ),
+              ValueListenableBuilder(
+                valueListenable: expandLyricsNotifier,
+                builder: (context, value, child) {
+                  if (value == true) {
+                    return SizedBox();
+                  }
+                  return Column(
+                    children: [
+                      const SizedBox(height: 10),
+                      Material(
+                        elevation: 15,
+                        shape: SmoothRectangleBorder(
+                          smoothness: 1,
+                          borderRadius: BorderRadius.circular(
+                            MediaQuery.widthOf(context) * 0.84 / 20,
+                          ),
+                        ),
+                        child: ArtWidget(
+                          size: MediaQuery.widthOf(context) * 0.84,
+                          borderRadius: MediaQuery.widthOf(context) * 0.84 / 20,
+                          source:
+                              currentSong != null &&
+                                  currentSong.pictures.isNotEmpty
+                              ? currentSong.pictures.first
+                              : null,
+                        ),
+                      ),
 
-              const SizedBox(height: 30),
+                      const SizedBox(height: 30),
+                    ],
+                  );
+                },
+              ),
 
               Expanded(
                 child: ShaderMask(
@@ -135,6 +150,14 @@ class LyricsPage extends StatelessWidget {
 
               Row(
                 children: [
+                  SizedBox(width: 25),
+                  IconButton(
+                    color: Colors.black,
+                    onPressed: () {
+                      expandLyricsNotifier.value = !expandLyricsNotifier.value;
+                    },
+                    icon: Icon(Icons.lyrics_outlined),
+                  ),
                   Spacer(),
                   FavoriteButton(),
                   IconButton(
