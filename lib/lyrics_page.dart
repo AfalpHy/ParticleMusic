@@ -406,7 +406,7 @@ class LyricsPage extends StatelessWidget {
         Column(
           children: [
             Spacer(),
-            FavoriteButton(),
+            FavoriteButton(size: 30),
 
             IconButton(
               color: Colors.black,
@@ -425,7 +425,7 @@ class LyricsPage extends StatelessWidget {
                   ? await audioHandler.pause()
                   : await audioHandler.play(),
             ),
-            SizedBox(height: 20),
+            SizedBox(height: 30),
           ],
         ),
         SizedBox(width: 20),
@@ -435,7 +435,8 @@ class LyricsPage extends StatelessWidget {
 }
 
 class FavoriteButton extends StatelessWidget {
-  const FavoriteButton({super.key});
+  final double? size;
+  const FavoriteButton({super.key, this.size});
 
   @override
   Widget build(BuildContext context) {
@@ -457,6 +458,7 @@ class FavoriteButton extends StatelessWidget {
               icon: Icon(
                 isFavorite.value ? Icons.favorite : Icons.favorite_outline,
                 color: isFavorite.value ? Colors.red : Colors.black,
+                size: size,
               ),
             );
           },
