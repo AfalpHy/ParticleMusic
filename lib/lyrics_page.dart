@@ -17,7 +17,7 @@ class LyricsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    ValueNotifier<bool> expandLyricsNotifier = ValueNotifier(false);
+    ValueNotifier<bool> lyricsExpandedNotifier = ValueNotifier(false);
     return ValueListenableBuilder(
       valueListenable: currentSongNotifier,
       builder: (_, currentSong, _) {
@@ -92,258 +92,135 @@ class LyricsPage extends StatelessWidget {
                     ),
                   ),
           ),
-          body: Column(
-            children: [
-              ValueListenableBuilder(
-                valueListenable: expandLyricsNotifier,
-                builder: (context, value, child) {
-                  if (value == true) {
-                    return SizedBox();
-                  }
-                  return Column(
-                    children: [
-                      const SizedBox(height: 10),
-                      Material(
-                        elevation: 15,
-                        shape: SmoothRectangleBorder(
-                          smoothness: 1,
-                          borderRadius: BorderRadius.circular(
-                            MediaQuery.widthOf(context) * 0.84 / 20,
-                          ),
-                        ),
-                        child: ArtWidget(
-                          size: MediaQuery.widthOf(context) * 0.84,
-                          borderRadius: MediaQuery.widthOf(context) * 0.84 / 20,
-                          source:
-                              currentSong != null &&
-                                  currentSong.pictures.isNotEmpty
-                              ? currentSong.pictures.first
-                              : null,
-                        ),
-                      ),
-
-                      const SizedBox(height: 30),
-                    ],
-                  );
-                },
-              ),
-
-              Expanded(
-                child: ShaderMask(
-                  shaderCallback: (rect) {
-                    return LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        Colors.transparent, // fade out at top
-                        Colors.black, // fully visible
-                        Colors.black, // fully visible
-                        Colors.transparent, // fade out at bottom
-                      ],
-                      stops: [0.0, 0.1, 0.8, 1.0], // adjust fade height
-                    ).createShader(rect);
-                  },
-                  blendMode: BlendMode.dstIn,
-                  child: LyricsListView(),
-                ),
-              ),
-
-              Row(
-                children: [
-                  SizedBox(width: 25),
-                  IconButton(
-                    color: Colors.black,
-                    onPressed: () {
-                      expandLyricsNotifier.value = !expandLyricsNotifier.value;
-                    },
-                    icon: Icon(Icons.lyrics_outlined),
-                  ),
-                  Spacer(),
-                  FavoriteButton(),
-                  IconButton(
-                    onPressed: () {
-                      if (hasVibration) {
-                        Vibration.vibrate(duration: 5);
-                      }
-                      showModalBottomSheet(
-                        context: context,
-                        isScrollControlled: true,
-                        builder: (context) {
-                          return mySheet(
-                            Column(
-                              children: [
-                                ListTile(
-                                  leading: ArtWidget(
-                                    size: 50,
-                                    borderRadius: 5,
-                                    source: currentSong!.pictures.isNotEmpty
-                                        ? currentSong.pictures.first
-                                        : null,
-                                  ),
-                                  title: Text(
-                                    currentSong.title ?? "Unknown Title",
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                  subtitle: Text(
-                                    "${currentSong.artist ?? "Unknown Artist"} - ${currentSong.album ?? "Unknown Album"}",
-                                    overflow: TextOverflow.ellipsis,
-                                  ),
-                                ),
-
-                                Divider(
-                                  color: Colors.grey.shade300,
-                                  thickness: 0.5,
-                                  height: 1,
-                                ),
-
-                                Expanded(
-                                  child: ListView(
-                                    physics: const ClampingScrollPhysics(),
-                                    children: [
-                                      ListTile(
-                                        leading: Icon(
-                                          Icons.playlist_add_outlined,
-                                          size: 25,
-                                        ),
-                                        title: Text(
-                                          'Add to Playlists',
-                                          style: TextStyle(
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 18,
-                                          ),
-                                        ),
-                                        visualDensity: const VisualDensity(
-                                          horizontal: 0,
-                                          vertical: -4,
-                                        ),
-                                        onTap: () {
-                                          Navigator.pop(context);
-
-                                          showModalBottomSheet(
-                                            context: context,
-                                            isScrollControlled: true,
-                                            builder: (_) {
-                                              return PlaylistsSheet(
-                                                song: currentSong,
-                                              );
-                                            },
-                                          );
-                                        },
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ],
-                            ),
-                          );
-                        },
-                      );
-                    },
-                    icon: Icon(Icons.more_vert, color: Colors.black),
-                  ),
-                  SizedBox(width: 25),
-                ],
-              ),
-              SeekBar(),
-
-              // -------- Play Controls --------
-              Padding(
-                padding: const EdgeInsets.fromLTRB(10, 0, 10, 40),
-
-                child: Row(
+          body: ValueListenableBuilder(
+            valueListenable: lyricsExpandedNotifier,
+            builder: (context, value, child) {
+              if (value) {
+                return Row(
                   children: [
                     Expanded(
-                      child: ValueListenableBuilder(
-                        valueListenable: playModeNotifier,
-                        builder: (_, playMode, _) {
-                          return IconButton(
-                            color: Colors.black,
-                            icon: ImageIcon(
-                              playMode == 0
-                                  ? AssetImage("assets/images/loop.png")
-                                  : playMode == 1
-                                  ? AssetImage("assets/images/shuffle.png")
-                                  : AssetImage("assets/images/repeat.png"),
-                              size: 35,
+                      child: Column(
+                        children: [
+                          Expanded(
+                            child: ShaderMask(
+                              shaderCallback: (rect) {
+                                return LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Colors.transparent, // fade out at top
+                                    Colors.black, // fully visible
+                                    Colors.black, // fully visible
+                                    Colors.transparent, // fade out at bottom
+                                  ],
+                                  stops: [
+                                    0.0,
+                                    0.1,
+                                    0.7,
+                                    1.0,
+                                  ], // adjust fade height
+                                ).createShader(rect);
+                              },
+                              blendMode: BlendMode.dstIn,
+                              child: LyricsListView(expanded: true),
                             ),
-                            onPressed: () {
-                              if (playModeNotifier.value != 2) {
-                                audioHandler.switchPlayMode();
-                                switch (playModeNotifier.value) {
-                                  case 0:
-                                    showCenterMessage(context, "loop");
-                                    break;
-                                  default:
-                                    showCenterMessage(context, "shuffle");
-                                    break;
-                                }
-                              }
-                            },
-                            onLongPress: () {
-                              audioHandler.toggleRepeat();
-                              switch (playModeNotifier.value) {
-                                case 0:
-                                  showCenterMessage(context, "loop");
-                                  break;
-                                case 1:
-                                  showCenterMessage(context, "shuffle");
-                                  break;
-                                default:
-                                  showCenterMessage(context, "repeat");
-                                  break;
-                              }
-                            },
-                          );
-                        },
+                          ),
+                          SizedBox(height: 50),
+                        ],
                       ),
                     ),
-
-                    Expanded(
-                      child: IconButton(
-                        color: Colors.black,
-                        icon: const ImageIcon(
-                          AssetImage("assets/images/previous_button.png"),
-                          size: 35,
-                        ),
-                        onPressed: audioHandler.skipToPrevious,
-                      ),
-                    ),
-                    Expanded(
-                      child: IconButton(
-                        color: Colors.black,
-                        icon: ValueListenableBuilder(
-                          valueListenable: isPlayingNotifier,
-                          builder: (_, isPlaying, _) {
-                            return Icon(
-                              isPlaying
-                                  ? Icons.pause_rounded
-                                  : Icons.play_arrow_rounded,
-                              size: 48,
-                            );
-                          },
-                        ),
-                        onPressed: () async => audioHandler.player.playing
-                            ? await audioHandler.pause()
-                            : await audioHandler.play(),
-                      ),
-                    ),
-                    Expanded(
-                      child: IconButton(
-                        color: Colors.black,
-                        icon: const ImageIcon(
-                          AssetImage("assets/images/next_button.png"),
-                          size: 35,
-                        ),
-                        onPressed: audioHandler.skipToNext,
-                      ),
-                    ),
-                    Expanded(
-                      child: IconButton(
-                        icon: Icon(
-                          Icons.playlist_play_rounded,
-                          size: 35,
+                    Column(
+                      children: [
+                        Spacer(),
+                        FavoriteButton(),
+                        IconButton(
                           color: Colors.black,
+                          onPressed: () {
+                            lyricsExpandedNotifier.value = false;
+                          },
+                          icon: Icon(Icons.lyrics_outlined),
                         ),
+
+                        IconButton(
+                          color: Colors.black,
+                          icon: ValueListenableBuilder(
+                            valueListenable: isPlayingNotifier,
+                            builder: (_, isPlaying, _) {
+                              return Icon(
+                                isPlaying
+                                    ? Icons.pause_circle_rounded
+                                    : Icons.play_circle_rounded,
+                                size: 48,
+                              );
+                            },
+                          ),
+                          onPressed: () async => audioHandler.player.playing
+                              ? await audioHandler.pause()
+                              : await audioHandler.play(),
+                        ),
+                        SizedBox(height: 20),
+                      ],
+                    ),
+                    SizedBox(width: 20),
+                  ],
+                );
+              }
+              return Column(
+                children: [
+                  const SizedBox(height: 10),
+                  Material(
+                    elevation: 15,
+                    shape: SmoothRectangleBorder(
+                      smoothness: 1,
+                      borderRadius: BorderRadius.circular(
+                        MediaQuery.widthOf(context) * 0.84 / 20,
+                      ),
+                    ),
+                    child: ArtWidget(
+                      size: MediaQuery.widthOf(context) * 0.84,
+                      borderRadius: MediaQuery.widthOf(context) * 0.84 / 20,
+                      source:
+                          currentSong != null && currentSong.pictures.isNotEmpty
+                          ? currentSong.pictures.first
+                          : null,
+                    ),
+                  ),
+
+                  const SizedBox(height: 30),
+
+                  Expanded(
+                    child: ShaderMask(
+                      shaderCallback: (rect) {
+                        return LinearGradient(
+                          begin: Alignment.topCenter,
+                          end: Alignment.bottomCenter,
+                          colors: [
+                            Colors.transparent, // fade out at top
+                            Colors.black, // fully visible
+                            Colors.black, // fully visible
+                            Colors.transparent, // fade out at bottom
+                          ],
+                          stops: [0.0, 0.1, 0.8, 1.0], // adjust fade height
+                        ).createShader(rect);
+                      },
+                      blendMode: BlendMode.dstIn,
+                      child: LyricsListView(expanded: false),
+                    ),
+                  ),
+
+                  Row(
+                    children: [
+                      SizedBox(width: 24),
+                      IconButton(
+                        color: Colors.black,
+                        onPressed: () {
+                          lyricsExpandedNotifier.value = true;
+                        },
+                        icon: Icon(Icons.lyrics_outlined),
+                      ),
+                      Spacer(),
+                      FavoriteButton(),
+                      IconButton(
                         onPressed: () {
                           if (hasVibration) {
                             Vibration.vibrate(duration: 5);
@@ -352,16 +229,201 @@ class LyricsPage extends StatelessWidget {
                             context: context,
                             isScrollControlled: true,
                             builder: (context) {
-                              return PlayQueueSheet();
+                              return mySheet(
+                                Column(
+                                  children: [
+                                    ListTile(
+                                      leading: ArtWidget(
+                                        size: 50,
+                                        borderRadius: 5,
+                                        source: currentSong!.pictures.isNotEmpty
+                                            ? currentSong.pictures.first
+                                            : null,
+                                      ),
+                                      title: Text(
+                                        currentSong.title ?? "Unknown Title",
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                      subtitle: Text(
+                                        "${currentSong.artist ?? "Unknown Artist"} - ${currentSong.album ?? "Unknown Album"}",
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+
+                                    Divider(
+                                      color: Colors.grey.shade300,
+                                      thickness: 0.5,
+                                      height: 1,
+                                    ),
+
+                                    Expanded(
+                                      child: ListView(
+                                        physics: const ClampingScrollPhysics(),
+                                        children: [
+                                          ListTile(
+                                            leading: Icon(
+                                              Icons.playlist_add_outlined,
+                                              size: 25,
+                                            ),
+                                            title: Text(
+                                              'Add to Playlists',
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 18,
+                                              ),
+                                            ),
+                                            visualDensity: const VisualDensity(
+                                              horizontal: 0,
+                                              vertical: -4,
+                                            ),
+                                            onTap: () {
+                                              Navigator.pop(context);
+
+                                              showModalBottomSheet(
+                                                context: context,
+                                                isScrollControlled: true,
+                                                builder: (_) {
+                                                  return PlaylistsSheet(
+                                                    song: currentSong,
+                                                  );
+                                                },
+                                              );
+                                            },
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              );
                             },
                           );
                         },
+                        icon: Icon(Icons.more_vert, color: Colors.black),
                       ),
+                      SizedBox(width: 25),
+                    ],
+                  ),
+                  SeekBar(),
+
+                  // -------- Play Controls --------
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(10, 0, 10, 40),
+
+                    child: Row(
+                      children: [
+                        Expanded(
+                          child: ValueListenableBuilder(
+                            valueListenable: playModeNotifier,
+                            builder: (_, playMode, _) {
+                              return IconButton(
+                                color: Colors.black,
+                                icon: ImageIcon(
+                                  playMode == 0
+                                      ? AssetImage("assets/images/loop.png")
+                                      : playMode == 1
+                                      ? AssetImage("assets/images/shuffle.png")
+                                      : AssetImage("assets/images/repeat.png"),
+                                  size: 35,
+                                ),
+                                onPressed: () {
+                                  if (playModeNotifier.value != 2) {
+                                    audioHandler.switchPlayMode();
+                                    switch (playModeNotifier.value) {
+                                      case 0:
+                                        showCenterMessage(context, "loop");
+                                        break;
+                                      default:
+                                        showCenterMessage(context, "shuffle");
+                                        break;
+                                    }
+                                  }
+                                },
+                                onLongPress: () {
+                                  audioHandler.toggleRepeat();
+                                  switch (playModeNotifier.value) {
+                                    case 0:
+                                      showCenterMessage(context, "loop");
+                                      break;
+                                    case 1:
+                                      showCenterMessage(context, "shuffle");
+                                      break;
+                                    default:
+                                      showCenterMessage(context, "repeat");
+                                      break;
+                                  }
+                                },
+                              );
+                            },
+                          ),
+                        ),
+
+                        Expanded(
+                          child: IconButton(
+                            color: Colors.black,
+                            icon: const ImageIcon(
+                              AssetImage("assets/images/previous_button.png"),
+                              size: 35,
+                            ),
+                            onPressed: audioHandler.skipToPrevious,
+                          ),
+                        ),
+                        Expanded(
+                          child: IconButton(
+                            color: Colors.black,
+                            icon: ValueListenableBuilder(
+                              valueListenable: isPlayingNotifier,
+                              builder: (_, isPlaying, _) {
+                                return Icon(
+                                  isPlaying
+                                      ? Icons.pause_rounded
+                                      : Icons.play_arrow_rounded,
+                                  size: 48,
+                                );
+                              },
+                            ),
+                            onPressed: () async => audioHandler.player.playing
+                                ? await audioHandler.pause()
+                                : await audioHandler.play(),
+                          ),
+                        ),
+                        Expanded(
+                          child: IconButton(
+                            color: Colors.black,
+                            icon: const ImageIcon(
+                              AssetImage("assets/images/next_button.png"),
+                              size: 35,
+                            ),
+                            onPressed: audioHandler.skipToNext,
+                          ),
+                        ),
+                        Expanded(
+                          child: IconButton(
+                            icon: Icon(
+                              Icons.playlist_play_rounded,
+                              size: 35,
+                              color: Colors.black,
+                            ),
+                            onPressed: () {
+                              if (hasVibration) {
+                                Vibration.vibrate(duration: 5);
+                              }
+                              showModalBottomSheet(
+                                context: context,
+                                isScrollControlled: true,
+                                builder: (context) {
+                                  return PlayQueueSheet();
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                     ),
-                  ],
-                ),
-              ),
-            ],
+                  ),
+                ],
+              );
+            },
           ),
         );
       },
@@ -402,7 +464,8 @@ class FavoriteButton extends StatelessWidget {
 }
 
 class LyricsListView extends StatefulWidget {
-  const LyricsListView({super.key});
+  final bool expanded;
+  const LyricsListView({super.key, required this.expanded});
 
   @override
   State<LyricsListView> createState() => LyricsListViewState();
@@ -437,7 +500,7 @@ class LyricsListViewState extends State<LyricsListView> {
                 index: currentIndexNotifier.value + 1,
                 duration: Duration(milliseconds: 300), // smooth animation
                 curve: Curves.linear,
-                alignment: 0.4,
+                alignment: widget.expanded ? 0.35 : 0.4,
               );
             }
           });
@@ -479,13 +542,22 @@ class LyricsListViewState extends State<LyricsListView> {
             itemCount: lyrics.length + 2,
             itemScrollController: itemScrollController,
             itemBuilder: (context, index) {
-              if (index == 0 || index == lyrics.length + 1) {
-                return SizedBox(height: parentHeight / 2);
+              if (index == 0) {
+                return SizedBox(
+                  height: widget.expanded ? parentHeight / 3 : parentHeight / 2,
+                );
+              } else if (index == lyrics.length + 1) {
+                return SizedBox(
+                  height: widget.expanded
+                      ? parentHeight / 1.5
+                      : parentHeight / 2,
+                );
               }
               return LyricLineWidget(
                 text: lyrics[index - 1].text,
                 index: index - 1,
                 currentIndexNotifier: currentIndexNotifier,
+                expanded: widget.expanded,
               );
             },
           ),
@@ -500,12 +572,14 @@ class LyricLineWidget extends StatelessWidget {
   final String text;
   final int index;
   final ValueNotifier<int> currentIndexNotifier;
+  final bool expanded;
 
   const LyricLineWidget({
     super.key,
     required this.text,
     required this.index,
     required this.currentIndexNotifier,
+    required this.expanded,
   });
 
   @override
@@ -523,7 +597,7 @@ class LyricLineWidget extends StatelessWidget {
           builder: (context, value, child) {
             return Text(
               text,
-              textAlign: TextAlign.center,
+              textAlign: expanded ? TextAlign.left : TextAlign.center,
               style: TextStyle(
                 fontSize: value == index ? 20 : 16,
                 fontWeight: value == index
