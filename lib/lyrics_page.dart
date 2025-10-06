@@ -406,8 +406,6 @@ class LyricsPage extends StatelessWidget {
         Column(
           children: [
             Spacer(),
-            FavoriteButton(size: 30),
-
             IconButton(
               color: Colors.black,
               icon: ValueListenableBuilder(
