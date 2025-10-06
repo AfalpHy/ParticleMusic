@@ -154,7 +154,7 @@ Widget bottomNavigator() {
                   highlightColor: Colors.transparent,
                   onTap: () {
                     if (hasVibration) {
-                      Vibration.vibrate(duration: 5);
+                      Vibration.vibrate(duration: 10);
                     }
                     homeBody.value = 1;
                   },
@@ -186,7 +186,7 @@ Widget bottomNavigator() {
                   highlightColor: Colors.transparent,
                   onTap: () {
                     if (hasVibration) {
-                      Vibration.vibrate(duration: 5);
+                      Vibration.vibrate(duration: 10);
                     }
                     homeBody.value = 3;
                   },
@@ -462,7 +462,7 @@ class HomePageState extends State<HomePage> {
                       value: value,
                       onToggle: (value) async {
                         if (hasVibration) {
-                          Vibration.vibrate(duration: 5);
+                          Vibration.vibrate(duration: 10);
                         }
                         timedPause.value = value;
                         if (value) {
@@ -504,7 +504,7 @@ class HomePageState extends State<HomePage> {
                                 value: value,
                                 onToggle: (value) {
                                   if (hasVibration) {
-                                    Vibration.vibrate(duration: 5);
+                                    Vibration.vibrate(duration: 10);
                                   }
                                   pauseAfterCompleted.value = value;
                                 },
@@ -591,7 +591,7 @@ class PlayerBar extends StatelessWidget {
 
                         onPressed: () {
                           if (hasVibration) {
-                            Vibration.vibrate(duration: 5);
+                            Vibration.vibrate(duration: 10);
                           }
                           if (audioHandler.player.playing) {
                             audioHandler.pause();
@@ -611,7 +611,7 @@ class PlayerBar extends StatelessWidget {
                         ),
                         onPressed: () {
                           if (hasVibration) {
-                            Vibration.vibrate(duration: 5);
+                            Vibration.vibrate(duration: 10);
                           }
                           showModalBottomSheet(
                             context: context,

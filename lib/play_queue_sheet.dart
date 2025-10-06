@@ -149,12 +149,12 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
               },
               onReorderStart: (_) {
                 if (hasVibration) {
-                  Vibration.vibrate(duration: 5);
+                  Vibration.vibrate(duration: 10);
                 }
               },
               onReorderEnd: (_) {
                 if (hasVibration) {
-                  Vibration.vibrate(duration: 5);
+                  Vibration.vibrate(duration: 10);
                 }
               },
               proxyDecorator:
