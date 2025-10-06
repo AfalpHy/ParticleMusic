@@ -1,12 +1,12 @@
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/services.dart';
 import 'package:marquee/marquee.dart';
 import 'dart:async';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:smooth_corner/smooth_corner.dart';
-import 'package:vibration/vibration.dart';
 import 'audio_handler.dart';
 import 'play_queue_sheet.dart';
 import 'art_widget.dart';
@@ -171,9 +171,7 @@ class LyricsPage extends StatelessWidget {
             FavoriteButton(),
             IconButton(
               onPressed: () {
-                if (hasVibration) {
-                  Vibration.vibrate(duration: 10);
-                }
+                HapticFeedback.heavyImpact();
                 showModalBottomSheet(
                   context: context,
                   isScrollControlled: true,
@@ -354,9 +352,7 @@ class LyricsPage extends StatelessWidget {
                     color: Colors.black,
                   ),
                   onPressed: () {
-                    if (hasVibration) {
-                      Vibration.vibrate(duration: 10);
-                    }
+                    HapticFeedback.heavyImpact();
                     showModalBottomSheet(
                       context: context,
                       isScrollControlled: true,
@@ -448,9 +444,7 @@ class FavoriteButton extends StatelessWidget {
           builder: (_, value, _) {
             return IconButton(
               onPressed: () {
-                if (hasVibration) {
-                  Vibration.vibrate(duration: 10);
-                }
+                HapticFeedback.heavyImpact();
                 toggleFavoriteState(currentSong);
               },
               icon: Icon(

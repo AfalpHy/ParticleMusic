@@ -1,8 +1,8 @@
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/playlists.dart';
-import 'package:vibration/vibration.dart';
 import 'audio_handler.dart';
 import 'art_widget.dart';
 
@@ -80,9 +80,7 @@ class SongListTile extends StatelessWidget {
       trailing: IconButton(
         icon: Icon(Icons.more_vert, size: 15),
         onPressed: () {
-          if (hasVibration) {
-            Vibration.vibrate(duration: 10);
-          }
+          HapticFeedback.heavyImpact();
           showModalBottomSheet(
             context: context,
             isScrollControlled: true,

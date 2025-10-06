@@ -13,7 +13,6 @@ import 'package:path_provider/path_provider.dart';
 import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:smooth_corner/smooth_corner.dart';
-import 'package:vibration/vibration.dart';
 import 'audio_handler.dart';
 import 'lyrics_page.dart';
 import 'play_queue_sheet.dart';
@@ -39,7 +38,6 @@ Future<void> main() async {
   await SystemChrome.setPreferredOrientations([
     DeviceOrientation.portraitUp, // only allow portrait
   ]);
-  hasVibration = await Vibration.hasVibrator();
   runApp(MyApp());
 }
 
@@ -153,9 +151,7 @@ Widget bottomNavigator() {
                   splashColor: Colors.transparent,
                   highlightColor: Colors.transparent,
                   onTap: () {
-                    if (hasVibration) {
-                      Vibration.vibrate(duration: 10);
-                    }
+                    HapticFeedback.heavyImpact();
                     homeBody.value = 1;
                   },
 
@@ -185,9 +181,7 @@ Widget bottomNavigator() {
                   splashColor: Colors.transparent,
                   highlightColor: Colors.transparent,
                   onTap: () {
-                    if (hasVibration) {
-                      Vibration.vibrate(duration: 10);
-                    }
+                    HapticFeedback.heavyImpact();
                     homeBody.value = 3;
                   },
                   child: Column(
@@ -461,9 +455,7 @@ class HomePageState extends State<HomePage> {
                       inactiveColor: Colors.grey.shade300,
                       value: value,
                       onToggle: (value) async {
-                        if (hasVibration) {
-                          Vibration.vibrate(duration: 10);
-                        }
+                        HapticFeedback.heavyImpact();
                         timedPause.value = value;
                         if (value) {
                           displayTimedPauseSetting(context);
@@ -503,9 +495,7 @@ class HomePageState extends State<HomePage> {
                                 inactiveColor: Colors.grey.shade300,
                                 value: value,
                                 onToggle: (value) {
-                                  if (hasVibration) {
-                                    Vibration.vibrate(duration: 10);
-                                  }
+                                  HapticFeedback.heavyImpact();
                                   pauseAfterCompleted.value = value;
                                 },
                               );
@@ -590,9 +580,7 @@ class PlayerBar extends StatelessWidget {
                         ),
 
                         onPressed: () {
-                          if (hasVibration) {
-                            Vibration.vibrate(duration: 10);
-                          }
+                          HapticFeedback.heavyImpact();
                           if (audioHandler.player.playing) {
                             audioHandler.pause();
                           } else {
@@ -610,9 +598,7 @@ class PlayerBar extends StatelessWidget {
                           size: 30,
                         ),
                         onPressed: () {
-                          if (hasVibration) {
-                            Vibration.vibrate(duration: 10);
-                          }
+                          HapticFeedback.heavyImpact();
                           showModalBottomSheet(
                             context: context,
                             isScrollControlled: true,

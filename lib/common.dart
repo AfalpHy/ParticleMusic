@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
-late bool hasVibration;
 const Color mainColor = Color.fromARGB(255, 120, 240, 240);
 
 class MyAutoSizeText extends AutoSizeText {

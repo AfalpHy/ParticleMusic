@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:particle_music/common.dart';
-import 'package:vibration/vibration.dart';
 import 'audio_handler.dart';
 
 class PlayQueueSheet extends StatefulWidget {
@@ -148,14 +148,10 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                 });
               },
               onReorderStart: (_) {
-                if (hasVibration) {
-                  Vibration.vibrate(duration: 10);
-                }
+                HapticFeedback.heavyImpact();
               },
               onReorderEnd: (_) {
-                if (hasVibration) {
-                  Vibration.vibrate(duration: 10);
-                }
+                HapticFeedback.heavyImpact();
               },
               proxyDecorator:
                   (Widget child, int index, Animation<double> animation) {
