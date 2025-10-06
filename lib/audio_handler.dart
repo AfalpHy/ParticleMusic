@@ -41,7 +41,7 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
       if (state == ProcessingState.completed) {
         bool needPauseTmp = needPause;
 
-        if (playModeNotifier.value == 1) {
+        if (playModeNotifier.value == 2) {
           // repeat
           await load();
         } else {

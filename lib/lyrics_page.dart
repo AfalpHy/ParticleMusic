@@ -246,14 +246,14 @@ class LyricsPage extends StatelessWidget {
                             onPressed: () {
                               if (playModeNotifier.value != 2) {
                                 audioHandler.switchPlayMode();
-                              }
-                              switch (playModeNotifier.value) {
-                                case 0:
-                                  showCenterMessage(context, "loop");
-                                  break;
-                                default:
-                                  showCenterMessage(context, "shuffle");
-                                  break;
+                                switch (playModeNotifier.value) {
+                                  case 0:
+                                    showCenterMessage(context, "loop");
+                                    break;
+                                  default:
+                                    showCenterMessage(context, "shuffle");
+                                    break;
+                                }
                               }
                             },
                             onLongPress: () {
