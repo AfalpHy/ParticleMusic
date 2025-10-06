@@ -4,6 +4,7 @@ import 'package:marquee/marquee.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
 late bool hasVibration;
+const Color mainColor = Color.fromARGB(255, 120, 240, 240);
 
 class MyAutoSizeText extends AutoSizeText {
   final String content;
@@ -39,4 +40,29 @@ Widget mySheet(Widget child, {double height = 500, color = Colors.white}) {
     borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
     child: Container(height: height, color: color, child: child),
   );
+}
+
+void showCenterMessage(BuildContext context, String message) {
+  final overlay = Overlay.of(context);
+  final overlayEntry = OverlayEntry(
+    builder: (context) => Center(
+      child: Material(
+        color: Colors.black45,
+        borderRadius: BorderRadius.circular(8),
+        child: Padding(
+          padding: EdgeInsets.all(16),
+          child: Text(
+            message,
+            style: TextStyle(color: Colors.white, fontSize: 16),
+          ),
+        ),
+      ),
+    ),
+  );
+
+  overlay.insert(overlayEntry);
+
+  Future.delayed(Duration(milliseconds: 500), () {
+    overlayEntry.remove();
+  });
 }

@@ -58,20 +58,29 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 Spacer(),
+
                 IconButton(
                   color: Colors.black,
                   icon: ImageIcon(
                     playModeNotifier.value == 0
                         ? AssetImage("assets/images/loop.png")
                         : playModeNotifier.value == 1
-                        ? AssetImage("assets/images/repeat.png")
-                        : AssetImage("assets/images/shuffle.png"),
+                        ? AssetImage("assets/images/shuffle.png")
+                        : AssetImage("assets/images/repeat.png"),
                     size: 25,
                   ),
                   onPressed: () {
-                    audioHandler.switchPlayMode();
-                    setState(() {
-                      if (playModeNotifier.value != 1) {
+                    if (playModeNotifier.value != 2) {
+                      audioHandler.switchPlayMode();
+                      switch (playModeNotifier.value) {
+                        case 0:
+                          showCenterMessage(context, "loop");
+                          break;
+                        default:
+                          showCenterMessage(context, "shuffle");
+                          break;
+                      }
+                      setState(() {
                         WidgetsBinding.instance.addPostFrameCallback((_) {
                           scrollController.animateTo(
                             lineHeight * audioHandler.currentIndex,
@@ -81,8 +90,23 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                             curve: Curves.linear,
                           );
                         });
-                      }
-                    });
+                      });
+                    }
+                  },
+                  onLongPress: () {
+                    audioHandler.toggleRepeat();
+                    switch (playModeNotifier.value) {
+                      case 0:
+                        showCenterMessage(context, "loop");
+                        break;
+                      case 1:
+                        showCenterMessage(context, "shuffle");
+                        break;
+                      default:
+                        showCenterMessage(context, "repeat");
+                        break;
+                    }
+                    setState(() {});
                   },
                 ),
                 IconButton(

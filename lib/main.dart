@@ -164,17 +164,13 @@ Widget bottomNavigator() {
                     children: [
                       Icon(
                         Icons.library_music_outlined,
-                        color: which == 1
-                            ? Color.fromARGB(255, 120, 240, 240)
-                            : Colors.black54,
+                        color: which == 1 ? mainColor : Colors.black54,
                       ),
 
                       Text(
                         "Library",
                         style: TextStyle(
-                          color: which == 1
-                              ? Color.fromARGB(255, 120, 240, 240)
-                              : Colors.black54,
+                          color: which == 1 ? mainColor : Colors.black54,
                         ),
                       ),
                     ],
@@ -200,17 +196,13 @@ Widget bottomNavigator() {
                     children: [
                       Icon(
                         Icons.settings_outlined,
-                        color: which == 3
-                            ? Color.fromARGB(255, 120, 240, 240)
-                            : Colors.black54,
+                        color: which == 3 ? mainColor : Colors.black54,
                       ),
 
                       Text(
                         "Settings",
                         style: TextStyle(
-                          color: which == 3
-                              ? Color.fromARGB(255, 120, 240, 240)
-                              : Colors.black54,
+                          color: which == 3 ? mainColor : Colors.black54,
                         ),
                       ),
                     ],
@@ -368,7 +360,7 @@ class HomePageState extends State<HomePage> {
           leading: const ImageIcon(
             AssetImage("assets/images/playlists.png"),
             size: 30,
-            color: Color.fromARGB(255, 120, 240, 240),
+            color: mainColor,
           ),
           title: Text('Playlists'),
           onTap: () {
@@ -381,7 +373,7 @@ class HomePageState extends State<HomePage> {
           leading: const ImageIcon(
             AssetImage("assets/images/artist.png"),
             size: 30,
-            color: Color.fromARGB(255, 120, 240, 240),
+            color: mainColor,
           ),
           title: Text('Artists'),
           onTap: () {
@@ -396,7 +388,7 @@ class HomePageState extends State<HomePage> {
           leading: const ImageIcon(
             AssetImage("assets/images/album.png"),
             size: 30,
-            color: Color.fromARGB(255, 120, 240, 240),
+            color: mainColor,
           ),
           title: Text('Albums'),
           onTap: () {
@@ -411,7 +403,7 @@ class HomePageState extends State<HomePage> {
           leading: const ImageIcon(
             AssetImage("assets/images/music_note.png"),
             size: 30,
-            color: Color.fromARGB(255, 120, 240, 240),
+            color: mainColor,
           ),
           title: Text('Songs'),
           onTap: () {
@@ -431,10 +423,7 @@ class HomePageState extends State<HomePage> {
       physics: ClampingScrollPhysics(),
       children: [
         ListTile(
-          leading: Icon(
-            Icons.timer_outlined,
-            color: Color.fromARGB(255, 120, 240, 240),
-          ),
+          leading: Icon(Icons.timer_outlined, color: mainColor),
           title: Text('Timed Pause'),
           trailing: SizedBox(
             width: 150,
@@ -468,7 +457,7 @@ class HomePageState extends State<HomePage> {
                       width: 45,
                       height: 20,
                       toggleSize: 15,
-                      activeColor: Color.fromARGB(255, 120, 240, 240),
+                      activeColor: mainColor,
                       inactiveColor: Colors.grey.shade300,
                       value: value,
                       onToggle: (value) async {
@@ -510,7 +499,7 @@ class HomePageState extends State<HomePage> {
                                 width: 45,
                                 height: 20,
                                 toggleSize: 15,
-                                activeColor: Color.fromARGB(255, 120, 240, 240),
+                                activeColor: mainColor,
                                 inactiveColor: Colors.grey.shade300,
                                 value: value,
                                 onToggle: (value) {

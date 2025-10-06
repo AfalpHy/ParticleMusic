@@ -32,6 +32,8 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
   final player = AudioPlayer();
   int currentIndex = -1;
 
+  int tmpPlayMode = 0;
+
   MyAudioHandler() {
     player.playbackEventStream.map(transformEvent).pipe(playbackState);
 
@@ -132,14 +134,23 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
   void switchPlayMode() {
     int playMode = playModeNotifier.value;
     playMode += 1;
-    playMode %= 3;
+    playMode %= 2;
     playModeNotifier.value = playMode;
     if (playMode == 0) {
       playQueue = List.from(playQueueTmp);
       playQueueTmp = [];
       currentIndex = playQueue.indexOf(currentSongNotifier.value!);
-    } else if (playMode == 2) {
+    } else if (playMode == 1) {
       shuffle();
+    }
+  }
+
+  void toggleRepeat() {
+    if (playModeNotifier.value != 2) {
+      tmpPlayMode = playModeNotifier.value;
+      playModeNotifier.value = 2;
+    } else {
+      playModeNotifier.value = tmpPlayMode;
     }
   }
 

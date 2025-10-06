@@ -239,12 +239,36 @@ class LyricsPage extends StatelessWidget {
                               playMode == 0
                                   ? AssetImage("assets/images/loop.png")
                                   : playMode == 1
-                                  ? AssetImage("assets/images/repeat.png")
-                                  : AssetImage("assets/images/shuffle.png"),
+                                  ? AssetImage("assets/images/shuffle.png")
+                                  : AssetImage("assets/images/repeat.png"),
                               size: 35,
                             ),
                             onPressed: () {
-                              audioHandler.switchPlayMode();
+                              if (playModeNotifier.value != 2) {
+                                audioHandler.switchPlayMode();
+                              }
+                              switch (playModeNotifier.value) {
+                                case 0:
+                                  showCenterMessage(context, "loop");
+                                  break;
+                                default:
+                                  showCenterMessage(context, "shuffle");
+                                  break;
+                              }
+                            },
+                            onLongPress: () {
+                              audioHandler.toggleRepeat();
+                              switch (playModeNotifier.value) {
+                                case 0:
+                                  showCenterMessage(context, "loop");
+                                  break;
+                                case 1:
+                                  showCenterMessage(context, "shuffle");
+                                  break;
+                                default:
+                                  showCenterMessage(context, "repeat");
+                                  break;
+                              }
                             },
                           );
                         },
