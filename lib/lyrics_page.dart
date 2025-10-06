@@ -588,7 +588,7 @@ class LyricLineWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Padding(
       padding: expanded
-          ? const EdgeInsets.fromLTRB(30, 5, 0, 5)
+          ? const EdgeInsets.fromLTRB(30, 10, 0, 10)
           : const EdgeInsets.symmetric(vertical: 5, horizontal: 30),
       child: InkWell(
         borderRadius: BorderRadius.all(Radius.circular(10)),
