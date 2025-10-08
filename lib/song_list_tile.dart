@@ -237,7 +237,7 @@ class ReorderableSongListTile extends StatelessWidget {
     final song = source[index];
     final isFavorite = songIsFavorite[song]!;
     return ListTile(
-      contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
+      contentPadding: EdgeInsets.fromLTRB(20, 0, 20, 0),
       leading: ArtWidget(
         size: 40,
         borderRadius: 4,

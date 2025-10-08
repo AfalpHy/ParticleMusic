@@ -288,7 +288,15 @@ class SongListScaffold extends StatelessWidget {
             onPressed: () {
               needReorderNotifier!.value = false;
             },
-            child: Text('complete'),
+
+            child: Text(
+              'Complete',
+              style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                color: Color.fromARGB(255, 75, 200, 200),
+              ),
+            ),
           ),
         ),
         Expanded(
