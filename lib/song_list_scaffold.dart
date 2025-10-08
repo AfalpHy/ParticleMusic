@@ -308,7 +308,6 @@ class MultifunctionalSongListScaffold extends StatelessWidget {
                 builder: (context, value, child) {
                   return Checkbox(
                     value: value,
-                    checkColor: Colors.transparent,
                     activeColor: Color.fromARGB(255, 75, 200, 200),
                     onChanged: (value) {
                       for (var isSelected in isSelectedList) {
@@ -317,6 +316,7 @@ class MultifunctionalSongListScaffold extends StatelessWidget {
                       selectedNum.value = value! ? songList.length : 0;
                     },
                     shape: const CircleBorder(),
+                    side: BorderSide(color: Colors.grey),
                   );
                 },
               ),
@@ -472,8 +472,9 @@ class MultifunctionalSongListScaffold extends StatelessWidget {
                 ? SizedBox()
                 : Expanded(
                     child: GestureDetector(
-                      onTap: () {
-                        if (selectedNum.value > 0) {
+                      onTap: () async {
+                        if (selectedNum.value > 0 &&
+                            await showConfirmDialog(context, 'Delete Action')) {
                           List<AudioMetadata> songs = [];
                           for (int i = isSelectedList.length - 1; i >= 0; i--) {
                             if (isSelectedList[i].value) {

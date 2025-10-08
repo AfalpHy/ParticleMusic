@@ -110,11 +110,16 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                   },
                 ),
                 IconButton(
-                  onPressed: () {
-                    playQueue = [];
-                    audioHandler.clear();
-                    while (Navigator.canPop(context)) {
-                      Navigator.pop(context);
+                  onPressed: () async {
+                    if (await showConfirmDialog(context, 'Clear Action')) {
+                      playQueue = [];
+                      audioHandler.clear();
+
+                      while (context.mounted && Navigator.canPop(context)) {
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                        }
+                      }
                     }
                   },
                   icon: Icon(

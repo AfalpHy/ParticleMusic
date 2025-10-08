@@ -55,11 +55,13 @@ class SongsScaffoldState extends State<SongsScaffold> {
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
             onTap: () async {
-              await widget.reload();
-              if (context.mounted) {
-                Navigator.of(context).pop();
+              if (await showConfirmDialog(context, 'Reload Action')) {
+                await widget.reload();
+                if (context.mounted) {
+                  Navigator.of(context).pop();
+                }
+                setState(() {});
               }
-              setState(() {});
             },
           ),
         ],

@@ -155,9 +155,13 @@ class PlaylistsScaffold extends StatelessWidget {
                     horizontal: 0,
                     vertical: -4,
                   ),
-                  onTap: () {
-                    playlistsManager.deletePlaylist(index);
-                    Navigator.pop(context, true);
+                  onTap: () async {
+                    if (await showConfirmDialog(context, 'Delete Action')) {
+                      playlistsManager.deletePlaylist(index);
+                      if (context.mounted) {
+                        Navigator.pop(context, true);
+                      }
+                    }
                   },
                 )
               : SizedBox(),

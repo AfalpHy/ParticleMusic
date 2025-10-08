@@ -202,9 +202,16 @@ class SongListTile extends StatelessWidget {
                                     horizontal: 0,
                                     vertical: -4,
                                   ),
-                                  onTap: () {
-                                    playlist!.remove([song]);
-                                    Navigator.pop(context);
+                                  onTap: () async {
+                                    if (await showConfirmDialog(
+                                      context,
+                                      'Delete Action',
+                                    )) {
+                                      playlist!.remove([song]);
+                                      if (context.mounted) {
+                                        Navigator.pop(context);
+                                      }
+                                    }
                                   },
                                 )
                               : SizedBox(),
@@ -246,13 +253,13 @@ class MultifunctionalSongListTile extends StatelessWidget {
           builder: (context, value, child) {
             return Checkbox(
               value: value,
-              checkColor: Colors.transparent,
               activeColor: Color.fromARGB(255, 75, 200, 200),
               onChanged: (value) {
                 isSelected.value = value!;
                 selectedNum.value += value ? 1 : -1;
               },
               shape: const CircleBorder(),
+              side: BorderSide(color: Colors.grey),
             );
           },
         ),

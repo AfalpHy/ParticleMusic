@@ -65,3 +65,35 @@ void showCenterMessage(BuildContext context, String message) {
     overlayEntry.remove();
   });
 }
+
+Future<bool> showConfirmDialog(BuildContext context, String action) async {
+  final result = await showDialog<bool>(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return AlertDialog(
+        backgroundColor: Colors.white.withAlpha(200),
+        title: Text(action),
+        content: const Text('Are you sure you want to continue?'),
+        actions: [
+          Row(
+            mainAxisAlignment:
+                MainAxisAlignment.center, // 👈 center horizontally
+            children: [
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: const Text('Cancel'),
+              ),
+              const SizedBox(width: 20),
+              ElevatedButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: const Text('Confirm'),
+              ),
+            ],
+          ),
+        ],
+      );
+    },
+  );
+  return result!;
+}
