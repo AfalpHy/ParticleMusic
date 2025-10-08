@@ -328,6 +328,7 @@ class MultifunctionalSongListScaffoldState
                   );
                 },
               ),
+              Text('Select All', style: TextStyle(fontSize: 16)),
               Spacer(),
               TextButton(
                 onPressed: () {
@@ -338,7 +339,6 @@ class MultifunctionalSongListScaffoldState
                   'Complete',
                   style: TextStyle(
                     fontSize: 16,
-                    fontWeight: FontWeight.bold,
                     color: Color.fromARGB(255, 75, 200, 200),
                   ),
                 ),
@@ -407,6 +407,7 @@ class MultifunctionalSongListScaffoldState
             Expanded(
               child: GestureDetector(
                 onTap: () async {
+                  HapticFeedback.heavyImpact();
                   if (selectedNum.value > 0) {
                     for (int i = isSelectedList.length - 1; i >= 0; i--) {
                       if (isSelectedList[i].value) {
@@ -441,6 +442,7 @@ class MultifunctionalSongListScaffoldState
             Expanded(
               child: GestureDetector(
                 onTap: () {
+                  HapticFeedback.heavyImpact();
                   if (selectedNum.value > 0) {
                     List<AudioMetadata> songs = [];
                     for (int i = isSelectedList.length - 1; i >= 0; i--) {
@@ -481,6 +483,7 @@ class MultifunctionalSongListScaffoldState
                 : Expanded(
                     child: GestureDetector(
                       onTap: () async {
+                        HapticFeedback.heavyImpact();
                         if (selectedNum.value > 0 &&
                             await showConfirmDialog(context, 'Delete Action')) {
                           List<AudioMetadata> songs = [];
