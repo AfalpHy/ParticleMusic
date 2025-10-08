@@ -121,9 +121,9 @@ class PlaylistsScaffold extends StatelessWidget {
           ),
           Divider(thickness: 0.5, height: 1, color: Colors.grey.shade300),
           ListTile(
-            leading: Icon(Icons.reorder, size: 25),
+            leading: Icon(Icons.reorder),
             title: Text(
-              'Batch Operations and Reordering',
+              'Select',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
             visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
@@ -146,7 +146,7 @@ class PlaylistsScaffold extends StatelessWidget {
           ),
           playlist.name != 'Favorite'
               ? ListTile(
-                  leading: Icon(Icons.delete_rounded, size: 25),
+                  leading: Icon(Icons.delete_rounded),
                   title: Text(
                     'Delete',
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),

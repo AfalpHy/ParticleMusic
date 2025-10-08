@@ -339,43 +339,56 @@ class MultifunctionalSongListScaffold extends StatelessWidget {
             ],
           ),
           Expanded(
-            child: ReorderableListView.builder(
-              onReorder: (oldIndex, newIndex) {
-                if (newIndex > oldIndex) newIndex -= 1;
-                final checkBoxitem = isSelectedList.removeAt(oldIndex);
-                isSelectedList.insert(newIndex, checkBoxitem);
+            child: playlist == null
+                ? ListView.builder(
+                    itemCount: songList.length,
+                    itemBuilder: (_, index) {
+                      return MultifunctionalSongListTile(
+                        index: index,
+                        source: songList,
+                        isSelected: isSelectedList[index],
+                        selectedNum: selectedNum,
+                      );
+                    },
+                  )
+                : ReorderableListView.builder(
+                    onReorder: (oldIndex, newIndex) {
+                      if (newIndex > oldIndex) newIndex -= 1;
+                      final checkBoxitem = isSelectedList.removeAt(oldIndex);
+                      isSelectedList.insert(newIndex, checkBoxitem);
 
-                final item = songList.removeAt(oldIndex);
-                songList.insert(newIndex, item);
+                      final item = songList.removeAt(oldIndex);
+                      songList.insert(newIndex, item);
 
-                playlist!.update();
-              },
-              onReorderStart: (_) {
-                HapticFeedback.heavyImpact();
-              },
-              onReorderEnd: (_) {
-                HapticFeedback.heavyImpact();
-              },
-              proxyDecorator:
-                  (Widget child, int index, Animation<double> animation) {
-                    return Material(
-                      elevation: 0.1,
-                      color:
-                          Colors.grey.shade100, // background color while moving
-                      child: child,
-                    );
-                  },
-              itemCount: songList.length,
-              itemBuilder: (_, index) {
-                return MultifunctionalSongListTile(
-                  key: ValueKey(songList[index]),
-                  index: index,
-                  source: songList,
-                  isSelected: isSelectedList[index],
-                  selectedNum: selectedNum,
-                );
-              },
-            ),
+                      playlist!.update();
+                    },
+                    onReorderStart: (_) {
+                      HapticFeedback.heavyImpact();
+                    },
+                    onReorderEnd: (_) {
+                      HapticFeedback.heavyImpact();
+                    },
+                    proxyDecorator:
+                        (Widget child, int index, Animation<double> animation) {
+                          return Material(
+                            elevation: 0.1,
+                            color: Colors
+                                .grey
+                                .shade100, // background color while moving
+                            child: child,
+                          );
+                        },
+                    itemCount: songList.length,
+                    itemBuilder: (_, index) {
+                      return MultifunctionalSongListTile(
+                        key: ValueKey(songList[index]),
+                        index: index,
+                        source: songList,
+                        isSelected: isSelectedList[index],
+                        selectedNum: selectedNum,
+                      );
+                    },
+                  ),
           ),
         ],
       ),
@@ -455,34 +468,36 @@ class MultifunctionalSongListScaffold extends StatelessWidget {
                 ),
               ),
             ),
-            Expanded(
-              child: GestureDetector(
-                onTap: () {
-                  if (selectedNum.value > 0) {
-                    List<AudioMetadata> songs = [];
-                    for (int i = isSelectedList.length - 1; i >= 0; i--) {
-                      if (isSelectedList[i].value) {
-                        songs.add(songList[i]);
-                      }
-                    }
-                    playlist!.remove(songs);
-                  }
-                },
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(Icons.delete, size: 28, color: mainColor),
+            playlist == null
+                ? SizedBox()
+                : Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        if (selectedNum.value > 0) {
+                          List<AudioMetadata> songs = [];
+                          for (int i = isSelectedList.length - 1; i >= 0; i--) {
+                            if (isSelectedList[i].value) {
+                              songs.add(songList[i]);
+                            }
+                          }
+                          playlist!.remove(songs);
+                        }
+                      },
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.delete, size: 28, color: mainColor),
 
-                    Text(
-                      "Delete",
-                      style: TextStyle(
-                        color: Color.fromARGB(255, 75, 200, 200),
+                          Text(
+                            "Delete",
+                            style: TextStyle(
+                              color: Color.fromARGB(255, 75, 200, 200),
+                            ),
+                          ),
+                        ],
                       ),
                     ),
-                  ],
-                ),
-              ),
-            ),
+                  ),
           ],
         ),
       ),

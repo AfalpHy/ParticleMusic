@@ -135,7 +135,8 @@ class ArtistAlbumScaffold extends StatelessWidget {
                             builder: (_) => SongListScaffold(
                               songList: songList,
                               name: key,
-                              moreSheet: (context) => moreSheet(context, key),
+                              moreSheet: (context) =>
+                                  moreSheet(context, key, songList),
                             ),
                           ),
                         );
@@ -164,7 +165,11 @@ class ArtistAlbumScaffold extends StatelessWidget {
     );
   }
 
-  Widget moreSheet(BuildContext context, String name) {
+  Widget moreSheet(
+    BuildContext context,
+    String name,
+    List<AudioMetadata> songList,
+  ) {
     return mySheet(
       Column(
         children: [
@@ -186,6 +191,23 @@ class ArtistAlbumScaffold extends StatelessWidget {
             ),
           ),
           Divider(thickness: 0.5, height: 1, color: Colors.grey.shade300),
+          ListTile(
+            leading: Icon(Icons.reorder),
+            title: Text(
+              'Select',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+            visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) =>
+                      MultifunctionalSongListScaffold(songList: songList),
+                ),
+              );
+            },
+          ),
         ],
       ),
     );

@@ -31,6 +31,24 @@ class SongsScaffoldState extends State<SongsScaffold> {
           Divider(color: Colors.grey.shade300, thickness: 0.5, height: 1),
 
           ListTile(
+            leading: Icon(Icons.reorder),
+            title: Text(
+              'Select',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+            visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) =>
+                      MultifunctionalSongListScaffold(songList: librarySongs),
+                ),
+              );
+            },
+          ),
+
+          ListTile(
             leading: Icon(Icons.refresh_rounded),
             title: Text(
               'Reload Library',
