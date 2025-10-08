@@ -72,7 +72,11 @@ Future<bool> showConfirmDialog(BuildContext context, String action) async {
     barrierDismissible: false,
     builder: (BuildContext context) {
       return AlertDialog(
-        backgroundColor: Colors.white.withAlpha(200),
+        shape: SmoothRectangleBorder(
+          smoothness: 1,
+          borderRadius: BorderRadius.circular(20),
+        ),
+        backgroundColor: Colors.white,
         title: Text(action),
         content: const Text('Are you sure you want to continue?'),
         actions: [
