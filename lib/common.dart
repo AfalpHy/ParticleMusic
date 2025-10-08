@@ -46,8 +46,11 @@ void showCenterMessage(BuildContext context, String message) {
   final overlayEntry = OverlayEntry(
     builder: (context) => Center(
       child: Material(
-        color: Colors.black45,
-        borderRadius: BorderRadius.circular(8),
+        color: Colors.black,
+        shape: SmoothRectangleBorder(
+          smoothness: 1,
+          borderRadius: BorderRadius.circular(8),
+        ),
         child: Padding(
           padding: EdgeInsets.all(16),
           child: Text(
@@ -74,23 +77,45 @@ Future<bool> showConfirmDialog(BuildContext context, String action) async {
       return AlertDialog(
         shape: SmoothRectangleBorder(
           smoothness: 1,
-          borderRadius: BorderRadius.circular(20),
+          borderRadius: BorderRadius.circular(10),
         ),
         backgroundColor: Colors.white,
         title: Text(action),
-        content: const Text('Are you sure you want to continue?'),
+        content: const Text(
+          'Are you sure you want to continue?',
+          style: TextStyle(fontSize: 14),
+        ),
         actions: [
           Row(
-            mainAxisAlignment:
-                MainAxisAlignment.center, // 👈 center horizontally
+            mainAxisAlignment: MainAxisAlignment.center,
             children: [
               ElevatedButton(
                 onPressed: () => Navigator.pop(context, false),
+                style: ElevatedButton.styleFrom(
+                  elevation: 1,
+                  backgroundColor: Colors.grey.shade50,
+                  shadowColor: Colors.black54,
+                  foregroundColor: Colors.black,
+                  shape: SmoothRectangleBorder(
+                    smoothness: 1,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
                 child: const Text('Cancel'),
               ),
               const SizedBox(width: 20),
               ElevatedButton(
                 onPressed: () => Navigator.pop(context, true),
+                style: ElevatedButton.styleFrom(
+                  elevation: 1,
+                  backgroundColor: Colors.grey.shade50,
+                  shadowColor: Colors.black54,
+                  foregroundColor: Colors.red,
+                  shape: SmoothRectangleBorder(
+                    smoothness: 1,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                ),
                 child: const Text('Confirm'),
               ),
             ],

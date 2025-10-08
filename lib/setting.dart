@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
+import 'package:smooth_corner/smooth_corner.dart';
 
 ValueNotifier<bool> timedPause = ValueNotifier(false);
 ValueNotifier<int> remainTimes = ValueNotifier(0);
@@ -40,6 +41,16 @@ void displayTimedPauseSetting(BuildContext context) {
                       timedPause.value = false;
                       Navigator.pop(context);
                     },
+                    style: ElevatedButton.styleFrom(
+                      elevation: 1,
+                      backgroundColor: Colors.grey.shade50,
+                      shadowColor: Colors.black54,
+                      foregroundColor: Colors.black,
+                      shape: SmoothRectangleBorder(
+                        smoothness: 1,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
                     child: const Text("Cancel"),
                   ),
                   SizedBox(width: 30),
@@ -73,6 +84,16 @@ void displayTimedPauseSetting(BuildContext context) {
 
                       Navigator.pop(context);
                     },
+                    style: ElevatedButton.styleFrom(
+                      elevation: 1,
+                      backgroundColor: Colors.grey.shade50,
+                      shadowColor: Colors.black54,
+                      foregroundColor: Colors.black,
+                      shape: SmoothRectangleBorder(
+                        smoothness: 1,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                    ),
                     child: const Text("Confirm"),
                   ),
 
