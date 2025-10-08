@@ -209,6 +209,9 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                             Navigator.pop(context);
                           }
                         } else {
+                          if (index == playQueue.length) {
+                            audioHandler.currentIndex = 0;
+                          }
                           await audioHandler.load();
                         }
                       }
