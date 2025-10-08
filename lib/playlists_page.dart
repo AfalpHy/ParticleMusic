@@ -62,6 +62,8 @@ class PlaylistsScaffold extends StatelessWidget {
                     },
                   ),
                   onTap: () {
+                    final ValueNotifier<bool> needReorderNotifier =
+                        ValueNotifier(false);
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         // can't use this builder context for MediaQuery.of(context), otherwise search field will not work
@@ -69,9 +71,14 @@ class PlaylistsScaffold extends StatelessWidget {
                           songList: playlist.songs,
                           name: playlist.name,
 
-                          moreSheet: (context) =>
-                              moreSheet(context, index, playlist.name),
+                          moreSheet: (context) => moreSheet(
+                            context,
+                            index,
+                            playlist.name,
+                            needReorderNotifier,
+                          ),
                           playlist: playlist,
+                          needReorderNotifier: needReorderNotifier,
                         ),
                       ),
                     );
@@ -97,7 +104,12 @@ class PlaylistsScaffold extends StatelessWidget {
     );
   }
 
-  Widget moreSheet(BuildContext context, int index, String name) {
+  Widget moreSheet(
+    BuildContext context,
+    int index,
+    String name,
+    ValueNotifier<bool> needReorderNotifier,
+  ) {
     return mySheet(
       Column(
         children: [
@@ -116,6 +128,18 @@ class PlaylistsScaffold extends StatelessWidget {
             ),
           ),
           Divider(thickness: 0.5, height: 1, color: Colors.grey.shade300),
+          ListTile(
+            leading: Icon(Icons.reorder, size: 25),
+            title: Text(
+              'Reorder',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+            visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+            onTap: () {
+              needReorderNotifier.value = true;
+              Navigator.pop(context);
+            },
+          ),
           name != 'Favorite'
               ? ListTile(
                   leading: Icon(Icons.delete_rounded, size: 25),

@@ -221,3 +221,66 @@ class SongListTile extends StatelessWidget {
     );
   }
 }
+
+class ReorderableSongListTile extends StatelessWidget {
+  final int index;
+  final List<AudioMetadata> source;
+
+  const ReorderableSongListTile({
+    super.key,
+    required this.index,
+    required this.source,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final song = source[index];
+    final isFavorite = songIsFavorite[song]!;
+    return ListTile(
+      contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
+      leading: ArtWidget(
+        size: 40,
+        borderRadius: 4,
+        source: song.pictures.isEmpty ? null : song.pictures.first,
+      ),
+      title: ValueListenableBuilder(
+        valueListenable: currentSongNotifier,
+        builder: (_, currentSong, _) {
+          return Text(
+            song.title ?? "Unknown Title",
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: song == currentSong
+                  ? Color.fromARGB(255, 75, 200, 200)
+                  : null,
+              fontWeight: song == currentSong ? FontWeight.bold : null,
+            ),
+          );
+        },
+      ),
+
+      subtitle: Row(
+        children: [
+          ValueListenableBuilder(
+            valueListenable: isFavorite,
+            builder: (_, value, _) {
+              return value
+                  ? SizedBox(
+                      width: 20,
+                      child: Icon(Icons.favorite, color: Colors.red, size: 15),
+                    )
+                  : SizedBox();
+            },
+          ),
+          Expanded(
+            child: Text(
+              "${song.artist ?? "Unknown Artist"} - ${song.album ?? "Unknown Album"}",
+              overflow: TextOverflow.ellipsis,
+            ),
+          ),
+        ],
+      ),
+      visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+    );
+  }
+}

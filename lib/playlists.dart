@@ -91,10 +91,7 @@ class Playlist {
       return;
     }
     songs.insert(0, song);
-    file.writeAsStringSync(
-      jsonEncode(songs.map((s) => p.basename(s.file.path)).toList()),
-    );
-    changeNotifier.value++;
+    update();
     if (name == 'Favorite') {
       songIsFavorite[song]!.value = true;
     }
@@ -102,13 +99,17 @@ class Playlist {
 
   void remove(AudioMetadata song) {
     songs.remove(song);
+    update();
+    if (name == 'Favorite') {
+      songIsFavorite[song]!.value = false;
+    }
+  }
+
+  void update() {
     file.writeAsStringSync(
       jsonEncode(songs.map((s) => p.basename(s.file.path)).toList()),
     );
     changeNotifier.value++;
-    if (name == 'Favorite') {
-      songIsFavorite[song]!.value = false;
-    }
   }
 }
 
