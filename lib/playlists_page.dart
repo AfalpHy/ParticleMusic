@@ -131,14 +131,9 @@ class PlaylistsScaffold extends StatelessWidget {
               Navigator.pop(context);
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (_) => ValueListenableBuilder(
-                    valueListenable: playlist.changeNotifier,
-                    builder: (_, _, _) {
-                      return MultifunctionalSongListScaffold(
-                        songList: playlist.songs,
-                        playlist: playlist,
-                      );
-                    },
+                  builder: (_) => MultifunctionalSongListScaffold(
+                    songList: playlist.songs,
+                    playlist: playlist,
                   ),
                 ),
               );

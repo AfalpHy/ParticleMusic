@@ -270,7 +270,7 @@ class SongListScaffold extends StatelessWidget {
   }
 }
 
-class MultifunctionalSongListScaffold extends StatelessWidget {
+class MultifunctionalSongListScaffold extends StatefulWidget {
   final List<AudioMetadata> songList;
 
   final Playlist? playlist;
@@ -282,7 +282,15 @@ class MultifunctionalSongListScaffold extends StatelessWidget {
   });
 
   @override
+  State<StatefulWidget> createState() => MultifunctionalSongListScaffoldState();
+}
+
+class MultifunctionalSongListScaffoldState
+    extends State<MultifunctionalSongListScaffold> {
+  @override
   Widget build(BuildContext context) {
+    final songList = widget.songList;
+    final playlist = widget.playlist;
     final List<ValueNotifier<bool>> isSelectedList = List.generate(
       songList.length,
       (_) => ValueNotifier(false),
@@ -360,7 +368,7 @@ class MultifunctionalSongListScaffold extends StatelessWidget {
                       final item = songList.removeAt(oldIndex);
                       songList.insert(newIndex, item);
 
-                      playlist!.update();
+                      playlist.update();
                     },
                     onReorderStart: (_) {
                       HapticFeedback.heavyImpact();
@@ -481,7 +489,8 @@ class MultifunctionalSongListScaffold extends StatelessWidget {
                               songs.add(songList[i]);
                             }
                           }
-                          playlist!.remove(songs);
+                          playlist.remove(songs);
+                          setState(() {});
                         }
                       },
                       child: Column(
