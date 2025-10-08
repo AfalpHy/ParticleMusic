@@ -6,6 +6,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:particle_music/art_widget.dart';
+import 'package:particle_music/audio_handler.dart';
+import 'package:particle_music/common.dart';
 import 'package:particle_music/my_location.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/song_list_tile.dart';
@@ -28,14 +30,12 @@ class SongListScaffold extends StatelessWidget {
   final itemScrollController = ItemScrollController();
   final textController = TextEditingController();
 
-  final ValueNotifier<bool>? needReorderNotifier;
   SongListScaffold({
     super.key,
     required this.songList,
     required this.moreSheet,
     this.name,
     this.playlist,
-    this.needReorderNotifier,
   }) : currentSongListNotifer = ValueNotifier<List<AudioMetadata>>(songList),
        extraItems = name == null ? 1 : 2,
        offset = name == null ? 0 : 1 {
@@ -64,18 +64,7 @@ class SongListScaffold extends StatelessWidget {
       backgroundColor: Colors.white,
       resizeToAvoidBottomInset: false,
       appBar: searchAndMore(context),
-      body: needReorderNotifier == null
-          ? normalSongList()
-          : ValueListenableBuilder(
-              valueListenable: needReorderNotifier!,
-              builder: (context, needReorder, child) {
-                if (needReorder) {
-                  return reorderableSongList();
-                } else {
-                  return normalSongList();
-                }
-              },
-            ),
+      body: normalSongList(),
     );
   }
 
@@ -279,60 +268,224 @@ class SongListScaffold extends StatelessWidget {
       ],
     );
   }
+}
 
-  Widget reorderableSongList() {
-    return Column(
-      children: [
-        ListTile(
-          trailing: TextButton(
-            onPressed: () {
-              needReorderNotifier!.value = false;
-            },
+class MultifunctionalSongListScaffold extends StatelessWidget {
+  final List<AudioMetadata> songList;
 
-            child: Text(
-              'Complete',
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Color.fromARGB(255, 75, 200, 200),
-              ),
-            ),
-          ),
-        ),
-        Expanded(
-          child: ReorderableListView.builder(
-            onReorder: (oldIndex, newIndex) {
-              if (newIndex > oldIndex) newIndex -= 1;
-              final item = songList.removeAt(oldIndex);
-              songList.insert(newIndex, item);
-              playlist!.update();
-            },
-            onReorderStart: (_) {
-              HapticFeedback.heavyImpact();
-            },
-            onReorderEnd: (_) {
-              HapticFeedback.heavyImpact();
-            },
-            proxyDecorator:
-                (Widget child, int index, Animation<double> animation) {
-                  return Material(
-                    elevation: 0.1,
-                    color:
-                        Colors.grey.shade100, // background color while moving
-                    child: child,
+  final Playlist? playlist;
+
+  const MultifunctionalSongListScaffold({
+    super.key,
+    required this.songList,
+    this.playlist,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final List<ValueNotifier<bool>> isSelectedList = List.generate(
+      songList.length,
+      (_) => ValueNotifier(false),
+    );
+    final ValueNotifier<bool> allSelected = ValueNotifier(false);
+    final ValueNotifier<int> selectedNum = ValueNotifier(0);
+    selectedNum.addListener(() {
+      if (selectedNum.value == songList.length) {
+        allSelected.value = true;
+      } else {
+        allSelected.value = false;
+      }
+    });
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(backgroundColor: Colors.white, scrolledUnderElevation: 0),
+      body: Column(
+        children: [
+          Row(
+            children: [
+              ValueListenableBuilder(
+                valueListenable: allSelected,
+                builder: (context, value, child) {
+                  return Checkbox(
+                    value: value,
+                    checkColor: Colors.transparent,
+                    activeColor: Color.fromARGB(255, 75, 200, 200),
+                    onChanged: (value) {
+                      for (var isSelected in isSelectedList) {
+                        isSelected.value = value!;
+                      }
+                      selectedNum.value = value! ? songList.length : 0;
+                    },
+                    shape: const CircleBorder(),
                   );
                 },
-            itemCount: songList.length,
-            itemBuilder: (_, index) {
-              return ReorderableSongListTile(
-                key: ValueKey(index),
-                index: index,
-                source: songList,
-              );
-            },
+              ),
+              Spacer(),
+              TextButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+
+                child: Text(
+                  'Complete',
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                    color: Color.fromARGB(255, 75, 200, 200),
+                  ),
+                ),
+              ),
+              SizedBox(width: 20),
+            ],
           ),
+          Expanded(
+            child: ReorderableListView.builder(
+              onReorder: (oldIndex, newIndex) {
+                if (newIndex > oldIndex) newIndex -= 1;
+                final checkBoxitem = isSelectedList.removeAt(oldIndex);
+                isSelectedList.insert(newIndex, checkBoxitem);
+
+                final item = songList.removeAt(oldIndex);
+                songList.insert(newIndex, item);
+
+                playlist!.update();
+              },
+              onReorderStart: (_) {
+                HapticFeedback.heavyImpact();
+              },
+              onReorderEnd: (_) {
+                HapticFeedback.heavyImpact();
+              },
+              proxyDecorator:
+                  (Widget child, int index, Animation<double> animation) {
+                    return Material(
+                      elevation: 0.1,
+                      color:
+                          Colors.grey.shade100, // background color while moving
+                      child: child,
+                    );
+                  },
+              itemCount: songList.length,
+              itemBuilder: (_, index) {
+                return MultifunctionalSongListTile(
+                  key: ValueKey(songList[index]),
+                  index: index,
+                  source: songList,
+                  isSelected: isSelectedList[index],
+                  selectedNum: selectedNum,
+                );
+              },
+            ),
+          ),
+        ],
+      ),
+      bottomNavigationBar: SizedBox(
+        height: 80,
+        child: Row(
+          children: [
+            Expanded(
+              child: GestureDetector(
+                onTap: () async {
+                  if (selectedNum.value > 0) {
+                    for (int i = isSelectedList.length - 1; i >= 0; i--) {
+                      if (isSelectedList[i].value) {
+                        audioHandler.insert2Next(i, songList);
+                      }
+                    }
+                    if (audioHandler.currentIndex == -1) {
+                      await audioHandler.skipToNext();
+                      audioHandler.play();
+                    }
+                  }
+                },
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.playlist_add_circle_outlined,
+                      size: 28,
+                      color: mainColor,
+                    ),
+
+                    Text(
+                      "Play Next",
+                      style: TextStyle(
+                        color: Color.fromARGB(255, 75, 200, 200),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  if (selectedNum.value > 0) {
+                    List<AudioMetadata> songs = [];
+                    for (int i = isSelectedList.length - 1; i >= 0; i--) {
+                      if (isSelectedList[i].value) {
+                        songs.add(songList[i]);
+                      }
+                    }
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (_) {
+                        return PlaylistsSheet(songs: songs);
+                      },
+                    );
+                  }
+                },
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(
+                      Icons.playlist_add_outlined,
+                      size: 28,
+                      color: mainColor,
+                    ),
+
+                    Text(
+                      "Add to Playlists",
+                      style: TextStyle(
+                        color: Color.fromARGB(255, 75, 200, 200),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+            Expanded(
+              child: GestureDetector(
+                onTap: () {
+                  if (selectedNum.value > 0) {
+                    List<AudioMetadata> songs = [];
+                    for (int i = isSelectedList.length - 1; i >= 0; i--) {
+                      if (isSelectedList[i].value) {
+                        songs.add(songList[i]);
+                      }
+                    }
+                    playlist!.remove(songs);
+                  }
+                },
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(Icons.delete, size: 28, color: mainColor),
+
+                    Text(
+                      "Delete",
+                      style: TextStyle(
+                        color: Color.fromARGB(255, 75, 200, 200),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
-      ],
+      ),
     );
   }
 }

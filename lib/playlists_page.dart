@@ -62,8 +62,6 @@ class PlaylistsScaffold extends StatelessWidget {
                     },
                   ),
                   onTap: () {
-                    final ValueNotifier<bool> needReorderNotifier =
-                        ValueNotifier(false);
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         // can't use this builder context for MediaQuery.of(context), otherwise search field will not work
@@ -71,14 +69,9 @@ class PlaylistsScaffold extends StatelessWidget {
                           songList: playlist.songs,
                           name: playlist.name,
 
-                          moreSheet: (context) => moreSheet(
-                            context,
-                            index,
-                            playlist.name,
-                            needReorderNotifier,
-                          ),
+                          moreSheet: (context) =>
+                              moreSheet(context, index, playlist),
                           playlist: playlist,
-                          needReorderNotifier: needReorderNotifier,
                         ),
                       ),
                     );
@@ -104,12 +97,7 @@ class PlaylistsScaffold extends StatelessWidget {
     );
   }
 
-  Widget moreSheet(
-    BuildContext context,
-    int index,
-    String name,
-    ValueNotifier<bool> needReorderNotifier,
-  ) {
+  Widget moreSheet(BuildContext context, int index, Playlist playlist) {
     return mySheet(
       Column(
         children: [
@@ -121,7 +109,11 @@ class PlaylistsScaffold extends StatelessWidget {
                 children: [
                   Text('Playlist: ', style: TextStyle(fontSize: 15)),
                   Expanded(
-                    child: MyAutoSizeText(name, maxLines: 1, fontsize: 15),
+                    child: MyAutoSizeText(
+                      playlist.name,
+                      maxLines: 1,
+                      fontsize: 15,
+                    ),
                   ),
                 ],
               ),
@@ -131,16 +123,28 @@ class PlaylistsScaffold extends StatelessWidget {
           ListTile(
             leading: Icon(Icons.reorder, size: 25),
             title: Text(
-              'Reorder',
+              'Batch Operations and Reordering',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
             visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
             onTap: () {
-              needReorderNotifier.value = true;
               Navigator.pop(context);
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => ValueListenableBuilder(
+                    valueListenable: playlist.changeNotifier,
+                    builder: (_, _, _) {
+                      return MultifunctionalSongListScaffold(
+                        songList: playlist.songs,
+                        playlist: playlist,
+                      );
+                    },
+                  ),
+                ),
+              );
             },
           ),
-          name != 'Favorite'
+          playlist.name != 'Favorite'
               ? ListTile(
                   leading: Icon(Icons.delete_rounded, size: 25),
                   title: Text(

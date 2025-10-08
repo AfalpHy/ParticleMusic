@@ -231,7 +231,7 @@ class LyricsPage extends StatelessWidget {
                                       isScrollControlled: true,
                                       builder: (_) {
                                         return PlaylistsSheet(
-                                          song: currentSong,
+                                          songs: [currentSong],
                                         );
                                       },
                                     );

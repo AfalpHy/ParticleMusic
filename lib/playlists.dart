@@ -86,23 +86,27 @@ class Playlist {
     }
   }
 
-  void add(AudioMetadata song) {
-    if (songs.contains(song)) {
-      return;
+  void add(List<AudioMetadata> songs) {
+    for (AudioMetadata song in songs) {
+      if (this.songs.contains(song)) {
+        continue;
+      }
+      this.songs.insert(0, song);
+      if (name == 'Favorite') {
+        songIsFavorite[song]!.value = true;
+      }
     }
-    songs.insert(0, song);
     update();
-    if (name == 'Favorite') {
-      songIsFavorite[song]!.value = true;
-    }
   }
 
-  void remove(AudioMetadata song) {
-    songs.remove(song);
-    update();
-    if (name == 'Favorite') {
-      songIsFavorite[song]!.value = false;
+  void remove(List<AudioMetadata> songs) {
+    for (AudioMetadata song in songs) {
+      this.songs.remove(song);
+      if (name == 'Favorite') {
+        songIsFavorite[song]!.value = false;
+      }
     }
+    update();
   }
 
   void update() {
@@ -119,15 +123,15 @@ void toggleFavoriteState(AudioMetadata song) {
   final favorite = playlistsManager.getPlaylistByName('Favorite')!;
   final isFavorite = songIsFavorite[song]!;
   if (isFavorite.value) {
-    favorite.remove(song);
+    favorite.remove([song]);
   } else {
-    favorite.add(song);
+    favorite.add([song]);
   }
 }
 
 class PlaylistsSheet extends StatefulWidget {
-  final AudioMetadata song;
-  const PlaylistsSheet({super.key, required this.song});
+  final List<AudioMetadata> songs;
+  const PlaylistsSheet({super.key, required this.songs});
 
   @override
   State<StatefulWidget> createState() => PlaylistsSheetState();
@@ -172,7 +176,9 @@ class PlaylistsSheetState extends State<PlaylistsSheet> {
                   title: Text(playlist.name),
 
                   onTap: () {
-                    playlist.add(widget.song);
+                    for (var song in widget.songs) {
+                      playlist.add([song]);
+                    }
                     Navigator.pop(context);
                   },
                 );

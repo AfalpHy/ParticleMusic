@@ -140,7 +140,7 @@ class SongListTile extends StatelessWidget {
                                 context: context,
                                 isScrollControlled: true,
                                 builder: (_) {
-                                  return PlaylistsSheet(song: song);
+                                  return PlaylistsSheet(songs: [song]);
                                 },
                               );
                             },
@@ -203,7 +203,7 @@ class SongListTile extends StatelessWidget {
                                     vertical: -4,
                                   ),
                                   onTap: () {
-                                    playlist!.remove(song);
+                                    playlist!.remove([song]);
                                     Navigator.pop(context);
                                   },
                                 )
@@ -222,65 +222,98 @@ class SongListTile extends StatelessWidget {
   }
 }
 
-class ReorderableSongListTile extends StatelessWidget {
+class MultifunctionalSongListTile extends StatelessWidget {
   final int index;
   final List<AudioMetadata> source;
-
-  const ReorderableSongListTile({
+  final ValueNotifier<bool> isSelected;
+  final ValueNotifier<int> selectedNum;
+  const MultifunctionalSongListTile({
     super.key,
     required this.index,
     required this.source,
+    required this.isSelected,
+    required this.selectedNum,
   });
 
   @override
   Widget build(BuildContext context) {
     final song = source[index];
     final isFavorite = songIsFavorite[song]!;
-    return ListTile(
-      contentPadding: EdgeInsets.fromLTRB(20, 0, 20, 0),
-      leading: ArtWidget(
-        size: 40,
-        borderRadius: 4,
-        source: song.pictures.isEmpty ? null : song.pictures.first,
-      ),
-      title: ValueListenableBuilder(
-        valueListenable: currentSongNotifier,
-        builder: (_, currentSong, _) {
-          return Text(
-            song.title ?? "Unknown Title",
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: song == currentSong
-                  ? Color.fromARGB(255, 75, 200, 200)
-                  : null,
-              fontWeight: song == currentSong ? FontWeight.bold : null,
+    return Row(
+      children: [
+        ValueListenableBuilder(
+          valueListenable: isSelected,
+          builder: (context, value, child) {
+            return Checkbox(
+              value: value,
+              checkColor: Colors.transparent,
+              activeColor: Color.fromARGB(255, 75, 200, 200),
+              onChanged: (value) {
+                isSelected.value = value!;
+                selectedNum.value += value ? 1 : -1;
+              },
+              shape: const CircleBorder(),
+            );
+          },
+        ),
+        Expanded(
+          child: ListTile(
+            contentPadding: EdgeInsets.fromLTRB(0, 0, 20, 0),
+            leading: ArtWidget(
+              size: 40,
+              borderRadius: 4,
+              source: song.pictures.isEmpty ? null : song.pictures.first,
             ),
-          );
-        },
-      ),
+            title: ValueListenableBuilder(
+              valueListenable: currentSongNotifier,
+              builder: (_, currentSong, _) {
+                return Text(
+                  song.title ?? "Unknown Title",
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: song == currentSong
+                        ? Color.fromARGB(255, 75, 200, 200)
+                        : null,
+                    fontWeight: song == currentSong ? FontWeight.bold : null,
+                  ),
+                );
+              },
+            ),
 
-      subtitle: Row(
-        children: [
-          ValueListenableBuilder(
-            valueListenable: isFavorite,
-            builder: (_, value, _) {
-              return value
-                  ? SizedBox(
-                      width: 20,
-                      child: Icon(Icons.favorite, color: Colors.red, size: 15),
-                    )
-                  : SizedBox();
+            subtitle: Row(
+              children: [
+                ValueListenableBuilder(
+                  valueListenable: isFavorite,
+                  builder: (_, value, _) {
+                    return value
+                        ? SizedBox(
+                            width: 20,
+                            child: Icon(
+                              Icons.favorite,
+                              color: Colors.red,
+                              size: 15,
+                            ),
+                          )
+                        : SizedBox();
+                  },
+                ),
+                Expanded(
+                  child: Text(
+                    "${song.artist ?? "Unknown Artist"} - ${song.album ?? "Unknown Album"}",
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+            visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+            splashColor: Colors.transparent,
+            onTap: () {
+              isSelected.value = !isSelected.value;
+              selectedNum.value += isSelected.value ? 1 : -1;
             },
           ),
-          Expanded(
-            child: Text(
-              "${song.artist ?? "Unknown Artist"} - ${song.album ?? "Unknown Album"}",
-              overflow: TextOverflow.ellipsis,
-            ),
-          ),
-        ],
-      ),
-      visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+        ),
+      ],
     );
   }
 }
