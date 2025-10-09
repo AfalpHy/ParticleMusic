@@ -21,76 +21,73 @@ class LyricsPage extends StatelessWidget {
     return ValueListenableBuilder(
       valueListenable: currentSongNotifier,
       builder: (context, currentSong, child) {
-        return lyricsScaffold(context, currentSong);
-      },
-    );
-  }
-
-  Widget lyricsScaffold(BuildContext context, AudioMetadata? currentSong) {
-    return Material(
-      child: Stack(
-        fit: StackFit.expand,
-        children: [
-          ClipRect(
-            child: ImageFiltered(
-              imageFilter: ImageFilter.blur(sigmaX: 35, sigmaY: 35),
-              child: ArtWidget(
-                source: currentSong != null && currentSong.pictures.isNotEmpty
-                    ? currentSong.pictures.first
-                    : null,
-              ),
-            ),
-          ),
-          Container(color: artAverageColor.withAlpha(128)),
-          Column(
+        return Material(
+          child: Stack(
+            fit: StackFit.expand,
             children: [
-              SizedBox(height: 60),
-              Row(
+              ClipRect(
+                child: ImageFiltered(
+                  imageFilter: ImageFilter.blur(sigmaX: 35, sigmaY: 35),
+                  child: ArtWidget(
+                    source:
+                        currentSong != null && currentSong.pictures.isNotEmpty
+                        ? currentSong.pictures.first
+                        : null,
+                  ),
+                ),
+              ),
+              Container(color: artAverageColor.withAlpha(128)),
+              Column(
                 children: [
-                  SizedBox(width: 30),
-                  Expanded(
-                    child: Column(
-                      children: [
-                        SizedBox(
-                          height: 30,
-                          child: MyAutoSizeText(
-                            currentSong?.title ?? 'Unknown Title',
-                            maxLines: 1,
-                            textStyle: TextStyle(
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20,
+                  SizedBox(height: 60),
+                  Row(
+                    children: [
+                      SizedBox(width: 30),
+                      Expanded(
+                        child: Column(
+                          children: [
+                            SizedBox(
+                              height: 30,
+                              child: MyAutoSizeText(
+                                currentSong?.title ?? 'Unknown Title',
+                                maxLines: 1,
+                                textStyle: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  fontSize: 20,
+                                ),
+                              ),
                             ),
-                          ),
-                        ),
 
-                        SizedBox(
-                          height: 20,
-                          child: MyAutoSizeText(
-                            currentSong?.artist ?? 'Unknown Artist',
-                            maxLines: 1,
-                            textStyle: TextStyle(fontSize: 14),
-                          ),
+                            SizedBox(
+                              height: 20,
+                              child: MyAutoSizeText(
+                                currentSong?.artist ?? 'Unknown Artist',
+                                maxLines: 1,
+                                textStyle: TextStyle(fontSize: 14),
+                              ),
+                            ),
+                          ],
                         ),
+                      ),
+                      SizedBox(width: 30),
+                    ],
+                  ),
+                  SizedBox(height: 15),
+
+                  Expanded(
+                    child: PageView(
+                      children: [
+                        artPage(context, currentSong),
+                        expandedLyricsPage(context, currentSong),
                       ],
                     ),
                   ),
-                  SizedBox(width: 30),
                 ],
-              ),
-              SizedBox(height: 15),
-
-              Expanded(
-                child: PageView(
-                  children: [
-                    artPage(context, currentSong),
-                    expandedLyricsPage(context, currentSong),
-                  ],
-                ),
               ),
             ],
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
