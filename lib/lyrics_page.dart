@@ -21,12 +21,12 @@ class LyricsPage extends StatelessWidget {
     return ValueListenableBuilder(
       valueListenable: currentSongNotifier,
       builder: (context, currentSong, child) {
-        return lyricsScaffold(currentSong, artPage(context, currentSong));
+        return lyricsScaffold(context, currentSong);
       },
     );
   }
 
-  Widget lyricsScaffold(AudioMetadata? currentSong, Widget body) {
+  Widget lyricsScaffold(BuildContext context, AudioMetadata? currentSong) {
     return Material(
       child: Stack(
         fit: StackFit.expand,
@@ -78,7 +78,15 @@ class LyricsPage extends StatelessWidget {
                 ],
               ),
               SizedBox(height: 15),
-              Expanded(child: body),
+
+              Expanded(
+                child: PageView(
+                  children: [
+                    artPage(context, currentSong),
+                    expandedLyricsPage(context, currentSong),
+                  ],
+                ),
+              ),
             ],
           ),
         ],
@@ -130,26 +138,6 @@ class LyricsPage extends StatelessWidget {
 
         Row(
           children: [
-            SizedBox(width: 24),
-            IconButton(
-              color: Colors.black,
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => ValueListenableBuilder(
-                      valueListenable: currentSongNotifier,
-                      builder: (context, currentSong, child) {
-                        return lyricsScaffold(
-                          currentSong,
-                          expandedLyricsPage(context, currentSong),
-                        );
-                      },
-                    ),
-                  ),
-                );
-              },
-              icon: Icon(Icons.lyrics_outlined),
-            ),
             Spacer(),
             FavoriteButton(),
             IconButton(
@@ -458,30 +446,39 @@ class LyricsListViewState extends State<LyricsListView> {
   bool userDragging = false;
   bool userDragged = false;
 
+  bool first = true;
   Timer? timer;
 
   @override
   void initState() {
     super.initState();
+
     positionSub = audioHandler.player.positionStream.listen((position) {
       if (lyrics.isNotEmpty) {
         int tmp = currentIndexNotifier.value;
-        currentIndexNotifier.value = lyrics.lastIndexWhere(
+        int current = lyrics.lastIndexWhere(
           (line) => position >= line.timestamp,
         );
+        currentIndexNotifier.value = current;
 
-        if (!userDragging &&
-            currentIndexNotifier.value >= 0 &&
-            (tmp != currentIndexNotifier.value || userDragged)) {
+        if (!userDragging && current >= 0 && (tmp != current || userDragged)) {
           userDragged = false;
 
           if (mounted) {
-            itemScrollController.scrollTo(
-              index: currentIndexNotifier.value + 1,
-              duration: Duration(milliseconds: 300), // smooth animation
-              curve: Curves.linear,
-              alignment: widget.expanded ? 0.35 : 0.4,
-            );
+            if (first) {
+              itemScrollController.jumpTo(
+                index: current + 1,
+                alignment: widget.expanded ? 0.35 : 0.4,
+              );
+              first = false;
+            } else {
+              itemScrollController.scrollTo(
+                index: currentIndexNotifier.value + 1,
+                duration: Duration(milliseconds: 300), // smooth animation
+                curve: Curves.linear,
+                alignment: widget.expanded ? 0.35 : 0.4,
+              );
+            }
           }
         }
       }
