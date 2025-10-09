@@ -25,18 +25,21 @@ class LyricsPage extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
+              ArtWidget(
+                source: currentSong != null && currentSong.pictures.isNotEmpty
+                    ? currentSong.pictures.first
+                    : null,
+              ),
               ClipRect(
-                child: ImageFiltered(
-                  imageFilter: ImageFilter.blur(sigmaX: 35, sigmaY: 35),
-                  child: ArtWidget(
-                    source:
-                        currentSong != null && currentSong.pictures.isNotEmpty
-                        ? currentSong.pictures.first
-                        : null,
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+                  child: Container(
+                    color: artAverageColor.withAlpha(
+                      128,
+                    ), // semi-transparent tint
                   ),
                 ),
               ),
-              Container(color: artAverageColor.withAlpha(128)),
               Column(
                 children: [
                   SizedBox(height: 60),
