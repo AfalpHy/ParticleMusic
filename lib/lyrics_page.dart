@@ -27,25 +27,24 @@ class LyricsPage extends StatelessWidget {
   }
 
   Widget lyricsScaffold(AudioMetadata? currentSong, Widget body) {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        ArtWidget(
-          source: currentSong != null && currentSong.pictures.isNotEmpty
-              ? currentSong.pictures.first
-              : null,
-        ),
-
-        BackdropFilter(
-          filter: ImageFilter.blur(sigmaX: 35, sigmaY: 35),
-          child: Container(color: artAverageColor.withAlpha(128)),
-        ),
-
-        Material(
-          color: Colors.transparent,
-          child: Column(
+    return Material(
+      child: Stack(
+        fit: StackFit.expand,
+        children: [
+          ClipRect(
+            child: ImageFiltered(
+              imageFilter: ImageFilter.blur(sigmaX: 35, sigmaY: 35),
+              child: ArtWidget(
+                source: currentSong != null && currentSong.pictures.isNotEmpty
+                    ? currentSong.pictures.first
+                    : null,
+              ),
+            ),
+          ),
+          Container(color: artAverageColor.withAlpha(128)),
+          Column(
             children: [
-              SizedBox(height: 35),
+              SizedBox(height: 60),
               Row(
                 children: [
                   SizedBox(width: 30),
@@ -65,7 +64,7 @@ class LyricsPage extends StatelessWidget {
                         ),
 
                         SizedBox(
-                          height: 25,
+                          height: 20,
                           child: MyAutoSizeText(
                             currentSong?.artist ?? 'Unknown Artist',
                             maxLines: 1,
@@ -82,8 +81,8 @@ class LyricsPage extends StatelessWidget {
               Expanded(child: body),
             ],
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 
