@@ -184,7 +184,11 @@ class ArtistAlbumScaffold extends StatelessWidget {
                     style: TextStyle(fontSize: 15),
                   ),
                   Expanded(
-                    child: MyAutoSizeText(name, maxLines: 1, fontsize: 15),
+                    child: MyAutoSizeText(
+                      name,
+                      maxLines: 1,
+                      textStyle: TextStyle(fontSize: 15),
+                    ),
                   ),
                 ],
               ),

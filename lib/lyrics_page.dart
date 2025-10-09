@@ -1,10 +1,10 @@
+import 'dart:ui';
+
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:marquee/marquee.dart';
 import 'dart:async';
-import 'package:auto_size_text/auto_size_text.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 import 'audio_handler.dart';
@@ -27,85 +27,69 @@ class LyricsPage extends StatelessWidget {
   }
 
   Widget lyricsScaffold(AudioMetadata? currentSong, Widget body) {
-    return Scaffold(
-      backgroundColor: artAverageColor,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        backgroundColor: artAverageColor,
-        scrolledUnderElevation: 0,
-        title: currentSong == null
-            ? null
-            : Center(
-                child: Column(
-                  children: [
-                    AutoSizeText(
-                      currentSong.title ?? 'Unknown Title',
-                      maxLines: 1,
-                      maxFontSize: 20,
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                      overflowReplacement: SizedBox(
-                        height: kToolbarHeight / 2, // finite height
-                        width: double
-                            .infinity, // takes whatever width AppBar gives
-                        child: Marquee(
-                          text: currentSong.title ?? 'Unknown Title',
-                          scrollAxis: Axis.horizontal,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 20,
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        ArtWidget(
+          source: currentSong != null && currentSong.pictures.isNotEmpty
+              ? currentSong.pictures.first
+              : null,
+        ),
+
+        BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 35, sigmaY: 35),
+          child: Container(color: artAverageColor.withAlpha(128)),
+        ),
+
+        Material(
+          color: Colors.transparent,
+          child: Column(
+            children: [
+              SizedBox(height: 35),
+              Row(
+                children: [
+                  SizedBox(width: 30),
+                  Expanded(
+                    child: Column(
+                      children: [
+                        SizedBox(
+                          height: 30,
+                          child: MyAutoSizeText(
+                            currentSong?.title ?? 'Unknown Title',
+                            maxLines: 1,
+                            textStyle: TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 20,
+                            ),
                           ),
-                          blankSpace: 20,
-                          velocity: 30.0,
-                          pauseAfterRound: const Duration(seconds: 1),
-                          accelerationDuration: const Duration(
-                            milliseconds: 500,
-                          ),
-                          accelerationCurve: Curves.linear,
-                          decelerationDuration: const Duration(
-                            milliseconds: 500,
-                          ),
-                          decelerationCurve: Curves.linear,
                         ),
-                      ),
-                    ),
-                    AutoSizeText(
-                      currentSong.artist ?? 'Unknown Artist',
-                      maxLines: 1,
-                      maxFontSize: 14,
-                      overflowReplacement: SizedBox(
-                        height: kToolbarHeight / 2, // finite height
-                        width: double
-                            .infinity, // takes whatever width AppBar gives
-                        child: Marquee(
-                          text: currentSong.artist ?? 'Unknown Artist',
-                          style: TextStyle(fontSize: 14),
-                          scrollAxis: Axis.horizontal,
-                          blankSpace: 20,
-                          velocity: 30.0,
-                          pauseAfterRound: const Duration(seconds: 1),
-                          accelerationDuration: const Duration(
-                            milliseconds: 500,
+
+                        SizedBox(
+                          height: 25,
+                          child: MyAutoSizeText(
+                            currentSong?.artist ?? 'Unknown Artist',
+                            maxLines: 1,
+                            textStyle: TextStyle(fontSize: 14),
                           ),
-                          accelerationCurve: Curves.linear,
-                          decelerationDuration: const Duration(
-                            milliseconds: 500,
-                          ),
-                          decelerationCurve: Curves.linear,
                         ),
-                      ),
+                      ],
                     ),
-                  ],
-                ),
+                  ),
+                  SizedBox(width: 30),
+                ],
               ),
-      ),
-      body: body,
+              SizedBox(height: 15),
+              Expanded(child: body),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
   Widget artPage(BuildContext context, AudioMetadata? currentSong) {
     return Column(
       children: [
-        const SizedBox(height: 10),
         Material(
           elevation: 15,
           shape: SmoothRectangleBorder(

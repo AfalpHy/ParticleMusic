@@ -7,20 +7,21 @@ const Color mainColor = Color.fromARGB(255, 120, 240, 240);
 
 class MyAutoSizeText extends AutoSizeText {
   final String content;
-  final double fontsize;
+
+  final TextStyle textStyle;
   MyAutoSizeText(
     this.content, {
     super.key,
     super.maxLines,
-    super.style,
-    required this.fontsize,
+    required this.textStyle,
   }) : super(
          content,
-         minFontSize: fontsize,
-         maxFontSize: fontsize,
+         style: textStyle,
+         minFontSize: textStyle.fontSize ?? 12,
+         maxFontSize: textStyle.fontSize ?? double.infinity,
          overflowReplacement: Marquee(
            text: content,
-           style: TextStyle(fontSize: fontsize),
+           style: textStyle,
            scrollAxis: Axis.horizontal,
            blankSpace: 20,
            velocity: 30,

@@ -3,13 +3,13 @@ import 'package:flutter/material.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
 class ArtWidget extends StatelessWidget {
-  final double size;
+  final double? size;
   final double borderRadius;
   final Picture? source;
 
   const ArtWidget({
     super.key,
-    required this.size,
+    this.size,
     this.borderRadius = 0,
     required this.source,
   });

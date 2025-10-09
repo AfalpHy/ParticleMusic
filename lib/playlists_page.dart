@@ -112,7 +112,7 @@ class PlaylistsScaffold extends StatelessWidget {
                     child: MyAutoSizeText(
                       playlist.name,
                       maxLines: 1,
-                      fontsize: 15,
+                      textStyle: TextStyle(fontSize: 15),
                     ),
                   ),
                 ],

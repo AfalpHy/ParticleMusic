@@ -558,7 +558,7 @@ class PlayerBar extends StatelessWidget {
                       child: MyAutoSizeText(
                         "${currentSong.title ?? 'Unknown Title'} - ${currentSong.artist ?? 'Unknown Artist'}",
                         maxLines: 1,
-                        fontsize: 16,
+                        textStyle: TextStyle(fontSize: 16),
                       ),
                     ),
 
