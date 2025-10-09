@@ -536,10 +536,16 @@ class PlayerBar extends StatelessWidget {
               color: Color.fromARGB(210, 240, 255, 255),
               child: InkWell(
                 onTap: () {
-                  // Open lyrics page
-                  Navigator.of(
-                    context,
-                  ).push(MaterialPageRoute(builder: (_) => const LyricsPage()));
+                  showModalBottomSheet(
+                    context: context,
+                    isScrollControlled: true,
+                    builder: (_) {
+                      return DraggableScrollableSheet(
+                        initialChildSize: 1.0,
+                        builder: (_, _) => LyricsPage(),
+                      );
+                    },
+                  );
                 },
 
                 child: Row(
