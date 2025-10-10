@@ -102,13 +102,13 @@ class SongListScaffold extends StatelessWidget {
       valueListenable: isSearch,
       builder: (context, value, child) {
         return AnimatedSize(
-          duration: const Duration(milliseconds: 200),
+          duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
           alignment: Alignment.centerRight, // expand from right to left
           child: value
               ? SizedBox(
                   width: MediaQuery.widthOf(context) - 100,
-                  height: 35,
+                  height: 30,
                   child: SearchField(
                     autofocus: true,
                     controller: textController,
