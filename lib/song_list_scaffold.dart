@@ -73,7 +73,6 @@ class SongListScaffold extends StatelessWidget {
       backgroundColor: Colors.white,
       scrolledUnderElevation: 0,
       actions: [
-        SizedBox(width: 50),
         searchField(),
         IconButton(
           icon: Icon(Icons.more_vert),
@@ -98,69 +97,73 @@ class SongListScaffold extends StatelessWidget {
 
   Widget searchField() {
     final ValueNotifier<bool> isSearch = ValueNotifier(false);
-    return ValueListenableBuilder(
+
+    return ValueListenableBuilder<bool>(
       valueListenable: isSearch,
       builder: (context, value, child) {
-        if (value) {
-          return Expanded(
-            child: SizedBox(
-              height: 35,
-              child: SearchField(
-                autofocus: true,
-                controller: textController,
-                suggestions: [],
-                searchInputDecoration: SearchInputDecoration(
-                  hintText: 'Search songs',
-                  prefixIcon: Icon(Icons.search),
-                  suffixIcon: IconButton(
-                    onPressed: () {
-                      isSearch.value = false;
-                      currentSongListNotifer.value = songList;
-                      textController.clear();
-                      FocusScope.of(context).unfocus();
+        return AnimatedSize(
+          duration: const Duration(milliseconds: 200),
+          curve: Curves.easeInOut,
+          alignment: Alignment.centerRight, // expand from right to left
+          child: value
+              ? SizedBox(
+                  width: MediaQuery.widthOf(context) - 100,
+                  height: 35,
+                  child: SearchField(
+                    autofocus: true,
+                    controller: textController,
+                    suggestions: const [],
+                    searchInputDecoration: SearchInputDecoration(
+                      hintText: 'Search songs',
+                      prefixIcon: const Icon(Icons.search),
+                      suffixIcon: IconButton(
+                        onPressed: () {
+                          isSearch.value = false;
+                          currentSongListNotifer.value = songList;
+                          textController.clear();
+                          FocusScope.of(context).unfocus();
+                        },
+                        icon: const Icon(Icons.clear),
+                        padding: EdgeInsets.zero,
+                      ),
+                      filled: true,
+                      fillColor: Colors.grey.shade100,
+                      contentPadding: EdgeInsets.zero,
+                      isDense: true,
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(20),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    onSearchTextChanged: (value) {
+                      currentSongListNotifer.value = songList
+                          .where(
+                            (song) =>
+                                (value.isEmpty) ||
+                                (song.title?.toLowerCase().contains(
+                                      value.toLowerCase(),
+                                    ) ??
+                                    false) ||
+                                (song.artist?.toLowerCase().contains(
+                                      value.toLowerCase(),
+                                    ) ??
+                                    false) ||
+                                (song.album?.toLowerCase().contains(
+                                      value.toLowerCase(),
+                                    ) ??
+                                    false),
+                          )
+                          .toList();
+                      return null;
                     },
-                    icon: Icon(Icons.clear),
-                    padding: EdgeInsets.zero,
                   ),
-                  filled: true,
-                  fillColor: Colors.grey.shade100,
-                  contentPadding: EdgeInsets.zero,
-                  isDense: true,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(20),
-                    borderSide: BorderSide.none,
-                  ),
+                )
+              : IconButton(
+                  onPressed: () {
+                    isSearch.value = true;
+                  },
+                  icon: const Icon(Icons.search),
                 ),
-                onSearchTextChanged: (value) {
-                  currentSongListNotifer.value = songList
-                      .where(
-                        (song) =>
-                            (value.isEmpty) ||
-                            (song.title?.toLowerCase().contains(
-                                  value.toLowerCase(),
-                                ) ??
-                                false) ||
-                            (song.artist?.toLowerCase().contains(
-                                  value.toLowerCase(),
-                                ) ??
-                                false) ||
-                            (song.album?.toLowerCase().contains(
-                                  value.toLowerCase(),
-                                ) ??
-                                false),
-                      )
-                      .toList();
-                  return null;
-                },
-              ),
-            ),
-          );
-        }
-        return IconButton(
-          onPressed: () {
-            isSearch.value = true;
-          },
-          icon: Icon(Icons.search),
         );
       },
     );
