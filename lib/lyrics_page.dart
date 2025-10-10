@@ -677,10 +677,10 @@ class SeekBarState extends State<SeekBar> {
                   Positioned.fill(
                     child: GestureDetector(
                       behavior: HitTestBehavior.translucent,
-                      onTapDown: (_) {
-                        setState(() => isDragging = true);
+                      onVerticalDragStart: (_) {
+                        setState(() => isDragging = false);
                       },
-                      onHorizontalDragStart: (_) {
+                      onTapDown: (_) {
                         setState(() => isDragging = true);
                       },
                       onHorizontalDragUpdate: (details) {
@@ -689,9 +689,10 @@ class SeekBarState extends State<SeekBar> {
                           context,
                           durationMs,
                         );
+                        setState(() {});
                       },
                       onHorizontalDragEnd: (_) async {
-                        await audioHandler.player.seek(
+                        await audioHandler.seek(
                           Duration(milliseconds: dragValue!.toInt()),
                         );
                         setState(() {
@@ -705,7 +706,7 @@ class SeekBarState extends State<SeekBar> {
                           context,
                           durationMs,
                         );
-                        await audioHandler.player.seek(
+                        await audioHandler.seek(
                           Duration(milliseconds: dragValue!.toInt()),
                         );
                         setState(() {
@@ -730,9 +731,7 @@ class SeekBarState extends State<SeekBar> {
 
     double relative = (dx - 30) / (box.size.width - 60);
     relative = relative.clamp(0.0, 1.0);
-    setState(() {
-      dragValue = relative * durationMs;
-    });
+    dragValue = relative * durationMs;
   }
 }
 
