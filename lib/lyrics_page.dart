@@ -660,7 +660,7 @@ class SeekBarState extends State<SeekBar> {
                           : RoundSliderThumbShape(enabledThumbRadius: 4),
                       overlayShape: SliderComponentShape.noOverlay,
                       activeTrackColor: Colors.black,
-                      inactiveTrackColor: Colors.grey.shade300,
+                      inactiveTrackColor: Colors.black12,
                     ),
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 30),
