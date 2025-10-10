@@ -22,7 +22,10 @@ class ArtWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(borderRadius),
         child: Container(
           color: Colors.grey,
-          child: Icon(Icons.music_note, size: size),
+          child: ImageIcon(
+            AssetImage("assets/images/music_note.png"),
+            size: size,
+          ),
         ),
       );
     }
@@ -37,7 +40,10 @@ class ArtWidget extends StatelessWidget {
         errorBuilder: (context, error, stackTrace) {
           return Container(
             color: Colors.grey,
-            child: Icon(Icons.music_note, size: size),
+            child: ImageIcon(
+              AssetImage("assets/images/music_note.png"),
+              size: size,
+            ),
           );
         },
       ),

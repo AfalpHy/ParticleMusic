@@ -118,10 +118,7 @@ class SongListTile extends StatelessWidget {
                         physics: const ClampingScrollPhysics(),
                         children: [
                           ListTile(
-                            leading: Icon(
-                              Icons.playlist_add_outlined,
-                              size: 25,
-                            ),
+                            leading: Icon(Icons.playlist_add_rounded, size: 25),
                             title: Text(
                               'Add to Playlists',
                               style: TextStyle(

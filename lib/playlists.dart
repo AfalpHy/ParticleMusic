@@ -6,6 +6,7 @@ import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:path/path.dart' as p;
+import 'package:smooth_corner/smooth_corner.dart';
 import 'art_widget.dart';
 
 late PlaylistsManager playlistsManager;
@@ -149,7 +150,14 @@ class PlaylistsSheetState extends State<PlaylistsSheet> {
       Column(
         children: [
           ListTile(
-            leading: Material(child: Icon(Icons.add, size: 40)),
+            leading: SmoothClipRRect(
+              smoothness: 1,
+              borderRadius: BorderRadius.circular(4),
+              child: Container(
+                color: const Color.fromARGB(255, 245, 235, 245),
+                child: ImageIcon(AssetImage("assets/images/add.png"), size: 40),
+              ),
+            ),
             title: Text('Create Playlist'),
             onTap: () async {
               if (await showCreatePlaylistSheet(context)) {

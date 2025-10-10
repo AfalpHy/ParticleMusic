@@ -395,7 +395,7 @@ class HomePageState extends State<HomePage> {
         ),
         ListTile(
           leading: const ImageIcon(
-            AssetImage("assets/images/music_note.png"),
+            AssetImage("assets/images/songs.png"),
             size: 30,
             color: mainColor,
           ),

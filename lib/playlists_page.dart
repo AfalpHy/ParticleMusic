@@ -4,6 +4,7 @@ import 'package:particle_music/art_widget.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/song_list_scaffold.dart';
+import 'package:smooth_corner/smooth_corner.dart';
 
 class PlaylistsScaffold extends StatelessWidget {
   const PlaylistsScaffold({super.key});
@@ -80,10 +81,17 @@ class PlaylistsScaffold extends StatelessWidget {
               }
 
               return ListTile(
-                contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
-                leading: Material(
-                  borderRadius: BorderRadius.circular(3),
-                  child: Icon(Icons.add, size: 50),
+                contentPadding: EdgeInsets.fromLTRB(20, 5, 20, 0),
+                leading: SmoothClipRRect(
+                  smoothness: 1,
+                  borderRadius: BorderRadius.circular(5),
+                  child: Container(
+                    color: const Color.fromARGB(255, 245, 235, 245),
+                    child: ImageIcon(
+                      AssetImage("assets/images/add.png"),
+                      size: 50,
+                    ),
+                  ),
                 ),
                 title: Text('Create Playlist'),
                 onTap: () {

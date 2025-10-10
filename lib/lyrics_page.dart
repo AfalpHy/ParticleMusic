@@ -180,7 +180,7 @@ class LyricsPage extends StatelessWidget {
                               children: [
                                 ListTile(
                                   leading: Icon(
-                                    Icons.playlist_add_outlined,
+                                    Icons.playlist_add_rounded,
                                     size: 25,
                                   ),
                                   title: Text(
