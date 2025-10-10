@@ -196,7 +196,7 @@ class ArtistAlbumScaffold extends StatelessWidget {
           ),
           Divider(thickness: 0.5, height: 1, color: Colors.grey.shade300),
           ListTile(
-            leading: Icon(Icons.reorder),
+            leading: Icon(Icons.reorder_rounded),
             title: Text(
               'Select',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),

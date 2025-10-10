@@ -31,7 +31,7 @@ class SongsScaffoldState extends State<SongsScaffold> {
           Divider(color: Colors.grey.shade300, thickness: 0.5, height: 1),
 
           ListTile(
-            leading: Icon(Icons.reorder),
+            leading: Icon(Icons.reorder_rounded),
             title: Text(
               'Select',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
