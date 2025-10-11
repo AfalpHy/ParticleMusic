@@ -184,6 +184,7 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
     lyrics = [];
     final file = File(path);
     if (!file.existsSync()) {
+      lyrics.add(LyricLine(Duration.zero, 'Lyrics not available'));
       return;
     }
     final lines = await file.readAsLines(); // read file line by line
@@ -209,6 +210,9 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
           ),
         );
       }
+    }
+    if (lyrics.isEmpty) {
+      lyrics.add(LyricLine(Duration.zero, 'Lyrics not available'));
     }
   }
 

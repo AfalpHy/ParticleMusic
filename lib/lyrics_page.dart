@@ -451,28 +451,26 @@ class LyricsListViewState extends State<LyricsListView>
   Timer? timer;
 
   void scroll2CurrentIndex(Duration position) {
-    if (lyrics.isNotEmpty) {
-      int tmp = currentIndexNotifier.value;
-      int current = lyrics.lastIndexWhere((line) => position >= line.timestamp);
-      currentIndexNotifier.value = current;
+    int tmp = currentIndexNotifier.value;
+    int current = lyrics.lastIndexWhere((line) => position >= line.timestamp);
+    currentIndexNotifier.value = current;
 
-      if (!userDragging && current >= 0 && (tmp != current || userDragged)) {
-        userDragged = false;
+    if (!userDragging && current >= 0 && (tmp != current || userDragged)) {
+      userDragged = false;
 
-        if (first) {
-          itemScrollController.jumpTo(
-            index: current + 1,
-            alignment: widget.expanded ? 0.35 : 0.4,
-          );
-          first = false;
-        } else {
-          itemScrollController.scrollTo(
-            index: currentIndexNotifier.value + 1,
-            duration: Duration(milliseconds: 300), // smooth animation
-            curve: Curves.linear,
-            alignment: widget.expanded ? 0.35 : 0.4,
-          );
-        }
+      if (first) {
+        itemScrollController.jumpTo(
+          index: current + 1,
+          alignment: widget.expanded ? 0.35 : 0.4,
+        );
+        first = false;
+      } else {
+        itemScrollController.scrollTo(
+          index: currentIndexNotifier.value + 1,
+          duration: Duration(milliseconds: 300), // smooth animation
+          curve: Curves.linear,
+          alignment: widget.expanded ? 0.35 : 0.4,
+        );
       }
     }
   }
