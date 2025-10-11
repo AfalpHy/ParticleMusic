@@ -189,7 +189,7 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
     }
     final lines = await file.readAsLines(); // read file line by line
 
-    final regex = RegExp(r'\[(\d{2}):(\d{2})(?::(\d{2})|.(\d{2}))\](.*)');
+    final regex = RegExp(r'\[(\d{2}):(\d{2})(?::(\d{2,3)|.(\d{2,3}))\](.*)');
 
     for (var line in lines) {
       final match = regex.firstMatch(line);
