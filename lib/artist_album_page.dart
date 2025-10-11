@@ -32,68 +32,60 @@ class ArtistAlbumScaffold extends StatelessWidget {
           ValueListenableBuilder(
             valueListenable: isSearch,
             builder: (context, value, child) {
-              return AnimatedSize(
-                duration: const Duration(milliseconds: 300),
-                curve: Curves.easeInOut,
-                alignment: Alignment.centerRight, // expand from right to left
-                child: value
-                    ? SizedBox(
-                        width: MediaQuery.widthOf(context) - 20,
+              return value
+                  ? Expanded(
+                      child: SizedBox(
                         height: 30,
-                        child: Row(
-                          children: [
-                            Expanded(
-                              child: SearchField(
-                                autofocus: true,
-                                controller: textController,
-                                suggestions: [],
-                                searchInputDecoration: SearchInputDecoration(
-                                  hintText:
-                                      'Search ${isArtist ? "Artists" : "Albums"}',
-                                  prefixIcon: Icon(Icons.search),
-                                  suffixIcon: IconButton(
-                                    onPressed: () {
-                                      isSearch.value = false;
-                                      songListMapNotifer.value = songListMap;
-                                      textController.clear();
-                                      FocusScope.of(context).unfocus();
-                                    },
-                                    icon: Icon(Icons.clear),
-                                    padding: EdgeInsets.zero,
-                                  ),
-                                  filled: true,
-                                  fillColor: Colors.grey.shade100,
-                                  contentPadding: EdgeInsets.zero,
-                                  isDense: true,
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(20),
-                                    borderSide: BorderSide.none,
-                                  ),
-                                ),
-                                onSearchTextChanged: (value) {
-                                  songListMapNotifer.value = Map.fromEntries(
-                                    songListMap.entries.where(
-                                      (e) => (e.key.toLowerCase().contains(
-                                        value.toLowerCase(),
-                                      )),
-                                    ),
-                                  );
-
-                                  return null;
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: SearchField(
+                            autofocus: true,
+                            controller: textController,
+                            suggestions: [],
+                            searchInputDecoration: SearchInputDecoration(
+                              hintText:
+                                  'Search ${isArtist ? "Artists" : "Albums"}',
+                              prefixIcon: Icon(Icons.search),
+                              suffixIcon: IconButton(
+                                onPressed: () {
+                                  isSearch.value = false;
+                                  songListMapNotifer.value = songListMap;
+                                  textController.clear();
+                                  FocusScope.of(context).unfocus();
                                 },
+                                icon: Icon(Icons.clear),
+                                padding: EdgeInsets.zero,
+                              ),
+                              filled: true,
+                              fillColor: Colors.grey.shade100,
+                              contentPadding: EdgeInsets.zero,
+                              isDense: true,
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(15),
+                                borderSide: BorderSide.none,
                               ),
                             ),
-                            SizedBox(width: 20),
-                          ],
+                            onSearchTextChanged: (value) {
+                              songListMapNotifer.value = Map.fromEntries(
+                                songListMap.entries.where(
+                                  (e) => (e.key.toLowerCase().contains(
+                                    value.toLowerCase(),
+                                  )),
+                                ),
+                              );
+
+                              return null;
+                            },
+                          ),
                         ),
-                      )
-                    : IconButton(
-                        onPressed: () {
-                          isSearch.value = true;
-                        },
-                        icon: Icon(Icons.search),
                       ),
-              );
+                    )
+                  : IconButton(
+                      onPressed: () {
+                        isSearch.value = true;
+                      },
+                      icon: Icon(Icons.search),
+                    );
             },
           ),
         ],

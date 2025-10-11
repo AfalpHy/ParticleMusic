@@ -101,70 +101,69 @@ class SongListScaffold extends StatelessWidget {
     return ValueListenableBuilder<bool>(
       valueListenable: isSearch,
       builder: (context, value, child) {
-        return AnimatedSize(
-          duration: const Duration(milliseconds: 300),
-          curve: Curves.easeInOut,
-          alignment: Alignment.centerRight, // expand from right to left
-          child: value
-              ? SizedBox(
-                  width: MediaQuery.widthOf(context) - 100,
-                  height: 30,
-                  child: SearchField(
-                    autofocus: true,
-                    controller: textController,
-                    suggestions: const [],
-                    searchInputDecoration: SearchInputDecoration(
-                      hintText: 'Search songs',
-                      prefixIcon: const Icon(Icons.search),
-                      suffixIcon: IconButton(
-                        onPressed: () {
-                          isSearch.value = false;
-                          currentSongListNotifer.value = songList;
-                          textController.clear();
-                          FocusScope.of(context).unfocus();
-                        },
-                        icon: const Icon(Icons.clear),
-                        padding: EdgeInsets.zero,
+        return value
+            ? Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(50, 0, 0, 0),
+                  child: SizedBox(
+                    height: 30,
+                    child: SearchField(
+                      autofocus: true,
+                      controller: textController,
+                      suggestions: const [],
+                      searchInputDecoration: SearchInputDecoration(
+                        hintText: 'Search songs',
+                        prefixIcon: const Icon(Icons.search),
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            isSearch.value = false;
+                            currentSongListNotifer.value = songList;
+                            textController.clear();
+                            FocusScope.of(context).unfocus();
+                          },
+                          icon: const Icon(Icons.clear),
+                          padding: EdgeInsets.zero,
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey.shade100,
+                        contentPadding: EdgeInsets.zero,
+                        isDense: true,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: BorderSide.none,
+                        ),
                       ),
-                      filled: true,
-                      fillColor: Colors.grey.shade100,
-                      contentPadding: EdgeInsets.zero,
-                      isDense: true,
-                      border: OutlineInputBorder(
-                        borderRadius: BorderRadius.circular(20),
-                        borderSide: BorderSide.none,
-                      ),
+                      onSearchTextChanged: (value) {
+                        currentSongListNotifer.value = songList
+                            .where(
+                              (song) =>
+                                  (value.isEmpty) ||
+                                  (song.title?.toLowerCase().contains(
+                                        value.toLowerCase(),
+                                      ) ??
+                                      false) ||
+                                  (song.artist?.toLowerCase().contains(
+                                        value.toLowerCase(),
+                                      ) ??
+                                      false) ||
+                                  (song.album?.toLowerCase().contains(
+                                        value.toLowerCase(),
+                                      ) ??
+                                      false),
+                            )
+                            .toList();
+                        return null;
+                      },
                     ),
-                    onSearchTextChanged: (value) {
-                      currentSongListNotifer.value = songList
-                          .where(
-                            (song) =>
-                                (value.isEmpty) ||
-                                (song.title?.toLowerCase().contains(
-                                      value.toLowerCase(),
-                                    ) ??
-                                    false) ||
-                                (song.artist?.toLowerCase().contains(
-                                      value.toLowerCase(),
-                                    ) ??
-                                    false) ||
-                                (song.album?.toLowerCase().contains(
-                                      value.toLowerCase(),
-                                    ) ??
-                                    false),
-                          )
-                          .toList();
-                      return null;
-                    },
                   ),
-                )
-              : IconButton(
-                  onPressed: () {
-                    isSearch.value = true;
-                  },
-                  icon: const Icon(Icons.search),
                 ),
-        );
+              )
+            : IconButton(
+                onPressed: () {
+                  isSearch.value = true;
+                },
+                icon: const Icon(Icons.search),
+              );
       },
     );
   }
