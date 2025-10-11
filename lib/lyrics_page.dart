@@ -62,7 +62,7 @@ class LyricsPage extends StatelessWidget {
                             ),
 
                             SizedBox(
-                              height: 20,
+                              height: 24,
                               child: MyAutoSizeText(
                                 currentSong?.artist ?? 'Unknown Artist',
                                 maxLines: 1,
@@ -75,7 +75,7 @@ class LyricsPage extends StatelessWidget {
                       SizedBox(width: 30),
                     ],
                   ),
-                  SizedBox(height: 15),
+                  SizedBox(height: 10),
 
                   Expanded(
                     child: PageView(
