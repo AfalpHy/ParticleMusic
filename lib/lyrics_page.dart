@@ -439,7 +439,8 @@ class LyricsListView extends StatefulWidget {
   State<LyricsListView> createState() => LyricsListViewState();
 }
 
-class LyricsListViewState extends State<LyricsListView> {
+class LyricsListViewState extends State<LyricsListView>
+    with WidgetsBindingObserver {
   final ItemScrollController itemScrollController = ItemScrollController();
   ValueNotifier<int> currentIndexNotifier = ValueNotifier<int>(-1);
   StreamSubscription<Duration>? positionSub;
@@ -449,47 +450,65 @@ class LyricsListViewState extends State<LyricsListView> {
   bool first = true;
   Timer? timer;
 
+  void scroll2CurrentIndex(Duration position) {
+    if (lyrics.isNotEmpty) {
+      int tmp = currentIndexNotifier.value;
+      int current = lyrics.lastIndexWhere((line) => position >= line.timestamp);
+      currentIndexNotifier.value = current;
+
+      if (!userDragging && current >= 0 && (tmp != current || userDragged)) {
+        userDragged = false;
+
+        if (first) {
+          itemScrollController.jumpTo(
+            index: current + 1,
+            alignment: widget.expanded ? 0.35 : 0.4,
+          );
+          first = false;
+        } else {
+          itemScrollController.scrollTo(
+            index: currentIndexNotifier.value + 1,
+            duration: Duration(milliseconds: 300), // smooth animation
+            curve: Curves.linear,
+            alignment: widget.expanded ? 0.35 : 0.4,
+          );
+        }
+      }
+    }
+  }
+
   @override
   void initState() {
     super.initState();
-
-    positionSub = audioHandler.player.positionStream.listen((position) {
-      if (lyrics.isNotEmpty) {
-        int tmp = currentIndexNotifier.value;
-        int current = lyrics.lastIndexWhere(
-          (line) => position >= line.timestamp,
-        );
-        currentIndexNotifier.value = current;
-
-        if (!userDragging && current >= 0 && (tmp != current || userDragged)) {
-          userDragged = false;
-
-          if (mounted) {
-            if (first) {
-              itemScrollController.jumpTo(
-                index: current + 1,
-                alignment: widget.expanded ? 0.35 : 0.4,
-              );
-              first = false;
-            } else {
-              itemScrollController.scrollTo(
-                index: currentIndexNotifier.value + 1,
-                duration: Duration(milliseconds: 300), // smooth animation
-                curve: Curves.linear,
-                alignment: widget.expanded ? 0.35 : 0.4,
-              );
-            }
-          }
-        }
-      }
-    });
+    WidgetsBinding.instance.addObserver(this);
+    positionSub = audioHandler.player.positionStream.listen(
+      (position) => scroll2CurrentIndex(position),
+    );
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     // Stop listening when lyrics page is closed
     positionSub?.cancel();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    switch (state) {
+      case AppLifecycleState.resumed:
+        first = true;
+        positionSub = audioHandler.player.positionStream.listen(
+          (position) => scroll2CurrentIndex(position),
+        );
+        break;
+      case AppLifecycleState.paused:
+        positionSub?.cancel();
+        break;
+      default:
+        break;
+    }
   }
 
   @override
