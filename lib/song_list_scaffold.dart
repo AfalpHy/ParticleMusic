@@ -77,6 +77,7 @@ class SongListScaffold extends StatelessWidget {
         IconButton(
           icon: Icon(Icons.more_vert),
           onPressed: () {
+            HapticFeedback.heavyImpact();
             showModalBottomSheet(
               context: context,
               isScrollControlled: true,
@@ -331,21 +332,6 @@ class SelectableSongListScaffoldState
                 },
               ),
               Text('Select All', style: TextStyle(fontSize: 16)),
-              Spacer(),
-              TextButton(
-                onPressed: () {
-                  Navigator.of(context).pop();
-                },
-
-                child: Text(
-                  'Complete',
-                  style: TextStyle(
-                    fontSize: 16,
-                    color: Color.fromARGB(255, 75, 200, 200),
-                  ),
-                ),
-              ),
-              SizedBox(width: 20),
             ],
           ),
           Expanded(
@@ -402,119 +388,140 @@ class SelectableSongListScaffoldState
           ),
         ],
       ),
-      bottomNavigationBar: SizedBox(
-        height: 80,
-        child: Row(
-          children: [
-            Expanded(
-              child: GestureDetector(
-                onTap: () async {
-                  HapticFeedback.heavyImpact();
-                  if (selectedNum.value > 0) {
-                    for (int i = isSelectedList.length - 1; i >= 0; i--) {
-                      if (isSelectedList[i].value) {
-                        audioHandler.insert2Next(i, songList);
-                      }
-                    }
-                    if (audioHandler.currentIndex == -1) {
-                      await audioHandler.skipToNext();
-                      audioHandler.play();
-                    }
-                  }
-                },
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.playlist_add_circle_outlined,
-                      size: 28,
-                      color: mainColor,
-                    ),
-
-                    Text(
-                      "Play Next",
-                      style: TextStyle(
-                        color: Color.fromARGB(255, 75, 200, 200),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            Expanded(
-              child: GestureDetector(
-                onTap: () {
-                  HapticFeedback.heavyImpact();
-                  if (selectedNum.value > 0) {
-                    List<AudioMetadata> songs = [];
-                    for (int i = isSelectedList.length - 1; i >= 0; i--) {
-                      if (isSelectedList[i].value) {
-                        songs.add(songList[i]);
-                      }
-                    }
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      builder: (_) {
-                        return PlaylistsSheet(songs: songs);
-                      },
-                    );
-                  }
-                },
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.playlist_add_outlined,
-                      size: 28,
-                      color: mainColor,
-                    ),
-
-                    Text(
-                      "Add to Playlists",
-                      style: TextStyle(
-                        color: Color.fromARGB(255, 75, 200, 200),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            playlist == null
-                ? SizedBox()
-                : Expanded(
-                    child: GestureDetector(
-                      onTap: () async {
+      bottomNavigationBar: ValueListenableBuilder(
+        valueListenable: selectedNum,
+        builder: (context, value, child) {
+          final valid = value > 0;
+          final iconColor = valid ? mainColor : Colors.black54;
+          final textColor = valid
+              ? Color.fromARGB(255, 75, 200, 200)
+              : Colors.black54;
+          return SizedBox(
+            height: 80,
+            child: Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () async {
+                      if (valid) {
                         HapticFeedback.heavyImpact();
-                        if (selectedNum.value > 0 &&
-                            await showConfirmDialog(context, 'Delete Action')) {
-                          List<AudioMetadata> songs = [];
-                          for (int i = isSelectedList.length - 1; i >= 0; i--) {
-                            if (isSelectedList[i].value) {
-                              songs.add(songList[i]);
-                            }
+                        for (int i = isSelectedList.length - 1; i >= 0; i--) {
+                          if (isSelectedList[i].value) {
+                            audioHandler.insert2Next(i, songList);
                           }
-                          playlist.remove(songs);
-                          setState(() {});
                         }
-                      },
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.delete, size: 28, color: mainColor),
+                        showCenterMessage(
+                          context,
+                          'Added to Play Queue',
+                          duration: 1000,
+                        );
+                        if (audioHandler.currentIndex == -1) {
+                          await audioHandler.skipToNext();
+                          audioHandler.play();
+                        }
+                      }
+                    },
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.playlist_add_circle_outlined,
+                          size: 28,
+                          color: iconColor,
+                        ),
 
-                          Text(
-                            "Delete",
-                            style: TextStyle(
-                              color: Color.fromARGB(255, 75, 200, 200),
-                            ),
-                          ),
-                        ],
-                      ),
+                        Text("Play Next", style: TextStyle(color: textColor)),
+                      ],
                     ),
                   ),
-          ],
-        ),
+                ),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      if (valid) {
+                        HapticFeedback.heavyImpact();
+                        List<AudioMetadata> songs = [];
+                        for (int i = isSelectedList.length - 1; i >= 0; i--) {
+                          if (isSelectedList[i].value) {
+                            songs.add(songList[i]);
+                          }
+                        }
+                        showModalBottomSheet(
+                          context: context,
+                          isScrollControlled: true,
+                          builder: (_) {
+                            return PlaylistsSheet(songs: songs);
+                          },
+                        );
+                      }
+                    },
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Icon(
+                          Icons.playlist_add_outlined,
+                          size: 28,
+                          color: iconColor,
+                        ),
+
+                        Text(
+                          "Add to Playlists",
+                          style: TextStyle(color: textColor),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                playlist == null
+                    ? SizedBox()
+                    : Expanded(
+                        child: GestureDetector(
+                          onTap: () async {
+                            if (valid) {
+                              HapticFeedback.heavyImpact();
+                              if (await showConfirmDialog(
+                                context,
+                                'Delete Action',
+                              )) {
+                                List<AudioMetadata> songs = [];
+                                for (
+                                  int i = isSelectedList.length - 1;
+                                  i >= 0;
+                                  i--
+                                ) {
+                                  if (isSelectedList[i].value) {
+                                    songs.add(songList[i]);
+                                  }
+                                }
+                                playlist.remove(songs);
+                                if (context.mounted) {
+                                  showCenterMessage(
+                                    context,
+                                    'Successfully Deleted',
+                                    duration: 1000,
+                                  );
+                                }
+                                setState(() {});
+                              }
+                            }
+                          },
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(Icons.delete, size: 28, color: iconColor),
+
+                              Text(
+                                "Delete",
+                                style: TextStyle(color: textColor),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+              ],
+            ),
+          );
+        },
       ),
     );
   }

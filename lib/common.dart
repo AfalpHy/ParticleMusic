@@ -43,7 +43,11 @@ Widget mySheet(Widget child, {double height = 500, color = Colors.white}) {
   );
 }
 
-void showCenterMessage(BuildContext context, String message) {
+void showCenterMessage(
+  BuildContext context,
+  String message, {
+  int duration = 500,
+}) {
   final overlay = Overlay.of(context);
   final overlayEntry = OverlayEntry(
     builder: (context) => Center(
@@ -66,7 +70,7 @@ void showCenterMessage(BuildContext context, String message) {
 
   overlay.insert(overlayEntry);
 
-  Future.delayed(Duration(milliseconds: 500), () {
+  Future.delayed(Duration(milliseconds: duration), () {
     overlayEntry.remove();
   });
 }

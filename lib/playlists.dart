@@ -187,6 +187,11 @@ class PlaylistsSheetState extends State<PlaylistsSheet> {
                     for (var song in widget.songs) {
                       playlist.add([song]);
                     }
+                    showCenterMessage(
+                      context,
+                      'Added to Playlist',
+                      duration: 1500,
+                    );
                     Navigator.pop(context);
                   },
                 );
