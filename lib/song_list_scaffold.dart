@@ -272,23 +272,23 @@ class SongListScaffold extends StatelessWidget {
   }
 }
 
-class MultifunctionalSongListScaffold extends StatefulWidget {
+class SelectableSongListScaffold extends StatefulWidget {
   final List<AudioMetadata> songList;
 
   final Playlist? playlist;
 
-  const MultifunctionalSongListScaffold({
+  const SelectableSongListScaffold({
     super.key,
     required this.songList,
     this.playlist,
   });
 
   @override
-  State<StatefulWidget> createState() => MultifunctionalSongListScaffoldState();
+  State<StatefulWidget> createState() => SelectableSongListScaffoldState();
 }
 
-class MultifunctionalSongListScaffoldState
-    extends State<MultifunctionalSongListScaffold> {
+class SelectableSongListScaffoldState
+    extends State<SelectableSongListScaffold> {
   @override
   Widget build(BuildContext context) {
     final songList = widget.songList;
@@ -353,7 +353,7 @@ class MultifunctionalSongListScaffoldState
                 ? ListView.builder(
                     itemCount: songList.length,
                     itemBuilder: (_, index) {
-                      return MultifunctionalSongListTile(
+                      return SelectableSongListTile(
                         index: index,
                         source: songList,
                         isSelected: isSelectedList[index],
@@ -390,7 +390,7 @@ class MultifunctionalSongListScaffoldState
                         },
                     itemCount: songList.length,
                     itemBuilder: (_, index) {
-                      return MultifunctionalSongListTile(
+                      return SelectableSongListTile(
                         key: ValueKey(songList[index]),
                         index: index,
                         source: songList,

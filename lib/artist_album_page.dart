@@ -199,7 +199,7 @@ class ArtistAlbumScaffold extends StatelessWidget {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (_) =>
-                      MultifunctionalSongListScaffold(songList: songList),
+                      SelectableSongListScaffold(songList: songList),
                 ),
               );
             },

@@ -42,7 +42,7 @@ class SongsScaffoldState extends State<SongsScaffold> {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (_) =>
-                      MultifunctionalSongListScaffold(songList: librarySongs),
+                      SelectableSongListScaffold(songList: librarySongs),
                 ),
               );
             },

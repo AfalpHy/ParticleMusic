@@ -226,12 +226,12 @@ class SongListTile extends StatelessWidget {
   }
 }
 
-class MultifunctionalSongListTile extends StatelessWidget {
+class SelectableSongListTile extends StatelessWidget {
   final int index;
   final List<AudioMetadata> source;
   final ValueNotifier<bool> isSelected;
   final ValueNotifier<int> selectedNum;
-  const MultifunctionalSongListTile({
+  const SelectableSongListTile({
     super.key,
     required this.index,
     required this.source,
