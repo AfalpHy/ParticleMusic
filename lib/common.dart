@@ -4,6 +4,7 @@ import 'package:marquee/marquee.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
 const Color mainColor = Color.fromARGB(255, 120, 240, 240);
+late double appWidth;
 
 class MyAutoSizeText extends AutoSizeText {
   final String content;

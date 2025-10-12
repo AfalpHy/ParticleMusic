@@ -74,6 +74,7 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    appWidth = MediaQuery.widthOf(context);
     return MaterialApp(
       title: 'Particle Music',
       home: Stack(

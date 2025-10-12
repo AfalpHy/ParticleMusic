@@ -20,7 +20,6 @@ class LyricLine {
 List<AudioMetadata> librarySongs = [];
 Map<String, AudioMetadata> basename2LibrarySong = {};
 List<AudioMetadata> playQueue = [];
-List<AudioMetadata> playQueueTmp = [];
 List<LyricLine> lyrics = [];
 Color artAverageColor = Colors.grey;
 
@@ -28,10 +27,11 @@ ValueNotifier<AudioMetadata?> currentSongNotifier = ValueNotifier(null);
 ValueNotifier<bool> isPlayingNotifier = ValueNotifier(false);
 ValueNotifier<int> playModeNotifier = ValueNotifier(0);
 
-class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
+class MyAudioHandler extends BaseAudioHandler {
   final player = AudioPlayer();
   int currentIndex = -1;
 
+  List<AudioMetadata> playQueueTmp = [];
   int tmpPlayMode = 0;
 
   MyAudioHandler() {
@@ -189,7 +189,7 @@ class MyAudioHandler extends BaseAudioHandler with ChangeNotifier {
     }
     final lines = await file.readAsLines(); // read file line by line
 
-    final regex = RegExp(r'\[(\d{2}):(\d{2})(?::(\d{2,3)|.(\d{2,3}))\](.*)');
+    final regex = RegExp(r'\[(\d{2}):(\d{2})(?::(\d{2,3})|.(\d{2,3}))\](.*)');
 
     for (var line in lines) {
       final match = regex.firstMatch(line);

@@ -65,7 +65,6 @@ class PlaylistsScaffold extends StatelessWidget {
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        // can't use this builder context for MediaQuery.of(context), otherwise search field will not work
                         builder: (_) => SongListScaffold(
                           songList: playlist.songs,
                           name: playlist.name,
@@ -112,7 +111,7 @@ class PlaylistsScaffold extends StatelessWidget {
           ListTile(
             title: SizedBox(
               height: 40,
-              width: MediaQuery.of(context).size.width * 0.9,
+              width: appWidth * 0.9,
               child: Row(
                 children: [
                   Text('Playlist: ', style: TextStyle(fontSize: 15)),

@@ -101,13 +101,11 @@ class LyricsPage extends StatelessWidget {
           elevation: 15,
           shape: SmoothRectangleBorder(
             smoothness: 1,
-            borderRadius: BorderRadius.circular(
-              MediaQuery.widthOf(context) * 0.84 / 20,
-            ),
+            borderRadius: BorderRadius.circular(appWidth * 0.04),
           ),
           child: ArtWidget(
-            size: MediaQuery.widthOf(context) * 0.84,
-            borderRadius: MediaQuery.widthOf(context) * 0.84 / 20,
+            size: appWidth * 0.84,
+            borderRadius: appWidth * 0.04,
             source: currentSong != null && currentSong.pictures.isNotEmpty
                 ? currentSong.pictures.first
                 : null,

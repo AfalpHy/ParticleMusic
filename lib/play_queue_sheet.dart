@@ -26,11 +26,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
               .size
               .height;
 
-      scrollController.animateTo(
-        lineHeight * audioHandler.currentIndex,
-        duration: Duration(milliseconds: 300), // smooth animation
-        curve: Curves.linear,
-      );
+      scrollController.jumpTo(lineHeight * audioHandler.currentIndex);
     });
   }
 
@@ -112,7 +108,6 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                 IconButton(
                   onPressed: () async {
                     if (await showConfirmDialog(context, 'Clear Action')) {
-                      playQueue = [];
                       audioHandler.clear();
 
                       while (context.mounted && Navigator.canPop(context)) {
