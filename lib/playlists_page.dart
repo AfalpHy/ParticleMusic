@@ -1,5 +1,6 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:particle_music/art_widget.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/playlists.dart';
@@ -19,6 +20,18 @@ class PlaylistsScaffold extends StatelessWidget {
         scrolledUnderElevation: 0,
         title: const Text("Playlists"),
         centerTitle: true,
+        actions: [
+          IconButton(
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => reorderPlaylistsScaffold(context),
+                ),
+              );
+            },
+            icon: Icon(Icons.reorder_rounded),
+          ),
+        ],
       ),
       body: ValueListenableBuilder(
         valueListenable: playlistsManager.changeNotifier,
@@ -103,6 +116,75 @@ class PlaylistsScaffold extends StatelessWidget {
                 ],
               );
             },
+          );
+        },
+      ),
+    );
+  }
+
+  Widget reorderPlaylistsScaffold(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+      ),
+      body: ReorderableListView.builder(
+        onReorder: (oldIndex, newIndex) {
+          if (newIndex > oldIndex) newIndex -= 1;
+          final item = playlistsManager.playlists.removeAt(oldIndex + 1);
+          playlistsManager.playlists.insert(newIndex + 1, item);
+          playlistsManager.update();
+        },
+        onReorderStart: (_) {
+          HapticFeedback.heavyImpact();
+        },
+        onReorderEnd: (_) {
+          HapticFeedback.heavyImpact();
+        },
+        proxyDecorator: (Widget child, int index, Animation<double> animation) {
+          return Material(
+            elevation: 0.1,
+            color: Colors.grey.shade100, // background color while moving
+            child: child,
+          );
+        },
+        itemCount: playlistsManager.length() - 1,
+        itemBuilder: (_, index) {
+          final playlist = playlistsManager.getPlaylistByIndex(index + 1);
+          return ListTile(
+            key: ValueKey(index),
+            contentPadding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+            visualDensity: const VisualDensity(horizontal: 0, vertical: -1),
+
+            leading: ValueListenableBuilder(
+              valueListenable: playlist.changeNotifier,
+              builder: (_, _, _) {
+                return ArtWidget(
+                  size: 50,
+                  borderRadius: 5,
+                  source:
+                      playlist.songs.isNotEmpty &&
+                          playlist.songs.first.pictures.isNotEmpty
+                      ? playlist.songs.first.pictures.first
+                      : null,
+                );
+              },
+            ),
+            title: AutoSizeText(
+              playlist.name,
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              minFontSize: 15,
+              maxFontSize: 15,
+            ),
+            subtitle: ValueListenableBuilder(
+              valueListenable: playlist.changeNotifier,
+              builder: (_, _, _) {
+                return Text("${playlist.songs.length} songs");
+              },
+            ),
           );
         },
       ),

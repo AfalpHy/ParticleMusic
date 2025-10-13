@@ -56,8 +56,7 @@ class PlaylistsManager {
     File playlistFile = File("${file.parent.path}/$name.json");
     addPlaylist(Playlist(name: name, file: playlistFile));
 
-    file.writeAsString(jsonEncode(playlists.map((pl) => pl.name).toList()));
-    changeNotifier.value++;
+    update();
   }
 
   void deletePlaylist(int index) {
@@ -65,13 +64,18 @@ class PlaylistsManager {
     playlistsMap.remove(playlist.name);
     playlist.file.deleteSync();
     playlists.removeAt(index);
-    file.writeAsString(jsonEncode(playlists.map((pl) => pl.name).toList()));
-    changeNotifier.value++;
+
+    update();
   }
 
   void clear() {
     playlists = [];
     playlistsMap = {};
+  }
+
+  void update() {
+    file.writeAsString(jsonEncode(playlists.map((pl) => pl.name).toList()));
+    changeNotifier.value++;
   }
 }
 
