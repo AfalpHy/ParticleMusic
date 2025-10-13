@@ -29,7 +29,7 @@ class PlaylistsScaffold extends StatelessWidget {
                 ),
               );
             },
-            icon: Icon(Icons.reorder_rounded),
+            icon: const ImageIcon(AssetImage("assets/images/reorder.png")),
           ),
         ],
       ),

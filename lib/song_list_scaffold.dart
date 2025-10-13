@@ -332,6 +332,14 @@ class SelectableSongListScaffoldState
                 },
               ),
               Text('Select All', style: TextStyle(fontSize: 16)),
+              Spacer(),
+              IconButton(
+                onPressed: () {
+                  Navigator.of(context).pop();
+                },
+                icon: Icon(Icons.done),
+              ),
+              SizedBox(width: 8),
             ],
           ),
           Expanded(
@@ -348,6 +356,7 @@ class SelectableSongListScaffoldState
                     },
                   )
                 : ReorderableListView.builder(
+                    buildDefaultDragHandles: false,
                     onReorder: (oldIndex, newIndex) {
                       if (newIndex > oldIndex) newIndex -= 1;
                       final checkBoxitem = isSelectedList.removeAt(oldIndex);
@@ -382,6 +391,7 @@ class SelectableSongListScaffoldState
                         source: songList,
                         isSelected: isSelectedList[index],
                         selectedNum: selectedNum,
+                        reorderable: true,
                       );
                     },
                   ),

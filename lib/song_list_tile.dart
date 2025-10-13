@@ -231,12 +231,14 @@ class SelectableSongListTile extends StatelessWidget {
   final List<AudioMetadata> source;
   final ValueNotifier<bool> isSelected;
   final ValueNotifier<int> selectedNum;
+  final bool reorderable;
   const SelectableSongListTile({
     super.key,
     required this.index,
     required this.source,
     required this.isSelected,
     required this.selectedNum,
+    this.reorderable = false,
   });
 
   @override
@@ -317,6 +319,13 @@ class SelectableSongListTile extends StatelessWidget {
             },
           ),
         ),
+        reorderable
+            ? ReorderableDragStartListener(
+                index: index,
+                child: const ImageIcon(AssetImage("assets/images/reorder.png")),
+              )
+            : SizedBox(),
+        SizedBox(width: 20),
       ],
     );
   }
