@@ -448,9 +448,10 @@ class LyricsListViewState extends State<LyricsListView>
   Timer? timer;
 
   void scroll2CurrentIndex(Duration position) {
+    int tmp = currentIndexNotifier.value;
     int current = lyrics.lastIndexWhere((line) => position >= line.timestamp);
     currentIndexNotifier.value = current;
-    if (!userDragging) {
+    if (!userDragging && tmp != current) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (first) {
           itemScrollController.jumpTo(
