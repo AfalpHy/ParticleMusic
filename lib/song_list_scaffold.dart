@@ -333,13 +333,14 @@ class SelectableSongListScaffoldState
               ),
               Text('Select All', style: TextStyle(fontSize: 16)),
               Spacer(),
-              IconButton(
-                onPressed: () {
+
+              GestureDetector(
+                onTap: () {
                   Navigator.of(context).pop();
                 },
-                icon: Icon(Icons.done),
+                child: Text('Complete', style: TextStyle(fontSize: 16)),
               ),
-              SizedBox(width: 8),
+              SizedBox(width: 10),
             ],
           ),
           Expanded(

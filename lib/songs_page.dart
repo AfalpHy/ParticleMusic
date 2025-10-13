@@ -57,6 +57,7 @@ class SongsScaffoldState extends State<SongsScaffold> {
               'Reload Library',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
             ),
+            visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
             onTap: () async {
               if (await showConfirmDialog(context, 'Reload Action')) {
                 await widget.reload();

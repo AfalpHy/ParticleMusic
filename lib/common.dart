@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
-const Color mainColor = Color.fromARGB(255, 120, 240, 240);
+const Color mainColor = Color.fromARGB(255, 120, 225, 225);
 late double appWidth;
 
 class MyAutoSizeText extends AutoSizeText {
