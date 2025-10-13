@@ -530,6 +530,7 @@ class LyricsListViewState extends State<LyricsListView>
             return false;
           },
           child: ScrollablePositionedList.builder(
+            physics: ClampingScrollPhysics(),
             itemCount: lyrics.length + 2,
             itemScrollController: itemScrollController,
             itemBuilder: (context, index) {
