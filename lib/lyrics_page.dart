@@ -452,24 +452,24 @@ class LyricsListViewState extends State<LyricsListView>
     int tmp = currentIndexNotifier.value;
     int current = lyrics.lastIndexWhere((line) => position >= line.timestamp);
     currentIndexNotifier.value = current;
-
-    if (!userDragging && current >= 0 && (tmp != current || userDragged)) {
+    if (!userDragging && (tmp != current || userDragged)) {
       userDragged = false;
-
-      if (first) {
-        itemScrollController.jumpTo(
-          index: current + 1,
-          alignment: widget.expanded ? 0.35 : 0.4,
-        );
-        first = false;
-      } else {
-        itemScrollController.scrollTo(
-          index: currentIndexNotifier.value + 1,
-          duration: Duration(milliseconds: 300), // smooth animation
-          curve: Curves.linear,
-          alignment: widget.expanded ? 0.35 : 0.4,
-        );
-      }
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (first) {
+          itemScrollController.jumpTo(
+            index: current + 1,
+            alignment: widget.expanded ? 0.35 : 0.4,
+          );
+          first = false;
+        } else {
+          itemScrollController.scrollTo(
+            index: current + 1,
+            duration: Duration(milliseconds: 300), // smooth animation
+            curve: Curves.linear,
+            alignment: widget.expanded ? 0.35 : 0.4,
+          );
+        }
+      });
     }
   }
 
@@ -578,10 +578,8 @@ class LyricLineWidget extends StatelessWidget {
     return Padding(
       padding: expanded
           ? const EdgeInsets.fromLTRB(30, 10, 0, 10)
-          : const EdgeInsets.symmetric(vertical: 5, horizontal: 30),
+          : const EdgeInsets.symmetric(vertical: 5, horizontal: 50),
       child: InkWell(
-        borderRadius: BorderRadius.all(Radius.circular(10)),
-
         onTap: () {
           audioHandler.seek(lyrics[index].timestamp);
         },
