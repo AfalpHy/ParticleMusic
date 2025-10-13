@@ -443,6 +443,7 @@ class LyricsListViewState extends State<LyricsListView>
   ValueNotifier<int> currentIndexNotifier = ValueNotifier<int>(-1);
   StreamSubscription<Duration>? positionSub;
   bool userDragging = false;
+  bool userDragged = false;
 
   bool first = true;
   Timer? timer;
@@ -451,22 +452,24 @@ class LyricsListViewState extends State<LyricsListView>
     int tmp = currentIndexNotifier.value;
     int current = lyrics.lastIndexWhere((line) => position >= line.timestamp);
     currentIndexNotifier.value = current;
-    if (!userDragging && tmp != current) {
+
+    if (first) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        if (first) {
-          itemScrollController.jumpTo(
-            index: current + 1,
-            alignment: widget.expanded ? 0.35 : 0.4,
-          );
-          first = false;
-        } else {
-          itemScrollController.scrollTo(
-            index: current + 1,
-            duration: Duration(milliseconds: 300), // smooth animation
-            curve: Curves.linear,
-            alignment: widget.expanded ? 0.35 : 0.4,
-          );
-        }
+        itemScrollController.jumpTo(
+          index: current + 1,
+          alignment: widget.expanded ? 0.35 : 0.4,
+        );
+        first = false;
+      });
+    } else if (!userDragging && (tmp != current || userDragged)) {
+      userDragged = false;
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        itemScrollController.scrollTo(
+          index: current + 1,
+          duration: Duration(milliseconds: 300), // smooth animation
+          curve: Curves.linear,
+          alignment: widget.expanded ? 0.35 : 0.4,
+        );
       });
     }
   }
@@ -492,13 +495,16 @@ class LyricsListViewState extends State<LyricsListView>
   void didChangeAppLifecycleState(AppLifecycleState state) {
     switch (state) {
       case AppLifecycleState.resumed:
-        first = true;
-        positionSub = audioHandler.player.positionStream.listen(
-          (position) => scroll2CurrentIndex(position),
-        );
+        if (positionSub == null) {
+          first = true;
+          positionSub = audioHandler.player.positionStream.listen(
+            (position) => scroll2CurrentIndex(position),
+          );
+        }
         break;
       case AppLifecycleState.paused:
         positionSub?.cancel();
+        positionSub = null;
         break;
       default:
         break;
@@ -521,6 +527,7 @@ class LyricsListViewState extends State<LyricsListView>
             } else {
               timer ??= Timer(const Duration(milliseconds: 1000), () {
                 userDragging = false;
+                userDragged = true;
                 timer = null;
               });
             }
