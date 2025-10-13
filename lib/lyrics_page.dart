@@ -453,25 +453,27 @@ class LyricsListViewState extends State<LyricsListView>
     int current = lyrics.lastIndexWhere((line) => position >= line.timestamp);
     currentIndexNotifier.value = current;
 
-    if (first) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        itemScrollController.jumpTo(
-          index: current + 1,
-          alignment: widget.expanded ? 0.35 : 0.4,
-        );
-        first = false;
-      });
-    } else if (!userDragging && (tmp != current || userDragged)) {
+    if (!userDragging && (tmp != current || userDragged)) {
       userDragged = false;
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        itemScrollController.scrollTo(
-          index: current + 1,
-          duration: Duration(milliseconds: 300), // smooth animation
-          curve: Curves.linear,
-          alignment: widget.expanded ? 0.35 : 0.4,
-        );
-      });
+      if (first) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          itemScrollController.jumpTo(
+            index: current + 1,
+            alignment: widget.expanded ? 0.35 : 0.4,
+          );
+        });
+      } else {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          itemScrollController.scrollTo(
+            index: current + 1,
+            duration: Duration(milliseconds: 300), // smooth animation
+            curve: Curves.linear,
+            alignment: widget.expanded ? 0.35 : 0.4,
+          );
+        });
+      }
     }
+    first = false;
   }
 
   @override
