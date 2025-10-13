@@ -119,7 +119,6 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                   },
                   icon: const ImageIcon(
                     AssetImage("assets/images/delete.png"),
-
                     color: Colors.black,
                   ),
                 ),

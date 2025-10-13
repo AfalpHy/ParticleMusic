@@ -34,7 +34,6 @@ class SongsScaffoldState extends State<SongsScaffold> {
             leading: const ImageIcon(
               AssetImage("assets/images/select.png"),
               color: Colors.black,
-              size: 20,
             ),
             title: Text(
               'Select',
