@@ -187,7 +187,11 @@ class SongListTile extends StatelessWidget {
                           ),
                           playlist != null
                               ? ListTile(
-                                  leading: Icon(Icons.delete, size: 25),
+                                  leading: const ImageIcon(
+                                    AssetImage("assets/images/delete.png"),
+                                    size: 25,
+                                    color: Colors.black,
+                                  ),
                                   title: Text(
                                     'Delete',
                                     style: TextStyle(

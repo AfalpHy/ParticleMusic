@@ -117,10 +117,10 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                       }
                     }
                   },
-                  icon: Icon(
-                    Icons.delete_rounded,
+                  icon: const ImageIcon(
+                    AssetImage("assets/images/delete.png"),
+
                     color: Colors.black,
-                    size: 20,
                   ),
                 ),
               ],

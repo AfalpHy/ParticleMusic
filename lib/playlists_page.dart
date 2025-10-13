@@ -239,7 +239,10 @@ class PlaylistsScaffold extends StatelessWidget {
           ),
           playlist.name != 'Favorite'
               ? ListTile(
-                  leading: Icon(Icons.delete_rounded),
+                  leading: const ImageIcon(
+                    AssetImage("assets/images/delete.png"),
+                    color: Colors.black,
+                  ),
                   title: Text(
                     'Delete',
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),

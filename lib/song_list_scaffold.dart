@@ -518,7 +518,11 @@ class SelectableSongListScaffoldState
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              Icon(Icons.delete, size: 28, color: iconColor),
+                              ImageIcon(
+                                AssetImage("assets/images/delete.png"),
+                                size: 28,
+                                color: iconColor,
+                              ),
 
                               Text(
                                 "Delete",
