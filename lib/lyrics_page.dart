@@ -443,17 +443,14 @@ class LyricsListViewState extends State<LyricsListView>
   ValueNotifier<int> currentIndexNotifier = ValueNotifier<int>(-1);
   StreamSubscription<Duration>? positionSub;
   bool userDragging = false;
-  bool userDragged = false;
 
   bool first = true;
   Timer? timer;
 
   void scroll2CurrentIndex(Duration position) {
-    int tmp = currentIndexNotifier.value;
     int current = lyrics.lastIndexWhere((line) => position >= line.timestamp);
     currentIndexNotifier.value = current;
-    if (!userDragging && (tmp != current || userDragged)) {
-      userDragged = false;
+    if (!userDragging) {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (first) {
           itemScrollController.jumpTo(
@@ -516,7 +513,6 @@ class LyricsListViewState extends State<LyricsListView>
           onNotification: (notification) {
             if (notification.direction != ScrollDirection.idle) {
               userDragging = true;
-              userDragged = true;
               if (timer != null) {
                 timer!.cancel();
                 timer = null;
