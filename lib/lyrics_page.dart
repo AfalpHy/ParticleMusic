@@ -454,6 +454,7 @@ class LyricsListViewState extends State<LyricsListView>
   Timer? timer;
 
   void scroll2CurrentIndex(Duration position) {
+    // return when loading song and rebuilding this widget
     if (audioHandler.player.processingState != ProcessingState.ready) {
       return;
     }
@@ -463,22 +464,21 @@ class LyricsListViewState extends State<LyricsListView>
 
     if (!userDragging && (tmp != current || userDragged)) {
       userDragged = false;
-      if (jump) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
+
+      if (itemScrollController.isAttached) {
+        if (jump) {
           itemScrollController.jumpTo(
             index: current + 1,
             alignment: widget.expanded ? 0.35 : 0.4,
           );
-        });
-      } else {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
+        } else {
           itemScrollController.scrollTo(
             index: current + 1,
             duration: Duration(milliseconds: 300), // smooth animation
             curve: Curves.linear,
             alignment: widget.expanded ? 0.35 : 0.4,
           );
-        });
+        }
       }
     }
     jump = false;
@@ -550,13 +550,15 @@ class LyricsListViewState extends State<LyricsListView>
             itemBuilder: (context, index) {
               if (index == 0) {
                 return SizedBox(
-                  height: widget.expanded ? parentHeight / 3 : parentHeight / 2,
+                  height: widget.expanded
+                      ? parentHeight * 0.35
+                      : parentHeight * 0.4,
                 );
               } else if (index == lyrics.length + 1) {
                 return SizedBox(
                   height: widget.expanded
-                      ? parentHeight / 1.5
-                      : parentHeight / 2,
+                      ? parentHeight * 0.6
+                      : parentHeight * 0.45,
                 );
               }
               return LyricLineWidget(
