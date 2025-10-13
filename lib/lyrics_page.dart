@@ -4,6 +4,7 @@ import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
+import 'package:just_audio/just_audio.dart';
 import 'dart:async';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:smooth_corner/smooth_corner.dart';
@@ -130,7 +131,8 @@ class LyricsPage extends StatelessWidget {
               ).createShader(rect);
             },
             blendMode: BlendMode.dstIn,
-            child: LyricsListView(expanded: false),
+            // use key to force update
+            child: LyricsListView(key: ValueKey(currentSong), expanded: false),
           ),
         ),
 
@@ -361,7 +363,10 @@ class LyricsPage extends StatelessWidget {
                     ).createShader(rect);
                   },
                   blendMode: BlendMode.dstIn,
-                  child: LyricsListView(expanded: true),
+                  child: LyricsListView(
+                    key: ValueKey(currentSong),
+                    expanded: true,
+                  ),
                 ),
               ),
               SizedBox(height: 50),
@@ -440,22 +445,25 @@ class LyricsListView extends StatefulWidget {
 class LyricsListViewState extends State<LyricsListView>
     with WidgetsBindingObserver {
   final ItemScrollController itemScrollController = ItemScrollController();
-  ValueNotifier<int> currentIndexNotifier = ValueNotifier<int>(-1);
+  final ValueNotifier<int> currentIndexNotifier = ValueNotifier<int>(-1);
   StreamSubscription<Duration>? positionSub;
   bool userDragging = false;
   bool userDragged = false;
 
-  bool first = true;
+  bool jump = true;
   Timer? timer;
 
   void scroll2CurrentIndex(Duration position) {
+    if (audioHandler.player.processingState != ProcessingState.ready) {
+      return;
+    }
     int tmp = currentIndexNotifier.value;
     int current = lyrics.lastIndexWhere((line) => position >= line.timestamp);
     currentIndexNotifier.value = current;
 
     if (!userDragging && (tmp != current || userDragged)) {
       userDragged = false;
-      if (first) {
+      if (jump) {
         WidgetsBinding.instance.addPostFrameCallback((_) {
           itemScrollController.jumpTo(
             index: current + 1,
@@ -473,7 +481,7 @@ class LyricsListViewState extends State<LyricsListView>
         });
       }
     }
-    first = false;
+    jump = false;
   }
 
   @override
@@ -498,7 +506,7 @@ class LyricsListViewState extends State<LyricsListView>
     switch (state) {
       case AppLifecycleState.resumed:
         if (positionSub == null) {
-          first = true;
+          jump = true;
           positionSub = audioHandler.player.positionStream.listen(
             (position) => scroll2CurrentIndex(position),
           );
