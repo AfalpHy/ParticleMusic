@@ -23,6 +23,7 @@ class PlaylistsScaffold extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: () {
+              HapticFeedback.heavyImpact();
               Navigator.of(context, rootNavigator: true).push(
                 MaterialPageRoute(
                   builder: (_) => reorderPlaylistsScaffold(context),

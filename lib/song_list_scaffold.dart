@@ -469,7 +469,7 @@ class SelectableSongListScaffoldState
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Icon(
-                          Icons.playlist_add_outlined,
+                          Icons.playlist_add_rounded,
                           size: 28,
                           color: iconColor,
                         ),
