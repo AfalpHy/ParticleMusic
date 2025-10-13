@@ -31,7 +31,11 @@ class SongsScaffoldState extends State<SongsScaffold> {
           Divider(color: Colors.grey.shade300, thickness: 0.5, height: 1),
 
           ListTile(
-            leading: Icon(Icons.reorder_rounded),
+            leading: const ImageIcon(
+              AssetImage("assets/images/select.png"),
+              color: Colors.black,
+              size: 20,
+            ),
             title: Text(
               'Select',
               style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
