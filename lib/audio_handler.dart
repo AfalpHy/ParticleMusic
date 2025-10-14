@@ -184,7 +184,7 @@ class MyAudioHandler extends BaseAudioHandler {
     lyrics = [];
     final file = File(path);
     if (!file.existsSync()) {
-      lyrics.add(LyricLine(Duration.zero, 'Lyrics not available'));
+      lyrics.add(LyricLine(Duration.zero, 'lyrics file does not exist'));
       return;
     }
     final lines = await file.readAsLines(); // read file line by line
@@ -212,7 +212,7 @@ class MyAudioHandler extends BaseAudioHandler {
       }
     }
     if (lyrics.isEmpty) {
-      lyrics.add(LyricLine(Duration.zero, 'Lyrics not available'));
+      lyrics.add(LyricLine(Duration.zero, 'lyrics parsing failed'));
     }
   }
 
