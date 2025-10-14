@@ -576,13 +576,21 @@ class PlayerBar extends StatelessWidget {
                         icon: ValueListenableBuilder(
                           valueListenable: isPlayingNotifier,
                           builder: (_, isPlaying, _) {
-                            return Icon(
-                              isPlaying
-                                  ? Icons.pause_circle_outline_rounded
-                                  : Icons.play_circle_outline_rounded,
-                              color: Colors.black,
-                              size: 25,
-                            );
+                            return isPlaying
+                                ? const ImageIcon(
+                                    AssetImage(
+                                      "assets/images/pause_circle.png",
+                                    ),
+                                    color: Colors.black,
+                                    size: 25,
+                                  )
+                                : const ImageIcon(
+                                    AssetImage(
+                                      "assets/images/play_circle_fill.png",
+                                    ),
+                                    color: Colors.black,
+                                    size: 25,
+                                  );
                           },
                         ),
 

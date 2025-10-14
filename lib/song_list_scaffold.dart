@@ -435,9 +435,8 @@ class SelectableSongListScaffoldState
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          Icons.playlist_add_circle_outlined,
-                          size: 28,
+                        ImageIcon(
+                          AssetImage("assets/images/playnext_circle.png"),
                           color: iconColor,
                         ),
 
@@ -469,9 +468,8 @@ class SelectableSongListScaffoldState
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
-                          Icons.playlist_add_rounded,
-                          size: 28,
+                        ImageIcon(
+                          AssetImage("assets/images/playlist_add.png"),
                           color: iconColor,
                         ),
 
@@ -521,7 +519,6 @@ class SelectableSongListScaffoldState
                             children: [
                               ImageIcon(
                                 AssetImage("assets/images/delete.png"),
-                                size: 28,
                                 color: iconColor,
                               ),
 

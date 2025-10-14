@@ -118,7 +118,10 @@ class SongListTile extends StatelessWidget {
                         physics: const ClampingScrollPhysics(),
                         children: [
                           ListTile(
-                            leading: Icon(Icons.playlist_add_rounded, size: 25),
+                            leading: const ImageIcon(
+                              AssetImage("assets/images/playlist_add.png"),
+                              color: Colors.black,
+                            ),
                             title: Text(
                               'Add to Playlists',
                               style: TextStyle(
@@ -143,7 +146,10 @@ class SongListTile extends StatelessWidget {
                             },
                           ),
                           ListTile(
-                            leading: Icon(Icons.play_circle_outline, size: 25),
+                            leading: const ImageIcon(
+                              AssetImage("assets/images/play_circle.png"),
+                              color: Colors.black,
+                            ),
                             title: Text(
                               'Play Now',
                               style: TextStyle(
@@ -161,9 +167,9 @@ class SongListTile extends StatelessWidget {
                             },
                           ),
                           ListTile(
-                            leading: Icon(
-                              Icons.playlist_add_circle_outlined,
-                              size: 25,
+                            leading: const ImageIcon(
+                              AssetImage("assets/images/playnext_circle.png"),
+                              color: Colors.black,
                             ),
                             title: Text(
                               'Play Next',
@@ -189,7 +195,6 @@ class SongListTile extends StatelessWidget {
                               ? ListTile(
                                   leading: const ImageIcon(
                                     AssetImage("assets/images/delete.png"),
-                                    size: 25,
                                     color: Colors.black,
                                   ),
                                   title: Text(

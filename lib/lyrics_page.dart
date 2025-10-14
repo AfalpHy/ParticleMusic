@@ -179,9 +179,11 @@ class LyricsPage extends StatelessWidget {
                               physics: const ClampingScrollPhysics(),
                               children: [
                                 ListTile(
-                                  leading: Icon(
-                                    Icons.playlist_add_rounded,
-                                    size: 25,
+                                  leading: const ImageIcon(
+                                    AssetImage(
+                                      "assets/images/playlist_add.png",
+                                    ),
+                                    color: Colors.black,
                                   ),
                                   title: Text(
                                     'Add to Playlists',
