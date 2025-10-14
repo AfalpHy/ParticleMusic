@@ -255,11 +255,14 @@ class HomePageState extends State<HomePage> {
 
   Future<void> loadSongs() async {
     for (var file in docs.listSync()) {
-      if ((file.path.endsWith('.mp3') || file.path.endsWith('.flac'))) {
+      if ((file.path.endsWith('.mp3') ||
+          file.path.endsWith('.flac') ||
+          file.path.endsWith('.ogg') ||
+          file.path.endsWith('.wav'))) {
         final basename = p.basename(file.path);
         try {
           final meta = readMetadata(File(file.path), getImage: true);
-          for (String artist in (meta.artist ?? "Unkown").split(
+          for (String artist in (meta.artist ?? "Unknown Artist").split(
             RegExp(r'[/&,]'),
           )) {
             if (artist2SongList[artist] == null) {
@@ -268,10 +271,10 @@ class HomePageState extends State<HomePage> {
             artist2SongList[artist]!.add(meta);
           }
 
-          if (album2SongList[meta.album ?? "Unkown"] == null) {
-            album2SongList[meta.album ?? "Unkown"] = [];
+          if (album2SongList[meta.album ?? "Unknown Album"] == null) {
+            album2SongList[meta.album ?? "Unknown Album"] = [];
           }
-          album2SongList[meta.album ?? "Unkown"]!.add(meta);
+          album2SongList[meta.album ?? "Unknown Album"]!.add(meta);
 
           librarySongs.add(meta);
           basename2LibrarySong[basename] = meta;

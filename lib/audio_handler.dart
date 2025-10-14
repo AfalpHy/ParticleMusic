@@ -264,7 +264,7 @@ class MyAudioHandler extends BaseAudioHandler {
     mediaItem.add(
       MediaItem(
         id: currentSong.file.path,
-        title: currentSong.title!,
+        title: currentSong.title ?? "Unknown Title",
         artist: currentSong.artist,
         album: currentSong.album,
         artUri: artUri, // file:// URI
