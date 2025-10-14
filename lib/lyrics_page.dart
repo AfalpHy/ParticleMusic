@@ -500,6 +500,9 @@ class LyricsListViewState extends State<LyricsListView>
     WidgetsBinding.instance.removeObserver(this);
     // Stop listening when lyrics page is closed
     positionSub?.cancel();
+    positionSub = null;
+    timer?.cancel();
+    timer = null;
     super.dispose();
   }
 
@@ -532,10 +535,8 @@ class LyricsListViewState extends State<LyricsListView>
           onNotification: (notification) {
             if (notification.direction != ScrollDirection.idle) {
               userDragging = true;
-              if (timer != null) {
-                timer!.cancel();
-                timer = null;
-              }
+              timer?.cancel();
+              timer = null;
             } else {
               timer ??= Timer(const Duration(milliseconds: 1000), () {
                 userDragging = false;
