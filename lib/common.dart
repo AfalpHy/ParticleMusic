@@ -1,6 +1,8 @@
+import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
+import 'package:path/path.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
 const Color mainColor = Color.fromARGB(255, 120, 230, 230);
@@ -35,7 +37,11 @@ class MyAutoSizeText extends AutoSizeText {
        );
 }
 
-Widget mySheet(Widget child, {double height = 500, color = Colors.white}) {
+Widget mySheet(
+  Widget child, {
+  double height = 500,
+  Color color = Colors.white,
+}) {
   return SmoothClipRRect(
     smoothness: 1,
     borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
@@ -131,4 +137,38 @@ Future<bool> showConfirmDialog(BuildContext context, String action) async {
     },
   );
   return result!;
+}
+
+String getTitle(AudioMetadata? song) {
+  if (song == null) {
+    return '';
+  }
+  return song.title ?? basename(song.file.path);
+}
+
+String getArtist(AudioMetadata? song) {
+  if (song == null) {
+    return '';
+  }
+  return song.artist ?? 'Unknown Artist';
+}
+
+String getAlbum(AudioMetadata? song) {
+  if (song == null) {
+    return '';
+  }
+  return song.album ?? 'Unknown Album';
+}
+
+List<AudioMetadata> filterSongs(List<AudioMetadata> songList, String value) {
+  return songList.where((song) {
+    final songTitle = getTitle(song);
+    final songArtist = getArtist(song);
+    final songAlbum = getAlbum(song);
+
+    return value.isEmpty ||
+        songTitle.toLowerCase().contains(value.toLowerCase()) ||
+        songArtist.toLowerCase().contains(value.toLowerCase()) ||
+        songAlbum.toLowerCase().contains(value.toLowerCase());
+  }).toList();
 }

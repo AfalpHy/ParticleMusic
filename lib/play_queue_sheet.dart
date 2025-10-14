@@ -171,7 +171,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                     valueListenable: currentSongNotifier,
                     builder: (_, currentSong, _) {
                       return Text(
-                        "${song.title ?? "Unknown Title"} - ${song.artist ?? "Unknown Artist"}",
+                        "${getTitle(song)} - ${getArtist(song)}",
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: song == currentSong

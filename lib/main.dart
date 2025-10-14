@@ -262,19 +262,18 @@ class HomePageState extends State<HomePage> {
         final basename = p.basename(file.path);
         try {
           final meta = readMetadata(File(file.path), getImage: true);
-          for (String artist in (meta.artist ?? "Unknown Artist").split(
-            RegExp(r'[/&,]'),
-          )) {
+          for (String artist in getArtist(meta).split(RegExp(r'[/&,]'))) {
             if (artist2SongList[artist] == null) {
               artist2SongList[artist] = [];
             }
             artist2SongList[artist]!.add(meta);
           }
 
-          if (album2SongList[meta.album ?? "Unknown Album"] == null) {
-            album2SongList[meta.album ?? "Unknown Album"] = [];
+          final songAlbum = getAlbum(meta);
+          if (album2SongList[songAlbum] == null) {
+            album2SongList[songAlbum] = [];
           }
-          album2SongList[meta.album ?? "Unknown Album"]!.add(meta);
+          album2SongList[songAlbum]!.add(meta);
 
           librarySongs.add(meta);
           basename2LibrarySong[basename] = meta;
@@ -566,7 +565,7 @@ class PlayerBar extends StatelessWidget {
                     const SizedBox(width: 10),
                     Expanded(
                       child: MyAutoSizeText(
-                        "${currentSong.title ?? 'Unknown Title'} - ${currentSong.artist ?? 'Unknown Artist'}",
+                        "${getTitle(currentSong)} - ${getArtist(currentSong)}",
                         maxLines: 1,
                         textStyle: TextStyle(fontSize: 16),
                       ),

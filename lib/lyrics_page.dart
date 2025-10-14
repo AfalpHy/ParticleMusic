@@ -53,7 +53,7 @@ class LyricsPage extends StatelessWidget {
                             SizedBox(
                               height: 30,
                               child: MyAutoSizeText(
-                                currentSong?.title ?? 'Unknown Title',
+                                getTitle(currentSong),
                                 maxLines: 1,
                                 textStyle: TextStyle(
                                   fontWeight: FontWeight.bold,
@@ -65,7 +65,7 @@ class LyricsPage extends StatelessWidget {
                             SizedBox(
                               height: 24,
                               child: MyAutoSizeText(
-                                currentSong?.artist ?? 'Unknown Artist',
+                                getArtist(currentSong),
                                 maxLines: 1,
                                 textStyle: TextStyle(fontSize: 14),
                               ),
@@ -159,11 +159,11 @@ class LyricsPage extends StatelessWidget {
                                   : null,
                             ),
                             title: Text(
-                              currentSong.title ?? "Unknown Title",
+                              getTitle(currentSong),
                               overflow: TextOverflow.ellipsis,
                             ),
                             subtitle: Text(
-                              "${currentSong.artist ?? "Unknown Artist"} - ${currentSong.album ?? "Unknown Album"}",
+                              "${getArtist(currentSong)} - ${getAlbum(currentSong)}",
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),

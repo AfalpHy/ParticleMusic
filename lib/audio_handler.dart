@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:audio_service/audio_service.dart';
+import 'package:particle_music/common.dart';
 import 'package:particle_music/setting.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:async';
@@ -264,7 +265,7 @@ class MyAudioHandler extends BaseAudioHandler {
     mediaItem.add(
       MediaItem(
         id: currentSong.file.path,
-        title: currentSong.title ?? "Unknown Title",
+        title: getTitle(currentSong),
         artist: currentSong.artist,
         album: currentSong.album,
         artUri: artUri, // file:// URI

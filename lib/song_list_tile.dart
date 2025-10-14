@@ -33,7 +33,7 @@ class SongListTile extends StatelessWidget {
         valueListenable: currentSongNotifier,
         builder: (_, currentSong, _) {
           return Text(
-            song.title ?? "Unknown Title",
+            getTitle(song),
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: song == currentSong
@@ -60,7 +60,7 @@ class SongListTile extends StatelessWidget {
           ),
           Expanded(
             child: Text(
-              "${song.artist ?? "Unknown Artist"} - ${song.album ?? "Unknown Album"}",
+              "${getArtist(song)} - ${getAlbum(song)}",
               overflow: TextOverflow.ellipsis,
             ),
           ),
@@ -98,11 +98,11 @@ class SongListTile extends StatelessWidget {
                             : song.pictures.first,
                       ),
                       title: Text(
-                        song.title ?? "Unknown Title",
+                        getTitle(song),
                         overflow: TextOverflow.ellipsis,
                       ),
                       subtitle: Text(
-                        "${song.artist ?? "Unknown Artist"} - ${song.album ?? "Unknown Album"}",
+                        "${getArtist(song)} - ${getAlbum(song)}",
                         overflow: TextOverflow.ellipsis,
                       ),
                     ),
@@ -283,7 +283,7 @@ class SelectableSongListTile extends StatelessWidget {
               valueListenable: currentSongNotifier,
               builder: (_, currentSong, _) {
                 return Text(
-                  song.title ?? "Unknown Title",
+                  getTitle(song),
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: song == currentSong
@@ -314,7 +314,7 @@ class SelectableSongListTile extends StatelessWidget {
                 ),
                 Expanded(
                   child: Text(
-                    "${song.artist ?? "Unknown Artist"} - ${song.album ?? "Unknown Album"}",
+                    "${getArtist(song)} - ${getAlbum(song)}",
                     overflow: TextOverflow.ellipsis,
                   ),
                 ),

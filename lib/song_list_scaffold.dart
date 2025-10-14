@@ -42,18 +42,7 @@ class SongListScaffold extends StatelessWidget {
     if (playlist != null) {
       playlist!.changeNotifier.addListener(() {
         final value = textController.text;
-        currentSongListNotifer.value = songList
-            .where(
-              (song) =>
-                  (value.isEmpty) ||
-                  (song.title?.toLowerCase().contains(value.toLowerCase()) ??
-                      false) ||
-                  (song.artist?.toLowerCase().contains(value.toLowerCase()) ??
-                      false) ||
-                  (song.album?.toLowerCase().contains(value.toLowerCase()) ??
-                      false),
-            )
-            .toList();
+        currentSongListNotifer.value = filterSongs(songList, value);
       });
     }
   }
@@ -135,24 +124,10 @@ class SongListScaffold extends StatelessWidget {
                         ),
                       ),
                       onSearchTextChanged: (value) {
-                        currentSongListNotifer.value = songList
-                            .where(
-                              (song) =>
-                                  (value.isEmpty) ||
-                                  (song.title?.toLowerCase().contains(
-                                        value.toLowerCase(),
-                                      ) ??
-                                      false) ||
-                                  (song.artist?.toLowerCase().contains(
-                                        value.toLowerCase(),
-                                      ) ??
-                                      false) ||
-                                  (song.album?.toLowerCase().contains(
-                                        value.toLowerCase(),
-                                      ) ??
-                                      false),
-                            )
-                            .toList();
+                        currentSongListNotifer.value = filterSongs(
+                          songList,
+                          value,
+                        );
                         return null;
                       },
                     ),
