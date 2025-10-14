@@ -132,6 +132,7 @@ class PlaylistsScaffold extends StatelessWidget {
         scrolledUnderElevation: 0,
       ),
       body: ReorderableListView.builder(
+        buildDefaultDragHandles: false,
         onReorder: (oldIndex, newIndex) {
           if (newIndex > oldIndex) newIndex -= 1;
           final item = playlistsManager.playlists.removeAt(oldIndex + 1);
@@ -154,38 +155,52 @@ class PlaylistsScaffold extends StatelessWidget {
         itemCount: playlistsManager.length() - 1,
         itemBuilder: (_, index) {
           final playlist = playlistsManager.getPlaylistByIndex(index + 1);
-          return ListTile(
+          return Row(
             key: ValueKey(index),
-            contentPadding: EdgeInsets.fromLTRB(20, 0, 20, 0),
-            visualDensity: const VisualDensity(horizontal: 0, vertical: -1),
+            children: [
+              Expanded(
+                child: ListTile(
+                  contentPadding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+                  visualDensity: const VisualDensity(
+                    horizontal: 0,
+                    vertical: -1,
+                  ),
 
-            leading: ValueListenableBuilder(
-              valueListenable: playlist.changeNotifier,
-              builder: (_, _, _) {
-                return ArtWidget(
-                  size: 50,
-                  borderRadius: 5,
-                  source:
-                      playlist.songs.isNotEmpty &&
-                          playlist.songs.first.pictures.isNotEmpty
-                      ? playlist.songs.first.pictures.first
-                      : null,
-                );
-              },
-            ),
-            title: AutoSizeText(
-              playlist.name,
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              minFontSize: 15,
-              maxFontSize: 15,
-            ),
-            subtitle: ValueListenableBuilder(
-              valueListenable: playlist.changeNotifier,
-              builder: (_, _, _) {
-                return Text("${playlist.songs.length} songs");
-              },
-            ),
+                  leading: ValueListenableBuilder(
+                    valueListenable: playlist.changeNotifier,
+                    builder: (_, _, _) {
+                      return ArtWidget(
+                        size: 50,
+                        borderRadius: 5,
+                        source:
+                            playlist.songs.isNotEmpty &&
+                                playlist.songs.first.pictures.isNotEmpty
+                            ? playlist.songs.first.pictures.first
+                            : null,
+                      );
+                    },
+                  ),
+                  title: AutoSizeText(
+                    playlist.name,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    minFontSize: 15,
+                    maxFontSize: 15,
+                  ),
+                  subtitle: ValueListenableBuilder(
+                    valueListenable: playlist.changeNotifier,
+                    builder: (_, _, _) {
+                      return Text("${playlist.songs.length} songs");
+                    },
+                  ),
+                ),
+              ),
+              ReorderableDragStartListener(
+                index: index,
+                child: const ImageIcon(AssetImage("assets/images/reorder.png")),
+              ),
+              SizedBox(width: 20),
+            ],
           );
         },
       ),
