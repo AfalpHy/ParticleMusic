@@ -24,13 +24,17 @@ class PlaylistsScaffold extends StatelessWidget {
           IconButton(
             onPressed: () {
               HapticFeedback.heavyImpact();
-              Navigator.of(context, rootNavigator: true).push(
-                MaterialPageRoute(
-                  builder: (_) => reorderPlaylistsScaffold(context),
-                ),
+
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                useRootNavigator: true,
+                builder: (context) {
+                  return playlistsMoreSheet(context);
+                },
               );
             },
-            icon: const ImageIcon(AssetImage("assets/images/reorder.png")),
+            icon: Icon(Icons.more_vert),
           ),
         ],
       ),
@@ -84,7 +88,7 @@ class PlaylistsScaffold extends StatelessWidget {
                           name: playlist.name,
 
                           moreSheet: (context) =>
-                              moreSheet(context, index, playlist),
+                              singlePlaylistMoreSheet(context, index, playlist),
                           playlist: playlist,
                         ),
                       ),
@@ -119,6 +123,50 @@ class PlaylistsScaffold extends StatelessWidget {
             },
           );
         },
+      ),
+    );
+  }
+
+  Widget playlistsMoreSheet(BuildContext context) {
+    return mySheet(
+      Column(
+        children: [
+          ListTile(
+            leading: SmoothClipRRect(
+              smoothness: 1,
+              borderRadius: BorderRadius.circular(5),
+              child: Container(
+                color: const Color.fromARGB(255, 245, 235, 245),
+                child: ImageIcon(AssetImage("assets/images/add.png"), size: 50),
+              ),
+            ),
+            title: Text('Create Playlist'),
+            visualDensity: const VisualDensity(horizontal: 0, vertical: 4),
+            onTap: () {
+              showCreatePlaylistSheet(context);
+            },
+          ),
+          Divider(thickness: 0.5, height: 1, color: Colors.grey.shade300),
+          ListTile(
+            leading: const ImageIcon(
+              AssetImage("assets/images/reorder.png"),
+              color: Colors.black,
+            ),
+            title: Text(
+              'Reorder',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.of(context, rootNavigator: true).push(
+                MaterialPageRoute(
+                  builder: (context) => reorderPlaylistsScaffold(context),
+                ),
+              );
+            },
+          ),
+        ],
       ),
     );
   }
@@ -207,7 +255,11 @@ class PlaylistsScaffold extends StatelessWidget {
     );
   }
 
-  Widget moreSheet(BuildContext context, int index, Playlist playlist) {
+  Widget singlePlaylistMoreSheet(
+    BuildContext context,
+    int index,
+    Playlist playlist,
+  ) {
     return mySheet(
       Column(
         children: [
@@ -237,7 +289,7 @@ class PlaylistsScaffold extends StatelessWidget {
             ),
             title: Text(
               'Select',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
             visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
             onTap: () {
@@ -260,7 +312,7 @@ class PlaylistsScaffold extends StatelessWidget {
                   ),
                   title: Text(
                     'Delete',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                    style: TextStyle(fontWeight: FontWeight.bold),
                   ),
                   visualDensity: const VisualDensity(
                     horizontal: 0,

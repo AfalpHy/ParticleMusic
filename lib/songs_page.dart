@@ -37,7 +37,7 @@ class SongsScaffoldState extends State<SongsScaffold> {
             ),
             title: Text(
               'Select',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
             visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
             onTap: () {
@@ -55,7 +55,7 @@ class SongsScaffoldState extends State<SongsScaffold> {
             leading: Icon(Icons.refresh_rounded),
             title: Text(
               'Reload Library',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
             visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
             onTap: () async {

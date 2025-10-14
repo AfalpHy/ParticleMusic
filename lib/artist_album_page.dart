@@ -194,7 +194,7 @@ class ArtistAlbumScaffold extends StatelessWidget {
             ),
             title: Text(
               'Select',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+              style: TextStyle(fontWeight: FontWeight.bold),
             ),
             visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
             onTap: () {

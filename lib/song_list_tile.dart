@@ -124,10 +124,7 @@ class SongListTile extends StatelessWidget {
                             ),
                             title: Text(
                               'Add to Playlists',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                              ),
+                              style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                             visualDensity: const VisualDensity(
                               horizontal: 0,
@@ -152,10 +149,7 @@ class SongListTile extends StatelessWidget {
                             ),
                             title: Text(
                               'Play Now',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                              ),
+                              style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                             visualDensity: const VisualDensity(
                               horizontal: 0,
@@ -173,10 +167,7 @@ class SongListTile extends StatelessWidget {
                             ),
                             title: Text(
                               'Play Next',
-                              style: TextStyle(
-                                fontWeight: FontWeight.bold,
-                                fontSize: 18,
-                              ),
+                              style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                             visualDensity: const VisualDensity(
                               horizontal: 0,
@@ -201,7 +192,6 @@ class SongListTile extends StatelessWidget {
                                     'Delete',
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 18,
                                     ),
                                   ),
                                   visualDensity: const VisualDensity(

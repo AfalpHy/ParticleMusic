@@ -189,7 +189,6 @@ class LyricsPage extends StatelessWidget {
                                     'Add to Playlists',
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      fontSize: 18,
                                     ),
                                   ),
                                   visualDensity: const VisualDensity(
