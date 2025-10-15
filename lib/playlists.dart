@@ -225,6 +225,7 @@ Future<bool> showCreatePlaylistSheet(BuildContext context) async {
                 padding: const EdgeInsets.fromLTRB(30, 30, 30, 0),
                 child: TextField(
                   controller: controller,
+                  autofocus: true,
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
                     labelText: "Playlist Name",

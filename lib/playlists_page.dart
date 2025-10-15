@@ -174,11 +174,7 @@ class PlaylistsScaffold extends StatelessWidget {
   Widget reorderPlaylistsScaffold(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
-      appBar: AppBar(
-        backgroundColor: Colors.white,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-      ),
+      appBar: AppBar(backgroundColor: Colors.white, scrolledUnderElevation: 0),
       body: ReorderableListView.builder(
         buildDefaultDragHandles: false,
         onReorder: (oldIndex, newIndex) {
@@ -252,6 +248,7 @@ class PlaylistsScaffold extends StatelessWidget {
           );
         },
       ),
+      bottomNavigationBar: SizedBox(height: 80),
     );
   }
 
