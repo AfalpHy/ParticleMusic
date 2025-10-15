@@ -319,7 +319,7 @@ class SelectableSongListTile extends StatelessWidget {
           ),
         ),
         reorderable
-            ? ReorderableDragStartListener(
+            ? ReorderableDelayedDragStartListener(
                 index: index,
                 child: const ImageIcon(AssetImage("assets/images/reorder.png")),
               )

@@ -239,7 +239,7 @@ class PlaylistsScaffold extends StatelessWidget {
                   ),
                 ),
               ),
-              ReorderableDragStartListener(
+              ReorderableDelayedDragStartListener(
                 index: index,
                 child: const ImageIcon(AssetImage("assets/images/reorder.png")),
               ),
@@ -247,8 +247,8 @@ class PlaylistsScaffold extends StatelessWidget {
             ],
           );
         },
+        footer: SizedBox(height: 80),
       ),
-      bottomNavigationBar: SizedBox(height: 80),
     );
   }
 
