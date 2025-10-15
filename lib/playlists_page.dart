@@ -204,7 +204,7 @@ class PlaylistsScaffold extends StatelessWidget {
             children: [
               Expanded(
                 child: ListTile(
-                  contentPadding: EdgeInsets.fromLTRB(20, 0, 20, 0),
+                  contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
                   visualDensity: const VisualDensity(
                     horizontal: 0,
                     vertical: -1,
@@ -239,11 +239,22 @@ class PlaylistsScaffold extends StatelessWidget {
                   ),
                 ),
               ),
-              ReorderableDelayedDragStartListener(
-                index: index,
-                child: const ImageIcon(AssetImage("assets/images/reorder.png")),
+              SizedBox(
+                width: 80,
+                height: 60,
+                child: ReorderableDelayedDragStartListener(
+                  index: index,
+                  child: Container(
+                    // must set color to make area valid
+                    color: Colors.transparent,
+                    child: Center(
+                      child: const ImageIcon(
+                        AssetImage("assets/images/reorder.png"),
+                      ),
+                    ),
+                  ),
+                ),
               ),
-              SizedBox(width: 20),
             ],
           );
         },

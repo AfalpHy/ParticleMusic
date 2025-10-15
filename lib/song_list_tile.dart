@@ -263,7 +263,7 @@ class SelectableSongListTile extends StatelessWidget {
         ),
         Expanded(
           child: ListTile(
-            contentPadding: EdgeInsets.fromLTRB(0, 0, 20, 0),
+            contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
             leading: ArtWidget(
               size: 40,
               borderRadius: 4,
@@ -319,12 +319,23 @@ class SelectableSongListTile extends StatelessWidget {
           ),
         ),
         reorderable
-            ? ReorderableDelayedDragStartListener(
-                index: index,
-                child: const ImageIcon(AssetImage("assets/images/reorder.png")),
+            ? SizedBox(
+                width: 80,
+                height: 50,
+                child: ReorderableDelayedDragStartListener(
+                  index: index,
+                  child: Container(
+                    // must set color to make area valid
+                    color: Colors.transparent,
+                    child: Center(
+                      child: const ImageIcon(
+                        AssetImage("assets/images/reorder.png"),
+                      ),
+                    ),
+                  ),
+                ),
               )
             : SizedBox(),
-        SizedBox(width: 20),
       ],
     );
   }
