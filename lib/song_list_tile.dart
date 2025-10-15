@@ -320,17 +320,20 @@ class SelectableSongListTile extends StatelessWidget {
         ),
         reorderable
             ? SizedBox(
-                width: 80,
+                width: 60,
                 height: 50,
-                child: ReorderableDelayedDragStartListener(
+                child: ReorderableDragStartListener(
                   index: index,
                   child: Container(
                     // must set color to make area valid
                     color: Colors.transparent,
-                    child: Center(
-                      child: const ImageIcon(
-                        AssetImage("assets/images/reorder.png"),
-                      ),
+                    child: Row(
+                      children: [
+                        SizedBox(width: 10),
+                        const ImageIcon(
+                          AssetImage("assets/images/reorder.png"),
+                        ),
+                      ],
                     ),
                   ),
                 ),
