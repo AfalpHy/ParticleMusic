@@ -27,7 +27,7 @@ class SongsScaffoldState extends State<SongsScaffold> {
     return mySheet(
       Column(
         children: [
-          ListTile(title: Text('Library', style: TextStyle(fontSize: 15))),
+          ListTile(title: Text('Songs', style: TextStyle(fontSize: 15))),
           Divider(color: Colors.grey.shade300, thickness: 0.5, height: 1),
 
           ListTile(
@@ -54,7 +54,7 @@ class SongsScaffoldState extends State<SongsScaffold> {
           ListTile(
             leading: Icon(Icons.refresh_rounded),
             title: Text(
-              'Reload Library',
+              'Reload',
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
