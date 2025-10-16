@@ -339,7 +339,7 @@ class SelectableSongListTile extends StatelessWidget {
                   ),
                 ),
               )
-            : SizedBox(),
+            : SizedBox(width: 20),
       ],
     );
   }
