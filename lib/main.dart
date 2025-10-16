@@ -30,7 +30,7 @@ Future<void> main() async {
   audioHandler = await AudioService.init(
     builder: () => MyAudioHandler(),
     config: const AudioServiceConfig(
-      androidNotificationChannelId: 'com.example.app.audio',
+      androidNotificationChannelId: 'com.afalphy.particle_music',
       androidNotificationChannelName: 'Music Playback',
       androidNotificationOngoing: true,
     ),
@@ -235,8 +235,8 @@ class HomePageState extends State<HomePage> {
     if (Platform.isAndroid) {
       await Permission.storage.request();
       await Permission.audio.request();
-      final dir = await getExternalStorageDirectories();
-      docs = Directory("${dir!.first.parent.parent.parent.parent.path}/Music");
+      final dir = await getExternalStorageDirectory();
+      docs = Directory("${dir!.parent.parent.parent.parent.path}/Music");
     } else {
       docs = await getApplicationDocumentsDirectory();
       final keepfile = File('${docs.path}/Particle Music.keep');
