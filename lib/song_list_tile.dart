@@ -262,56 +262,57 @@ class SelectableSongListTile extends StatelessWidget {
           },
         ),
         Expanded(
-          child: ListTile(
-            contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-            leading: ArtWidget(
-              size: 40,
-              borderRadius: 4,
-              source: song.pictures.isEmpty ? null : song.pictures.first,
-            ),
-            title: ValueListenableBuilder(
-              valueListenable: currentSongNotifier,
-              builder: (_, currentSong, _) {
-                return Text(
-                  getTitle(song),
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(
-                    color: song == currentSong
-                        ? Color.fromARGB(255, 75, 200, 200)
-                        : null,
-                    fontWeight: song == currentSong ? FontWeight.bold : null,
-                  ),
-                );
-              },
-            ),
-
-            subtitle: Row(
-              children: [
-                ValueListenableBuilder(
-                  valueListenable: isFavorite,
-                  builder: (_, value, _) {
-                    return value
-                        ? SizedBox(
-                            width: 20,
-                            child: Icon(
-                              Icons.favorite,
-                              color: Colors.red,
-                              size: 15,
-                            ),
-                          )
-                        : SizedBox();
-                  },
-                ),
-                Expanded(
-                  child: Text(
-                    "${getArtist(song)} - ${getAlbum(song)}",
+          child: GestureDetector(
+            child: ListTile(
+              contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+              leading: ArtWidget(
+                size: 40,
+                borderRadius: 4,
+                source: song.pictures.isEmpty ? null : song.pictures.first,
+              ),
+              title: ValueListenableBuilder(
+                valueListenable: currentSongNotifier,
+                builder: (_, currentSong, _) {
+                  return Text(
+                    getTitle(song),
                     overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: song == currentSong
+                          ? Color.fromARGB(255, 75, 200, 200)
+                          : null,
+                      fontWeight: song == currentSong ? FontWeight.bold : null,
+                    ),
+                  );
+                },
+              ),
+
+              subtitle: Row(
+                children: [
+                  ValueListenableBuilder(
+                    valueListenable: isFavorite,
+                    builder: (_, value, _) {
+                      return value
+                          ? SizedBox(
+                              width: 20,
+                              child: Icon(
+                                Icons.favorite,
+                                color: Colors.red,
+                                size: 15,
+                              ),
+                            )
+                          : SizedBox();
+                    },
                   ),
-                ),
-              ],
+                  Expanded(
+                    child: Text(
+                      "${getArtist(song)} - ${getAlbum(song)}",
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+              visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
             ),
-            visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-            splashColor: Colors.transparent,
             onTap: () {
               isSelected.value = !isSelected.value;
               selectedNum.value += isSelected.value ? 1 : -1;
