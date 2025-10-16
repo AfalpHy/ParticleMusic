@@ -5,14 +5,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:just_audio/just_audio.dart';
+import 'package:particle_music/art_widget.dart';
+import 'package:particle_music/audio_handler.dart';
+import 'package:particle_music/common.dart';
+import 'package:particle_music/play_queue_sheet.dart';
+import 'package:particle_music/playlists.dart';
 import 'dart:async';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:smooth_corner/smooth_corner.dart';
-import 'audio_handler.dart';
-import 'play_queue_sheet.dart';
-import 'art_widget.dart';
-import 'playlists.dart';
-import 'common.dart';
 
 class LyricsPage extends StatelessWidget {
   const LyricsPage({super.key});
