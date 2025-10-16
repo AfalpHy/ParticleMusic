@@ -511,6 +511,19 @@ class HomePageState extends State<HomePage> {
                 : SizedBox();
           },
         ),
+        ListTile(
+          leading: Icon(Icons.info_outline_rounded, color: mainColor),
+          title: const Text('Open Source Licenses'),
+          onTap: () {
+            showLicensePage(
+              context: context,
+              useRootNavigator: true,
+              applicationName: 'Particle Music',
+              applicationVersion: '1.0.0',
+              applicationLegalese: '© 2025 AfalpHy',
+            );
+          },
+        ),
       ],
     );
   }
