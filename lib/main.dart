@@ -515,12 +515,22 @@ class HomePageState extends State<HomePage> {
           leading: Icon(Icons.info_outline_rounded, color: mainColor),
           title: const Text('Open Source Licenses'),
           onTap: () {
-            showLicensePage(
-              context: context,
-              useRootNavigator: true,
-              applicationName: 'Particle Music',
-              applicationVersion: '1.0.0',
-              applicationLegalese: '© 2025 AfalpHy',
+            Navigator.of(context, rootNavigator: true).push(
+              MaterialPageRoute(
+                builder: (_) => Theme(
+                  data: ThemeData(
+                    colorScheme: ColorScheme.light(
+                      surface: Colors.white, // <- this is what LicensePage uses
+                    ),
+                    appBarTheme: const AppBarTheme(scrolledUnderElevation: 0),
+                  ),
+                  child: const LicensePage(
+                    applicationName: 'Particle Music',
+                    applicationVersion: '1.0.0',
+                    applicationLegalese: '© 2025 AfalpHy',
+                  ),
+                ),
+              ),
             );
           },
         ),
