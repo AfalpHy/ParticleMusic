@@ -271,7 +271,7 @@ class DesktopAudioHandler extends MyAudioHandler {
     await super.load();
     final currentSong = currentSongNotifier.value!;
 
-    await player.setSourceUrl(currentSong.file.uri.toString());
+    await player.setSource(desktop.DeviceFileSource(currentSong.file.path));
   }
 
   @override
