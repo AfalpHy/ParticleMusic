@@ -227,8 +227,6 @@ abstract class MyAudioHandler extends BaseAudioHandler {
 
   bool isReady();
 
-  Stream<Duration?> getDurationStream();
-
   Stream<Duration> getPositionStream();
 }
 
@@ -300,11 +298,6 @@ class DesktopAudioHandler extends MyAudioHandler {
     if (isPlayingNotifier.value) {
       player.resume();
     }
-  }
-
-  @override
-  Stream<Duration?> getDurationStream() {
-    return player.onDurationChanged;
   }
 
   @override
@@ -438,11 +431,6 @@ class MobileAudioHandler extends MyAudioHandler {
   @override
   bool isReady() {
     return player.processingState == mobile.ProcessingState.ready;
-  }
-
-  @override
-  Stream<Duration?> getDurationStream() {
-    return player.durationStream;
   }
 
   @override

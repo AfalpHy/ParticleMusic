@@ -641,112 +641,99 @@ class SeekBarState extends State<SeekBar> {
 
   @override
   Widget build(BuildContext context) {
-    return StreamBuilder<Duration?>(
-      stream: audioHandler.getDurationStream(),
-      builder: (context, durationSnapshot) {
-        final duration = durationSnapshot.data ?? Duration.zero;
-        final durationMs = duration.inMilliseconds.toDouble();
+    final duration = currentSongNotifier.value?.duration ?? Duration.zero;
+    final durationMs = duration.inMilliseconds.toDouble();
 
-        return StreamBuilder<Duration>(
-          stream: audioHandler.getPositionStream(),
-          builder: (context, snapshot) {
-            final position = snapshot.data ?? Duration.zero;
-            final sliderValue = dragValue ?? position.inMilliseconds.toDouble();
+    return StreamBuilder<Duration>(
+      stream: audioHandler.getPositionStream(),
+      builder: (context, snapshot) {
+        final position = snapshot.data ?? Duration.zero;
+        final sliderValue = dragValue ?? position.inMilliseconds.toDouble();
 
-            return SizedBox(
-              height: 60, // expand gesture area for easier touch
-              child: Stack(
-                alignment: Alignment.centerLeft,
-                children: [
-                  // Duration labels
-                  Positioned(
-                    left: 30,
-                    right: 30,
-                    bottom: 0,
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          formatDuration(
-                            Duration(milliseconds: sliderValue.toInt()),
-                          ),
-                        ),
-                        Text(formatDuration(duration)),
-                      ],
-                    ),
-                  ),
-
-                  // Slider visuals
-                  SliderTheme(
-                    data: SliderTheme.of(context).copyWith(
-                      thumbColor: Colors.black,
-                      trackHeight: isDragging ? 4 : 2,
-                      trackShape: const FullWidthTrackShape(),
-                      thumbShape: isDragging
-                          ? RoundSliderThumbShape(enabledThumbRadius: 8)
-                          : RoundSliderThumbShape(enabledThumbRadius: 4),
-                      overlayShape: SliderComponentShape.noOverlay,
-                      activeTrackColor: Colors.black,
-                      inactiveTrackColor: Colors.black12,
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 30),
-                      child: Slider(
-                        min: 0.0,
-                        max: durationMs,
-                        value: sliderValue.clamp(0.0, durationMs),
-                        onChanged: (value) {},
+        return SizedBox(
+          height: 60, // expand gesture area for easier touch
+          child: Stack(
+            alignment: Alignment.centerLeft,
+            children: [
+              // Duration labels
+              Positioned(
+                left: 30,
+                right: 30,
+                bottom: 0,
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      formatDuration(
+                        Duration(milliseconds: sliderValue.toInt()),
                       ),
                     ),
-                  ),
-
-                  // Full-track GestureDetector to capture touches anywhere on the track
-                  Positioned.fill(
-                    child: GestureDetector(
-                      behavior: HitTestBehavior.translucent,
-                      onVerticalDragStart: (_) {
-                        setState(() => isDragging = false);
-                      },
-                      onTapDown: (_) {
-                        setState(() => isDragging = true);
-                      },
-                      onHorizontalDragUpdate: (details) {
-                        seekByTouch(
-                          details.localPosition.dx,
-                          context,
-                          durationMs,
-                        );
-                        setState(() {});
-                      },
-                      onHorizontalDragEnd: (_) async {
-                        await audioHandler.seek(
-                          Duration(milliseconds: dragValue!.toInt()),
-                        );
-                        setState(() {
-                          dragValue = null;
-                          isDragging = false;
-                        });
-                      },
-                      onTapUp: (details) async {
-                        seekByTouch(
-                          details.localPosition.dx,
-                          context,
-                          durationMs,
-                        );
-                        await audioHandler.seek(
-                          Duration(milliseconds: dragValue!.toInt()),
-                        );
-                        setState(() {
-                          dragValue = null;
-                          isDragging = false;
-                        });
-                      },
-                    ),
-                  ),
-                ],
+                    Text(formatDuration(duration)),
+                  ],
+                ),
               ),
-            );
-          },
+
+              // Slider visuals
+              SliderTheme(
+                data: SliderTheme.of(context).copyWith(
+                  thumbColor: Colors.black,
+                  trackHeight: isDragging ? 4 : 2,
+                  trackShape: const FullWidthTrackShape(),
+                  thumbShape: isDragging
+                      ? RoundSliderThumbShape(enabledThumbRadius: 8)
+                      : RoundSliderThumbShape(enabledThumbRadius: 4),
+                  overlayShape: SliderComponentShape.noOverlay,
+                  activeTrackColor: Colors.black,
+                  inactiveTrackColor: Colors.black12,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 30),
+                  child: Slider(
+                    min: 0.0,
+                    max: durationMs,
+                    value: sliderValue.clamp(0.0, durationMs),
+                    onChanged: (value) {},
+                  ),
+                ),
+              ),
+
+              // Full-track GestureDetector to capture touches anywhere on the track
+              Positioned.fill(
+                child: GestureDetector(
+                  behavior: HitTestBehavior.translucent,
+                  onVerticalDragStart: (_) {
+                    setState(() => isDragging = false);
+                  },
+                  onTapDown: (_) {
+                    setState(() => isDragging = true);
+                  },
+                  onHorizontalDragUpdate: (details) {
+                    seekByTouch(details.localPosition.dx, context, durationMs);
+                    setState(() {});
+                  },
+                  onHorizontalDragEnd: (_) async {
+                    await audioHandler.seek(
+                      Duration(milliseconds: dragValue!.toInt()),
+                    );
+                    setState(() {
+                      dragValue = null;
+                      isDragging = false;
+                    });
+                  },
+                  onTapUp: (details) async {
+                    seekByTouch(details.localPosition.dx, context, durationMs);
+                    await audioHandler.seek(
+                      Duration(milliseconds: dragValue!.toInt()),
+                    );
+                    setState(() {
+                      dragValue = null;
+                      isDragging = false;
+                    });
+                  },
+                ),
+              ),
+            ],
+          ),
         );
       },
     );
