@@ -4,7 +4,7 @@ project(particle_music LANGUAGES CXX)
 
 # The name of the executable created for the application. Change this to change
 # the on-disk name of your application.
-set(BINARY_NAME "particle_music")
+set(BINARY_NAME "ParticleMusic")
 
 # Explicitly opt in to modern CMake behaviors to avoid warnings with recent
 # versions of CMake.
