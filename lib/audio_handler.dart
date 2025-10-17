@@ -287,6 +287,22 @@ class DesktopAudioHandler extends MyAudioHandler {
   Future<void> seek(Duration position) async => await player.seek(position);
 
   @override
+  Future<void> skipToNext() async {
+    await super.skipToNext();
+    if (isPlayingNotifier.value) {
+      player.resume();
+    }
+  }
+
+  @override
+  Future<void> skipToPrevious() async {
+    await super.skipToPrevious();
+    if (isPlayingNotifier.value) {
+      player.resume();
+    }
+  }
+
+  @override
   Stream<Duration?> getDurationStream() {
     return player.onDurationChanged;
   }
