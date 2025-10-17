@@ -27,17 +27,21 @@ final ValueNotifier<int> homeBody = ValueNotifier<int>(1);
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  audioHandler = await AudioService.init(
-    builder: () => MyAudioHandler(),
-    config: const AudioServiceConfig(
-      androidNotificationChannelId: 'com.afalphy.particle_music',
-      androidNotificationChannelName: 'Music Playback',
-      androidNotificationOngoing: true,
-    ),
-  );
-  await SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp, // only allow portrait
-  ]);
+  if (Platform.isAndroid || Platform.isIOS) {
+    audioHandler = await AudioService.init(
+      builder: () => MobileAudioHandler(),
+      config: const AudioServiceConfig(
+        androidNotificationChannelId: 'com.afalphy.particle_music',
+        androidNotificationChannelName: 'Music Playback',
+        androidNotificationOngoing: true,
+      ),
+    );
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp, // only allow portrait
+    ]);
+  } else {
+    audioHandler = DesktopAudioHandler();
+  }
   runApp(MyApp());
 }
 
@@ -237,12 +241,15 @@ class HomePageState extends State<HomePage> {
       await Permission.audio.request();
       final dir = await getExternalStorageDirectory();
       docs = Directory("${dir!.parent.parent.parent.parent.path}/Music");
-    } else {
+    } else if (Platform.isIOS) {
       docs = await getApplicationDocumentsDirectory();
       final keepfile = File('${docs.path}/Particle Music.keep');
       if (!(await keepfile.exists())) {
         await keepfile.writeAsString("App initialized");
       }
+    } else {
+      final dir = await getDownloadsDirectory();
+      docs = Directory("${dir!.parent.path}/Music");
     }
 
     appSupportDir = await getApplicationSupportDirectory();
@@ -621,11 +628,7 @@ class PlayerBar extends StatelessWidget {
 
                         onPressed: () {
                           HapticFeedback.heavyImpact();
-                          if (audioHandler.player.playing) {
-                            audioHandler.pause();
-                          } else {
-                            audioHandler.play();
-                          }
+                          audioHandler.togglePlay();
                         },
                       ),
                     ),

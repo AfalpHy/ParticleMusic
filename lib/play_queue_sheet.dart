@@ -190,7 +190,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                     vertical: -4,
                   ),
                   onTap: () async {
-                    audioHandler.setIndex(index);
+                    audioHandler.currentIndex = index;
                     await audioHandler.load();
                     await audioHandler.play();
                   },

@@ -4,7 +4,6 @@ import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:just_audio/just_audio.dart';
 import 'package:particle_music/art_widget.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
@@ -301,9 +300,7 @@ class LyricsPage extends StatelessWidget {
                       );
                     },
                   ),
-                  onPressed: () async => audioHandler.player.playing
-                      ? await audioHandler.pause()
-                      : await audioHandler.play(),
+                  onPressed: () => audioHandler.togglePlay(),
                 ),
               ),
               Expanded(
@@ -390,9 +387,7 @@ class LyricsPage extends StatelessWidget {
                   );
                 },
               ),
-              onPressed: () async => audioHandler.player.playing
-                  ? await audioHandler.pause()
-                  : await audioHandler.play(),
+              onPressed: () => audioHandler.togglePlay(),
             ),
             SizedBox(height: 30),
           ],
@@ -456,7 +451,7 @@ class LyricsListViewState extends State<LyricsListView>
 
   void scroll2CurrentIndex(Duration position) {
     // return when loading song and rebuilding this widget
-    if (audioHandler.player.processingState != ProcessingState.ready) {
+    if (!audioHandler.isReady()) {
       return;
     }
     int tmp = currentIndexNotifier.value;
@@ -489,7 +484,7 @@ class LyricsListViewState extends State<LyricsListView>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
-    positionSub = audioHandler.player.positionStream.listen(
+    positionSub = audioHandler.getPositionStream().listen(
       (position) => scroll2CurrentIndex(position),
     );
   }
@@ -511,7 +506,7 @@ class LyricsListViewState extends State<LyricsListView>
       case AppLifecycleState.resumed:
         if (positionSub == null) {
           jump = true;
-          positionSub = audioHandler.player.positionStream.listen(
+          positionSub = audioHandler.getPositionStream().listen(
             (position) => scroll2CurrentIndex(position),
           );
         }
@@ -647,13 +642,13 @@ class SeekBarState extends State<SeekBar> {
   @override
   Widget build(BuildContext context) {
     return StreamBuilder<Duration?>(
-      stream: audioHandler.player.durationStream,
+      stream: audioHandler.getDurationStream(),
       builder: (context, durationSnapshot) {
         final duration = durationSnapshot.data ?? Duration.zero;
         final durationMs = duration.inMilliseconds.toDouble();
 
         return StreamBuilder<Duration>(
-          stream: audioHandler.player.positionStream,
+          stream: audioHandler.getPositionStream(),
           builder: (context, snapshot) {
             final position = snapshot.data ?? Duration.zero;
             final sliderValue = dragValue ?? position.inMilliseconds.toDouble();
