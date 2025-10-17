@@ -529,7 +529,10 @@ class HomePageState extends State<HomePage> {
                     colorScheme: ColorScheme.light(
                       surface: Colors.white, // <- this is what LicensePage uses
                     ),
-                    appBarTheme: const AppBarTheme(scrolledUnderElevation: 0),
+                    appBarTheme: const AppBarTheme(
+                      scrolledUnderElevation: 0,
+                      centerTitle: true,
+                    ),
                   ),
                   child: const LicensePage(
                     applicationName: 'Particle Music',
