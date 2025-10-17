@@ -116,15 +116,6 @@ abstract class MyAudioHandler extends BaseAudioHandler {
     currentSongNotifier.value = null;
   }
 
-  Future<Uri> saveAlbumCover(Uint8List bytes) async {
-    final dir = await getTemporaryDirectory();
-
-    final file = File('${dir.path}/cover');
-
-    await file.writeAsBytes(bytes);
-    return file.uri;
-  }
-
   Future<void> parseLyricsFile(String path) async {
     lyrics = [];
     final file = File(path);
@@ -373,6 +364,15 @@ class MobileAudioHandler extends MyAudioHandler {
       }[player.processingState]!,
       updatePosition: player.position,
     );
+  }
+
+  Future<Uri> saveAlbumCover(Uint8List bytes) async {
+    final dir = await getTemporaryDirectory();
+
+    final file = File('${dir.path}/cover');
+
+    await file.writeAsBytes(bytes);
+    return file.uri;
   }
 
   @override
