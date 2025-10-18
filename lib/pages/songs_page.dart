@@ -1,14 +1,10 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
-import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/load_library.dart';
 import 'package:particle_music/song_list_scaffold.dart';
 
 class SongsScaffold extends StatefulWidget {
-  final Future<void> Function() reload;
-
-  const SongsScaffold({super.key, required this.reload});
+  const SongsScaffold({super.key});
 
   @override
   State<StatefulWidget> createState() => SongsScaffoldState();
@@ -60,7 +56,7 @@ class SongsScaffoldState extends State<SongsScaffold> {
             visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
             onTap: () async {
               if (await showConfirmDialog(context, 'Reload Action')) {
-                await widget.reload();
+                await libraryLoader.reload();
                 if (context.mounted) {
                   Navigator.of(context).pop();
                 }

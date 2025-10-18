@@ -1,23 +1,18 @@
-import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:particle_music/load_library.dart';
 import 'package:particle_music/pages/artist_album_page.dart';
 import 'package:particle_music/pages/lyrics_page.dart';
-import 'package:particle_music/playlists.dart';
 import 'package:particle_music/pages/playlists_page.dart';
 import 'package:particle_music/setting.dart';
 import 'package:particle_music/pages/songs_page.dart';
-import 'package:permission_handler/permission_handler.dart';
-import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:audio_service/audio_service.dart';
-import 'package:path_provider/path_provider.dart';
 import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 import 'audio_handler.dart';
 import 'play_queue_sheet.dart';
 import 'art_widget.dart';
-import 'package:path/path.dart' as p;
 import 'common.dart';
 import 'package:flutter_switch/flutter_switch.dart';
 
@@ -42,6 +37,8 @@ Future<void> main() async {
   } else {
     audioHandler = DesktopAudioHandler();
   }
+  await libraryLoader.initial();
+  await libraryLoader.load();
   runApp(MyApp());
 }
 
@@ -60,9 +57,6 @@ class SwipeObserver extends NavigatorObserver {
 
   @override
   void didPop(Route route, Route? previousRoute) {
-    if (deep == 1) {
-      swipeProgressNotifier.value = 0;
-    }
     deep--;
     super.didPop(route, previousRoute);
   }
@@ -219,116 +213,8 @@ Widget bottomNavigator() {
 // --------------------
 // Home Page
 // --------------------
-class HomePage extends StatefulWidget {
+class HomePage extends StatelessWidget {
   const HomePage({super.key});
-
-  @override
-  State<HomePage> createState() => HomePageState();
-}
-
-class HomePageState extends State<HomePage> {
-  late Directory docs;
-  late Directory appSupportDir;
-  @override
-  void initState() {
-    super.initState();
-    initial();
-  }
-
-  Future<void> initial() async {
-    if (Platform.isAndroid) {
-      await Permission.storage.request();
-      await Permission.audio.request();
-      final dir = await getExternalStorageDirectory();
-      docs = Directory("${dir!.parent.parent.parent.parent.path}/Music");
-    } else if (Platform.isIOS) {
-      docs = await getApplicationDocumentsDirectory();
-      final keepfile = File('${docs.path}/Particle Music.keep');
-      if (!(await keepfile.exists())) {
-        await keepfile.writeAsString("App initialized");
-      }
-    } else {
-      final dir = await getDownloadsDirectory();
-      docs = Directory("${dir!.parent.path}/Music");
-    }
-
-    appSupportDir = await getApplicationSupportDirectory();
-    playlistsManager = PlaylistsManager(
-      File("${appSupportDir.path}/allPlaylists.txt"),
-    );
-
-    await loadSongs();
-  }
-
-  Future<void> loadSongs() async {
-    for (var file in docs.listSync()) {
-      if ((file.path.endsWith('.mp3') ||
-          file.path.endsWith('.flac') ||
-          file.path.endsWith('.ogg') ||
-          file.path.endsWith('.wav'))) {
-        final basename = p.basename(file.path);
-        try {
-          final meta = readMetadata(File(file.path), getImage: true);
-          for (String artist in getArtist(meta).split(RegExp(r'[/&,]'))) {
-            if (artist2SongList[artist] == null) {
-              artist2SongList[artist] = [];
-            }
-            artist2SongList[artist]!.add(meta);
-          }
-
-          final songAlbum = getAlbum(meta);
-          if (album2SongList[songAlbum] == null) {
-            album2SongList[songAlbum] = [];
-          }
-          album2SongList[songAlbum]!.add(meta);
-
-          librarySongs.add(meta);
-          basename2LibrarySong[basename] = meta;
-          songIsFavorite[meta] = ValueNotifier(false);
-        } catch (error) {
-          continue; // skip unreadable files
-        }
-      }
-    }
-
-    List<dynamic> allPlaylists = await playlistsManager.getAllPlaylists();
-
-    for (String name in allPlaylists) {
-      final playlist = Playlist(
-        name: name,
-        file: File("${appSupportDir.path}/$name.json"),
-      );
-      playlistsManager.addPlaylist(playlist);
-
-      final contents = await playlist.file.readAsString();
-      if (contents != "") {
-        List<dynamic> decoded = jsonDecode(contents);
-        for (String basename in decoded) {
-          AudioMetadata? meta = basename2LibrarySong[basename];
-          if (meta != null) {
-            playlist.songs.add(meta);
-            if (name == 'Favorite') {
-              songIsFavorite[meta]!.value = true;
-            }
-          }
-        }
-      }
-    }
-
-    setState(() {});
-  }
-
-  Future<void> reloadSongs() async {
-    audioHandler.clear();
-    librarySongs = [];
-    basename2LibrarySong = {};
-    playlistsManager.clear();
-    artist2SongList = {};
-    album2SongList = {};
-    songIsFavorite = {};
-
-    await loadSongs();
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -348,7 +234,7 @@ class HomePageState extends State<HomePage> {
           body: ValueListenableBuilder(
             valueListenable: homeBody,
             builder: (context, value, child) {
-              return value == 1 ? buildLibrary() : buildSetting();
+              return value == 1 ? buildLibrary(context) : buildSetting(context);
             },
           ),
         ),
@@ -356,7 +242,7 @@ class HomePageState extends State<HomePage> {
     );
   }
 
-  Widget buildLibrary() {
+  Widget buildLibrary(BuildContext context) {
     return ListView(
       physics: ClampingScrollPhysics(),
       children: [
@@ -411,18 +297,16 @@ class HomePageState extends State<HomePage> {
           ),
           title: Text('Songs'),
           onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => SongsScaffold(reload: reloadSongs),
-              ),
-            );
+            Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => SongsScaffold()));
           },
         ),
       ],
     );
   }
 
-  Widget buildSetting() {
+  Widget buildSetting(BuildContext context) {
     return ListView(
       physics: ClampingScrollPhysics(),
       children: [

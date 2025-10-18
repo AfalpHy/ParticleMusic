@@ -19,8 +19,6 @@ class LyricLine {
   LyricLine(this.timestamp, this.text);
 }
 
-List<AudioMetadata> librarySongs = [];
-Map<String, AudioMetadata> basename2LibrarySong = {};
 List<AudioMetadata> playQueue = [];
 List<LyricLine> lyrics = [];
 Color artAverageColor = Colors.grey;
