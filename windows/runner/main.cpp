@@ -27,7 +27,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   FlutterWindow window(project);
 
   RECT screen_rect;
-  Win32Window::Size size(1280, 720);
+  Win32Window::Size size(1200, 800);
 
   SystemParametersInfo(SPI_GETWORKAREA, 0, &screen_rect, 0);
 

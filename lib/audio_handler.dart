@@ -242,7 +242,8 @@ class DesktopAudioHandler extends MyAudioHandler {
       if (state == desktop.PlayerState.playing) {
         isPlayingNotifier.value = true;
         needPause = false;
-      } else if (state == desktop.PlayerState.paused) {
+      } else if (state == desktop.PlayerState.paused ||
+          state == desktop.PlayerState.stopped) {
         isPlayingNotifier.value = false;
         needPause = false;
       }

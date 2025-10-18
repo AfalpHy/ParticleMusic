@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:particle_music/desktop_ui/main_page.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:particle_music/pages/artist_album_page.dart';
 import 'package:particle_music/pages/lyrics_page.dart';
@@ -75,60 +76,64 @@ class MyApp extends StatelessWidget {
     appWidth = MediaQuery.widthOf(context);
     return MaterialApp(
       title: 'Particle Music',
-      home: Stack(
-        children: [
-          // Navigator for normal pages (PlayerBar stays above)
-          PopScope(
-            canPop: false, // we control when popping is allowed
-            onPopInvokedWithResult: (didPop, result) {
-              if (didPop) return; // already handled by system / parent
+      home: (Platform.isAndroid || Platform.isIOS)
+          ? Stack(
+              children: [
+                // Navigator for normal pages (PlayerBar stays above)
+                PopScope(
+                  canPop: false, // we control when popping is allowed
+                  onPopInvokedWithResult: (didPop, result) {
+                    if (didPop) return; // already handled by system / parent
 
-              if (homeNavigatorKey.currentState!.canPop()) {
-                homeNavigatorKey.currentState!.pop();
-              } else {
-                Navigator.of(context).maybePop(); // fallback to root
-              }
-            },
-            child: Navigator(
-              key: homeNavigatorKey,
-              observers: [swipeObserver],
-              onGenerateRoute: (settings) {
-                return MaterialPageRoute(builder: (_) => const HomePage());
-              },
-            ),
-          ),
-          ValueListenableBuilder<double>(
-            valueListenable: swipeProgressNotifier,
-            builder: (context, progress, _) {
-              final double bottom = 80 - (40 * progress);
-              return AnimatedPositioned(
-                duration: const Duration(milliseconds: 8),
-                curve: Curves.linear,
-                left: 20,
-                right: 20,
-                bottom: bottom,
-                child: const PlayerBar(),
-              );
-            },
-          ),
+                    if (homeNavigatorKey.currentState!.canPop()) {
+                      homeNavigatorKey.currentState!.pop();
+                    } else {
+                      Navigator.of(context).maybePop(); // fallback to root
+                    }
+                  },
+                  child: Navigator(
+                    key: homeNavigatorKey,
+                    observers: [swipeObserver],
+                    onGenerateRoute: (settings) {
+                      return MaterialPageRoute(
+                        builder: (_) => const HomePage(),
+                      );
+                    },
+                  ),
+                ),
+                ValueListenableBuilder<double>(
+                  valueListenable: swipeProgressNotifier,
+                  builder: (context, progress, _) {
+                    final double bottom = 80 - (40 * progress);
+                    return AnimatedPositioned(
+                      duration: const Duration(milliseconds: 8),
+                      curve: Curves.linear,
+                      left: 20,
+                      right: 20,
+                      bottom: bottom,
+                      child: const PlayerBar(),
+                    );
+                  },
+                ),
 
-          ValueListenableBuilder<double>(
-            valueListenable: swipeProgressNotifier,
-            builder: (context, progress, _) {
-              final double bottom = -80 * progress;
+                ValueListenableBuilder<double>(
+                  valueListenable: swipeProgressNotifier,
+                  builder: (context, progress, _) {
+                    final double bottom = -80 * progress;
 
-              return AnimatedPositioned(
-                duration: const Duration(milliseconds: 8),
-                curve: Curves.linear,
-                left: 0,
-                right: 0,
-                bottom: bottom,
-                child: bottomNavigator(),
-              );
-            },
-          ),
-        ],
-      ),
+                    return AnimatedPositioned(
+                      duration: const Duration(milliseconds: 8),
+                      curve: Curves.linear,
+                      left: 0,
+                      right: 0,
+                      bottom: bottom,
+                      child: bottomNavigator(),
+                    );
+                  },
+                ),
+              ],
+            )
+          : DesktopMainPage(),
     );
   }
 }
