@@ -17,6 +17,7 @@ class DesktopMainPage extends StatelessWidget {
       ValueNotifier(librarySongs);
 
   final ValueNotifier<Playlist?> currentPlaylistNotifier = ValueNotifier(null);
+  final ValueNotifier<double> sidebarWidthNotifier = ValueNotifier(200);
 
   DesktopMainPage({super.key});
 
@@ -25,17 +26,42 @@ class DesktopMainPage extends StatelessWidget {
     return Material(
       child: Column(
         children: [
-          Expanded(child: Row(children: [sideBar(), songList()])),
+          Expanded(
+            child: Row(
+              children: [
+                ValueListenableBuilder(
+                  valueListenable: sidebarWidthNotifier,
+                  builder: (context, width, child) {
+                    return sidebar(width);
+                  },
+                ), // Drag handle
+                MouseRegion(
+                  cursor: SystemMouseCursors.resizeColumn,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.translucent,
+                    onHorizontalDragUpdate: (details) {
+                      sidebarWidthNotifier.value = details.globalPosition.dx
+                          .clamp(200, 600);
+                    },
+
+                    child: Container(width: 10, color: Colors.grey.shade100),
+                  ),
+                ),
+                Container(color: Colors.white, width: 30),
+                songList(),
+              ],
+            ),
+          ),
           bottomControl(context),
         ],
       ),
     );
   }
 
-  Widget sideBar() {
+  Widget sidebar(double width) {
     return Container(
       color: Colors.grey.shade100,
-      width: 200,
+      width: width,
       child: Column(
         children: [
           ListTile(
@@ -94,7 +120,6 @@ class DesktopMainPage extends StatelessWidget {
                             ),
                             items: [
                               PopupMenuItem(
-                                height: 30,
                                 onTap: () async {
                                   if (await showConfirmDialog(
                                     context,
@@ -103,7 +128,12 @@ class DesktopMainPage extends StatelessWidget {
                                     playlistsManager.deletePlaylist(index);
                                   }
                                 },
-                                child: Text('Delete'),
+                                child: ListTile(
+                                  leading: ImageIcon(
+                                    AssetImage("assets/images/delete.png"),
+                                  ),
+                                  title: Text('Delete'),
+                                ),
                               ),
                             ],
                           );
@@ -269,10 +299,12 @@ class DesktopMainPage extends StatelessWidget {
                       getTitle(currentSong),
                       overflow: TextOverflow.ellipsis,
                     ),
-                    subtitle: Text(
-                      "${getArtist(currentSong)} - ${getAlbum(currentSong)}",
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                    subtitle: currentSong != null
+                        ? Text(
+                            "${getArtist(currentSong)} - ${getAlbum(currentSong)}",
+                            overflow: TextOverflow.ellipsis,
+                          )
+                        : null,
                   );
                 },
               ),
@@ -407,13 +439,13 @@ class DesktopMainPage extends StatelessWidget {
                   builder: (context, value, child) {
                     return SliderTheme(
                       data: SliderTheme.of(context).copyWith(
-                        trackHeight: 3, // thinner track
+                        trackHeight: 1.5, // thinner track
                         thumbShape: RoundSliderThumbShape(
-                          enabledThumbRadius: 3,
+                          enabledThumbRadius: 2.5,
                         ), // smaller thumb
                         overlayColor: Colors.transparent,
                         activeTrackColor: Colors.black,
-                        inactiveTrackColor: Colors.black12,
+                        inactiveTrackColor: Colors.black54,
                         thumbColor: Colors.black,
                       ),
                       child: Slider(
