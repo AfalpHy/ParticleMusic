@@ -246,120 +246,165 @@ class DesktopMainPage extends StatelessWidget {
   }
 
   Widget bottomControl(BuildContext context) {
+    final volumeNotifier = ValueNotifier(1.0);
     return Container(
       color: Colors.grey.shade50,
       height: 75,
-      child: Row(
+      child: Stack(
         children: [
-          Spacer(),
-          ValueListenableBuilder(
-            valueListenable: playModeNotifier,
-            builder: (_, playMode, _) {
-              return IconButton(
-                color: Colors.black,
-                icon: ImageIcon(
-                  playMode == 0
-                      ? AssetImage("assets/images/loop.png")
-                      : playMode == 1
-                      ? AssetImage("assets/images/shuffle.png")
-                      : AssetImage("assets/images/repeat.png"),
-                  size: 35,
+          Center(
+            child: Row(
+              children: [
+                Spacer(),
+                ValueListenableBuilder(
+                  valueListenable: playModeNotifier,
+                  builder: (_, playMode, _) {
+                    return IconButton(
+                      color: Colors.black,
+                      icon: ImageIcon(
+                        playMode == 0
+                            ? AssetImage("assets/images/loop.png")
+                            : playMode == 1
+                            ? AssetImage("assets/images/shuffle.png")
+                            : AssetImage("assets/images/repeat.png"),
+                        size: 35,
+                      ),
+                      onPressed: () {
+                        if (playQueue.isEmpty) {
+                          return;
+                        }
+                        if (playModeNotifier.value != 2) {
+                          audioHandler.switchPlayMode();
+                          switch (playModeNotifier.value) {
+                            case 0:
+                              showCenterMessage(context, "loop");
+                              break;
+                            default:
+                              showCenterMessage(context, "shuffle");
+                              break;
+                          }
+                        }
+                      },
+                      onLongPress: () {
+                        if (playQueue.isEmpty) {
+                          return;
+                        }
+                        audioHandler.toggleRepeat();
+                        switch (playModeNotifier.value) {
+                          case 0:
+                            showCenterMessage(context, "loop");
+                            break;
+                          case 1:
+                            showCenterMessage(context, "shuffle");
+                            break;
+                          default:
+                            showCenterMessage(context, "repeat");
+                            break;
+                        }
+                      },
+                    );
+                  },
                 ),
-                onPressed: () {
-                  if (playQueue.isEmpty) {
-                    return;
-                  }
-                  if (playModeNotifier.value != 2) {
-                    audioHandler.switchPlayMode();
-                    switch (playModeNotifier.value) {
-                      case 0:
-                        showCenterMessage(context, "loop");
-                        break;
-                      default:
-                        showCenterMessage(context, "shuffle");
-                        break;
+
+                IconButton(
+                  color: Colors.black,
+                  icon: const ImageIcon(
+                    AssetImage("assets/images/previous_button.png"),
+                    size: 35,
+                  ),
+                  onPressed: () {
+                    if (playQueue.isEmpty) {
+                      return;
                     }
-                  }
-                },
-                onLongPress: () {
-                  if (playQueue.isEmpty) {
-                    return;
-                  }
-                  audioHandler.toggleRepeat();
-                  switch (playModeNotifier.value) {
-                    case 0:
-                      showCenterMessage(context, "loop");
-                      break;
-                    case 1:
-                      showCenterMessage(context, "shuffle");
-                      break;
-                    default:
-                      showCenterMessage(context, "repeat");
-                      break;
-                  }
-                },
-              );
-            },
-          ),
+                    audioHandler.skipToPrevious();
+                  },
+                ),
+                IconButton(
+                  color: Colors.black,
+                  icon: ValueListenableBuilder(
+                    valueListenable: isPlayingNotifier,
+                    builder: (_, isPlaying, _) {
+                      return Icon(
+                        isPlaying
+                            ? Icons.pause_rounded
+                            : Icons.play_arrow_rounded,
+                        size: 48,
+                      );
+                    },
+                  ),
+                  onPressed: () {
+                    if (playQueue.isEmpty) {
+                      return;
+                    }
+                    audioHandler.togglePlay();
+                  },
+                ),
+                IconButton(
+                  color: Colors.black,
+                  icon: const ImageIcon(
+                    AssetImage("assets/images/next_button.png"),
+                    size: 35,
+                  ),
+                  onPressed: () {
+                    if (playQueue.isEmpty) {
+                      return;
+                    }
 
-          IconButton(
-            color: Colors.black,
-            icon: const ImageIcon(
-              AssetImage("assets/images/previous_button.png"),
-              size: 35,
+                    audioHandler.skipToNext();
+                  },
+                ),
+                IconButton(
+                  icon: Icon(
+                    Icons.playlist_play_rounded,
+                    size: 35,
+                    color: Colors.black,
+                  ),
+                  onPressed: () {
+                    if (playQueue.isEmpty) {
+                      return;
+                    }
+                  },
+                ),
+                Spacer(),
+              ],
             ),
-            onPressed: () {
-              if (playQueue.isEmpty) {
-                return;
-              }
-              audioHandler.skipToPrevious();
-            },
           ),
-          IconButton(
-            color: Colors.black,
-            icon: ValueListenableBuilder(
-              valueListenable: isPlayingNotifier,
-              builder: (_, isPlaying, _) {
-                return Icon(
-                  isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                  size: 48,
-                );
-              },
-            ),
-            onPressed: () {
-              if (playQueue.isEmpty) {
-                return;
-              }
-              audioHandler.togglePlay();
-            },
+          Row(
+            children: [
+              Spacer(),
+              SizedBox(width: 10, child: Icon(Icons.volume_down_rounded)),
+              SizedBox(
+                width: 200,
+                child: ValueListenableBuilder(
+                  valueListenable: volumeNotifier,
+                  builder: (context, value, child) {
+                    return SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        trackHeight: 3, // thinner track
+                        thumbShape: RoundSliderThumbShape(
+                          enabledThumbRadius: 3,
+                        ), // smaller thumb
+                        overlayColor: Colors.transparent,
+                        activeTrackColor: Colors.black,
+                        inactiveTrackColor: Colors.black12,
+                        thumbColor: Colors.black,
+                      ),
+                      child: Slider(
+                        value: value,
+                        min: 0,
+                        max: 1,
+                        onChanged: (value) {
+                          volumeNotifier.value = value;
+                          audioHandler.setVolume(value);
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
+              SizedBox(width: 50),
+            ],
           ),
-          IconButton(
-            color: Colors.black,
-            icon: const ImageIcon(
-              AssetImage("assets/images/next_button.png"),
-              size: 35,
-            ),
-            onPressed: () {
-              if (playQueue.isEmpty) {
-                return;
-              }
-
-              audioHandler.skipToNext();
-            },
-          ),
-          IconButton(
-            icon: Icon(
-              Icons.playlist_play_rounded,
-              size: 35,
-              color: Colors.black,
-            ),
-            onPressed: () {
-              if (playQueue.isEmpty) {
-                return;
-              }
-            },
-          ),
-          Spacer(),
         ],
       ),
     );

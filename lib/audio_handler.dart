@@ -217,6 +217,8 @@ abstract class MyAudioHandler extends BaseAudioHandler {
   bool isReady();
 
   Stream<Duration> getPositionStream();
+
+  void setVolume(double volume) {}
 }
 
 class DesktopAudioHandler extends MyAudioHandler {
@@ -308,6 +310,11 @@ class DesktopAudioHandler extends MyAudioHandler {
     } else {
       await player.resume();
     }
+  }
+
+  @override
+  void setVolume(double volume) {
+    player.setVolume(volume);
   }
 }
 
