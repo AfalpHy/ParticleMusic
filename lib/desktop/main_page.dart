@@ -280,73 +280,77 @@ class DesktopMainPage extends StatelessWidget {
                     itemCount: currentSongList.length,
                     itemBuilder: (context, index) {
                       final song = currentSongList[index];
-                      return Row(
-                        spacing: 20,
-                        children: [
-                          Expanded(
-                            child: ListTile(
-                              contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                              visualDensity: const VisualDensity(
-                                horizontal: 0,
-                                vertical: -4,
+                      return GestureDetector(
+                        onDoubleTap: () async {
+                          audioHandler.currentIndex = index;
+                          playQueue = List.from(currentSongList);
+                          if (playModeNotifier.value == 1 ||
+                              (playModeNotifier.value == 2 &&
+                                  audioHandler.tmpPlayMode == 1)) {
+                            audioHandler.shuffle();
+                          }
+                          await audioHandler.load();
+                          await audioHandler.play();
+                        },
+
+                        child: Row(
+                          spacing: 20,
+
+                          children: [
+                            Expanded(
+                              child: ListTile(
+                                contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                                visualDensity: const VisualDensity(
+                                  horizontal: 0,
+                                  vertical: -4,
+                                ),
+                                leading: CoverArtWidget(
+                                  size: 40,
+                                  borderRadius: 4,
+                                  source: getCoverArt(song),
+                                ),
+                                title: ValueListenableBuilder(
+                                  valueListenable: currentSongNotifier,
+                                  builder: (_, currentSong, _) {
+                                    return Text(
+                                      getTitle(song),
+                                      overflow: TextOverflow.ellipsis,
+                                      style: song == currentSong
+                                          ? TextStyle(
+                                              color: Color.fromARGB(
+                                                255,
+                                                75,
+                                                200,
+                                                200,
+                                              ),
+                                              fontWeight: FontWeight.bold,
+                                            )
+                                          : null,
+                                    );
+                                  },
+                                ),
+                                subtitle: Text(
+                                  getArtist(song),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
                               ),
-                              leading: CoverArtWidget(
-                                size: 40,
-                                borderRadius: 4,
-                                source: getCoverArt(song),
-                              ),
-                              title: ValueListenableBuilder(
-                                valueListenable: currentSongNotifier,
-                                builder: (_, currentSong, _) {
-                                  return Text(
-                                    getTitle(song),
-                                    overflow: TextOverflow.ellipsis,
-                                    style: song == currentSong
-                                        ? TextStyle(
-                                            color: Color.fromARGB(
-                                              255,
-                                              75,
-                                              200,
-                                              200,
-                                            ),
-                                            fontWeight: FontWeight.bold,
-                                          )
-                                        : null,
-                                  );
-                                },
-                              ),
-                              subtitle: Text(
-                                getArtist(song),
+                            ),
+                            SizedBox(
+                              width: 300,
+                              child: Text(
+                                getAlbum(song),
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              onTap: () async {
-                                audioHandler.currentIndex = index;
-                                playQueue = List.from(currentSongList);
-                                if (playModeNotifier.value == 1 ||
-                                    (playModeNotifier.value == 2 &&
-                                        audioHandler.tmpPlayMode == 1)) {
-                                  audioHandler.shuffle();
-                                }
-                                await audioHandler.load();
-                                await audioHandler.play();
-                              },
                             ),
-                          ),
-                          SizedBox(
-                            width: 300,
-                            child: Text(
-                              getAlbum(song),
-                              overflow: TextOverflow.ellipsis,
+                            SizedBox(
+                              width: 100,
+                              child: Text(
+                                '${getDuration(song).inMinutes.toString().padLeft(2, '0')}:${(getDuration(song).inSeconds % 60).toString().padLeft(2, '0')}',
+                                overflow: TextOverflow.ellipsis,
+                              ),
                             ),
-                          ),
-                          SizedBox(
-                            width: 100,
-                            child: Text(
-                              '${getDuration(song).inMinutes.toString().padLeft(2, '0')}:${(getDuration(song).inSeconds % 60).toString().padLeft(2, '0')}',
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
+                          ],
+                        ),
                       );
                     },
                   );
