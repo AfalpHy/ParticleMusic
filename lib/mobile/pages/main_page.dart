@@ -39,6 +39,7 @@ class MobileMainPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    appWidth = MediaQuery.widthOf(context);
     return Stack(
       children: [
         // Navigator for normal pages (PlayerBar stays above)
