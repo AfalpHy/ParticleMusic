@@ -15,7 +15,7 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:searchfield/searchfield.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
-class SongListScaffold extends StatelessWidget {
+class SongListPage extends StatelessWidget {
   final List<AudioMetadata> songList;
   final Widget Function(BuildContext) moreSheet;
 
@@ -30,7 +30,7 @@ class SongListScaffold extends StatelessWidget {
   final itemScrollController = ItemScrollController();
   final textController = TextEditingController();
 
-  SongListScaffold({
+  SongListPage({
     super.key,
     required this.songList,
     required this.moreSheet,
@@ -246,23 +246,22 @@ class SongListScaffold extends StatelessWidget {
   }
 }
 
-class SelectableSongListScaffold extends StatefulWidget {
+class SelectableSongListPage extends StatefulWidget {
   final List<AudioMetadata> songList;
 
   final Playlist? playlist;
 
-  const SelectableSongListScaffold({
+  const SelectableSongListPage({
     super.key,
     required this.songList,
     this.playlist,
   });
 
   @override
-  State<StatefulWidget> createState() => SelectableSongListScaffoldState();
+  State<StatefulWidget> createState() => SelectableSongListPageState();
 }
 
-class SelectableSongListScaffoldState
-    extends State<SelectableSongListScaffold> {
+class SelectableSongListPageState extends State<SelectableSongListPage> {
   @override
   Widget build(BuildContext context) {
     final songList = widget.songList;

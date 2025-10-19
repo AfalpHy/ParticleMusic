@@ -4,11 +4,11 @@ import 'package:flutter/services.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/playlists.dart';
-import 'package:particle_music/mobile/song_list_scaffold.dart';
+import 'package:particle_music/mobile/pages/song_list_page.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
-class PlaylistsScaffold extends StatelessWidget {
-  const PlaylistsScaffold({super.key});
+class PlaylistsPage extends StatelessWidget {
+  const PlaylistsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -81,7 +81,7 @@ class PlaylistsScaffold extends StatelessWidget {
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (_) => SongListScaffold(
+                        builder: (_) => SongListPage(
                           songList: playlist.songs,
                           name: playlist.name,
 
@@ -159,7 +159,7 @@ class PlaylistsScaffold extends StatelessWidget {
               Navigator.pop(context);
               Navigator.of(context, rootNavigator: true).push(
                 MaterialPageRoute(
-                  builder: (context) => reorderPlaylistsScaffold(context),
+                  builder: (context) => reorderPlaylistsPage(context),
                 ),
               );
             },
@@ -169,7 +169,7 @@ class PlaylistsScaffold extends StatelessWidget {
     );
   }
 
-  Widget reorderPlaylistsScaffold(BuildContext context) {
+  Widget reorderPlaylistsPage(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(backgroundColor: Colors.white, scrolledUnderElevation: 0),
@@ -298,7 +298,7 @@ class PlaylistsScaffold extends StatelessWidget {
               Navigator.pop(context);
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (_) => SelectableSongListScaffold(
+                  builder: (_) => SelectableSongListPage(
                     songList: playlist.songs,
                     playlist: playlist,
                   ),

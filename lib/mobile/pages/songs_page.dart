@@ -1,19 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/load_library.dart';
-import 'package:particle_music/mobile/song_list_scaffold.dart';
+import 'package:particle_music/mobile/pages/song_list_page.dart';
 
-class SongsScaffold extends StatefulWidget {
-  const SongsScaffold({super.key});
+class SongsPage extends StatefulWidget {
+  const SongsPage({super.key});
 
   @override
-  State<StatefulWidget> createState() => SongsScaffoldState();
+  State<StatefulWidget> createState() => SongsPageState();
 }
 
-class SongsScaffoldState extends State<SongsScaffold> {
+class SongsPageState extends State<SongsPage> {
   @override
   Widget build(BuildContext _) {
-    return SongListScaffold(
+    return SongListPage(
       songList: librarySongs,
       moreSheet: (context) => moreSheet(context),
     );
@@ -41,7 +41,7 @@ class SongsScaffoldState extends State<SongsScaffold> {
               Navigator.of(context).push(
                 MaterialPageRoute(
                   builder: (_) =>
-                      SelectableSongListScaffold(songList: librarySongs),
+                      SelectableSongListPage(songList: librarySongs),
                 ),
               );
             },

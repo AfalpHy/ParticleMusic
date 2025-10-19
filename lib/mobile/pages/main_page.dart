@@ -219,7 +219,7 @@ class HomePage extends StatelessWidget {
           onTap: () {
             Navigator.of(
               context,
-            ).push(MaterialPageRoute(builder: (_) => PlaylistsScaffold()));
+            ).push(MaterialPageRoute(builder: (_) => PlaylistsPage()));
           },
         ),
         ListTile(
@@ -232,7 +232,7 @@ class HomePage extends StatelessWidget {
           onTap: () {
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (_) => ArtistAlbumScaffold(isArtist: true),
+                builder: (_) => ArtistAlbumPage(isArtist: true),
               ),
             );
           },
@@ -247,7 +247,7 @@ class HomePage extends StatelessWidget {
           onTap: () {
             Navigator.of(context).push(
               MaterialPageRoute(
-                builder: (_) => ArtistAlbumScaffold(isArtist: false),
+                builder: (_) => ArtistAlbumPage(isArtist: false),
               ),
             );
           },
@@ -262,7 +262,7 @@ class HomePage extends StatelessWidget {
           onTap: () {
             Navigator.of(
               context,
-            ).push(MaterialPageRoute(builder: (_) => SongsScaffold()));
+            ).push(MaterialPageRoute(builder: (_) => SongsPage()));
           },
         ),
       ],

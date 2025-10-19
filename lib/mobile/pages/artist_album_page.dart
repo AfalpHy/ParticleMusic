@@ -2,16 +2,16 @@ import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/mobile/song_list_scaffold.dart';
+import 'package:particle_music/mobile/pages/song_list_page.dart';
 import 'package:searchfield/searchfield.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
 Map<String, List<AudioMetadata>> artist2SongList = {};
 Map<String, List<AudioMetadata>> album2SongList = {};
 
-class ArtistAlbumScaffold extends StatelessWidget {
+class ArtistAlbumPage extends StatelessWidget {
   final bool isArtist;
-  const ArtistAlbumScaffold({super.key, required this.isArtist});
+  const ArtistAlbumPage({super.key, required this.isArtist});
 
   @override
   Widget build(BuildContext context) {
@@ -122,7 +122,7 @@ class ArtistAlbumScaffold extends StatelessWidget {
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (_) => SongListScaffold(
+                            builder: (_) => SongListPage(
                               songList: songList,
                               name: key,
                               moreSheet: (context) =>
@@ -199,8 +199,7 @@ class ArtistAlbumScaffold extends StatelessWidget {
               Navigator.pop(context);
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (_) =>
-                      SelectableSongListScaffold(songList: songList),
+                  builder: (_) => SelectableSongListPage(songList: songList),
                 ),
               );
             },
