@@ -252,6 +252,33 @@ class DesktopMainPage extends StatelessWidget {
       height: 75,
       child: Stack(
         children: [
+          Align(
+            alignment: Alignment.centerLeft,
+            child: SizedBox(
+              width: 300,
+              child: ValueListenableBuilder(
+                valueListenable: currentSongNotifier,
+                builder: (_, currentSong, _) {
+                  return ListTile(
+                    leading: CoverArtWidget(
+                      size: 50,
+                      borderRadius: 5,
+                      source: getCoverArt(currentSong),
+                    ),
+                    title: Text(
+                      getTitle(currentSong),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    subtitle: Text(
+                      "${getArtist(currentSong)} - ${getAlbum(currentSong)}",
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+
           Center(
             child: Row(
               children: [
