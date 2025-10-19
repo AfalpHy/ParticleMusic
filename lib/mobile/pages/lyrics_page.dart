@@ -25,11 +25,7 @@ class LyricsPage extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              ArtWidget(
-                source: currentSong != null && currentSong.pictures.isNotEmpty
-                    ? currentSong.pictures.first
-                    : null,
-              ),
+              ArtWidget(source: getCoverArt(currentSong)),
               ClipRect(
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
@@ -106,9 +102,7 @@ class LyricsPage extends StatelessWidget {
           child: ArtWidget(
             size: appWidth * 0.84,
             borderRadius: appWidth * 0.04,
-            source: currentSong != null && currentSong.pictures.isNotEmpty
-                ? currentSong.pictures.first
-                : null,
+            source: getCoverArt(currentSong),
           ),
         ),
 
@@ -153,9 +147,7 @@ class LyricsPage extends StatelessWidget {
                             leading: ArtWidget(
                               size: 50,
                               borderRadius: 5,
-                              source: currentSong!.pictures.isNotEmpty
-                                  ? currentSong.pictures.first
-                                  : null,
+                              source: getCoverArt(currentSong),
                             ),
                             title: Text(
                               getTitle(currentSong),
@@ -202,7 +194,7 @@ class LyricsPage extends StatelessWidget {
                                       isScrollControlled: true,
                                       builder: (_) {
                                         return PlaylistsSheet(
-                                          songs: [currentSong],
+                                          songs: [currentSong!],
                                         );
                                       },
                                     );

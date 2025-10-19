@@ -24,11 +24,7 @@ class SongListTile extends StatelessWidget {
     final isFavorite = songIsFavorite[song]!;
     return ListTile(
       contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
-      leading: ArtWidget(
-        size: 40,
-        borderRadius: 4,
-        source: song.pictures.isEmpty ? null : song.pictures.first,
-      ),
+      leading: ArtWidget(size: 40, borderRadius: 4, source: getCoverArt(song)),
       title: ValueListenableBuilder(
         valueListenable: currentSongNotifier,
         builder: (_, currentSong, _) {
@@ -93,9 +89,7 @@ class SongListTile extends StatelessWidget {
                       leading: ArtWidget(
                         size: 50,
                         borderRadius: 5,
-                        source: song.pictures.isEmpty
-                            ? null
-                            : song.pictures.first,
+                        source: getCoverArt(song),
                       ),
                       title: Text(
                         getTitle(song),
@@ -268,7 +262,7 @@ class SelectableSongListTile extends StatelessWidget {
               leading: ArtWidget(
                 size: 40,
                 borderRadius: 4,
-                source: song.pictures.isEmpty ? null : song.pictures.first,
+                source: getCoverArt(song),
               ),
               title: ValueListenableBuilder(
                 valueListenable: currentSongNotifier,

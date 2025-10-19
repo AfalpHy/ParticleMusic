@@ -1,12 +1,12 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:particle_music/desktop_ui/main_page.dart';
+import 'package:particle_music/desktop/main_page.dart';
 import 'package:particle_music/load_library.dart';
-import 'package:particle_music/pages/artist_album_page.dart';
-import 'package:particle_music/pages/lyrics_page.dart';
-import 'package:particle_music/pages/playlists_page.dart';
+import 'package:particle_music/mobile/pages/artist_album_page.dart';
+import 'package:particle_music/mobile/pages/lyrics_page.dart';
+import 'package:particle_music/mobile/pages/playlists_page.dart';
 import 'package:particle_music/setting.dart';
-import 'package:particle_music/pages/songs_page.dart';
+import 'package:particle_music/mobile/pages/songs_page.dart';
 import 'package:audio_service/audio_service.dart';
 import 'dart:async';
 import 'package:flutter/services.dart';
@@ -479,9 +479,7 @@ class PlayerBar extends StatelessWidget {
                     ArtWidget(
                       size: 35,
                       borderRadius: 3,
-                      source: currentSong.pictures.isEmpty
-                          ? null
-                          : currentSong.pictures.first,
+                      source: getCoverArt(currentSong),
                     ),
 
                     const SizedBox(width: 10),

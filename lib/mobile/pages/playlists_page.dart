@@ -59,10 +59,8 @@ class PlaylistsScaffold extends StatelessWidget {
                       return ArtWidget(
                         size: 50,
                         borderRadius: 5,
-                        source:
-                            playlist.songs.isNotEmpty &&
-                                playlist.songs.first.pictures.isNotEmpty
-                            ? playlist.songs.first.pictures.first
+                        source: playlist.songs.isNotEmpty
+                            ? getCoverArt(playlist.songs.first)
                             : null,
                       );
                     },
@@ -210,19 +208,12 @@ class PlaylistsScaffold extends StatelessWidget {
                     vertical: -1,
                   ),
 
-                  leading: ValueListenableBuilder(
-                    valueListenable: playlist.changeNotifier,
-                    builder: (_, _, _) {
-                      return ArtWidget(
-                        size: 50,
-                        borderRadius: 5,
-                        source:
-                            playlist.songs.isNotEmpty &&
-                                playlist.songs.first.pictures.isNotEmpty
-                            ? playlist.songs.first.pictures.first
-                            : null,
-                      );
-                    },
+                  leading: ArtWidget(
+                    size: 50,
+                    borderRadius: 5,
+                    source: playlist.songs.isNotEmpty
+                        ? getCoverArt(playlist.songs.first)
+                        : null,
                   ),
                   title: AutoSizeText(
                     playlist.name,

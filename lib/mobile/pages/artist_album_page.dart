@@ -117,9 +117,7 @@ class ArtistAlbumScaffold extends StatelessWidget {
                       child: ArtWidget(
                         size: appWidth * 0.4,
                         borderRadius: appWidth * 0.025,
-                        source: songList!.first.pictures.isNotEmpty
-                            ? songList.first.pictures.first
-                            : null,
+                        source: getCoverArt(songList!.first),
                       ),
                       onTap: () {
                         Navigator.of(context).push(

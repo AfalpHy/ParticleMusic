@@ -5,7 +5,7 @@ import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/pages/artist_album_page.dart';
+import 'package:particle_music/mobile/pages/artist_album_page.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';

@@ -179,10 +179,8 @@ class PlaylistsSheetState extends State<PlaylistsSheet> {
                   leading: ArtWidget(
                     size: 40,
                     borderRadius: 4,
-                    source:
-                        playlist.songs.isNotEmpty &&
-                            playlist.songs.first.pictures.isNotEmpty
-                        ? playlist.songs.first.pictures.first
+                    source: playlist.songs.isNotEmpty
+                        ? getCoverArt(playlist.songs.first)
                         : null,
                   ),
                   title: Text(playlist.name),

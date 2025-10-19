@@ -160,6 +160,13 @@ String getAlbum(AudioMetadata? song) {
   return song.album ?? 'Unknown Album';
 }
 
+Picture? getCoverArt(AudioMetadata? song) {
+  if (song == null) {
+    return null;
+  }
+  return song.pictures.isNotEmpty ? song.pictures.first : null;
+}
+
 List<AudioMetadata> filterSongs(List<AudioMetadata> songList, String value) {
   return songList.where((song) {
     final songTitle = getTitle(song);

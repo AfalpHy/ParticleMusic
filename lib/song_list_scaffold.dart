@@ -190,10 +190,8 @@ class SongListScaffold extends StatelessWidget {
                               child: ArtWidget(
                                 size: 120,
                                 borderRadius: 9,
-                                source:
-                                    songList.isNotEmpty &&
-                                        songList.first.pictures.isNotEmpty
-                                    ? songList.first.pictures.first
+                                source: songList.isNotEmpty
+                                    ? getCoverArt(songList.first)
                                     : null,
                               ),
                             ),
