@@ -160,6 +160,13 @@ String getAlbum(AudioMetadata? song) {
   return song.album ?? 'Unknown Album';
 }
 
+Duration getDuration(AudioMetadata? song) {
+  if (song == null) {
+    return Duration.zero;
+  }
+  return song.duration ?? Duration.zero;
+}
+
 Picture? getCoverArt(AudioMetadata? song) {
   if (song == null) {
     return null;

@@ -7,7 +7,6 @@ import 'package:audio_service/audio_service.dart';
 import 'dart:async';
 import 'package:flutter/services.dart';
 import 'audio_handler.dart';
-import 'common.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();

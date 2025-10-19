@@ -6,7 +6,6 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:particle_music/playlists.dart';
-import 'package:particle_music/song_list_tile.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
@@ -213,8 +212,6 @@ class DesktopMainPage extends StatelessWidget {
                       SizedBox(height: 30),
                       Row(
                         children: [
-                          SizedBox(width: 20),
-
                           Material(
                             elevation: 5,
                             shape: SmoothRectangleBorder(
@@ -252,6 +249,28 @@ class DesktopMainPage extends StatelessWidget {
               },
             ),
 
+            SizedBox(
+              height: 50,
+              child: Row(
+                spacing: 20,
+                children: [
+                  Expanded(
+                    child: SizedBox(
+                      child: Text('Title', overflow: TextOverflow.ellipsis),
+                    ),
+                  ),
+                  SizedBox(
+                    width: 300,
+                    child: Text('Album', overflow: TextOverflow.ellipsis),
+                  ),
+                  SizedBox(
+                    width: 100,
+                    child: Text('Duration', overflow: TextOverflow.ellipsis),
+                  ),
+                ],
+              ),
+            ),
+
             Expanded(
               child: ValueListenableBuilder(
                 valueListenable: currentSongListNotifier,
@@ -260,9 +279,71 @@ class DesktopMainPage extends StatelessWidget {
                     itemScrollController: itemScrollController,
                     itemCount: currentSongList.length,
                     itemBuilder: (context, index) {
-                      return SongListTile(
-                        index: index,
-                        source: currentSongList,
+                      final song = currentSongList[index];
+                      return Row(
+                        spacing: 20,
+                        children: [
+                          Expanded(
+                            child: ListTile(
+                              contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                              visualDensity: const VisualDensity(
+                                horizontal: 0,
+                                vertical: -4,
+                              ),
+                              leading: CoverArtWidget(
+                                size: 40,
+                                borderRadius: 4,
+                                source: getCoverArt(song),
+                              ),
+                              title: ValueListenableBuilder(
+                                valueListenable: currentSongNotifier,
+                                builder: (_, currentSong, _) {
+                                  return Text(
+                                    getTitle(song),
+                                    overflow: TextOverflow.ellipsis,
+                                    style: song == currentSong
+                                        ? TextStyle(
+                                            color: Color.fromARGB(
+                                              255,
+                                              75,
+                                              200,
+                                              200,
+                                            ),
+                                            fontWeight: FontWeight.bold,
+                                          )
+                                        : null,
+                                  );
+                                },
+                              ),
+                              subtitle: Text(getArtist(song)),
+                              onTap: () async {
+                                audioHandler.currentIndex = index;
+                                playQueue = List.from(currentSongList);
+                                if (playModeNotifier.value == 1 ||
+                                    (playModeNotifier.value == 2 &&
+                                        audioHandler.tmpPlayMode == 1)) {
+                                  audioHandler.shuffle();
+                                }
+                                await audioHandler.load();
+                                await audioHandler.play();
+                              },
+                            ),
+                          ),
+                          SizedBox(
+                            width: 300,
+                            child: Text(
+                              getAlbum(song),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                          SizedBox(
+                            width: 100,
+                            child: Text(
+                              '${getDuration(song).inMinutes.toString().padLeft(2, '0')}:${(getDuration(song).inSeconds % 60).toString().padLeft(2, '0')}',
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
                       );
                     },
                   );
