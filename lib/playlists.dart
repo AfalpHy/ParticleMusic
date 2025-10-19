@@ -7,7 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:path/path.dart' as p;
 import 'package:smooth_corner/smooth_corner.dart';
-import 'art_widget.dart';
+import 'cover_art_widget.dart';
 
 late PlaylistsManager playlistsManager;
 
@@ -176,7 +176,7 @@ class PlaylistsSheetState extends State<PlaylistsSheet> {
               itemBuilder: (_, index) {
                 final playlist = playlistsManager.getPlaylistByIndex(index);
                 return ListTile(
-                  leading: ArtWidget(
+                  leading: CoverArtWidget(
                     size: 40,
                     borderRadius: 4,
                     source: playlist.songs.isNotEmpty

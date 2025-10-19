@@ -1,8 +1,8 @@
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
-import 'package:particle_music/art_widget.dart';
+import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/song_list_scaffold.dart';
+import 'package:particle_music/mobile/song_list_scaffold.dart';
 import 'package:searchfield/searchfield.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
@@ -114,7 +114,7 @@ class ArtistAlbumScaffold extends StatelessWidget {
                     child: InkWell(
                       splashColor: Colors.transparent,
                       highlightColor: Colors.transparent,
-                      child: ArtWidget(
+                      child: CoverArtWidget(
                         size: appWidth * 0.4,
                         borderRadius: appWidth * 0.025,
                         source: getCoverArt(songList!.first),

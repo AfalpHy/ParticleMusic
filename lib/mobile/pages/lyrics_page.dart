@@ -4,10 +4,10 @@ import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:particle_music/art_widget.dart';
+import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/play_queue_sheet.dart';
+import 'package:particle_music/mobile/play_queue_sheet.dart';
 import 'package:particle_music/playlists.dart';
 import 'dart:async';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -25,7 +25,7 @@ class LyricsPage extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              ArtWidget(source: getCoverArt(currentSong)),
+              CoverArtWidget(source: getCoverArt(currentSong)),
               ClipRect(
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
@@ -99,7 +99,7 @@ class LyricsPage extends StatelessWidget {
             smoothness: 1,
             borderRadius: BorderRadius.circular(appWidth * 0.04),
           ),
-          child: ArtWidget(
+          child: CoverArtWidget(
             size: appWidth * 0.84,
             borderRadius: appWidth * 0.04,
             source: getCoverArt(currentSong),
@@ -144,7 +144,7 @@ class LyricsPage extends StatelessWidget {
                       Column(
                         children: [
                           ListTile(
-                            leading: ArtWidget(
+                            leading: CoverArtWidget(
                               size: 50,
                               borderRadius: 5,
                               source: getCoverArt(currentSong),

@@ -1,10 +1,10 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:particle_music/art_widget.dart';
+import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/playlists.dart';
-import 'package:particle_music/song_list_scaffold.dart';
+import 'package:particle_music/mobile/song_list_scaffold.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
 class PlaylistsScaffold extends StatelessWidget {
@@ -56,7 +56,7 @@ class PlaylistsScaffold extends StatelessWidget {
                   leading: ValueListenableBuilder(
                     valueListenable: playlist.changeNotifier,
                     builder: (_, _, _) {
-                      return ArtWidget(
+                      return CoverArtWidget(
                         size: 50,
                         borderRadius: 5,
                         source: playlist.songs.isNotEmpty
@@ -208,7 +208,7 @@ class PlaylistsScaffold extends StatelessWidget {
                     vertical: -1,
                   ),
 
-                  leading: ArtWidget(
+                  leading: CoverArtWidget(
                     size: 50,
                     borderRadius: 5,
                     source: playlist.songs.isNotEmpty

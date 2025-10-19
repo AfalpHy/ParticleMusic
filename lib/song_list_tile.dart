@@ -4,7 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/playlists.dart';
 import 'audio_handler.dart';
-import 'art_widget.dart';
+import 'cover_art_widget.dart';
 
 class SongListTile extends StatelessWidget {
   final int index;
@@ -24,7 +24,11 @@ class SongListTile extends StatelessWidget {
     final isFavorite = songIsFavorite[song]!;
     return ListTile(
       contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
-      leading: ArtWidget(size: 40, borderRadius: 4, source: getCoverArt(song)),
+      leading: CoverArtWidget(
+        size: 40,
+        borderRadius: 4,
+        source: getCoverArt(song),
+      ),
       title: ValueListenableBuilder(
         valueListenable: currentSongNotifier,
         builder: (_, currentSong, _) {
@@ -86,7 +90,7 @@ class SongListTile extends StatelessWidget {
                 Column(
                   children: [
                     ListTile(
-                      leading: ArtWidget(
+                      leading: CoverArtWidget(
                         size: 50,
                         borderRadius: 5,
                         source: getCoverArt(song),
@@ -259,7 +263,7 @@ class SelectableSongListTile extends StatelessWidget {
           child: GestureDetector(
             child: ListTile(
               contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-              leading: ArtWidget(
+              leading: CoverArtWidget(
                 size: 40,
                 borderRadius: 4,
                 source: getCoverArt(song),

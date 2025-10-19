@@ -2,12 +2,12 @@ import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
-class ArtWidget extends StatelessWidget {
+class CoverArtWidget extends StatelessWidget {
   final double? size;
   final double borderRadius;
   final Picture? source;
 
-  const ArtWidget({
+  const CoverArtWidget({
     super.key,
     this.size,
     this.borderRadius = 0,

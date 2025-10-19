@@ -5,7 +5,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
-import 'package:particle_music/art_widget.dart';
+import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/my_location.dart';
@@ -187,7 +187,7 @@ class SongListScaffold extends StatelessWidget {
                                 smoothness: 1,
                                 borderRadius: BorderRadius.circular(9),
                               ),
-                              child: ArtWidget(
+                              child: CoverArtWidget(
                                 size: 120,
                                 borderRadius: 9,
                                 source: songList.isNotEmpty

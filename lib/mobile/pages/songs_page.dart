@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/load_library.dart';
-import 'package:particle_music/song_list_scaffold.dart';
+import 'package:particle_music/mobile/song_list_scaffold.dart';
 
 class SongsScaffold extends StatefulWidget {
   const SongsScaffold({super.key});
