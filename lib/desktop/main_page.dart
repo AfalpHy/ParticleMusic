@@ -315,7 +315,10 @@ class DesktopMainPage extends StatelessWidget {
                                   );
                                 },
                               ),
-                              subtitle: Text(getArtist(song)),
+                              subtitle: Text(
+                                getArtist(song),
+                                overflow: TextOverflow.ellipsis,
+                              ),
                               onTap: () async {
                                 audioHandler.currentIndex = index;
                                 playQueue = List.from(currentSongList);
