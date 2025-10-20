@@ -59,10 +59,10 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                   color: Colors.black,
                   icon: ImageIcon(
                     playModeNotifier.value == 0
-                        ? AssetImage("assets/images/loop.png")
+                        ? loopImage
                         : playModeNotifier.value == 1
-                        ? AssetImage("assets/images/shuffle.png")
-                        : AssetImage("assets/images/repeat.png"),
+                        ? shuffleImage
+                        : repeatImage,
                     size: 25,
                   ),
                   onPressed: () {
@@ -117,10 +117,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                       }
                     }
                   },
-                  icon: const ImageIcon(
-                    AssetImage("assets/images/delete.png"),
-                    color: Colors.black,
-                  ),
+                  icon: const ImageIcon(deleteImage, color: Colors.black),
                 ),
               ],
             ),

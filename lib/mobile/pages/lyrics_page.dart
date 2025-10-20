@@ -171,9 +171,7 @@ class LyricsPage extends StatelessWidget {
                               children: [
                                 ListTile(
                                   leading: const ImageIcon(
-                                    AssetImage(
-                                      "assets/images/playlist_add.png",
-                                    ),
+                                    playlistAddImage,
                                     color: Colors.black,
                                   ),
                                   title: Text(
@@ -230,10 +228,10 @@ class LyricsPage extends StatelessWidget {
                       color: Colors.black,
                       icon: ImageIcon(
                         playMode == 0
-                            ? AssetImage("assets/images/loop.png")
+                            ? loopImage
                             : playMode == 1
-                            ? AssetImage("assets/images/shuffle.png")
-                            : AssetImage("assets/images/repeat.png"),
+                            ? shuffleImage
+                            : repeatImage,
                         size: 35,
                       ),
                       onPressed: () {
@@ -271,10 +269,7 @@ class LyricsPage extends StatelessWidget {
               Expanded(
                 child: IconButton(
                   color: Colors.black,
-                  icon: const ImageIcon(
-                    AssetImage("assets/images/previous_button.png"),
-                    size: 35,
-                  ),
+                  icon: const ImageIcon(previousButtonImage, size: 35),
                   onPressed: audioHandler.skipToPrevious,
                 ),
               ),
@@ -298,10 +293,7 @@ class LyricsPage extends StatelessWidget {
               Expanded(
                 child: IconButton(
                   color: Colors.black,
-                  icon: const ImageIcon(
-                    AssetImage("assets/images/next_button.png"),
-                    size: 35,
-                  ),
+                  icon: const ImageIcon(nextButtonImage, size: 35),
                   onPressed: audioHandler.skipToNext,
                 ),
               ),

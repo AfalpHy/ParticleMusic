@@ -104,10 +104,7 @@ class PlaylistsPage extends StatelessWidget {
                       borderRadius: BorderRadius.circular(5),
                       child: Container(
                         color: const Color.fromARGB(255, 245, 235, 245),
-                        child: ImageIcon(
-                          AssetImage("assets/images/add.png"),
-                          size: 50,
-                        ),
+                        child: ImageIcon(addImage, size: 50),
                       ),
                     ),
                     title: Text('Create Playlist'),
@@ -135,7 +132,7 @@ class PlaylistsPage extends StatelessWidget {
               borderRadius: BorderRadius.circular(5),
               child: Container(
                 color: const Color.fromARGB(255, 245, 235, 245),
-                child: ImageIcon(AssetImage("assets/images/add.png"), size: 50),
+                child: ImageIcon(addImage, size: 50),
               ),
             ),
             title: Text('Create Playlist'),
@@ -146,10 +143,7 @@ class PlaylistsPage extends StatelessWidget {
           ),
           Divider(thickness: 0.5, height: 1, color: Colors.grey.shade300),
           ListTile(
-            leading: const ImageIcon(
-              AssetImage("assets/images/reorder.png"),
-              color: Colors.black,
-            ),
+            leading: const ImageIcon(reorderImage, color: Colors.black),
             title: Text(
               'Reorder',
               style: TextStyle(fontWeight: FontWeight.bold),
@@ -241,9 +235,7 @@ class PlaylistsPage extends StatelessWidget {
                     child: Row(
                       children: [
                         SizedBox(width: 10),
-                        const ImageIcon(
-                          AssetImage("assets/images/reorder.png"),
-                        ),
+                        const ImageIcon(reorderImage),
                       ],
                     ),
                   ),
@@ -285,10 +277,7 @@ class PlaylistsPage extends StatelessWidget {
           ),
           Divider(thickness: 0.5, height: 1, color: Colors.grey.shade300),
           ListTile(
-            leading: const ImageIcon(
-              AssetImage("assets/images/select.png"),
-              color: Colors.black,
-            ),
+            leading: const ImageIcon(selectImage, color: Colors.black),
             title: Text(
               'Select',
               style: TextStyle(fontWeight: FontWeight.bold),
@@ -308,10 +297,7 @@ class PlaylistsPage extends StatelessWidget {
           ),
           playlist.name != 'Favorite'
               ? ListTile(
-                  leading: const ImageIcon(
-                    AssetImage("assets/images/delete.png"),
-                    color: Colors.black,
-                  ),
+                  leading: const ImageIcon(deleteImage, color: Colors.black),
                   title: Text(
                     'Delete',
                     style: TextStyle(fontWeight: FontWeight.bold),

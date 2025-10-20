@@ -186,10 +186,7 @@ class ArtistAlbumPage extends StatelessWidget {
           ),
           Divider(thickness: 0.5, height: 1, color: Colors.grey.shade300),
           ListTile(
-            leading: const ImageIcon(
-              AssetImage("assets/images/select.png"),
-              color: Colors.black,
-            ),
+            leading: const ImageIcon(selectImage, color: Colors.black),
             title: Text(
               'Select',
               style: TextStyle(fontWeight: FontWeight.bold),

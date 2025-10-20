@@ -407,10 +407,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        ImageIcon(
-                          AssetImage("assets/images/playnext_circle.png"),
-                          color: iconColor,
-                        ),
+                        ImageIcon(playnextCircleImage, color: iconColor),
 
                         Text("Play Next", style: TextStyle(color: textColor)),
                       ],
@@ -440,10 +437,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        ImageIcon(
-                          AssetImage("assets/images/playlist_add.png"),
-                          color: iconColor,
-                        ),
+                        ImageIcon(playlistAddImage, color: iconColor),
 
                         Text(
                           "Add to Playlists",
@@ -489,10 +483,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              ImageIcon(
-                                AssetImage("assets/images/delete.png"),
-                                color: iconColor,
-                              ),
+                              ImageIcon(deleteImage, color: iconColor),
 
                               Text(
                                 "Delete",

@@ -159,7 +159,7 @@ class PlaylistsSheetState extends State<PlaylistsSheet> {
               borderRadius: BorderRadius.circular(4),
               child: Container(
                 color: const Color.fromARGB(255, 245, 235, 245),
-                child: ImageIcon(AssetImage("assets/images/add.png"), size: 40),
+                child: ImageIcon(addImage, size: 40),
               ),
             ),
             title: Text('Create Playlist'),

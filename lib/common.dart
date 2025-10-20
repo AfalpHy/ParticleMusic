@@ -8,6 +8,36 @@ import 'package:smooth_corner/smooth_corner.dart';
 const Color mainColor = Color.fromARGB(255, 120, 230, 230);
 late double appWidth;
 
+const AssetImage addImage = AssetImage('assets/images/add.png');
+const AssetImage albumImage = AssetImage('assets/images/album.png');
+const AssetImage artistImage = AssetImage('assets/images/artist.png');
+const AssetImage deleteImage = AssetImage('assets/images/delete.png');
+const AssetImage loopImage = AssetImage('assets/images/loop.png');
+const AssetImage musicNoteImage = AssetImage('assets/images/music_note.png');
+const AssetImage nextButtonImage = AssetImage('assets/images/next_button.png');
+const AssetImage pauseCircleImage = AssetImage(
+  'assets/images/pause_circle.png',
+);
+const AssetImage playCircleFillImage = AssetImage(
+  'assets/images/play_circle_fill.png',
+);
+const AssetImage playCircleImage = AssetImage('assets/images/play_circle.png');
+const AssetImage playlistAddImage = AssetImage(
+  'assets/images/playlist_add.png',
+);
+const AssetImage playlistsImage = AssetImage('assets/images/playlists.png');
+const AssetImage playnextCircleImage = AssetImage(
+  'assets/images/playnext_circle.png',
+);
+const AssetImage previousButtonImage = AssetImage(
+  'assets/images/previous_button.png',
+);
+const AssetImage reorderImage = AssetImage('assets/images/reorder.png');
+const AssetImage repeatImage = AssetImage('assets/images/repeat.png');
+const AssetImage selectImage = AssetImage('assets/images/select.png');
+const AssetImage shuffleImage = AssetImage('assets/images/shuffle.png');
+const AssetImage songsImage = AssetImage('assets/images/songs.png');
+
 class MyAutoSizeText extends AutoSizeText {
   final String content;
 

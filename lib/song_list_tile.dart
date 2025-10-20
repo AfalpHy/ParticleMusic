@@ -117,7 +117,7 @@ class SongListTile extends StatelessWidget {
                         children: [
                           ListTile(
                             leading: const ImageIcon(
-                              AssetImage("assets/images/playlist_add.png"),
+                              playlistAddImage,
                               color: Colors.black,
                             ),
                             title: Text(
@@ -142,7 +142,7 @@ class SongListTile extends StatelessWidget {
                           ),
                           ListTile(
                             leading: const ImageIcon(
-                              AssetImage("assets/images/play_circle.png"),
+                              playCircleImage,
                               color: Colors.black,
                             ),
                             title: Text(
@@ -160,7 +160,7 @@ class SongListTile extends StatelessWidget {
                           ),
                           ListTile(
                             leading: const ImageIcon(
-                              AssetImage("assets/images/playnext_circle.png"),
+                              playnextCircleImage,
                               color: Colors.black,
                             ),
                             title: Text(
@@ -183,7 +183,7 @@ class SongListTile extends StatelessWidget {
                           playlist != null
                               ? ListTile(
                                   leading: const ImageIcon(
-                                    AssetImage("assets/images/delete.png"),
+                                    deleteImage,
                                     color: Colors.black,
                                   ),
                                   title: Text(
@@ -329,9 +329,7 @@ class SelectableSongListTile extends StatelessWidget {
                     child: Row(
                       children: [
                         SizedBox(width: 10),
-                        const ImageIcon(
-                          AssetImage("assets/images/reorder.png"),
-                        ),
+                        const ImageIcon(reorderImage),
                       ],
                     ),
                   ),

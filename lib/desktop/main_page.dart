@@ -64,29 +64,17 @@ class DesktopMainPage extends StatelessWidget {
       child: Column(
         children: [
           ListTile(
-            leading: const ImageIcon(
-              AssetImage("assets/images/artist.png"),
-              size: 30,
-              color: mainColor,
-            ),
+            leading: const ImageIcon(artistImage, size: 30, color: mainColor),
             title: Text('Artists'),
             onTap: () {},
           ),
           ListTile(
-            leading: const ImageIcon(
-              AssetImage("assets/images/album.png"),
-              size: 30,
-              color: mainColor,
-            ),
+            leading: const ImageIcon(albumImage, size: 30, color: mainColor),
             title: Text('Albums'),
             onTap: () {},
           ),
           ListTile(
-            leading: const ImageIcon(
-              AssetImage("assets/images/songs.png"),
-              size: 30,
-              color: mainColor,
-            ),
+            leading: const ImageIcon(songsImage, size: 30, color: mainColor),
             title: Text('Songs'),
             onTap: () {
               currentSongListNotifier.value = librarySongs;
@@ -128,9 +116,7 @@ class DesktopMainPage extends StatelessWidget {
                                   }
                                 },
                                 child: ListTile(
-                                  leading: ImageIcon(
-                                    AssetImage("assets/images/delete.png"),
-                                  ),
+                                  leading: ImageIcon(deleteImage),
                                   title: Text('Delete'),
                                 ),
                               ),
@@ -174,10 +160,7 @@ class DesktopMainPage extends StatelessWidget {
                         borderRadius: BorderRadius.circular(3),
                         child: Container(
                           color: const Color.fromARGB(255, 245, 235, 245),
-                          child: ImageIcon(
-                            AssetImage("assets/images/add.png"),
-                            size: 30,
-                          ),
+                          child: ImageIcon(addImage, size: 30),
                         ),
                       ),
                       title: Text('Create Playlist'),
@@ -410,10 +393,10 @@ class DesktopMainPage extends StatelessWidget {
                       color: Colors.black,
                       icon: ImageIcon(
                         playMode == 0
-                            ? AssetImage("assets/images/loop.png")
+                            ? loopImage
                             : playMode == 1
-                            ? AssetImage("assets/images/shuffle.png")
-                            : AssetImage("assets/images/repeat.png"),
+                            ? shuffleImage
+                            : repeatImage,
                         size: 35,
                       ),
                       onPressed: () {
@@ -455,10 +438,7 @@ class DesktopMainPage extends StatelessWidget {
 
                 IconButton(
                   color: Colors.black,
-                  icon: const ImageIcon(
-                    AssetImage("assets/images/previous_button.png"),
-                    size: 35,
-                  ),
+                  icon: const ImageIcon(previousButtonImage, size: 35),
                   onPressed: () {
                     if (playQueue.isEmpty) {
                       return;
@@ -488,10 +468,7 @@ class DesktopMainPage extends StatelessWidget {
                 ),
                 IconButton(
                   color: Colors.black,
-                  icon: const ImageIcon(
-                    AssetImage("assets/images/next_button.png"),
-                    size: 35,
-                  ),
+                  icon: const ImageIcon(nextButtonImage, size: 35),
                   onPressed: () {
                     if (playQueue.isEmpty) {
                       return;

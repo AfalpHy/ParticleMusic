@@ -27,10 +27,7 @@ class SongsPageState extends State<SongsPage> {
           Divider(color: Colors.grey.shade300, thickness: 0.5, height: 1),
 
           ListTile(
-            leading: const ImageIcon(
-              AssetImage("assets/images/select.png"),
-              color: Colors.black,
-            ),
+            leading: const ImageIcon(selectImage, color: Colors.black),
             title: Text(
               'Select',
               style: TextStyle(fontWeight: FontWeight.bold),

@@ -1,5 +1,6 @@
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
+import 'package:particle_music/common.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
 class CoverArtWidget extends StatelessWidget {
@@ -22,10 +23,7 @@ class CoverArtWidget extends StatelessWidget {
         borderRadius: BorderRadius.circular(borderRadius),
         child: Container(
           color: Colors.grey,
-          child: ImageIcon(
-            AssetImage("assets/images/music_note.png"),
-            size: size,
-          ),
+          child: ImageIcon(musicNoteImage, size: size),
         ),
       );
     }
@@ -40,10 +38,7 @@ class CoverArtWidget extends StatelessWidget {
         errorBuilder: (context, error, stackTrace) {
           return Container(
             color: Colors.grey,
-            child: ImageIcon(
-              AssetImage("assets/images/music_note.png"),
-              size: size,
-            ),
+            child: ImageIcon(musicNoteImage, size: size),
           );
         },
       ),

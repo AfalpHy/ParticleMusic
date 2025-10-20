@@ -69,16 +69,12 @@ class PlayerBar extends StatelessWidget {
                           builder: (_, isPlaying, _) {
                             return isPlaying
                                 ? const ImageIcon(
-                                    AssetImage(
-                                      "assets/images/pause_circle.png",
-                                    ),
+                                    pauseCircleImage,
                                     color: Colors.black,
                                     size: 25,
                                   )
                                 : const ImageIcon(
-                                    AssetImage(
-                                      "assets/images/play_circle_fill.png",
-                                    ),
+                                    playCircleFillImage,
                                     color: Colors.black,
                                     size: 25,
                                   );
