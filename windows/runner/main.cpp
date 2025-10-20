@@ -37,7 +37,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   int x = (screen_width - size.width) / 2;
   int y = (screen_height - size.height) / 2;
   Win32Window::Point origin(x, y);
-  if (!window.Create(L"ParticleMusic", origin, size)) {
+  if (!window.Create(L"Particle Music", origin, size)) {
     return EXIT_FAILURE;
   }
   window.SetQuitOnClose(true);
