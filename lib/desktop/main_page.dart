@@ -237,6 +237,7 @@ class DesktopMainPage extends StatelessWidget {
               child: Row(
                 spacing: 20,
                 children: [
+                  SizedBox(width: 30, child: Center(child: Text('#'))),
                   Expanded(
                     child: SizedBox(
                       child: Text('Title', overflow: TextOverflow.ellipsis),
@@ -280,6 +281,15 @@ class DesktopMainPage extends StatelessWidget {
                           spacing: 20,
 
                           children: [
+                            SizedBox(
+                              width: 30,
+                              child: Center(
+                                child: Text(
+                                  (index + 1).toString(),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ),
                             Expanded(
                               child: ListTile(
                                 contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
