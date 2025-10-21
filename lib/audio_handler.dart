@@ -5,6 +5,7 @@ import 'package:audioplayers/audioplayers.dart' as desktop;
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/lyrics.dart';
 import 'package:particle_music/setting.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:async';
@@ -13,14 +14,7 @@ import 'package:flutter/services.dart';
 
 late MyAudioHandler audioHandler;
 
-class LyricLine {
-  final Duration timestamp;
-  final String text;
-  LyricLine(this.timestamp, this.text);
-}
-
 List<AudioMetadata> playQueue = [];
-List<LyricLine> lyrics = [];
 Color artAverageColor = Colors.grey;
 
 ValueNotifier<AudioMetadata?> currentSongNotifier = ValueNotifier(null);
@@ -113,42 +107,6 @@ abstract class MyAudioHandler extends BaseAudioHandler {
     lyrics = [];
     currentIndex = -1;
     currentSongNotifier.value = null;
-  }
-
-  Future<void> parseLyricsFile(String path) async {
-    lyrics = [];
-    final file = File(path);
-    if (!file.existsSync()) {
-      lyrics.add(LyricLine(Duration.zero, 'lyrics file does not exist'));
-      return;
-    }
-    final lines = await file.readAsLines(); // read file line by line
-
-    final regex = RegExp(r'\[(\d{2}):(\d{2})(?::(\d{2,3})|.(\d{2,3}))\](.*)');
-
-    for (var line in lines) {
-      final match = regex.firstMatch(line);
-      if (match != null) {
-        final min = int.parse(match.group(1)!);
-        final sec = int.parse(match.group(2)!);
-        final ms = match.group(3) != null
-            ? int.parse(match.group(3)!.padRight(3, '0'))
-            : int.parse(match.group(4)!.padRight(3, '0'));
-        final text = match.group(5)!.trim();
-        if (text == '') {
-          continue;
-        }
-        lyrics.add(
-          LyricLine(
-            Duration(minutes: min, seconds: sec, milliseconds: ms),
-            text,
-          ),
-        );
-      }
-    }
-    if (lyrics.isEmpty) {
-      lyrics.add(LyricLine(Duration.zero, 'lyrics parsing failed'));
-    }
   }
 
   Color computeMixedColor(Uint8List bytes) {
