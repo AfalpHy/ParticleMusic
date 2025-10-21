@@ -31,6 +31,7 @@ abstract class MyAudioHandler extends BaseAudioHandler {
   int currentIndex = -1;
   List<AudioMetadata> playQueueTmp = [];
   int tmpPlayMode = 0;
+  bool isloading = false;
 
   bool insert2Next(int index, List<AudioMetadata> source) {
     final tmp = source[index];
@@ -214,8 +215,6 @@ abstract class MyAudioHandler extends BaseAudioHandler {
 
   Future<void> togglePlay();
 
-  bool isReady();
-
   Stream<Duration> getPositionStream();
 
   void setVolume(double volume) {}
@@ -258,10 +257,12 @@ class DesktopAudioHandler extends MyAudioHandler {
 
   @override
   Future<void> load() async {
+    isloading = true;
     await super.load();
     final currentSong = currentSongNotifier.value!;
 
     await player.setSource(desktop.DeviceFileSource(currentSong.file.path));
+    isloading = false;
   }
 
   @override
@@ -295,12 +296,6 @@ class DesktopAudioHandler extends MyAudioHandler {
   @override
   Stream<Duration> getPositionStream() {
     return player.onPositionChanged;
-  }
-
-  @override
-  bool isReady() {
-    return player.state == desktop.PlayerState.playing ||
-        player.state == desktop.PlayerState.paused;
   }
 
   @override
@@ -383,6 +378,7 @@ class MobileAudioHandler extends MyAudioHandler {
 
   @override
   Future<void> load() async {
+    isloading = true;
     await super.load();
     final currentSong = currentSongNotifier.value!;
 
@@ -411,6 +407,7 @@ class MobileAudioHandler extends MyAudioHandler {
     );
 
     await player.setAudioSource(audioSource);
+    isloading = false;
   }
 
   @override
@@ -432,11 +429,6 @@ class MobileAudioHandler extends MyAudioHandler {
     } else {
       await play();
     }
-  }
-
-  @override
-  bool isReady() {
-    return player.processingState == mobile.ProcessingState.ready;
   }
 
   @override

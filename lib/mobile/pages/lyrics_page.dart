@@ -435,7 +435,7 @@ class LyricsListViewState extends State<LyricsListView>
 
   void scroll2CurrentIndex(Duration position) {
     // return when loading song and rebuilding this widget
-    if (!audioHandler.isReady()) {
+    if (audioHandler.isloading) {
       return;
     }
     int tmp = currentIndexNotifier.value;

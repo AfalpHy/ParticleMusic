@@ -21,7 +21,7 @@ void displayTimedPauseSetting(BuildContext context) {
       Duration currentDuration = Duration();
 
       return mySheet(
-        height: 400,
+        height: 350,
         Center(
           child: Column(
             children: [

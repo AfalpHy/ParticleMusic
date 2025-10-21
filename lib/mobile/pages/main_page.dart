@@ -324,7 +324,7 @@ class HomePage extends StatelessWidget {
                       child: Row(
                         children: [
                           Spacer(),
-                          Text('Pause After Compelete'),
+                          Text('Pause After Complete'),
                           SizedBox(width: 10),
                           ValueListenableBuilder(
                             valueListenable: pauseAfterCompleted,
