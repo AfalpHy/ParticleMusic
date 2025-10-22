@@ -6,11 +6,10 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:particle_music/playlists.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
 class DesktopMainPage extends StatelessWidget {
-  final itemScrollController = ItemScrollController();
+  final controller = ScrollController();
 
   final ValueNotifier<List<AudioMetadata>> currentSongListNotifier =
       ValueNotifier(librarySongs);
@@ -64,7 +63,7 @@ class DesktopMainPage extends StatelessWidget {
                   size: 25,
                   color: mainColor,
                 ),
-                title: Text('Artists'),
+                title: Text('Artists', style: TextStyle(fontSize: 15)),
                 visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
                 onTap: () {},
               ),
@@ -79,7 +78,7 @@ class DesktopMainPage extends StatelessWidget {
                   size: 25,
                   color: mainColor,
                 ),
-                title: Text('Albums'),
+                title: Text('Albums', style: TextStyle(fontSize: 15)),
                 visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
                 onTap: () {},
               ),
@@ -94,7 +93,7 @@ class DesktopMainPage extends StatelessWidget {
                   size: 25,
                   color: mainColor,
                 ),
-                title: Text('Songs'),
+                title: Text('Songs', style: TextStyle(fontSize: 15)),
                 visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
                 onTap: () {
                   currentSongListNotifier.value = librarySongs;
@@ -146,6 +145,7 @@ class DesktopMainPage extends StatelessWidget {
                                 title: Text(
                                   playlist.name,
                                   overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(fontSize: 14),
                                 ),
 
                                 onTap: () {
@@ -230,7 +230,7 @@ class DesktopMainPage extends StatelessWidget {
                 padding: const EdgeInsets.symmetric(horizontal: 30),
                 child: Row(
                   children: [
-                    SizedBox(width: 50, child: Center(child: Text('#'))),
+                    SizedBox(width: 60, child: Center(child: Text('#'))),
                     Expanded(
                       child: SizedBox(
                         child: Text('Title', overflow: TextOverflow.ellipsis),
@@ -257,8 +257,22 @@ class DesktopMainPage extends StatelessWidget {
               child: ValueListenableBuilder(
                 valueListenable: currentSongListNotifier,
                 builder: (context, currentSongList, child) {
-                  return ScrollablePositionedList.builder(
-                    itemScrollController: itemScrollController,
+                  return ListView.builder(
+                    controller: controller,
+                    prototypeItem: ListTile(
+                      contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                      visualDensity: const VisualDensity(
+                        horizontal: 0,
+                        vertical: -4,
+                      ),
+                      leading: CoverArtWidget(
+                        size: 40,
+                        borderRadius: 4,
+                        source: null,
+                      ),
+                      title: Text('title'),
+                      subtitle: Text('subtitle'),
+                    ),
                     itemCount: currentSongList.length,
                     itemBuilder: (context, index) {
                       final song = currentSongList[index];
@@ -285,7 +299,7 @@ class DesktopMainPage extends StatelessWidget {
                               child: Row(
                                 children: [
                                   SizedBox(
-                                    width: 50,
+                                    width: 60,
                                     child: Center(
                                       child: Text(
                                         (index + 1).toString(),
@@ -326,14 +340,19 @@ class DesktopMainPage extends StatelessWidget {
                                                       200,
                                                     ),
                                                     fontWeight: FontWeight.bold,
+                                                    fontSize: 15,
                                                   )
-                                                : null,
+                                                : TextStyle(fontSize: 15),
                                           );
                                         },
                                       ),
                                       subtitle: Text(
                                         getArtist(song),
                                         overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: Colors.grey,
+                                        ),
                                       ),
                                     ),
                                   ),
