@@ -16,177 +16,168 @@ class DesktopMainPage extends StatelessWidget {
       ValueNotifier(librarySongs);
 
   final ValueNotifier<Playlist?> currentPlaylistNotifier = ValueNotifier(null);
-  final ValueNotifier<double> sidebarWidthNotifier = ValueNotifier(200);
 
   DesktopMainPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      child: Column(
-        children: [
-          Expanded(
-            child: Row(
-              children: [
-                ValueListenableBuilder(
-                  valueListenable: sidebarWidthNotifier,
-                  builder: (context, width, child) {
-                    return sidebar(width);
-                  },
-                ), // Drag handle
-                MouseRegion(
-                  cursor: SystemMouseCursors.resizeColumn,
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.translucent,
-                    onHorizontalDragUpdate: (details) {
-                      sidebarWidthNotifier.value = details.globalPosition.dx
-                          .clamp(200, 600);
-                    },
+    return Column(
+      children: [
+        Expanded(child: Row(children: [sidebar(), songList()])),
+        Material(child: bottomControl(context)),
+      ],
+    );
+  }
 
-                    child: Container(width: 10, color: Colors.grey.shade100),
-                  ),
-                ),
-                Container(color: Colors.white, width: 30),
-                songList(),
-              ],
-            ),
-          ),
-          bottomControl(context),
-        ],
+  Widget wrapWithPSM({
+    required Color color,
+    required EdgeInsets padding,
+    required double radius,
+    required Widget child,
+  }) {
+    return Padding(
+      padding: padding,
+      child: SmoothClipRRect(
+        smoothness: 1,
+        borderRadius: BorderRadius.circular(radius),
+        child: Material(color: Colors.grey.shade100, child: child),
       ),
     );
   }
 
-  Widget sidebar(double width) {
-    return Container(
+  Widget sidebar() {
+    return Material(
       color: Colors.grey.shade100,
-      width: width,
-      child: Column(
-        children: [
-          ListTile(
-            leading: const ImageIcon(artistImage, size: 30, color: mainColor),
-            title: Text('Artists'),
-            onTap: () {},
-          ),
-          ListTile(
-            leading: const ImageIcon(albumImage, size: 30, color: mainColor),
-            title: Text('Albums'),
-            onTap: () {},
-          ),
-          ListTile(
-            leading: const ImageIcon(songsImage, size: 30, color: mainColor),
-            title: Text('Songs'),
-            onTap: () {
-              currentSongListNotifier.value = librarySongs;
-              currentPlaylistNotifier.value = null;
-            },
-          ),
-          Divider(thickness: 0.5, height: 1, color: Colors.grey.shade300),
+      child: SizedBox(
+        width: 200,
+        child: Column(
+          children: [
+            SizedBox(height: 10),
 
-          Expanded(
-            child: ValueListenableBuilder(
-              valueListenable: playlistsManager.changeNotifier,
-              builder: (context, _, _) {
-                return ListView.builder(
-                  itemCount: playlistsManager.length() + 1,
-                  itemBuilder: (_, index) {
-                    if (index < playlistsManager.length()) {
+            wrapWithPSM(
+              color: Colors.grey.shade100,
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              radius: 10,
+              child: ListTile(
+                leading: const ImageIcon(
+                  artistImage,
+                  size: 25,
+                  color: mainColor,
+                ),
+                title: Text('Artists'),
+                visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+                onTap: () {},
+              ),
+            ),
+            wrapWithPSM(
+              color: Colors.grey.shade100,
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              radius: 10,
+              child: ListTile(
+                leading: const ImageIcon(
+                  albumImage,
+                  size: 25,
+                  color: mainColor,
+                ),
+                title: Text('Albums'),
+                visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+                onTap: () {},
+              ),
+            ),
+            wrapWithPSM(
+              color: Colors.grey.shade100,
+              padding: EdgeInsets.symmetric(horizontal: 10),
+              radius: 10,
+              child: ListTile(
+                leading: const ImageIcon(
+                  songsImage,
+                  size: 25,
+                  color: mainColor,
+                ),
+                title: Text('Songs'),
+                visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+                onTap: () {
+                  currentSongListNotifier.value = librarySongs;
+                  currentPlaylistNotifier.value = null;
+                },
+              ),
+            ),
+            SizedBox(height: 10),
+            Divider(thickness: 0.5, height: 1, color: Colors.grey.shade300),
+            SizedBox(height: 10),
+
+            Expanded(
+              child: ValueListenableBuilder(
+                valueListenable: playlistsManager.changeNotifier,
+                builder: (context, _, _) {
+                  return ListView.builder(
+                    itemCount: playlistsManager.length(),
+                    itemBuilder: (_, index) {
                       final playlist = playlistsManager.getPlaylistByIndex(
                         index,
                       );
-                      return GestureDetector(
-                        onSecondaryTapDown: (TapDownDetails details) {
-                          showMenu(
-                            color: Colors.white,
-                            context: context,
-                            position: RelativeRect.fromLTRB(
-                              details.globalPosition.dx,
-                              details.globalPosition.dy,
-                              details.globalPosition.dx,
-                              details.globalPosition.dy,
-                            ),
-                            items: [
-                              PopupMenuItem(
-                                onTap: () async {
-                                  if (await showConfirmDialog(
-                                    context,
-                                    'Delete Action',
-                                  )) {
-                                    playlistsManager.deletePlaylist(index);
-                                  }
-                                },
-                                child: ListTile(
-                                  leading: ImageIcon(deleteImage),
-                                  title: Text('Delete'),
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: SmoothClipRRect(
+                          smoothness: 1,
+                          borderRadius: BorderRadius.circular(10),
+                          child: Material(
+                            color: Colors.grey.shade100,
+                            child: GestureDetector(
+                              onSecondaryTapDown: (TapDownDetails details) {},
+                              child: ListTile(
+                                visualDensity: const VisualDensity(
+                                  horizontal: 0,
+                                  vertical: -3,
                                 ),
+
+                                leading: ValueListenableBuilder(
+                                  valueListenable: playlist.changeNotifier,
+                                  builder: (_, _, _) {
+                                    return CoverArtWidget(
+                                      size: 30,
+                                      borderRadius: 3,
+                                      source: playlist.songs.isNotEmpty
+                                          ? getCoverArt(playlist.songs.first)
+                                          : null,
+                                    );
+                                  },
+                                ),
+                                title: Text(
+                                  playlist.name,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+
+                                onTap: () {
+                                  currentPlaylistNotifier.value = playlist;
+                                  currentSongListNotifier.value =
+                                      playlist.songs;
+                                },
                               ),
-                            ],
-                          );
-                        },
-                        child: ListTile(
-                          visualDensity: const VisualDensity(
-                            horizontal: 0,
-                            vertical: -2,
+                            ),
                           ),
-
-                          leading: ValueListenableBuilder(
-                            valueListenable: playlist.changeNotifier,
-                            builder: (_, _, _) {
-                              return CoverArtWidget(
-                                size: 30,
-                                borderRadius: 3,
-                                source: playlist.songs.isNotEmpty
-                                    ? getCoverArt(playlist.songs.first)
-                                    : null,
-                              );
-                            },
-                          ),
-                          title: Text(
-                            playlist.name,
-                            overflow: TextOverflow.ellipsis,
-                          ),
-
-                          onTap: () {
-                            currentPlaylistNotifier.value = playlist;
-                            currentSongListNotifier.value = playlist.songs;
-                          },
                         ),
                       );
-                    }
-
-                    return ListTile(
-                      leading: SmoothClipRRect(
-                        smoothness: 1,
-                        borderRadius: BorderRadius.circular(3),
-                        child: Container(
-                          color: const Color.fromARGB(255, 245, 235, 245),
-                          child: ImageIcon(addImage, size: 30),
-                        ),
-                      ),
-                      title: Text('Create Playlist'),
-                      onTap: () {
-                        showCreatePlaylistSheet(context);
-                      },
-                    );
-                  },
-                );
-              },
+                    },
+                  );
+                },
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
 
   Widget songList() {
     return Expanded(
-      child: Container(
+      child: Material(
         color: Colors.white,
         child: Column(
           children: [
             ValueListenableBuilder(
               valueListenable: currentPlaylistNotifier,
-              builder: (_, playlist, _) {
+              builder: (context, playlist, _) {
                 if (playlist == null) {
                   return SizedBox.shrink();
                 } else {
@@ -195,6 +186,7 @@ class DesktopMainPage extends StatelessWidget {
                       SizedBox(height: 30),
                       Row(
                         children: [
+                          SizedBox(width: 30),
                           Material(
                             elevation: 5,
                             shape: SmoothRectangleBorder(
@@ -234,24 +226,30 @@ class DesktopMainPage extends StatelessWidget {
 
             SizedBox(
               height: 50,
-              child: Row(
-                spacing: 20,
-                children: [
-                  SizedBox(width: 30, child: Center(child: Text('#'))),
-                  Expanded(
-                    child: SizedBox(
-                      child: Text('Title', overflow: TextOverflow.ellipsis),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 30),
+                child: Row(
+                  children: [
+                    SizedBox(width: 50, child: Center(child: Text('#'))),
+                    Expanded(
+                      child: SizedBox(
+                        child: Text('Title', overflow: TextOverflow.ellipsis),
+                      ),
                     ),
-                  ),
-                  SizedBox(
-                    width: 300,
-                    child: Text('Album', overflow: TextOverflow.ellipsis),
-                  ),
-                  SizedBox(
-                    width: 100,
-                    child: Text('Duration', overflow: TextOverflow.ellipsis),
-                  ),
-                ],
+                    SizedBox(width: 30),
+
+                    SizedBox(
+                      width: 200,
+                      child: Text('Album', overflow: TextOverflow.ellipsis),
+                    ),
+                    SizedBox(width: 30),
+
+                    SizedBox(
+                      width: 100,
+                      child: Text('Duration', overflow: TextOverflow.ellipsis),
+                    ),
+                  ],
+                ),
               ),
             ),
 
@@ -264,85 +262,102 @@ class DesktopMainPage extends StatelessWidget {
                     itemCount: currentSongList.length,
                     itemBuilder: (context, index) {
                       final song = currentSongList[index];
-                      return GestureDetector(
-                        onDoubleTap: () async {
-                          audioHandler.currentIndex = index;
-                          playQueue = List.from(currentSongList);
-                          if (playModeNotifier.value == 1 ||
-                              (playModeNotifier.value == 2 &&
-                                  audioHandler.tmpPlayMode == 1)) {
-                            audioHandler.shuffle();
-                          }
-                          await audioHandler.load();
-                          await audioHandler.play();
-                        },
+                      return Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 30),
+                        child: SmoothClipRRect(
+                          smoothness: 1,
+                          borderRadius: BorderRadius.circular(15),
+                          child: Material(
+                            color: Colors.white,
+                            child: InkWell(
+                              onDoubleTap: () async {
+                                audioHandler.currentIndex = index;
+                                playQueue = List.from(currentSongList);
+                                if (playModeNotifier.value == 1 ||
+                                    (playModeNotifier.value == 2 &&
+                                        audioHandler.tmpPlayMode == 1)) {
+                                  audioHandler.shuffle();
+                                }
+                                await audioHandler.load();
+                                await audioHandler.play();
+                              },
 
-                        child: Row(
-                          spacing: 20,
+                              child: Row(
+                                children: [
+                                  SizedBox(
+                                    width: 50,
+                                    child: Center(
+                                      child: Text(
+                                        (index + 1).toString(),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ),
 
-                          children: [
-                            SizedBox(
-                              width: 30,
-                              child: Center(
-                                child: Text(
-                                  (index + 1).toString(),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ),
-                            Expanded(
-                              child: ListTile(
-                                contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                                visualDensity: const VisualDensity(
-                                  horizontal: 0,
-                                  vertical: -4,
-                                ),
-                                leading: CoverArtWidget(
-                                  size: 40,
-                                  borderRadius: 4,
-                                  source: getCoverArt(song),
-                                ),
-                                title: ValueListenableBuilder(
-                                  valueListenable: currentSongNotifier,
-                                  builder: (_, currentSong, _) {
-                                    return Text(
-                                      getTitle(song),
+                                  Expanded(
+                                    child: ListTile(
+                                      contentPadding: EdgeInsets.fromLTRB(
+                                        0,
+                                        0,
+                                        0,
+                                        0,
+                                      ),
+                                      visualDensity: const VisualDensity(
+                                        horizontal: 0,
+                                        vertical: -4,
+                                      ),
+                                      leading: CoverArtWidget(
+                                        size: 40,
+                                        borderRadius: 4,
+                                        source: getCoverArt(song),
+                                      ),
+                                      title: ValueListenableBuilder(
+                                        valueListenable: currentSongNotifier,
+                                        builder: (_, currentSong, _) {
+                                          return Text(
+                                            getTitle(song),
+                                            overflow: TextOverflow.ellipsis,
+                                            style: song == currentSong
+                                                ? TextStyle(
+                                                    color: Color.fromARGB(
+                                                      255,
+                                                      75,
+                                                      200,
+                                                      200,
+                                                    ),
+                                                    fontWeight: FontWeight.bold,
+                                                  )
+                                                : null,
+                                          );
+                                        },
+                                      ),
+                                      subtitle: Text(
+                                        getArtist(song),
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(width: 30),
+                                  SizedBox(
+                                    width: 200,
+                                    child: Text(
+                                      getAlbum(song),
                                       overflow: TextOverflow.ellipsis,
-                                      style: song == currentSong
-                                          ? TextStyle(
-                                              color: Color.fromARGB(
-                                                255,
-                                                75,
-                                                200,
-                                                200,
-                                              ),
-                                              fontWeight: FontWeight.bold,
-                                            )
-                                          : null,
-                                    );
-                                  },
-                                ),
-                                subtitle: Text(
-                                  getArtist(song),
-                                  overflow: TextOverflow.ellipsis,
-                                ),
+                                    ),
+                                  ),
+                                  SizedBox(width: 30),
+
+                                  SizedBox(
+                                    width: 100,
+                                    child: Text(
+                                      '${getDuration(song).inMinutes.toString().padLeft(2, '0')}:${(getDuration(song).inSeconds % 60).toString().padLeft(2, '0')}',
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
-                            SizedBox(
-                              width: 300,
-                              child: Text(
-                                getAlbum(song),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                            SizedBox(
-                              width: 100,
-                              child: Text(
-                                '${getDuration(song).inMinutes.toString().padLeft(2, '0')}:${(getDuration(song).inSeconds % 60).toString().padLeft(2, '0')}',
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
+                          ),
                         ),
                       );
                     },
@@ -407,7 +422,7 @@ class DesktopMainPage extends StatelessWidget {
                             : playMode == 1
                             ? shuffleImage
                             : repeatImage,
-                        size: 35,
+                        size: 30,
                       ),
                       onPressed: () {
                         if (playQueue.isEmpty) {
@@ -448,7 +463,7 @@ class DesktopMainPage extends StatelessWidget {
 
                 IconButton(
                   color: Colors.black,
-                  icon: const ImageIcon(previousButtonImage, size: 35),
+                  icon: const ImageIcon(previousButtonImage, size: 30),
                   onPressed: () {
                     if (playQueue.isEmpty) {
                       return;
@@ -465,7 +480,7 @@ class DesktopMainPage extends StatelessWidget {
                         isPlaying
                             ? Icons.pause_rounded
                             : Icons.play_arrow_rounded,
-                        size: 48,
+                        size: 45,
                       );
                     },
                   ),
@@ -478,7 +493,7 @@ class DesktopMainPage extends StatelessWidget {
                 ),
                 IconButton(
                   color: Colors.black,
-                  icon: const ImageIcon(nextButtonImage, size: 35),
+                  icon: const ImageIcon(nextButtonImage, size: 30),
                   onPressed: () {
                     if (playQueue.isEmpty) {
                       return;
@@ -490,7 +505,7 @@ class DesktopMainPage extends StatelessWidget {
                 IconButton(
                   icon: Icon(
                     Icons.playlist_play_rounded,
-                    size: 35,
+                    size: 30,
                     color: Colors.black,
                   ),
                   onPressed: () {
@@ -508,7 +523,7 @@ class DesktopMainPage extends StatelessWidget {
               Spacer(),
               SizedBox(width: 10, child: Icon(Icons.volume_down_rounded)),
               SizedBox(
-                width: 200,
+                width: 175,
                 child: ValueListenableBuilder(
                   valueListenable: volumeNotifier,
                   builder: (context, value, child) {
@@ -536,7 +551,7 @@ class DesktopMainPage extends StatelessWidget {
                   },
                 ),
               ),
-              SizedBox(width: 50),
+              SizedBox(width: 30),
             ],
           ),
         ],
