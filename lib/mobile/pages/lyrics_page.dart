@@ -11,10 +11,10 @@ import 'package:particle_music/mobile/play_queue_sheet.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
-class LyricsPage extends StatelessWidget {
-  final ValueNotifier<bool> filterNotifier = ValueNotifier(true);
+final ValueNotifier<bool> filterBackgroundNotifier = ValueNotifier(true);
 
-  LyricsPage({super.key});
+class LyricsPage extends StatelessWidget {
+  const LyricsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +30,7 @@ class LyricsPage extends StatelessWidget {
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
                   child: ValueListenableBuilder(
-                    valueListenable: filterNotifier,
+                    valueListenable: filterBackgroundNotifier,
                     builder: (context, value, child) {
                       return value
                           ? Container(
@@ -143,7 +143,8 @@ class LyricsPage extends StatelessWidget {
             SizedBox(width: 25),
             IconButton(
               onPressed: () {
-                filterNotifier.value = !filterNotifier.value;
+                filterBackgroundNotifier.value =
+                    !filterBackgroundNotifier.value;
               },
               icon: Icon(Icons.filter, color: Colors.black),
             ),
@@ -233,7 +234,7 @@ class LyricsPage extends StatelessWidget {
 
         // -------- Play Controls --------
         Padding(
-          padding: const EdgeInsets.fromLTRB(10, 0, 10, 40),
+          padding: const EdgeInsets.fromLTRB(12, 0, 10, 40),
 
           child: Row(
             children: [
@@ -249,7 +250,7 @@ class LyricsPage extends StatelessWidget {
                             : playMode == 1
                             ? shuffleImage
                             : repeatImage,
-                        size: 35,
+                        size: 32,
                       ),
                       onPressed: () {
                         if (playModeNotifier.value != 2) {
@@ -286,7 +287,7 @@ class LyricsPage extends StatelessWidget {
               Expanded(
                 child: IconButton(
                   color: Colors.black,
-                  icon: const ImageIcon(previousButtonImage, size: 35),
+                  icon: const ImageIcon(previousButtonImage, size: 32),
                   onPressed: audioHandler.skipToPrevious,
                 ),
               ),
@@ -300,7 +301,7 @@ class LyricsPage extends StatelessWidget {
                         isPlaying
                             ? Icons.pause_rounded
                             : Icons.play_arrow_rounded,
-                        size: 48,
+                        size: 50,
                       );
                     },
                   ),
@@ -310,7 +311,7 @@ class LyricsPage extends StatelessWidget {
               Expanded(
                 child: IconButton(
                   color: Colors.black,
-                  icon: const ImageIcon(nextButtonImage, size: 35),
+                  icon: const ImageIcon(nextButtonImage, size: 32),
                   onPressed: audioHandler.skipToNext,
                 ),
               ),
@@ -318,7 +319,7 @@ class LyricsPage extends StatelessWidget {
                 child: IconButton(
                   icon: Icon(
                     Icons.playlist_play_rounded,
-                    size: 35,
+                    size: 32,
                     color: Colors.black,
                   ),
                   onPressed: () {
