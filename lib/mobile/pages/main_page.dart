@@ -182,27 +182,23 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Scaffold(
-          backgroundColor: Colors.white,
-          appBar: AppBar(
-            backgroundColor: Colors.white,
-            elevation: 0,
-            scrolledUnderElevation: 0,
-            title: const Text(
-              "Particle Music",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-          ),
-          body: ValueListenableBuilder(
-            valueListenable: homeBody,
-            builder: (context, value, child) {
-              return value == 1 ? buildLibrary(context) : buildSetting(context);
-            },
-          ),
+    return Scaffold(
+      backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        scrolledUnderElevation: 0,
+        title: const Text(
+          "Particle Music",
+          style: TextStyle(fontWeight: FontWeight.bold),
         ),
-      ],
+      ),
+      body: ValueListenableBuilder(
+        valueListenable: homeBody,
+        builder: (context, value, child) {
+          return value == 1 ? buildLibrary(context) : buildSetting(context);
+        },
+      ),
     );
   }
 

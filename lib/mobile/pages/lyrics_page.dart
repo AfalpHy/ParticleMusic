@@ -12,7 +12,9 @@ import 'package:particle_music/playlists.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
 class LyricsPage extends StatelessWidget {
-  const LyricsPage({super.key});
+  final ValueNotifier<bool> filterNotifier = ValueNotifier(true);
+
+  LyricsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -27,10 +29,19 @@ class LyricsPage extends StatelessWidget {
               ClipRect(
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
-                  child: Container(
-                    color: artAverageColor.withAlpha(
-                      128,
-                    ), // semi-transparent tint
+                  child: ValueListenableBuilder(
+                    valueListenable: filterNotifier,
+                    builder: (context, value, child) {
+                      return value
+                          ? Container(
+                              color: artAverageColor.withAlpha(
+                                128,
+                              ), // semi-transparent tint
+                            )
+                          : Container(
+                              color: artAverageColor, // semi-transparent tint
+                            );
+                    },
                   ),
                 ),
               ),
@@ -129,7 +140,15 @@ class LyricsPage extends StatelessWidget {
 
         Row(
           children: [
+            SizedBox(width: 25),
+            IconButton(
+              onPressed: () {
+                filterNotifier.value = !filterNotifier.value;
+              },
+              icon: Icon(Icons.filter, color: Colors.black),
+            ),
             Spacer(),
+
             FavoriteButton(),
             IconButton(
               onPressed: () {
