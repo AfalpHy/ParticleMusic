@@ -5,6 +5,7 @@ import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/load_library.dart';
+import 'package:particle_music/lyrics.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
@@ -16,14 +17,86 @@ class DesktopMainPage extends StatelessWidget {
 
   final ValueNotifier<Playlist?> currentPlaylistNotifier = ValueNotifier(null);
 
+  final ValueNotifier<bool> displayLyricsPageNotifier = ValueNotifier(false);
+
   DesktopMainPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
+    return Stack(
       children: [
-        Expanded(child: Row(children: [sidebar(), songList()])),
-        Material(child: bottomControl(context)),
+        Column(
+          children: [
+            Expanded(child: Row(children: [sidebar(), songList()])),
+            Material(child: bottomControl(context)),
+          ],
+        ),
+        ValueListenableBuilder(
+          valueListenable: displayLyricsPageNotifier,
+          builder: (context, display, _) {
+            return AnimatedSlide(
+              offset: display ? Offset.zero : const Offset(0, 1),
+              duration: const Duration(milliseconds: 300),
+              curve: Curves.linear,
+              child: Material(
+                color: coverArtAverageColor,
+                child: ValueListenableBuilder(
+                  valueListenable: currentSongNotifier,
+                  builder: (context, currentSong, child) {
+                    return Row(
+                      children: [
+                        SizedBox(width: MediaQuery.widthOf(context) * 0.15),
+                        InkWell(
+                          splashColor: Colors.transparent,
+                          highlightColor: Colors.transparent,
+                          hoverColor: Colors.transparent,
+                          onTap: () {
+                            displayLyricsPageNotifier.value = false;
+                          },
+                          child: CoverArtWidget(
+                            size: MediaQuery.widthOf(context) * 0.3,
+                            borderRadius: MediaQuery.widthOf(context) * 0.03,
+                            source: getCoverArt(currentSong),
+                          ),
+                        ),
+                        SizedBox(width: MediaQuery.widthOf(context) * 0.05),
+                        SizedBox(
+                          width: MediaQuery.widthOf(context) * 0.4,
+                          child: ShaderMask(
+                            shaderCallback: (rect) {
+                              return LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  Colors.transparent, // fade out at top
+                                  Colors.black, // fully visible
+                                  Colors.black, // fully visible
+                                  Colors.transparent, // fade out at bottom
+                                ],
+                                stops: [
+                                  0.0,
+                                  0.1,
+                                  0.8,
+                                  1.0,
+                                ], // adjust fade height
+                              ).createShader(rect);
+                            },
+                            blendMode: BlendMode.dstIn,
+                            // use key to force update
+                            child: LyricsListView(
+                              key: ValueKey(currentSong),
+                              expanded: false,
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            );
+          },
+        ),
       ],
     );
   }
@@ -420,6 +493,9 @@ class DesktopMainPage extends StatelessWidget {
                             overflow: TextOverflow.ellipsis,
                           )
                         : null,
+                    onTap: () {
+                      displayLyricsPageNotifier.value = true;
+                    },
                   );
                 },
               ),
