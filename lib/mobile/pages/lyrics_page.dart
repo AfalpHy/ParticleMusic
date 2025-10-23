@@ -28,18 +28,19 @@ class LyricsPage extends StatelessWidget {
               CoverArtWidget(source: getCoverArt(currentSong)),
               ClipRect(
                 child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 25, sigmaY: 25),
+                  filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
                   child: ValueListenableBuilder(
                     valueListenable: filterBackgroundNotifier,
                     builder: (context, value, child) {
                       return value
                           ? Container(
-                              color: artAverageColor.withAlpha(
-                                128,
+                              color: coverArtAverageColor.withAlpha(
+                                160,
                               ), // semi-transparent tint
                             )
                           : Container(
-                              color: artAverageColor, // semi-transparent tint
+                              color:
+                                  coverArtAverageColor, // semi-transparent tint
                             );
                     },
                   ),
@@ -56,22 +57,26 @@ class LyricsPage extends StatelessWidget {
                           children: [
                             SizedBox(
                               height: 30,
-                              child: MyAutoSizeText(
-                                getTitle(currentSong),
-                                maxLines: 1,
-                                textStyle: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 20,
+                              child: Center(
+                                child: MyAutoSizeText(
+                                  getTitle(currentSong),
+                                  maxLines: 1,
+                                  textStyle: TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                    fontSize: 20,
+                                  ),
                                 ),
                               ),
                             ),
 
                             SizedBox(
                               height: 24,
-                              child: MyAutoSizeText(
-                                getArtist(currentSong),
-                                maxLines: 1,
-                                textStyle: TextStyle(fontSize: 14),
+                              child: Center(
+                                child: MyAutoSizeText(
+                                  '${getArtist(currentSong)} - ${getAlbum(currentSong)}',
+                                  maxLines: 1,
+                                  textStyle: TextStyle(fontSize: 14),
+                                ),
                               ),
                             ),
                           ],

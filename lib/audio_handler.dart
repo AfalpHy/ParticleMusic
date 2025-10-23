@@ -15,7 +15,7 @@ import 'package:flutter/services.dart';
 late MyAudioHandler audioHandler;
 
 List<AudioMetadata> playQueue = [];
-Color artAverageColor = Colors.grey;
+Color coverArtAverageColor = Colors.grey;
 
 ValueNotifier<AudioMetadata?> currentSongNotifier = ValueNotifier(null);
 ValueNotifier<bool> isPlayingNotifier = ValueNotifier(false);
@@ -129,7 +129,7 @@ abstract class MyAudioHandler extends BaseAudioHandler {
     g /= count;
     b /= count;
     int luminance = image.getLuminanceRgb(r, g, b).toInt();
-    int minLuminace = 90;
+    int minLuminace = 60;
     if (luminance < minLuminace) {
       r += minLuminace - luminance;
       g += minLuminace - luminance;
@@ -146,9 +146,11 @@ abstract class MyAudioHandler extends BaseAudioHandler {
     await parseLyricsFile("${path.substring(0, path.lastIndexOf('.'))}.lrc");
 
     if (currentSong.pictures.isNotEmpty) {
-      artAverageColor = computeMixedColor(currentSong.pictures.first.bytes);
+      coverArtAverageColor = computeMixedColor(
+        currentSong.pictures.first.bytes,
+      );
     } else {
-      artAverageColor = Colors.grey;
+      coverArtAverageColor = Colors.grey;
     }
     currentSongNotifier.value = currentSong;
   }
