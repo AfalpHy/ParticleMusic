@@ -178,7 +178,7 @@ class LyricsListViewState extends State<LyricsListView>
           );
         }
         break;
-      case AppLifecycleState.inactive:
+      case AppLifecycleState.hidden:
         if (!(Platform.isIOS || Platform.isAndroid)) {
           positionSub?.cancel();
           positionSub = null;

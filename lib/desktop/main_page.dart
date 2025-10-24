@@ -38,12 +38,12 @@ class DesktopMainPage extends StatelessWidget {
               offset: display ? Offset.zero : const Offset(0, 1),
               duration: const Duration(milliseconds: 300),
               curve: Curves.linear,
-              child: Material(
-                color: coverArtAverageColor,
-                child: ValueListenableBuilder(
-                  valueListenable: currentSongNotifier,
-                  builder: (context, currentSong, child) {
-                    return Row(
+              child: ValueListenableBuilder(
+                valueListenable: currentSongNotifier,
+                builder: (context, currentSong, child) {
+                  return Material(
+                    color: coverArtAverageColor,
+                    child: Row(
                       children: [
                         SizedBox(width: MediaQuery.widthOf(context) * 0.15),
                         InkWell(
@@ -90,9 +90,9 @@ class DesktopMainPage extends StatelessWidget {
                           ),
                         ),
                       ],
-                    );
-                  },
-                ),
+                    ),
+                  );
+                },
               ),
             );
           },
