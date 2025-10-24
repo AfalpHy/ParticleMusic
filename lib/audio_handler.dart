@@ -15,7 +15,9 @@ import 'package:flutter/services.dart';
 late MyAudioHandler audioHandler;
 
 List<AudioMetadata> playQueue = [];
+
 Color coverArtAverageColor = Colors.grey;
+Color coverArtFilterColor = coverArtAverageColor.withAlpha(160);
 
 ValueNotifier<AudioMetadata?> currentSongNotifier = ValueNotifier(null);
 ValueNotifier<bool> isPlayingNotifier = ValueNotifier(false);
@@ -109,9 +111,16 @@ abstract class MyAudioHandler extends BaseAudioHandler {
     currentSongNotifier.value = null;
   }
 
-  Color computeMixedColor(Uint8List bytes) {
+  void computeCoverArtColors(AudioMetadata currentSong) {
+    coverArtAverageColor = Colors.grey;
+    coverArtFilterColor = coverArtAverageColor.withAlpha(160);
+
+    if (currentSong.pictures.isEmpty) return;
+
+    final bytes = currentSong.pictures.first.bytes;
+
     final decoded = image.decodeImage(bytes);
-    if (decoded == null) return Colors.grey;
+    if (decoded == null) return;
 
     // simple average of top pixels
     double r = 0, g = 0, b = 0, count = 0;
@@ -129,29 +138,49 @@ abstract class MyAudioHandler extends BaseAudioHandler {
     g /= count;
     b /= count;
     int luminance = image.getLuminanceRgb(r, g, b).toInt();
-    int minLuminace = 60;
+    int minLuminace = 50;
     if (luminance < minLuminace) {
       r += minLuminace - luminance;
       g += minLuminace - luminance;
       b += minLuminace - luminance;
-    }
+      coverArtAverageColor = Color.fromARGB(
+        255,
+        r.toInt(),
+        g.toInt(),
+        b.toInt(),
+      );
 
-    return Color.fromARGB(255, r.toInt(), g.toInt(), b.toInt());
+      r += 25;
+      g += 25;
+      b += 25;
+      // make coverArtFilterColor more brighter
+      coverArtFilterColor = Color.fromARGB(
+        160,
+        r.toInt(),
+        g.toInt(),
+        b.toInt(),
+      );
+    } else {
+      coverArtAverageColor = Color.fromARGB(
+        255,
+        r.toInt(),
+        g.toInt(),
+        b.toInt(),
+      );
+      coverArtFilterColor = coverArtAverageColor.withAlpha(160);
+    }
   }
 
   Future<void> load() async {
     if (currentIndex < 0 || currentIndex >= playQueue.length) return;
+
     final currentSong = playQueue[currentIndex];
+
     String path = currentSong.file.path;
     await parseLyricsFile("${path.substring(0, path.lastIndexOf('.'))}.lrc");
 
-    if (currentSong.pictures.isNotEmpty) {
-      coverArtAverageColor = computeMixedColor(
-        currentSong.pictures.first.bytes,
-      );
-    } else {
-      coverArtAverageColor = Colors.grey;
-    }
+    computeCoverArtColors(currentSong);
+
     currentSongNotifier.value = currentSong;
   }
 
