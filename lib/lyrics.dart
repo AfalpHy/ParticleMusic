@@ -47,7 +47,7 @@ class LyricLineWidget extends StatelessWidget {
               textAlign: expanded ? TextAlign.left : TextAlign.center,
               style: TextStyle(
                 fontSize: value == index
-                    ? (expanded ? 24 : 18)
+                    ? (expanded ? 22 : 18)
                     : (expanded ? 18 : 14),
                 fontWeight: value == index
                     ? FontWeight.bold

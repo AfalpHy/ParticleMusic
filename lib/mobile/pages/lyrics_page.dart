@@ -65,6 +65,7 @@ class LyricsPage extends StatelessWidget {
                                   textStyle: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 20,
+                                    color: Colors.black,
                                   ),
                                 ),
                               ),
@@ -77,7 +78,10 @@ class LyricsPage extends StatelessWidget {
                                   key: UniqueKey(),
                                   '${getArtist(currentSong)} - ${getAlbum(currentSong)}',
                                   maxLines: 1,
-                                  textStyle: TextStyle(fontSize: 14),
+                                  textStyle: TextStyle(
+                                    fontSize: 14,
+                                    color: Colors.black54,
+                                  ),
                                 ),
                               ),
                             ),
