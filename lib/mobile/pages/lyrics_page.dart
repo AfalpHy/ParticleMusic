@@ -59,6 +59,7 @@ class LyricsPage extends StatelessWidget {
                               height: 30,
                               child: Center(
                                 child: MyAutoSizeText(
+                                  key: UniqueKey(),
                                   getTitle(currentSong),
                                   maxLines: 1,
                                   textStyle: TextStyle(
@@ -73,6 +74,7 @@ class LyricsPage extends StatelessWidget {
                               height: 24,
                               child: Center(
                                 child: MyAutoSizeText(
+                                  key: UniqueKey(),
                                   '${getArtist(currentSong)} - ${getAlbum(currentSong)}',
                                   maxLines: 1,
                                   textStyle: TextStyle(fontSize: 14),
