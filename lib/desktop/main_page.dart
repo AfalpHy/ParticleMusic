@@ -8,6 +8,7 @@ import 'package:particle_music/load_library.dart';
 import 'package:particle_music/lyrics.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:smooth_corner/smooth_corner.dart';
+import 'package:window_manager/window_manager.dart';
 
 class DesktopMainPage extends StatelessWidget {
   final controller = ScrollController();
@@ -27,6 +28,7 @@ class DesktopMainPage extends StatelessWidget {
       children: [
         Column(
           children: [
+            titleBar(),
             Expanded(child: Row(children: [sidebar(), songList()])),
             Material(child: bottomControl(context)),
           ],
@@ -98,6 +100,32 @@ class DesktopMainPage extends StatelessWidget {
           },
         ),
       ],
+    );
+  }
+
+  Widget titleBar() {
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onPanStart: (details) => windowManager.startDragging(),
+      onDoubleTap: () async => await windowManager.isMaximized()
+          ? windowManager.unmaximize()
+          : windowManager.maximize(),
+      child: Container(
+        color: Colors.grey.shade100,
+        height: 50,
+        child: Row(
+          children: [
+            Spacer(),
+
+            IconButton(
+              onPressed: () {
+                windowManager.close();
+              },
+              icon: Icon(Icons.close_rounded),
+            ),
+          ],
+        ),
+      ),
     );
   }
 

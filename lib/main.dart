@@ -6,6 +6,7 @@ import 'package:particle_music/mobile/pages/main_page.dart';
 import 'package:audio_service/audio_service.dart';
 import 'dart:async';
 import 'package:flutter/services.dart';
+import 'package:window_manager/window_manager.dart';
 import 'audio_handler.dart';
 
 Future<void> main() async {
@@ -24,6 +25,19 @@ Future<void> main() async {
     ]);
   } else {
     audioHandler = DesktopAudioHandler();
+
+    await windowManager.ensureInitialized();
+
+    WindowOptions windowOptions = WindowOptions(
+      minimumSize: Size(1050, 700),
+      center: true,
+      backgroundColor: Colors.transparent,
+      titleBarStyle: TitleBarStyle.hidden,
+    );
+    windowManager.waitUntilReadyToShow(windowOptions, () async {
+      await windowManager.show();
+      await windowManager.focus();
+    });
   }
   await libraryLoader.initial();
   await libraryLoader.load();

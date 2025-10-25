@@ -26,17 +26,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
 
   FlutterWindow window(project);
 
-  RECT screen_rect;
   Win32Window::Size size(1050, 700);
-
-  SystemParametersInfo(SPI_GETWORKAREA, 0, &screen_rect, 0);
-
-  int screen_width = screen_rect.right - screen_rect.left;
-  int screen_height = screen_rect.bottom - screen_rect.top;
-
-  int x = (screen_width - size.width) / 2;
-  int y = (screen_height - size.height) / 2;
-  Win32Window::Point origin(x, y);
+  Win32Window::Point origin(0,0);
   if (!window.Create(L"Particle Music", origin, size)) {
     return EXIT_FAILURE;
   }
