@@ -79,15 +79,24 @@ class SeekBarState extends State<SeekBar> {
                     setState(() => isDragging = false);
                   },
                   onTapDown: (_) {
+                    if (currentSongNotifier.value == null) {
+                      return;
+                    }
                     setState(() => isDragging = true);
                   },
                   onHorizontalDragUpdate: (details) {
+                    if (currentSongNotifier.value == null) {
+                      return;
+                    }
                     seekByTouch(details.localPosition.dx, context, durationMs);
                     setState(() {
                       isDragging = true;
                     });
                   },
                   onHorizontalDragEnd: (_) async {
+                    if (currentSongNotifier.value == null) {
+                      return;
+                    }
                     await audioHandler.seek(
                       Duration(milliseconds: dragValue!.toInt()),
                     );
@@ -97,6 +106,9 @@ class SeekBarState extends State<SeekBar> {
                     });
                   },
                   onTapUp: (details) async {
+                    if (currentSongNotifier.value == null) {
+                      return;
+                    }
                     seekByTouch(details.localPosition.dx, context, durationMs);
                     await audioHandler.seek(
                       Duration(milliseconds: dragValue!.toInt()),

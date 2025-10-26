@@ -788,7 +788,16 @@ class DesktopMainPage extends StatelessWidget {
                 child: Row(
                   children: [
                     Spacer(),
-                    SizedBox(width: 400, height: 20, child: SeekBar()),
+                    SizedBox(
+                      width: 400,
+                      height: 20,
+                      child: ValueListenableBuilder(
+                        valueListenable: currentSongNotifier,
+                        builder: (_, _, _) {
+                          return SeekBar();
+                        },
+                      ),
+                    ),
 
                     Spacer(),
                   ],
