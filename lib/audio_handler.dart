@@ -219,6 +219,9 @@ class DesktopAudioHandler extends MyAudioHandler {
       if (playModeNotifier.value == 2) {
         // repeat
         await load();
+        if (isPlayingNotifier.value) {
+          player.resume();
+        }
       } else {
         await skipToNext(); // automatically go to next song
       }
