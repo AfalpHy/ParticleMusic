@@ -207,6 +207,8 @@ abstract class MyAudioHandler extends BaseAudioHandler {
   Stream<Duration> getPositionStream();
 
   void setVolume(double volume) {}
+
+  double getVolume();
 }
 
 class DesktopAudioHandler extends MyAudioHandler {
@@ -302,6 +304,11 @@ class DesktopAudioHandler extends MyAudioHandler {
   @override
   void setVolume(double volume) {
     player.setVolume(volume);
+  }
+
+  @override
+  double getVolume() {
+    return player.volume;
   }
 }
 
@@ -426,5 +433,10 @@ class MobileAudioHandler extends MyAudioHandler {
   @override
   Stream<Duration> getPositionStream() {
     return player.positionStream;
+  }
+
+  @override
+  double getVolume() {
+    return player.volume;
   }
 }
