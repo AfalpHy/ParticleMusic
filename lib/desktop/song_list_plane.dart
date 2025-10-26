@@ -24,7 +24,7 @@ class SongListPlane extends StatelessWidget {
     final albumWidth = songListWidth * 0.25;
     return Expanded(
       child: Material(
-        color: Colors.white,
+        color: Color.fromARGB(255, 235, 240, 245),
         child: Column(
           children: [
             TitleBar(),
@@ -167,7 +167,7 @@ class SongListPlane extends StatelessWidget {
         smoothness: 1,
         borderRadius: BorderRadius.circular(15),
         child: Material(
-          color: Colors.white,
+          color: Color.fromARGB(255, 235, 240, 245),
           child: InkWell(
             onDoubleTap: () async {
               audioHandler.currentIndex = index;

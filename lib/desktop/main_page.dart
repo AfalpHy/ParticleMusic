@@ -46,7 +46,7 @@ class DesktopMainPage extends StatelessWidget {
             Material(
               child: BottomControl(
                 displayLyricsPageNotifier: displayLyricsPageNotifier,
-                displayPlayQueuePageNotifier: displayLyricsPageNotifier,
+                displayPlayQueuePageNotifier: displayPlayQueuePageNotifier,
               ),
             ),
           ],
@@ -79,7 +79,7 @@ class DesktopMainPage extends StatelessWidget {
             builder: (context, display, _) {
               return AnimatedSlide(
                 offset: display ? Offset.zero : Offset(1, 0),
-                duration: const Duration(milliseconds: 300),
+                duration: const Duration(milliseconds: 200),
                 curve: Curves.linear,
                 child: Material(
                   elevation: 5,
@@ -91,7 +91,13 @@ class DesktopMainPage extends StatelessWidget {
                     ),
                   ),
 
-                  child: SizedBox(width: 350, child: PlayQueuePage()),
+                  child: SizedBox(
+                    width: 350,
+                    child: PlayQueuePage(
+                      displayPlayQueuePageNotifier:
+                          displayPlayQueuePageNotifier,
+                    ),
+                  ),
                 ),
               );
             },

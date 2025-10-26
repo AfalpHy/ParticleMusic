@@ -4,16 +4,25 @@ import 'package:particle_music/cover_art_widget.dart';
 import '../audio_handler.dart';
 
 class PlayQueuePage extends StatefulWidget {
-  const PlayQueuePage({super.key});
+  final ValueNotifier<bool> displayPlayQueuePageNotifier;
+
+  const PlayQueuePage({super.key, required this.displayPlayQueuePageNotifier});
 
   @override
   State<StatefulWidget> createState() => PlayQueueSheetState();
 }
 
 class PlayQueueSheetState extends State<PlayQueuePage> {
+  final scrollController = ScrollController();
+
   @override
   void initState() {
     super.initState();
+    widget.displayPlayQueuePageNotifier.addListener(() {
+      if (widget.displayPlayQueuePageNotifier.value) {
+        scrollController.jumpTo(64.0 * audioHandler.currentIndex);
+      }
+    });
   }
 
   @override
@@ -49,6 +58,7 @@ class PlayQueueSheetState extends State<PlayQueuePage> {
         Expanded(
           child: ReorderableListView.builder(
             itemExtent: 64,
+            scrollController: scrollController,
             buildDefaultDragHandles: false,
             onReorder: (oldIndex, newIndex) {
               if (newIndex > oldIndex) newIndex -= 1;

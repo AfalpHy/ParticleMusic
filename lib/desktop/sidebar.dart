@@ -31,7 +31,7 @@ class Sidebar extends StatelessWidget {
         smoothness: 1,
         borderRadius: BorderRadius.circular(10),
         child: Material(
-          color: Colors.grey.shade100,
+          color: Color.fromARGB(255, 240, 245, 250),
           child: ListTile(
             leading: leading,
             title: Text(
@@ -51,7 +51,7 @@ class Sidebar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
-      color: Colors.grey.shade100,
+      color: Color.fromARGB(255, 240, 245, 250),
       child: SizedBox(
         width: 220,
         child: Column(
