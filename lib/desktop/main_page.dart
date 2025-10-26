@@ -6,6 +6,7 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:particle_music/lyrics.dart';
+import 'package:particle_music/mobile/play_queue_sheet.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 import 'package:window_manager/window_manager.dart';
@@ -28,8 +29,7 @@ class DesktopMainPage extends StatelessWidget {
       children: [
         Column(
           children: [
-            titleBar(),
-            Expanded(child: Row(children: [sidebar(), songList()])),
+            Expanded(child: Row(children: [sidebar(), songList(context)])),
             Material(child: bottomControl(context)),
           ],
         ),
@@ -45,51 +45,77 @@ class DesktopMainPage extends StatelessWidget {
                 builder: (context, currentSong, child) {
                   return Material(
                     color: coverArtAverageColor,
-                    child: Row(
+                    child: Stack(
                       children: [
-                        SizedBox(width: MediaQuery.widthOf(context) * 0.15),
-                        InkWell(
-                          splashColor: Colors.transparent,
-                          highlightColor: Colors.transparent,
-                          hoverColor: Colors.transparent,
-                          onTap: () {
-                            displayLyricsPageNotifier.value = false;
-                          },
-                          child: CoverArtWidget(
-                            size: MediaQuery.widthOf(context) * 0.3,
-                            borderRadius: MediaQuery.widthOf(context) * 0.03,
-                            source: getCoverArt(currentSong),
-                          ),
-                        ),
-                        SizedBox(width: MediaQuery.widthOf(context) * 0.05),
-                        SizedBox(
-                          width: MediaQuery.widthOf(context) * 0.4,
-                          child: ShaderMask(
-                            shaderCallback: (rect) {
-                              return LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  Colors.transparent, // fade out at top
-                                  Colors.black, // fully visible
-                                  Colors.black, // fully visible
-                                  Colors.transparent, // fade out at bottom
-                                ],
-                                stops: [
-                                  0.0,
-                                  0.1,
-                                  0.8,
-                                  1.0,
-                                ], // adjust fade height
-                              ).createShader(rect);
-                            },
-                            blendMode: BlendMode.dstIn,
-                            // use key to force update
-                            child: LyricsListView(
-                              key: ValueKey(currentSong),
-                              expanded: false,
+                        Row(
+                          children: [
+                            SizedBox(width: MediaQuery.widthOf(context) * 0.15),
+                            InkWell(
+                              splashColor: Colors.transparent,
+                              highlightColor: Colors.transparent,
+                              hoverColor: Colors.transparent,
+                              onTap: () {
+                                displayLyricsPageNotifier.value = false;
+                              },
+                              child: CoverArtWidget(
+                                size: MediaQuery.widthOf(context) * 0.3,
+                                borderRadius:
+                                    MediaQuery.widthOf(context) * 0.015,
+                                source: getCoverArt(currentSong),
+                              ),
                             ),
-                          ),
+                            SizedBox(width: MediaQuery.widthOf(context) * 0.05),
+                            SizedBox(
+                              width: MediaQuery.widthOf(context) * 0.4,
+                              child: Column(
+                                children: [
+                                  SizedBox(height: 100),
+                                  Expanded(
+                                    child: ShaderMask(
+                                      shaderCallback: (rect) {
+                                        return LinearGradient(
+                                          begin: Alignment.topCenter,
+                                          end: Alignment.bottomCenter,
+                                          colors: [
+                                            Colors
+                                                .transparent, // fade out at top
+                                            Colors.black, // fully visible
+                                            Colors.black, // fully visible
+                                            Colors
+                                                .transparent, // fade out at bottom
+                                          ],
+                                          stops: [
+                                            0.0,
+                                            0.1,
+                                            0.9,
+                                            1.0,
+                                          ], // adjust fade height
+                                        ).createShader(rect);
+                                      },
+                                      blendMode: BlendMode.dstIn,
+                                      // use key to force update
+                                      child: ScrollConfiguration(
+                                        behavior: ScrollConfiguration.of(
+                                          context,
+                                        ).copyWith(scrollbars: false),
+                                        child: LyricsListView(
+                                          key: ValueKey(currentSong),
+                                          expanded: true,
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  SizedBox(height: 75),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                        Positioned(
+                          left: 0,
+                          right: 0,
+                          top: 0,
+                          child: titleBar(),
                         ),
                       ],
                     ),
@@ -111,18 +137,34 @@ class DesktopMainPage extends StatelessWidget {
           ? windowManager.unmaximize()
           : windowManager.maximize(),
       child: Container(
-        color: Colors.grey.shade100,
-        height: 50,
+        color: Colors.transparent,
+        height: 75,
         child: Row(
           children: [
             Spacer(),
 
             IconButton(
               onPressed: () {
+                windowManager.minimize();
+              },
+              icon: ImageIcon(minimizeImage, color: Colors.black54),
+            ),
+            IconButton(
+              onPressed: () async {
+                await windowManager.isMaximized()
+                    ? windowManager.unmaximize()
+                    : windowManager.maximize();
+              },
+              icon: ImageIcon(maximizeImage, color: Colors.black54),
+            ),
+
+            IconButton(
+              onPressed: () {
                 windowManager.close();
               },
-              icon: Icon(Icons.close_rounded),
+              icon: Icon(Icons.close_rounded, color: Colors.black54),
             ),
+            SizedBox(width: 30),
           ],
         ),
       ),
@@ -152,7 +194,22 @@ class DesktopMainPage extends StatelessWidget {
         width: 200,
         child: Column(
           children: [
-            SizedBox(height: 10),
+            GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onPanStart: (details) => windowManager.startDragging(),
+              onDoubleTap: () async => await windowManager.isMaximized()
+                  ? windowManager.unmaximize()
+                  : windowManager.maximize(),
+              child: SizedBox(
+                height: 75,
+                child: Center(
+                  child: Text(
+                    'Particle Music',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                  ),
+                ),
+              ),
+            ),
 
             wrapWithPSM(
               color: Colors.grey.shade100,
@@ -246,7 +303,7 @@ class DesktopMainPage extends StatelessWidget {
                                 title: Text(
                                   playlist.name,
                                   overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(fontSize: 14),
+                                  style: TextStyle(fontSize: 13),
                                 ),
 
                                 onTap: () {
@@ -270,219 +327,248 @@ class DesktopMainPage extends StatelessWidget {
     );
   }
 
-  Widget songList() {
+  Widget songList(BuildContext context) {
+    final songListWidth = MediaQuery.widthOf(context);
+    final albumWidth = songListWidth * 0.25;
     return Expanded(
       child: Material(
         color: Colors.white,
         child: Column(
           children: [
-            ValueListenableBuilder(
-              valueListenable: currentPlaylistNotifier,
-              builder: (context, playlist, _) {
-                if (playlist == null) {
-                  return SizedBox.shrink();
-                } else {
-                  return Column(
-                    children: [
-                      SizedBox(height: 30),
-                      Row(
-                        children: [
-                          SizedBox(width: 30),
-                          Material(
-                            elevation: 5,
-                            shape: SmoothRectangleBorder(
-                              smoothness: 1,
-                              borderRadius: BorderRadius.circular(15),
-                            ),
-                            child: CoverArtWidget(
-                              size: 200,
-                              borderRadius: 15,
-                              source: playlist.songs.isNotEmpty
-                                  ? getCoverArt(playlist.songs.first)
-                                  : null,
-                            ),
-                          ),
-
-                          Expanded(
-                            child: ListTile(
-                              title: AutoSizeText(
-                                playlist.name,
-                                maxLines: 1,
-                                minFontSize: 20,
-                                maxFontSize: 20,
-                                overflow: TextOverflow.ellipsis,
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                              subtitle: Text("${playlist.songs.length} songs"),
-                            ),
-                          ),
-                        ],
-                      ),
-                      SizedBox(height: 30),
-                    ],
-                  );
-                }
-              },
-            ),
-
-            SizedBox(
-              height: 50,
-              child: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 30),
-                child: Row(
-                  children: [
-                    SizedBox(width: 60, child: Center(child: Text('#'))),
-                    Expanded(
-                      child: SizedBox(
-                        child: Text('Title', overflow: TextOverflow.ellipsis),
-                      ),
-                    ),
-                    SizedBox(width: 30),
-
-                    SizedBox(
-                      width: 200,
-                      child: Text('Album', overflow: TextOverflow.ellipsis),
-                    ),
-                    SizedBox(width: 30),
-
-                    SizedBox(
-                      width: 100,
-                      child: Text('Duration', overflow: TextOverflow.ellipsis),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+            titleBar(),
 
             Expanded(
-              child: ValueListenableBuilder(
-                valueListenable: currentSongListNotifier,
-                builder: (context, currentSongList, child) {
-                  return ListView.builder(
-                    controller: controller,
-                    prototypeItem: ListTile(
-                      contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                      visualDensity: const VisualDensity(
-                        horizontal: 0,
-                        vertical: -4,
-                      ),
-                      leading: CoverArtWidget(
-                        size: 40,
-                        borderRadius: 4,
-                        source: null,
-                      ),
-                      title: Text('title'),
-                      subtitle: Text('subtitle'),
-                    ),
-                    itemCount: currentSongList.length,
-                    itemBuilder: (context, index) {
-                      final song = currentSongList[index];
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 30),
-                        child: SmoothClipRRect(
-                          smoothness: 1,
-                          borderRadius: BorderRadius.circular(15),
-                          child: Material(
-                            color: Colors.white,
-                            child: InkWell(
-                              onDoubleTap: () async {
-                                audioHandler.currentIndex = index;
-                                playQueue = List.from(currentSongList);
-                                if (playModeNotifier.value == 1 ||
-                                    (playModeNotifier.value == 2 &&
-                                        audioHandler.tmpPlayMode == 1)) {
-                                  audioHandler.shuffle();
-                                }
-                                await audioHandler.load();
-                                await audioHandler.play();
-                              },
-
-                              child: Row(
+              child: CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: ValueListenableBuilder(
+                      valueListenable: currentPlaylistNotifier,
+                      builder: (context, playlist, _) {
+                        if (playlist == null) {
+                          return SizedBox.shrink();
+                        } else {
+                          return Column(
+                            children: [
+                              Row(
                                 children: [
-                                  SizedBox(
-                                    width: 60,
-                                    child: Center(
-                                      child: Text(
-                                        (index + 1).toString(),
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
+                                  SizedBox(width: 30),
+                                  Material(
+                                    elevation: 5,
+                                    shape: SmoothRectangleBorder(
+                                      smoothness: 1,
+                                      borderRadius: BorderRadius.circular(15),
+                                    ),
+                                    child: CoverArtWidget(
+                                      size: 200,
+                                      borderRadius: 15,
+                                      source: playlist.songs.isNotEmpty
+                                          ? getCoverArt(playlist.songs.first)
+                                          : null,
                                     ),
                                   ),
 
                                   Expanded(
                                     child: ListTile(
-                                      contentPadding: EdgeInsets.fromLTRB(
-                                        0,
-                                        0,
-                                        0,
-                                        0,
-                                      ),
-                                      visualDensity: const VisualDensity(
-                                        horizontal: 0,
-                                        vertical: -4,
-                                      ),
-                                      leading: CoverArtWidget(
-                                        size: 40,
-                                        borderRadius: 4,
-                                        source: getCoverArt(song),
-                                      ),
-                                      title: ValueListenableBuilder(
-                                        valueListenable: currentSongNotifier,
-                                        builder: (_, currentSong, _) {
-                                          return Text(
-                                            getTitle(song),
-                                            overflow: TextOverflow.ellipsis,
-                                            style: song == currentSong
-                                                ? TextStyle(
-                                                    color: Color.fromARGB(
-                                                      255,
-                                                      75,
-                                                      200,
-                                                      200,
-                                                    ),
-                                                    fontWeight: FontWeight.bold,
-                                                    fontSize: 15,
-                                                  )
-                                                : TextStyle(fontSize: 15),
-                                          );
-                                        },
-                                      ),
-                                      subtitle: Text(
-                                        getArtist(song),
+                                      title: AutoSizeText(
+                                        playlist.name,
+                                        maxLines: 1,
+                                        minFontSize: 20,
+                                        maxFontSize: 20,
                                         overflow: TextOverflow.ellipsis,
                                         style: TextStyle(
-                                          fontSize: 12,
-                                          color: Colors.grey,
+                                          fontWeight: FontWeight.bold,
                                         ),
                                       ),
-                                    ),
-                                  ),
-                                  SizedBox(width: 30),
-                                  SizedBox(
-                                    width: 200,
-                                    child: Text(
-                                      getAlbum(song),
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
-                                  SizedBox(width: 30),
-
-                                  SizedBox(
-                                    width: 100,
-                                    child: Text(
-                                      '${getDuration(song).inMinutes.toString().padLeft(2, '0')}:${(getDuration(song).inSeconds % 60).toString().padLeft(2, '0')}',
-                                      overflow: TextOverflow.ellipsis,
+                                      subtitle: Text(
+                                        "${playlist.songs.length} songs",
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
+                              SizedBox(height: 10),
+                            ],
+                          );
+                        }
+                      },
+                    ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: SizedBox(
+                      height: 50,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 30),
+                        child: Row(
+                          children: [
+                            SizedBox(
+                              width: 60,
+                              child: Center(child: Text('#')),
                             ),
+                            Expanded(
+                              child: Text(
+                                'Title',
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            SizedBox(width: 30),
+
+                            SizedBox(
+                              width: albumWidth,
+                              child: Text(
+                                'Album',
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                            SizedBox(width: 30),
+
+                            SizedBox(
+                              width: 80,
+                              child: Text(
+                                'Duration',
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  ValueListenableBuilder(
+                    valueListenable: currentSongListNotifier,
+                    builder: (context, currentSongList, child) {
+                      return SliverPrototypeExtentList(
+                        prototypeItem: ListTile(
+                          contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                          visualDensity: const VisualDensity(
+                            horizontal: 0,
+                            vertical: -4,
                           ),
+                          leading: CoverArtWidget(
+                            size: 40,
+                            borderRadius: 4,
+                            source: null,
+                          ),
+                          title: Text('title'),
+                          subtitle: Text('subtitle'),
+                        ),
+                        delegate: SliverChildBuilderDelegate(
+                          childCount: currentSongList.length,
+                          (context, index) {
+                            final song = currentSongList[index];
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 30,
+                              ),
+                              child: SmoothClipRRect(
+                                smoothness: 1,
+                                borderRadius: BorderRadius.circular(15),
+                                child: Material(
+                                  color: Colors.white,
+                                  child: InkWell(
+                                    onDoubleTap: () async {
+                                      audioHandler.currentIndex = index;
+                                      playQueue = List.from(currentSongList);
+                                      if (playModeNotifier.value == 1 ||
+                                          (playModeNotifier.value == 2 &&
+                                              audioHandler.tmpPlayMode == 1)) {
+                                        audioHandler.shuffle();
+                                      }
+                                      await audioHandler.load();
+                                      await audioHandler.play();
+                                    },
+
+                                    child: Row(
+                                      children: [
+                                        SizedBox(
+                                          width: 60,
+                                          child: Center(
+                                            child: Text(
+                                              (index + 1).toString(),
+                                              overflow: TextOverflow.ellipsis,
+                                            ),
+                                          ),
+                                        ),
+
+                                        Expanded(
+                                          child: ListTile(
+                                            contentPadding: EdgeInsets.fromLTRB(
+                                              0,
+                                              0,
+                                              0,
+                                              0,
+                                            ),
+                                            visualDensity: const VisualDensity(
+                                              horizontal: 0,
+                                              vertical: -4,
+                                            ),
+                                            leading: CoverArtWidget(
+                                              size: 40,
+                                              borderRadius: 4,
+                                              source: getCoverArt(song),
+                                            ),
+                                            title: ValueListenableBuilder(
+                                              valueListenable:
+                                                  currentSongNotifier,
+                                              builder: (_, currentSong, _) {
+                                                return Text(
+                                                  getTitle(song),
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                  style: song == currentSong
+                                                      ? TextStyle(
+                                                          color: Color.fromARGB(
+                                                            255,
+                                                            75,
+                                                            200,
+                                                            200,
+                                                          ),
+                                                          fontWeight:
+                                                              FontWeight.bold,
+                                                          fontSize: 15,
+                                                        )
+                                                      : TextStyle(fontSize: 15),
+                                                );
+                                              },
+                                            ),
+                                            subtitle: Text(
+                                              getArtist(song),
+                                              overflow: TextOverflow.ellipsis,
+                                              style: TextStyle(
+                                                fontSize: 12,
+                                                color: Colors.grey,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        SizedBox(width: 30),
+                                        SizedBox(
+                                          width: albumWidth,
+                                          child: Text(
+                                            getAlbum(song),
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                        SizedBox(width: 30),
+
+                                        SizedBox(
+                                          width: 80,
+                                          child: Text(
+                                            '${getDuration(song).inMinutes.toString().padLeft(2, '0')}:${(getDuration(song).inSeconds % 60).toString().padLeft(2, '0')}',
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       );
                     },
-                  );
-                },
+                  ),
+                ],
               ),
             ),
           ],
@@ -545,7 +631,7 @@ class DesktopMainPage extends StatelessWidget {
                             : playMode == 1
                             ? shuffleImage
                             : repeatImage,
-                        size: 30,
+                        size: 25,
                       ),
                       onPressed: () {
                         if (playQueue.isEmpty) {
@@ -586,7 +672,7 @@ class DesktopMainPage extends StatelessWidget {
 
                 IconButton(
                   color: Colors.black,
-                  icon: const ImageIcon(previousButtonImage, size: 30),
+                  icon: const ImageIcon(previousButtonImage, size: 25),
                   onPressed: () {
                     if (playQueue.isEmpty) {
                       return;
@@ -603,7 +689,7 @@ class DesktopMainPage extends StatelessWidget {
                         isPlaying
                             ? Icons.pause_rounded
                             : Icons.play_arrow_rounded,
-                        size: 45,
+                        size: 40,
                       );
                     },
                   ),
@@ -616,7 +702,7 @@ class DesktopMainPage extends StatelessWidget {
                 ),
                 IconButton(
                   color: Colors.black,
-                  icon: const ImageIcon(nextButtonImage, size: 30),
+                  icon: const ImageIcon(nextButtonImage, size: 25),
                   onPressed: () {
                     if (playQueue.isEmpty) {
                       return;
@@ -628,7 +714,7 @@ class DesktopMainPage extends StatelessWidget {
                 IconButton(
                   icon: Icon(
                     Icons.playlist_play_rounded,
-                    size: 30,
+                    size: 25,
                     color: Colors.black,
                   ),
                   onPressed: () {

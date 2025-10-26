@@ -11,8 +11,11 @@ late double appWidth;
 const AssetImage addImage = AssetImage('assets/images/add.png');
 const AssetImage albumImage = AssetImage('assets/images/album.png');
 const AssetImage artistImage = AssetImage('assets/images/artist.png');
+const AssetImage closeImage = AssetImage('assets/images/close.png');
 const AssetImage deleteImage = AssetImage('assets/images/delete.png');
 const AssetImage loopImage = AssetImage('assets/images/loop.png');
+const AssetImage maximizeImage = AssetImage('assets/images/maximize.png');
+const AssetImage minimizeImage = AssetImage('assets/images/minimize.png');
 const AssetImage musicNoteImage = AssetImage('assets/images/music_note.png');
 const AssetImage nextButtonImage = AssetImage('assets/images/next_button.png');
 const AssetImage pauseCircleImage = AssetImage(

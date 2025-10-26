@@ -205,7 +205,7 @@ class LyricsListViewState extends State<LyricsListView>
               timer?.cancel();
               timer = null;
             } else {
-              timer ??= Timer(const Duration(milliseconds: 1000), () {
+              timer ??= Timer(const Duration(milliseconds: 2000), () {
                 userDragging = false;
                 userDragged = true;
                 timer = null;
