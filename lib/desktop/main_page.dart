@@ -32,7 +32,9 @@ class DesktopMainPage extends StatelessWidget {
       children: [
         Column(
           children: [
-            Expanded(child: Row(children: [sidebar(), songList(context)])),
+            Expanded(
+              child: Row(children: [sidebar(context), songList(context)]),
+            ),
             Material(child: bottomControl(context)),
           ],
         ),
@@ -234,7 +236,8 @@ class DesktopMainPage extends StatelessWidget {
     );
   }
 
-  Widget sidebar() {
+  Widget sidebar(BuildContext context) {
+    final ScrollController scrollController = ScrollController();
     return Material(
       color: Colors.grey.shade100,
       child: SizedBox(
@@ -258,114 +261,186 @@ class DesktopMainPage extends StatelessWidget {
               ),
             ),
 
-            wrapWithPSM(
-              color: Colors.grey.shade100,
-              padding: EdgeInsets.symmetric(horizontal: 10),
-              radius: 10,
-              child: ListTile(
-                leading: const ImageIcon(
-                  artistImage,
-                  size: 25,
-                  color: mainColor,
-                ),
-                title: Text('Artists', style: TextStyle(fontSize: 15)),
-                visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-                onTap: () {},
-              ),
-            ),
-            wrapWithPSM(
-              color: Colors.grey.shade100,
-              padding: EdgeInsets.symmetric(horizontal: 10),
-              radius: 10,
-              child: ListTile(
-                leading: const ImageIcon(
-                  albumImage,
-                  size: 25,
-                  color: mainColor,
-                ),
-                title: Text('Albums', style: TextStyle(fontSize: 15)),
-                visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-                onTap: () {},
-              ),
-            ),
-            wrapWithPSM(
-              color: Colors.grey.shade100,
-              padding: EdgeInsets.symmetric(horizontal: 10),
-              radius: 10,
-              child: ListTile(
-                leading: const ImageIcon(
-                  songsImage,
-                  size: 25,
-                  color: mainColor,
-                ),
-                title: Text('Songs', style: TextStyle(fontSize: 15)),
-                visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-                onTap: () {
-                  currentSongListNotifier.value = librarySongs;
-                  currentPlaylistNotifier.value = null;
-                },
-              ),
-            ),
-            SizedBox(height: 10),
-            Divider(thickness: 0.5, height: 1, color: Colors.grey.shade300),
-            SizedBox(height: 10),
-
             Expanded(
-              child: ValueListenableBuilder(
-                valueListenable: playlistsManager.changeNotifier,
-                builder: (context, _, _) {
-                  return ListView.builder(
-                    itemCount: playlistsManager.length(),
-                    itemBuilder: (_, index) {
-                      final playlist = playlistsManager.getPlaylistByIndex(
-                        index,
-                      );
-                      return Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
-                        child: SmoothClipRRect(
-                          smoothness: 1,
-                          borderRadius: BorderRadius.circular(10),
-                          child: Material(
-                            color: Colors.grey.shade100,
-                            child: GestureDetector(
-                              onSecondaryTapDown: (TapDownDetails details) {},
-                              child: ListTile(
-                                visualDensity: const VisualDensity(
-                                  horizontal: 0,
-                                  vertical: -3,
-                                ),
+              child: Scrollbar(
+                thickness: 2, // 👈 makes it thinner (default ~6)
+                controller: scrollController,
+                child: CustomScrollView(
+                  primary: false,
+                  controller: scrollController,
+                  scrollBehavior: ScrollConfiguration.of(
+                    context,
+                  ).copyWith(scrollbars: false),
+                  slivers: [
+                    SliverToBoxAdapter(
+                      child: wrapWithPSM(
+                        color: Colors.grey.shade100,
+                        padding: EdgeInsets.symmetric(horizontal: 10),
+                        radius: 10,
+                        child: ListTile(
+                          leading: const ImageIcon(
+                            artistImage,
+                            size: 25,
+                            color: mainColor,
+                          ),
+                          title: Text(
+                            'Artists',
+                            style: TextStyle(fontSize: 15),
+                          ),
+                          visualDensity: const VisualDensity(
+                            horizontal: 0,
+                            vertical: -4,
+                          ),
+                          onTap: () {},
+                        ),
+                      ),
+                    ),
+                    SliverToBoxAdapter(
+                      child: wrapWithPSM(
+                        color: Colors.grey.shade100,
+                        padding: EdgeInsets.symmetric(horizontal: 10),
+                        radius: 10,
+                        child: ListTile(
+                          leading: const ImageIcon(
+                            albumImage,
+                            size: 25,
+                            color: mainColor,
+                          ),
+                          title: Text('Albums', style: TextStyle(fontSize: 15)),
+                          visualDensity: const VisualDensity(
+                            horizontal: 0,
+                            vertical: -4,
+                          ),
+                          onTap: () {},
+                        ),
+                      ),
+                    ),
+                    SliverToBoxAdapter(
+                      child: wrapWithPSM(
+                        color: Colors.grey.shade100,
+                        padding: EdgeInsets.symmetric(horizontal: 10),
+                        radius: 10,
+                        child: ListTile(
+                          leading: const ImageIcon(
+                            songsImage,
+                            size: 25,
+                            color: mainColor,
+                          ),
+                          title: Text('Songs', style: TextStyle(fontSize: 15)),
+                          visualDensity: const VisualDensity(
+                            horizontal: 0,
+                            vertical: -4,
+                          ),
+                          onTap: () {
+                            currentSongListNotifier.value = librarySongs;
+                            currentPlaylistNotifier.value = null;
+                          },
+                        ),
+                      ),
+                    ),
+                    SliverToBoxAdapter(child: SizedBox(height: 10)),
+                    SliverToBoxAdapter(
+                      child: Divider(
+                        thickness: 0.5,
+                        height: 1,
+                        color: Colors.grey.shade300,
+                      ),
+                    ),
 
-                                leading: ValueListenableBuilder(
-                                  valueListenable: playlist.changeNotifier,
-                                  builder: (_, _, _) {
-                                    return CoverArtWidget(
-                                      size: 30,
-                                      borderRadius: 3,
-                                      source: playlist.songs.isNotEmpty
-                                          ? getCoverArt(playlist.songs.first)
-                                          : null,
-                                    );
-                                  },
-                                ),
-                                title: Text(
-                                  playlist.name,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(fontSize: 13),
-                                ),
-
-                                onTap: () {
-                                  currentPlaylistNotifier.value = playlist;
-                                  currentSongListNotifier.value =
-                                      playlist.songs;
-                                },
-                              ),
-                            ),
+                    SliverToBoxAdapter(child: SizedBox(height: 10)),
+                    SliverToBoxAdapter(
+                      child: wrapWithPSM(
+                        color: Colors.grey.shade100,
+                        padding: EdgeInsets.symmetric(horizontal: 10),
+                        radius: 10,
+                        child: ListTile(
+                          leading: const ImageIcon(
+                            playlistsImage,
+                            size: 25,
+                            color: mainColor,
+                          ),
+                          title: Text(
+                            'Playlists',
+                            style: TextStyle(fontSize: 15),
+                          ),
+                          contentPadding: EdgeInsets.fromLTRB(16, 0, 8, 0),
+                          visualDensity: const VisualDensity(
+                            horizontal: 0,
+                            vertical: -4,
+                          ),
+                          trailing: IconButton(
+                            onPressed: () {
+                              showCreatePlaylistDialog(context);
+                            },
+                            icon: ImageIcon(addImage, size: 20),
                           ),
                         ),
-                      );
-                    },
-                  );
-                },
+                      ),
+                    ),
+                    ValueListenableBuilder(
+                      valueListenable: playlistsManager.changeNotifier,
+                      builder: (context, _, _) {
+                        return SliverList.builder(
+                          itemCount: playlistsManager.length(),
+                          itemBuilder: (_, index) {
+                            final playlist = playlistsManager
+                                .getPlaylistByIndex(index);
+                            return Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                              ),
+                              child: SmoothClipRRect(
+                                smoothness: 1,
+                                borderRadius: BorderRadius.circular(10),
+                                child: Material(
+                                  color: Colors.grey.shade100,
+                                  child: GestureDetector(
+                                    onSecondaryTapDown:
+                                        (TapDownDetails details) {},
+                                    child: ListTile(
+                                      visualDensity: const VisualDensity(
+                                        horizontal: 0,
+                                        vertical: -3,
+                                      ),
+
+                                      leading: ValueListenableBuilder(
+                                        valueListenable:
+                                            playlist.changeNotifier,
+                                        builder: (_, _, _) {
+                                          return CoverArtWidget(
+                                            size: 30,
+                                            borderRadius: 3,
+                                            source: playlist.songs.isNotEmpty
+                                                ? getCoverArt(
+                                                    playlist.songs.first,
+                                                  )
+                                                : null,
+                                          );
+                                        },
+                                      ),
+                                      title: Text(
+                                        playlist.name,
+                                        overflow: TextOverflow.ellipsis,
+                                        style: TextStyle(fontSize: 13),
+                                      ),
+
+                                      onTap: () {
+                                        currentPlaylistNotifier.value =
+                                            playlist;
+                                        currentSongListNotifier.value =
+                                            playlist.songs;
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                ),
               ),
             ),
           ],

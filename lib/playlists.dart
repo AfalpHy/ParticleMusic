@@ -249,3 +249,44 @@ Future<bool> showCreatePlaylistSheet(BuildContext context) async {
   }
   return false;
 }
+
+Future<bool> showCreatePlaylistDialog(BuildContext context) async {
+  final controller = TextEditingController();
+
+  final result = await showDialog<String>(
+    context: context,
+    builder: (context) {
+      return AlertDialog(
+        title: const Text('Create Playlist'),
+        shape: SmoothRectangleBorder(
+          smoothness: 1,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          decoration: const InputDecoration(
+            border: OutlineInputBorder(),
+            labelText: "Playlist Name",
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context), // cancel
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () => Navigator.pop(context, controller.text), // submit
+            child: const Text('Complete'),
+          ),
+        ],
+      );
+    },
+  );
+
+  if (result != null && result != '') {
+    playlistsManager.createPlaylist(result);
+    return true;
+  }
+  return false;
+}
