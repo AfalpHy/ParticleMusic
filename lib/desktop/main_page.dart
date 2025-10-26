@@ -8,6 +8,7 @@ import 'package:particle_music/desktop/play_quee_page.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:particle_music/lyrics.dart';
 import 'package:particle_music/playlists.dart';
+import 'package:particle_music/seekbar.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -402,11 +403,11 @@ class DesktopMainPage extends StatelessWidget {
                                     elevation: 5,
                                     shape: SmoothRectangleBorder(
                                       smoothness: 1,
-                                      borderRadius: BorderRadius.circular(15),
+                                      borderRadius: BorderRadius.circular(10),
                                     ),
                                     child: CoverArtWidget(
                                       size: 200,
-                                      borderRadius: 15,
+                                      borderRadius: 10,
                                       source: playlist.songs.isNotEmpty
                                           ? getCoverArt(playlist.songs.first)
                                           : null,
@@ -599,7 +600,7 @@ class DesktopMainPage extends StatelessWidget {
                                         SizedBox(
                                           width: 80,
                                           child: Text(
-                                            twoPadDuration(getDuration(song)),
+                                            formatDuration(getDuration(song)),
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
@@ -662,149 +663,173 @@ class DesktopMainPage extends StatelessWidget {
             ),
           ),
 
-          Center(
-            child: Row(
-              children: [
-                Spacer(),
-                ValueListenableBuilder(
-                  valueListenable: playModeNotifier,
-                  builder: (_, playMode, _) {
-                    return IconButton(
+          Stack(
+            children: [
+              Positioned(
+                top: 0,
+                left: 0,
+                right: 0,
+                child: Row(
+                  children: [
+                    Spacer(),
+                    ValueListenableBuilder(
+                      valueListenable: playModeNotifier,
+                      builder: (_, playMode, _) {
+                        return IconButton(
+                          color: Colors.black,
+                          icon: ImageIcon(
+                            playMode == 0
+                                ? loopImage
+                                : playMode == 1
+                                ? shuffleImage
+                                : repeatImage,
+                            size: 25,
+                          ),
+                          onPressed: () {
+                            if (playQueue.isEmpty) {
+                              return;
+                            }
+                            if (playModeNotifier.value != 2) {
+                              audioHandler.switchPlayMode();
+                              switch (playModeNotifier.value) {
+                                case 0:
+                                  showCenterMessage(context, "loop");
+                                  break;
+                                default:
+                                  showCenterMessage(context, "shuffle");
+                                  break;
+                              }
+                            }
+                          },
+                          onLongPress: () {
+                            if (playQueue.isEmpty) {
+                              return;
+                            }
+                            audioHandler.toggleRepeat();
+                            switch (playModeNotifier.value) {
+                              case 0:
+                                showCenterMessage(context, "loop");
+                                break;
+                              case 1:
+                                showCenterMessage(context, "shuffle");
+                                break;
+                              default:
+                                showCenterMessage(context, "repeat");
+                                break;
+                            }
+                          },
+                        );
+                      },
+                    ),
+
+                    IconButton(
                       color: Colors.black,
-                      icon: ImageIcon(
-                        playMode == 0
-                            ? loopImage
-                            : playMode == 1
-                            ? shuffleImage
-                            : repeatImage,
-                        size: 25,
+                      icon: const ImageIcon(previousButtonImage, size: 25),
+                      onPressed: () {
+                        if (playQueue.isEmpty) {
+                          return;
+                        }
+                        audioHandler.skipToPrevious();
+                      },
+                    ),
+                    IconButton(
+                      color: Colors.black,
+                      icon: ValueListenableBuilder(
+                        valueListenable: isPlayingNotifier,
+                        builder: (_, isPlaying, _) {
+                          return Icon(
+                            isPlaying
+                                ? Icons.pause_rounded
+                                : Icons.play_arrow_rounded,
+                            size: 35,
+                          );
+                        },
                       ),
                       onPressed: () {
                         if (playQueue.isEmpty) {
                           return;
                         }
-                        if (playModeNotifier.value != 2) {
-                          audioHandler.switchPlayMode();
-                          switch (playModeNotifier.value) {
-                            case 0:
-                              showCenterMessage(context, "loop");
-                              break;
-                            default:
-                              showCenterMessage(context, "shuffle");
-                              break;
-                          }
-                        }
+                        audioHandler.togglePlay();
                       },
-                      onLongPress: () {
+                    ),
+                    IconButton(
+                      color: Colors.black,
+                      icon: const ImageIcon(nextButtonImage, size: 25),
+                      onPressed: () {
                         if (playQueue.isEmpty) {
                           return;
                         }
-                        audioHandler.toggleRepeat();
-                        switch (playModeNotifier.value) {
-                          case 0:
-                            showCenterMessage(context, "loop");
-                            break;
-                          case 1:
-                            showCenterMessage(context, "shuffle");
-                            break;
-                          default:
-                            showCenterMessage(context, "repeat");
-                            break;
-                        }
+
+                        audioHandler.skipToNext();
                       },
-                    );
-                  },
+                    ),
+                    IconButton(
+                      icon: Icon(
+                        Icons.playlist_play_rounded,
+                        size: 25,
+                        color: Colors.black,
+                      ),
+                      onPressed: () {
+                        if (playQueue.isEmpty) {
+                          return;
+                        }
+                        displayPlayQueuePageNotifier.value = true;
+                      },
+                    ),
+                    Spacer(),
+                  ],
                 ),
+              ),
+              Positioned(
+                top: 35,
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Row(
+                  children: [
+                    Spacer(),
+                    SizedBox(width: 400, height: 20, child: SeekBar()),
 
-                IconButton(
-                  color: Colors.black,
-                  icon: const ImageIcon(previousButtonImage, size: 25),
-                  onPressed: () {
-                    if (playQueue.isEmpty) {
-                      return;
-                    }
-                    audioHandler.skipToPrevious();
-                  },
+                    Spacer(),
+                  ],
                 ),
-                IconButton(
-                  color: Colors.black,
-                  icon: ValueListenableBuilder(
-                    valueListenable: isPlayingNotifier,
-                    builder: (_, isPlaying, _) {
-                      return Icon(
-                        isPlaying
-                            ? Icons.pause_rounded
-                            : Icons.play_arrow_rounded,
-                        size: 40,
-                      );
-                    },
-                  ),
-                  onPressed: () {
-                    if (playQueue.isEmpty) {
-                      return;
-                    }
-                    audioHandler.togglePlay();
-                  },
-                ),
-                IconButton(
-                  color: Colors.black,
-                  icon: const ImageIcon(nextButtonImage, size: 25),
-                  onPressed: () {
-                    if (playQueue.isEmpty) {
-                      return;
-                    }
-
-                    audioHandler.skipToNext();
-                  },
-                ),
-                IconButton(
-                  icon: Icon(
-                    Icons.playlist_play_rounded,
-                    size: 25,
-                    color: Colors.black,
-                  ),
-                  onPressed: () {
-                    if (playQueue.isEmpty) {
-                      return;
-                    }
-                    displayPlayQueuePageNotifier.value = true;
-                  },
-                ),
-                Spacer(),
-              ],
-            ),
+              ),
+            ],
           ),
           Row(
             children: [
               Spacer(),
               SizedBox(width: 10, child: Icon(Icons.volume_down_rounded)),
-              SizedBox(
-                width: 175,
-                child: ValueListenableBuilder(
-                  valueListenable: volumeNotifier,
-                  builder: (context, value, child) {
-                    return SliderTheme(
-                      data: SliderTheme.of(context).copyWith(
-                        trackHeight: 1.5, // thinner track
-                        thumbShape: RoundSliderThumbShape(
-                          enabledThumbRadius: 2.5,
-                        ), // smaller thumb
-                        overlayColor: Colors.transparent,
-                        activeTrackColor: Colors.black,
-                        inactiveTrackColor: Colors.black54,
-                        thumbColor: Colors.black,
-                      ),
-                      child: Slider(
-                        value: value,
-                        min: 0,
-                        max: 1,
-                        onChanged: (value) {
-                          volumeNotifier.value = value;
-                          audioHandler.setVolume(value);
-                        },
-                      ),
-                    );
-                  },
+              Center(
+                child: SizedBox(
+                  height: 20,
+                  width: 175,
+                  child: ValueListenableBuilder(
+                    valueListenable: volumeNotifier,
+                    builder: (context, value, child) {
+                      return SliderTheme(
+                        data: SliderTheme.of(context).copyWith(
+                          trackHeight: 0.1, // thinner track
+                          thumbShape: RoundSliderThumbShape(
+                            enabledThumbRadius: 1,
+                          ), // smaller thumb
+                          overlayColor: Colors.transparent,
+                          activeTrackColor: Colors.black,
+                          inactiveTrackColor: Colors.black54,
+                          thumbColor: Colors.black,
+                        ),
+                        child: Slider(
+                          value: value,
+                          min: 0,
+                          max: 1,
+                          onChanged: (value) {
+                            volumeNotifier.value = value;
+                            audioHandler.setVolume(value);
+                          },
+                        ),
+                      );
+                    },
+                  ),
                 ),
               ),
               SizedBox(width: 30),

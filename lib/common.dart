@@ -1,9 +1,13 @@
+import 'dart:io';
+
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
 import 'package:path/path.dart';
 import 'package:smooth_corner/smooth_corner.dart';
+
+final isMobile = Platform.isAndroid || Platform.isIOS;
 
 const Color mainColor = Color.fromARGB(255, 120, 230, 230);
 late double appWidth;
@@ -220,6 +224,9 @@ List<AudioMetadata> filterSongs(List<AudioMetadata> songList, String value) {
   }).toList();
 }
 
-String twoPadDuration(Duration duration) {
-  return '${duration.inMinutes.toString().padLeft(2, '0')}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}';
+String formatDuration(Duration duration) {
+  String twoDigits(int n) => n.toString().padLeft(2, "0");
+  final minutes = twoDigits(duration.inMinutes.remainder(60));
+  final seconds = twoDigits(duration.inSeconds.remainder(60));
+  return "$minutes:$seconds";
 }

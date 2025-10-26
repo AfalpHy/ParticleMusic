@@ -109,7 +109,7 @@ class PlayQueueSheetState extends State<PlayQueuePage> {
                           style: TextStyle(fontSize: 12, color: Colors.grey),
                         ),
                         trailing: Text(
-                          twoPadDuration(getDuration(song)),
+                          formatDuration(getDuration(song)),
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(fontSize: 12),
                         ),
