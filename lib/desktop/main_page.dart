@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
+import 'package:particle_music/desktop/play_quee_page.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:particle_music/lyrics.dart';
 import 'package:particle_music/playlists.dart';
@@ -19,6 +20,8 @@ class DesktopMainPage extends StatelessWidget {
   final ValueNotifier<Playlist?> currentPlaylistNotifier = ValueNotifier(null);
 
   final ValueNotifier<bool> displayLyricsPageNotifier = ValueNotifier(false);
+
+  final ValueNotifier<bool> displayPlayQueuePageNotifier = ValueNotifier(false);
 
   DesktopMainPage({super.key});
 
@@ -123,6 +126,50 @@ class DesktopMainPage extends StatelessWidget {
               ),
             );
           },
+        ),
+
+        ValueListenableBuilder(
+          valueListenable: displayPlayQueuePageNotifier,
+          builder: (context, display, _) {
+            if (display) {
+              return GestureDetector(
+                onTap: () {
+                  displayPlayQueuePageNotifier.value = false;
+                },
+                child: Container(color: Colors.black.withAlpha(25)),
+              );
+            } else {
+              return SizedBox.shrink();
+            }
+          },
+        ),
+
+        Positioned(
+          top: 80,
+          bottom: 100,
+          right: 0,
+          child: ValueListenableBuilder(
+            valueListenable: displayPlayQueuePageNotifier,
+            builder: (context, display, _) {
+              return AnimatedSlide(
+                offset: display ? Offset.zero : Offset(1, 0),
+                duration: const Duration(milliseconds: 300),
+                curve: Curves.linear,
+                child: Material(
+                  elevation: 5,
+                  color: Colors.grey.shade50,
+                  shape: SmoothRectangleBorder(
+                    smoothness: 1,
+                    borderRadius: BorderRadius.horizontal(
+                      left: Radius.circular(15),
+                    ),
+                  ),
+
+                  child: SizedBox(width: 350, child: PlayQueuePage()),
+                ),
+              );
+            },
+          ),
         ),
       ],
     );
@@ -552,7 +599,7 @@ class DesktopMainPage extends StatelessWidget {
                                         SizedBox(
                                           width: 80,
                                           child: Text(
-                                            '${getDuration(song).inMinutes.toString().padLeft(2, '0')}:${(getDuration(song).inSeconds % 60).toString().padLeft(2, '0')}',
+                                            twoPadDuration(getDuration(song)),
                                             overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
@@ -720,6 +767,7 @@ class DesktopMainPage extends StatelessWidget {
                     if (playQueue.isEmpty) {
                       return;
                     }
+                    displayPlayQueuePageNotifier.value = true;
                   },
                 ),
                 Spacer(),

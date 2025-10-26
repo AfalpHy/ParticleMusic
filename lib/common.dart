@@ -219,3 +219,7 @@ List<AudioMetadata> filterSongs(List<AudioMetadata> songList, String value) {
         songAlbum.toLowerCase().contains(value.toLowerCase());
   }).toList();
 }
+
+String twoPadDuration(Duration duration) {
+  return '${duration.inMinutes.toString().padLeft(2, '0')}:${(duration.inSeconds % 60).toString().padLeft(2, '0')}';
+}

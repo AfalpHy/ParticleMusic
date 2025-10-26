@@ -128,20 +128,18 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
               scrollController: scrollController,
 
               onReorder: (oldIndex, newIndex) {
-                setState(() {
-                  if (newIndex > oldIndex) newIndex -= 1;
-                  if (oldIndex == audioHandler.currentIndex) {
-                    audioHandler.currentIndex = newIndex;
-                  } else if (oldIndex < audioHandler.currentIndex &&
-                      newIndex >= audioHandler.currentIndex) {
-                    audioHandler.currentIndex -= 1;
-                  } else if (oldIndex > audioHandler.currentIndex &&
-                      newIndex <= audioHandler.currentIndex) {
-                    audioHandler.currentIndex += 1;
-                  }
-                  final item = playQueue.removeAt(oldIndex);
-                  playQueue.insert(newIndex, item);
-                });
+                if (newIndex > oldIndex) newIndex -= 1;
+                if (oldIndex == audioHandler.currentIndex) {
+                  audioHandler.currentIndex = newIndex;
+                } else if (oldIndex < audioHandler.currentIndex &&
+                    newIndex >= audioHandler.currentIndex) {
+                  audioHandler.currentIndex -= 1;
+                } else if (oldIndex > audioHandler.currentIndex &&
+                    newIndex <= audioHandler.currentIndex) {
+                  audioHandler.currentIndex += 1;
+                }
+                final item = playQueue.removeAt(oldIndex);
+                playQueue.insert(newIndex, item);
               },
               onReorderStart: (_) {
                 HapticFeedback.heavyImpact();
