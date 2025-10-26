@@ -5,6 +5,7 @@ import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:smooth_corner/smooth_corner.dart';
+import 'package:super_context_menu/super_context_menu.dart';
 import 'package:window_manager/window_manager.dart';
 
 class Sidebar extends StatelessWidget {
@@ -168,24 +169,43 @@ class Sidebar extends StatelessWidget {
                           itemBuilder: (_, index) {
                             final playlist = playlistsManager
                                 .getPlaylistByIndex(index);
-                            return sidebarItem(
-                              leading: ValueListenableBuilder(
-                                valueListenable: playlist.changeNotifier,
-                                builder: (_, _, _) {
-                                  return CoverArtWidget(
-                                    size: 30,
-                                    borderRadius: 3,
-                                    source: playlist.songs.isNotEmpty
-                                        ? getCoverArt(playlist.songs.first)
-                                        : null,
-                                  );
+                            return ContextMenuWidget(
+                              child: sidebarItem(
+                                leading: ValueListenableBuilder(
+                                  valueListenable: playlist.changeNotifier,
+                                  builder: (_, _, _) {
+                                    return CoverArtWidget(
+                                      size: 30,
+                                      borderRadius: 3,
+                                      source: playlist.songs.isNotEmpty
+                                          ? getCoverArt(playlist.songs.first)
+                                          : null,
+                                    );
+                                  },
+                                ),
+                                content: playlist.name,
+
+                                onTap: () {
+                                  currentPlaylistNotifier.value = playlist;
+                                  currentSongListNotifier.value =
+                                      playlist.songs;
                                 },
                               ),
-                              content: playlist.name,
-
-                              onTap: () {
-                                currentPlaylistNotifier.value = playlist;
-                                currentSongListNotifier.value = playlist.songs;
+                              menuProvider: (_) {
+                                if (playlist.name == 'Favorite') {
+                                  return null;
+                                }
+                                return Menu(
+                                  children: [
+                                    MenuAction(
+                                      title: 'Delete',
+                                      image: MenuImage.icon(Icons.delete),
+                                      callback: () {
+                                        playlistsManager.deletePlaylist(index);
+                                      },
+                                    ),
+                                  ],
+                                );
                               },
                             );
                           },

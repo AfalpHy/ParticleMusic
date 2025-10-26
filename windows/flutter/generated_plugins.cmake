@@ -4,8 +4,10 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   audioplayers_windows
+  irondash_engine_context
   permission_handler_windows
   screen_retriever_windows
+  super_native_extensions
   window_manager
 )
 

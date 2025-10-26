@@ -50,6 +50,7 @@ dependencies:
   flutter_switch: ^0.3.2
   smooth_corner: ^1.1.1
   window_manager: ^0.5.1
+  super_context_menu: ^0.9.1
 
 dev_dependencies:
   flutter_test:
