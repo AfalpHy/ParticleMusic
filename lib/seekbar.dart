@@ -54,12 +54,8 @@ class SeekBarState extends State<SeekBar> {
                   trackHeight: isDragging ? 4 : 2,
                   trackShape: const FullWidthTrackShape(),
                   thumbShape: isDragging
-                      ? RoundSliderThumbShape(
-                          enabledThumbRadius: isMobile ? 8 : 4,
-                        )
-                      : RoundSliderThumbShape(
-                          enabledThumbRadius: isMobile ? 4 : 0,
-                        ),
+                      ? RoundSliderThumbShape(enabledThumbRadius: 4)
+                      : RoundSliderThumbShape(enabledThumbRadius: 0),
                   overlayShape: SliderComponentShape.noOverlay,
                   activeTrackColor: Colors.black,
                   inactiveTrackColor: Colors.black12,
