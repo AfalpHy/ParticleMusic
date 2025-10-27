@@ -1,19 +1,14 @@
-import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/desktop/bottom_control.dart';
 import 'package:particle_music/desktop/play_quee_page.dart';
 import 'package:particle_music/desktop/sidebar.dart';
 import 'package:particle_music/desktop/song_list_plane.dart';
-import 'package:particle_music/load_library.dart';
 import 'package:particle_music/desktop/lyrics_page.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
 class DesktopMainPage extends StatelessWidget {
   final controller = ScrollController();
-
-  final ValueNotifier<List<AudioMetadata>> currentSongListNotifier =
-      ValueNotifier(librarySongs);
 
   final ValueNotifier<Playlist?> currentPlaylistNotifier = ValueNotifier(null);
 
@@ -32,13 +27,15 @@ class DesktopMainPage extends StatelessWidget {
             Expanded(
               child: Row(
                 children: [
-                  Sidebar(
-                    currentSongListNotifier: currentSongListNotifier,
-                    currentPlaylistNotifier: currentPlaylistNotifier,
-                  ),
-                  SongListPlane(
-                    currentSongListNotifier: currentSongListNotifier,
-                    currentPlaylistNotifier: currentPlaylistNotifier,
+                  Sidebar(currentPlaylistNotifier: currentPlaylistNotifier),
+                  ValueListenableBuilder(
+                    valueListenable: currentPlaylistNotifier,
+                    builder: (context, playlist, child) {
+                      return SongListPlane(
+                        key: ValueKey(playlist),
+                        playlist: playlist,
+                      );
+                    },
                   ),
                 ],
               ),

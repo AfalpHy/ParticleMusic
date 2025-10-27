@@ -1,23 +1,16 @@
-import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
-import 'package:particle_music/load_library.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 import 'package:super_context_menu/super_context_menu.dart';
 import 'package:window_manager/window_manager.dart';
 
 class Sidebar extends StatelessWidget {
-  final ValueNotifier<List<AudioMetadata>> currentSongListNotifier;
   final ValueNotifier<Playlist?> currentPlaylistNotifier;
   final ScrollController _scrollController = ScrollController();
 
-  Sidebar({
-    super.key,
-    required this.currentSongListNotifier,
-    required this.currentPlaylistNotifier,
-  });
+  Sidebar({super.key, required this.currentPlaylistNotifier});
 
   Widget sidebarItem({
     required Widget leading,
@@ -121,7 +114,6 @@ class Sidebar extends StatelessWidget {
                         content: 'Songs',
 
                         onTap: () {
-                          currentSongListNotifier.value = librarySongs;
                           currentPlaylistNotifier.value = null;
                         },
                       ),
@@ -187,23 +179,36 @@ class Sidebar extends StatelessWidget {
 
                                 onTap: () {
                                   currentPlaylistNotifier.value = playlist;
-                                  currentSongListNotifier.value =
-                                      playlist.songs;
                                 },
                               ),
                               menuProvider: (_) {
-                                if (playlist.name == 'Favorite') {
-                                  return null;
-                                }
                                 return Menu(
                                   children: [
                                     MenuAction(
-                                      title: 'Delete',
-                                      image: MenuImage.icon(Icons.delete),
-                                      callback: () {
-                                        playlistsManager.deletePlaylist(index);
-                                      },
+                                      title: playlist.name,
+                                      callback: () {},
                                     ),
+                                    if (playlist.name != 'Favorite')
+                                      MenuAction(
+                                        title: 'Delete',
+                                        image: MenuImage.icon(Icons.delete),
+                                        callback: () async {
+                                          if (await showConfirmDialog(
+                                            context,
+                                            'Delete Action',
+                                          )) {
+                                            // back to songs if the playlist which will be deleted is displaying on the song list plane
+                                            if (currentPlaylistNotifier.value ==
+                                                playlist) {
+                                              currentPlaylistNotifier.value =
+                                                  null;
+                                            }
+                                            playlistsManager.deletePlaylist(
+                                              index,
+                                            );
+                                          }
+                                        },
+                                      ),
                                   ],
                                 );
                               },

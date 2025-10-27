@@ -26,7 +26,7 @@ class SongListPage extends StatelessWidget {
   final int offset;
 
   final listIsScrollingNotifier = ValueNotifier(false);
-  final ValueNotifier<List<AudioMetadata>> currentSongListNotifer;
+  final ValueNotifier<List<AudioMetadata>> currentSongListNotifier;
   final itemScrollController = ItemScrollController();
   final textController = TextEditingController();
 
@@ -36,13 +36,13 @@ class SongListPage extends StatelessWidget {
     required this.moreSheet,
     this.name,
     this.playlist,
-  }) : currentSongListNotifer = ValueNotifier<List<AudioMetadata>>(songList),
+  }) : currentSongListNotifier = ValueNotifier<List<AudioMetadata>>(songList),
        extraItems = name == null ? 1 : 2,
        offset = name == null ? 0 : 1 {
     if (playlist != null) {
       playlist!.changeNotifier.addListener(() {
         final value = textController.text;
-        currentSongListNotifer.value = filterSongs(songList, value);
+        currentSongListNotifier.value = filterSongs(songList, value);
       });
     }
   }
@@ -107,7 +107,7 @@ class SongListPage extends StatelessWidget {
                         suffixIcon: IconButton(
                           onPressed: () {
                             isSearch.value = false;
-                            currentSongListNotifer.value = songList;
+                            currentSongListNotifier.value = songList;
                             textController.clear();
                             FocusScope.of(context).unfocus();
                           },
@@ -124,7 +124,7 @@ class SongListPage extends StatelessWidget {
                         ),
                       ),
                       onSearchTextChanged: (value) {
-                        currentSongListNotifer.value = filterSongs(
+                        currentSongListNotifier.value = filterSongs(
                           songList,
                           value,
                         );
@@ -167,7 +167,7 @@ class SongListPage extends StatelessWidget {
             return false;
           },
           child: ValueListenableBuilder(
-            valueListenable: currentSongListNotifer,
+            valueListenable: currentSongListNotifier,
             builder: (context, currentSongList, child) {
               return ScrollablePositionedList.builder(
                 itemScrollController: itemScrollController,
@@ -237,7 +237,7 @@ class SongListPage extends StatelessWidget {
           child: MyLocation(
             itemScrollController: itemScrollController,
             listIsScrollingNotifier: listIsScrollingNotifier,
-            songListNotifer: currentSongListNotifer,
+            songListNotifer: currentSongListNotifier,
             offset: offset,
           ),
         ),

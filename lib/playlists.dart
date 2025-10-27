@@ -150,104 +150,78 @@ class PlaylistsSheetState extends State<PlaylistsSheet> {
 
   @override
   Widget build(BuildContext context) {
-    return mySheet(
-      Column(
-        children: [
-          ListTile(
-            leading: SmoothClipRRect(
-              smoothness: 1,
-              borderRadius: BorderRadius.circular(4),
-              child: Container(
-                color: const Color.fromARGB(255, 245, 235, 245),
-                child: ImageIcon(addImage, size: 40),
-              ),
-            ),
-            title: Text('Create Playlist'),
-            onTap: () async {
-              if (await showCreatePlaylistSheet(context)) {
-                setState(() {});
-              }
-            },
-          ),
-          Divider(thickness: 0.5, height: 1, color: Colors.grey.shade300),
-          Expanded(
-            child: ListView.builder(
-              itemCount: playlistsManager.length(),
-              itemBuilder: (_, index) {
-                final playlist = playlistsManager.getPlaylistByIndex(index);
-                return ListTile(
-                  leading: CoverArtWidget(
-                    size: 40,
-                    borderRadius: 4,
-                    source: playlist.songs.isNotEmpty
-                        ? getCoverArt(playlist.songs.first)
-                        : null,
-                  ),
-                  title: Text(playlist.name),
-
-                  onTap: () {
-                    for (var song in widget.songs) {
-                      playlist.add([song]);
-                    }
-                    showCenterMessage(
-                      context,
-                      'Added to Playlist',
-                      duration: 1500,
-                    );
-                    Navigator.pop(context);
-                  },
-                );
-              },
-            ),
-          ),
-        ],
-      ),
-    );
+    return mySheet(Add2PlaylistPlane(songs: widget.songs));
   }
 }
 
-Future<bool> showCreatePlaylistSheet(BuildContext context) async {
-  final controller = TextEditingController();
-  final name = await showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    useRootNavigator: true,
-    builder: (context) {
-      return mySheet(
-        SizedBox(
-          height: 250, // fixed height
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.start, // center vertically
-            children: [
-              Padding(
-                padding: const EdgeInsets.fromLTRB(30, 30, 30, 0),
-                child: TextField(
-                  controller: controller,
-                  autofocus: true,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    labelText: "Playlist Name",
-                  ),
+class Add2PlaylistPlane extends StatefulWidget {
+  final List<AudioMetadata> songs;
+  const Add2PlaylistPlane({super.key, required this.songs});
+
+  @override
+  State<StatefulWidget> createState() => _Add2PlaylistPlaneState();
+}
+
+class _Add2PlaylistPlaneState extends State<Add2PlaylistPlane> {
+  @override
+  void initState() {
+    super.initState();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      children: [
+        ListTile(
+          leading: SmoothClipRRect(
+            smoothness: 1,
+            borderRadius: BorderRadius.circular(4),
+            child: Container(
+              color: const Color.fromARGB(255, 245, 235, 245),
+              child: ImageIcon(addImage, size: 40),
+            ),
+          ),
+          title: Text('Create Playlist'),
+          onTap: () async {
+            if (await showCreatePlaylistDialog(context)) {
+              setState(() {});
+            }
+          },
+        ),
+        Divider(thickness: 0.5, height: 1, color: Colors.grey.shade300),
+        Expanded(
+          child: ListView.builder(
+            itemCount: playlistsManager.length(),
+            itemBuilder: (_, index) {
+              final playlist = playlistsManager.getPlaylistByIndex(index);
+              return ListTile(
+                leading: CoverArtWidget(
+                  size: 40,
+                  borderRadius: 4,
+                  source: playlist.songs.isNotEmpty
+                      ? getCoverArt(playlist.songs.first)
+                      : null,
                 ),
-              ),
-              const SizedBox(height: 10),
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context, controller.text); // close with value
+                title: Text(playlist.name),
+
+                onTap: () {
+                  for (var song in widget.songs) {
+                    playlist.add([song]);
+                  }
+                  showCenterMessage(
+                    context,
+                    'Added to Playlist',
+                    duration: 1500,
+                  );
+                  Navigator.pop(context);
                 },
-                child: const Text("Complete"),
-              ),
-            ],
+              );
+            },
           ),
         ),
-      );
-    },
-  );
-  if (name != null && name != '') {
-    playlistsManager.createPlaylist(name);
-    return true;
+      ],
+    );
   }
-  return false;
 }
 
 Future<bool> showCreatePlaylistDialog(BuildContext context) async {
@@ -289,4 +263,31 @@ Future<bool> showCreatePlaylistDialog(BuildContext context) async {
     return true;
   }
   return false;
+}
+
+void showAddPlaylistDialog(
+  BuildContext context,
+  List<AudioMetadata> songs,
+) async {
+  showDialog(
+    context: context,
+    builder: (context) {
+      return Dialog(
+        shape: SmoothRectangleBorder(
+          smoothness: 1,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: SizedBox(
+          height: 500,
+          width: 500,
+          child: Column(
+            children: [
+              SizedBox(height: 10),
+              Expanded(child: Add2PlaylistPlane(songs: songs)),
+            ],
+          ),
+        ),
+      );
+    },
+  );
 }
