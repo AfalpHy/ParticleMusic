@@ -88,7 +88,12 @@ class LyricsPage extends StatelessWidget {
                         ),
                       ],
                     ),
-                    Positioned(left: 0, right: 0, top: 0, child: TitleBar()),
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      top: 0,
+                      child: TitleBar(isMainPage: false),
+                    ),
                   ],
                 ),
               );

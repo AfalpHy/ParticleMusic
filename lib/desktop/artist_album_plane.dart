@@ -23,6 +23,7 @@ class ArtistAlbumPlane extends StatelessWidget {
     final planeWidth = (MediaQuery.widthOf(context) - 220);
     final crossAxisCount = (planeWidth / 200).toInt();
     final coverArtWidth = planeWidth / crossAxisCount - 50;
+    final textController = TextEditingController();
 
     return Expanded(
       child: Material(
@@ -30,7 +31,16 @@ class ArtistAlbumPlane extends StatelessWidget {
 
         child: Column(
           children: [
-            TitleBar(),
+            TitleBar(
+              textController: textController,
+              onChanged: (value) {
+                songListMapNotifer.value = Map.fromEntries(
+                  songListMap.entries.where(
+                    (e) => (e.key.toLowerCase().contains(value.toLowerCase())),
+                  ),
+                );
+              },
+            ),
 
             Expanded(
               child: ValueListenableBuilder(

@@ -28,6 +28,8 @@ class _SongListPlane extends State<SongListPlane> {
   Playlist? playlist;
   String? title;
 
+  late Function(String) onChanged;
+
   void updateSongList() {
     final value = textController.text;
     currentSongListNotifier.value = filterSongs(playlist!.songs, value);
@@ -41,14 +43,32 @@ class _SongListPlane extends State<SongListPlane> {
     if (playlist != null) {
       currentSongListNotifier.value = playlist!.songs;
       title = playlist!.name;
+      onChanged = (value) {
+        currentSongListNotifier.value = filterSongs(playlist!.songs, value);
+      };
     } else if (widget.artist != null) {
       currentSongListNotifier.value = artist2SongList[widget.artist]!;
       title = widget.artist;
+      onChanged = (value) {
+        currentSongListNotifier.value = filterSongs(
+          artist2SongList[widget.artist]!,
+          value,
+        );
+      };
     } else if (widget.album != null) {
       currentSongListNotifier.value = album2SongList[widget.album]!;
       title = widget.album;
+      onChanged = (value) {
+        currentSongListNotifier.value = filterSongs(
+          album2SongList[widget.album]!,
+          value,
+        );
+      };
     } else {
       currentSongListNotifier.value = librarySongs;
+      onChanged = (value) {
+        currentSongListNotifier.value = filterSongs(librarySongs, value);
+      };
     }
 
     playlist?.changeNotifier.addListener(updateSongList);
@@ -67,7 +87,7 @@ class _SongListPlane extends State<SongListPlane> {
         color: Color.fromARGB(255, 235, 240, 245),
         child: Column(
           children: [
-            TitleBar(),
+            TitleBar(textController: textController, onChanged: onChanged),
 
             Expanded(
               child: CustomScrollView(
