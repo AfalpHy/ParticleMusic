@@ -2,12 +2,10 @@ import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/load_library.dart';
 import 'package:particle_music/mobile/pages/song_list_page.dart';
 import 'package:searchfield/searchfield.dart';
 import 'package:smooth_corner/smooth_corner.dart';
-
-Map<String, List<AudioMetadata>> artist2SongList = {};
-Map<String, List<AudioMetadata>> album2SongList = {};
 
 class ArtistAlbumPage extends StatelessWidget {
   final bool isArtist;

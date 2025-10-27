@@ -8,9 +8,15 @@ import 'package:window_manager/window_manager.dart';
 
 class Sidebar extends StatelessWidget {
   final ValueNotifier<Playlist?> currentPlaylistNotifier;
+  final ValueNotifier<int> displayWhichPlaneNotifier;
+
   final ScrollController _scrollController = ScrollController();
 
-  Sidebar({super.key, required this.currentPlaylistNotifier});
+  Sidebar({
+    super.key,
+    required this.currentPlaylistNotifier,
+    required this.displayWhichPlaneNotifier,
+  });
 
   Widget sidebarItem({
     required Widget leading,
@@ -87,7 +93,9 @@ class Sidebar extends StatelessWidget {
                         ),
                         content: 'Artists',
 
-                        onTap: () {},
+                        onTap: () {
+                          displayWhichPlaneNotifier.value = 1;
+                        },
                       ),
                     ),
 
@@ -100,7 +108,9 @@ class Sidebar extends StatelessWidget {
                         ),
                         content: 'Albums',
 
-                        onTap: () {},
+                        onTap: () {
+                          displayWhichPlaneNotifier.value = 2;
+                        },
                       ),
                     ),
 
@@ -114,7 +124,7 @@ class Sidebar extends StatelessWidget {
                         content: 'Songs',
 
                         onTap: () {
-                          currentPlaylistNotifier.value = null;
+                          displayWhichPlaneNotifier.value = 0;
                         },
                       ),
                     ),
@@ -179,6 +189,7 @@ class Sidebar extends StatelessWidget {
 
                                 onTap: () {
                                   currentPlaylistNotifier.value = playlist;
+                                  displayWhichPlaneNotifier.value = 5;
                                 },
                               ),
                               menuProvider: (_) {
@@ -200,6 +211,8 @@ class Sidebar extends StatelessWidget {
                                             // back to songs if the playlist which will be deleted is displaying on the song list plane
                                             if (currentPlaylistNotifier.value ==
                                                 playlist) {
+                                              displayWhichPlaneNotifier.value =
+                                                  0;
                                               currentPlaylistNotifier.value =
                                                   null;
                                             }

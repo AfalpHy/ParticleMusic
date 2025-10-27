@@ -12,19 +12,21 @@ import 'package:super_context_menu/super_context_menu.dart';
 
 class SongListPlane extends StatefulWidget {
   final Playlist? playlist;
+  final String? artist;
+  final String? album;
 
-  const SongListPlane({super.key, required this.playlist});
+  const SongListPlane({super.key, this.playlist, this.artist, this.album});
 
   @override
   State<StatefulWidget> createState() => _SongListPlane();
 }
 
 class _SongListPlane extends State<SongListPlane> {
-  List<AudioMetadata> songList = [];
   final ValueNotifier<List<AudioMetadata>> currentSongListNotifier =
       ValueNotifier([]);
   final textController = TextEditingController();
   Playlist? playlist;
+  String? title;
 
   void updateSongList() {
     final value = textController.text;
@@ -35,8 +37,19 @@ class _SongListPlane extends State<SongListPlane> {
   void initState() {
     super.initState();
     playlist = widget.playlist;
-    songList = playlist == null ? librarySongs : playlist!.songs;
-    currentSongListNotifier.value = songList;
+
+    if (playlist != null) {
+      currentSongListNotifier.value = playlist!.songs;
+      title = playlist!.name;
+    } else if (widget.artist != null) {
+      currentSongListNotifier.value = artist2SongList[widget.artist]!;
+      title = widget.artist;
+    } else if (widget.album != null) {
+      currentSongListNotifier.value = album2SongList[widget.album]!;
+      title = widget.album;
+    } else {
+      currentSongListNotifier.value = librarySongs;
+    }
 
     playlist?.changeNotifier.addListener(updateSongList);
   }
@@ -49,8 +62,6 @@ class _SongListPlane extends State<SongListPlane> {
 
   @override
   Widget build(BuildContext context) {
-    final songListWidth = MediaQuery.widthOf(context);
-    final albumWidth = songListWidth * 0.25;
     return Expanded(
       child: Material(
         color: Color.fromARGB(255, 235, 240, 245),
@@ -61,19 +72,9 @@ class _SongListPlane extends State<SongListPlane> {
             Expanded(
               child: CustomScrollView(
                 slivers: [
-                  SliverToBoxAdapter(
-                    child: ValueListenableBuilder(
-                      valueListenable: currentSongListNotifier,
-                      builder: (context, _, _) {
-                        if (playlist == null) {
-                          return SizedBox.shrink();
-                        }
-                        return playlistHeader(playlist!);
-                      },
-                    ),
-                  ),
+                  SliverToBoxAdapter(child: titleHeader()),
 
-                  SliverToBoxAdapter(child: contentHeader(albumWidth)),
+                  SliverToBoxAdapter(child: contentHeader()),
 
                   ValueListenableBuilder(
                     valueListenable: currentSongListNotifier,
@@ -100,7 +101,6 @@ class _SongListPlane extends State<SongListPlane> {
                               context,
                               currentSongList,
                               index,
-                              albumWidth,
                             );
                           },
                         ),
@@ -116,48 +116,56 @@ class _SongListPlane extends State<SongListPlane> {
     );
   }
 
-  Widget playlistHeader(Playlist playlist) {
-    return Column(
-      children: [
-        Row(
+  Widget titleHeader() {
+    if (title == null) {
+      return SizedBox.shrink();
+    }
+    return ValueListenableBuilder(
+      valueListenable: currentSongListNotifier,
+      builder: (context, songList, child) {
+        return Column(
           children: [
-            SizedBox(width: 30),
-            Material(
-              elevation: 5,
-              shape: SmoothRectangleBorder(
-                smoothness: 1,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: CoverArtWidget(
-                size: 200,
-                borderRadius: 10,
-                source: playlist.songs.isNotEmpty
-                    ? getCoverArt(playlist.songs.first)
-                    : null,
-              ),
-            ),
-
-            Expanded(
-              child: ListTile(
-                title: AutoSizeText(
-                  playlist.name,
-                  maxLines: 1,
-                  minFontSize: 20,
-                  maxFontSize: 20,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontWeight: FontWeight.bold),
+            Row(
+              children: [
+                SizedBox(width: 30),
+                Material(
+                  elevation: 5,
+                  shape: SmoothRectangleBorder(
+                    smoothness: 1,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: CoverArtWidget(
+                    size: 200,
+                    borderRadius: 10,
+                    source: songList.isNotEmpty
+                        ? getCoverArt(songList.first)
+                        : null,
+                  ),
                 ),
-                subtitle: Text("${playlist.songs.length} songs"),
-              ),
+
+                Expanded(
+                  child: ListTile(
+                    title: AutoSizeText(
+                      title!,
+                      maxLines: 1,
+                      minFontSize: 20,
+                      maxFontSize: 20,
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    subtitle: Text("${songList.length} songs"),
+                  ),
+                ),
+              ],
             ),
+            SizedBox(height: 10),
           ],
-        ),
-        SizedBox(height: 10),
-      ],
+        );
+      },
     );
   }
 
-  Widget contentHeader(double albumWidth) {
+  Widget contentHeader() {
     return SizedBox(
       height: 50,
       child: Padding(
@@ -165,13 +173,13 @@ class _SongListPlane extends State<SongListPlane> {
         child: Row(
           children: [
             SizedBox(width: 60, child: Center(child: Text('#'))),
+
             Expanded(child: Text('Title', overflow: TextOverflow.ellipsis)),
+
             SizedBox(width: 30),
 
-            SizedBox(
-              width: albumWidth,
-              child: Text('Album', overflow: TextOverflow.ellipsis),
-            ),
+            Expanded(child: Text('Album', overflow: TextOverflow.ellipsis)),
+
             SizedBox(width: 30),
 
             SizedBox(
@@ -188,7 +196,6 @@ class _SongListPlane extends State<SongListPlane> {
     BuildContext context,
     List<AudioMetadata> currentSongList,
     int index,
-    double albumWidth,
   ) {
     final song = currentSongList[index];
 
@@ -260,14 +267,16 @@ class _SongListPlane extends State<SongListPlane> {
                       ),
                     ),
                   ),
+
                   SizedBox(width: 30),
-                  SizedBox(
-                    width: albumWidth,
+
+                  Expanded(
                     child: Text(
                       getAlbum(song),
                       overflow: TextOverflow.ellipsis,
                     ),
                   ),
+
                   SizedBox(width: 30),
 
                   SizedBox(

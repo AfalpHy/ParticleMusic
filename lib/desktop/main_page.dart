@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:particle_music/desktop/artist_album_plane.dart';
 import 'package:particle_music/desktop/bottom_control.dart';
 import 'package:particle_music/desktop/play_quee_page.dart';
 import 'package:particle_music/desktop/sidebar.dart';
@@ -8,18 +9,22 @@ import 'package:particle_music/playlists.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
 class DesktopMainPage extends StatelessWidget {
-  final controller = ScrollController();
-
   final ValueNotifier<Playlist?> currentPlaylistNotifier = ValueNotifier(null);
 
   final ValueNotifier<bool> displayLyricsPageNotifier = ValueNotifier(false);
 
   final ValueNotifier<bool> displayPlayQueuePageNotifier = ValueNotifier(false);
 
+  // 0 library song, 1 artist plane, 2 album plane, 3 artist song list
+  // 4 album song list, 5 playlist song list
+  final ValueNotifier<int> displayWhichPlaneNotifier = ValueNotifier(0);
+
   DesktopMainPage({super.key});
 
   @override
   Widget build(BuildContext context) {
+    String? songListTitle;
+
     return Stack(
       children: [
         Column(
@@ -27,14 +32,47 @@ class DesktopMainPage extends StatelessWidget {
             Expanded(
               child: Row(
                 children: [
-                  Sidebar(currentPlaylistNotifier: currentPlaylistNotifier),
+                  Sidebar(
+                    currentPlaylistNotifier: currentPlaylistNotifier,
+                    displayWhichPlaneNotifier: displayWhichPlaneNotifier,
+                  ),
                   ValueListenableBuilder(
-                    valueListenable: currentPlaylistNotifier,
-                    builder: (context, playlist, child) {
-                      return SongListPlane(
-                        key: ValueKey(playlist),
-                        playlist: playlist,
-                      );
+                    valueListenable: displayWhichPlaneNotifier,
+                    builder: (context, value, child) {
+                      switch (value) {
+                        case 0:
+                          return SongListPlane();
+                        case 1:
+                          return ArtistAlbumPlane(
+                            isArtist: true,
+                            switchPlane: (title) {
+                              displayWhichPlaneNotifier.value = 3;
+                              songListTitle = title;
+                            },
+                          );
+                        case 2:
+                          return ArtistAlbumPlane(
+                            isArtist: false,
+                            switchPlane: (title) {
+                              displayWhichPlaneNotifier.value = 4;
+                              songListTitle = title;
+                            },
+                          );
+                        case 3:
+                          return SongListPlane(artist: songListTitle);
+                        case 4:
+                          return SongListPlane(album: songListTitle);
+                        default:
+                          return ValueListenableBuilder(
+                            valueListenable: currentPlaylistNotifier,
+                            builder: (context, playlist, child) {
+                              return SongListPlane(
+                                key: ValueKey(playlist),
+                                playlist: playlist,
+                              );
+                            },
+                          );
+                      }
                     },
                   ),
                 ],
