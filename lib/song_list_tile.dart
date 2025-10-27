@@ -131,13 +131,7 @@ class SongListTile extends StatelessWidget {
                             onTap: () {
                               Navigator.pop(context);
 
-                              showModalBottomSheet(
-                                context: context,
-                                isScrollControlled: true,
-                                builder: (_) {
-                                  return PlaylistsSheet(songs: [song]);
-                                },
-                              );
+                              showAddPlaylistSheet(context, [song]);
                             },
                           ),
                           ListTile(

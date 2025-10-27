@@ -109,7 +109,7 @@ class PlaylistsPage extends StatelessWidget {
                     ),
                     title: Text('Create Playlist'),
                     onTap: () {
-                      showCreatePlaylistDialog(context);
+                      showCreatePlaylistSheet(context);
                     },
                   ),
                   SizedBox(height: 70),
@@ -138,7 +138,7 @@ class PlaylistsPage extends StatelessWidget {
             title: Text('Create Playlist'),
             visualDensity: const VisualDensity(horizontal: 0, vertical: 4),
             onTap: () {
-              showCreatePlaylistDialog(context);
+              showCreatePlaylistSheet(context);
             },
           ),
           Divider(thickness: 0.5, height: 1, color: Colors.grey.shade300),

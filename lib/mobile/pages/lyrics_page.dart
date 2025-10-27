@@ -210,15 +210,9 @@ class LyricsPage extends StatelessWidget {
                                   onTap: () {
                                     Navigator.pop(context);
 
-                                    showModalBottomSheet(
-                                      context: context,
-                                      isScrollControlled: true,
-                                      builder: (_) {
-                                        return PlaylistsSheet(
-                                          songs: [currentSong!],
-                                        );
-                                      },
-                                    );
+                                    showAddPlaylistSheet(context, [
+                                      currentSong!,
+                                    ]);
                                   },
                                 ),
                               ],

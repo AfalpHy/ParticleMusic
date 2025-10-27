@@ -15,36 +15,56 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:searchfield/searchfield.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
-class SongListPage extends StatelessWidget {
+class SongListPage extends StatefulWidget {
   final List<AudioMetadata> songList;
   final Widget Function(BuildContext) moreSheet;
 
   final String? name;
   final Playlist? playlist;
 
-  final int extraItems;
-  final int offset;
-
-  final listIsScrollingNotifier = ValueNotifier(false);
-  final ValueNotifier<List<AudioMetadata>> currentSongListNotifier;
-  final itemScrollController = ItemScrollController();
-  final textController = TextEditingController();
-
-  SongListPage({
+  const SongListPage({
     super.key,
     required this.songList,
     required this.moreSheet,
     this.name,
     this.playlist,
-  }) : currentSongListNotifier = ValueNotifier<List<AudioMetadata>>(songList),
-       extraItems = name == null ? 1 : 2,
-       offset = name == null ? 0 : 1 {
-    if (playlist != null) {
-      playlist!.changeNotifier.addListener(() {
-        final value = textController.text;
-        currentSongListNotifier.value = filterSongs(songList, value);
-      });
+  });
+
+  @override
+  State<StatefulWidget> createState() => _SongListPageState();
+}
+
+class _SongListPageState extends State<SongListPage> {
+  int extraItems = 0;
+  int offset = 0;
+
+  final ValueNotifier<List<AudioMetadata>> currentSongListNotifier =
+      ValueNotifier([]);
+
+  final listIsScrollingNotifier = ValueNotifier(false);
+  final itemScrollController = ItemScrollController();
+  final textController = TextEditingController();
+
+  void updateSongList() {
+    final value = textController.text;
+    currentSongListNotifier.value = filterSongs(widget.playlist!.songs, value);
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    extraItems = widget.name == null ? 1 : 2;
+    offset = widget.name == null ? 0 : 1;
+    currentSongListNotifier.value = widget.songList;
+    if (widget.playlist != null) {
+      widget.playlist!.changeNotifier.addListener(updateSongList);
     }
+  }
+
+  @override
+  void dispose() {
+    widget.playlist?.changeNotifier.removeListener(updateSongList);
+    super.dispose();
   }
 
   @override
@@ -72,7 +92,7 @@ class SongListPage extends StatelessWidget {
               isScrollControlled: true,
               useRootNavigator: true,
               builder: (context) {
-                return moreSheet(context);
+                return widget.moreSheet(context);
               },
             ).then((value) {
               if (value == true && context.mounted) {
@@ -107,7 +127,7 @@ class SongListPage extends StatelessWidget {
                         suffixIcon: IconButton(
                           onPressed: () {
                             isSearch.value = false;
-                            currentSongListNotifier.value = songList;
+                            currentSongListNotifier.value = widget.songList;
                             textController.clear();
                             FocusScope.of(context).unfocus();
                           },
@@ -125,7 +145,7 @@ class SongListPage extends StatelessWidget {
                       ),
                       onSearchTextChanged: (value) {
                         currentSongListNotifier.value = filterSongs(
-                          songList,
+                          widget.songList,
                           value,
                         );
                         return null;
@@ -173,7 +193,7 @@ class SongListPage extends StatelessWidget {
                 itemScrollController: itemScrollController,
                 itemCount: currentSongList.length + extraItems,
                 itemBuilder: (context, index) {
-                  if (name != null && index == 0) {
+                  if (widget.name != null && index == 0) {
                     return Column(
                       children: [
                         SizedBox(height: 10),
@@ -190,8 +210,8 @@ class SongListPage extends StatelessWidget {
                               child: CoverArtWidget(
                                 size: 120,
                                 borderRadius: 9,
-                                source: songList.isNotEmpty
-                                    ? getCoverArt(songList.first)
+                                source: widget.songList.isNotEmpty
+                                    ? getCoverArt(widget.songList.first)
                                     : null,
                               ),
                             ),
@@ -199,14 +219,16 @@ class SongListPage extends StatelessWidget {
                             Expanded(
                               child: ListTile(
                                 title: AutoSizeText(
-                                  name!,
+                                  widget.name!,
                                   maxLines: 1,
                                   minFontSize: 20,
                                   maxFontSize: 20,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(fontWeight: FontWeight.bold),
                                 ),
-                                subtitle: Text("${songList.length} songs"),
+                                subtitle: Text(
+                                  "${widget.songList.length} songs",
+                                ),
                               ),
                             ),
                           ],
@@ -220,7 +242,7 @@ class SongListPage extends StatelessWidget {
                     return SongListTile(
                       index: index - offset,
                       source: currentSongList,
-                      playlist: playlist,
+                      playlist: widget.playlist,
                     );
                   } else {
                     return SizedBox(height: 90);
@@ -425,13 +447,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                             songs.add(songList[i]);
                           }
                         }
-                        showModalBottomSheet(
-                          context: context,
-                          isScrollControlled: true,
-                          builder: (_) {
-                            return PlaylistsSheet(songs: songs);
-                          },
-                        );
+                        showAddPlaylistSheet(context, songs);
                       }
                     },
                     child: Column(

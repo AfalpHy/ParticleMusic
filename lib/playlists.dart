@@ -134,26 +134,6 @@ void toggleFavoriteState(AudioMetadata song) {
   }
 }
 
-class PlaylistsSheet extends StatefulWidget {
-  final List<AudioMetadata> songs;
-  const PlaylistsSheet({super.key, required this.songs});
-
-  @override
-  State<StatefulWidget> createState() => PlaylistsSheetState();
-}
-
-class PlaylistsSheetState extends State<PlaylistsSheet> {
-  @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return mySheet(Add2PlaylistPlane(songs: widget.songs));
-  }
-}
-
 class Add2PlaylistPlane extends StatefulWidget {
   final List<AudioMetadata> songs;
   const Add2PlaylistPlane({super.key, required this.songs});
@@ -183,8 +163,14 @@ class _Add2PlaylistPlaneState extends State<Add2PlaylistPlane> {
           ),
           title: Text('Create Playlist'),
           onTap: () async {
-            if (await showCreatePlaylistDialog(context)) {
-              setState(() {});
+            if (isMobile) {
+              if (await showCreatePlaylistSheet(context)) {
+                setState(() {});
+              }
+            } else {
+              if (await showCreatePlaylistDialog(context)) {
+                setState(() {});
+              }
             }
           },
         ),
@@ -222,6 +208,50 @@ class _Add2PlaylistPlaneState extends State<Add2PlaylistPlane> {
       ],
     );
   }
+}
+
+Future<bool> showCreatePlaylistSheet(BuildContext context) async {
+  final controller = TextEditingController();
+  final name = await showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    useRootNavigator: true,
+    builder: (context) {
+      return mySheet(
+        SizedBox(
+          height: 250, // fixed height
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.start, // center vertically
+            children: [
+              Padding(
+                padding: const EdgeInsets.fromLTRB(30, 30, 30, 0),
+                child: TextField(
+                  controller: controller,
+                  autofocus: true,
+                  decoration: const InputDecoration(
+                    border: OutlineInputBorder(),
+                    labelText: "Playlist Name",
+                  ),
+                ),
+              ),
+              const SizedBox(height: 10),
+              ElevatedButton(
+                onPressed: () {
+                  Navigator.pop(context, controller.text); // close with value
+                },
+                child: const Text("Complete"),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+  if (name != null && name != '') {
+    playlistsManager.createPlaylist(name);
+    return true;
+  }
+  return false;
 }
 
 Future<bool> showCreatePlaylistDialog(BuildContext context) async {
@@ -263,6 +293,19 @@ Future<bool> showCreatePlaylistDialog(BuildContext context) async {
     return true;
   }
   return false;
+}
+
+void showAddPlaylistSheet(
+  BuildContext context,
+  List<AudioMetadata> songs,
+) async {
+  showModalBottomSheet(
+    context: context,
+    isScrollControlled: true,
+    builder: (_) {
+      return mySheet(Add2PlaylistPlane(songs: songs));
+    },
+  );
 }
 
 void showAddPlaylistDialog(
