@@ -51,6 +51,7 @@ dependencies:
   smooth_corner: ^1.1.1
   window_manager: ^0.5.1
   super_context_menu: ^0.9.1
+  tray_manager: ^0.5.1
 
 dev_dependencies:
   flutter_test:
@@ -69,7 +70,9 @@ dev_dependencies:
 # The following section is specific to Flutter packages.
 flutter:
   assets:
+    - assets/
     - assets/images/
+
   # The following line ensures that the Material Icons font is
   # included with your application, so that you can use the icons in
   # the material Icons class.

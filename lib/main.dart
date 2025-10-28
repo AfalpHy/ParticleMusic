@@ -6,6 +6,7 @@ import 'package:particle_music/mobile/pages/main_page.dart';
 import 'package:audio_service/audio_service.dart';
 import 'dart:async';
 import 'package:flutter/services.dart';
+import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
 import 'audio_handler.dart';
 
@@ -34,10 +35,29 @@ Future<void> main() async {
       backgroundColor: Colors.transparent,
       titleBarStyle: TitleBarStyle.hidden,
     );
-    windowManager.waitUntilReadyToShow(windowOptions, () async {
+    await windowManager.waitUntilReadyToShow(windowOptions, () async {
+      await windowManager.setPreventClose(true);
       await windowManager.show();
       await windowManager.focus();
     });
+
+    await trayManager.setIcon(
+      Platform.isWindows ? 'assets/app_icon.ico' : 'assets/app_icon.png',
+    );
+
+    await trayManager.setContextMenu(
+      Menu(
+        items: [
+          MenuItem(key: 'show', label: 'Show App'),
+          MenuItem(key: 'skipToPrevious', label: 'Skip to Previous'),
+          MenuItem(key: 'togglePlay', label: 'Play/Pause'),
+          MenuItem(key: 'skipToNext', label: 'Skip to Next'),
+
+          MenuItem.separator(),
+          MenuItem(key: 'exit', label: 'Exit'),
+        ],
+      ),
+    );
   }
   await libraryLoader.initial();
   await libraryLoader.load();

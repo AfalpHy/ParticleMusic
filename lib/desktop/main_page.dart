@@ -1,5 +1,8 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/desktop/bottom_control.dart';
 import 'package:particle_music/desktop/keyboard.dart';
 import 'package:particle_music/desktop/plane_manager.dart';
@@ -8,9 +11,10 @@ import 'package:particle_music/desktop/sidebar.dart';
 import 'package:particle_music/desktop/lyrics_page.dart';
 import 'package:particle_music/desktop/title_bar.dart';
 import 'package:smooth_corner/smooth_corner.dart';
+import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
 
-class DesktopMainPage extends StatelessWidget {
+class DesktopMainPage extends StatelessWidget with TrayListener {
   DesktopMainPage({super.key}) {
     // clear press state when focus lost
     appFocusNode.addListener(() {
@@ -19,6 +23,38 @@ class DesktopMainPage extends StatelessWidget {
     });
 
     windowManager.addListener(MyWindowListener());
+    trayManager.addListener(this);
+  }
+
+  @override
+  void onTrayIconMouseDown() async {
+    windowManager.show();
+  }
+
+  @override
+  void onTrayIconRightMouseDown() {
+    trayManager.popUpContextMenu();
+  }
+
+  @override
+  void onTrayMenuItemClick(MenuItem menuItem) async {
+    if (menuItem.key == 'show') {
+      await windowManager.show();
+    } else if (menuItem.key == 'exit') {
+      exit(0);
+    } else if (menuItem.key == 'skipToPrevious') {
+      if (playQueue.isNotEmpty) {
+        await audioHandler.skipToPrevious();
+      }
+    } else if (menuItem.key == 'togglePlay') {
+      if (playQueue.isNotEmpty) {
+        await audioHandler.togglePlay();
+      }
+    } else if (menuItem.key == 'skipToNext') {
+      if (playQueue.isNotEmpty) {
+        await audioHandler.skipToNext();
+      }
+    }
   }
 
   @override
