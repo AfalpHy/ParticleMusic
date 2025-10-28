@@ -131,6 +131,7 @@ class ArtistAlbumPage extends StatelessWidget {
                       },
                     ),
                   ),
+                  SizedBox(height: 5),
                   SizedBox(
                     width: appWidth * 0.4 - 20,
                     child: Center(
