@@ -6,19 +6,19 @@ import 'package:particle_music/desktop/plane_manager.dart';
 import 'package:particle_music/desktop/play_quee_page.dart';
 import 'package:particle_music/desktop/sidebar.dart';
 import 'package:particle_music/desktop/lyrics_page.dart';
+import 'package:particle_music/desktop/title_bar.dart';
 import 'package:smooth_corner/smooth_corner.dart';
+import 'package:window_manager/window_manager.dart';
 
 class DesktopMainPage extends StatelessWidget {
-  final ValueNotifier<bool> displayLyricsPageNotifier = ValueNotifier(false);
-
-  final ValueNotifier<bool> displayPlayQueuePageNotifier = ValueNotifier(false);
-
   DesktopMainPage({super.key}) {
     // clear press state when focus lost
     appFocusNode.addListener(() {
       shiftIsPressed = false;
       ctrlIsPressed = false;
     });
+
+    windowManager.addListener(MyWindowListener());
   }
 
   @override
@@ -70,16 +70,11 @@ class DesktopMainPage extends StatelessWidget {
                   ],
                 ),
               ),
-              Material(
-                child: BottomControl(
-                  displayLyricsPageNotifier: displayLyricsPageNotifier,
-                  displayPlayQueuePageNotifier: displayPlayQueuePageNotifier,
-                ),
-              ),
+              Material(child: BottomControl()),
             ],
           ),
 
-          LyricsPage(displayLyricsPageNotifier: displayLyricsPageNotifier),
+          LyricsPage(),
 
           ValueListenableBuilder(
             valueListenable: displayPlayQueuePageNotifier,
@@ -118,13 +113,7 @@ class DesktopMainPage extends StatelessWidget {
                       ),
                     ),
 
-                    child: SizedBox(
-                      width: 350,
-                      child: PlayQueuePage(
-                        displayPlayQueuePageNotifier:
-                            displayPlayQueuePageNotifier,
-                      ),
-                    ),
+                    child: SizedBox(width: 350, child: PlayQueuePage()),
                   ),
                 );
               },

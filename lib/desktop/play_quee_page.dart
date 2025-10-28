@@ -5,10 +5,10 @@ import 'package:particle_music/desktop/keyboard.dart';
 import 'package:super_context_menu/super_context_menu.dart';
 import '../audio_handler.dart';
 
-class PlayQueuePage extends StatefulWidget {
-  final ValueNotifier<bool> displayPlayQueuePageNotifier;
+final ValueNotifier<bool> displayPlayQueuePageNotifier = ValueNotifier(false);
 
-  const PlayQueuePage({super.key, required this.displayPlayQueuePageNotifier});
+class PlayQueuePage extends StatefulWidget {
+  const PlayQueuePage({super.key});
 
   @override
   State<StatefulWidget> createState() => PlayQueueSheetState();
@@ -21,8 +21,8 @@ class PlayQueueSheetState extends State<PlayQueuePage> {
   @override
   void initState() {
     super.initState();
-    widget.displayPlayQueuePageNotifier.addListener(() {
-      if (widget.displayPlayQueuePageNotifier.value) {
+    displayPlayQueuePageNotifier.addListener(() {
+      if (displayPlayQueuePageNotifier.value) {
         scrollController.jumpTo(64.0 * audioHandler.currentIndex);
       }
     });
@@ -54,7 +54,7 @@ class PlayQueueSheetState extends State<PlayQueuePage> {
                     audioHandler.clear();
 
                     setState(() {});
-                    widget.displayPlayQueuePageNotifier.value = false;
+                    displayPlayQueuePageNotifier.value = false;
                   }
                 },
                 icon: const ImageIcon(deleteImage, color: Colors.black),
@@ -230,7 +230,7 @@ class PlayQueueSheetState extends State<PlayQueuePage> {
                           setState(() {});
                           if (playQueue.isEmpty) {
                             audioHandler.clear();
-                            widget.displayPlayQueuePageNotifier.value = false;
+                            displayPlayQueuePageNotifier.value = false;
                           } else if (removeCurrent) {
                             await audioHandler.load();
                             if (isPlayingNotifier.value) {

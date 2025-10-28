@@ -5,10 +5,10 @@ import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/desktop/title_bar.dart';
 import 'package:particle_music/lyrics.dart';
 
-class LyricsPage extends StatelessWidget {
-  final ValueNotifier<bool> displayLyricsPageNotifier;
+final ValueNotifier<bool> displayLyricsPageNotifier = ValueNotifier(false);
 
-  const LyricsPage({super.key, required this.displayLyricsPageNotifier});
+class LyricsPage extends StatelessWidget {
+  const LyricsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -29,18 +29,10 @@ class LyricsPage extends StatelessWidget {
                     Row(
                       children: [
                         SizedBox(width: MediaQuery.widthOf(context) * 0.15),
-                        InkWell(
-                          splashColor: Colors.transparent,
-                          highlightColor: Colors.transparent,
-                          hoverColor: Colors.transparent,
-                          onTap: () {
-                            displayLyricsPageNotifier.value = false;
-                          },
-                          child: CoverArtWidget(
-                            size: MediaQuery.widthOf(context) * 0.3,
-                            borderRadius: MediaQuery.widthOf(context) * 0.015,
-                            source: getCoverArt(currentSong),
-                          ),
+                        CoverArtWidget(
+                          size: MediaQuery.widthOf(context) * 0.3,
+                          borderRadius: MediaQuery.widthOf(context) * 0.015,
+                          source: getCoverArt(currentSong),
                         ),
                         SizedBox(width: MediaQuery.widthOf(context) * 0.05),
                         SizedBox(

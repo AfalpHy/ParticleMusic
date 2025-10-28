@@ -14,9 +14,14 @@ late double appWidth;
 
 const AssetImage addImage = AssetImage('assets/images/add.png');
 const AssetImage albumImage = AssetImage('assets/images/album.png');
+const AssetImage arrowDownImage = AssetImage('assets/images/arrow_down.png');
 const AssetImage artistImage = AssetImage('assets/images/artist.png');
 const AssetImage closeImage = AssetImage('assets/images/close.png');
 const AssetImage deleteImage = AssetImage('assets/images/delete.png');
+const AssetImage fullscreenExitImage = AssetImage(
+  'assets/images/fullscreen_exit.png',
+);
+const AssetImage fullscreenImage = AssetImage('assets/images/fullscreen.png');
 const AssetImage loopImage = AssetImage('assets/images/loop.png');
 const AssetImage maximizeImage = AssetImage('assets/images/maximize.png');
 const AssetImage minimizeImage = AssetImage('assets/images/minimize.png');
@@ -44,6 +49,7 @@ const AssetImage repeatImage = AssetImage('assets/images/repeat.png');
 const AssetImage selectImage = AssetImage('assets/images/select.png');
 const AssetImage shuffleImage = AssetImage('assets/images/shuffle.png');
 const AssetImage songsImage = AssetImage('assets/images/songs.png');
+const AssetImage unmaximizeImage = AssetImage('assets/images/unmaximize.png');
 
 class MyAutoSizeText extends AutoSizeText {
   final String content;

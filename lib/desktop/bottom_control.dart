@@ -2,17 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
+import 'package:particle_music/desktop/lyrics_page.dart';
+import 'package:particle_music/desktop/play_quee_page.dart';
 import 'package:particle_music/seekbar.dart';
 
 class BottomControl extends StatelessWidget {
-  final ValueNotifier<bool> displayLyricsPageNotifier;
-
-  final ValueNotifier<bool> displayPlayQueuePageNotifier;
-  const BottomControl({
-    super.key,
-    required this.displayLyricsPageNotifier,
-    required this.displayPlayQueuePageNotifier,
-  });
+  const BottomControl({super.key});
 
   @override
   Widget build(BuildContext context) {

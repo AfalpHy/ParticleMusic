@@ -1,9 +1,25 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/keyboard.dart';
+import 'package:particle_music/desktop/lyrics_page.dart';
 import 'package:particle_music/desktop/plane_manager.dart';
 import 'package:searchfield/searchfield.dart';
 import 'package:window_manager/window_manager.dart';
+
+ValueNotifier<bool> isMaximizedNotifier = ValueNotifier(false);
+ValueNotifier<bool> isFullScreenNotifier = ValueNotifier(false);
+
+class MyWindowListener extends WindowListener {
+  @override
+  void onWindowMaximize() {
+    isMaximizedNotifier.value = true;
+  }
+
+  @override
+  void onWindowUnmaximize() {
+    isMaximizedNotifier.value = false;
+  }
+}
 
 class TitleBar extends StatelessWidget {
   final bool isMainPage;
@@ -35,11 +51,17 @@ class TitleBar extends StatelessWidget {
           GestureDetector(
             behavior: HitTestBehavior.translucent,
             onPanStart: (details) => windowManager.startDragging(),
-            onDoubleTap: () async => await windowManager.isMaximized()
-                ? windowManager.unmaximize()
-                : windowManager.maximize(),
+            onDoubleTap: () async {
+              if (isFullScreenNotifier.value) {
+                return;
+              }
+              isMaximizedNotifier.value
+                  ? windowManager.unmaximize()
+                  : windowManager.maximize();
+            },
             child: Container(),
           ),
+
           if (isMainPage)
             Center(
               child: SizedBox(
@@ -63,11 +85,13 @@ class TitleBar extends StatelessWidget {
                 ),
               ),
             ),
-          if (isMainPage)
-            Center(
-              child: Row(
-                children: [
-                  SizedBox(width: 30),
+
+          Center(
+            child: Row(
+              children: [
+                SizedBox(width: 30),
+
+                if (isMainPage)
                   IconButton(
                     onPressed: () {
                       planeManager.popPlane();
@@ -76,34 +100,116 @@ class TitleBar extends StatelessWidget {
                       Icons.arrow_back_ios_rounded,
                       color: Colors.black54,
                     ),
-                  ),
-                  Spacer(),
-
-                  IconButton(
-                    onPressed: () {
-                      windowManager.minimize();
+                  )
+                else
+                  ValueListenableBuilder(
+                    valueListenable: isFullScreenNotifier,
+                    builder: (context, isFullScreen, child) {
+                      return isFullScreen
+                          ? SizedBox.shrink()
+                          : IconButton(
+                              onPressed: () {
+                                displayLyricsPageNotifier.value = false;
+                              },
+                              icon: ImageIcon(
+                                arrowDownImage,
+                                color: Colors.black54,
+                              ),
+                            );
                     },
-                    icon: ImageIcon(minimizeImage, color: Colors.black54),
                   ),
+
+                if (!isMainPage)
                   IconButton(
                     onPressed: () async {
-                      await windowManager.isMaximized()
-                          ? windowManager.unmaximize()
-                          : windowManager.maximize();
+                      if (isFullScreenNotifier.value) {
+                        await windowManager.setFullScreen(false);
+                        isFullScreenNotifier.value = false;
+                      } else {
+                        if (isMaximizedNotifier.value) {
+                          if (context.mounted) {
+                            showCenterMessage(
+                              context,
+                              'enter fullscreen with maximized window will cause bug',
+                              duration: 3000,
+                            );
+                          }
+                          return;
+                        }
+                        await windowManager.setFullScreen(true);
+                        isFullScreenNotifier.value = true;
+                      }
                     },
-                    icon: ImageIcon(maximizeImage, color: Colors.black54),
+                    icon: ValueListenableBuilder(
+                      valueListenable: isFullScreenNotifier,
+                      builder: (context, isFullScreen, child) {
+                        return isFullScreen
+                            ? ImageIcon(
+                                fullscreenExitImage,
+                                color: Colors.black54,
+                              )
+                            : ImageIcon(fullscreenImage, color: Colors.black54);
+                      },
+                    ),
                   ),
 
-                  IconButton(
-                    onPressed: () {
-                      windowManager.close();
-                    },
-                    icon: Icon(Icons.close_rounded, color: Colors.black54),
-                  ),
-                  SizedBox(width: 30),
-                ],
-              ),
+                Spacer(),
+
+                ValueListenableBuilder(
+                  valueListenable: isFullScreenNotifier,
+                  builder: (context, isFullScreen, child) {
+                    return isFullScreen
+                        ? SizedBox.shrink()
+                        : Row(
+                            children: [
+                              IconButton(
+                                onPressed: () {
+                                  windowManager.minimize();
+                                },
+                                icon: ImageIcon(
+                                  minimizeImage,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                              ValueListenableBuilder(
+                                valueListenable: isMaximizedNotifier,
+                                builder: (context, value, child) {
+                                  return IconButton(
+                                    onPressed: () async {
+                                      isMaximizedNotifier.value
+                                          ? windowManager.unmaximize()
+                                          : windowManager.maximize();
+                                    },
+                                    icon: value
+                                        ? ImageIcon(
+                                            unmaximizeImage,
+                                            color: Colors.black54,
+                                          )
+                                        : ImageIcon(
+                                            maximizeImage,
+                                            color: Colors.black54,
+                                          ),
+                                  );
+                                },
+                              ),
+                              IconButton(
+                                onPressed: () {
+                                  windowManager.close();
+                                },
+                                icon: Icon(
+                                  Icons.close_rounded,
+                                  color: Colors.black54,
+                                ),
+                              ),
+                            ],
+                          );
+                  },
+                ),
+
+                SizedBox(width: 30),
+              ],
             ),
+          ),
         ],
       ),
     );
