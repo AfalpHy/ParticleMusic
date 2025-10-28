@@ -113,44 +113,43 @@ class PlayQueueSheetState extends State<PlayQueuePage> {
                               color: value
                                   ? Colors.grey.shade300
                                   : Colors.transparent,
-                              child: ListTile(
-                                leading: InkWell(
-                                  child: CoverArtWidget(
+                              child: InkWell(
+                                highlightColor: Colors.transparent,
+                                splashColor: Colors.transparent,
+                                child: ListTile(
+                                  leading: CoverArtWidget(
                                     size: 50,
                                     borderRadius: 5,
                                     source: getCoverArt(song),
                                   ),
-                                  onTap: () async {
-                                    audioHandler.currentIndex = index;
-                                    await audioHandler.load();
-                                    await audioHandler.play();
-                                  },
-                                ),
-                                title: Text(
-                                  getTitle(song),
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    color: song == currentSong
-                                        ? Color.fromARGB(255, 75, 210, 210)
-                                        : null,
-                                    fontWeight: song == currentSong
-                                        ? FontWeight.bold
-                                        : null,
-                                    fontSize: 14,
+                                  title: Text(
+                                    getTitle(song),
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      color: song == currentSong
+                                          ? Color.fromARGB(255, 75, 210, 210)
+                                          : null,
+                                      fontWeight: song == currentSong
+                                          ? FontWeight.bold
+                                          : null,
+                                      fontSize: 14,
+                                    ),
                                   ),
-                                ),
-                                subtitle: Text(
-                                  "${getArtist(song)} - ${getAlbum(song)}",
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    color: Colors.grey,
+                                  subtitle: Text(
+                                    "${getArtist(song)} - ${getAlbum(song)}",
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      color: Colors.grey,
+                                    ),
                                   ),
-                                ),
-                                trailing: Text(
-                                  formatDuration(getDuration(song)),
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(fontSize: 12),
+                                  trailing: Text(
+                                    formatDuration(getDuration(song)),
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(fontSize: 12),
+                                  ),
+                                  // need add this to keep cursor without adding onTap
+                                  mouseCursor: SystemMouseCursors.click,
                                 ),
                                 onTap: () async {
                                   if (ctrlIsPressed) {
@@ -188,6 +187,11 @@ class PlayQueueSheetState extends State<PlayQueuePage> {
                                     isSelected.value = true;
                                     continuousSelectBeginIndex = index;
                                   }
+                                },
+                                onDoubleTap: () async {
+                                  audioHandler.currentIndex = index;
+                                  await audioHandler.load();
+                                  await audioHandler.play();
                                 },
                               ),
                             );
