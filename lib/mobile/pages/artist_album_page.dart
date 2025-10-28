@@ -95,7 +95,7 @@ class ArtistAlbumPage extends StatelessWidget {
             padding: EdgeInsets.symmetric(horizontal: 16),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               crossAxisCount: 2,
-              childAspectRatio: 0.88,
+              childAspectRatio: 0.95,
             ),
             itemCount: currentSongListMap.length,
             itemBuilder: (context, index) {
@@ -131,18 +131,14 @@ class ArtistAlbumPage extends StatelessWidget {
                       },
                     ),
                   ),
-                  SizedBox(height: 10),
-                  Row(
-                    children: [
-                      SizedBox(width: 15),
-                      Expanded(
-                        child: Text(
-                          key,
-                          style: TextStyle(overflow: TextOverflow.ellipsis),
-                        ),
+                  SizedBox(
+                    width: appWidth * 0.4 - 20,
+                    child: Center(
+                      child: Text(
+                        key,
+                        style: TextStyle(overflow: TextOverflow.ellipsis),
                       ),
-                      SizedBox(width: 10),
-                    ],
+                    ),
                   ),
                 ],
               );
