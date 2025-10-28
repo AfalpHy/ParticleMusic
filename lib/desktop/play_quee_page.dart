@@ -233,7 +233,9 @@ class PlayQueueSheetState extends State<PlayQueuePage> {
                             widget.displayPlayQueuePageNotifier.value = false;
                           } else if (removeCurrent) {
                             await audioHandler.load();
-                            await audioHandler.play();
+                            if (isPlayingNotifier.value) {
+                              await audioHandler.play();
+                            }
                           }
                         },
                       ),
