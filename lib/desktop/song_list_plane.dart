@@ -194,7 +194,14 @@ class _SongListPlane extends State<SongListPlane> {
 
             Expanded(child: Text('Album', overflow: TextOverflow.ellipsis)),
 
-            SizedBox(width: 30),
+            SizedBox(width: 20),
+
+            SizedBox(
+              width: 60,
+              child: Text('Favorited', overflow: TextOverflow.ellipsis),
+            ),
+
+            SizedBox(width: 10),
 
             SizedBox(
               width: 80,
@@ -291,7 +298,32 @@ class _SongListPlane extends State<SongListPlane> {
                     ),
                   ),
 
-                  SizedBox(width: 30),
+                  SizedBox(width: 20),
+                  SizedBox(
+                    width: 60,
+                    child: Align(
+                      alignment: AlignmentGeometry.centerLeft,
+                      child: IconButton(
+                        onPressed: () {
+                          toggleFavoriteState(song);
+                        },
+                        icon: ValueListenableBuilder(
+                          valueListenable: songIsFavorite[song]!,
+                          builder: (context, value, child) {
+                            return value
+                                ? Icon(
+                                    Icons.favorite_rounded,
+                                    color: Colors.red,
+                                    size: 20,
+                                  )
+                                : Icon(Icons.favorite_outline, size: 20);
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  SizedBox(width: 10),
 
                   SizedBox(
                     width: 80,
