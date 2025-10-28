@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/desktop/keyboard.dart';
 import 'package:particle_music/desktop/plane_manager.dart';
 import 'package:searchfield/searchfield.dart';
 import 'package:window_manager/window_manager.dart';
@@ -8,12 +9,21 @@ class TitleBar extends StatelessWidget {
   final bool isMainPage;
   final TextEditingController? textController;
   final Function(String)? onChanged;
-  const TitleBar({
+
+  final textFieldFocusNode = FocusNode();
+
+  TitleBar({
     super.key,
     this.isMainPage = true,
     this.textController,
     this.onChanged,
-  });
+  }) {
+    textFieldFocusNode.addListener(() {
+      if (!textFieldFocusNode.hasFocus) {
+        appFocusNode.requestFocus();
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,6 +45,7 @@ class TitleBar extends StatelessWidget {
               child: SizedBox(
                 width: 350,
                 child: TextField(
+                  focusNode: textFieldFocusNode,
                   controller: textController,
                   decoration: SearchInputDecoration(
                     hintText: 'Search',

@@ -13,11 +13,9 @@ class DesktopMainPage extends StatelessWidget {
 
   final ValueNotifier<bool> displayPlayQueuePageNotifier = ValueNotifier(false);
 
-  final focusNode = FocusNode();
-
   DesktopMainPage({super.key}) {
     // clear press state when focus lost
-    focusNode.addListener(() {
+    appFocusNode.addListener(() {
       shiftIsPressed = false;
       ctrlIsPressed = false;
     });
@@ -26,7 +24,7 @@ class DesktopMainPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return KeyboardListener(
-      focusNode: focusNode,
+      focusNode: appFocusNode,
       autofocus: true,
       onKeyEvent: (value) {
         if (value is KeyDownEvent || value is KeyRepeatEvent) {
