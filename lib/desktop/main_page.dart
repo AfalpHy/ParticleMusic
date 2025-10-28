@@ -28,7 +28,10 @@ class DesktopMainPage extends StatelessWidget {
                     child: ValueListenableBuilder(
                       valueListenable: planeManager.updatePlane,
                       builder: (_, _, _) {
-                        return Stack(children: planeManager.planeStack);
+                        return IndexedStack(
+                          index: planeManager.planeStack.length - 1,
+                          children: planeManager.planeStack,
+                        );
                       },
                     ),
                   ),
