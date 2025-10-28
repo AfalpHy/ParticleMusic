@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
+import 'package:particle_music/desktop/keyboard.dart';
 import 'package:super_context_menu/super_context_menu.dart';
 import '../audio_handler.dart';
 
@@ -15,6 +16,7 @@ class PlayQueuePage extends StatefulWidget {
 
 class PlayQueueSheetState extends State<PlayQueuePage> {
   final scrollController = ScrollController();
+  int continuousSelectBeginIndex = -1;
 
   @override
   void initState() {
@@ -28,6 +30,11 @@ class PlayQueueSheetState extends State<PlayQueuePage> {
 
   @override
   Widget build(BuildContext context) {
+    final List<ValueNotifier<bool>> isSelectedList = List.generate(
+      playQueue.length,
+      (_) => ValueNotifier(false),
+    );
+    continuousSelectBeginIndex = -1;
     return Column(
       children: [
         SizedBox(height: 10),
@@ -89,6 +96,8 @@ class PlayQueueSheetState extends State<PlayQueuePage> {
             itemCount: playQueue.length,
             itemBuilder: (_, index) {
               final song = playQueue[index];
+              final isSelected = isSelectedList[index];
+
               return ContextMenuWidget(
                 key: ValueKey(index),
                 child: ReorderableDragStartListener(
@@ -97,39 +106,91 @@ class PlayQueueSheetState extends State<PlayQueuePage> {
                     valueListenable: currentSongNotifier,
                     builder: (_, currentSong, _) {
                       return Center(
-                        child: ListTile(
-                          leading: CoverArtWidget(
-                            size: 50,
-                            borderRadius: 5,
-                            source: getCoverArt(song),
-                          ),
-                          title: Text(
-                            getTitle(song),
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(
-                              color: song == currentSong
-                                  ? Color.fromARGB(255, 75, 210, 210)
-                                  : null,
-                              fontWeight: song == currentSong
-                                  ? FontWeight.bold
-                                  : null,
-                              fontSize: 14,
-                            ),
-                          ),
-                          subtitle: Text(
-                            "${getArtist(song)} - ${getAlbum(song)}",
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(fontSize: 12, color: Colors.grey),
-                          ),
-                          trailing: Text(
-                            formatDuration(getDuration(song)),
-                            overflow: TextOverflow.ellipsis,
-                            style: TextStyle(fontSize: 12),
-                          ),
-                          onTap: () async {
-                            audioHandler.currentIndex = index;
-                            await audioHandler.load();
-                            await audioHandler.play();
+                        child: ValueListenableBuilder(
+                          valueListenable: isSelected,
+                          builder: (context, value, child) {
+                            return Material(
+                              color: value
+                                  ? Colors.grey.shade300
+                                  : Colors.transparent,
+                              child: ListTile(
+                                leading: InkWell(
+                                  child: CoverArtWidget(
+                                    size: 50,
+                                    borderRadius: 5,
+                                    source: getCoverArt(song),
+                                  ),
+                                  onTap: () async {
+                                    audioHandler.currentIndex = index;
+                                    await audioHandler.load();
+                                    await audioHandler.play();
+                                  },
+                                ),
+                                title: Text(
+                                  getTitle(song),
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    color: song == currentSong
+                                        ? Color.fromARGB(255, 75, 210, 210)
+                                        : null,
+                                    fontWeight: song == currentSong
+                                        ? FontWeight.bold
+                                        : null,
+                                    fontSize: 14,
+                                  ),
+                                ),
+                                subtitle: Text(
+                                  "${getArtist(song)} - ${getAlbum(song)}",
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    color: Colors.grey,
+                                  ),
+                                ),
+                                trailing: Text(
+                                  formatDuration(getDuration(song)),
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(fontSize: 12),
+                                ),
+                                onTap: () async {
+                                  if (ctrlIsPressed) {
+                                    isSelected.value = !isSelected.value;
+                                    continuousSelectBeginIndex = index;
+                                  } else if (shiftIsPressed) {
+                                    if (continuousSelectBeginIndex == -1) {
+                                      return;
+                                    }
+                                    int left =
+                                        continuousSelectBeginIndex < index
+                                        ? continuousSelectBeginIndex
+                                        : index;
+                                    int right =
+                                        continuousSelectBeginIndex > index
+                                        ? continuousSelectBeginIndex
+                                        : index;
+
+                                    for (
+                                      int i = 0;
+                                      i < isSelectedList.length;
+                                      i++
+                                    ) {
+                                      if (i < left || i > right) {
+                                        isSelectedList[i].value = false;
+                                      } else {
+                                        isSelectedList[i].value = true;
+                                      }
+                                    }
+                                  } else {
+                                    // clear select
+                                    for (var tmp in isSelectedList) {
+                                      tmp.value = false;
+                                    }
+                                    isSelected.value = true;
+                                    continuousSelectBeginIndex = index;
+                                  }
+                                },
+                              ),
+                            );
                           },
                         ),
                       );
@@ -137,26 +198,42 @@ class PlayQueueSheetState extends State<PlayQueuePage> {
                   ),
                 ),
                 menuProvider: (request) {
+                  // select current and clear others if it's not selected
+                  if (!isSelected.value) {
+                    for (var tmp in isSelectedList) {
+                      tmp.value = false;
+                    }
+                    isSelected.value = true;
+                    continuousSelectBeginIndex = index;
+                  }
                   return Menu(
                     children: [
                       MenuAction(
                         title: 'Remove',
                         image: MenuImage.icon(Icons.close_rounded),
                         callback: () async {
-                          audioHandler.delete(index);
-                          setState(() {});
-                          if (index < audioHandler.currentIndex) {
-                            audioHandler.currentIndex -= 1;
-                          } else if (index == audioHandler.currentIndex) {
-                            if (playQueue.isEmpty) {
-                              audioHandler.clear();
-                              widget.displayPlayQueuePageNotifier.value = false;
-                            } else {
-                              if (index == playQueue.length) {
-                                audioHandler.currentIndex = 0;
+                          bool removeCurrent = false;
+                          for (int i = isSelectedList.length - 1; i >= 0; i--) {
+                            if (isSelectedList[i].value) {
+                              if (i < audioHandler.currentIndex) {
+                                audioHandler.currentIndex -= 1;
+                              } else if (i == audioHandler.currentIndex) {
+                                removeCurrent = true;
+                                if (audioHandler.currentIndex ==
+                                    playQueue.length - 1) {
+                                  audioHandler.currentIndex = 0;
+                                }
                               }
-                              await audioHandler.load();
+                              audioHandler.delete(i);
                             }
+                          }
+                          setState(() {});
+                          if (playQueue.isEmpty) {
+                            audioHandler.clear();
+                            widget.displayPlayQueuePageNotifier.value = false;
+                          } else if (removeCurrent) {
+                            await audioHandler.load();
+                            await audioHandler.play();
                           }
                         },
                       ),

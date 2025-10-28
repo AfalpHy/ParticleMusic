@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
+import 'package:particle_music/desktop/keyboard.dart';
 import 'package:particle_music/desktop/title_bar.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:particle_music/playlists.dart';
@@ -27,6 +28,8 @@ class _SongListPlane extends State<SongListPlane> {
   final textController = TextEditingController();
   Playlist? playlist;
   String? title;
+
+  int continuousSelectBeginIndex = -1;
 
   late Function(String) onChanged;
 
@@ -98,6 +101,12 @@ class _SongListPlane extends State<SongListPlane> {
                 ValueListenableBuilder(
                   valueListenable: currentSongListNotifier,
                   builder: (context, currentSongList, child) {
+                    final List<ValueNotifier<bool>> isSelectedList =
+                        List.generate(
+                          currentSongList.length,
+                          (_) => ValueNotifier(false),
+                        );
+                    continuousSelectBeginIndex = -1;
                     return SliverPrototypeExtentList(
                       prototypeItem: ListTile(
                         contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
@@ -116,7 +125,12 @@ class _SongListPlane extends State<SongListPlane> {
                       delegate: SliverChildBuilderDelegate(
                         childCount: currentSongList.length,
                         (context, index) {
-                          return songListTile(context, currentSongList, index);
+                          return songListTile(
+                            context,
+                            currentSongList,
+                            index,
+                            isSelectedList,
+                          );
                         },
                       ),
                     );
@@ -217,8 +231,10 @@ class _SongListPlane extends State<SongListPlane> {
     BuildContext context,
     List<AudioMetadata> currentSongList,
     int index,
+    List<ValueNotifier<bool>> isSelectedList,
   ) {
     final song = currentSongList[index];
+    final isSelected = isSelectedList[index];
 
     return ContextMenuWidget(
       child: Padding(
@@ -226,143 +242,229 @@ class _SongListPlane extends State<SongListPlane> {
         child: SmoothClipRRect(
           smoothness: 1,
           borderRadius: BorderRadius.circular(15),
-          child: Material(
-            color: Color.fromARGB(255, 235, 240, 245),
-            child: InkWell(
-              onDoubleTap: () async {
-                audioHandler.currentIndex = index;
-                playQueue = List.from(currentSongList);
-                if (playModeNotifier.value == 1 ||
-                    (playModeNotifier.value == 2 &&
-                        audioHandler.tmpPlayMode == 1)) {
-                  audioHandler.shuffle();
-                }
-                await audioHandler.load();
-                await audioHandler.play();
-              },
+          child: ValueListenableBuilder(
+            valueListenable: isSelected,
+            builder: (context, value, child) {
+              return Material(
+                color: value
+                    ? Colors.white
+                    : Color.fromARGB(255, 235, 240, 245),
+                child: InkWell(
+                  highlightColor: Colors.transparent,
+                  splashColor: Colors.transparent,
+                  onDoubleTap: () async {
+                    // clear select
+                    for (var tmp in isSelectedList) {
+                      tmp.value = false;
+                    }
+                    isSelected.value = true;
+                    continuousSelectBeginIndex = index;
 
-              child: Row(
-                children: [
-                  SizedBox(
-                    width: 60,
-                    child: Center(
-                      child: Text(
-                        (index + 1).toString(),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ),
+                    audioHandler.currentIndex = index;
+                    playQueue = List.from(currentSongList);
+                    if (playModeNotifier.value == 1 ||
+                        (playModeNotifier.value == 2 &&
+                            audioHandler.tmpPlayMode == 1)) {
+                      audioHandler.shuffle();
+                    }
+                    await audioHandler.load();
+                    await audioHandler.play();
+                  },
+                  onTap: () {
+                    if (ctrlIsPressed) {
+                      isSelected.value = !isSelected.value;
+                      continuousSelectBeginIndex = index;
+                    } else if (shiftIsPressed) {
+                      if (continuousSelectBeginIndex == -1) {
+                        return;
+                      }
+                      int left = continuousSelectBeginIndex < index
+                          ? continuousSelectBeginIndex
+                          : index;
+                      int right = continuousSelectBeginIndex > index
+                          ? continuousSelectBeginIndex
+                          : index;
 
-                  Expanded(
-                    child: ListTile(
-                      contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                      visualDensity: const VisualDensity(
-                        horizontal: 0,
-                        vertical: -4,
-                      ),
-                      leading: CoverArtWidget(
-                        size: 40,
-                        borderRadius: 4,
-                        source: getCoverArt(song),
-                      ),
-                      title: ValueListenableBuilder(
-                        valueListenable: currentSongNotifier,
-                        builder: (_, currentSong, _) {
-                          return Text(
-                            getTitle(song),
+                      for (int i = 0; i < isSelectedList.length; i++) {
+                        if (i < left || i > right) {
+                          isSelectedList[i].value = false;
+                        } else {
+                          isSelectedList[i].value = true;
+                        }
+                      }
+                    } else {
+                      // clear select
+                      for (var tmp in isSelectedList) {
+                        tmp.value = false;
+                      }
+                      isSelected.value = true;
+                      continuousSelectBeginIndex = index;
+                    }
+                  },
+                  child: Row(
+                    children: [
+                      SizedBox(
+                        width: 60,
+                        child: Center(
+                          child: Text(
+                            (index + 1).toString(),
                             overflow: TextOverflow.ellipsis,
-                            style: song == currentSong
-                                ? TextStyle(
-                                    color: Color.fromARGB(255, 75, 200, 200),
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 15,
-                                  )
-                                : TextStyle(fontSize: 15),
-                          );
-                        },
-                      ),
-                      subtitle: Text(
-                        getArtist(song),
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 12, color: Colors.grey),
-                      ),
-                    ),
-                  ),
-
-                  SizedBox(width: 30),
-
-                  Expanded(
-                    child: Text(
-                      getAlbum(song),
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-
-                  SizedBox(width: 20),
-                  SizedBox(
-                    width: 60,
-                    child: Align(
-                      alignment: AlignmentGeometry.centerLeft,
-                      child: IconButton(
-                        onPressed: () {
-                          toggleFavoriteState(song);
-                        },
-                        icon: ValueListenableBuilder(
-                          valueListenable: songIsFavorite[song]!,
-                          builder: (context, value, child) {
-                            return value
-                                ? Icon(
-                                    Icons.favorite_rounded,
-                                    color: Colors.red,
-                                    size: 20,
-                                  )
-                                : Icon(Icons.favorite_outline, size: 20);
-                          },
+                          ),
                         ),
                       ),
-                    ),
-                  ),
 
-                  SizedBox(width: 20),
+                      Expanded(
+                        child: ListTile(
+                          contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                          visualDensity: const VisualDensity(
+                            horizontal: 0,
+                            vertical: -4,
+                          ),
+                          leading: CoverArtWidget(
+                            size: 40,
+                            borderRadius: 4,
+                            source: getCoverArt(song),
+                          ),
+                          title: ValueListenableBuilder(
+                            valueListenable: currentSongNotifier,
+                            builder: (_, currentSong, _) {
+                              return Text(
+                                getTitle(song),
+                                overflow: TextOverflow.ellipsis,
+                                style: song == currentSong
+                                    ? TextStyle(
+                                        color: Color.fromARGB(
+                                          255,
+                                          75,
+                                          200,
+                                          200,
+                                        ),
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 15,
+                                      )
+                                    : TextStyle(fontSize: 15),
+                              );
+                            },
+                          ),
+                          subtitle: Text(
+                            getArtist(song),
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(fontSize: 12, color: Colors.grey),
+                          ),
+                          // need add this to keep cursor without adding onTap
+                          mouseCursor: SystemMouseCursors.click,
+                        ),
+                      ),
 
-                  SizedBox(
-                    width: 80,
-                    child: Text(
-                      formatDuration(getDuration(song)),
-                      overflow: TextOverflow.ellipsis,
-                    ),
+                      SizedBox(width: 30),
+
+                      Expanded(
+                        child: Text(
+                          getAlbum(song),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+
+                      SizedBox(width: 20),
+                      SizedBox(
+                        width: 60,
+                        child: Align(
+                          alignment: AlignmentGeometry.centerLeft,
+                          child: IconButton(
+                            onPressed: () {
+                              toggleFavoriteState(song);
+                            },
+                            icon: ValueListenableBuilder(
+                              valueListenable: songIsFavorite[song]!,
+                              builder: (context, value, child) {
+                                return value
+                                    ? Icon(
+                                        Icons.favorite_rounded,
+                                        color: Colors.red,
+                                        size: 20,
+                                      )
+                                    : Icon(Icons.favorite_outline, size: 20);
+                              },
+                            ),
+                          ),
+                        ),
+                      ),
+
+                      SizedBox(width: 20),
+
+                      SizedBox(
+                        width: 80,
+                        child: Text(
+                          formatDuration(getDuration(song)),
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           ),
         ),
       ),
       menuProvider: (_) async {
+        // select current and clear others if it's not selected
+        if (!isSelected.value) {
+          for (var tmp in isSelectedList) {
+            tmp.value = false;
+          }
+          isSelected.value = true;
+          continuousSelectBeginIndex = index;
+        }
+
         return Menu(
           children: [
             MenuAction(
               title: 'Add to Playlists',
               image: MenuImage.icon(Icons.playlist_add_rounded),
               callback: () {
-                showAddPlaylistDialog(context, [song]);
+                final List<AudioMetadata> tmpSongList = [];
+                for (int i = isSelectedList.length - 1; i >= 0; i--) {
+                  if (isSelectedList[i].value) {
+                    tmpSongList.add(currentSongList[i]);
+                  }
+                }
+                showAddPlaylistDialog(context, tmpSongList);
               },
             ),
             MenuAction(
               title: 'Play Now',
               image: MenuImage.icon(Icons.play_arrow_rounded),
-              callback: () {
-                audioHandler.singlePlay(index, currentSongList);
+              callback: () async {
+                AudioMetadata? tmp;
+                for (int i = isSelectedList.length - 1; i >= 0; i--) {
+                  if (isSelectedList[i].value) {
+                    tmp = currentSongList[i];
+                    audioHandler.insert2Next(i, currentSongList);
+                  }
+                }
+                if (tmp != currentSongNotifier.value) {
+                  await audioHandler.skipToNext();
+                }
+                await audioHandler.play();
               },
             ),
             MenuAction(
               title: 'Play Next',
               image: MenuImage.icon(Icons.navigate_next_rounded),
-              callback: () {
+              callback: () async {
+                bool needPlay = false;
                 if (playQueue.isEmpty) {
-                  audioHandler.singlePlay(index, currentSongList);
-                } else {
-                  audioHandler.insert2Next(index, currentSongList);
+                  needPlay = true;
+                }
+                for (int i = isSelectedList.length - 1; i >= 0; i--) {
+                  if (isSelectedList[i].value) {
+                    audioHandler.insert2Next(i, currentSongList);
+                  }
+                }
+                if (needPlay) {
+                  await audioHandler.skipToNext();
+                  await audioHandler.play();
                 }
               },
             ),
@@ -373,7 +475,13 @@ class _SongListPlane extends State<SongListPlane> {
                 image: MenuImage.icon(Icons.delete_rounded),
                 callback: () async {
                   if (await showConfirmDialog(context, 'Delete Action')) {
-                    playlist!.remove([song]);
+                    final List<AudioMetadata> tmpSongList = [];
+                    for (int i = isSelectedList.length - 1; i >= 0; i--) {
+                      if (isSelectedList[i].value) {
+                        tmpSongList.add(currentSongList[i]);
+                      }
+                    }
+                    playlist!.remove(tmpSongList);
                   }
                 },
               ),

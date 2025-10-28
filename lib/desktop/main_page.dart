@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:particle_music/desktop/bottom_control.dart';
+import 'package:particle_music/desktop/keyboard.dart';
 import 'package:particle_music/desktop/plane_manager.dart';
 import 'package:particle_music/desktop/play_quee_page.dart';
 import 'package:particle_music/desktop/sidebar.dart';
@@ -11,94 +13,127 @@ class DesktopMainPage extends StatelessWidget {
 
   final ValueNotifier<bool> displayPlayQueuePageNotifier = ValueNotifier(false);
 
-  DesktopMainPage({super.key});
+  final focusNode = FocusNode();
+
+  DesktopMainPage({super.key}) {
+    // clear press state when focus lost
+    focusNode.addListener(() {
+      shiftIsPressed = false;
+      ctrlIsPressed = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
-    return Stack(
-      children: [
-        Column(
-          children: [
-            Expanded(
-              child: Row(
-                children: [
-                  Sidebar(),
+    return KeyboardListener(
+      focusNode: focusNode,
+      autofocus: true,
+      onKeyEvent: (value) {
+        if (value is KeyDownEvent || value is KeyRepeatEvent) {
+          if (value.logicalKey.keyLabel == 'Shift Left' ||
+              value.logicalKey.keyLabel == 'Shift Right') {
+            shiftIsPressed = true;
+          }
+          if (value.logicalKey.keyLabel == 'Control Left' ||
+              value.logicalKey.keyLabel == 'Control Right') {
+            ctrlIsPressed = true;
+          }
+        } else if (value is KeyUpEvent) {
+          if (value.logicalKey.keyLabel == 'Shift Left' ||
+              value.logicalKey.keyLabel == 'Shift Right') {
+            shiftIsPressed = false;
+          }
+          if (value.logicalKey.keyLabel == 'Control Left' ||
+              value.logicalKey.keyLabel == 'Control Right') {
+            ctrlIsPressed = false;
+          }
+        }
+      },
+      child: Stack(
+        children: [
+          Column(
+            children: [
+              Expanded(
+                child: Row(
+                  children: [
+                    Sidebar(),
 
-                  Expanded(
-                    child: ValueListenableBuilder(
-                      valueListenable: planeManager.updatePlane,
-                      builder: (_, _, _) {
-                        return IndexedStack(
-                          index: planeManager.planeStack.length - 1,
-                          children: planeManager.planeStack,
-                        );
-                      },
+                    Expanded(
+                      child: ValueListenableBuilder(
+                        valueListenable: planeManager.updatePlane,
+                        builder: (_, _, _) {
+                          return IndexedStack(
+                            index: planeManager.planeStack.length - 1,
+                            children: planeManager.planeStack,
+                          );
+                        },
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
-            ),
-            Material(
-              child: BottomControl(
-                displayLyricsPageNotifier: displayLyricsPageNotifier,
-                displayPlayQueuePageNotifier: displayPlayQueuePageNotifier,
+              Material(
+                child: BottomControl(
+                  displayLyricsPageNotifier: displayLyricsPageNotifier,
+                  displayPlayQueuePageNotifier: displayPlayQueuePageNotifier,
+                ),
               ),
-            ),
-          ],
-        ),
+            ],
+          ),
 
-        LyricsPage(displayLyricsPageNotifier: displayLyricsPageNotifier),
+          LyricsPage(displayLyricsPageNotifier: displayLyricsPageNotifier),
 
-        ValueListenableBuilder(
-          valueListenable: displayPlayQueuePageNotifier,
-          builder: (context, display, _) {
-            if (display) {
-              return GestureDetector(
-                onTap: () {
-                  displayPlayQueuePageNotifier.value = false;
-                },
-                child: Container(color: Colors.black.withAlpha(25)),
-              );
-            } else {
-              return SizedBox.shrink();
-            }
-          },
-        ),
-
-        Positioned(
-          top: 80,
-          bottom: 100,
-          right: 0,
-          child: ValueListenableBuilder(
+          ValueListenableBuilder(
             valueListenable: displayPlayQueuePageNotifier,
             builder: (context, display, _) {
-              return AnimatedSlide(
-                offset: display ? Offset.zero : Offset(1, 0),
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.linear,
-                child: Material(
-                  elevation: 5,
-                  color: Colors.grey.shade50,
-                  shape: SmoothRectangleBorder(
-                    smoothness: 1,
-                    borderRadius: BorderRadius.horizontal(
-                      left: Radius.circular(15),
-                    ),
-                  ),
-
-                  child: SizedBox(
-                    width: 350,
-                    child: PlayQueuePage(
-                      displayPlayQueuePageNotifier:
-                          displayPlayQueuePageNotifier,
-                    ),
-                  ),
-                ),
-              );
+              if (display) {
+                return GestureDetector(
+                  onTap: () {
+                    displayPlayQueuePageNotifier.value = false;
+                  },
+                  child: Container(color: Colors.black.withAlpha(25)),
+                );
+              } else {
+                return SizedBox.shrink();
+              }
             },
           ),
-        ),
-      ],
+
+          Positioned(
+            top: 80,
+            bottom: 100,
+            right: 0,
+            child: ValueListenableBuilder(
+              valueListenable: displayPlayQueuePageNotifier,
+              builder: (context, display, _) {
+                return AnimatedSlide(
+                  offset: display ? Offset.zero : Offset(1, 0),
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.linear,
+                  child: Material(
+                    elevation: 5,
+                    color: Colors.grey.shade50,
+                    shape: SmoothRectangleBorder(
+                      smoothness: 1,
+                      borderRadius: BorderRadius.horizontal(
+                        left: Radius.circular(15),
+                      ),
+                    ),
+
+                    child: SizedBox(
+                      width: 350,
+                      child: PlayQueuePage(
+                        displayPlayQueuePageNotifier:
+                            displayPlayQueuePageNotifier,
+                      ),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
