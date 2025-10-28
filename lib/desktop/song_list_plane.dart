@@ -211,11 +211,9 @@ class _SongListPlane extends State<SongListPlane> {
             SizedBox(width: 20),
 
             SizedBox(
-              width: 60,
+              width: 80,
               child: Text('Favorited', overflow: TextOverflow.ellipsis),
             ),
-
-            SizedBox(width: 20),
 
             SizedBox(
               width: 80,
@@ -367,7 +365,7 @@ class _SongListPlane extends State<SongListPlane> {
 
                       SizedBox(width: 20),
                       SizedBox(
-                        width: 60,
+                        width: 80,
                         child: Align(
                           alignment: AlignmentGeometry.centerLeft,
                           child: IconButton(
@@ -389,8 +387,6 @@ class _SongListPlane extends State<SongListPlane> {
                           ),
                         ),
                       ),
-
-                      SizedBox(width: 20),
 
                       SizedBox(
                         width: 80,
