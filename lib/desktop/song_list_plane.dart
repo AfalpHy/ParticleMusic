@@ -82,56 +82,50 @@ class _SongListPlane extends State<SongListPlane> {
 
   @override
   Widget build(BuildContext context) {
-    return Expanded(
-      child: Material(
-        color: Color.fromARGB(255, 235, 240, 245),
-        child: Column(
-          children: [
-            TitleBar(textController: textController, onChanged: onChanged),
+    return Material(
+      color: Color.fromARGB(255, 235, 240, 245),
+      child: Column(
+        children: [
+          TitleBar(textController: textController, onChanged: onChanged),
 
-            Expanded(
-              child: CustomScrollView(
-                slivers: [
-                  SliverToBoxAdapter(child: titleHeader()),
+          Expanded(
+            child: CustomScrollView(
+              slivers: [
+                SliverToBoxAdapter(child: titleHeader()),
 
-                  SliverToBoxAdapter(child: contentHeader()),
+                SliverToBoxAdapter(child: contentHeader()),
 
-                  ValueListenableBuilder(
-                    valueListenable: currentSongListNotifier,
-                    builder: (context, currentSongList, child) {
-                      return SliverPrototypeExtentList(
-                        prototypeItem: ListTile(
-                          contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                          visualDensity: const VisualDensity(
-                            horizontal: 0,
-                            vertical: -4,
-                          ),
-                          leading: CoverArtWidget(
-                            size: 40,
-                            borderRadius: 4,
-                            source: null,
-                          ),
-                          title: Text('title'),
-                          subtitle: Text('subtitle'),
+                ValueListenableBuilder(
+                  valueListenable: currentSongListNotifier,
+                  builder: (context, currentSongList, child) {
+                    return SliverPrototypeExtentList(
+                      prototypeItem: ListTile(
+                        contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+                        visualDensity: const VisualDensity(
+                          horizontal: 0,
+                          vertical: -4,
                         ),
-                        delegate: SliverChildBuilderDelegate(
-                          childCount: currentSongList.length,
-                          (context, index) {
-                            return songListTile(
-                              context,
-                              currentSongList,
-                              index,
-                            );
-                          },
+                        leading: CoverArtWidget(
+                          size: 40,
+                          borderRadius: 4,
+                          source: null,
                         ),
-                      );
-                    },
-                  ),
-                ],
-              ),
+                        title: Text('title'),
+                        subtitle: Text('subtitle'),
+                      ),
+                      delegate: SliverChildBuilderDelegate(
+                        childCount: currentSongList.length,
+                        (context, index) {
+                          return songListTile(context, currentSongList, index);
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

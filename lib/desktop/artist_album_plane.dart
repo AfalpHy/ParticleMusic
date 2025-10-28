@@ -25,78 +25,74 @@ class ArtistAlbumPlane extends StatelessWidget {
     final coverArtWidth = planeWidth / crossAxisCount - 50;
     final textController = TextEditingController();
 
-    return Expanded(
-      child: Material(
-        color: Color.fromARGB(255, 235, 240, 245),
+    return Material(
+      color: Color.fromARGB(255, 235, 240, 245),
 
-        child: Column(
-          children: [
-            TitleBar(
-              textController: textController,
-              onChanged: (value) {
-                songListMapNotifer.value = Map.fromEntries(
-                  songListMap.entries.where(
-                    (e) => (e.key.toLowerCase().contains(value.toLowerCase())),
+      child: Column(
+        children: [
+          TitleBar(
+            textController: textController,
+            onChanged: (value) {
+              songListMapNotifer.value = Map.fromEntries(
+                songListMap.entries.where(
+                  (e) => (e.key.toLowerCase().contains(value.toLowerCase())),
+                ),
+              );
+            },
+          ),
+
+          Expanded(
+            child: ValueListenableBuilder(
+              valueListenable: songListMapNotifer,
+              builder: (context, currentSongListMap, child) {
+                return GridView.builder(
+                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: crossAxisCount,
+                    childAspectRatio: 1.08,
                   ),
+                  itemCount: currentSongListMap.length,
+                  itemBuilder: (context, index) {
+                    final key = currentSongListMap.keys.elementAt(index);
+                    final songList = currentSongListMap[key];
+                    return Column(
+                      children: [
+                        Material(
+                          elevation: 1,
+                          shape: SmoothRectangleBorder(
+                            smoothness: 1,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: InkWell(
+                            splashColor: Colors.transparent,
+                            highlightColor: Colors.transparent,
+                            child: CoverArtWidget(
+                              size: coverArtWidth,
+                              borderRadius: 10,
+                              source: getCoverArt(songList!.first),
+                            ),
+                            onTap: () {
+                              switchPlane(key);
+                            },
+                          ),
+                        ),
+                        SizedBox(
+                          width: coverArtWidth - 20,
+                          child: Center(
+                            child: Text(
+                              key,
+                              style: TextStyle(overflow: TextOverflow.ellipsis),
+                            ),
+                          ),
+                        ),
+                      ],
+                    );
+                  },
                 );
               },
             ),
-
-            Expanded(
-              child: ValueListenableBuilder(
-                valueListenable: songListMapNotifer,
-                builder: (context, currentSongListMap, child) {
-                  return GridView.builder(
-                    padding: EdgeInsets.symmetric(horizontal: 16),
-                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                      crossAxisCount: crossAxisCount,
-                      childAspectRatio: 1.08,
-                    ),
-                    itemCount: currentSongListMap.length,
-                    itemBuilder: (context, index) {
-                      final key = currentSongListMap.keys.elementAt(index);
-                      final songList = currentSongListMap[key];
-                      return Column(
-                        children: [
-                          Material(
-                            elevation: 1,
-                            shape: SmoothRectangleBorder(
-                              smoothness: 1,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: InkWell(
-                              splashColor: Colors.transparent,
-                              highlightColor: Colors.transparent,
-                              child: CoverArtWidget(
-                                size: coverArtWidth,
-                                borderRadius: 10,
-                                source: getCoverArt(songList!.first),
-                              ),
-                              onTap: () {
-                                switchPlane(key);
-                              },
-                            ),
-                          ),
-                          SizedBox(
-                            width: coverArtWidth - 20,
-                            child: Center(
-                              child: Text(
-                                key,
-                                style: TextStyle(
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
     );
   }

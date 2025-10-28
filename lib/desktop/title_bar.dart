@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/desktop/plane_manager.dart';
 import 'package:searchfield/searchfield.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -57,7 +58,9 @@ class TitleBar extends StatelessWidget {
                 children: [
                   SizedBox(width: 30),
                   IconButton(
-                    onPressed: () {},
+                    onPressed: () {
+                      planeManager.popPlane();
+                    },
                     icon: Icon(
                       Icons.arrow_back_ios_rounded,
                       color: Colors.black54,

@@ -1,22 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
+import 'package:particle_music/desktop/plane_manager.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 import 'package:super_context_menu/super_context_menu.dart';
 import 'package:window_manager/window_manager.dart';
 
 class Sidebar extends StatelessWidget {
-  final ValueNotifier<Playlist?> currentPlaylistNotifier;
-  final ValueNotifier<int> displayWhichPlaneNotifier;
-
   final ScrollController _scrollController = ScrollController();
 
-  Sidebar({
-    super.key,
-    required this.currentPlaylistNotifier,
-    required this.displayWhichPlaneNotifier,
-  });
+  Sidebar({super.key});
 
   Widget sidebarItem({
     required Widget leading,
@@ -94,7 +88,7 @@ class Sidebar extends StatelessWidget {
                         content: 'Artists',
 
                         onTap: () {
-                          displayWhichPlaneNotifier.value = 1;
+                          planeManager.pushPlane(1);
                         },
                       ),
                     ),
@@ -109,7 +103,7 @@ class Sidebar extends StatelessWidget {
                         content: 'Albums',
 
                         onTap: () {
-                          displayWhichPlaneNotifier.value = 2;
+                          planeManager.pushPlane(2);
                         },
                       ),
                     ),
@@ -124,7 +118,7 @@ class Sidebar extends StatelessWidget {
                         content: 'Songs',
 
                         onTap: () {
-                          displayWhichPlaneNotifier.value = 0;
+                          planeManager.pushPlane(0);
                         },
                       ),
                     ),
@@ -188,8 +182,7 @@ class Sidebar extends StatelessWidget {
                                 content: playlist.name,
 
                                 onTap: () {
-                                  currentPlaylistNotifier.value = playlist;
-                                  displayWhichPlaneNotifier.value = 5;
+                                  planeManager.pushPlane(index + 5);
                                 },
                               ),
                               menuProvider: (_) {
@@ -208,14 +201,9 @@ class Sidebar extends StatelessWidget {
                                             context,
                                             'Delete Action',
                                           )) {
-                                            // back to songs if the playlist which will be deleted is displaying on the song list plane
-                                            if (currentPlaylistNotifier.value ==
-                                                playlist) {
-                                              displayWhichPlaneNotifier.value =
-                                                  0;
-                                              currentPlaylistNotifier.value =
-                                                  null;
-                                            }
+                                            planeManager.removePlaylistPlane(
+                                              playlist,
+                                            );
                                             playlistsManager.deletePlaylist(
                                               index,
                                             );
