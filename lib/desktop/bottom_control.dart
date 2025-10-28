@@ -45,6 +45,9 @@ class BottomControl extends StatelessWidget {
                     )
                   : null,
               onTap: () {
+                if (playQueue.isEmpty) {
+                  return;
+                }
                 displayLyricsPageNotifier.value = true;
               },
             );
