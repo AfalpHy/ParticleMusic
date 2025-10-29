@@ -23,7 +23,7 @@ class SingleInstance {
     bool isPrimary = true;
     int? existingPort;
     try {
-      lock = await lockFile.open();
+      lock = await lockFile.open(mode: FileMode.write);
       await lock!.lock();
     } catch (_) {
       isPrimary = false;
