@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:particle_music/desktop/main_page.dart';
+import 'package:particle_music/desktop/single_instance.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:particle_music/mobile/pages/main_page.dart';
 import 'package:audio_service/audio_service.dart';
@@ -25,9 +26,11 @@ Future<void> main() async {
       DeviceOrientation.portraitUp, // only allow portrait
     ]);
   } else {
-    audioHandler = DesktopAudioHandler();
-
     await windowManager.ensureInitialized();
+
+    await singleInstance.init();
+
+    audioHandler = DesktopAudioHandler();
 
     WindowOptions windowOptions = WindowOptions(
       minimumSize: Size(1050, 700),
