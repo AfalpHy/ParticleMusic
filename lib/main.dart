@@ -76,6 +76,9 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      theme: Platform.isWindows
+          ? ThemeData(fontFamily: 'Microsoft YaHei')
+          : null,
       title: 'Particle Music',
       home: (Platform.isAndroid || Platform.isIOS)
           ? MobileMainPage()
