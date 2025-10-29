@@ -71,16 +71,20 @@ class TitleBar extends StatelessWidget {
             Center(
               child: SizedBox(
                 width: 350,
+                height: 35,
                 child: TextField(
                   focusNode: textFieldFocusNode,
                   controller: textController,
+                  style: TextStyle(fontSize: 14.5),
                   decoration: SearchInputDecoration(
-                    hintText: 'Search',
+                    hint: Baseline(
+                      baseline: 14,
+                      baselineType: TextBaseline.alphabetic,
+                      child: Text('Search', style: TextStyle(fontSize: 14.5)),
+                    ),
                     prefixIcon: const Icon(Icons.search),
-
                     filled: true,
                     fillColor: Color.fromARGB(255, 215, 225, 235),
-                    isDense: true,
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
                       borderSide: BorderSide.none,

@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/desktop/main_page.dart';
 import 'package:particle_music/desktop/single_instance.dart';
@@ -28,7 +29,9 @@ Future<void> main() async {
   } else {
     await windowManager.ensureInitialized();
 
-    await singleInstance.init();
+    if (kReleaseMode) {
+      await singleInstance.init();
+    }
 
     audioHandler = DesktopAudioHandler();
 
