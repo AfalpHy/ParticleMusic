@@ -33,19 +33,26 @@ class Sidebar extends StatelessWidget {
               color: value == index
                   ? Colors.white
                   : Color.fromARGB(255, 240, 245, 250),
-              child: ListTile(
-                leading: leading,
-                title: Text(
-                  content,
-                  style: TextStyle(
-                    fontSize: 15,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-                contentPadding: contentPadding,
-                visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+              child: InkWell(
                 onTap: onTap,
-                trailing: trailing,
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                child: ListTile(
+                  leading: leading,
+                  title: Text(
+                    content,
+                    style: TextStyle(
+                      fontSize: 15,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                  contentPadding: contentPadding,
+                  visualDensity: const VisualDensity(
+                    horizontal: 0,
+                    vertical: -4,
+                  ),
+                  trailing: trailing,
+                ),
               ),
             );
           },
