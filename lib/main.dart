@@ -37,6 +37,7 @@ Future<void> main() async {
 
     WindowOptions windowOptions = WindowOptions(
       minimumSize: Size(1050, 700),
+      size: Size(1050, 700),
       center: true,
       backgroundColor: Colors.transparent,
       titleBarStyle: TitleBarStyle.hidden,
