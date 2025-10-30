@@ -147,7 +147,7 @@ class LyricsPageState extends State<LyricsPage> {
       children: [
         SizedBox(height: pageHight * 0.025),
         SizedBox(
-          width: width,
+          width: width - 30,
 
           height: 30,
           child: Center(
@@ -165,7 +165,7 @@ class LyricsPageState extends State<LyricsPage> {
         ),
 
         SizedBox(
-          width: width,
+          width: width - 30,
 
           height: 24,
           child: Center(
@@ -179,7 +179,7 @@ class LyricsPageState extends State<LyricsPage> {
         ),
         SizedBox(height: pageHight * 0.02),
 
-        SizedBox(width: width, height: 20, child: SeekBar()),
+        SizedBox(width: width - 15, height: 20, child: SeekBar(light: true)),
 
         SizedBox(
           width: width,
@@ -234,7 +234,6 @@ class LyricsPageState extends State<LyricsPage> {
                   );
                 },
               ),
-
               Spacer(),
               IconButton(
                 color: Colors.grey.shade50,
@@ -247,7 +246,6 @@ class LyricsPageState extends State<LyricsPage> {
                 },
               ),
 
-              Spacer(),
               IconButton(
                 color: Colors.grey.shade50,
                 icon: ValueListenableBuilder(
@@ -268,7 +266,6 @@ class LyricsPageState extends State<LyricsPage> {
                   audioHandler.togglePlay();
                 },
               ),
-              Spacer(),
               IconButton(
                 color: Colors.grey.shade50,
                 icon: const ImageIcon(nextButtonImage, size: 25),
@@ -282,11 +279,8 @@ class LyricsPageState extends State<LyricsPage> {
               ),
               Spacer(),
               IconButton(
-                icon: Icon(
-                  Icons.playlist_play_rounded,
-                  size: 25,
-                  color: Colors.grey.shade50,
-                ),
+                color: Colors.grey.shade50,
+                icon: Icon(Icons.playlist_play_rounded, size: 25),
                 onPressed: () {
                   if (playQueue.isEmpty) {
                     return;
@@ -294,6 +288,54 @@ class LyricsPageState extends State<LyricsPage> {
                   displayPlayQueuePageNotifier.value = true;
                 },
               ),
+            ],
+          ),
+        ),
+        SizedBox(
+          width: width,
+          child: Row(
+            children: [
+              Spacer(),
+              SizedBox(
+                width: 40,
+                child: IconButton(
+                  icon: Icon(Icons.volume_down_rounded),
+                  color: Colors.grey.shade50,
+                  onPressed: () {},
+                ),
+              ),
+              SizedBox(
+                width: width * 0.5,
+                child: ValueListenableBuilder(
+                  valueListenable: volumeNotifier,
+                  builder: (context, value, child) {
+                    return SliderTheme(
+                      data: SliderTheme.of(context).copyWith(
+                        trackHeight: 1.5, // thinner track
+                        trackShape: const FullWidthTrackShape(),
+                        thumbShape: RoundSliderThumbShape(
+                          enabledThumbRadius: 0,
+                        ), // smaller thumb
+                        overlayColor: Colors.transparent,
+                        activeTrackColor: Colors.white,
+                        inactiveTrackColor: Colors.black12,
+                        thumbColor: Colors.grey.shade50,
+                      ),
+                      child: Slider(
+                        value: value,
+                        min: 0,
+                        max: 1,
+                        onChanged: (value) {
+                          volumeNotifier.value = value;
+                          audioHandler.setVolume(value);
+                        },
+                      ),
+                    );
+                  },
+                ),
+              ),
+              SizedBox(width: 40),
+              Spacer(),
             ],
           ),
         ),

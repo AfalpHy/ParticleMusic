@@ -203,8 +203,6 @@ class BottomControl extends StatelessWidget {
   }
 
   Widget volumeControl() {
-    final volumeNotifier = ValueNotifier(audioHandler.getVolume());
-
     return Row(
       children: [
         Spacer(),

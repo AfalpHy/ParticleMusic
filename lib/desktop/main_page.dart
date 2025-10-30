@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -149,7 +150,10 @@ class DesktopMainPage extends StatelessWidget with TrayListener {
                       ),
                     ),
 
-                    child: SizedBox(width: 350, child: PlayQueuePage()),
+                    child: SizedBox(
+                      width: max(350, MediaQuery.widthOf(context) * 0.25),
+                      child: PlayQueuePage(),
+                    ),
                   ),
                 );
               },

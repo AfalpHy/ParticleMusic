@@ -22,6 +22,7 @@ Color coverArtFilterColor = coverArtAverageColor.withAlpha(160);
 ValueNotifier<AudioMetadata?> currentSongNotifier = ValueNotifier(null);
 ValueNotifier<bool> isPlayingNotifier = ValueNotifier(false);
 ValueNotifier<int> playModeNotifier = ValueNotifier(0);
+late final ValueNotifier<double> volumeNotifier;
 
 abstract class MyAudioHandler extends BaseAudioHandler {
   int currentIndex = -1;
@@ -216,6 +217,8 @@ class DesktopAudioHandler extends MyAudioHandler {
 
   DesktopAudioHandler() {
     player.setVolume(0.3);
+    volumeNotifier = ValueNotifier(0.3);
+
     player.onPlayerComplete.listen((_) async {
       bool needPauseTmp = needPause;
 
