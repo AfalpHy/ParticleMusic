@@ -107,7 +107,7 @@ class TitleBar extends StatelessWidget {
                     },
                     icon: Icon(
                       Icons.arrow_back_ios_rounded,
-                      color: Colors.black54,
+                      color: isMainPage ? Colors.black54 : Colors.black,
                     ),
                   )
                 else
@@ -122,7 +122,9 @@ class TitleBar extends StatelessWidget {
                               },
                               icon: ImageIcon(
                                 arrowDownImage,
-                                color: Colors.black54,
+                                color: isMainPage
+                                    ? Colors.black54
+                                    : Colors.black,
                               ),
                             );
                     },
@@ -155,9 +157,16 @@ class TitleBar extends StatelessWidget {
                         return isFullScreen
                             ? ImageIcon(
                                 fullscreenExitImage,
-                                color: Colors.black54,
+                                color: isMainPage
+                                    ? Colors.black54
+                                    : Colors.black,
                               )
-                            : ImageIcon(fullscreenImage, color: Colors.black54);
+                            : ImageIcon(
+                                fullscreenImage,
+                                color: isMainPage
+                                    ? Colors.black54
+                                    : Colors.black,
+                              );
                       },
                     ),
                   ),
@@ -177,7 +186,9 @@ class TitleBar extends StatelessWidget {
                                 },
                                 icon: ImageIcon(
                                   minimizeImage,
-                                  color: Colors.black54,
+                                  color: isMainPage
+                                      ? Colors.black54
+                                      : Colors.black,
                                 ),
                               ),
                               ValueListenableBuilder(
@@ -192,11 +203,15 @@ class TitleBar extends StatelessWidget {
                                     icon: value
                                         ? ImageIcon(
                                             unmaximizeImage,
-                                            color: Colors.black54,
+                                            color: isMainPage
+                                                ? Colors.black54
+                                                : Colors.black,
                                           )
                                         : ImageIcon(
                                             maximizeImage,
-                                            color: Colors.black54,
+                                            color: isMainPage
+                                                ? Colors.black54
+                                                : Colors.black,
                                           ),
                                   );
                                 },
@@ -207,7 +222,9 @@ class TitleBar extends StatelessWidget {
                                 },
                                 icon: Icon(
                                   Icons.close_rounded,
-                                  color: Colors.black54,
+                                  color: isMainPage
+                                      ? Colors.black54
+                                      : Colors.black,
                                 ),
                               ),
                             ],

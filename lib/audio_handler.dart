@@ -215,6 +215,7 @@ class DesktopAudioHandler extends MyAudioHandler {
   final player = desktop.AudioPlayer();
 
   DesktopAudioHandler() {
+    player.setVolume(0.3);
     player.onPlayerComplete.listen((_) async {
       bool needPauseTmp = needPause;
 
