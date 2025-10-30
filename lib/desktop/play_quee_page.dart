@@ -97,6 +97,9 @@ class PlayQueueSheetState extends State<PlayQueuePage> {
             itemBuilder: (_, index) {
               final song = playQueue[index];
               final isSelected = isSelectedList[index];
+              final ValueNotifier<bool> showPlayButtonNotifier = ValueNotifier(
+                false,
+              );
 
               return ContextMenuWidget(
                 key: ValueKey(index),
@@ -114,13 +117,41 @@ class PlayQueueSheetState extends State<PlayQueuePage> {
                                   ? Colors.grey.shade300
                                   : Colors.transparent,
                               child: InkWell(
+                                onHover: (value) {
+                                  showPlayButtonNotifier.value =
+                                      !showPlayButtonNotifier.value;
+                                },
                                 highlightColor: Colors.transparent,
                                 splashColor: Colors.transparent,
                                 child: ListTile(
-                                  leading: CoverArtWidget(
-                                    size: 50,
-                                    borderRadius: 5,
-                                    source: getCoverArt(song),
+                                  leading: Stack(
+                                    children: [
+                                      CoverArtWidget(
+                                        size: 50,
+                                        borderRadius: 5,
+                                        source: getCoverArt(song),
+                                      ),
+                                      ValueListenableBuilder(
+                                        valueListenable: showPlayButtonNotifier,
+                                        builder: (context, value, child) {
+                                          return value
+                                              ? IconButton(
+                                                  onPressed: () async {
+                                                    audioHandler.currentIndex =
+                                                        index;
+                                                    await audioHandler.load();
+                                                    await audioHandler.play();
+                                                  },
+                                                  icon: Icon(
+                                                    Icons.play_arrow_rounded,
+                                                    color: Colors.white,
+                                                    size: 30,
+                                                  ),
+                                                )
+                                              : SizedBox.shrink();
+                                        },
+                                      ),
+                                    ],
                                   ),
                                   title: Text(
                                     getTitle(song),
@@ -148,8 +179,6 @@ class PlayQueueSheetState extends State<PlayQueuePage> {
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(fontSize: 12),
                                   ),
-                                  // need add this to keep cursor without adding onTap
-                                  mouseCursor: SystemMouseCursors.click,
                                 ),
                                 onTap: () async {
                                   if (ctrlIsPressed) {
@@ -187,11 +216,6 @@ class PlayQueueSheetState extends State<PlayQueuePage> {
                                     isSelected.value = true;
                                     continuousSelectBeginIndex = index;
                                   }
-                                },
-                                onDoubleTap: () async {
-                                  audioHandler.currentIndex = index;
-                                  await audioHandler.load();
-                                  await audioHandler.play();
                                 },
                               ),
                             );

@@ -233,6 +233,7 @@ class _SongListPlane extends State<SongListPlane> {
   ) {
     final song = currentSongList[index];
     final isSelected = isSelectedList[index];
+    final ValueNotifier<bool> showPlayButtonNotifier = ValueNotifier(false);
 
     return ContextMenuWidget(
       child: Padding(
@@ -248,26 +249,14 @@ class _SongListPlane extends State<SongListPlane> {
                     ? Colors.white
                     : Color.fromARGB(255, 235, 240, 245),
                 child: InkWell(
+                  onHover: (value) {
+                    showPlayButtonNotifier.value =
+                        !showPlayButtonNotifier.value;
+                  },
                   highlightColor: Colors.transparent,
                   splashColor: Colors.transparent,
-                  onDoubleTap: () async {
-                    // clear select
-                    for (var tmp in isSelectedList) {
-                      tmp.value = false;
-                    }
-                    isSelected.value = true;
-                    continuousSelectBeginIndex = index;
+                  mouseCursor: SystemMouseCursors.basic,
 
-                    audioHandler.currentIndex = index;
-                    playQueue = List.from(currentSongList);
-                    if (playModeNotifier.value == 1 ||
-                        (playModeNotifier.value == 2 &&
-                            audioHandler.tmpPlayMode == 1)) {
-                      audioHandler.shuffle();
-                    }
-                    await audioHandler.load();
-                    await audioHandler.play();
-                  },
                   onTap: () {
                     if (ctrlIsPressed) {
                       isSelected.value = !isSelected.value;
@@ -304,9 +293,30 @@ class _SongListPlane extends State<SongListPlane> {
                       SizedBox(
                         width: 60,
                         child: Center(
-                          child: Text(
-                            (index + 1).toString(),
-                            overflow: TextOverflow.ellipsis,
+                          child: ValueListenableBuilder(
+                            valueListenable: showPlayButtonNotifier,
+                            builder: (context, value, child) {
+                              return value
+                                  ? IconButton(
+                                      onPressed: () async {
+                                        audioHandler.currentIndex = index;
+                                        playQueue = List.from(currentSongList);
+                                        if (playModeNotifier.value == 1 ||
+                                            (playModeNotifier.value == 2 &&
+                                                audioHandler.tmpPlayMode ==
+                                                    1)) {
+                                          audioHandler.shuffle();
+                                        }
+                                        await audioHandler.load();
+                                        await audioHandler.play();
+                                      },
+                                      icon: Icon(Icons.play_arrow_rounded),
+                                    )
+                                  : Text(
+                                      (index + 1).toString(),
+                                      overflow: TextOverflow.ellipsis,
+                                    );
+                            },
                           ),
                         ),
                       ),
@@ -349,8 +359,6 @@ class _SongListPlane extends State<SongListPlane> {
                             overflow: TextOverflow.ellipsis,
                             style: TextStyle(fontSize: 12, color: Colors.grey),
                           ),
-                          // need add this to keep cursor without adding onTap
-                          mouseCursor: SystemMouseCursors.click,
                         ),
                       ),
 

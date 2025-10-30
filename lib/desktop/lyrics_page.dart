@@ -1,9 +1,14 @@
+import 'dart:math';
+
+import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
+import 'package:particle_music/desktop/play_quee_page.dart';
 import 'package:particle_music/desktop/title_bar.dart';
 import 'package:particle_music/lyrics.dart';
+import 'package:particle_music/seekbar.dart';
 
 final ValueNotifier<bool> displayLyricsPageNotifier = ValueNotifier(false);
 
@@ -22,24 +27,41 @@ class LyricsPage extends StatelessWidget {
           child: ValueListenableBuilder(
             valueListenable: currentSongNotifier,
             builder: (context, currentSong, child) {
+              final pageWidth = MediaQuery.widthOf(context);
+              final pageHight = MediaQuery.heightOf(context);
+              final coverArtSize = min(pageWidth * 0.3, pageHight * 0.6);
+
               return Material(
                 color: coverArtAverageColor,
                 child: Stack(
                   children: [
                     Row(
                       children: [
-                        SizedBox(width: MediaQuery.widthOf(context) * 0.15),
-                        CoverArtWidget(
-                          size: MediaQuery.widthOf(context) * 0.3,
-                          borderRadius: MediaQuery.widthOf(context) * 0.015,
-                          source: getCoverArt(currentSong),
+                        Spacer(),
+                        Column(
+                          children: [
+                            SizedBox(height: pageHight * 0.1),
+                            Spacer(),
+                            CoverArtWidget(
+                              size: coverArtSize,
+                              borderRadius: coverArtSize * 0.025,
+                              source: getCoverArt(currentSong),
+                            ),
+                            playControls(
+                              coverArtSize,
+                              pageHight,
+                              currentSong,
+                              context,
+                            ),
+                            Spacer(),
+                          ],
                         ),
-                        SizedBox(width: MediaQuery.widthOf(context) * 0.05),
+                        SizedBox(width: pageWidth * 0.07),
                         SizedBox(
-                          width: MediaQuery.widthOf(context) * 0.4,
+                          width: pageWidth * 0.39,
                           child: Column(
                             children: [
-                              SizedBox(height: 100),
+                              SizedBox(height: 75),
                               Expanded(
                                 child: ShaderMask(
                                   shaderCallback: (rect) {
@@ -55,8 +77,8 @@ class LyricsPage extends StatelessWidget {
                                       ],
                                       stops: [
                                         0.0,
-                                        0.1,
-                                        0.9,
+                                        0.05,
+                                        0.95,
                                         1.0,
                                       ], // adjust fade height
                                     ).createShader(rect);
@@ -74,10 +96,10 @@ class LyricsPage extends StatelessWidget {
                                   ),
                                 ),
                               ),
-                              SizedBox(height: 75),
                             ],
                           ),
                         ),
+                        SizedBox(width: pageWidth * 0.1),
                       ],
                     ),
                     Positioned(
@@ -93,6 +115,170 @@ class LyricsPage extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  Widget playControls(
+    double width,
+    double pageHight,
+    AudioMetadata? currentSong,
+    BuildContext context,
+  ) {
+    return Column(
+      children: [
+        SizedBox(height: pageHight * 0.025),
+        SizedBox(
+          width: width,
+
+          height: 30,
+          child: Center(
+            child: MyAutoSizeText(
+              key: UniqueKey(),
+              getTitle(currentSong),
+              maxLines: 1,
+              textStyle: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+                color: Colors.black,
+              ),
+            ),
+          ),
+        ),
+
+        SizedBox(
+          width: width,
+
+          height: 24,
+          child: Center(
+            child: MyAutoSizeText(
+              key: UniqueKey(),
+              '${getArtist(currentSong)} - ${getAlbum(currentSong)}',
+              maxLines: 1,
+              textStyle: TextStyle(fontSize: 14, color: Colors.black54),
+            ),
+          ),
+        ),
+        SizedBox(height: pageHight * 0.02),
+
+        SizedBox(width: width, height: 20, child: SeekBar()),
+
+        SizedBox(
+          width: width,
+          child: Row(
+            children: [
+              ValueListenableBuilder(
+                valueListenable: playModeNotifier,
+                builder: (_, playMode, _) {
+                  return IconButton(
+                    color: Colors.black,
+                    icon: ImageIcon(
+                      playMode == 0
+                          ? loopImage
+                          : playMode == 1
+                          ? shuffleImage
+                          : repeatImage,
+                      size: 25,
+                    ),
+                    onPressed: () {
+                      if (playQueue.isEmpty) {
+                        return;
+                      }
+                      if (playModeNotifier.value != 2) {
+                        audioHandler.switchPlayMode();
+                        switch (playModeNotifier.value) {
+                          case 0:
+                            showCenterMessage(context, "loop");
+                            break;
+                          default:
+                            showCenterMessage(context, "shuffle");
+                            break;
+                        }
+                      }
+                    },
+                    onLongPress: () {
+                      if (playQueue.isEmpty) {
+                        return;
+                      }
+                      audioHandler.toggleRepeat();
+                      switch (playModeNotifier.value) {
+                        case 0:
+                          showCenterMessage(context, "loop");
+                          break;
+                        case 1:
+                          showCenterMessage(context, "shuffle");
+                          break;
+                        default:
+                          showCenterMessage(context, "repeat");
+                          break;
+                      }
+                    },
+                  );
+                },
+              ),
+
+              Spacer(),
+              IconButton(
+                color: Colors.black,
+                icon: const ImageIcon(previousButtonImage, size: 25),
+                onPressed: () {
+                  if (playQueue.isEmpty) {
+                    return;
+                  }
+                  audioHandler.skipToPrevious();
+                },
+              ),
+
+              Spacer(),
+              IconButton(
+                color: Colors.black,
+                icon: ValueListenableBuilder(
+                  valueListenable: isPlayingNotifier,
+                  builder: (_, isPlaying, _) {
+                    return Icon(
+                      isPlaying
+                          ? Icons.pause_rounded
+                          : Icons.play_arrow_rounded,
+                      size: 35,
+                    );
+                  },
+                ),
+                onPressed: () {
+                  if (playQueue.isEmpty) {
+                    return;
+                  }
+                  audioHandler.togglePlay();
+                },
+              ),
+              Spacer(),
+              IconButton(
+                color: Colors.black,
+                icon: const ImageIcon(nextButtonImage, size: 25),
+                onPressed: () {
+                  if (playQueue.isEmpty) {
+                    return;
+                  }
+
+                  audioHandler.skipToNext();
+                },
+              ),
+              Spacer(),
+              IconButton(
+                icon: Icon(
+                  Icons.playlist_play_rounded,
+                  size: 25,
+                  color: Colors.black,
+                ),
+                onPressed: () {
+                  if (playQueue.isEmpty) {
+                    return;
+                  }
+                  displayPlayQueuePageNotifier.value = true;
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

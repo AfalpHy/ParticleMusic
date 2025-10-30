@@ -4,6 +4,8 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:particle_music/audio_handler.dart';
+import 'package:particle_music/common.dart';
+import 'package:particle_music/desktop/title_bar.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class LyricLine {
@@ -39,23 +41,54 @@ class LyricLineWidget extends StatelessWidget {
         onTap: () {
           audioHandler.seek(lyrics[index].timestamp);
         },
+        borderRadius: BorderRadius.circular(10),
         child: ValueListenableBuilder(
           valueListenable: currentIndexNotifier,
           builder: (context, value, child) {
-            return Text(
-              text,
-              textAlign: expanded ? TextAlign.left : TextAlign.center,
-              style: TextStyle(
-                fontSize: value == index
-                    ? (expanded ? 22 : 18)
-                    : (expanded ? 18 : 14),
-                fontWeight: value == index
-                    ? FontWeight.bold
-                    : FontWeight.normal,
-                color: value == index
-                    ? Colors.black
-                    : const Color.fromARGB(128, 0, 0, 0),
-              ),
+            final isCurrent = value == index;
+            double fontSize = 14;
+            if (isCurrent) {
+              fontSize += 4;
+            }
+            if (expanded) {
+              fontSize += 4;
+            }
+            if (isMobile) {
+              return Text(
+                text,
+                textAlign: expanded ? TextAlign.left : TextAlign.center,
+                style: TextStyle(
+                  fontSize: fontSize,
+                  fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+                  color: isCurrent
+                      ? Colors.black
+                      : const Color.fromARGB(128, 0, 0, 0),
+                ),
+              );
+            }
+            return ValueListenableBuilder(
+              valueListenable: isMaximizedNotifier,
+              builder: (context, isMaximized, child) {
+                return ValueListenableBuilder(
+                  valueListenable: isFullScreenNotifier,
+                  builder: (context, isFullScreen, child) {
+                    return Text(
+                      text,
+                      textAlign: expanded ? TextAlign.left : TextAlign.center,
+                      style: TextStyle(
+                        fontSize:
+                            fontSize + (isMaximized | isFullScreen ? 35 : 0),
+                        fontWeight: isCurrent
+                            ? FontWeight.bold
+                            : FontWeight.normal,
+                        color: isCurrent
+                            ? Colors.black
+                            : const Color.fromARGB(128, 0, 0, 0),
+                      ),
+                    );
+                  },
+                );
+              },
             );
           },
         ),
