@@ -1,4 +1,21 @@
-# ParticleMusic-Mobile
+# ParticleMusic
 
-A Flutter project.
+A cross-platform music player supporting Android, iOS, Windows, Linux and MacOS. This project is built for learning Flutter and having some fun.
 
+
+# Screenshot
+
+## On iOS
+![My picture](./screenshot/mobile0.png)
+![My picture](./screenshot/mobile1.png)
+![My picture](./screenshot/mobile2.png)
+![My picture](./screenshot/mobile3.png)
+![My picture](./screenshot/mobile4.png)
+![My picture](./screenshot/mobile5.png)
+
+## On Windows
+![My picture](./screenshot/desktop0.png)
+![My picture](./screenshot/desktop1.png)
+![My picture](./screenshot/desktop2.png)
+![My picture](./screenshot/desktop3.png)
+![My picture](./screenshot/desktop4.png)
