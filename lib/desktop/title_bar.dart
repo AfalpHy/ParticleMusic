@@ -124,7 +124,7 @@ class TitleBar extends StatelessWidget {
                                 arrowDownImage,
                                 color: isMainPage
                                     ? Colors.black54
-                                    : Colors.black,
+                                    : Colors.grey.shade50,
                               ),
                             );
                     },
@@ -159,13 +159,13 @@ class TitleBar extends StatelessWidget {
                                 fullscreenExitImage,
                                 color: isMainPage
                                     ? Colors.black54
-                                    : Colors.black,
+                                    : Colors.grey.shade50,
                               )
                             : ImageIcon(
                                 fullscreenImage,
                                 color: isMainPage
                                     ? Colors.black54
-                                    : Colors.black,
+                                    : Colors.grey.shade50,
                               );
                       },
                     ),
@@ -188,7 +188,7 @@ class TitleBar extends StatelessWidget {
                                   minimizeImage,
                                   color: isMainPage
                                       ? Colors.black54
-                                      : Colors.black,
+                                      : Colors.grey.shade50,
                                 ),
                               ),
                               ValueListenableBuilder(
@@ -205,13 +205,13 @@ class TitleBar extends StatelessWidget {
                                             unmaximizeImage,
                                             color: isMainPage
                                                 ? Colors.black54
-                                                : Colors.black,
+                                                : Colors.grey.shade50,
                                           )
                                         : ImageIcon(
                                             maximizeImage,
                                             color: isMainPage
                                                 ? Colors.black54
-                                                : Colors.black,
+                                                : Colors.grey.shade50,
                                           ),
                                   );
                                 },
@@ -224,7 +224,7 @@ class TitleBar extends StatelessWidget {
                                   Icons.close_rounded,
                                   color: isMainPage
                                       ? Colors.black54
-                                      : Colors.black,
+                                      : Colors.grey.shade50,
                                 ),
                               ),
                             ],

@@ -41,8 +41,16 @@ class SeekBarState extends State<SeekBar> {
                       formatDuration(
                         Duration(milliseconds: sliderValue.toInt()),
                       ),
+                      style: isMobile
+                          ? null
+                          : TextStyle(color: Colors.grey.shade50),
                     ),
-                    Text(formatDuration(duration)),
+                    Text(
+                      formatDuration(duration),
+                      style: isMobile
+                          ? null
+                          : TextStyle(color: Colors.grey.shade50),
+                    ),
                   ],
                 ),
               ),
@@ -50,14 +58,16 @@ class SeekBarState extends State<SeekBar> {
               // Slider visuals
               SliderTheme(
                 data: SliderTheme.of(context).copyWith(
-                  thumbColor: Colors.black,
+                  thumbColor: isMobile ? Colors.black : Colors.grey.shade50,
                   trackHeight: isDragging ? 4 : 2,
                   trackShape: const FullWidthTrackShape(),
                   thumbShape: isDragging
                       ? RoundSliderThumbShape(enabledThumbRadius: 4)
                       : RoundSliderThumbShape(enabledThumbRadius: 0),
                   overlayShape: SliderComponentShape.noOverlay,
-                  activeTrackColor: Colors.black,
+                  activeTrackColor: isMobile
+                      ? Colors.black
+                      : Colors.grey.shade50,
                   inactiveTrackColor: Colors.black12,
                 ),
                 child: Padding(

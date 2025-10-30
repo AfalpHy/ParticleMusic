@@ -1,4 +1,5 @@
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
@@ -12,8 +13,18 @@ import 'package:particle_music/seekbar.dart';
 
 final ValueNotifier<bool> displayLyricsPageNotifier = ValueNotifier(false);
 
-class LyricsPage extends StatelessWidget {
+class LyricsPage extends StatefulWidget {
   const LyricsPage({super.key});
+
+  @override
+  State<LyricsPage> createState() => LyricsPageState();
+}
+
+class LyricsPageState extends State<LyricsPage> {
+  @override
+  void initState() {
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -34,7 +45,15 @@ class LyricsPage extends StatelessWidget {
               return Material(
                 color: coverArtAverageColor,
                 child: Stack(
+                  fit: StackFit.expand,
                   children: [
+                    CoverArtWidget(source: getCoverArt(currentSong)),
+                    ClipRect(
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(sigmaX: 35, sigmaY: 35),
+                        child: Container(color: coverArtFilterColor),
+                      ),
+                    ),
                     Row(
                       children: [
                         Spacer(),
@@ -58,7 +77,7 @@ class LyricsPage extends StatelessWidget {
                         ),
                         SizedBox(width: pageWidth * 0.07),
                         SizedBox(
-                          width: pageWidth * 0.39,
+                          width: pageWidth * 0.44,
                           child: Column(
                             children: [
                               SizedBox(height: 75),
@@ -99,7 +118,7 @@ class LyricsPage extends StatelessWidget {
                             ],
                           ),
                         ),
-                        SizedBox(width: pageWidth * 0.1),
+                        SizedBox(width: pageWidth * 0.05),
                       ],
                     ),
                     Positioned(
@@ -139,7 +158,7 @@ class LyricsPage extends StatelessWidget {
               textStyle: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 20,
-                color: Colors.black,
+                color: Colors.grey.shade50,
               ),
             ),
           ),
@@ -154,7 +173,7 @@ class LyricsPage extends StatelessWidget {
               key: UniqueKey(),
               '${getArtist(currentSong)} - ${getAlbum(currentSong)}',
               maxLines: 1,
-              textStyle: TextStyle(fontSize: 14, color: Colors.black54),
+              textStyle: TextStyle(fontSize: 14, color: Colors.grey.shade300),
             ),
           ),
         ),
@@ -170,7 +189,7 @@ class LyricsPage extends StatelessWidget {
                 valueListenable: playModeNotifier,
                 builder: (_, playMode, _) {
                   return IconButton(
-                    color: Colors.black,
+                    color: Colors.grey.shade50,
                     icon: ImageIcon(
                       playMode == 0
                           ? loopImage
@@ -218,7 +237,7 @@ class LyricsPage extends StatelessWidget {
 
               Spacer(),
               IconButton(
-                color: Colors.black,
+                color: Colors.grey.shade50,
                 icon: const ImageIcon(previousButtonImage, size: 25),
                 onPressed: () {
                   if (playQueue.isEmpty) {
@@ -230,7 +249,7 @@ class LyricsPage extends StatelessWidget {
 
               Spacer(),
               IconButton(
-                color: Colors.black,
+                color: Colors.grey.shade50,
                 icon: ValueListenableBuilder(
                   valueListenable: isPlayingNotifier,
                   builder: (_, isPlaying, _) {
@@ -251,7 +270,7 @@ class LyricsPage extends StatelessWidget {
               ),
               Spacer(),
               IconButton(
-                color: Colors.black,
+                color: Colors.grey.shade50,
                 icon: const ImageIcon(nextButtonImage, size: 25),
                 onPressed: () {
                   if (playQueue.isEmpty) {
@@ -266,7 +285,7 @@ class LyricsPage extends StatelessWidget {
                 icon: Icon(
                   Icons.playlist_play_rounded,
                   size: 25,
-                  color: Colors.black,
+                  color: Colors.grey.shade50,
                 ),
                 onPressed: () {
                   if (playQueue.isEmpty) {

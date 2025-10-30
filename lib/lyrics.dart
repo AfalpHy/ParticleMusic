@@ -77,13 +77,11 @@ class LyricLineWidget extends StatelessWidget {
                       textAlign: expanded ? TextAlign.left : TextAlign.center,
                       style: TextStyle(
                         fontSize:
-                            fontSize + (isMaximized | isFullScreen ? 35 : 0),
-                        fontWeight: isCurrent
-                            ? FontWeight.bold
-                            : FontWeight.normal,
+                            fontSize + (isMaximized | isFullScreen ? 25 : 0),
+
                         color: isCurrent
-                            ? Colors.black
-                            : const Color.fromARGB(128, 0, 0, 0),
+                            ? Colors.grey.shade50
+                            : Colors.white.withAlpha(64),
                       ),
                     );
                   },
