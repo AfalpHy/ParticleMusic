@@ -1,3 +1,4 @@
+import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
@@ -34,6 +35,10 @@ class PlayQueueSheetState extends State<PlayQueuePage> {
       playQueue.length,
       (_) => ValueNotifier(false),
     );
+    final Map<AudioMetadata, ValueNotifier<bool>> showPlayButtonMap = {};
+    for (AudioMetadata song in playQueue) {
+      showPlayButtonMap[song] = ValueNotifier(false);
+    }
     continuousSelectBeginIndex = -1;
     return Column(
       children: [
@@ -97,12 +102,10 @@ class PlayQueueSheetState extends State<PlayQueuePage> {
             itemBuilder: (_, index) {
               final song = playQueue[index];
               final isSelected = isSelectedList[index];
-              final ValueNotifier<bool> showPlayButtonNotifier = ValueNotifier(
-                false,
-              );
+              final showPlayButtonNotifier = showPlayButtonMap[song]!;
 
               return ContextMenuWidget(
-                key: ValueKey(index),
+                key: ValueKey(song),
                 child: ReorderableDragStartListener(
                   index: index,
                   child: ValueListenableBuilder(
@@ -116,107 +119,113 @@ class PlayQueueSheetState extends State<PlayQueuePage> {
                               color: value
                                   ? Colors.grey.shade300
                                   : Colors.transparent,
-                              child: InkWell(
-                                onHover: (value) {
-                                  showPlayButtonNotifier.value =
-                                      !showPlayButtonNotifier.value;
+                              child: MouseRegion(
+                                onEnter: (_) {
+                                  showPlayButtonNotifier.value = true;
                                 },
-                                highlightColor: Colors.transparent,
-                                splashColor: Colors.transparent,
-                                child: ListTile(
-                                  leading: Stack(
-                                    children: [
-                                      CoverArtWidget(
-                                        size: 50,
-                                        borderRadius: 5,
-                                        source: getCoverArt(song),
+                                onExit: (_) {
+                                  showPlayButtonNotifier.value = false;
+                                },
+                                child: InkWell(
+                                  highlightColor: Colors.transparent,
+                                  splashColor: Colors.transparent,
+                                  child: ListTile(
+                                    leading: Stack(
+                                      children: [
+                                        CoverArtWidget(
+                                          size: 50,
+                                          borderRadius: 5,
+                                          source: getCoverArt(song),
+                                        ),
+                                        ValueListenableBuilder(
+                                          valueListenable:
+                                              showPlayButtonNotifier,
+                                          builder: (context, value, child) {
+                                            return value
+                                                ? IconButton(
+                                                    onPressed: () async {
+                                                      audioHandler
+                                                              .currentIndex =
+                                                          index;
+                                                      await audioHandler.load();
+                                                      await audioHandler.play();
+                                                    },
+                                                    icon: Icon(
+                                                      Icons.play_arrow_rounded,
+                                                      color: Colors.white,
+                                                      size: 30,
+                                                    ),
+                                                  )
+                                                : SizedBox.shrink();
+                                          },
+                                        ),
+                                      ],
+                                    ),
+                                    title: Text(
+                                      getTitle(song),
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        color: song == currentSong
+                                            ? Color.fromARGB(255, 75, 210, 210)
+                                            : null,
+                                        fontWeight: song == currentSong
+                                            ? FontWeight.bold
+                                            : null,
+                                        fontSize: 14,
                                       ),
-                                      ValueListenableBuilder(
-                                        valueListenable: showPlayButtonNotifier,
-                                        builder: (context, value, child) {
-                                          return value
-                                              ? IconButton(
-                                                  onPressed: () async {
-                                                    audioHandler.currentIndex =
-                                                        index;
-                                                    await audioHandler.load();
-                                                    await audioHandler.play();
-                                                  },
-                                                  icon: Icon(
-                                                    Icons.play_arrow_rounded,
-                                                    color: Colors.white,
-                                                    size: 30,
-                                                  ),
-                                                )
-                                              : SizedBox.shrink();
-                                        },
+                                    ),
+                                    subtitle: Text(
+                                      "${getArtist(song)} - ${getAlbum(song)}",
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey,
                                       ),
-                                    ],
-                                  ),
-                                  title: Text(
-                                    getTitle(song),
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      color: song == currentSong
-                                          ? Color.fromARGB(255, 75, 210, 210)
-                                          : null,
-                                      fontWeight: song == currentSong
-                                          ? FontWeight.bold
-                                          : null,
-                                      fontSize: 14,
+                                    ),
+                                    trailing: Text(
+                                      formatDuration(getDuration(song)),
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(fontSize: 12),
                                     ),
                                   ),
-                                  subtitle: Text(
-                                    "${getArtist(song)} - ${getAlbum(song)}",
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey,
-                                    ),
-                                  ),
-                                  trailing: Text(
-                                    formatDuration(getDuration(song)),
-                                    overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(fontSize: 12),
-                                  ),
-                                ),
-                                onTap: () async {
-                                  if (ctrlIsPressed) {
-                                    isSelected.value = !isSelected.value;
-                                    continuousSelectBeginIndex = index;
-                                  } else if (shiftIsPressed) {
-                                    if (continuousSelectBeginIndex == -1) {
-                                      return;
-                                    }
-                                    int left =
-                                        continuousSelectBeginIndex < index
-                                        ? continuousSelectBeginIndex
-                                        : index;
-                                    int right =
-                                        continuousSelectBeginIndex > index
-                                        ? continuousSelectBeginIndex
-                                        : index;
-
-                                    for (
-                                      int i = 0;
-                                      i < isSelectedList.length;
-                                      i++
-                                    ) {
-                                      if (i < left || i > right) {
-                                        isSelectedList[i].value = false;
-                                      } else {
-                                        isSelectedList[i].value = true;
+                                  onTap: () async {
+                                    if (ctrlIsPressed) {
+                                      isSelected.value = !isSelected.value;
+                                      continuousSelectBeginIndex = index;
+                                    } else if (shiftIsPressed) {
+                                      if (continuousSelectBeginIndex == -1) {
+                                        return;
                                       }
+                                      int left =
+                                          continuousSelectBeginIndex < index
+                                          ? continuousSelectBeginIndex
+                                          : index;
+                                      int right =
+                                          continuousSelectBeginIndex > index
+                                          ? continuousSelectBeginIndex
+                                          : index;
+
+                                      for (
+                                        int i = 0;
+                                        i < isSelectedList.length;
+                                        i++
+                                      ) {
+                                        if (i < left || i > right) {
+                                          isSelectedList[i].value = false;
+                                        } else {
+                                          isSelectedList[i].value = true;
+                                        }
+                                      }
+                                    } else {
+                                      // clear select
+                                      for (var tmp in isSelectedList) {
+                                        tmp.value = false;
+                                      }
+                                      isSelected.value = true;
+                                      continuousSelectBeginIndex = index;
                                     }
-                                  } else {
-                                    // clear select
-                                    for (var tmp in isSelectedList) {
-                                      tmp.value = false;
-                                    }
-                                    isSelected.value = true;
-                                    continuousSelectBeginIndex = index;
-                                  }
-                                },
+                                  },
+                                ),
                               ),
                             );
                           },
