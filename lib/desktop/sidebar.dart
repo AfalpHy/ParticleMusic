@@ -7,12 +7,14 @@ import 'package:smooth_corner/smooth_corner.dart';
 import 'package:super_context_menu/super_context_menu.dart';
 import 'package:window_manager/window_manager.dart';
 
+final ValueNotifier<int> sidebarHighlightIndex = ValueNotifier<int>(2);
+
 class Sidebar extends StatelessWidget {
   final ScrollController _scrollController = ScrollController();
-
   Sidebar({super.key});
 
   Widget sidebarItem({
+    required int index,
     required Widget leading,
     required String content,
     Widget? trailing,
@@ -24,19 +26,29 @@ class Sidebar extends StatelessWidget {
       child: SmoothClipRRect(
         smoothness: 1,
         borderRadius: BorderRadius.circular(10),
-        child: Material(
-          color: Color.fromARGB(255, 240, 245, 250),
-          child: ListTile(
-            leading: leading,
-            title: Text(
-              content,
-              style: TextStyle(fontSize: 15, overflow: TextOverflow.ellipsis),
-            ),
-            contentPadding: contentPadding,
-            visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-            onTap: onTap,
-            trailing: trailing,
-          ),
+        child: ValueListenableBuilder(
+          valueListenable: sidebarHighlightIndex,
+          builder: (context, value, child) {
+            return Material(
+              color: value == index
+                  ? Colors.white
+                  : Color.fromARGB(255, 240, 245, 250),
+              child: ListTile(
+                leading: leading,
+                title: Text(
+                  content,
+                  style: TextStyle(
+                    fontSize: 15,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+                contentPadding: contentPadding,
+                visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+                onTap: onTap,
+                trailing: trailing,
+              ),
+            );
+          },
         ),
       ),
     );
@@ -80,6 +92,7 @@ class Sidebar extends StatelessWidget {
                   slivers: [
                     SliverToBoxAdapter(
                       child: sidebarItem(
+                        index: 0,
                         leading: const ImageIcon(
                           artistImage,
                           size: 30,
@@ -95,6 +108,8 @@ class Sidebar extends StatelessWidget {
 
                     SliverToBoxAdapter(
                       child: sidebarItem(
+                        index: 1,
+
                         leading: const ImageIcon(
                           albumImage,
                           size: 30,
@@ -110,6 +125,8 @@ class Sidebar extends StatelessWidget {
 
                     SliverToBoxAdapter(
                       child: sidebarItem(
+                        index: 2,
+
                         leading: const ImageIcon(
                           songsImage,
                           size: 30,
@@ -135,6 +152,7 @@ class Sidebar extends StatelessWidget {
 
                     SliverToBoxAdapter(
                       child: sidebarItem(
+                        index: 3,
                         leading: const ImageIcon(
                           playlistsImage,
                           size: 30,
@@ -167,6 +185,7 @@ class Sidebar extends StatelessWidget {
                                 .getPlaylistByIndex(index);
                             return ContextMenuWidget(
                               child: sidebarItem(
+                                index: 4 + index,
                                 leading: ValueListenableBuilder(
                                   valueListenable: playlist.changeNotifier,
                                   builder: (_, _, _) {

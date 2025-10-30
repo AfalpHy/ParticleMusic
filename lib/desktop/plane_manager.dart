@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/desktop/artist_album_plane.dart';
+import 'package:particle_music/desktop/sidebar.dart';
 import 'package:particle_music/desktop/song_list_plane.dart';
 import 'package:particle_music/playlists.dart';
 
 class PlaneManager {
   final List<Widget> planeStack = [SongListPlane()];
+  final List<int> sidebarHighlightIndexStack = [2];
 
   final ValueNotifier<int> updatePlane = ValueNotifier(0);
 
@@ -12,6 +14,7 @@ class PlaneManager {
     switch (index) {
       case 0:
         planeStack.add(SongListPlane(key: UniqueKey()));
+        sidebarHighlightIndex.value = 2;
         break;
       case 1:
         planeStack.add(
@@ -23,6 +26,7 @@ class PlaneManager {
             },
           ),
         );
+        sidebarHighlightIndex.value = 0;
         break;
       case 2:
         planeStack.add(
@@ -34,6 +38,7 @@ class PlaneManager {
             },
           ),
         );
+        sidebarHighlightIndex.value = 1;
         break;
       case 3:
         planeStack.add(SongListPlane(key: UniqueKey(), artist: title));
@@ -44,8 +49,10 @@ class PlaneManager {
       default:
         final playlist = playlistsManager.getPlaylistByIndex(index - 5);
         planeStack.add(SongListPlane(key: UniqueKey(), playlist: playlist));
+        sidebarHighlightIndex.value = 4 + index - 5;
         break;
     }
+    sidebarHighlightIndexStack.add(sidebarHighlightIndex.value);
     updatePlane.value++;
   }
 
@@ -54,6 +61,8 @@ class PlaneManager {
       return;
     }
     planeStack.removeLast();
+    sidebarHighlightIndexStack.removeLast();
+    sidebarHighlightIndex.value = sidebarHighlightIndexStack.last;
     updatePlane.value++;
   }
 
@@ -62,8 +71,10 @@ class PlaneManager {
       Widget tmp = planeStack[i];
       if (tmp is SongListPlane && tmp.playlist == playlist) {
         planeStack.removeAt(i);
+        sidebarHighlightIndexStack.removeAt(i);
       }
     }
+    sidebarHighlightIndex.value = sidebarHighlightIndexStack.last;
     updatePlane.value++;
   }
 }
