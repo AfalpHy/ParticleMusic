@@ -18,10 +18,10 @@ class ArtistAlbumPage extends StatelessWidget {
     final textController = TextEditingController();
     final ValueNotifier<bool> isSearch = ValueNotifier(false);
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey.shade50,
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.grey.shade50,
         elevation: 0,
         scrolledUnderElevation: 0,
         title: Text(isArtist ? "Artists" : "Albums"),

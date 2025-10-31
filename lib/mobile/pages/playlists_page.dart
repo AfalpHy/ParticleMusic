@@ -13,9 +13,9 @@ class PlaylistsPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.grey.shade50,
         elevation: 0,
         scrolledUnderElevation: 0,
         title: const Text("Playlists"),
@@ -165,8 +165,11 @@ class PlaylistsPage extends StatelessWidget {
 
   Widget reorderPlaylistsPage(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(backgroundColor: Colors.white, scrolledUnderElevation: 0),
+      backgroundColor: Colors.grey.shade50,
+      appBar: AppBar(
+        backgroundColor: Colors.grey.shade50,
+        scrolledUnderElevation: 0,
+      ),
       body: ReorderableListView.builder(
         buildDefaultDragHandles: false,
         onReorder: (oldIndex, newIndex) {

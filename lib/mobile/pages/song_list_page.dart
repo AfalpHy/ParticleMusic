@@ -70,7 +70,7 @@ class _SongListPageState extends State<SongListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey.shade50,
       resizeToAvoidBottomInset: false,
       appBar: searchAndMore(context),
       body: normalSongList(),
@@ -79,7 +79,7 @@ class _SongListPageState extends State<SongListPage> {
 
   PreferredSizeWidget searchAndMore(BuildContext context) {
     return AppBar(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey.shade50,
       scrolledUnderElevation: 0,
       actions: [
         searchField(),
@@ -302,8 +302,11 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
       }
     });
     return Scaffold(
-      backgroundColor: Colors.white,
-      appBar: AppBar(backgroundColor: Colors.white, scrolledUnderElevation: 0),
+      backgroundColor: Colors.grey.shade50,
+      appBar: AppBar(
+        backgroundColor: Colors.grey.shade50,
+        scrolledUnderElevation: 0,
+      ),
       body: Column(
         children: [
           Row(

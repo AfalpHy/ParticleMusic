@@ -102,7 +102,7 @@ class MobileMainPage extends StatelessWidget {
       builder: (context, which, _) {
         // must use Material to avoid layout problem
         return Material(
-          color: Colors.white,
+          color: Colors.grey.shade50,
 
           child: Row(
             children: [
@@ -183,9 +183,9 @@ class HomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
-        backgroundColor: Colors.white,
+        backgroundColor: Colors.grey.shade50,
         elevation: 0,
         scrolledUnderElevation: 0,
         title: const Text(
@@ -355,7 +355,9 @@ class HomePage extends StatelessWidget {
                 builder: (_) => Theme(
                   data: ThemeData(
                     colorScheme: ColorScheme.light(
-                      surface: Colors.white, // <- this is what LicensePage uses
+                      surface: Colors
+                          .grey
+                          .shade50, // <- this is what LicensePage uses
                     ),
                     appBarTheme: const AppBarTheme(
                       scrolledUnderElevation: 0,
