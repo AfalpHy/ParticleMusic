@@ -3,9 +3,9 @@
 A cross-platform music player supporting Android, iOS, Windows, Linux and MacOS. This project is built for learning Flutter and having some fun.
 
 
-# Screenshot
+## Screenshot
 
-## On iOS
+### On iOS
 <div>
     <img src="./screenshot/mobile0.png" width="250" height="500" />
     <img src="./screenshot/mobile1.png" width="250" height="500" />
@@ -19,7 +19,7 @@ A cross-platform music player supporting Android, iOS, Windows, Linux and MacOS.
 </div>
 
 
-## On Windows
+### On Windows
 
 
 ![My picture](./screenshot/desktop0.png)
