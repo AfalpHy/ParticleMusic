@@ -109,6 +109,8 @@ abstract class MyAudioHandler extends BaseAudioHandler {
     playQueueTmp = [];
     lyrics = [];
     currentIndex = -1;
+    coverArtAverageColor = Colors.grey;
+    coverArtFilterColor = coverArtAverageColor.withAlpha(160);
     currentSongNotifier.value = null;
   }
 

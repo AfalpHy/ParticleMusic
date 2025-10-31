@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/desktop/keyboard.dart';
+import 'package:particle_music/desktop/lyrics_page.dart';
 import 'package:super_context_menu/super_context_menu.dart';
 import '../audio_handler.dart';
 
@@ -92,8 +93,8 @@ class PlayQueueSheetState extends State<PlayQueuePage> {
                         if (await showConfirmDialog(context, 'Clear Action')) {
                           audioHandler.clear();
 
-                          setState(() {});
                           displayPlayQueuePageNotifier.value = false;
+                          displayLyricsPageNotifier.value = false;
                         }
                       },
                       icon: const ImageIcon(deleteImage, color: Colors.black),
@@ -315,10 +316,12 @@ class PlayQueueSheetState extends State<PlayQueuePage> {
                                     audioHandler.delete(i);
                                   }
                                 }
+
                                 setState(() {});
                                 if (playQueue.isEmpty) {
                                   audioHandler.clear();
                                   displayPlayQueuePageNotifier.value = false;
+                                  displayLyricsPageNotifier.value = false;
                                 } else if (removeCurrent) {
                                   await audioHandler.load();
                                   if (isPlayingNotifier.value) {
