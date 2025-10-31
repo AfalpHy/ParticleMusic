@@ -148,7 +148,7 @@ class _SongListPlane extends State<SongListPlane> {
                                 // reusing the same widget to avoid unnecessary rebuild
                                 key: ValueKey(currentSongList[index]),
                                 index: index,
-                                child: songListTile(
+                                child: listItem(
                                   context,
                                   currentSongList,
                                   index,
@@ -158,7 +158,7 @@ class _SongListPlane extends State<SongListPlane> {
                               )
                             : SizedBox(
                                 key: ValueKey(index),
-                                child: songListTile(
+                                child: listItem(
                                   context,
                                   currentSongList,
                                   index,
@@ -270,7 +270,7 @@ class _SongListPlane extends State<SongListPlane> {
     );
   }
 
-  Widget songListTile(
+  Widget listItem(
     BuildContext context,
     List<AudioMetadata> currentSongList,
     int index,
@@ -342,79 +342,15 @@ class _SongListPlane extends State<SongListPlane> {
                         SizedBox(
                           width: 60,
                           child: Center(
-                            child: ValueListenableBuilder(
-                              valueListenable: showPlayButtonNotifier,
-                              builder: (context, value, child) {
-                                return value
-                                    ? IconButton(
-                                        onPressed: () async {
-                                          audioHandler.currentIndex = index;
-                                          playQueue = List.from(
-                                            currentSongList,
-                                          );
-                                          if (playModeNotifier.value == 1 ||
-                                              (playModeNotifier.value == 2 &&
-                                                  audioHandler.tmpPlayMode ==
-                                                      1)) {
-                                            audioHandler.shuffle();
-                                          }
-                                          await audioHandler.load();
-                                          await audioHandler.play();
-                                        },
-                                        icon: Icon(Icons.play_arrow_rounded),
-                                      )
-                                    : Text(
-                                        (index + 1).toString(),
-                                        overflow: TextOverflow.ellipsis,
-                                      );
-                              },
+                            child: indexOrPlayButton(
+                              index,
+                              showPlayButtonNotifier,
+                              currentSongList,
                             ),
                           ),
                         ),
 
-                        Expanded(
-                          child: ListTile(
-                            contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-                            visualDensity: const VisualDensity(
-                              horizontal: 0,
-                              vertical: -4,
-                            ),
-                            leading: CoverArtWidget(
-                              size: 40,
-                              borderRadius: 4,
-                              source: getCoverArt(song),
-                            ),
-                            title: ValueListenableBuilder(
-                              valueListenable: currentSongNotifier,
-                              builder: (_, currentSong, _) {
-                                return Text(
-                                  getTitle(song),
-                                  overflow: TextOverflow.ellipsis,
-                                  style: song == currentSong
-                                      ? TextStyle(
-                                          color: Color.fromARGB(
-                                            255,
-                                            75,
-                                            200,
-                                            200,
-                                          ),
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 15,
-                                        )
-                                      : TextStyle(fontSize: 15),
-                                );
-                              },
-                            ),
-                            subtitle: Text(
-                              getArtist(song),
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Colors.grey,
-                              ),
-                            ),
-                          ),
-                        ),
+                        Expanded(child: songListTile(song)),
 
                         SizedBox(width: 30),
 
@@ -547,6 +483,67 @@ class _SongListPlane extends State<SongListPlane> {
           ],
         );
       },
+    );
+  }
+
+  Widget indexOrPlayButton(
+    int index,
+    ValueNotifier<bool> showPlayButtonNotifier,
+    List<AudioMetadata> currentSongList,
+  ) {
+    return ValueListenableBuilder(
+      valueListenable: showPlayButtonNotifier,
+      builder: (context, value, child) {
+        return value
+            ? IconButton(
+                onPressed: () async {
+                  audioHandler.currentIndex = index;
+                  playQueue = List.from(currentSongList);
+                  if (playModeNotifier.value == 1 ||
+                      (playModeNotifier.value == 2 &&
+                          audioHandler.tmpPlayMode == 1)) {
+                    audioHandler.shuffle();
+                  }
+                  await audioHandler.load();
+                  await audioHandler.play();
+                },
+                icon: Icon(Icons.play_arrow_rounded),
+              )
+            : Text((index + 1).toString(), overflow: TextOverflow.ellipsis);
+      },
+    );
+  }
+
+  Widget songListTile(AudioMetadata song) {
+    return ListTile(
+      contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+      visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+      leading: CoverArtWidget(
+        size: 40,
+        borderRadius: 4,
+        source: getCoverArt(song),
+      ),
+      title: ValueListenableBuilder(
+        valueListenable: currentSongNotifier,
+        builder: (_, currentSong, _) {
+          return Text(
+            getTitle(song),
+            overflow: TextOverflow.ellipsis,
+            style: song == currentSong
+                ? TextStyle(
+                    color: Color.fromARGB(255, 75, 200, 200),
+                    fontWeight: FontWeight.bold,
+                    fontSize: 15,
+                  )
+                : TextStyle(fontSize: 15),
+          );
+        },
+      ),
+      subtitle: Text(
+        getArtist(song),
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(fontSize: 12, color: Colors.grey),
+      ),
     );
   }
 }

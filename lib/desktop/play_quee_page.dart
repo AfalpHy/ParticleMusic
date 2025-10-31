@@ -47,6 +47,9 @@ class PlayQueueSheetState extends State<PlayQueuePage> {
       playQueue.length,
       (_) => ValueNotifier(false),
     );
+
+    // tapping down and dargging will cause widget rebuild,
+    // using this and MouseRegion to keep play button show state while reodering
     final Map<AudioMetadata, ValueNotifier<bool>> showPlayButtonMap = {};
     for (AudioMetadata song in playQueue) {
       showPlayButtonMap[song] = ValueNotifier(false);
@@ -64,43 +67,38 @@ class PlayQueueSheetState extends State<PlayQueuePage> {
         : Column(
             children: [
               SizedBox(height: 10),
-              SizedBox(
-                child: Row(
-                  children: [
-                    SizedBox(width: 15),
-                    Text(
-                      'Play Queue',
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    Spacer(),
+              Row(
+                children: [
+                  SizedBox(width: 15),
+                  Text(
+                    'Play Queue',
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                  Spacer(),
 
-                    IconButton(
-                      color: Colors.black,
-                      onPressed: () {
-                        scrollController.animateTo(
-                          64.0 * audioHandler.currentIndex,
-                          duration: Duration(milliseconds: 300),
-                          curve: Curves.linear,
-                        );
-                      },
-                      icon: Icon(Icons.my_location_rounded, size: 20),
-                    ),
-                    IconButton(
-                      onPressed: () async {
-                        if (await showConfirmDialog(context, 'Clear Action')) {
-                          audioHandler.clear();
+                  IconButton(
+                    color: Colors.black,
+                    onPressed: () {
+                      scrollController.animateTo(
+                        64.0 * audioHandler.currentIndex,
+                        duration: Duration(milliseconds: 300),
+                        curve: Curves.linear,
+                      );
+                    },
+                    icon: Icon(Icons.my_location_rounded, size: 20),
+                  ),
+                  IconButton(
+                    onPressed: () async {
+                      if (await showConfirmDialog(context, 'Clear Action')) {
+                        audioHandler.clear();
 
-                          displayPlayQueuePageNotifier.value = false;
-                          displayLyricsPageNotifier.value = false;
-                        }
-                      },
-                      icon: const ImageIcon(deleteImage, color: Colors.black),
-                    ),
-                  ],
-                ),
+                        displayPlayQueuePageNotifier.value = false;
+                        displayLyricsPageNotifier.value = false;
+                      }
+                    },
+                    icon: const ImageIcon(deleteImage, color: Colors.black),
+                  ),
+                ],
               ),
               SizedBox(height: 10),
 
@@ -122,6 +120,11 @@ class PlayQueueSheetState extends State<PlayQueuePage> {
                     }
                     final item = playQueue.removeAt(oldIndex);
                     playQueue.insert(newIndex, item);
+                    // clearing selected after reordering
+                    for (var tmp in isSelectedList) {
+                      tmp.value = false;
+                    }
+                    continuousSelectBeginIndex = -1;
                   },
 
                   proxyDecorator:
@@ -145,138 +148,66 @@ class PlayQueueSheetState extends State<PlayQueuePage> {
                       child: ReorderableDragStartListener(
                         index: index,
                         child: ValueListenableBuilder(
-                          valueListenable: currentSongNotifier,
-                          builder: (_, currentSong, _) {
-                            return Center(
-                              child: ValueListenableBuilder(
-                                valueListenable: isSelected,
-                                builder: (context, value, child) {
-                                  return Material(
-                                    color: value
-                                        ? Colors.grey.shade300
-                                        : Colors.transparent,
-                                    child: MouseRegion(
-                                      onEnter: (_) {
-                                        showPlayButtonNotifier.value = true;
-                                      },
-                                      onExit: (_) {
-                                        showPlayButtonNotifier.value = false;
-                                      },
-                                      child: InkWell(
-                                        highlightColor: Colors.transparent,
-                                        splashColor: Colors.transparent,
-                                        child: ListTile(
-                                          leading: Stack(
-                                            children: [
-                                              CoverArtWidget(
-                                                size: 50,
-                                                borderRadius: 5,
-                                                source: getCoverArt(song),
-                                              ),
-                                              ValueListenableBuilder(
-                                                valueListenable:
-                                                    showPlayButtonNotifier,
-                                                builder: (context, value, child) {
-                                                  return value
-                                                      ? IconButton(
-                                                          onPressed: () async {
-                                                            audioHandler
-                                                                    .currentIndex =
-                                                                index;
-                                                            await audioHandler
-                                                                .load();
-                                                            await audioHandler
-                                                                .play();
-                                                          },
-                                                          icon: Icon(
-                                                            Icons
-                                                                .play_arrow_rounded,
-                                                            color: Colors.white,
-                                                            size: 30,
-                                                          ),
-                                                        )
-                                                      : SizedBox.shrink();
-                                                },
-                                              ),
-                                            ],
-                                          ),
-                                          title: Text(
-                                            getTitle(song),
-                                            overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(
-                                              color: song == currentSong
-                                                  ? Color.fromARGB(
-                                                      255,
-                                                      75,
-                                                      210,
-                                                      210,
-                                                    )
-                                                  : null,
-                                              fontWeight: song == currentSong
-                                                  ? FontWeight.bold
-                                                  : null,
-                                              fontSize: 14,
-                                            ),
-                                          ),
-                                          subtitle: Text(
-                                            "${getArtist(song)} - ${getAlbum(song)}",
-                                            overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(
-                                              fontSize: 12,
-                                              color: Colors.grey,
-                                            ),
-                                          ),
-                                          trailing: Text(
-                                            formatDuration(getDuration(song)),
-                                            overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(fontSize: 12),
-                                          ),
-                                        ),
-                                        onTap: () async {
-                                          if (ctrlIsPressed) {
-                                            isSelected.value =
-                                                !isSelected.value;
-                                            continuousSelectBeginIndex = index;
-                                          } else if (shiftIsPressed) {
-                                            if (continuousSelectBeginIndex ==
-                                                -1) {
-                                              return;
-                                            }
-                                            int left =
-                                                continuousSelectBeginIndex <
-                                                    index
-                                                ? continuousSelectBeginIndex
-                                                : index;
-                                            int right =
-                                                continuousSelectBeginIndex >
-                                                    index
-                                                ? continuousSelectBeginIndex
-                                                : index;
+                          valueListenable: isSelected,
+                          builder: (context, value, child) {
+                            return Material(
+                              color: value
+                                  ? Colors.grey.shade300
+                                  : Colors.transparent,
 
-                                            for (
-                                              int i = 0;
-                                              i < isSelectedList.length;
-                                              i++
-                                            ) {
-                                              if (i < left || i > right) {
-                                                isSelectedList[i].value = false;
-                                              } else {
-                                                isSelectedList[i].value = true;
-                                              }
-                                            }
-                                          } else {
-                                            // clear select
-                                            for (var tmp in isSelectedList) {
-                                              tmp.value = false;
-                                            }
-                                            isSelected.value = true;
-                                            continuousSelectBeginIndex = index;
-                                          }
-                                        },
-                                      ),
-                                    ),
-                                  );
+                              child: MouseRegion(
+                                onEnter: (_) {
+                                  showPlayButtonNotifier.value = true;
                                 },
+                                onExit: (_) {
+                                  showPlayButtonNotifier.value = false;
+                                },
+                                child: InkWell(
+                                  highlightColor: Colors.transparent,
+                                  splashColor: Colors.transparent,
+                                  child: songListTile(
+                                    index,
+                                    showPlayButtonNotifier,
+                                    song,
+                                  ),
+                                  onTap: () async {
+                                    if (ctrlIsPressed) {
+                                      isSelected.value = !isSelected.value;
+                                      continuousSelectBeginIndex = index;
+                                    } else if (shiftIsPressed) {
+                                      if (continuousSelectBeginIndex == -1) {
+                                        return;
+                                      }
+                                      int left =
+                                          continuousSelectBeginIndex < index
+                                          ? continuousSelectBeginIndex
+                                          : index;
+                                      int right =
+                                          continuousSelectBeginIndex > index
+                                          ? continuousSelectBeginIndex
+                                          : index;
+
+                                      for (
+                                        int i = 0;
+                                        i < isSelectedList.length;
+                                        i++
+                                      ) {
+                                        if (i < left || i > right) {
+                                          isSelectedList[i].value = false;
+                                        } else {
+                                          isSelectedList[i].value = true;
+                                        }
+                                      }
+                                    } else {
+                                      // clear select
+                                      for (var tmp in isSelectedList) {
+                                        tmp.value = false;
+                                      }
+                                      isSelected.value = true;
+                                      continuousSelectBeginIndex = index;
+                                    }
+                                  },
+                                ),
                               ),
                             );
                           },
@@ -339,5 +270,64 @@ class PlayQueueSheetState extends State<PlayQueuePage> {
               ),
             ],
           );
+  }
+
+  Widget songListTile(
+    int index,
+    ValueNotifier<bool> showPlayButtonNotifier,
+    AudioMetadata song,
+  ) {
+    return ListTile(
+      leading: Stack(
+        children: [
+          CoverArtWidget(size: 50, borderRadius: 5, source: getCoverArt(song)),
+          ValueListenableBuilder(
+            valueListenable: showPlayButtonNotifier,
+            builder: (context, value, child) {
+              return value
+                  ? IconButton(
+                      onPressed: () async {
+                        audioHandler.currentIndex = index;
+                        await audioHandler.load();
+                        await audioHandler.play();
+                      },
+                      icon: Icon(
+                        Icons.play_arrow_rounded,
+                        color: Colors.white,
+                        size: 30,
+                      ),
+                    )
+                  : SizedBox.shrink();
+            },
+          ),
+        ],
+      ),
+      title: ValueListenableBuilder(
+        valueListenable: currentSongNotifier,
+        builder: (_, currentSong, _) {
+          return Text(
+            getTitle(song),
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: song == currentSong
+                  ? Color.fromARGB(255, 75, 210, 210)
+                  : null,
+              fontWeight: song == currentSong ? FontWeight.bold : null,
+              fontSize: 14,
+            ),
+          );
+        },
+      ),
+      subtitle: Text(
+        "${getArtist(song)} - ${getAlbum(song)}",
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(fontSize: 12, color: Colors.grey),
+      ),
+      trailing: Text(
+        formatDuration(getDuration(song)),
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(fontSize: 12),
+      ),
+    );
   }
 }
