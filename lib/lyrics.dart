@@ -209,12 +209,8 @@ class LyricsListViewState extends State<LyricsListView>
           );
         }
         break;
+      case AppLifecycleState.inactive:
       case AppLifecycleState.hidden:
-        if (!(Platform.isIOS || Platform.isAndroid)) {
-          positionSub?.cancel();
-          positionSub = null;
-          break;
-        }
       case AppLifecycleState.paused:
         positionSub?.cancel();
         positionSub = null;
@@ -226,6 +222,14 @@ class LyricsListViewState extends State<LyricsListView>
 
   @override
   Widget build(BuildContext context) {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (itemScrollController.isAttached) {
+        itemScrollController.jumpTo(
+          index: currentIndexNotifier.value + 1,
+          alignment: widget.expanded ? 0.35 : 0.4,
+        );
+      }
+    });
     return LayoutBuilder(
       builder: (context, constraints) {
         final parentHeight = constraints.maxHeight; // height of the parent
