@@ -30,6 +30,7 @@ class TitleBar extends StatelessWidget {
   final bool isMainPage;
   final TextEditingController? textController;
   final Function(String)? onChanged;
+  final Function()? findMyLocation;
 
   final textFieldFocusNode = FocusNode();
 
@@ -38,6 +39,7 @@ class TitleBar extends StatelessWidget {
     this.isMainPage = true,
     this.textController,
     this.onChanged,
+    this.findMyLocation,
   }) {
     textFieldFocusNode.addListener(() {
       if (!textFieldFocusNode.hasFocus) {
@@ -106,7 +108,7 @@ class TitleBar extends StatelessWidget {
                     onPressed: () {
                       planeManager.popPlane();
                     },
-                    icon: Icon(Icons.arrow_back_ios_rounded),
+                    icon: Icon(Icons.arrow_back_ios_rounded, size: 20),
                   )
                 else
                   ValueListenableBuilder(
@@ -124,6 +126,17 @@ class TitleBar extends StatelessWidget {
                               ),
                             );
                     },
+                  ),
+
+                if (isMainPage)
+                  IconButton(
+                    color: Colors.black54,
+                    onPressed: () {
+                      if (findMyLocation != null) {
+                        findMyLocation!();
+                      }
+                    },
+                    icon: Icon(Icons.my_location_rounded, size: 20),
                   ),
 
                 if (!isMainPage)
@@ -175,7 +188,7 @@ class TitleBar extends StatelessWidget {
                     onPressed: () {
                       planeManager.pushPlane(-1);
                     },
-                    icon: Icon(Icons.settings_outlined),
+                    icon: Icon(Icons.settings_outlined, size: 20),
                   ),
 
                 ValueListenableBuilder(

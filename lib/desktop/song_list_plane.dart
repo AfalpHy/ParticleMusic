@@ -28,6 +28,7 @@ class _SongListPlane extends State<SongListPlane> {
   final textController = TextEditingController();
   Playlist? playlist;
   String? title;
+  final scrollController = ScrollController();
 
   int continuousSelectBeginIndex = -1;
 
@@ -89,10 +90,33 @@ class _SongListPlane extends State<SongListPlane> {
       color: Color.fromARGB(255, 235, 240, 245),
       child: Column(
         children: [
-          TitleBar(textController: textController, onChanged: onChanged),
+          TitleBar(
+            textController: textController,
+            onChanged: onChanged,
+            findMyLocation: () {
+              if (currentSongNotifier.value == null) {
+                return;
+              }
+              final index = currentSongListNotifier.value.indexOf(
+                currentSongNotifier.value!,
+              );
+              final offset =
+                  (title != null ? 200 : 0) -
+                  (MediaQuery.heightOf(context) - 280) / 2;
+
+              if (index != -1) {
+                scrollController.animateTo(
+                  60 * index.toDouble() + offset,
+                  duration: Duration(milliseconds: 300), // smooth animation
+                  curve: Curves.linear,
+                );
+              }
+            },
+          ),
 
           Expanded(
             child: CustomScrollView(
+              controller: scrollController,
               slivers: [
                 SliverToBoxAdapter(child: titleHeader()),
 

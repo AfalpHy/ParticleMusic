@@ -29,7 +29,12 @@ class PlayQueueSheetState extends State<PlayQueuePage> {
       if (displayPlayQueuePageNotifier.value) {
         hideWiget = false;
         WidgetsBinding.instance.addPostFrameCallback((_) {
-          scrollController.jumpTo(64.0 * audioHandler.currentIndex);
+          // using animateTo to avoid overscroll
+          scrollController.animateTo(
+            64.0 * audioHandler.currentIndex,
+            duration: Duration(milliseconds: 1),
+            curve: Curves.linear,
+          );
         });
       }
     });
@@ -71,6 +76,17 @@ class PlayQueueSheetState extends State<PlayQueuePage> {
                     ),
                     Spacer(),
 
+                    IconButton(
+                      color: Colors.black,
+                      onPressed: () {
+                        scrollController.animateTo(
+                          64.0 * audioHandler.currentIndex,
+                          duration: Duration(milliseconds: 300),
+                          curve: Curves.linear,
+                        );
+                      },
+                      icon: Icon(Icons.my_location_rounded, size: 20),
+                    ),
                     IconButton(
                       onPressed: () async {
                         if (await showConfirmDialog(context, 'Clear Action')) {
