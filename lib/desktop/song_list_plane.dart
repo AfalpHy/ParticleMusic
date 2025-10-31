@@ -143,9 +143,9 @@ class _SongListPlane extends State<SongListPlane> {
                     return SliverReorderableList(
                       itemExtent: 60,
                       itemBuilder: (context, index) {
-                        return playlist != null
+                        return playlist != null && textController.text == ''
                             ? ReorderableDragStartListener(
-                                // reuse the same widget to avoid updating
+                                // reusing the same widget to avoid unnecessary rebuild
                                 key: ValueKey(currentSongList[index]),
                                 index: index,
                                 child: songListTile(
