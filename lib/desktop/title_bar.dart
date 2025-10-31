@@ -220,8 +220,8 @@ class TitleBar extends StatelessWidget {
                                 onPressed: () {
                                   windowManager.close();
                                 },
-                                icon: Icon(
-                                  Icons.close_rounded,
+                                icon: ImageIcon(
+                                  closeImage,
                                   color: isMainPage
                                       ? Colors.black54
                                       : Colors.grey.shade50,
