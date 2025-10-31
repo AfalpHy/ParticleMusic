@@ -322,7 +322,7 @@ void showAddPlaylistDialog(
         ),
         child: SizedBox(
           height: 500,
-          width: 500,
+          width: 400,
           child: Column(
             children: [
               SizedBox(height: 10),
