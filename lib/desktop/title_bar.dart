@@ -90,7 +90,7 @@ class TitleBar extends StatelessWidget {
                       borderSide: BorderSide.none,
                     ),
                   ),
-                  onChanged: (value) => onChanged!(value),
+                  onChanged: onChanged,
                 ),
               ),
             ),
@@ -102,13 +102,11 @@ class TitleBar extends StatelessWidget {
 
                 if (isMainPage)
                   IconButton(
+                    color: Colors.black54,
                     onPressed: () {
                       planeManager.popPlane();
                     },
-                    icon: Icon(
-                      Icons.arrow_back_ios_rounded,
-                      color: isMainPage ? Colors.black54 : Colors.black,
-                    ),
+                    icon: Icon(Icons.arrow_back_ios_rounded),
                   )
                 else
                   ValueListenableBuilder(
@@ -122,9 +120,7 @@ class TitleBar extends StatelessWidget {
                               },
                               icon: ImageIcon(
                                 arrowDownImage,
-                                color: isMainPage
-                                    ? Colors.black54
-                                    : Colors.grey.shade50,
+                                color: Colors.grey.shade50,
                               ),
                             );
                     },
@@ -172,6 +168,15 @@ class TitleBar extends StatelessWidget {
                   ),
 
                 Spacer(),
+
+                if (isMainPage)
+                  IconButton(
+                    color: Colors.black54,
+                    onPressed: () {
+                      planeManager.pushPlane(-1);
+                    },
+                    icon: Icon(Icons.settings_outlined),
+                  ),
 
                 ValueListenableBuilder(
                   valueListenable: isFullScreenNotifier,

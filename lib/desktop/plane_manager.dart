@@ -1,20 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/desktop/artist_album_plane.dart';
+import 'package:particle_music/desktop/setting_plane.dart';
 import 'package:particle_music/desktop/sidebar.dart';
 import 'package:particle_music/desktop/song_list_plane.dart';
 import 'package:particle_music/playlists.dart';
 
 class PlaneManager {
   final List<Widget> planeStack = [SongListPlane()];
-  final List<int> sidebarHighlightIndexStack = [2];
+  final List<String> sidebarHighlighLabelStack = ['_songs'];
 
   final ValueNotifier<int> updatePlane = ValueNotifier(0);
 
   void pushPlane(int index, {String? title}) {
     switch (index) {
+      case -2:
+        planeStack.add(LicensePagePlane(key: UniqueKey()));
+        sidebarHighlighLabel.value = '';
+        break;
+      case -1:
+        planeStack.add(SettingPlane(key: UniqueKey()));
+        sidebarHighlighLabel.value = '';
+        break;
       case 0:
         planeStack.add(SongListPlane(key: UniqueKey()));
-        sidebarHighlightIndex.value = 2;
+        sidebarHighlighLabel.value = '_songs';
         break;
       case 1:
         planeStack.add(
@@ -26,7 +35,7 @@ class PlaneManager {
             },
           ),
         );
-        sidebarHighlightIndex.value = 0;
+        sidebarHighlighLabel.value = '_artists';
         break;
       case 2:
         planeStack.add(
@@ -38,7 +47,7 @@ class PlaneManager {
             },
           ),
         );
-        sidebarHighlightIndex.value = 1;
+        sidebarHighlighLabel.value = '_albums';
         break;
       case 3:
         planeStack.add(SongListPlane(key: UniqueKey(), artist: title));
@@ -49,10 +58,10 @@ class PlaneManager {
       default:
         final playlist = playlistsManager.getPlaylistByIndex(index - 5);
         planeStack.add(SongListPlane(key: UniqueKey(), playlist: playlist));
-        sidebarHighlightIndex.value = 4 + index - 5;
+        sidebarHighlighLabel.value = '__${playlist.name}';
         break;
     }
-    sidebarHighlightIndexStack.add(sidebarHighlightIndex.value);
+    sidebarHighlighLabelStack.add(sidebarHighlighLabel.value);
     updatePlane.value++;
   }
 
@@ -61,8 +70,8 @@ class PlaneManager {
       return;
     }
     planeStack.removeLast();
-    sidebarHighlightIndexStack.removeLast();
-    sidebarHighlightIndex.value = sidebarHighlightIndexStack.last;
+    sidebarHighlighLabelStack.removeLast();
+    sidebarHighlighLabel.value = sidebarHighlighLabelStack.last;
     updatePlane.value++;
   }
 
@@ -71,10 +80,10 @@ class PlaneManager {
       Widget tmp = planeStack[i];
       if (tmp is SongListPlane && tmp.playlist == playlist) {
         planeStack.removeAt(i);
-        sidebarHighlightIndexStack.removeAt(i);
+        sidebarHighlighLabelStack.removeAt(i);
       }
     }
-    sidebarHighlightIndex.value = sidebarHighlightIndexStack.last;
+    sidebarHighlighLabel.value = sidebarHighlighLabelStack.last;
     updatePlane.value++;
   }
 }

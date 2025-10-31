@@ -7,14 +7,14 @@ import 'package:smooth_corner/smooth_corner.dart';
 import 'package:super_context_menu/super_context_menu.dart';
 import 'package:window_manager/window_manager.dart';
 
-final ValueNotifier<int> sidebarHighlightIndex = ValueNotifier<int>(2);
+final ValueNotifier<String> sidebarHighlighLabel = ValueNotifier('_songs');
 
 class Sidebar extends StatelessWidget {
   final ScrollController _scrollController = ScrollController();
   Sidebar({super.key});
 
   Widget sidebarItem({
-    required int index,
+    required String label,
     required Widget leading,
     required String content,
     Widget? trailing,
@@ -27,10 +27,10 @@ class Sidebar extends StatelessWidget {
         smoothness: 1,
         borderRadius: BorderRadius.circular(10),
         child: ValueListenableBuilder(
-          valueListenable: sidebarHighlightIndex,
+          valueListenable: sidebarHighlighLabel,
           builder: (context, value, child) {
             return Material(
-              color: value == index
+              color: value == label
                   ? Colors.white
                   : Color.fromARGB(255, 240, 245, 250),
               child: InkWell(
@@ -99,7 +99,7 @@ class Sidebar extends StatelessWidget {
                   slivers: [
                     SliverToBoxAdapter(
                       child: sidebarItem(
-                        index: 0,
+                        label: '_artists',
                         leading: const ImageIcon(
                           artistImage,
                           size: 30,
@@ -115,7 +115,7 @@ class Sidebar extends StatelessWidget {
 
                     SliverToBoxAdapter(
                       child: sidebarItem(
-                        index: 1,
+                        label: '_albums',
 
                         leading: const ImageIcon(
                           albumImage,
@@ -132,7 +132,7 @@ class Sidebar extends StatelessWidget {
 
                     SliverToBoxAdapter(
                       child: sidebarItem(
-                        index: 2,
+                        label: '_songs',
 
                         leading: const ImageIcon(
                           songsImage,
@@ -159,7 +159,7 @@ class Sidebar extends StatelessWidget {
 
                     SliverToBoxAdapter(
                       child: sidebarItem(
-                        index: 3,
+                        label: '_playlists',
                         leading: const ImageIcon(
                           playlistsImage,
                           size: 30,
@@ -192,7 +192,7 @@ class Sidebar extends StatelessWidget {
                                 .getPlaylistByIndex(index);
                             return ContextMenuWidget(
                               child: sidebarItem(
-                                index: 4 + index,
+                                label: '__${playlist.name}',
                                 leading: ValueListenableBuilder(
                                   valueListenable: playlist.changeNotifier,
                                   builder: (_, _, _) {
