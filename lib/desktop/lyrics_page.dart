@@ -50,7 +50,10 @@ class LyricsPageState extends State<LyricsPage> {
                     CoverArtWidget(source: getCoverArt(currentSong)),
                     ClipRect(
                       child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 35, sigmaY: 35),
+                        filter: ImageFilter.blur(
+                          sigmaX: pageWidth * 0.03,
+                          sigmaY: pageHight * 0.03,
+                        ),
                         child: Container(color: coverArtFilterColor),
                       ),
                     ),
