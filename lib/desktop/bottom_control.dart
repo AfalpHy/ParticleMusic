@@ -4,6 +4,7 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/desktop/lyrics_page.dart';
 import 'package:particle_music/desktop/play_quee_page.dart';
+import 'package:particle_music/full_width_track_shape.dart';
 import 'package:particle_music/seekbar.dart';
 
 class BottomControl extends StatelessWidget {
@@ -206,23 +207,22 @@ class BottomControl extends StatelessWidget {
     return Row(
       children: [
         Spacer(),
-        SizedBox(width: 10, child: Icon(Icons.volume_down_rounded)),
+        Icon(Icons.volume_down_rounded),
         Center(
           child: SizedBox(
             height: 20,
-            width: 175,
+            width: 140,
             child: ValueListenableBuilder(
               valueListenable: volumeNotifier,
               builder: (context, value, child) {
                 return SliderTheme(
                   data: SliderTheme.of(context).copyWith(
-                    trackHeight: 0.3, // thinner track
-                    thumbShape: RoundSliderThumbShape(
-                      enabledThumbRadius: 1,
-                    ), // smaller thumb
+                    trackHeight: 2,
+                    trackShape: const FullWidthTrackShape(),
+                    thumbShape: RoundSliderThumbShape(enabledThumbRadius: 0),
                     overlayColor: Colors.transparent,
                     activeTrackColor: Colors.black,
-                    inactiveTrackColor: Colors.black,
+                    inactiveTrackColor: Colors.black12,
                     thumbColor: Colors.black,
                   ),
                   child: Slider(

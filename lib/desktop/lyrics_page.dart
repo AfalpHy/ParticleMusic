@@ -8,6 +8,7 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/desktop/play_quee_page.dart';
 import 'package:particle_music/desktop/title_bar.dart';
+import 'package:particle_music/full_width_track_shape.dart';
 import 'package:particle_music/lyrics.dart';
 import 'package:particle_music/seekbar.dart';
 
@@ -314,13 +315,13 @@ class LyricsPageState extends State<LyricsPage> {
                   builder: (context, value, child) {
                     return SliderTheme(
                       data: SliderTheme.of(context).copyWith(
-                        trackHeight: 1.5, // thinner track
+                        trackHeight: 2,
                         trackShape: const FullWidthTrackShape(),
                         thumbShape: RoundSliderThumbShape(
                           enabledThumbRadius: 0,
                         ), // smaller thumb
                         overlayColor: Colors.transparent,
-                        activeTrackColor: Colors.white,
+                        activeTrackColor: Colors.grey.shade50,
                         inactiveTrackColor: Colors.black12,
                         thumbColor: Colors.grey.shade50,
                       ),
