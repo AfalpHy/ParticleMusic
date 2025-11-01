@@ -46,8 +46,8 @@ class LyricLineWidget extends StatelessWidget {
         ),
         child: Padding(
           padding: expanded
-              ? const EdgeInsets.fromLTRB(30, 10, 0, 10)
-              : const EdgeInsets.symmetric(vertical: 5, horizontal: 50),
+              ? const EdgeInsets.fromLTRB(25, 10, 0, 10)
+              : const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
           child: ValueListenableBuilder(
             valueListenable: currentIndexNotifier,
             builder: (context, value, child) {

@@ -124,7 +124,7 @@ class LyricsPage extends StatelessWidget {
 
         Expanded(
           child: Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 50),
+            padding: const EdgeInsets.symmetric(horizontal: 40),
             child: ShaderMask(
               shaderCallback: (rect) {
                 return LinearGradient(
