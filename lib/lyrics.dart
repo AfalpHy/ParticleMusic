@@ -1,11 +1,11 @@
 import 'dart:async';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/desktop/title_bar.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 
 class LyricLine {
@@ -33,62 +33,60 @@ class LyricLineWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: expanded
-          ? const EdgeInsets.fromLTRB(30, 10, 0, 10)
-          : const EdgeInsets.symmetric(vertical: 5, horizontal: 50),
+    return Material(
+      color: Colors.transparent,
       child: InkWell(
         onTap: () {
           audioHandler.seek(lyrics[index].timestamp);
         },
         borderRadius: BorderRadius.circular(10),
-        child: ValueListenableBuilder(
-          valueListenable: currentIndexNotifier,
-          builder: (context, value, child) {
-            final isCurrent = value == index;
-            double fontSize = 14;
-            if (isCurrent) {
-              fontSize += 4;
-            }
-            if (expanded) {
-              fontSize += 4;
-            }
-            if (isMobile) {
+        child: Padding(
+          padding: expanded
+              ? const EdgeInsets.fromLTRB(30, 10, 0, 10)
+              : const EdgeInsets.symmetric(vertical: 5, horizontal: 50),
+          child: ValueListenableBuilder(
+            valueListenable: currentIndexNotifier,
+            builder: (context, value, child) {
+              final isCurrent = value == index;
+              double fontSize = 14;
+              if (isCurrent) {
+                fontSize += 4;
+              }
+              if (expanded) {
+                fontSize += 4;
+              }
+              if (isMobile) {
+                return Text(
+                  text,
+                  textAlign: expanded ? TextAlign.left : TextAlign.center,
+                  style: TextStyle(
+                    fontSize: fontSize,
+                    fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+                    color: isCurrent
+                        ? Colors.black
+                        : const Color.fromARGB(128, 0, 0, 0),
+                  ),
+                );
+              }
+              final pageHeight = MediaQuery.heightOf(context);
+              final pageWidth = MediaQuery.widthOf(context);
+              final fontSizeOffset = min(
+                (pageHeight - 700) * 0.06,
+                (pageWidth - 1050) * 0.03,
+              );
               return Text(
                 text,
                 textAlign: expanded ? TextAlign.left : TextAlign.center,
                 style: TextStyle(
-                  fontSize: fontSize,
-                  fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
+                  fontSize: fontSize + fontSizeOffset,
+
                   color: isCurrent
-                      ? Colors.black
-                      : const Color.fromARGB(128, 0, 0, 0),
+                      ? Colors.grey.shade50
+                      : Colors.white.withAlpha(64),
                 ),
               );
-            }
-            return ValueListenableBuilder(
-              valueListenable: isMaximizedNotifier,
-              builder: (context, isMaximized, child) {
-                return ValueListenableBuilder(
-                  valueListenable: isFullScreenNotifier,
-                  builder: (context, isFullScreen, child) {
-                    return Text(
-                      text,
-                      textAlign: expanded ? TextAlign.left : TextAlign.center,
-                      style: TextStyle(
-                        fontSize:
-                            fontSize + (isMaximized | isFullScreen ? 25 : 0),
-
-                        color: isCurrent
-                            ? Colors.grey.shade50
-                            : Colors.white.withAlpha(64),
-                      ),
-                    );
-                  },
-                );
-              },
-            );
-          },
+            },
+          ),
         ),
       ),
     );
@@ -209,8 +207,6 @@ class LyricsListViewState extends State<LyricsListView>
           );
         }
         break;
-      case AppLifecycleState.inactive:
-      case AppLifecycleState.hidden:
       case AppLifecycleState.paused:
         positionSub?.cancel();
         positionSub = null;
@@ -222,6 +218,7 @@ class LyricsListViewState extends State<LyricsListView>
 
   @override
   Widget build(BuildContext context) {
+    // scrolling to current index while resizing
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (itemScrollController.isAttached) {
         itemScrollController.jumpTo(
