@@ -123,23 +123,29 @@ class LyricsPage extends StatelessWidget {
         const SizedBox(height: 30),
 
         Expanded(
-          child: ShaderMask(
-            shaderCallback: (rect) {
-              return LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [
-                  Colors.transparent, // fade out at top
-                  Colors.black, // fully visible
-                  Colors.black, // fully visible
-                  Colors.transparent, // fade out at bottom
-                ],
-                stops: [0.0, 0.1, 0.8, 1.0], // adjust fade height
-              ).createShader(rect);
-            },
-            blendMode: BlendMode.dstIn,
-            // use key to force update
-            child: LyricsListView(key: ValueKey(currentSong), expanded: false),
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 50),
+            child: ShaderMask(
+              shaderCallback: (rect) {
+                return LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent, // fade out at top
+                    Colors.black, // fully visible
+                    Colors.black, // fully visible
+                    Colors.transparent, // fade out at bottom
+                  ],
+                  stops: [0.0, 0.1, 0.8, 1.0], // adjust fade height
+                ).createShader(rect);
+              },
+              blendMode: BlendMode.dstIn,
+              // use key to force update
+              child: LyricsListView(
+                key: ValueKey(currentSong),
+                expanded: false,
+              ),
+            ),
           ),
         ),
 

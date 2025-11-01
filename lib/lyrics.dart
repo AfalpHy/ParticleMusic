@@ -7,6 +7,7 @@ import 'package:flutter/rendering.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
+import 'package:smooth_corner/smooth_corner.dart';
 
 class LyricLine {
   final Duration timestamp;
@@ -39,7 +40,10 @@ class LyricLineWidget extends StatelessWidget {
         onTap: () {
           audioHandler.seek(lyrics[index].timestamp);
         },
-        borderRadius: BorderRadius.circular(10),
+        customBorder: SmoothRectangleBorder(
+          smoothness: 1,
+          borderRadius: BorderRadius.circular(10),
+        ),
         child: Padding(
           padding: expanded
               ? const EdgeInsets.fromLTRB(30, 10, 0, 10)
