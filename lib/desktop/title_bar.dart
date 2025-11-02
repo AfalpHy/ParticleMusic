@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/keyboard.dart';
-import 'package:particle_music/desktop/lyrics_page.dart';
+import 'package:particle_music/desktop/pages/lyrics_page.dart';
 import 'package:particle_music/desktop/plane_manager.dart';
 import 'package:searchfield/searchfield.dart';
 import 'package:window_manager/window_manager.dart';

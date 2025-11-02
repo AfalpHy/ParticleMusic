@@ -3,8 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/playlists.dart';
-import 'audio_handler.dart';
-import 'cover_art_widget.dart';
+import '../audio_handler.dart';
+import '../cover_art_widget.dart';
 
 class SongListTile extends StatelessWidget {
   final int index;

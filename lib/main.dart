@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:particle_music/desktop/main_page.dart';
+import 'package:particle_music/desktop/pages/main_page.dart';
 import 'package:particle_music/desktop/single_instance.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:particle_music/mobile/pages/main_page.dart';

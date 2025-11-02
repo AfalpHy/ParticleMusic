@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:particle_music/desktop/artist_album_plane.dart';
-import 'package:particle_music/desktop/setting_plane.dart';
+import 'package:particle_music/desktop/planes/artist_album_plane.dart';
+import 'package:particle_music/desktop/planes/setting_plane.dart';
 import 'package:particle_music/desktop/sidebar.dart';
-import 'package:particle_music/desktop/song_list_plane.dart';
+import 'package:particle_music/desktop/planes/song_list_plane.dart';
 import 'package:particle_music/playlists.dart';
 
 class PlaneManager {
