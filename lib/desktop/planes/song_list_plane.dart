@@ -7,6 +7,7 @@ import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/desktop/keyboard.dart';
 import 'package:particle_music/desktop/title_bar.dart';
 import 'package:particle_music/load_library.dart';
+import 'package:particle_music/metadata.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 import 'package:super_context_menu/super_context_menu.dart';
@@ -413,21 +414,16 @@ class _SongListPlane extends State<SongListPlane> {
           continuousSelectBeginIndex = index;
         }
 
+        int selectedCnt = 0;
+
+        for (int i = isSelectedList.length - 1; i >= 0; i--) {
+          if (isSelectedList[i].value) {
+            selectedCnt++;
+          }
+        }
+
         return Menu(
           children: [
-            MenuAction(
-              title: 'Add to Playlists',
-              image: MenuImage.icon(Icons.playlist_add_rounded),
-              callback: () {
-                final List<AudioMetadata> tmpSongList = [];
-                for (int i = isSelectedList.length - 1; i >= 0; i--) {
-                  if (isSelectedList[i].value) {
-                    tmpSongList.add(currentSongList[i]);
-                  }
-                }
-                showAddPlaylistDialog(context, tmpSongList);
-              },
-            ),
             MenuAction(
               title: 'Play Now',
               image: MenuImage.icon(Icons.play_arrow_rounded),
@@ -465,6 +461,30 @@ class _SongListPlane extends State<SongListPlane> {
               },
             ),
 
+            MenuAction(
+              title: 'Add to Playlists',
+              image: MenuImage.icon(Icons.playlist_add_rounded),
+              callback: () {
+                final List<AudioMetadata> tmpSongList = [];
+                for (int i = isSelectedList.length - 1; i >= 0; i--) {
+                  if (isSelectedList[i].value) {
+                    tmpSongList.add(currentSongList[i]);
+                  }
+                }
+                showAddPlaylistDialog(context, tmpSongList);
+              },
+            ),
+
+            if (selectedCnt == 1 || playlist != null) MenuSeparator(),
+
+            if (selectedCnt == 1)
+              MenuAction(
+                title: 'Edit Metadata',
+                image: MenuImage.icon(Icons.edit_rounded),
+                callback: () {
+                  showSongMetadataDialog(context, currentSongList[index]);
+                },
+              ),
             if (playlist != null)
               MenuAction(
                 title: 'Delete',

@@ -295,10 +295,7 @@ Future<bool> showCreatePlaylistDialog(BuildContext context) async {
   return false;
 }
 
-void showAddPlaylistSheet(
-  BuildContext context,
-  List<AudioMetadata> songs,
-) async {
+void showAddPlaylistSheet(BuildContext context, List<AudioMetadata> songs) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -308,10 +305,7 @@ void showAddPlaylistSheet(
   );
 }
 
-void showAddPlaylistDialog(
-  BuildContext context,
-  List<AudioMetadata> songs,
-) async {
+void showAddPlaylistDialog(BuildContext context, List<AudioMetadata> songs) {
   showDialog(
     context: context,
     builder: (context) {

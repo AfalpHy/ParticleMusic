@@ -248,6 +248,8 @@ class Sidebar extends StatelessWidget {
         return Menu(
           children: [
             MenuAction(title: playlist.name, callback: () {}),
+
+            if (playlist.name != 'Favorite') MenuSeparator(),
             if (playlist.name != 'Favorite')
               MenuAction(
                 title: 'Delete',
