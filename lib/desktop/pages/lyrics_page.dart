@@ -177,7 +177,7 @@ class LyricsPageState extends State<LyricsPage> {
               key: UniqueKey(),
               '${getArtist(currentSong)} - ${getAlbum(currentSong)}',
               maxLines: 1,
-              textStyle: TextStyle(fontSize: 14, color: Colors.grey.shade300),
+              textStyle: TextStyle(fontSize: 14, color: Colors.grey.shade100),
             ),
           ),
         ),

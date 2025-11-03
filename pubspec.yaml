@@ -36,7 +36,7 @@ dependencies:
   just_audio: ^0.10.5
   audioplayers: ^6.5.1
   provider: ^6.1.5+1
-  file_picker: any
+  file_picker: ^10.3.3
   permission_handler: ^12.0.1
   audio_metadata_reader: ^1.4.2
   marquee: ^2.3.0
@@ -51,7 +51,7 @@ dependencies:
   smooth_corner: ^1.1.1
   window_manager: ^0.5.1
   super_context_menu: ^0.9.1
-  tray_manager: ^0.5.1
+  tray_manager: ^0.5.2
 
 dev_dependencies:
   flutter_test:
@@ -62,7 +62,7 @@ dev_dependencies:
   # activated in the `analysis_options.yaml` file located at the root of your
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

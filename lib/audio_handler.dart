@@ -95,7 +95,7 @@ abstract class MyAudioHandler extends BaseAudioHandler {
     }
   }
 
-  void delete(index) {
+  void delete(int index) {
     AudioMetadata tmp = playQueue[index];
     if (playQueueTmp.isNotEmpty) {
       playQueueTmp.remove(tmp);
@@ -142,6 +142,7 @@ abstract class MyAudioHandler extends BaseAudioHandler {
     b /= count;
     int luminance = image.getLuminanceRgb(r, g, b).toInt();
     int minLuminace = 50;
+    int maxLuminace = 200;
     if (luminance < minLuminace) {
       r += minLuminace - luminance;
       g += minLuminace - luminance;
@@ -152,13 +153,18 @@ abstract class MyAudioHandler extends BaseAudioHandler {
         g.toInt(),
         b.toInt(),
       );
-
-      r += 25;
-      g += 25;
-      b += 25;
       // make coverArtFilterColor more brighter
-      coverArtFilterColor = Color.fromARGB(
-        160,
+      if (isMobile) {
+        r += 25;
+        g += 25;
+        b += 25;
+      }
+    } else if (luminance > maxLuminace) {
+      r -= luminance - maxLuminace;
+      g -= luminance - maxLuminace;
+      b -= luminance - maxLuminace;
+      coverArtAverageColor = Color.fromARGB(
+        255,
         r.toInt(),
         g.toInt(),
         b.toInt(),
@@ -170,8 +176,8 @@ abstract class MyAudioHandler extends BaseAudioHandler {
         g.toInt(),
         b.toInt(),
       );
-      coverArtFilterColor = coverArtAverageColor.withAlpha(160);
     }
+    coverArtFilterColor = coverArtAverageColor.withAlpha(160);
   }
 
   Future<void> load() async {
