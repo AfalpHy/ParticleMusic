@@ -21,7 +21,7 @@ class PlayQueuePage extends StatefulWidget {
 
 class PlayQueueSheetState extends State<PlayQueuePage> {
   final scrollController = ScrollController();
-  int continuousSelectBeginIndex = -1;
+  int continuousSelectBeginIndex = 0;
   bool hideWiget = true;
 
   @override
@@ -62,7 +62,7 @@ class PlayQueueSheetState extends State<PlayQueuePage> {
         });
       });
     }
-    continuousSelectBeginIndex = -1;
+    continuousSelectBeginIndex = 0;
     return hideWiget
         ? SizedBox.shrink()
         : Column(
@@ -125,7 +125,7 @@ class PlayQueueSheetState extends State<PlayQueuePage> {
                     for (var tmp in isSelectedList) {
                       tmp.value = false;
                     }
-                    continuousSelectBeginIndex = -1;
+                    continuousSelectBeginIndex = 0;
                   },
 
                   proxyDecorator:
@@ -176,9 +176,6 @@ class PlayQueueSheetState extends State<PlayQueuePage> {
                                       isSelected.value = !isSelected.value;
                                       continuousSelectBeginIndex = index;
                                     } else if (shiftIsPressed) {
-                                      if (continuousSelectBeginIndex == -1) {
-                                        return;
-                                      }
                                       int left =
                                           continuousSelectBeginIndex < index
                                           ? continuousSelectBeginIndex

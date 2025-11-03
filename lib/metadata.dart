@@ -2,9 +2,10 @@ import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
+import 'package:particle_music/desktop/keyboard.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
-void showSongMetadataDialog(BuildContext context, AudioMetadata song) {
+void showSongMetadataDialog(BuildContext context, AudioMetadata song) async {
   final titleTextController = TextEditingController();
   titleTextController.text = getTitle(song);
   final artistTextController = TextEditingController();
@@ -12,7 +13,7 @@ void showSongMetadataDialog(BuildContext context, AudioMetadata song) {
   final albumTextController = TextEditingController();
   albumTextController.text = getAlbum(song);
 
-  showDialog(
+  await showDialog(
     context: context,
     builder: (context) {
       return Dialog(
@@ -145,4 +146,6 @@ void showSongMetadataDialog(BuildContext context, AudioMetadata song) {
       );
     },
   );
+
+  appFocusNode.requestFocus();
 }

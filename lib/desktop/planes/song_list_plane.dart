@@ -31,7 +31,7 @@ class _SongListPlane extends State<SongListPlane> {
   String? title;
   final scrollController = ScrollController();
 
-  int continuousSelectBeginIndex = -1;
+  int continuousSelectBeginIndex = 0;
 
   late Function(String) onChanged;
 
@@ -141,7 +141,7 @@ class _SongListPlane extends State<SongListPlane> {
                           (_) => ValueNotifier(false),
                         );
 
-                    continuousSelectBeginIndex = -1;
+                    continuousSelectBeginIndex = 0;
                     return SliverReorderableList(
                       itemExtent: 60,
                       itemBuilder: (context, index) {
@@ -313,9 +313,6 @@ class _SongListPlane extends State<SongListPlane> {
                         isSelected.value = !isSelected.value;
                         continuousSelectBeginIndex = index;
                       } else if (shiftIsPressed) {
-                        if (continuousSelectBeginIndex == -1) {
-                          return;
-                        }
                         int left = continuousSelectBeginIndex < index
                             ? continuousSelectBeginIndex
                             : index;
