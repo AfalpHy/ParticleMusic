@@ -182,63 +182,30 @@ class Sidebar extends StatelessWidget {
                     ),
                     SliverToBoxAdapter(child: SizedBox(height: 10)),
 
+                    // keep Favorite at top
+                    SliverToBoxAdapter(child: playlistItem(context, 0)),
+
                     ValueListenableBuilder(
                       valueListenable: playlistsManager.changeNotifier,
                       builder: (context, _, _) {
-                        return SliverList.builder(
-                          itemCount: playlistsManager.length(),
+                        return SliverReorderableList(
+                          onReorder: (oldIndex, newIndex) {
+                            if (newIndex > oldIndex) newIndex -= 1;
+                            final item = playlistsManager.playlists.removeAt(
+                              oldIndex + 1,
+                            );
+                            playlistsManager.playlists.insert(
+                              newIndex + 1,
+                              item,
+                            );
+                            playlistsManager.update();
+                          },
+                          itemCount: playlistsManager.length() - 1,
                           itemBuilder: (_, index) {
-                            final playlist = playlistsManager
-                                .getPlaylistByIndex(index);
-                            return ContextMenuWidget(
-                              child: sidebarItem(
-                                label: '__${playlist.name}',
-                                leading: ValueListenableBuilder(
-                                  valueListenable: playlist.changeNotifier,
-                                  builder: (_, _, _) {
-                                    return CoverArtWidget(
-                                      size: 30,
-                                      borderRadius: 3,
-                                      source: playlist.songs.isNotEmpty
-                                          ? getCoverArt(playlist.songs.first)
-                                          : null,
-                                    );
-                                  },
-                                ),
-                                content: playlist.name,
-
-                                onTap: () {
-                                  planeManager.pushPlane(index + 5);
-                                },
-                              ),
-                              menuProvider: (_) {
-                                return Menu(
-                                  children: [
-                                    MenuAction(
-                                      title: playlist.name,
-                                      callback: () {},
-                                    ),
-                                    if (playlist.name != 'Favorite')
-                                      MenuAction(
-                                        title: 'Delete',
-                                        image: MenuImage.icon(Icons.delete),
-                                        callback: () async {
-                                          if (await showConfirmDialog(
-                                            context,
-                                            'Delete Action',
-                                          )) {
-                                            planeManager.removePlaylistPlane(
-                                              playlist,
-                                            );
-                                            playlistsManager.deletePlaylist(
-                                              index,
-                                            );
-                                          }
-                                        },
-                                      ),
-                                  ],
-                                );
-                              },
+                            return ReorderableDragStartListener(
+                              index: index,
+                              key: ValueKey(index),
+                              child: playlistItem(context, index + 1),
                             );
                           },
                         );
@@ -251,6 +218,50 @@ class Sidebar extends StatelessWidget {
           ],
         ),
       ),
+    );
+  }
+
+  Widget playlistItem(BuildContext context, int index) {
+    final playlist = playlistsManager.getPlaylistByIndex(index);
+    return ContextMenuWidget(
+      child: sidebarItem(
+        label: '__${playlist.name}',
+        leading: ValueListenableBuilder(
+          valueListenable: playlist.changeNotifier,
+          builder: (_, _, _) {
+            return CoverArtWidget(
+              size: 30,
+              borderRadius: 3,
+              source: playlist.songs.isNotEmpty
+                  ? getCoverArt(playlist.songs.first)
+                  : null,
+            );
+          },
+        ),
+        content: playlist.name,
+
+        onTap: () {
+          planeManager.pushPlane(index + 5);
+        },
+      ),
+      menuProvider: (_) {
+        return Menu(
+          children: [
+            MenuAction(title: playlist.name, callback: () {}),
+            if (playlist.name != 'Favorite')
+              MenuAction(
+                title: 'Delete',
+                image: MenuImage.icon(Icons.delete),
+                callback: () async {
+                  if (await showConfirmDialog(context, 'Delete Action')) {
+                    planeManager.removePlaylistPlane(playlist);
+                    playlistsManager.deletePlaylist(index);
+                  }
+                },
+              ),
+          ],
+        );
+      },
     );
   }
 }
