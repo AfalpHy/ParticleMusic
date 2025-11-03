@@ -6,6 +6,7 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/desktop/keyboard.dart';
 import 'package:particle_music/desktop/pages/lyrics_page.dart';
+import 'package:particle_music/playlists.dart';
 import 'package:super_context_menu/super_context_menu.dart';
 import '../../audio_handler.dart';
 
@@ -224,6 +225,23 @@ class PlayQueueSheetState extends State<PlayQueuePage> {
                         }
                         return Menu(
                           children: [
+                            MenuAction(
+                              title: 'Add to Playlists',
+                              image: MenuImage.icon(Icons.playlist_add_rounded),
+                              callback: () {
+                                final List<AudioMetadata> tmpSongList = [];
+                                for (
+                                  int i = isSelectedList.length - 1;
+                                  i >= 0;
+                                  i--
+                                ) {
+                                  if (isSelectedList[i].value) {
+                                    tmpSongList.add(playQueue[i]);
+                                  }
+                                }
+                                showAddPlaylistDialog(context, tmpSongList);
+                              },
+                            ),
                             MenuAction(
                               title: 'Remove',
                               image: MenuImage.icon(Icons.close_rounded),
