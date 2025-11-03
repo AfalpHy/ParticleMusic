@@ -31,6 +31,7 @@ class ArtistAlbumPlane extends StatelessWidget {
       child: Column(
         children: [
           TitleBar(
+            hintText: 'Search ${isArtist ? 'Artists' : 'Albums'}',
             textController: textController,
             onChanged: (value) {
               songListMapNotifer.value = Map.fromEntries(

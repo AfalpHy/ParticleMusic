@@ -91,6 +91,7 @@ class _SongListPlane extends State<SongListPlane> {
       child: Column(
         children: [
           TitleBar(
+            hintText: 'Search Songs',
             textController: textController,
             onChanged: onChanged,
             findMyLocation: () {

@@ -14,7 +14,7 @@ class SettingPlane extends StatelessWidget {
 
       child: Column(
         children: [
-          TitleBar(),
+          TitleBar(hintText: 'Search Settings'),
           SizedBox(height: 30),
           Expanded(
             child: ListView(
@@ -22,7 +22,7 @@ class SettingPlane extends StatelessWidget {
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 30),
                   child: Text(
-                    'Setting',
+                    'Settings',
                     style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
                   ),
                 ),
@@ -67,7 +67,7 @@ class LicensePagePlane extends StatelessWidget {
 
       child: Column(
         children: [
-          TitleBar(),
+          TitleBar(hintText: 'Search Licenses'),
           Expanded(
             child: Theme(
               data: ThemeData(

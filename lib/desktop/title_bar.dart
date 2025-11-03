@@ -28,15 +28,19 @@ class MyWindowListener extends WindowListener {
 
 class TitleBar extends StatelessWidget {
   final bool isMainPage;
+  final String hintText;
   final TextEditingController? textController;
   final Function(String)? onChanged;
   final Function()? findMyLocation;
 
   final textFieldFocusNode = FocusNode();
 
+  final displayCancelNotifier = ValueNotifier(false);
+
   TitleBar({
     super.key,
     this.isMainPage = true,
+    required this.hintText,
     this.textController,
     this.onChanged,
     this.findMyLocation,
@@ -46,6 +50,16 @@ class TitleBar extends StatelessWidget {
         appFocusNode.requestFocus();
       }
     });
+
+    if (textController != null) {
+      textController!.addListener(() {
+        if (textController!.text != '') {
+          displayCancelNotifier.value = true;
+        } else {
+          displayCancelNotifier.value = false;
+        }
+      });
+    }
   }
 
   @override
@@ -82,9 +96,23 @@ class TitleBar extends StatelessWidget {
                     hint: Baseline(
                       baseline: 14,
                       baselineType: TextBaseline.alphabetic,
-                      child: Text('Search', style: TextStyle(fontSize: 14.5)),
+                      child: Text(hintText, style: TextStyle(fontSize: 14.5)),
                     ),
                     prefixIcon: const Icon(Icons.search),
+                    suffixIcon: ValueListenableBuilder(
+                      valueListenable: displayCancelNotifier,
+                      builder: (context, value, child) {
+                        return value
+                            ? IconButton(
+                                onPressed: () {
+                                  textController!.clear();
+                                  onChanged!('');
+                                },
+                                icon: const Icon(Icons.close, size: 20),
+                              )
+                            : SizedBox.shrink();
+                      },
+                    ),
                     filled: true,
                     fillColor: Color.fromARGB(255, 215, 225, 235),
                     border: OutlineInputBorder(
