@@ -9,9 +9,9 @@ import 'package:smooth_corner/smooth_corner.dart';
 Map<AudioMetadata, ValueNotifier<int>> songIsUpdated = {};
 
 void showSongMetadataDialog(BuildContext context, AudioMetadata song) async {
-  final originalTitle = getTitle(song);
-  final originalArtist = getArtist(song);
-  final originalAlbum = getAlbum(song);
+  final originalTitle = song.title ?? '';
+  final originalArtist = song.artist ?? '';
+  final originalAlbum = song.album ?? '';
 
   final titleTextController = TextEditingController();
   titleTextController.text = originalTitle;
@@ -150,15 +150,21 @@ void showSongMetadataDialog(BuildContext context, AudioMetadata song) async {
                           if (titleTextController.text != originalTitle ||
                               artistTextController.text != originalArtist ||
                               albumTextController.text != originalAlbum) {
-                            song.title = titleTextController.text;
-                            song.artist = artistTextController.text;
-                            song.album = albumTextController.text;
+                            song.title = titleTextController.text == ''
+                                ? null
+                                : titleTextController.text;
+                            song.artist = artistTextController.text == ''
+                                ? null
+                                : artistTextController.text;
+                            song.album = albumTextController.text == ''
+                                ? null
+                                : albumTextController.text;
 
                             try {
                               updateMetadata(song.file, (metadata) {
-                                metadata.setTitle(titleTextController.text);
-                                metadata.setArtist(artistTextController.text);
-                                metadata.setAlbum(albumTextController.text);
+                                metadata.setTitle(song.title);
+                                metadata.setArtist(song.artist);
+                                metadata.setAlbum(song.album);
                               });
                               if (context.mounted) {
                                 showCenterMessage(
