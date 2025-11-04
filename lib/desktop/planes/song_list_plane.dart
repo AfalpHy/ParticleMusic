@@ -336,63 +336,71 @@ class _SongListPlane extends State<SongListPlane> {
                         continuousSelectBeginIndex = index;
                       }
                     },
-                    child: Row(
-                      children: [
-                        SizedBox(
-                          width: 60,
-                          child: Center(
-                            child: indexOrPlayButton(
-                              index,
-                              showPlayButtonNotifier,
-                              currentSongList,
-                            ),
-                          ),
-                        ),
-
-                        Expanded(child: songListTile(song)),
-
-                        SizedBox(width: 30),
-
-                        Expanded(
-                          child: Text(
-                            getAlbum(song),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-
-                        SizedBox(width: 20),
-                        SizedBox(
-                          width: 80,
-                          child: Align(
-                            alignment: AlignmentGeometry.centerLeft,
-                            child: IconButton(
-                              onPressed: () {
-                                toggleFavoriteState(song);
-                              },
-                              icon: ValueListenableBuilder(
-                                valueListenable: songIsFavorite[song]!,
-                                builder: (context, value, child) {
-                                  return value
-                                      ? Icon(
-                                          Icons.favorite_rounded,
-                                          color: Colors.red,
-                                          size: 20,
-                                        )
-                                      : Icon(Icons.favorite_outline, size: 20);
-                                },
+                    child: ValueListenableBuilder(
+                      valueListenable: songIsUpdated[song]!,
+                      builder: (_, _, _) {
+                        return Row(
+                          children: [
+                            SizedBox(
+                              width: 60,
+                              child: Center(
+                                child: indexOrPlayButton(
+                                  index,
+                                  showPlayButtonNotifier,
+                                  currentSongList,
+                                ),
                               ),
                             ),
-                          ),
-                        ),
 
-                        SizedBox(
-                          width: 80,
-                          child: Text(
-                            formatDuration(getDuration(song)),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
+                            Expanded(child: songListTile(song)),
+
+                            SizedBox(width: 30),
+
+                            Expanded(
+                              child: Text(
+                                getAlbum(song),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+
+                            SizedBox(width: 20),
+                            SizedBox(
+                              width: 80,
+                              child: Align(
+                                alignment: AlignmentGeometry.centerLeft,
+                                child: IconButton(
+                                  onPressed: () {
+                                    toggleFavoriteState(song);
+                                  },
+                                  icon: ValueListenableBuilder(
+                                    valueListenable: songIsFavorite[song]!,
+                                    builder: (context, value, child) {
+                                      return value
+                                          ? Icon(
+                                              Icons.favorite_rounded,
+                                              color: Colors.red,
+                                              size: 20,
+                                            )
+                                          : Icon(
+                                              Icons.favorite_outline,
+                                              size: 20,
+                                            );
+                                    },
+                                  ),
+                                ),
+                              ),
+                            ),
+
+                            SizedBox(
+                              width: 80,
+                              child: Text(
+                                formatDuration(getDuration(song)),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   ),
                 ),

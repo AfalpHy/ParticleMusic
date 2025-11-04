@@ -1,17 +1,24 @@
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
+import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/desktop/keyboard.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
+Map<AudioMetadata, ValueNotifier<int>> songIsUpdated = {};
+
 void showSongMetadataDialog(BuildContext context, AudioMetadata song) async {
+  final originalTitle = getTitle(song);
+  final originalArtist = getArtist(song);
+  final originalAlbum = getAlbum(song);
+
   final titleTextController = TextEditingController();
-  titleTextController.text = getTitle(song);
+  titleTextController.text = originalTitle;
   final artistTextController = TextEditingController();
-  artistTextController.text = getArtist(song);
+  artistTextController.text = originalArtist;
   final albumTextController = TextEditingController();
-  albumTextController.text = getAlbum(song);
+  albumTextController.text = originalAlbum;
 
   await showDialog(
     context: context,
@@ -41,14 +48,22 @@ void showSongMetadataDialog(BuildContext context, AudioMetadata song) async {
                         children: [
                           ElevatedButton(
                             onPressed: () {
-                              showCenterMessage(context, 'Not supported yet');
+                              showCenterMessage(
+                                context,
+                                'Not supported yet',
+                                duration: 2000,
+                              );
                             },
                             child: Text("Change Cover"),
                           ),
 
                           ElevatedButton(
                             onPressed: () {
-                              showCenterMessage(context, 'Not supported yet');
+                              showCenterMessage(
+                                context,
+                                'Not supported yet',
+                                duration: 2000,
+                              );
                             },
                             child: Text("Remove Cover"),
                           ),
@@ -120,22 +135,65 @@ void showSongMetadataDialog(BuildContext context, AudioMetadata song) async {
                     SizedBox(width: 30),
                     ElevatedButton(
                       onPressed: () async {
-                        showCenterMessage(context, 'Not supported yet');
-                        // TODO: the plugin has bug when content is Chinese
-                        // if (await showConfirmDialog(
-                        //   context,
-                        //   'Change Metadata Action',
-                        // )) {
-                        //   updateMetadata(song.file, (metadata) {
-                        //     metadata.setTitle('');
-                        //   });
+                        if (song == currentSongNotifier.value) {
+                          showCenterMessage(
+                            context,
+                            'Can not modify the song that is playing',
+                            duration: 2000,
+                          );
+                          return;
+                        }
+                        if (await showConfirmDialog(
+                          context,
+                          'Update Metadata Action',
+                        )) {
+                          if (titleTextController.text != originalTitle ||
+                              artistTextController.text != originalArtist ||
+                              albumTextController.text != originalAlbum) {
+                            song.title = titleTextController.text;
+                            song.artist = artistTextController.text;
+                            song.album = albumTextController.text;
 
-                        //   if (context.mounted) {
-                        //     Navigator.pop(context);
-                        //   }
-                        // }
+                            try {
+                              updateMetadata(song.file, (metadata) {
+                                metadata.setTitle(titleTextController.text);
+                                metadata.setArtist(artistTextController.text);
+                                metadata.setAlbum(albumTextController.text);
+                              });
+                              if (context.mounted) {
+                                showCenterMessage(
+                                  context,
+                                  'Update successfully',
+                                  duration: 2000,
+                                );
+                              }
+                            } catch (_) {
+                              if (context.mounted) {
+                                showCenterMessage(
+                                  context,
+                                  'Update failed',
+                                  duration: 2000,
+                                );
+                              }
+                            }
+
+                            songIsUpdated[song]!.value++;
+                          } else {
+                            if (context.mounted) {
+                              showCenterMessage(
+                                context,
+                                'Nothing need to update',
+                                duration: 2000,
+                              );
+                            }
+                          }
+
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                          }
+                        }
                       },
-                      child: const Text('Save'),
+                      child: const Text('Update'),
                     ),
                   ],
                 ),

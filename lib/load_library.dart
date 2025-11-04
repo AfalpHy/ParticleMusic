@@ -5,6 +5,7 @@ import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/metadata.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
@@ -57,6 +58,7 @@ class LibraryLoader {
         librarySongs.add(song);
         basename2LibrarySong[p.basename(file.path)] = song;
         songIsFavorite[song] = ValueNotifier(false);
+        songIsUpdated[song] = ValueNotifier(0);
 
         _add2ArtistAndAlbum(song);
       } catch (error) {
