@@ -186,21 +186,30 @@ String getTitle(AudioMetadata? song) {
   if (song == null) {
     return '';
   }
-  return song.title ?? basename(song.file.path);
+  if (song.title == null || song.title == '') {
+    return basename(song.file.path);
+  }
+  return song.title!;
 }
 
 String getArtist(AudioMetadata? song) {
   if (song == null) {
     return '';
   }
-  return song.artist ?? 'Unknown Artist';
+  if (song.artist == null || song.artist == '') {
+    return 'Unknown Artist';
+  }
+  return song.artist!;
 }
 
 String getAlbum(AudioMetadata? song) {
   if (song == null) {
     return '';
   }
-  return song.album ?? 'Unknown Album';
+  if (song.album == null || song.album == '') {
+    return 'Unknown Album';
+  }
+  return song.album!;
 }
 
 Duration getDuration(AudioMetadata? song) {

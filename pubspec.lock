@@ -30,7 +30,7 @@ packages:
     description:
       path: "."
       ref: main
-      resolved-ref: "2a87c2d07586660d92cf2e725dad80480af3ac13"
+      resolved-ref: "2a6b3314e2688a234237ff9615a674a03fc5c09f"
       url: "https://github.com/AfalpHy/audio_metadata_reader.git"
     source: git
     version: "1.4.2"
