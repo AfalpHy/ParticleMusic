@@ -91,13 +91,10 @@ class TitleBar extends StatelessWidget {
                 child: TextField(
                   focusNode: textFieldFocusNode,
                   controller: textController,
-                  style: TextStyle(fontSize: 14.5),
+                  style: TextStyle(fontSize: 14),
                   decoration: SearchInputDecoration(
-                    hint: Baseline(
-                      baseline: 14,
-                      baselineType: TextBaseline.alphabetic,
-                      child: Text(hintText, style: TextStyle(fontSize: 14.5)),
-                    ),
+                    hint: Text(hintText, style: TextStyle(fontSize: 14)),
+                    contentPadding: EdgeInsets.all(0),
                     prefixIcon: const Icon(Icons.search),
                     suffixIcon: ValueListenableBuilder(
                       valueListenable: displayCancelNotifier,
