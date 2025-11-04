@@ -209,13 +209,22 @@ class _SongListPlane extends State<SongListPlane> {
                     smoothness: 1,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  child: CoverArtWidget(
-                    size: 200,
-                    borderRadius: 10,
-                    source: songList.isNotEmpty
-                        ? getCoverArt(songList.first)
-                        : null,
-                  ),
+                  child: songList.isNotEmpty
+                      ? ValueListenableBuilder(
+                          valueListenable: songIsUpdated[songList.first]!,
+                          builder: (_, _, _) {
+                            return CoverArtWidget(
+                              size: 200,
+                              borderRadius: 10,
+                              source: getCoverArt(songList.first),
+                            );
+                          },
+                        )
+                      : CoverArtWidget(
+                          size: 200,
+                          borderRadius: 10,
+                          source: null,
+                        ),
                 ),
 
                 Expanded(

@@ -3,6 +3,7 @@ import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/title_bar.dart';
 import 'package:particle_music/load_library.dart';
+import 'package:particle_music/metadata.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
 class ArtistAlbumPlane extends StatelessWidget {
@@ -67,10 +68,15 @@ class ArtistAlbumPlane extends StatelessWidget {
                           child: InkWell(
                             splashColor: Colors.transparent,
                             highlightColor: Colors.transparent,
-                            child: CoverArtWidget(
-                              size: coverArtWidth,
-                              borderRadius: 10,
-                              source: getCoverArt(songList!.first),
+                            child: ValueListenableBuilder(
+                              valueListenable: songIsUpdated[songList!.first]!,
+                              builder: (_, _, _) {
+                                return CoverArtWidget(
+                                  size: coverArtWidth,
+                                  borderRadius: 10,
+                                  source: getCoverArt(songList.first),
+                                );
+                              },
                             ),
                             onTap: () {
                               switchPlane(key);

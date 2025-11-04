@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/desktop/plane_manager.dart';
+import 'package:particle_music/metadata.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 import 'package:super_context_menu/super_context_menu.dart';
@@ -229,13 +230,18 @@ class Sidebar extends StatelessWidget {
         leading: ValueListenableBuilder(
           valueListenable: playlist.changeNotifier,
           builder: (_, _, _) {
-            return CoverArtWidget(
-              size: 30,
-              borderRadius: 3,
-              source: playlist.songs.isNotEmpty
-                  ? getCoverArt(playlist.songs.first)
-                  : null,
-            );
+            return playlist.songs.isNotEmpty
+                ? ValueListenableBuilder(
+                    valueListenable: songIsUpdated[playlist.songs.first]!,
+                    builder: (_, _, _) {
+                      return CoverArtWidget(
+                        size: 30,
+                        borderRadius: 3,
+                        source: getCoverArt(playlist.songs.first),
+                      );
+                    },
+                  )
+                : CoverArtWidget(size: 30, borderRadius: 3, source: null);
           },
         ),
         content: playlist.name,
