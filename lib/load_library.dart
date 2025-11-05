@@ -116,6 +116,7 @@ class LibraryLoader {
     librarySongs = [];
     basename2LibrarySong = {};
     songIsFavorite = {};
+    songIsUpdated = {};
 
     artist2SongList = {};
     album2SongList = {};

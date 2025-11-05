@@ -14,6 +14,7 @@ class SongsPageState extends State<SongsPage> {
   @override
   Widget build(BuildContext _) {
     return SongListPage(
+      key: ValueKey(librarySongs),
       songList: librarySongs,
       moreSheet: (context) => moreSheet(context),
     );
