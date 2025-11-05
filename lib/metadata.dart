@@ -7,7 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
-import 'package:particle_music/desktop/keyboard.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
 Map<AudioMetadata, ValueNotifier<int>> songIsUpdated = {};
@@ -275,6 +274,4 @@ void showSongMetadataDialog(BuildContext context, AudioMetadata song) async {
       );
     },
   );
-
-  appFocusNode.requestFocus();
 }

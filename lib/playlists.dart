@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/desktop/keyboard.dart';
 import 'package:path/path.dart' as p;
 import 'package:smooth_corner/smooth_corner.dart';
 import 'cover_art_widget.dart';
@@ -331,6 +330,4 @@ void showAddPlaylistDialog(
       );
     },
   );
-
-  appFocusNode.requestFocus();
 }

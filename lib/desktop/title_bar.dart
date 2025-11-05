@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/desktop/keyboard.dart';
 import 'package:particle_music/desktop/pages/lyrics_page.dart';
 import 'package:particle_music/desktop/plane_manager.dart';
 import 'package:searchfield/searchfield.dart';
@@ -33,8 +32,6 @@ class TitleBar extends StatelessWidget {
   final Function(String)? onChanged;
   final Function()? findMyLocation;
 
-  final textFieldFocusNode = FocusNode();
-
   final displayCancelNotifier = ValueNotifier(false);
 
   TitleBar({
@@ -45,12 +42,6 @@ class TitleBar extends StatelessWidget {
     this.onChanged,
     this.findMyLocation,
   }) {
-    textFieldFocusNode.addListener(() {
-      if (!textFieldFocusNode.hasFocus) {
-        appFocusNode.requestFocus();
-      }
-    });
-
     if (textController != null) {
       textController!.addListener(() {
         if (textController!.text != '') {
@@ -89,7 +80,6 @@ class TitleBar extends StatelessWidget {
                 width: 350,
                 height: 35,
                 child: TextField(
-                  focusNode: textFieldFocusNode,
                   controller: textController,
                   style: TextStyle(fontSize: 14),
                   decoration: SearchInputDecoration(
