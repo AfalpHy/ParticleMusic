@@ -133,15 +133,8 @@ class _SongListPlane extends State<SongListPlane> {
                           (_) => ValueNotifier(false),
                         );
 
-                    // ReorderableDragStartListener will cause rebuilding
-                    // generate in here to avoid onTap getting failed
-                    final List<ValueNotifier<bool>> showPlayButtonList =
-                        List.generate(
-                          currentSongList.length,
-                          (_) => ValueNotifier(false),
-                        );
-
                     continuousSelectBeginIndex = 0;
+
                     return SliverReorderableList(
                       itemExtent: 60,
                       itemBuilder: (context, index) {
@@ -155,7 +148,6 @@ class _SongListPlane extends State<SongListPlane> {
                                   currentSongList,
                                   index,
                                   isSelectedList,
-                                  showPlayButtonList,
                                 ),
                               )
                             : SizedBox(
@@ -165,7 +157,6 @@ class _SongListPlane extends State<SongListPlane> {
                                   currentSongList,
                                   index,
                                   isSelectedList,
-                                  showPlayButtonList,
                                 ),
                               );
                       },
@@ -286,137 +277,42 @@ class _SongListPlane extends State<SongListPlane> {
     List<AudioMetadata> currentSongList,
     int index,
     List<ValueNotifier<bool>> isSelectedList,
-    List<ValueNotifier<bool>> showPlayButtonList,
   ) {
-    final song = currentSongList[index];
     final isSelected = isSelectedList[index];
-    final showPlayButtonNotifier = showPlayButtonList[index];
 
     return ContextMenuWidget(
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 30),
-        child: SmoothClipRRect(
-          smoothness: 1,
-          borderRadius: BorderRadius.circular(15),
-          child: ValueListenableBuilder(
-            valueListenable: isSelected,
-            builder: (context, value, child) {
-              return Material(
-                color: value
-                    ? Colors.white
-                    : Color.fromARGB(255, 235, 240, 245),
-                child: MouseRegion(
-                  onEnter: (event) {
-                    showPlayButtonNotifier.value = true;
-                  },
-                  onExit: (event) {
-                    showPlayButtonNotifier.value = false;
-                  },
-                  child: InkWell(
-                    highlightColor: Colors.transparent,
-                    splashColor: Colors.transparent,
-                    mouseCursor: SystemMouseCursors.basic,
+      child: ListItemChild(
+        index: index,
+        isSelected: isSelected,
+        currentSongList: currentSongList,
+        onTap: () {
+          if (ctrlIsPressed) {
+            isSelected.value = !isSelected.value;
+            continuousSelectBeginIndex = index;
+          } else if (shiftIsPressed) {
+            int left = continuousSelectBeginIndex < index
+                ? continuousSelectBeginIndex
+                : index;
+            int right = continuousSelectBeginIndex > index
+                ? continuousSelectBeginIndex
+                : index;
 
-                    onTap: () {
-                      if (ctrlIsPressed) {
-                        isSelected.value = !isSelected.value;
-                        continuousSelectBeginIndex = index;
-                      } else if (shiftIsPressed) {
-                        int left = continuousSelectBeginIndex < index
-                            ? continuousSelectBeginIndex
-                            : index;
-                        int right = continuousSelectBeginIndex > index
-                            ? continuousSelectBeginIndex
-                            : index;
-
-                        for (int i = 0; i < isSelectedList.length; i++) {
-                          if (i < left || i > right) {
-                            isSelectedList[i].value = false;
-                          } else {
-                            isSelectedList[i].value = true;
-                          }
-                        }
-                      } else {
-                        // clear select
-                        for (var tmp in isSelectedList) {
-                          tmp.value = false;
-                        }
-                        isSelected.value = true;
-                        continuousSelectBeginIndex = index;
-                      }
-                    },
-                    child: ValueListenableBuilder(
-                      valueListenable: songIsUpdated[song]!,
-                      builder: (_, _, _) {
-                        return Row(
-                          children: [
-                            SizedBox(
-                              width: 60,
-                              child: Center(
-                                child: indexOrPlayButton(
-                                  index,
-                                  showPlayButtonNotifier,
-                                  currentSongList,
-                                ),
-                              ),
-                            ),
-
-                            Expanded(child: songListTile(song)),
-
-                            SizedBox(width: 30),
-
-                            Expanded(
-                              child: Text(
-                                getAlbum(song),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-
-                            SizedBox(width: 20),
-                            SizedBox(
-                              width: 80,
-                              child: Align(
-                                alignment: AlignmentGeometry.centerLeft,
-                                child: IconButton(
-                                  onPressed: () {
-                                    toggleFavoriteState(song);
-                                  },
-                                  icon: ValueListenableBuilder(
-                                    valueListenable: songIsFavorite[song]!,
-                                    builder: (context, value, child) {
-                                      return value
-                                          ? Icon(
-                                              Icons.favorite_rounded,
-                                              color: Colors.red,
-                                              size: 20,
-                                            )
-                                          : Icon(
-                                              Icons.favorite_outline,
-                                              size: 20,
-                                            );
-                                    },
-                                  ),
-                                ),
-                              ),
-                            ),
-
-                            SizedBox(
-                              width: 80,
-                              child: Text(
-                                formatDuration(getDuration(song)),
-                                overflow: TextOverflow.ellipsis,
-                              ),
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-        ),
+            for (int i = 0; i < isSelectedList.length; i++) {
+              if (i < left || i > right) {
+                isSelectedList[i].value = false;
+              } else {
+                isSelectedList[i].value = true;
+              }
+            }
+          } else {
+            // clear select
+            for (var tmp in isSelectedList) {
+              tmp.value = false;
+            }
+            isSelected.value = true;
+            continuousSelectBeginIndex = index;
+          }
+        },
       ),
       menuProvider: (_) async {
         // select current and clear others if it's not selected
@@ -520,20 +416,38 @@ class _SongListPlane extends State<SongListPlane> {
       },
     );
   }
+}
 
-  Widget indexOrPlayButton(
-    int index,
-    ValueNotifier<bool> showPlayButtonNotifier,
-    List<AudioMetadata> currentSongList,
-  ) {
+class ListItemChild extends StatefulWidget {
+  final int index;
+  final ValueNotifier<bool> isSelected;
+  final List<AudioMetadata> currentSongList;
+  final void Function() onTap;
+
+  const ListItemChild({
+    super.key,
+    required this.index,
+    required this.isSelected,
+    required this.currentSongList,
+    required this.onTap,
+  });
+
+  @override
+  State<StatefulWidget> createState() => ListItemChildState();
+}
+
+class ListItemChildState extends State<ListItemChild> {
+  final showPlayButtonNotifier = ValueNotifier(false);
+
+  Widget indexOrPlayButton() {
     return ValueListenableBuilder(
       valueListenable: showPlayButtonNotifier,
       builder: (context, value, child) {
         return value
             ? IconButton(
                 onPressed: () async {
-                  audioHandler.currentIndex = index;
-                  playQueue = List.from(currentSongList);
+                  audioHandler.currentIndex = widget.index;
+                  playQueue = List.from(widget.currentSongList);
                   if (playModeNotifier.value == 1 ||
                       (playModeNotifier.value == 2 &&
                           audioHandler.tmpPlayMode == 1)) {
@@ -544,7 +458,10 @@ class _SongListPlane extends State<SongListPlane> {
                 },
                 icon: Icon(Icons.play_arrow_rounded),
               )
-            : Text((index + 1).toString(), overflow: TextOverflow.ellipsis);
+            : Text(
+                (widget.index + 1).toString(),
+                overflow: TextOverflow.ellipsis,
+              );
       },
     );
   }
@@ -578,6 +495,103 @@ class _SongListPlane extends State<SongListPlane> {
         getArtist(song),
         overflow: TextOverflow.ellipsis,
         style: TextStyle(fontSize: 12, color: Colors.grey),
+      ),
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final index = widget.index;
+    final song = widget.currentSongList[index];
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 30),
+      child: SmoothClipRRect(
+        smoothness: 1,
+        borderRadius: BorderRadius.circular(15),
+        child: ValueListenableBuilder(
+          valueListenable: widget.isSelected,
+          builder: (context, value, child) {
+            return Material(
+              color: value ? Colors.white : Color.fromARGB(255, 235, 240, 245),
+              child: MouseRegion(
+                onEnter: (event) {
+                  showPlayButtonNotifier.value = true;
+                },
+                onExit: (event) {
+                  showPlayButtonNotifier.value = false;
+                },
+                child: InkWell(
+                  highlightColor: Colors.transparent,
+                  splashColor: Colors.transparent,
+                  mouseCursor: SystemMouseCursors.basic,
+
+                  onTap: widget.onTap,
+                  child: ValueListenableBuilder(
+                    valueListenable: songIsUpdated[song]!,
+                    builder: (_, _, _) {
+                      return Row(
+                        children: [
+                          SizedBox(
+                            width: 60,
+                            child: Center(child: indexOrPlayButton()),
+                          ),
+
+                          Expanded(child: songListTile(song)),
+
+                          SizedBox(width: 30),
+
+                          Expanded(
+                            child: Text(
+                              getAlbum(song),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+
+                          SizedBox(width: 20),
+                          SizedBox(
+                            width: 80,
+                            child: Align(
+                              alignment: AlignmentGeometry.centerLeft,
+                              child: IconButton(
+                                onPressed: () {
+                                  toggleFavoriteState(song);
+                                },
+                                icon: ValueListenableBuilder(
+                                  valueListenable: songIsFavorite[song]!,
+                                  builder: (context, value, child) {
+                                    return value
+                                        ? Icon(
+                                            Icons.favorite_rounded,
+                                            color: Colors.red,
+                                            size: 20,
+                                          )
+                                        : Icon(
+                                            Icons.favorite_outline,
+                                            size: 20,
+                                          );
+                                  },
+                                ),
+                              ),
+                            ),
+                          ),
+
+                          SizedBox(
+                            width: 80,
+                            child: Text(
+                              formatDuration(getDuration(song)),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
       ),
     );
   }
