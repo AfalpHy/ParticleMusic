@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/desktop/plane_manager.dart';
 import 'package:particle_music/desktop/title_bar.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:particle_music/metadata.dart';
@@ -9,13 +10,7 @@ import 'package:smooth_corner/smooth_corner.dart';
 class ArtistAlbumPlane extends StatelessWidget {
   final bool isArtist;
 
-  final void Function(String title) switchPlane;
-
-  const ArtistAlbumPlane({
-    super.key,
-    required this.isArtist,
-    required this.switchPlane,
-  });
+  const ArtistAlbumPlane({super.key, required this.isArtist});
 
   @override
   Widget build(BuildContext context) {
@@ -79,7 +74,10 @@ class ArtistAlbumPlane extends StatelessWidget {
                               },
                             ),
                             onTap: () {
-                              switchPlane(key);
+                              planeManager.pushPlane(
+                                isArtist ? 3 : 4,
+                                title: key,
+                              );
                             },
                           ),
                         ),

@@ -178,7 +178,9 @@ class Sidebar extends StatelessWidget {
                           highlightColor: Colors.transparent,
                         ),
 
-                        onTap: () {},
+                        onTap: () {
+                          planeManager.pushPlane(-3);
+                        },
                       ),
                     ),
                     SliverToBoxAdapter(child: SizedBox(height: 10)),

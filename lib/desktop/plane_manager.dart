@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/desktop/planes/artist_album_plane.dart';
+import 'package:particle_music/desktop/planes/playlists_plane.dart';
 import 'package:particle_music/desktop/planes/setting_plane.dart';
 import 'package:particle_music/desktop/sidebar.dart';
 import 'package:particle_music/desktop/planes/song_list_plane.dart';
@@ -13,6 +14,10 @@ class PlaneManager {
 
   void pushPlane(int index, {String? title}) {
     switch (index) {
+      case -3:
+        planeStack.add(PlaylistsPlane(key: UniqueKey()));
+        sidebarHighlighLabel.value = '_playlists';
+        break;
       case -2:
         planeStack.add(LicensePagePlane(key: UniqueKey()));
         sidebarHighlighLabel.value = '';
@@ -26,27 +31,11 @@ class PlaneManager {
         sidebarHighlighLabel.value = '_songs';
         break;
       case 1:
-        planeStack.add(
-          ArtistAlbumPlane(
-            key: UniqueKey(),
-            isArtist: true,
-            switchPlane: (title) {
-              pushPlane(3, title: title);
-            },
-          ),
-        );
+        planeStack.add(ArtistAlbumPlane(key: UniqueKey(), isArtist: true));
         sidebarHighlighLabel.value = '_artists';
         break;
       case 2:
-        planeStack.add(
-          ArtistAlbumPlane(
-            key: UniqueKey(),
-            isArtist: false,
-            switchPlane: (title) {
-              pushPlane(4, title: title);
-            },
-          ),
-        );
+        planeStack.add(ArtistAlbumPlane(key: UniqueKey(), isArtist: false));
         sidebarHighlighLabel.value = '_albums';
         break;
       case 3:
