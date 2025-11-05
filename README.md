@@ -6,15 +6,15 @@ A cross-platform music player supporting Android, iOS, Windows, Linux and MacOS.
 
 ### On iOS
 <div>
-    <img src="./screenshot/mobile0.png" width="260" height="520" />
-    <img src="./screenshot/mobile1.png" width="260" height="520" />
-    <img src="./screenshot/mobile2.png" width="260" height="520" />
+    <img src="./screenshot/mobile0.png" width="270" height="540" />
+    <img src="./screenshot/mobile1.png" width="270" height="540" />
+    <img src="./screenshot/mobile2.png" width="270" height="540" />
 </div>
 
 <div>
-    <img src="./screenshot/mobile3.png" width="260" height="520" />
-    <img src="./screenshot/mobile4.png" width="260" height="520" />
-    <img src="./screenshot/mobile5.png" width="260" height="520" />
+    <img src="./screenshot/mobile3.png" width="270" height="540" />
+    <img src="./screenshot/mobile4.png" width="270" height="540" />
+    <img src="./screenshot/mobile5.png" width="270" height="540" />
 </div>
 
 ### On Windows
