@@ -19,6 +19,8 @@ class PlayQueuePage extends StatefulWidget {
 
 class PlayQueuePageState extends State<PlayQueuePage> {
   final scrollController = ScrollController();
+
+  List<ValueNotifier<bool>> isSelectedList = [];
   int continuousSelectBeginIndex = 0;
 
   @override
@@ -40,12 +42,14 @@ class PlayQueuePageState extends State<PlayQueuePage> {
 
   @override
   Widget build(BuildContext context) {
-    final List<ValueNotifier<bool>> isSelectedList = List.generate(
-      playQueue.length,
-      (_) => ValueNotifier(false),
-    );
+    if (playQueue.length != isSelectedList.length) {
+      isSelectedList = List.generate(
+        playQueue.length,
+        (_) => ValueNotifier(false),
+      );
 
-    continuousSelectBeginIndex = 0;
+      continuousSelectBeginIndex = 0;
+    }
 
     return Column(
       children: [
