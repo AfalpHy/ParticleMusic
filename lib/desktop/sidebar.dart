@@ -50,7 +50,7 @@ class Sidebar extends StatelessWidget {
                   contentPadding: contentPadding,
                   visualDensity: const VisualDensity(
                     horizontal: 0,
-                    vertical: -4,
+                    vertical: -3.5,
                   ),
                   trailing: trailing,
                 ),
