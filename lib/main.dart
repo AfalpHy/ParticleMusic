@@ -1,6 +1,8 @@
 import 'dart:io';
+import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:particle_music/desktop/desktop_lyrics.dart';
 import 'package:particle_music/desktop/pages/main_page.dart';
 import 'package:particle_music/desktop/single_instance.dart';
 import 'package:particle_music/load_library.dart';
@@ -28,6 +30,23 @@ Future<void> main() async {
     ]);
   } else {
     await windowManager.ensureInitialized();
+    final windowController = await WindowController.fromCurrentEngine();
+
+    if (windowController.arguments.isNotEmpty) {
+      WindowOptions windowOptions = WindowOptions(
+        size: Size(800, 120),
+        center: true,
+        backgroundColor: Colors.transparent,
+        titleBarStyle: TitleBarStyle.hidden,
+        skipTaskbar: true,
+        alwaysOnTop: true,
+      );
+      await windowManager.waitUntilReadyToShow(windowOptions, () async {
+        await windowManager.setAsFrameless();
+      });
+      runApp(DesktopLyrics());
+      return;
+    }
 
     if (kReleaseMode) {
       await singleInstance.init();

@@ -1,3 +1,4 @@
+import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
@@ -6,6 +7,8 @@ import 'package:particle_music/desktop/pages/lyrics_page.dart';
 import 'package:particle_music/desktop/pages/play_queue_page.dart';
 import 'package:particle_music/full_width_track_shape.dart';
 import 'package:particle_music/seekbar.dart';
+
+String? lyricsWinId;
 
 class BottomControl extends StatelessWidget {
   const BottomControl({super.key});
@@ -207,7 +210,24 @@ class BottomControl extends StatelessWidget {
     return Row(
       children: [
         Spacer(),
-        Icon(Icons.volume_down_rounded),
+        IconButton(
+          onPressed: () async {
+            if (lyricsWinId == null) {
+              final controller = await WindowController.create(
+                WindowConfiguration(
+                  hiddenAtLaunch: false,
+                  arguments: 'desktop_lyrics',
+                ),
+              );
+              lyricsWinId = controller.windowId;
+            } else {
+              final controller = WindowController.fromWindowId(lyricsWinId!);
+              controller.show();
+            }
+          },
+          icon: Icon(Icons.lyrics_rounded, size: 20),
+        ),
+        IconButton(onPressed: () {}, icon: Icon(Icons.volume_down)),
         Center(
           child: SizedBox(
             height: 20,
