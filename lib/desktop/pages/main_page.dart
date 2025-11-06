@@ -135,12 +135,12 @@ class DesktopMainPage extends StatelessWidget with TrayListener {
                 duration: const Duration(milliseconds: 200),
                 curve: Curves.linear,
                 child: Material(
-                  elevation: 5,
+                  elevation: 1,
                   color: Colors.grey.shade50,
                   shape: SmoothRectangleBorder(
                     smoothness: 1,
                     borderRadius: BorderRadius.horizontal(
-                      left: Radius.circular(15),
+                      left: Radius.circular(10),
                     ),
                   ),
 
