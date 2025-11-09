@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/desktop/planes/artist_album_plane.dart';
+import 'package:particle_music/desktop/planes/folders_plane.dart';
 import 'package:particle_music/desktop/planes/playlists_plane.dart';
 import 'package:particle_music/desktop/planes/setting_plane.dart';
 import 'package:particle_music/desktop/sidebar.dart';
@@ -14,6 +15,10 @@ class PlaneManager {
 
   void pushPlane(int index, {String? title}) {
     switch (index) {
+      case -4:
+        planeStack.add(FoldersPlane(key: UniqueKey()));
+        sidebarHighlighLabel.value = '_folders';
+        break;
       case -3:
         planeStack.add(PlaylistsPlane(key: UniqueKey()));
         sidebarHighlighLabel.value = '_playlists';

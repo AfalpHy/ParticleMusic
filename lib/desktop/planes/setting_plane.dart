@@ -1,7 +1,9 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/plane_manager.dart';
 import 'package:particle_music/desktop/title_bar.dart';
+import 'package:particle_music/load_library.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
 class SettingPlane extends StatelessWidget {
@@ -27,6 +29,141 @@ class SettingPlane extends StatelessWidget {
                   ),
                 ),
                 SizedBox(height: 30),
+
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 30),
+                  child: SmoothClipRRect(
+                    smoothness: 1,
+                    borderRadius: BorderRadius.circular(15),
+                    child: Material(
+                      color: Color.fromARGB(255, 235, 240, 245),
+                      child: ListTile(
+                        leading: Icon(Icons.refresh_rounded, color: mainColor),
+                        title: const Text('Reload'),
+                        onTap: () async {
+                          if (await showConfirmDialog(
+                            context,
+                            'Reload Action',
+                          )) {
+                            libraryLoader.reload();
+                          }
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 30),
+                  child: SmoothClipRRect(
+                    smoothness: 1,
+                    borderRadius: BorderRadius.circular(15),
+                    child: Material(
+                      color: Color.fromARGB(255, 235, 240, 245),
+                      child: ListTile(
+                        leading: ImageIcon(folderImage, color: mainColor),
+                        title: const Text('Select Music Folders'),
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              return Dialog(
+                                shape: SmoothRectangleBorder(
+                                  smoothness: 1,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: SizedBox(
+                                  height: 500,
+                                  width: 400,
+                                  child: Column(
+                                    children: [
+                                      SizedBox(height: 10),
+                                      Text(
+                                        'Folders',
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 20,
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: ValueListenableBuilder(
+                                          valueListenable:
+                                              foldersChangeNotifier,
+                                          builder: (_, _, _) {
+                                            return ListView.builder(
+                                              itemCount: folderPaths.length,
+                                              itemBuilder: (_, index) {
+                                                return ListTile(
+                                                  title: Text(
+                                                    folderPaths[index],
+                                                  ),
+
+                                                  trailing: IconButton(
+                                                    onPressed: () {
+                                                      libraryLoader
+                                                          .removeFolder(
+                                                            folderPaths[index],
+                                                          );
+                                                    },
+                                                    icon: Icon(
+                                                      Icons.clear_rounded,
+                                                    ),
+                                                  ),
+                                                );
+                                              },
+                                            );
+                                          },
+                                        ),
+                                      ),
+                                      Row(
+                                        children: [
+                                          Spacer(),
+                                          ElevatedButton(
+                                            onPressed: () async {
+                                              final result = await FilePicker
+                                                  .platform
+                                                  .getDirectoryPath();
+                                              if (result != null) {
+                                                libraryLoader.addFolder(result);
+                                              }
+                                            },
+                                            style: ElevatedButton.styleFrom(
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(5),
+                                              ),
+                                              padding: EdgeInsets.all(10),
+                                            ),
+                                            child: Text('Add Folder'),
+                                          ),
+                                          SizedBox(width: 20),
+                                          ElevatedButton(
+                                            onPressed: () {
+                                              Navigator.of(context).pop();
+                                            },
+                                            style: ElevatedButton.styleFrom(
+                                              shape: RoundedRectangleBorder(
+                                                borderRadius:
+                                                    BorderRadius.circular(5),
+                                              ),
+                                              padding: EdgeInsets.all(10),
+                                            ),
+                                            child: Text('Complete'),
+                                          ),
+                                          Spacer(),
+                                        ],
+                                      ),
+                                      SizedBox(height: 10),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                ),
 
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 30),

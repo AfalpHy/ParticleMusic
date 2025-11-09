@@ -12,7 +12,11 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 List<AudioMetadata> librarySongs = [];
-Map<String, AudioMetadata> basename2LibrarySong = {};
+Map<String, AudioMetadata> filePath2LibrarySong = {};
+
+List<String> folderPaths = [];
+Map<String, List<AudioMetadata>> folder2SongList = {};
+ValueNotifier<int> foldersChangeNotifier = ValueNotifier(0);
 
 Map<String, List<AudioMetadata>> artist2SongList = {};
 Map<String, List<AudioMetadata>> album2SongList = {};
@@ -20,6 +24,7 @@ Map<String, List<AudioMetadata>> album2SongList = {};
 class LibraryLoader {
   late Directory _docs;
   late Directory _appSupportDir;
+  late File folderPathsFile;
 
   Future<void> initial() async {
     if (Platform.isAndroid) {
@@ -33,36 +38,75 @@ class LibraryLoader {
       if (!(await keepfile.exists())) {
         await keepfile.writeAsString("App initialized");
       }
-    } else {
-      final dir = await getDownloadsDirectory();
-      _docs = Directory("${dir!.parent.path}/Music");
     }
 
     _appSupportDir = await getApplicationSupportDirectory();
     playlistsManager = PlaylistsManager(
-      File("${_appSupportDir.path}/allPlaylists.txt"),
+      File("${_appSupportDir.path}/playlists.txt"),
     );
+
+    if (!isMobile) {
+      folderPathsFile = File("${_appSupportDir.path}/folder_paths.txt");
+      if (!folderPathsFile.existsSync()) {
+        folderPathsFile.createSync();
+      }
+      final folderPathsContent = await folderPathsFile.readAsString();
+      if (folderPathsContent.isNotEmpty) {
+        List<dynamic> result = jsonDecode(folderPathsContent);
+        folderPaths = result.cast<String>();
+      }
+    }
   }
 
   Future<void> load() async {
-    for (var file in _docs.listSync()) {
-      if (!(file.path.endsWith('.mp3') ||
-          file.path.endsWith('.flac') ||
-          file.path.endsWith('.ogg') ||
-          file.path.endsWith('.wav'))) {
-        continue;
+    if (isMobile) {
+      for (var file in _docs.listSync()) {
+        if (!(file.path.endsWith('.mp3') ||
+            file.path.endsWith('.flac') ||
+            file.path.endsWith('.ogg') ||
+            file.path.endsWith('.wav'))) {
+          continue;
+        }
+
+        try {
+          final song = readMetadata(File(file.path), getImage: true);
+          librarySongs.add(song);
+          filePath2LibrarySong[p.basename(file.path)] = song;
+          songIsFavorite[song] = ValueNotifier(false);
+          songIsUpdated[song] = ValueNotifier(0);
+
+          _add2ArtistAndAlbum(song);
+        } catch (error) {
+          continue; // skip unreadable files
+        }
       }
+    } else {
+      for (String folderPath in folderPaths) {
+        final folder = Directory(folderPath);
+        List<AudioMetadata> songList = [];
 
-      try {
-        final song = readMetadata(File(file.path), getImage: true);
-        librarySongs.add(song);
-        basename2LibrarySong[p.basename(file.path)] = song;
-        songIsFavorite[song] = ValueNotifier(false);
-        songIsUpdated[song] = ValueNotifier(0);
+        for (final file in folder.listSync()) {
+          if (!(file.path.endsWith('.mp3') ||
+              file.path.endsWith('.flac') ||
+              file.path.endsWith('.ogg') ||
+              file.path.endsWith('.wav'))) {
+            continue;
+          }
 
-        _add2ArtistAndAlbum(song);
-      } catch (error) {
-        continue; // skip unreadable files
+          try {
+            final song = readMetadata(File(file.path), getImage: true);
+            librarySongs.add(song);
+            filePath2LibrarySong[file.path] = song;
+            songList.add(song);
+            songIsFavorite[song] = ValueNotifier(false);
+            songIsUpdated[song] = ValueNotifier(0);
+
+            _add2ArtistAndAlbum(song);
+          } catch (error) {
+            continue; // skip unreadable files
+          }
+        }
+        folder2SongList[folderPath] = songList;
       }
     }
 
@@ -98,7 +142,7 @@ class LibraryLoader {
       if (contents != "") {
         List<dynamic> decoded = jsonDecode(contents);
         for (String basename in decoded) {
-          AudioMetadata? song = basename2LibrarySong[basename];
+          AudioMetadata? song = filePath2LibrarySong[basename];
           if (song != null) {
             playlist.songs.add(song);
             if (name == 'Favorite') {
@@ -114,7 +158,8 @@ class LibraryLoader {
     audioHandler.clear();
 
     librarySongs = [];
-    basename2LibrarySong = {};
+    filePath2LibrarySong = {};
+    folder2SongList = {};
     songIsFavorite = {};
     songIsUpdated = {};
 
@@ -124,6 +169,18 @@ class LibraryLoader {
     playlistsManager.clear();
 
     await load();
+  }
+
+  void addFolder(String path) {
+    folderPaths.add(path);
+    folderPathsFile.writeAsStringSync(jsonEncode(folderPaths));
+    foldersChangeNotifier.value++;
+  }
+
+  void removeFolder(String path) {
+    folderPaths.remove(path);
+    folderPathsFile.writeAsStringSync(jsonEncode(folderPaths));
+    foldersChangeNotifier.value++;
   }
 }
 

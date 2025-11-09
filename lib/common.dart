@@ -18,6 +18,7 @@ const AssetImage arrowDownImage = AssetImage('assets/images/arrow_down.png');
 const AssetImage artistImage = AssetImage('assets/images/artist.png');
 const AssetImage closeImage = AssetImage('assets/images/close.png');
 const AssetImage deleteImage = AssetImage('assets/images/delete.png');
+const AssetImage folderImage = AssetImage('assets/images/folder.png');
 const AssetImage fullscreenExitImage = AssetImage(
   'assets/images/fullscreen_exit.png',
 );
