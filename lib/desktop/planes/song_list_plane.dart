@@ -205,49 +205,70 @@ class _SongListPlane extends State<SongListPlane> {
     return ValueListenableBuilder(
       valueListenable: currentSongListNotifier,
       builder: (context, songList, child) {
-        return Column(
+        return Row(
           children: [
-            Row(
-              children: [
-                Material(
-                  elevation: 5,
-                  shape: SmoothRectangleBorder(
-                    smoothness: 1,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  child: songList.isNotEmpty
-                      ? ValueListenableBuilder(
-                          valueListenable: songIsUpdated[songList.first]!,
-                          builder: (_, _, _) {
-                            return CoverArtWidget(
-                              size: 200,
-                              borderRadius: 10,
-                              source: getCoverArt(songList.first),
-                            );
-                          },
-                        )
-                      : CoverArtWidget(
+            Material(
+              elevation: 5,
+              shape: SmoothRectangleBorder(
+                smoothness: 1,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: songList.isNotEmpty
+                  ? ValueListenableBuilder(
+                      valueListenable: songIsUpdated[songList.first]!,
+                      builder: (_, _, _) {
+                        return CoverArtWidget(
                           size: 200,
                           borderRadius: 10,
-                          source: null,
-                        ),
-                ),
+                          source: getCoverArt(songList.first),
+                        );
+                      },
+                    )
+                  : CoverArtWidget(size: 200, borderRadius: 10, source: null),
+            ),
 
-                Expanded(
-                  child: ListTile(
-                    title: AutoSizeText(
-                      title,
-                      maxLines: 1,
-                      minFontSize: 20,
-                      maxFontSize: 20,
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                    subtitle: Text("${songList.length} songs"),
-                  ),
+            Expanded(
+              child: ListTile(
+                title: AutoSizeText(
+                  title,
+                  maxLines: 1,
+                  minFontSize: 20,
+                  maxFontSize: 20,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text("${songList.length} songs"),
+              ),
+            ),
+            Column(
+              children: [
+                SizedBox(height: 120),
+                IconButton(
+                  onPressed: () {
+                    if (currentSongNotifier.value == null) {
+                      return;
+                    }
+                    final index = currentSongListNotifier.value.indexOf(
+                      currentSongNotifier.value!,
+                    );
+                    final offset =
+                        200 - (MediaQuery.heightOf(context) - 280) / 2;
+
+                    if (index != -1) {
+                      scrollController.animateTo(
+                        60 * index.toDouble() + offset,
+                        duration: Duration(
+                          milliseconds: 300,
+                        ), // smooth animation
+                        curve: Curves.linear,
+                      );
+                    }
+                  },
+                  icon: Icon(Icons.my_location_outlined, size: 20),
                 ),
               ],
             ),
+            SizedBox(width: 10),
           ],
         );
       },
