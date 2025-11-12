@@ -1,6 +1,9 @@
+import 'dart:async';
+
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
@@ -36,7 +39,10 @@ class _SongListPlane extends State<SongListPlane> {
   final textController = TextEditingController();
   Playlist? playlist;
   String title = 'Songs';
+
+  final listIsScrollingNotifier = ValueNotifier(false);
   final scrollController = ScrollController();
+  Timer? timer;
 
   int continuousSelectBeginIndex = 0;
 
@@ -124,9 +130,26 @@ class _SongListPlane extends State<SongListPlane> {
   Widget build(BuildContext context) {
     return Material(
       color: Color.fromARGB(255, 235, 240, 245),
-      child: Column(
+      child: Stack(
         children: [
-          Expanded(
+          NotificationListener<UserScrollNotification>(
+            onNotification: (notification) {
+              if (notification.direction != ScrollDirection.idle) {
+                listIsScrollingNotifier.value = true;
+                if (timer != null) {
+                  timer!.cancel();
+                  timer = null;
+                }
+              } else {
+                if (listIsScrollingNotifier.value) {
+                  timer ??= Timer(const Duration(milliseconds: 3000), () {
+                    listIsScrollingNotifier.value = false;
+                    timer = null;
+                  });
+                }
+              }
+              return false;
+            },
             child: CustomScrollView(
               controller: scrollController,
               slivers: [
@@ -196,7 +219,50 @@ class _SongListPlane extends State<SongListPlane> {
               ],
             ),
           ),
+
+          myLocation(),
         ],
+      ),
+    );
+  }
+
+  Widget myLocation() {
+    return Positioned(
+      right: widget.folder == null ? 120 : 100,
+      bottom: 100,
+      child: ValueListenableBuilder(
+        valueListenable: currentSongNotifier,
+        builder: (_, currentSong, _) {
+          return ValueListenableBuilder(
+            valueListenable: currentSongListNotifier,
+            builder: (_, currentSongList, _) {
+              final index = currentSongList.indexOf(currentSongNotifier.value!);
+              return ValueListenableBuilder(
+                valueListenable: listIsScrollingNotifier,
+                builder: (_, isScrolling, _) {
+                  return isScrolling && index >= 0
+                      ? IconButton(
+                          color: mainColor,
+                          onPressed: () {
+                            final offset =
+                                200 - (MediaQuery.heightOf(context) - 280) / 2;
+
+                            scrollController.animateTo(
+                              60 * index.toDouble() + offset,
+                              duration: Duration(
+                                milliseconds: 300,
+                              ), // smooth animation
+                              curve: Curves.linear,
+                            );
+                          },
+                          icon: Icon(Icons.my_location_outlined, size: 20),
+                        )
+                      : SizedBox.shrink();
+                },
+              );
+            },
+          );
+        },
       ),
     );
   }
@@ -240,35 +306,6 @@ class _SongListPlane extends State<SongListPlane> {
                 subtitle: Text("${songList.length} songs"),
               ),
             ),
-            Column(
-              children: [
-                SizedBox(height: 120),
-                IconButton(
-                  onPressed: () {
-                    if (currentSongNotifier.value == null) {
-                      return;
-                    }
-                    final index = currentSongListNotifier.value.indexOf(
-                      currentSongNotifier.value!,
-                    );
-                    final offset =
-                        200 - (MediaQuery.heightOf(context) - 280) / 2;
-
-                    if (index != -1) {
-                      scrollController.animateTo(
-                        60 * index.toDouble() + offset,
-                        duration: Duration(
-                          milliseconds: 300,
-                        ), // smooth animation
-                        curve: Curves.linear,
-                      );
-                    }
-                  },
-                  icon: Icon(Icons.my_location_outlined, size: 20),
-                ),
-              ],
-            ),
-            SizedBox(width: 10),
           ],
         );
       },
