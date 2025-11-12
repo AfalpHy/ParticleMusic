@@ -152,7 +152,7 @@ class DesktopMainPage extends StatelessWidget with TrayListener {
                   ),
 
                   child: SizedBox(
-                    width: max(350, MediaQuery.widthOf(context) * 0.25),
+                    width: max(350, MediaQuery.widthOf(context) * 0.2),
                     child: PlayQueuePage(),
                   ),
                 ),
