@@ -233,10 +233,13 @@ class _SongListPlane extends State<SongListPlane> {
       child: ValueListenableBuilder(
         valueListenable: currentSongNotifier,
         builder: (_, currentSong, _) {
+          if (currentSong == null) {
+            return SizedBox.shrink();
+          }
           return ValueListenableBuilder(
             valueListenable: currentSongListNotifier,
             builder: (_, currentSongList, _) {
-              final index = currentSongList.indexOf(currentSongNotifier.value!);
+              final index = currentSongList.indexOf(currentSong);
               return ValueListenableBuilder(
                 valueListenable: listIsScrollingNotifier,
                 builder: (_, isScrolling, _) {
