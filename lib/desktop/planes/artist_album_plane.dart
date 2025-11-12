@@ -43,7 +43,7 @@ class ArtistAlbumPlaneState extends State<ArtistAlbumPlane> {
     );
     titleSearchFieldStack.add(searchField);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      updateSearchField.value++;
+      updateTitleSearchField.value++;
     });
   }
 
@@ -51,7 +51,7 @@ class ArtistAlbumPlaneState extends State<ArtistAlbumPlane> {
   void dispose() {
     titleSearchFieldStack.remove(searchField);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      updateSearchField.value++;
+      updateTitleSearchField.value++;
     });
     super.dispose();
   }
@@ -99,9 +99,14 @@ class ArtistAlbumPlaneState extends State<ArtistAlbumPlane> {
                             fontWeight: FontWeight.bold,
                           ),
                         ),
-                        subtitle: Text(
-                          '${songListMap.length} in total',
-                          style: TextStyle(fontSize: 12),
+                        subtitle: ValueListenableBuilder(
+                          valueListenable: songListMapNotifer,
+                          builder: (context, currentSongListMap, child) {
+                            return Text(
+                              '${currentSongListMap.length} in total',
+                              style: TextStyle(fontSize: 12),
+                            );
+                          },
                         ),
                         trailing: SizedBox(
                           width: 100,

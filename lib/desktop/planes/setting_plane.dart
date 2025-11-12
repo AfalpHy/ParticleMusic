@@ -23,7 +23,7 @@ class SettingPlaneState extends State<SettingPlane> {
     searchField = titleSearchField('Search Setting');
     titleSearchFieldStack.add(searchField);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      updateSearchField.value++;
+      updateTitleSearchField.value++;
     });
   }
 
@@ -31,7 +31,7 @@ class SettingPlaneState extends State<SettingPlane> {
   void dispose() {
     titleSearchFieldStack.remove(searchField);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      updateSearchField.value++;
+      updateTitleSearchField.value++;
     });
     super.dispose();
   }
@@ -237,7 +237,7 @@ class LicensePagePlaneState extends State<LicensePagePlane> {
     searchField = titleSearchField('Search Licenses');
     titleSearchFieldStack.add(searchField);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      updateSearchField.value++;
+      updateTitleSearchField.value++;
     });
   }
 
@@ -245,7 +245,7 @@ class LicensePagePlaneState extends State<LicensePagePlane> {
   void dispose() {
     titleSearchFieldStack.remove(searchField);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      updateSearchField.value++;
+      updateTitleSearchField.value++;
     });
     super.dispose();
   }

@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/desktop_lyrics.dart';
 import 'package:particle_music/desktop/pages/main_page.dart';
 import 'package:particle_music/desktop/single_instance.dart';
@@ -100,9 +101,7 @@ class MyApp extends StatelessWidget {
           ? ThemeData(fontFamily: 'Microsoft YaHei')
           : null,
       title: 'Particle Music',
-      home: (Platform.isAndroid || Platform.isIOS)
-          ? MobileMainPage()
-          : DesktopMainPage(),
+      home: isMobile ? MobileMainPage() : DesktopMainPage(),
     );
   }
 }

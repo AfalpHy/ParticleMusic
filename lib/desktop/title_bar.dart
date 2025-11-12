@@ -26,7 +26,7 @@ class MyWindowListener extends WindowListener {
 }
 
 final List<Widget> titleSearchFieldStack = [];
-final ValueNotifier<int> updateSearchField = ValueNotifier(0);
+final ValueNotifier<int> updateTitleSearchField = ValueNotifier(0);
 
 Widget titleSearchField(
   String hintText, {
@@ -117,7 +117,7 @@ class TitleBar extends StatelessWidget {
             if (isMainPage)
               Center(
                 child: ValueListenableBuilder(
-                  valueListenable: updateSearchField,
+                  valueListenable: updateTitleSearchField,
                   builder: (_, _, _) {
                     if (titleSearchFieldStack.isEmpty) {
                       return SizedBox.shrink();

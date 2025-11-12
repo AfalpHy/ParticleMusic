@@ -39,7 +39,7 @@ class PlaylistsPlaneState extends State<PlaylistsPlane> {
     );
     titleSearchFieldStack.add(searchField);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      updateSearchField.value++;
+      updateTitleSearchField.value++;
     });
   }
 
@@ -48,7 +48,7 @@ class PlaylistsPlaneState extends State<PlaylistsPlane> {
     playlistsManager.changeNotifier.removeListener(filterPlaylists);
     titleSearchFieldStack.remove(searchField);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      updateSearchField.value++;
+      updateTitleSearchField.value++;
     });
     super.dispose();
   }

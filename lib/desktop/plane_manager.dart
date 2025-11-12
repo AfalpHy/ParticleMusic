@@ -80,6 +80,14 @@ class PlaneManager {
     sidebarHighlighLabel.value = sidebarHighlighLabelStack.last;
     updatePlane.value++;
   }
+
+  void reload() {
+    planeStack.clear();
+    sidebarHighlighLabelStack.clear();
+
+    pushPlane(0);
+    pushPlane(-1);
+  }
 }
 
 PlaneManager planeManager = PlaneManager();

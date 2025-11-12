@@ -106,7 +106,7 @@ class _SongListPlane extends State<SongListPlane> {
     );
     titleSearchFieldStack.add(searchField);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      updateSearchField.value++;
+      updateTitleSearchField.value++;
     });
   }
 
@@ -115,7 +115,7 @@ class _SongListPlane extends State<SongListPlane> {
     playlist?.changeNotifier.removeListener(updateSongList);
     titleSearchFieldStack.remove(searchField);
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      updateSearchField.value++;
+      updateTitleSearchField.value++;
     });
     super.dispose();
   }
