@@ -155,8 +155,7 @@ class SettingPlaneState extends State<SettingPlane> {
                                                   libraryLoader.addFolder(
                                                     result,
                                                   );
-                                                }
-                                                if (context.mounted) {
+                                                } else if (context.mounted) {
                                                   showCenterMessage(
                                                     context,
                                                     'The folder already exists',
