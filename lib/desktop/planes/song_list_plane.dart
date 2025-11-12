@@ -16,8 +16,15 @@ class SongListPlane extends StatefulWidget {
   final Playlist? playlist;
   final String? artist;
   final String? album;
+  final String? folder;
 
-  const SongListPlane({super.key, this.playlist, this.artist, this.album});
+  const SongListPlane({
+    super.key,
+    this.playlist,
+    this.artist,
+    this.album,
+    this.folder,
+  });
 
   @override
   State<StatefulWidget> createState() => _SongListPlane();
@@ -28,12 +35,16 @@ class _SongListPlane extends State<SongListPlane> {
       ValueNotifier([]);
   final textController = TextEditingController();
   Playlist? playlist;
-  String? title;
+  String title = 'Songs';
   final scrollController = ScrollController();
 
   int continuousSelectBeginIndex = 0;
 
+  late Widget searchField;
+
   late Function(String) onChanged;
+
+  late EdgeInsets padding;
 
   void updateSongList() {
     final value = textController.text;
@@ -44,7 +55,9 @@ class _SongListPlane extends State<SongListPlane> {
   void initState() {
     super.initState();
     playlist = widget.playlist;
-
+    padding = widget.folder == null
+        ? const EdgeInsets.symmetric(horizontal: 30)
+        : const EdgeInsets.fromLTRB(30, 0, 10, 0);
     if (playlist != null) {
       currentSongListNotifier.value = playlist!.songs;
       title = playlist!.name;
@@ -53,7 +66,7 @@ class _SongListPlane extends State<SongListPlane> {
       };
     } else if (widget.artist != null) {
       currentSongListNotifier.value = artist2SongList[widget.artist]!;
-      title = widget.artist;
+      title = widget.artist!;
       onChanged = (value) {
         currentSongListNotifier.value = filterSongs(
           artist2SongList[widget.artist]!,
@@ -62,10 +75,19 @@ class _SongListPlane extends State<SongListPlane> {
       };
     } else if (widget.album != null) {
       currentSongListNotifier.value = album2SongList[widget.album]!;
-      title = widget.album;
+      title = widget.album!;
       onChanged = (value) {
         currentSongListNotifier.value = filterSongs(
           album2SongList[widget.album]!,
+          value,
+        );
+      };
+    } else if (widget.folder != null) {
+      currentSongListNotifier.value = folder2SongList[widget.folder]!;
+      title = widget.folder!;
+      onChanged = (value) {
+        currentSongListNotifier.value = filterSongs(
+          folder2SongList[widget.folder]!,
           value,
         );
       };
@@ -77,11 +99,24 @@ class _SongListPlane extends State<SongListPlane> {
     }
 
     playlist?.changeNotifier.addListener(updateSongList);
+    searchField = titleSearchField(
+      'Search Songs',
+      textController: textController,
+      onChanged: onChanged,
+    );
+    titleSearchFieldStack.add(searchField);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      updateSearchField.value++;
+    });
   }
 
   @override
   void dispose() {
     playlist?.changeNotifier.removeListener(updateSongList);
+    titleSearchFieldStack.remove(searchField);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      updateSearchField.value++;
+    });
     super.dispose();
   }
 
@@ -91,88 +126,72 @@ class _SongListPlane extends State<SongListPlane> {
       color: Color.fromARGB(255, 235, 240, 245),
       child: Column(
         children: [
-          TitleBar(
-            hintText: 'Search Songs',
-            textController: textController,
-            onChanged: onChanged,
-            findMyLocation: () {
-              if (currentSongNotifier.value == null) {
-                return;
-              }
-              final index = currentSongListNotifier.value.indexOf(
-                currentSongNotifier.value!,
-              );
-              final offset =
-                  (title != null ? 200 : 0) -
-                  (MediaQuery.heightOf(context) - 280) / 2;
-
-              if (index != -1) {
-                scrollController.animateTo(
-                  60 * index.toDouble() + offset,
-                  duration: Duration(milliseconds: 300), // smooth animation
-                  curve: Curves.linear,
-                );
-              }
-            },
-          ),
-
           Expanded(
             child: CustomScrollView(
               controller: scrollController,
               slivers: [
-                SliverToBoxAdapter(child: titleHeader()),
+                SliverToBoxAdapter(
+                  child: Padding(padding: padding, child: titleHeader()),
+                ),
 
-                SliverToBoxAdapter(child: contentHeader()),
+                SliverToBoxAdapter(
+                  child: Padding(padding: padding, child: contentHeader()),
+                ),
 
-                ValueListenableBuilder(
-                  valueListenable: currentSongListNotifier,
-                  builder: (context, currentSongList, child) {
-                    final List<ValueNotifier<bool>> isSelectedList =
-                        List.generate(
-                          currentSongList.length,
-                          (_) => ValueNotifier(false),
-                        );
+                SliverPadding(
+                  padding: padding,
+                  sliver: ValueListenableBuilder(
+                    valueListenable: currentSongListNotifier,
+                    builder: (context, currentSongList, child) {
+                      final List<ValueNotifier<bool>> isSelectedList =
+                          List.generate(
+                            currentSongList.length,
+                            (_) => ValueNotifier(false),
+                          );
 
-                    continuousSelectBeginIndex = 0;
+                      continuousSelectBeginIndex = 0;
 
-                    return SliverReorderableList(
-                      itemExtent: 60,
-                      itemBuilder: (context, index) {
-                        return playlist != null && textController.text == ''
-                            ? ReorderableDragStartListener(
-                                // reusing the same widget to avoid unnecessary rebuild
-                                key: ValueKey(currentSongList[index]),
-                                index: index,
-                                child: listItem(
-                                  context,
-                                  currentSongList,
-                                  index,
-                                  isSelectedList,
-                                ),
-                              )
-                            : SizedBox(
-                                key: ValueKey(index),
-                                child: listItem(
-                                  context,
-                                  currentSongList,
-                                  index,
-                                  isSelectedList,
-                                ),
-                              );
-                      },
-                      itemCount: currentSongList.length,
-                      onReorder: (oldIndex, newIndex) {
-                        if (newIndex > oldIndex) newIndex -= 1;
-                        final checkBoxitem = isSelectedList.removeAt(oldIndex);
-                        isSelectedList.insert(newIndex, checkBoxitem);
+                      return SliverReorderableList(
+                        itemExtent: 60,
+                        itemBuilder: (context, index) {
+                          return playlist != null && textController.text == ''
+                              ? ReorderableDragStartListener(
+                                  // reusing the same widget to avoid unnecessary rebuild
+                                  key: ValueKey(currentSongList[index]),
+                                  index: index,
+                                  child: listItem(
+                                    context,
+                                    currentSongList,
+                                    index,
+                                    isSelectedList,
+                                  ),
+                                )
+                              : SizedBox(
+                                  key: ValueKey(index),
+                                  child: listItem(
+                                    context,
+                                    currentSongList,
+                                    index,
+                                    isSelectedList,
+                                  ),
+                                );
+                        },
+                        itemCount: currentSongList.length,
+                        onReorder: (oldIndex, newIndex) {
+                          if (newIndex > oldIndex) newIndex -= 1;
+                          final checkBoxitem = isSelectedList.removeAt(
+                            oldIndex,
+                          );
+                          isSelectedList.insert(newIndex, checkBoxitem);
 
-                        final item = playlist!.songs.removeAt(oldIndex);
-                        playlist!.songs.insert(newIndex, item);
+                          final item = playlist!.songs.removeAt(oldIndex);
+                          playlist!.songs.insert(newIndex, item);
 
-                        playlist!.update();
-                      },
-                    );
-                  },
+                          playlist!.update();
+                        },
+                      );
+                    },
+                  ),
                 ),
               ],
             ),
@@ -183,9 +202,6 @@ class _SongListPlane extends State<SongListPlane> {
   }
 
   Widget titleHeader() {
-    if (title == null) {
-      return SizedBox.shrink();
-    }
     return ValueListenableBuilder(
       valueListenable: currentSongListNotifier,
       builder: (context, songList, child) {
@@ -193,7 +209,6 @@ class _SongListPlane extends State<SongListPlane> {
           children: [
             Row(
               children: [
-                SizedBox(width: 30),
                 Material(
                   elevation: 5,
                   shape: SmoothRectangleBorder(
@@ -221,7 +236,7 @@ class _SongListPlane extends State<SongListPlane> {
                 Expanded(
                   child: ListTile(
                     title: AutoSizeText(
-                      title!,
+                      title,
                       maxLines: 1,
                       minFontSize: 20,
                       maxFontSize: 20,
@@ -233,7 +248,6 @@ class _SongListPlane extends State<SongListPlane> {
                 ),
               ],
             ),
-            SizedBox(height: 10),
           ],
         );
       },
@@ -243,31 +257,28 @@ class _SongListPlane extends State<SongListPlane> {
   Widget contentHeader() {
     return SizedBox(
       height: 50,
-      child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 30),
-        child: Row(
-          children: [
-            SizedBox(width: 60, child: Center(child: Text('#'))),
+      child: Row(
+        children: [
+          SizedBox(width: 60, child: Center(child: Text('#'))),
 
-            Expanded(child: Text('Title', overflow: TextOverflow.ellipsis)),
+          Expanded(child: Text('Title', overflow: TextOverflow.ellipsis)),
 
-            SizedBox(width: 30),
+          SizedBox(width: 30),
 
-            Expanded(child: Text('Album', overflow: TextOverflow.ellipsis)),
+          Expanded(child: Text('Album', overflow: TextOverflow.ellipsis)),
 
-            SizedBox(width: 20),
+          SizedBox(width: 20),
 
-            SizedBox(
-              width: 80,
-              child: Text('Favorited', overflow: TextOverflow.ellipsis),
-            ),
+          SizedBox(
+            width: 80,
+            child: Text('Favorited', overflow: TextOverflow.ellipsis),
+          ),
 
-            SizedBox(
-              width: 80,
-              child: Text('Duration', overflow: TextOverflow.ellipsis),
-            ),
-          ],
-        ),
+          SizedBox(
+            width: 80,
+            child: Text('Duration', overflow: TextOverflow.ellipsis),
+          ),
+        ],
       ),
     );
   }
@@ -504,94 +515,88 @@ class ListItemChildState extends State<ListItemChild> {
     final index = widget.index;
     final song = widget.currentSongList[index];
 
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 30),
-      child: SmoothClipRRect(
-        smoothness: 1,
-        borderRadius: BorderRadius.circular(15),
-        child: ValueListenableBuilder(
-          valueListenable: widget.isSelected,
-          builder: (context, value, child) {
-            return Material(
-              color: value ? Colors.white : Color.fromARGB(255, 235, 240, 245),
-              child: MouseRegion(
-                onEnter: (event) {
-                  showPlayButtonNotifier.value = true;
-                },
-                onExit: (event) {
-                  showPlayButtonNotifier.value = false;
-                },
-                child: InkWell(
-                  highlightColor: Colors.transparent,
-                  splashColor: Colors.transparent,
-                  mouseCursor: SystemMouseCursors.basic,
+    return SmoothClipRRect(
+      smoothness: 1,
+      borderRadius: BorderRadius.circular(15),
+      child: ValueListenableBuilder(
+        valueListenable: widget.isSelected,
+        builder: (context, value, child) {
+          return Material(
+            color: value ? Colors.white : Color.fromARGB(255, 235, 240, 245),
+            child: MouseRegion(
+              onEnter: (event) {
+                showPlayButtonNotifier.value = true;
+              },
+              onExit: (event) {
+                showPlayButtonNotifier.value = false;
+              },
+              child: InkWell(
+                highlightColor: Colors.transparent,
+                splashColor: Colors.transparent,
+                mouseCursor: SystemMouseCursors.basic,
 
-                  onTap: widget.onTap,
-                  child: ValueListenableBuilder(
-                    valueListenable: songIsUpdated[song]!,
-                    builder: (_, _, _) {
-                      return Row(
-                        children: [
-                          SizedBox(
-                            width: 60,
-                            child: Center(child: indexOrPlayButton()),
+                onTap: widget.onTap,
+                child: ValueListenableBuilder(
+                  valueListenable: songIsUpdated[song]!,
+                  builder: (_, _, _) {
+                    return Row(
+                      children: [
+                        SizedBox(
+                          width: 60,
+                          child: Center(child: indexOrPlayButton()),
+                        ),
+
+                        Expanded(child: songListTile(song)),
+
+                        SizedBox(width: 30),
+
+                        Expanded(
+                          child: Text(
+                            getAlbum(song),
+                            overflow: TextOverflow.ellipsis,
                           ),
+                        ),
 
-                          Expanded(child: songListTile(song)),
-
-                          SizedBox(width: 30),
-
-                          Expanded(
-                            child: Text(
-                              getAlbum(song),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-
-                          SizedBox(width: 20),
-                          SizedBox(
-                            width: 80,
-                            child: Align(
-                              alignment: AlignmentGeometry.centerLeft,
-                              child: IconButton(
-                                onPressed: () {
-                                  toggleFavoriteState(song);
+                        SizedBox(width: 20),
+                        SizedBox(
+                          width: 80,
+                          child: Align(
+                            alignment: AlignmentGeometry.centerLeft,
+                            child: IconButton(
+                              onPressed: () {
+                                toggleFavoriteState(song);
+                              },
+                              icon: ValueListenableBuilder(
+                                valueListenable: songIsFavorite[song]!,
+                                builder: (context, value, child) {
+                                  return value
+                                      ? Icon(
+                                          Icons.favorite_rounded,
+                                          color: Colors.red,
+                                          size: 20,
+                                        )
+                                      : Icon(Icons.favorite_outline, size: 20);
                                 },
-                                icon: ValueListenableBuilder(
-                                  valueListenable: songIsFavorite[song]!,
-                                  builder: (context, value, child) {
-                                    return value
-                                        ? Icon(
-                                            Icons.favorite_rounded,
-                                            color: Colors.red,
-                                            size: 20,
-                                          )
-                                        : Icon(
-                                            Icons.favorite_outline,
-                                            size: 20,
-                                          );
-                                  },
-                                ),
                               ),
                             ),
                           ),
+                        ),
 
-                          SizedBox(
-                            width: 80,
-                            child: Text(
-                              formatDuration(getDuration(song)),
-                              overflow: TextOverflow.ellipsis,
-                            ),
+                        SizedBox(
+                          width: 80,
+                          child: Text(
+                            formatDuration(getDuration(song)),
+                            overflow: TextOverflow.ellipsis,
                           ),
-                        ],
-                      );
-                    },
-                  ),
+                        ),
+                      ],
+                    );
+                  },
                 ),
               ),
-            );
-          },
-        ),
+            ),
+          );
+        },
       ),
     );
   }

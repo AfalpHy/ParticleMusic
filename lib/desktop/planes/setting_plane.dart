@@ -6,8 +6,35 @@ import 'package:particle_music/desktop/title_bar.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
-class SettingPlane extends StatelessWidget {
+class SettingPlane extends StatefulWidget {
   const SettingPlane({super.key});
+
+  @override
+  State<StatefulWidget> createState() => SettingPlaneState();
+}
+
+class SettingPlaneState extends State<SettingPlane> {
+  late Widget searchField;
+
+  @override
+  void initState() {
+    super.initState();
+
+    searchField = titleSearchField('Search Setting');
+    titleSearchFieldStack.add(searchField);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      updateSearchField.value++;
+    });
+  }
+
+  @override
+  void dispose() {
+    titleSearchFieldStack.remove(searchField);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      updateSearchField.value++;
+    });
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +43,6 @@ class SettingPlane extends StatelessWidget {
 
       child: Column(
         children: [
-          TitleBar(hintText: 'Search Settings'),
           SizedBox(height: 30),
           Expanded(
             child: ListView(
@@ -194,8 +220,35 @@ class SettingPlane extends StatelessWidget {
   }
 }
 
-class LicensePagePlane extends StatelessWidget {
+class LicensePagePlane extends StatefulWidget {
   const LicensePagePlane({super.key});
+
+  @override
+  State<StatefulWidget> createState() => LicensePagePlaneState();
+}
+
+class LicensePagePlaneState extends State<LicensePagePlane> {
+  late Widget searchField;
+
+  @override
+  void initState() {
+    super.initState();
+
+    searchField = titleSearchField('Search Licenses');
+    titleSearchFieldStack.add(searchField);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      updateSearchField.value++;
+    });
+  }
+
+  @override
+  void dispose() {
+    titleSearchFieldStack.remove(searchField);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      updateSearchField.value++;
+    });
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -204,7 +257,6 @@ class LicensePagePlane extends StatelessWidget {
 
       child: Column(
         children: [
-          TitleBar(hintText: 'Search Licenses'),
           Expanded(
             child: Theme(
               data: ThemeData(

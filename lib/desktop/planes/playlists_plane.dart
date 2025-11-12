@@ -17,7 +17,7 @@ class PlaylistsPlane extends StatefulWidget {
 class PlaylistsPlaneState extends State<PlaylistsPlane> {
   final playlistsNotifier = ValueNotifier(playlistsManager.playlists);
   final textController = TextEditingController();
-
+  late Widget searchField;
   void filterPlaylists() {
     playlistsNotifier.value = playlistsManager.playlists.where((playlist) {
       return playlist.name.toLowerCase().contains(
@@ -30,11 +30,26 @@ class PlaylistsPlaneState extends State<PlaylistsPlane> {
   void initState() {
     super.initState();
     playlistsManager.changeNotifier.addListener(filterPlaylists);
+    searchField = titleSearchField(
+      'Search Playlists',
+      textController: textController,
+      onChanged: (_) {
+        filterPlaylists();
+      },
+    );
+    titleSearchFieldStack.add(searchField);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      updateSearchField.value++;
+    });
   }
 
   @override
   void dispose() {
     playlistsManager.changeNotifier.removeListener(filterPlaylists);
+    titleSearchFieldStack.remove(searchField);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      updateSearchField.value++;
+    });
     super.dispose();
   }
 
@@ -49,14 +64,6 @@ class PlaylistsPlaneState extends State<PlaylistsPlane> {
 
       child: Column(
         children: [
-          TitleBar(
-            hintText: 'Search Playlists',
-            textController: textController,
-            onChanged: (_) {
-              filterPlaylists();
-            },
-          ),
-
           Expanded(
             child: ValueListenableBuilder(
               valueListenable: playlistsNotifier,

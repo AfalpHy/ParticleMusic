@@ -133,23 +133,6 @@ class Sidebar extends StatelessWidget {
 
                     SliverToBoxAdapter(
                       child: sidebarItem(
-                        label: '_folders',
-
-                        leading: const ImageIcon(
-                          folderImage,
-                          size: 30,
-                          color: mainColor,
-                        ),
-                        content: 'Folders',
-
-                        onTap: () {
-                          planeManager.pushPlane(-4);
-                        },
-                      ),
-                    ),
-
-                    SliverToBoxAdapter(
-                      child: sidebarItem(
                         label: '_songs',
 
                         leading: const ImageIcon(
@@ -161,6 +144,23 @@ class Sidebar extends StatelessWidget {
 
                         onTap: () {
                           planeManager.pushPlane(0);
+                        },
+                      ),
+                    ),
+
+                    SliverToBoxAdapter(
+                      child: sidebarItem(
+                        label: '_folders',
+
+                        leading: const ImageIcon(
+                          folderImage,
+                          size: 30,
+                          color: mainColor,
+                        ),
+                        content: 'Folders',
+
+                        onTap: () {
+                          planeManager.pushPlane(-4);
                         },
                       ),
                     ),

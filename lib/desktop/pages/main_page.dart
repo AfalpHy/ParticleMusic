@@ -88,14 +88,21 @@ class DesktopMainPage extends StatelessWidget with TrayListener {
                   Sidebar(),
 
                   Expanded(
-                    child: ValueListenableBuilder(
-                      valueListenable: planeManager.updatePlane,
-                      builder: (_, _, _) {
-                        return IndexedStack(
-                          index: planeManager.planeStack.length - 1,
-                          children: planeManager.planeStack,
-                        );
-                      },
+                    child: Column(
+                      children: [
+                        TitleBar(isMainPage: true),
+                        Expanded(
+                          child: ValueListenableBuilder(
+                            valueListenable: planeManager.updatePlane,
+                            builder: (_, _, _) {
+                              return IndexedStack(
+                                index: planeManager.planeStack.length - 1,
+                                children: planeManager.planeStack,
+                              );
+                            },
+                          ),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -124,7 +131,7 @@ class DesktopMainPage extends StatelessWidget with TrayListener {
         ),
 
         Positioned(
-          top: 80,
+          top: 75,
           bottom: 100,
           right: 0,
           child: ValueListenableBuilder(
