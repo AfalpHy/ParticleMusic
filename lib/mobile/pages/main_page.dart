@@ -207,7 +207,7 @@ class HomePage extends StatelessWidget {
       physics: ClampingScrollPhysics(),
       children: [
         ListTile(
-          leading: const ImageIcon(playlistsImage, size: 30, color: mainColor),
+          leading: const ImageIcon(playlistsImage, size: 35, color: mainColor),
           title: Text('Playlists'),
           onTap: () {
             Navigator.of(
@@ -216,7 +216,7 @@ class HomePage extends StatelessWidget {
           },
         ),
         ListTile(
-          leading: const ImageIcon(artistImage, size: 30, color: mainColor),
+          leading: const ImageIcon(artistImage, size: 35, color: mainColor),
           title: Text('Artists'),
           onTap: () {
             Navigator.of(context).push(
@@ -227,7 +227,7 @@ class HomePage extends StatelessWidget {
           },
         ),
         ListTile(
-          leading: const ImageIcon(albumImage, size: 30, color: mainColor),
+          leading: const ImageIcon(albumImage, size: 35, color: mainColor),
           title: Text('Albums'),
           onTap: () {
             Navigator.of(context).push(
@@ -238,7 +238,7 @@ class HomePage extends StatelessWidget {
           },
         ),
         ListTile(
-          leading: const ImageIcon(songsImage, size: 30, color: mainColor),
+          leading: const ImageIcon(songsImage, size: 35, color: mainColor),
           title: Text('Songs'),
           onTap: () {
             Navigator.of(
