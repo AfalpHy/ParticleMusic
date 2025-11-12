@@ -171,7 +171,7 @@ class TitleBar extends StatelessWidget {
                             if (context.mounted) {
                               showCenterMessage(
                                 context,
-                                'enter fullscreen with maximized window will cause bug',
+                                'Enter fullscreen with maximized window will cause bug',
                                 duration: 3000,
                               );
                             }

@@ -149,7 +149,20 @@ class SettingPlaneState extends State<SettingPlane> {
                                                   .platform
                                                   .getDirectoryPath();
                                               if (result != null) {
-                                                libraryLoader.addFolder(result);
+                                                if (!folderPaths.contains(
+                                                  result,
+                                                )) {
+                                                  libraryLoader.addFolder(
+                                                    result,
+                                                  );
+                                                }
+                                                if (context.mounted) {
+                                                  showCenterMessage(
+                                                    context,
+                                                    'The folder already exists',
+                                                    duration: 2000,
+                                                  );
+                                                }
                                               }
                                             },
                                             style: ElevatedButton.styleFrom(
