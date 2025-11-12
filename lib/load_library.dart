@@ -72,7 +72,11 @@ class LibraryLoader {
         try {
           final song = readMetadata(File(file.path), getImage: true);
           librarySongs.add(song);
-          filePath2LibrarySong[p.basename(file.path)] = song;
+          if (Platform.isIOS) {
+            filePath2LibrarySong[p.basename(file.path)] = song;
+          } else {
+            filePath2LibrarySong[file.path] = song;
+          }
           songIsFavorite[song] = ValueNotifier(false);
           songIsUpdated[song] = ValueNotifier(0);
 
