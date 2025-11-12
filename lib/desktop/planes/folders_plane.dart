@@ -65,7 +65,6 @@ class FoldersPlane extends StatelessWidget {
                                   child: ListTile(
                                     title: Text(
                                       folder,
-                                      overflow: TextOverflow.ellipsis,
                                       style: TextStyle(fontSize: 12),
                                     ),
                                     onTap: () {

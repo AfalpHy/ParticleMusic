@@ -60,7 +60,7 @@ class ArtistAlbumPlaneState extends State<ArtistAlbumPlane> {
   Widget build(BuildContext context) {
     final planeWidth = (MediaQuery.widthOf(context) - 300);
     final crossAxisCount = (planeWidth / 180).toInt();
-    final coverArtWidth = 120.0;
+    final coverArtWidth = planeWidth / crossAxisCount - 60;
 
     return Material(
       color: Color.fromARGB(255, 235, 240, 245),
@@ -129,7 +129,7 @@ class ArtistAlbumPlaneState extends State<ArtistAlbumPlane> {
                       return SliverGrid.builder(
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: crossAxisCount,
-                          childAspectRatio: 1.15,
+                          childAspectRatio: 1.16,
                         ),
                         itemCount: currentSongListMap.length,
                         itemBuilder: (context, index) {
