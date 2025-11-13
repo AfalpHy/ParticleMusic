@@ -17,15 +17,8 @@ import 'audio_handler.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  if (Platform.isAndroid || Platform.isIOS) {
-    audioHandler = await AudioService.init(
-      builder: () => MobileAudioHandler(),
-      config: const AudioServiceConfig(
-        androidNotificationChannelId: 'com.afalphy.particle_music',
-        androidNotificationChannelName: 'Music Playback',
-        androidNotificationOngoing: true,
-      ),
-    );
+
+  if (isMobile) {
     await SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp, // only allow portrait
     ]);
@@ -52,8 +45,6 @@ Future<void> main() async {
     if (kReleaseMode) {
       await singleInstance.init();
     }
-
-    audioHandler = DesktopAudioHandler();
 
     WindowOptions windowOptions = WindowOptions(
       minimumSize: Size(1050, 700),
@@ -86,6 +77,20 @@ Future<void> main() async {
       ),
     );
   }
+
+  if (Platform.isAndroid || Platform.isIOS || Platform.isMacOS) {
+    audioHandler = await AudioService.init(
+      builder: () => AIMAudioHandler(),
+      config: const AudioServiceConfig(
+        androidNotificationChannelId: 'com.afalphy.particle_music',
+        androidNotificationChannelName: 'Music Playback',
+        androidNotificationOngoing: true,
+      ),
+    );
+  } else {
+    audioHandler = WLAudioHandler();
+  }
+
   await libraryLoader.initial();
   await libraryLoader.load();
   runApp(MyApp());
