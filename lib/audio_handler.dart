@@ -330,6 +330,10 @@ class AIMAudioHandler extends MyAudioHandler {
   final _player = just_audio.AudioPlayer();
 
   AIMAudioHandler() {
+    if (Platform.isMacOS) {
+      _player.setVolume(0.3);
+      volumeNotifier = ValueNotifier(0.3);
+    }
     _player.playbackEventStream.map(transformEvent).pipe(playbackState);
 
     _player.processingStateStream.listen((state) async {
