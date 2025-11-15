@@ -284,9 +284,66 @@ class SelectableSongListPage extends StatefulWidget {
 }
 
 class SelectableSongListPageState extends State<SelectableSongListPage> {
+  final textController = TextEditingController();
+  final ValueNotifier<bool> isSearch = ValueNotifier(false);
+
+  Widget searchField() {
+    return ValueListenableBuilder<bool>(
+      valueListenable: isSearch,
+      builder: (context, value, child) {
+        return value
+            ? Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                  child: SizedBox(
+                    height: 30,
+                    child: SearchField(
+                      autofocus: true,
+                      controller: textController,
+                      suggestions: const [],
+                      searchInputDecoration: SearchInputDecoration(
+                        hintText: 'Search songs',
+                        prefixIcon: const Icon(Icons.search),
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            isSearch.value = false;
+                            textController.clear();
+                            FocusScope.of(context).unfocus();
+                            setState(() {});
+                          },
+                          icon: const Icon(Icons.clear),
+                          padding: EdgeInsets.zero,
+                        ),
+                        filled: true,
+                        fillColor: Colors.grey.shade100,
+                        contentPadding: EdgeInsets.zero,
+                        isDense: true,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      onSearchTextChanged: (value) {
+                        setState(() {});
+                        return null;
+                      },
+                    ),
+                  ),
+                ),
+              )
+            : IconButton(
+                onPressed: () {
+                  isSearch.value = true;
+                },
+                icon: const Icon(Icons.search),
+              );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
-    final songList = widget.songList;
+    final songList = filterSongs(widget.songList, textController.text);
     final playlist = widget.playlist;
     final List<ValueNotifier<bool>> isSelectedList = List.generate(
       songList.length,
@@ -306,6 +363,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
       appBar: AppBar(
         backgroundColor: Colors.grey.shade50,
         scrolledUnderElevation: 0,
+        actions: [searchField()],
       ),
       body: Column(
         children: [
@@ -341,7 +399,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
             ],
           ),
           Expanded(
-            child: playlist == null
+            child: playlist == null || textController.text.isNotEmpty
                 ? ListView.builder(
                     itemCount: songList.length,
                     itemBuilder: (_, index) {
@@ -360,8 +418,8 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                       final checkBoxitem = isSelectedList.removeAt(oldIndex);
                       isSelectedList.insert(newIndex, checkBoxitem);
 
-                      final item = songList.removeAt(oldIndex);
-                      songList.insert(newIndex, item);
+                      final item = widget.songList.removeAt(oldIndex);
+                      widget.songList.insert(newIndex, item);
 
                       playlist.update();
                     },
