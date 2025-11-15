@@ -93,7 +93,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                         // using animateTo to avoid overscroll
                         scrollController.animateTo(
                           64.0 * audioHandler.currentIndex,
-                          duration: Duration(milliseconds: 1),
+                          duration: Duration(milliseconds: 300),
                           curve: Curves.linear,
                         );
                       });
@@ -117,7 +117,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                         // using animateTo to avoid overscroll
                         scrollController.animateTo(
                           64.0 * audioHandler.currentIndex,
-                          duration: Duration(milliseconds: 1),
+                          duration: Duration(milliseconds: 300),
                           curve: Curves.linear,
                         );
                       });
