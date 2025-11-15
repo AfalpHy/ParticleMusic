@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
@@ -402,6 +404,10 @@ class HomePage extends StatelessWidget {
           leading: ImageIcon(folderImage, color: mainColor),
           title: const Text('Select Music Folders'),
           onTap: () {
+            if (Platform.isIOS) {
+              showCenterMessage(context, 'Not supported yet', duration: 2000);
+              return;
+            }
             showDialog(
               context: context,
               builder: (context) {
