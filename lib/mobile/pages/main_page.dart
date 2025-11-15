@@ -1,12 +1,16 @@
+import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/load_library.dart';
 import 'package:particle_music/mobile/pages/artist_album_page.dart';
+import 'package:particle_music/mobile/pages/folders_page.dart';
 import 'package:particle_music/mobile/pages/playlists_page.dart';
 import 'package:particle_music/mobile/player_bar.dart';
 import 'package:particle_music/setting.dart';
 import 'package:particle_music/mobile/pages/songs_page.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_switch/flutter_switch.dart';
+import 'package:smooth_corner/smooth_corner.dart';
 
 final ValueNotifier<double> swipeProgressNotifier = ValueNotifier<double>(0.0);
 final ValueNotifier<int> homeBody = ValueNotifier<int>(1);
@@ -237,6 +241,17 @@ class HomePage extends StatelessWidget {
             );
           },
         ),
+
+        ListTile(
+          leading: const ImageIcon(folderImage, size: 35, color: mainColor),
+          title: Text('Folders'),
+          onTap: () {
+            Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => FoldersPage()));
+          },
+        ),
+
         ListTile(
           leading: const ImageIcon(songsImage, size: 35, color: mainColor),
           title: Text('Songs'),
@@ -371,6 +386,116 @@ class HomePage extends StatelessWidget {
                   ),
                 ),
               ),
+            );
+          },
+        ),
+        ListTile(
+          leading: Icon(Icons.refresh_rounded, color: mainColor),
+          title: const Text('Reload'),
+          onTap: () async {
+            if (await showConfirmDialog(context, 'Reload Action')) {
+              await libraryLoader.reload();
+            }
+          },
+        ),
+        ListTile(
+          leading: ImageIcon(folderImage, color: mainColor),
+          title: const Text('Select Music Folders'),
+          onTap: () {
+            showDialog(
+              context: context,
+              builder: (context) {
+                return Dialog(
+                  shape: SmoothRectangleBorder(
+                    smoothness: 1,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: SizedBox(
+                    height: 450,
+                    width: 300,
+                    child: Column(
+                      children: [
+                        SizedBox(height: 10),
+                        Text(
+                          'Folders',
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            fontSize: 20,
+                          ),
+                        ),
+                        Expanded(
+                          child: ValueListenableBuilder(
+                            valueListenable: foldersChangeNotifier,
+                            builder: (_, _, _) {
+                              return ListView.builder(
+                                itemCount: folderPaths.length,
+                                itemBuilder: (_, index) {
+                                  return ListTile(
+                                    title: Text(folderPaths[index]),
+
+                                    trailing: IconButton(
+                                      onPressed: () {
+                                        libraryLoader.removeFolder(
+                                          folderPaths[index],
+                                        );
+                                      },
+                                      icon: Icon(Icons.clear_rounded),
+                                    ),
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                        Row(
+                          children: [
+                            Spacer(),
+                            ElevatedButton(
+                              onPressed: () async {
+                                final result = await FilePicker.platform
+                                    .getDirectoryPath();
+                                if (result != null) {
+                                  if (!folderPaths.contains(result)) {
+                                    libraryLoader.addFolder(result);
+                                  } else if (context.mounted) {
+                                    showCenterMessage(
+                                      context,
+                                      'The folder already exists',
+                                      duration: 2000,
+                                    );
+                                  }
+                                }
+                              },
+                              style: ElevatedButton.styleFrom(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                padding: EdgeInsets.all(10),
+                              ),
+                              child: Text('Add Folder'),
+                            ),
+                            SizedBox(width: 20),
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.of(context).pop();
+                              },
+                              style: ElevatedButton.styleFrom(
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(5),
+                                ),
+                                padding: EdgeInsets.all(10),
+                              ),
+                              child: Text('Complete'),
+                            ),
+                            Spacer(),
+                          ],
+                        ),
+                        SizedBox(height: 10),
+                      ],
+                    ),
+                  ),
+                );
+              },
             );
           },
         ),

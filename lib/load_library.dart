@@ -31,8 +31,6 @@ class LibraryLoader {
     if (Platform.isAndroid) {
       await Permission.storage.request();
       await Permission.audio.request();
-      final dir = await getExternalStorageDirectory();
-      _docs = Directory("${dir!.parent.parent.parent.parent.path}/Music");
     } else if (Platform.isIOS) {
       _docs = await getApplicationDocumentsDirectory();
       final keepfile = File('${_docs.path}/Particle Music.keep');
@@ -46,7 +44,7 @@ class LibraryLoader {
       File("${_appSupportDir.path}/playlists.txt"),
     );
 
-    if (!isMobile) {
+    if (!Platform.isIOS) {
       folderPathsFile = File("${_appSupportDir.path}/folder_paths.txt");
       if (!folderPathsFile.existsSync()) {
         folderPathsFile.createSync();
@@ -60,7 +58,7 @@ class LibraryLoader {
   }
 
   Future<void> load() async {
-    if (isMobile) {
+    if (Platform.isIOS) {
       for (var file in _docs.listSync()) {
         if (!(file.path.endsWith('.mp3') ||
             file.path.endsWith('.flac') ||

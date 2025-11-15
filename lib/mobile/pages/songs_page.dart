@@ -44,24 +44,6 @@ class SongsPageState extends State<SongsPage> {
               );
             },
           ),
-
-          ListTile(
-            leading: Icon(Icons.refresh_rounded),
-            title: Text(
-              'Reload',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-            onTap: () async {
-              if (await showConfirmDialog(context, 'Reload Action')) {
-                await libraryLoader.reload();
-                if (context.mounted) {
-                  Navigator.of(context).pop();
-                }
-                setState(() {});
-              }
-            },
-          ),
         ],
       ),
     );
