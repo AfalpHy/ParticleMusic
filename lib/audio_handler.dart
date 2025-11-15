@@ -185,8 +185,7 @@ abstract class MyAudioHandler extends BaseAudioHandler {
 
     final currentSong = playQueue[currentIndex];
 
-    String path = currentSong.file.path;
-    await parseLyricsFile("${path.substring(0, path.lastIndexOf('.'))}.lrc");
+    await parseLyricsFile(currentSong);
 
     computeCoverArtColors(currentSong);
 

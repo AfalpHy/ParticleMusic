@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:particle_music/audio_handler.dart';
@@ -97,14 +98,21 @@ class LyricLineWidget extends StatelessWidget {
   }
 }
 
-Future<void> parseLyricsFile(String path) async {
+Future<void> parseLyricsFile(AudioMetadata song) async {
   lyrics = [];
-  final file = File(path);
-  if (!file.existsSync()) {
-    lyrics.add(LyricLine(Duration.zero, 'lyrics file does not exist'));
-    return;
+  List<String> lines = [];
+  if (song.lyrics == null) {
+    String path = song.file.path;
+    path = "${path.substring(0, path.lastIndexOf('.'))}.lrc";
+    final file = File(path);
+    if (!file.existsSync()) {
+      lyrics.add(LyricLine(Duration.zero, 'lyrics file does not exist'));
+      return;
+    }
+    lines = await file.readAsLines(); // read file line by line
+  } else {
+    lines = song.lyrics!.split(RegExp(r'[\n]'));
   }
-  final lines = await file.readAsLines(); // read file line by line
 
   final regex = RegExp(r'\[(\d{2}):(\d{2})(?::(\d{2,3})|.(\d{2,3}))\](.*)');
 
