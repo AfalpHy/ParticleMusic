@@ -153,7 +153,7 @@ class LyricsPageState extends State<LyricsPage> {
         SizedBox(
           width: width - 30,
 
-          height: 30,
+          height: 36,
           child: Center(
             child: MyAutoSizeText(
               key: UniqueKey(),
@@ -171,7 +171,7 @@ class LyricsPageState extends State<LyricsPage> {
         SizedBox(
           width: width - 30,
 
-          height: 24,
+          height: 28,
           child: Center(
             child: MyAutoSizeText(
               key: UniqueKey(),

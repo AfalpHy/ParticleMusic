@@ -63,6 +63,70 @@ class PlayQueuePageState extends State<PlayQueuePage> {
             ),
             Spacer(),
 
+            ValueListenableBuilder(
+              valueListenable: playModeNotifier,
+              builder: (_, playMode, _) {
+                return IconButton(
+                  color: Colors.black,
+                  icon: ImageIcon(
+                    playMode == 0
+                        ? loopImage
+                        : playMode == 1
+                        ? shuffleImage
+                        : repeatImage,
+                    size: 20,
+                  ),
+                  onPressed: () {
+                    if (playModeNotifier.value != 2) {
+                      audioHandler.switchPlayMode();
+                      switch (playModeNotifier.value) {
+                        case 0:
+                          showCenterMessage(context, "loop");
+                          break;
+                        default:
+                          showCenterMessage(context, "shuffle");
+                          break;
+                      }
+                    }
+                    setState(() {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        // using animateTo to avoid overscroll
+                        scrollController.animateTo(
+                          64.0 * audioHandler.currentIndex,
+                          duration: Duration(milliseconds: 1),
+                          curve: Curves.linear,
+                        );
+                      });
+                    });
+                  },
+                  onLongPress: () {
+                    audioHandler.toggleRepeat();
+                    switch (playModeNotifier.value) {
+                      case 0:
+                        showCenterMessage(context, "loop");
+                        break;
+                      case 1:
+                        showCenterMessage(context, "shuffle");
+                        break;
+                      default:
+                        showCenterMessage(context, "repeat");
+                        break;
+                    }
+                    setState(() {
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        // using animateTo to avoid overscroll
+                        scrollController.animateTo(
+                          64.0 * audioHandler.currentIndex,
+                          duration: Duration(milliseconds: 1),
+                          curve: Curves.linear,
+                        );
+                      });
+                    });
+                  },
+                );
+              },
+            ),
+
             IconButton(
               color: Colors.black,
               onPressed: () {
