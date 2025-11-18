@@ -72,7 +72,7 @@ class PlaylistsPlaneState extends State<PlaylistsPlane> {
                   padding: EdgeInsets.symmetric(horizontal: 16),
                   gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                     crossAxisCount: crossAxisCount,
-                    childAspectRatio: 1.09,
+                    childAspectRatio: 1.08,
                   ),
                   itemCount: playlists.length,
                   itemBuilder: (context, index) {
