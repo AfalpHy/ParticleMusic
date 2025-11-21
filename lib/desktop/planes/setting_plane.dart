@@ -285,7 +285,7 @@ class LicensePagePlaneState extends State<LicensePagePlane> {
               ),
               child: const LicensePage(
                 applicationName: 'Particle Music',
-                applicationVersion: '1.0.0',
+                applicationVersion: '1.0.2',
                 applicationLegalese: '© 2025 AfalpHy',
               ),
             ),
