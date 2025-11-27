@@ -74,7 +74,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                         : playMode == 1
                         ? shuffleImage
                         : repeatImage,
-                    size: 20,
+                    size: 22,
                   ),
                   onPressed: () {
                     if (playModeNotifier.value != 2) {
