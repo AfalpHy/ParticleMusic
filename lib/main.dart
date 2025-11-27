@@ -47,7 +47,6 @@ Future<void> main() async {
     }
 
     WindowOptions windowOptions = WindowOptions(
-      minimumSize: Size(1050, 700),
       size: Size(1050, 700),
       center: true,
       backgroundColor: Colors.transparent,
@@ -57,6 +56,10 @@ Future<void> main() async {
       await windowManager.setPreventClose(true);
       await windowManager.show();
       await windowManager.focus();
+      // it's weird on linux: it needs 52 extra pixels, and setMinimumSize should be invoked at last
+      await windowManager.setMinimumSize(
+        Platform.isLinux ? Size(1102, 752) : Size(1050, 700),
+      );
     });
 
     await trayManager.setIcon(
