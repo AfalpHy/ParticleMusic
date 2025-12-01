@@ -125,9 +125,6 @@ class BottomControl extends StatelessWidget {
                 color: Colors.black,
                 icon: const ImageIcon(previousButtonImage, size: 25),
                 onPressed: () {
-                  if (playQueue.isEmpty) {
-                    return;
-                  }
                   audioHandler.skipToPrevious();
                 },
               ),
@@ -155,10 +152,6 @@ class BottomControl extends StatelessWidget {
                 color: Colors.black,
                 icon: const ImageIcon(nextButtonImage, size: 25),
                 onPressed: () {
-                  if (playQueue.isEmpty) {
-                    return;
-                  }
-
                   audioHandler.skipToNext();
                 },
               ),

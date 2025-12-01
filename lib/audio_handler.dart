@@ -182,8 +182,12 @@ abstract class MyAudioHandler extends BaseAudioHandler {
 
   Future<Uri> saveAlbumCover(Uint8List bytes) async {
     final dir = await getTemporaryDirectory();
-
-    final file = File('${dir.path}/particle_music_cover');
+    String filePath = '${dir.path}/particle_music_cover';
+    // must use different file path to update cover, it's weird on linux
+    if (Platform.isLinux) {
+      filePath += '${bytes.length}';
+    }
+    final file = File(filePath);
 
     await file.writeAsBytes(bytes);
     return file.uri;
@@ -239,14 +243,13 @@ abstract class MyAudioHandler extends BaseAudioHandler {
 
   Stream<Duration> getPositionStream();
 
-  void setVolume(double volume) {}
+  void setVolume(double volume);
 
   double getVolume();
 }
 
 class WLAudioHandler extends MyAudioHandler {
   final _player = audioplayers.AudioPlayer();
-  Duration _currentPostion = Duration.zero;
 
   WLAudioHandler() {
     _player.setVolume(0.3);
@@ -282,10 +285,6 @@ class WLAudioHandler extends MyAudioHandler {
       }
     });
 
-    _player.onPositionChanged.listen((postion) {
-      _currentPostion = postion;
-    });
-
     currentSongNotifier.addListener(() {
       needPause = false;
     });
@@ -310,7 +309,6 @@ class WLAudioHandler extends MyAudioHandler {
         audioplayers.PlayerState.completed: AudioProcessingState.completed,
         audioplayers.PlayerState.disposed: AudioProcessingState.idle,
       }[state]!,
-      updatePosition: _currentPostion,
     );
   }
 
@@ -326,7 +324,10 @@ class WLAudioHandler extends MyAudioHandler {
   }
 
   @override
-  Future<void> play() async => await _player.resume();
+  Future<void> play() async {
+    if (playQueue.isEmpty) return;
+    await _player.resume();
+  }
 
   @override
   Future<void> pause() async => await _player.pause();
@@ -456,7 +457,10 @@ class AIMAudioHandler extends MyAudioHandler {
   }
 
   @override
-  Future<void> play() async => await _player.play();
+  Future<void> play() async {
+    if (playQueue.isEmpty) return;
+    await _player.play();
+  }
 
   @override
   Future<void> pause() async => await _player.pause();
@@ -479,6 +483,11 @@ class AIMAudioHandler extends MyAudioHandler {
   @override
   Stream<Duration> getPositionStream() {
     return _player.positionStream;
+  }
+
+  @override
+  void setVolume(double volume) {
+    _player.setVolume(volume);
   }
 
   @override

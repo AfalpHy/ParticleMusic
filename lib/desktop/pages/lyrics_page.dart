@@ -203,9 +203,6 @@ class LyricsPageState extends State<LyricsPage> {
                       size: 25,
                     ),
                     onPressed: () {
-                      if (playQueue.isEmpty) {
-                        return;
-                      }
                       if (playModeNotifier.value != 2) {
                         audioHandler.switchPlayMode();
                         switch (playModeNotifier.value) {
@@ -219,9 +216,6 @@ class LyricsPageState extends State<LyricsPage> {
                       }
                     },
                     onLongPress: () {
-                      if (playQueue.isEmpty) {
-                        return;
-                      }
                       audioHandler.toggleRepeat();
                       switch (playModeNotifier.value) {
                         case 0:
@@ -243,9 +237,6 @@ class LyricsPageState extends State<LyricsPage> {
                 color: Colors.grey.shade50,
                 icon: const ImageIcon(previousButtonImage, size: 25),
                 onPressed: () {
-                  if (playQueue.isEmpty) {
-                    return;
-                  }
                   audioHandler.skipToPrevious();
                 },
               ),
@@ -264,9 +255,6 @@ class LyricsPageState extends State<LyricsPage> {
                   },
                 ),
                 onPressed: () {
-                  if (playQueue.isEmpty) {
-                    return;
-                  }
                   audioHandler.togglePlay();
                 },
               ),
@@ -274,10 +262,6 @@ class LyricsPageState extends State<LyricsPage> {
                 color: Colors.grey.shade50,
                 icon: const ImageIcon(nextButtonImage, size: 25),
                 onPressed: () {
-                  if (playQueue.isEmpty) {
-                    return;
-                  }
-
                   audioHandler.skipToNext();
                 },
               ),
@@ -286,9 +270,6 @@ class LyricsPageState extends State<LyricsPage> {
                 color: Colors.grey.shade50,
                 icon: Icon(Icons.playlist_play_rounded, size: 25),
                 onPressed: () {
-                  if (playQueue.isEmpty) {
-                    return;
-                  }
                   displayPlayQueuePageNotifier.value = true;
                 },
               ),
