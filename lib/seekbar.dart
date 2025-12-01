@@ -24,8 +24,10 @@ class SeekBarState extends State<SeekBar> {
       stream: audioHandler.getPositionStream(),
       builder: (context, snapshot) {
         final position = snapshot.data ?? Duration.zero;
-        final sliderValue = dragValue ?? position.inMilliseconds.toDouble();
-
+        double sliderValue = dragValue ?? position.inMilliseconds.toDouble();
+        if (playQueue.isEmpty) {
+          sliderValue = 0;
+        }
         return SizedBox(
           height: isMobile ? 60 : 10, // expand gesture area for easier touch
           child: Stack(
