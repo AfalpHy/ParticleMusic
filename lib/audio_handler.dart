@@ -180,6 +180,15 @@ abstract class MyAudioHandler extends BaseAudioHandler {
     coverArtFilterColor = coverArtAverageColor.withAlpha(160);
   }
 
+  Future<Uri> saveAlbumCover(Uint8List bytes) async {
+    final dir = await getTemporaryDirectory();
+
+    final file = File('${dir.path}/particle_music_cover');
+
+    await file.writeAsBytes(bytes);
+    return file.uri;
+  }
+
   Future<void> load() async {
     if (currentIndex < 0 || currentIndex >= playQueue.length) return;
 
@@ -190,6 +199,22 @@ abstract class MyAudioHandler extends BaseAudioHandler {
     computeCoverArtColors(currentSong);
 
     currentSongNotifier.value = currentSong;
+
+    Uri? artUri;
+    if (currentSong.pictures.isNotEmpty) {
+      artUri = await saveAlbumCover(currentSong.pictures.first.bytes);
+    }
+
+    mediaItem.add(
+      MediaItem(
+        id: currentSong.file.path,
+        title: getTitle(currentSong),
+        artist: currentSong.artist,
+        album: currentSong.album,
+        artUri: artUri, // file:// URI
+        duration: currentSong.duration,
+      ),
+    );
   }
 
   @override
@@ -221,10 +246,12 @@ abstract class MyAudioHandler extends BaseAudioHandler {
 
 class WLAudioHandler extends MyAudioHandler {
   final _player = audioplayers.AudioPlayer();
+  Duration _currentPostion = Duration.zero;
 
   WLAudioHandler() {
     _player.setVolume(0.3);
     volumeNotifier = ValueNotifier(0.3);
+    _player.onPlayerStateChanged.map(transformState).pipe(playbackState);
 
     _player.onPlayerComplete.listen((_) async {
       bool needPauseTmp = needPause;
@@ -255,19 +282,45 @@ class WLAudioHandler extends MyAudioHandler {
       }
     });
 
+    _player.onPositionChanged.listen((postion) {
+      _currentPostion = postion;
+    });
+
     currentSongNotifier.addListener(() {
       needPause = false;
     });
+  }
+
+  PlaybackState transformState(audioplayers.PlayerState state) {
+    return PlaybackState(
+      controls: [
+        MediaControl.skipToPrevious,
+        state == audioplayers.PlayerState.playing
+            ? MediaControl.pause
+            : MediaControl.play,
+        MediaControl.skipToNext,
+        MediaControl.stop,
+      ],
+      systemActions: {MediaAction.seek},
+      playing: state == audioplayers.PlayerState.playing,
+      processingState: {
+        audioplayers.PlayerState.stopped: AudioProcessingState.idle,
+        audioplayers.PlayerState.playing: AudioProcessingState.ready,
+        audioplayers.PlayerState.paused: AudioProcessingState.ready,
+        audioplayers.PlayerState.completed: AudioProcessingState.completed,
+        audioplayers.PlayerState.disposed: AudioProcessingState.idle,
+      }[state]!,
+      updatePosition: _currentPostion,
+    );
   }
 
   @override
   Future<void> load() async {
     isloading = true;
     await super.load();
-    final currentSong = currentSongNotifier.value!;
 
     await _player.setSource(
-      audioplayers.DeviceFileSource(currentSong.file.path),
+      audioplayers.DeviceFileSource(currentSongNotifier.value!.file.path),
     );
     isloading = false;
   }
@@ -378,43 +431,19 @@ class AIMAudioHandler extends MyAudioHandler {
         just_audio.ProcessingState.buffering: AudioProcessingState.buffering,
         just_audio.ProcessingState.ready: AudioProcessingState.ready,
         just_audio.ProcessingState.completed: AudioProcessingState.completed,
-      }[_player.processingState]!,
+      }[event.processingState]!,
       updatePosition: _player.position,
+      bufferedPosition: _player.bufferedPosition,
     );
-  }
-
-  Future<Uri> saveAlbumCover(Uint8List bytes) async {
-    final dir = await getTemporaryDirectory();
-
-    final file = File('${dir.path}/cover');
-
-    await file.writeAsBytes(bytes);
-    return file.uri;
   }
 
   @override
   Future<void> load() async {
     isloading = true;
     await super.load();
-    final currentSong = currentSongNotifier.value!;
 
-    Uri? artUri;
-    if (currentSong.pictures.isNotEmpty) {
-      artUri = await saveAlbumCover(currentSong.pictures.first.bytes);
-    }
-
-    mediaItem.add(
-      MediaItem(
-        id: currentSong.file.path,
-        title: getTitle(currentSong),
-        artist: currentSong.artist,
-        album: currentSong.album,
-        artUri: artUri, // file:// URI
-        duration: currentSong.duration,
-      ),
-    );
     final audioSource = just_audio.ProgressiveAudioSource(
-      Uri.file(currentSong.file.path),
+      Uri.file(currentSongNotifier.value!.file.path),
       options: just_audio.ProgressiveAudioSourceOptions(
         darwinAssetOptions: just_audio.DarwinAssetOptions(
           preferPreciseDurationAndTiming: true,

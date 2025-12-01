@@ -81,18 +81,16 @@ Future<void> main() async {
     );
   }
 
-  if (Platform.isAndroid || Platform.isIOS || Platform.isMacOS) {
-    audioHandler = await AudioService.init(
-      builder: () => AIMAudioHandler(),
-      config: const AudioServiceConfig(
-        androidNotificationChannelId: 'com.afalphy.particle_music',
-        androidNotificationChannelName: 'Music Playback',
-        androidNotificationOngoing: true,
-      ),
-    );
-  } else {
-    audioHandler = WLAudioHandler();
-  }
+  audioHandler = await AudioService.init(
+    builder: () => Platform.isWindows || Platform.isLinux
+        ? WLAudioHandler()
+        : AIMAudioHandler(),
+    config: const AudioServiceConfig(
+      androidNotificationChannelId: 'com.afalphy.particle_music',
+      androidNotificationChannelName: 'Music Playback',
+      androidNotificationOngoing: true,
+    ),
+  );
 
   await libraryLoader.initial();
   await libraryLoader.load();

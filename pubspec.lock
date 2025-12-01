@@ -58,6 +58,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.1.4"
+  audio_service_win:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: main
+      resolved-ref: "9a6934ad857edd985efb4eb1bc632a1b6f457315"
+      url: "https://github.com/GerryDush/audio_service_win.git"
+    source: git
+    version: "0.0.2"
   audio_session:
     dependency: transitive
     description:

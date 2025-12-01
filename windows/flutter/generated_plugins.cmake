@@ -3,6 +3,7 @@
 #
 
 list(APPEND FLUTTER_PLUGIN_LIST
+  audio_service_win
   audioplayers_windows
   desktop_multi_window
   irondash_engine_context

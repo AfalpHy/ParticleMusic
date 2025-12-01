@@ -44,6 +44,10 @@ dependencies:
       ref: main
   marquee: ^2.3.0
   audio_service: ^0.18.18
+  audio_service_win:
+    git:
+      url: https://github.com/GerryDush/audio_service_win.git
+      ref: main
   path_provider: ^2.1.5
   image: ^4.5.4
   auto_size_text: ^3.0.0
