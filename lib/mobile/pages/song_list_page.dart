@@ -443,7 +443,10 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
 
   @override
   Widget build(BuildContext context) {
-    final songList = filterSongs(widget.songList, textController.text);
+    List<AudioMetadata> songList = filterSongs(
+      widget.songList,
+      textController.text,
+    );
     final playlist = widget.playlist;
     final List<ValueNotifier<bool>> isSelectedList = List.generate(
       songList.length,
@@ -520,6 +523,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
 
                       final item = widget.songList.removeAt(oldIndex);
                       widget.songList.insert(newIndex, item);
+                      songList = widget.songList;
 
                       playlist.update();
                     },
@@ -539,12 +543,12 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                             child: child,
                           );
                         },
-                    itemCount: songList.length,
+                    itemCount: widget.songList.length,
                     itemBuilder: (_, index) {
                       return SelectableSongListTile(
-                        key: ValueKey(songList[index]),
+                        key: ValueKey(widget.songList[index]),
                         index: index,
-                        source: songList,
+                        source: widget.songList,
                         isSelected: isSelectedList[index],
                         selectedNum: selectedNum,
                         reorderable: true,
