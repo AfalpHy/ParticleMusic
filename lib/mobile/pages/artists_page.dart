@@ -43,7 +43,7 @@ class ArtistsPage extends StatelessWidget {
                               suffixIcon: IconButton(
                                 onPressed: () {
                                   isSearchingNotifier.value = false;
-                                  songListMapNotifer.value = album2SongList;
+                                  songListMapNotifer.value = artist2SongList;
                                   textController.clear();
                                   FocusScope.of(context).unfocus();
                                 },
@@ -61,7 +61,7 @@ class ArtistsPage extends StatelessWidget {
                             ),
                             onSearchTextChanged: (value) {
                               songListMapNotifer.value = Map.fromEntries(
-                                album2SongList.entries.where(
+                                artist2SongList.entries.where(
                                   (e) => (e.key.toLowerCase().contains(
                                     value.toLowerCase(),
                                   )),
