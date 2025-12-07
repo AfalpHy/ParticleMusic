@@ -8,26 +8,25 @@ import 'package:flutter/services.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/mobile/my_location.dart';
+import 'package:particle_music/load_library.dart';
+import 'package:particle_music/my_location.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/mobile/song_list_tile.dart';
-import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:searchfield/searchfield.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
 class SongListPage extends StatefulWidget {
-  final List<AudioMetadata> songList;
-  final Widget Function(BuildContext) moreSheet;
-
-  final String? name;
   final Playlist? playlist;
+  final String? artist;
+  final String? album;
+  final String? folder;
 
   const SongListPage({
     super.key,
-    required this.songList,
-    required this.moreSheet,
-    this.name,
     this.playlist,
+    this.artist,
+    this.album,
+    this.folder,
   });
 
   @override
@@ -35,35 +34,58 @@ class SongListPage extends StatefulWidget {
 }
 
 class _SongListPageState extends State<SongListPage> {
-  int extraItems = 0;
-  int offset = 0;
+  late String title;
+  late List<AudioMetadata> songList;
+  Playlist? playlist;
+  String? artist;
+  String? album;
+  String? folder;
 
   final ValueNotifier<List<AudioMetadata>> currentSongListNotifier =
       ValueNotifier([]);
 
   final listIsScrollingNotifier = ValueNotifier(false);
-  final itemScrollController = ItemScrollController();
+  final scrollController = ScrollController();
   final textController = TextEditingController();
 
   void updateSongList() {
     final value = textController.text;
-    currentSongListNotifier.value = filterSongs(widget.playlist!.songs, value);
+    currentSongListNotifier.value = filterSongs(songList, value);
   }
 
   @override
   void initState() {
     super.initState();
-    extraItems = widget.name == null ? 1 : 2;
-    offset = widget.name == null ? 0 : 1;
-    currentSongListNotifier.value = widget.songList;
-    if (widget.playlist != null) {
-      widget.playlist!.changeNotifier.addListener(updateSongList);
+
+    playlist = widget.playlist;
+    artist = widget.artist;
+    album = widget.album;
+    folder = widget.folder;
+
+    if (playlist != null) {
+      songList = playlist!.songs;
+      title = playlist!.name;
+      playlist!.changeNotifier.addListener(updateSongList);
+    } else if (artist != null) {
+      songList = artist2SongList[artist]!;
+      title = artist!;
+    } else if (album != null) {
+      songList = album2SongList[album]!;
+      title = album!;
+    } else if (folder != null) {
+      songList = folder2SongList[widget.folder]!;
+      title = folder!;
+    } else {
+      songList = librarySongs;
+      title = 'Songs';
     }
+
+    currentSongListNotifier.value = songList;
   }
 
   @override
   void dispose() {
-    widget.playlist?.changeNotifier.removeListener(updateSongList);
+    playlist?.changeNotifier.removeListener(updateSongList);
     super.dispose();
   }
 
@@ -81,27 +103,7 @@ class _SongListPageState extends State<SongListPage> {
     return AppBar(
       backgroundColor: Colors.grey.shade50,
       scrolledUnderElevation: 0,
-      actions: [
-        searchField(),
-        IconButton(
-          icon: Icon(Icons.more_vert),
-          onPressed: () {
-            HapticFeedback.heavyImpact();
-            showModalBottomSheet(
-              context: context,
-              isScrollControlled: true,
-              useRootNavigator: true,
-              builder: (context) {
-                return widget.moreSheet(context);
-              },
-            ).then((value) {
-              if (value == true && context.mounted) {
-                Navigator.pop(context);
-              }
-            });
-          },
-        ),
-      ],
+      actions: [searchField(), moreButton(context)],
     );
   }
 
@@ -127,7 +129,7 @@ class _SongListPageState extends State<SongListPage> {
                         suffixIcon: IconButton(
                           onPressed: () {
                             isSearch.value = false;
-                            currentSongListNotifier.value = widget.songList;
+                            currentSongListNotifier.value = songList;
                             textController.clear();
                             FocusScope.of(context).unfocus();
                           },
@@ -144,10 +146,7 @@ class _SongListPageState extends State<SongListPage> {
                         ),
                       ),
                       onSearchTextChanged: (value) {
-                        currentSongListNotifier.value = filterSongs(
-                          widget.songList,
-                          value,
-                        );
+                        updateSongList();
                         return null;
                       },
                     ),
@@ -161,6 +160,99 @@ class _SongListPageState extends State<SongListPage> {
                 icon: const Icon(Icons.search),
               );
       },
+    );
+  }
+
+  Widget moreButton(BuildContext context) {
+    return IconButton(
+      icon: Icon(Icons.more_vert),
+      onPressed: () {
+        HapticFeedback.heavyImpact();
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          useRootNavigator: true,
+          builder: (context) {
+            return moreSheet(context);
+          },
+        ).then((value) {
+          if (value == true && context.mounted) {
+            Navigator.pop(context);
+          }
+        });
+      },
+    );
+  }
+
+  Widget moreSheet(BuildContext context) {
+    return mySheet(
+      Column(
+        children: [
+          ListTile(
+            title: SizedBox(
+              height: 40,
+              width: appWidth * 0.9,
+              child: Row(
+                children: [
+                  if (playlist != null)
+                    Text('Playlist: ', style: TextStyle(fontSize: 15)),
+                  if (artist != null)
+                    Text('Artist: ', style: TextStyle(fontSize: 15)),
+                  if (album != null)
+                    Text('Album: ', style: TextStyle(fontSize: 15)),
+                  if (folder != null)
+                    Text('Folder: ', style: TextStyle(fontSize: 15)),
+
+                  Expanded(
+                    child: MyAutoSizeText(
+                      title,
+                      maxLines: 1,
+                      textStyle: TextStyle(fontSize: 15),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Divider(thickness: 0.5, height: 1, color: Colors.grey.shade300),
+          ListTile(
+            leading: const ImageIcon(selectImage, color: Colors.black),
+            title: Text(
+              'Select',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => SelectableSongListPage(
+                    songList: songList,
+                    playlist: playlist,
+                  ),
+                ),
+              );
+            },
+          ),
+          if (playlist != null && playlist!.name != 'Favorite')
+            ListTile(
+              leading: const ImageIcon(deleteImage, color: Colors.black),
+              title: Text(
+                'Delete',
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+              onTap: () async {
+                if (await showConfirmDialog(context, 'Delete Action')) {
+                  playlistsManager.deletePlaylist(playlist!);
+                  if (context.mounted) {
+                    Navigator.pop(context, true);
+                  }
+                }
+              },
+            ),
+        ],
+      ),
     );
   }
 
@@ -186,81 +278,89 @@ class _SongListPageState extends State<SongListPage> {
             }
             return false;
           },
-          child: ValueListenableBuilder(
-            valueListenable: currentSongListNotifier,
-            builder: (context, currentSongList, child) {
-              return ScrollablePositionedList.builder(
-                itemScrollController: itemScrollController,
-                itemCount: currentSongList.length + extraItems,
-                itemBuilder: (context, index) {
-                  if (widget.name != null && index == 0) {
-                    return Column(
+          child: CustomScrollView(
+            controller: scrollController,
+            slivers: [
+              SliverToBoxAdapter(
+                child: Column(
+                  children: [
+                    SizedBox(height: 10),
+                    Row(
                       children: [
-                        SizedBox(height: 10),
-                        Row(
-                          children: [
-                            SizedBox(width: 20),
+                        SizedBox(width: 20),
 
-                            Material(
-                              elevation: 5,
-                              shape: SmoothRectangleBorder(
-                                smoothness: 1,
-                                borderRadius: BorderRadius.circular(9),
-                              ),
-                              child: CoverArtWidget(
+                        Material(
+                          elevation: 5,
+                          shape: SmoothRectangleBorder(
+                            smoothness: 1,
+                            borderRadius: BorderRadius.circular(9),
+                          ),
+                          child: ValueListenableBuilder(
+                            valueListenable: currentSongListNotifier,
+                            builder: (context, currentSongList, child) {
+                              return CoverArtWidget(
                                 size: 120,
                                 borderRadius: 9,
-                                source: widget.songList.isNotEmpty
-                                    ? getCoverArt(widget.songList.first)
+                                source: currentSongList.isNotEmpty
+                                    ? getCoverArt(currentSongList.first)
                                     : null,
-                              ),
-                            ),
-
-                            Expanded(
-                              child: ListTile(
-                                title: AutoSizeText(
-                                  widget.name!,
-                                  maxLines: 1,
-                                  minFontSize: 20,
-                                  maxFontSize: 20,
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                subtitle: Text(
-                                  "${widget.songList.length} songs",
-                                ),
-                              ),
-                            ),
-                          ],
+                              );
+                            },
+                          ),
                         ),
-                        SizedBox(height: 20),
-                      ],
-                    );
-                  }
 
-                  if (index < currentSongList.length + offset) {
-                    return SongListTile(
-                      index: index - offset,
-                      source: currentSongList,
-                      playlist: widget.playlist,
-                    );
-                  } else {
-                    return SizedBox(height: 90);
-                  }
+                        Expanded(
+                          child: ListTile(
+                            title: AutoSizeText(
+                              title,
+                              maxLines: 1,
+                              minFontSize: 20,
+                              maxFontSize: 20,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            subtitle: ValueListenableBuilder(
+                              valueListenable: currentSongListNotifier,
+                              builder: (context, currentSongList, child) {
+                                return Text("${currentSongList.length} songs");
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 20),
+                  ],
+                ),
+              ),
+              ValueListenableBuilder(
+                valueListenable: currentSongListNotifier,
+                builder: (context, currentSongList, child) {
+                  return SliverFixedExtentList.builder(
+                    itemExtent: 60,
+                    itemCount: currentSongList.length,
+                    itemBuilder: (context, index) {
+                      return SongListTile(
+                        index: index,
+                        source: currentSongList,
+                        playlist: widget.playlist,
+                      );
+                    },
+                  );
                 },
-              );
-            },
+              ),
+              SliverToBoxAdapter(child: SizedBox(height: 90)),
+            ],
           ),
         ),
         Positioned(
-          left: 0,
-          right: 0,
+          right: 30,
           bottom: 120,
           child: MyLocation(
-            itemScrollController: itemScrollController,
+            scrollController: scrollController,
             listIsScrollingNotifier: listIsScrollingNotifier,
-            songListNotifer: currentSongListNotifier,
-            offset: offset,
+            currentSongListNotifier: currentSongListNotifier,
+            offset: 300 - MediaQuery.heightOf(context) / 2,
           ),
         ),
       ],

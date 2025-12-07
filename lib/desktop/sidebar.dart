@@ -285,7 +285,7 @@ class Sidebar extends StatelessWidget {
                     callback: () async {
                       if (await showConfirmDialog(context, 'Delete Action')) {
                         planeManager.removePlaylistPlane(playlist);
-                        playlistsManager.deletePlaylist(index);
+                        playlistsManager.deletePlaylistByIndex(index);
                       }
                     },
                   ),

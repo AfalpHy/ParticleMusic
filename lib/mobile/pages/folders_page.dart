@@ -1,4 +1,3 @@
-import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
@@ -40,66 +39,13 @@ class FoldersPage extends StatelessWidget {
               onTap: () {
                 Navigator.of(context).push(
                   MaterialPageRoute(
-                    builder: (_) => SongListPage(
-                      songList: songList,
-                      name: folder,
-                      moreSheet: (context) =>
-                          moreSheet(context, folder, songList),
-                    ),
+                    builder: (_) => SongListPage(folder: folder),
                   ),
                 );
               },
             ),
           );
         },
-      ),
-    );
-  }
-
-  Widget moreSheet(
-    BuildContext context,
-    String name,
-    List<AudioMetadata> songList,
-  ) {
-    return mySheet(
-      Column(
-        children: [
-          ListTile(
-            title: SizedBox(
-              height: 40,
-              width: appWidth * 0.9,
-              child: Row(
-                children: [
-                  Text('Folders', style: TextStyle(fontSize: 15)),
-                  Expanded(
-                    child: MyAutoSizeText(
-                      name,
-                      maxLines: 1,
-                      textStyle: TextStyle(fontSize: 15),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Divider(thickness: 0.5, height: 1, color: Colors.grey.shade300),
-          ListTile(
-            leading: const ImageIcon(selectImage, color: Colors.black),
-            title: Text(
-              'Select',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => SelectableSongListPage(songList: songList),
-                ),
-              );
-            },
-          ),
-        ],
       ),
     );
   }

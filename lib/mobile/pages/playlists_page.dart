@@ -81,14 +81,7 @@ class PlaylistsPage extends StatelessWidget {
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (_) => SongListPage(
-                          songList: playlist.songs,
-                          name: playlist.name,
-
-                          moreSheet: (context) =>
-                              singlePlaylistMoreSheet(context, index, playlist),
-                          playlist: playlist,
-                        ),
+                        builder: (_) => SongListPage(playlist: playlist),
                       ),
                     );
                   },
@@ -248,78 +241,6 @@ class PlaylistsPage extends StatelessWidget {
           );
         },
         footer: SizedBox(height: 80),
-      ),
-    );
-  }
-
-  Widget singlePlaylistMoreSheet(
-    BuildContext context,
-    int index,
-    Playlist playlist,
-  ) {
-    return mySheet(
-      Column(
-        children: [
-          ListTile(
-            title: SizedBox(
-              height: 40,
-              width: appWidth * 0.9,
-              child: Row(
-                children: [
-                  Text('Playlist: ', style: TextStyle(fontSize: 15)),
-                  Expanded(
-                    child: MyAutoSizeText(
-                      playlist.name,
-                      maxLines: 1,
-                      textStyle: TextStyle(fontSize: 15),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Divider(thickness: 0.5, height: 1, color: Colors.grey.shade300),
-          ListTile(
-            leading: const ImageIcon(selectImage, color: Colors.black),
-            title: Text(
-              'Select',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => SelectableSongListPage(
-                    songList: playlist.songs,
-                    playlist: playlist,
-                  ),
-                ),
-              );
-            },
-          ),
-          playlist.name != 'Favorite'
-              ? ListTile(
-                  leading: const ImageIcon(deleteImage, color: Colors.black),
-                  title: Text(
-                    'Delete',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  visualDensity: const VisualDensity(
-                    horizontal: 0,
-                    vertical: -4,
-                  ),
-                  onTap: () async {
-                    if (await showConfirmDialog(context, 'Delete Action')) {
-                      playlistsManager.deletePlaylist(index);
-                      if (context.mounted) {
-                        Navigator.pop(context, true);
-                      }
-                    }
-                  },
-                )
-              : SizedBox(),
-        ],
       ),
     );
   }

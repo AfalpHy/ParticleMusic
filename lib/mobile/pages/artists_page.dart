@@ -1,4 +1,3 @@
-import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
@@ -7,16 +6,14 @@ import 'package:particle_music/mobile/pages/song_list_page.dart';
 import 'package:searchfield/searchfield.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
-class ArtistAlbumPage extends StatelessWidget {
-  final bool isArtist;
-  const ArtistAlbumPage({super.key, required this.isArtist});
+class ArtistsPage extends StatelessWidget {
+  const ArtistsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final songListMap = isArtist ? artist2SongList : album2SongList;
-    final songListMapNotifer = ValueNotifier(songListMap);
+    final songListMapNotifer = ValueNotifier(artist2SongList);
     final textController = TextEditingController();
-    final ValueNotifier<bool> isSearch = ValueNotifier(false);
+    final ValueNotifier<bool> isSearchingNotifier = ValueNotifier(false);
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       resizeToAvoidBottomInset: false,
@@ -24,11 +21,11 @@ class ArtistAlbumPage extends StatelessWidget {
         backgroundColor: Colors.grey.shade50,
         elevation: 0,
         scrolledUnderElevation: 0,
-        title: Text(isArtist ? "Artists" : "Albums"),
+        title: Text("Artists"),
         centerTitle: true,
         actions: [
           ValueListenableBuilder(
-            valueListenable: isSearch,
+            valueListenable: isSearchingNotifier,
             builder: (context, value, child) {
               return value
                   ? Expanded(
@@ -41,13 +38,12 @@ class ArtistAlbumPage extends StatelessWidget {
                             controller: textController,
                             suggestions: [],
                             searchInputDecoration: SearchInputDecoration(
-                              hintText:
-                                  'Search ${isArtist ? "Artists" : "Albums"}',
+                              hintText: 'Search Artists',
                               prefixIcon: Icon(Icons.search),
                               suffixIcon: IconButton(
                                 onPressed: () {
-                                  isSearch.value = false;
-                                  songListMapNotifer.value = songListMap;
+                                  isSearchingNotifier.value = false;
+                                  songListMapNotifer.value = album2SongList;
                                   textController.clear();
                                   FocusScope.of(context).unfocus();
                                 },
@@ -65,7 +61,7 @@ class ArtistAlbumPage extends StatelessWidget {
                             ),
                             onSearchTextChanged: (value) {
                               songListMapNotifer.value = Map.fromEntries(
-                                songListMap.entries.where(
+                                album2SongList.entries.where(
                                   (e) => (e.key.toLowerCase().contains(
                                     value.toLowerCase(),
                                   )),
@@ -80,7 +76,7 @@ class ArtistAlbumPage extends StatelessWidget {
                     )
                   : IconButton(
                       onPressed: () {
-                        isSearch.value = true;
+                        isSearchingNotifier.value = true;
                       },
                       icon: Icon(Icons.search),
                     );
@@ -120,12 +116,7 @@ class ArtistAlbumPage extends StatelessWidget {
                       onTap: () {
                         Navigator.of(context).push(
                           MaterialPageRoute(
-                            builder: (_) => SongListPage(
-                              songList: songList,
-                              name: key,
-                              moreSheet: (context) =>
-                                  moreSheet(context, key, songList),
-                            ),
+                            builder: (_) => SongListPage(artist: key),
                           ),
                         );
                       },
@@ -146,57 +137,6 @@ class ArtistAlbumPage extends StatelessWidget {
             },
           );
         },
-      ),
-    );
-  }
-
-  Widget moreSheet(
-    BuildContext context,
-    String name,
-    List<AudioMetadata> songList,
-  ) {
-    return mySheet(
-      Column(
-        children: [
-          ListTile(
-            title: SizedBox(
-              height: 40,
-              width: appWidth * 0.9,
-              child: Row(
-                children: [
-                  Text(
-                    (isArtist ? 'Artist: ' : 'Album: '),
-                    style: TextStyle(fontSize: 15),
-                  ),
-                  Expanded(
-                    child: MyAutoSizeText(
-                      name,
-                      maxLines: 1,
-                      textStyle: TextStyle(fontSize: 15),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-          Divider(thickness: 0.5, height: 1, color: Colors.grey.shade300),
-          ListTile(
-            leading: const ImageIcon(selectImage, color: Colors.black),
-            title: Text(
-              'Select',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-            onTap: () {
-              Navigator.pop(context);
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => SelectableSongListPage(songList: songList),
-                ),
-              );
-            },
-          ),
-        ],
       ),
     );
   }

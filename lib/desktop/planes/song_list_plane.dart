@@ -11,6 +11,7 @@ import 'package:particle_music/desktop/keyboard.dart';
 import 'package:particle_music/desktop/title_bar.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:particle_music/metadata.dart';
+import 'package:particle_music/my_location.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 import 'package:super_context_menu/super_context_menu.dart';
@@ -220,52 +221,17 @@ class _SongListPlane extends State<SongListPlane> {
             ),
           ),
 
-          myLocation(),
+          Positioned(
+            right: widget.folder == null ? 120 : 100,
+            bottom: 100,
+            child: MyLocation(
+              scrollController: scrollController,
+              listIsScrollingNotifier: listIsScrollingNotifier,
+              currentSongListNotifier: currentSongListNotifier,
+              offset: 200 - (MediaQuery.heightOf(context) - 280) / 2,
+            ),
+          ),
         ],
-      ),
-    );
-  }
-
-  Widget myLocation() {
-    return Positioned(
-      right: widget.folder == null ? 120 : 100,
-      bottom: 100,
-      child: ValueListenableBuilder(
-        valueListenable: currentSongNotifier,
-        builder: (_, currentSong, _) {
-          if (currentSong == null) {
-            return SizedBox.shrink();
-          }
-          return ValueListenableBuilder(
-            valueListenable: currentSongListNotifier,
-            builder: (_, currentSongList, _) {
-              final index = currentSongList.indexOf(currentSong);
-              return ValueListenableBuilder(
-                valueListenable: listIsScrollingNotifier,
-                builder: (_, isScrolling, _) {
-                  return isScrolling && index >= 0
-                      ? IconButton(
-                          color: mainColor,
-                          onPressed: () {
-                            final offset =
-                                200 - (MediaQuery.heightOf(context) - 280) / 2;
-
-                            scrollController.animateTo(
-                              60 * index.toDouble() + offset,
-                              duration: Duration(
-                                milliseconds: 300,
-                              ), // smooth animation
-                              curve: Curves.linear,
-                            );
-                          },
-                          icon: Icon(Icons.my_location_outlined, size: 20),
-                        )
-                      : SizedBox.shrink();
-                },
-              );
-            },
-          );
-        },
       ),
     );
   }

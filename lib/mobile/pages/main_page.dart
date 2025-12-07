@@ -4,7 +4,8 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/load_library.dart';
-import 'package:particle_music/mobile/pages/artist_album_page.dart';
+import 'package:particle_music/mobile/pages/albums_page.dart';
+import 'package:particle_music/mobile/pages/artists_page.dart';
 import 'package:particle_music/mobile/pages/folders_page.dart';
 import 'package:particle_music/mobile/pages/playlists_page.dart';
 import 'package:particle_music/mobile/player_bar.dart';
@@ -225,22 +226,18 @@ class HomePage extends StatelessWidget {
           leading: const ImageIcon(artistImage, size: 35, color: mainColor),
           title: Text('Artists'),
           onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => ArtistAlbumPage(isArtist: true),
-              ),
-            );
+            Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => ArtistsPage()));
           },
         ),
         ListTile(
           leading: const ImageIcon(albumImage, size: 35, color: mainColor),
           title: Text('Albums'),
           onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => ArtistAlbumPage(isArtist: false),
-              ),
-            );
+            Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => AlbumsPage()));
           },
         ),
 
