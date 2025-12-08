@@ -1,6 +1,5 @@
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_switch/flutter_switch.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
@@ -131,7 +130,7 @@ class ArtistsPage extends StatelessWidget {
     return IconButton(
       icon: Icon(Icons.more_vert),
       onPressed: () {
-        HapticFeedback.heavyImpact();
+        tryVibrate();
 
         showModalBottomSheet(
           context: context,
@@ -183,7 +182,7 @@ class ArtistsPage extends StatelessWidget {
                         inactiveColor: Colors.grey.shade300,
                         value: value,
                         onToggle: (value) async {
-                          HapticFeedback.heavyImpact();
+                          tryVibrate();
                           _isListViewNotifier.value = value;
                         },
                       ),
@@ -225,7 +224,7 @@ class ArtistsPage extends StatelessWidget {
                             inactiveColor: Colors.grey.shade300,
                             value: value == 3,
                             onToggle: (value) async {
-                              HapticFeedback.heavyImpact();
+                              tryVibrate();
                               _crossAxisCountNotifier.value = value ? 3 : 2;
                               updateCurrentMapEntryList();
                             },
@@ -265,7 +264,7 @@ class ArtistsPage extends StatelessWidget {
                         inactiveColor: Colors.grey.shade300,
                         value: value,
                         onToggle: (value) async {
-                          HapticFeedback.heavyImpact();
+                          tryVibrate();
                           _isAscendingNotifier.value = value;
                           updateCurrentMapEntryList();
                         },

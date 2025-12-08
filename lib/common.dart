@@ -3,8 +3,10 @@ import 'dart:io';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:lpinyin/lpinyin.dart';
 import 'package:marquee/marquee.dart';
+import 'package:particle_music/setting.dart';
 import 'package:path/path.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
@@ -60,6 +62,7 @@ const AssetImage shuffleImage = AssetImage('assets/images/shuffle.png');
 const AssetImage songsImage = AssetImage('assets/images/songs.png');
 const AssetImage timerImage = AssetImage('assets/images/timer.png');
 const AssetImage unmaximizeImage = AssetImage('assets/images/unmaximize.png');
+const AssetImage vibrationImage = AssetImage('assets/images/vibration.png');
 
 class MyAutoSizeText extends AutoSizeText {
   final String content;
@@ -275,4 +278,10 @@ int compareMixed(String a, String b) {
   final pa = PinyinHelper.getPinyinE(a);
   final pb = PinyinHelper.getPinyinE(b);
   return pa.compareTo(pb);
+}
+
+void tryVibrate() {
+  if (vibrationOnNoitifier.value) {
+    HapticFeedback.heavyImpact();
+  }
 }

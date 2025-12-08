@@ -4,7 +4,6 @@ import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:flutter/services.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
@@ -167,7 +166,7 @@ class _SongListPageState extends State<SongListPage> {
     return IconButton(
       icon: Icon(Icons.more_vert),
       onPressed: () {
-        HapticFeedback.heavyImpact();
+        tryVibrate();
         showModalBottomSheet(
           context: context,
           isScrollControlled: true,
@@ -528,10 +527,10 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                       playlist.update();
                     },
                     onReorderStart: (_) {
-                      HapticFeedback.heavyImpact();
+                      tryVibrate();
                     },
                     onReorderEnd: (_) {
-                      HapticFeedback.heavyImpact();
+                      tryVibrate();
                     },
                     proxyDecorator:
                         (Widget child, int index, Animation<double> animation) {
@@ -574,7 +573,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                   child: GestureDetector(
                     onTap: () async {
                       if (valid) {
-                        HapticFeedback.heavyImpact();
+                        tryVibrate();
                         for (int i = isSelectedList.length - 1; i >= 0; i--) {
                           if (isSelectedList[i].value) {
                             audioHandler.insert2Next(i, songList);
@@ -605,7 +604,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                   child: GestureDetector(
                     onTap: () {
                       if (valid) {
-                        HapticFeedback.heavyImpact();
+                        tryVibrate();
                         List<AudioMetadata> songs = [];
                         for (int i = isSelectedList.length - 1; i >= 0; i--) {
                           if (isSelectedList[i].value) {
@@ -634,7 +633,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                         child: GestureDetector(
                           onTap: () async {
                             if (valid) {
-                              HapticFeedback.heavyImpact();
+                              tryVibrate();
                               if (await showConfirmDialog(
                                 context,
                                 'Delete Action',

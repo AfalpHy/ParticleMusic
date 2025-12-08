@@ -2,7 +2,6 @@ import 'dart:ui';
 
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
@@ -164,7 +163,7 @@ class LyricsPage extends StatelessWidget {
             FavoriteButton(),
             IconButton(
               onPressed: () {
-                HapticFeedback.heavyImpact();
+                tryVibrate();
                 showModalBottomSheet(
                   context: context,
                   isScrollControlled: true,
@@ -328,7 +327,7 @@ class LyricsPage extends StatelessWidget {
                     color: Colors.black,
                   ),
                   onPressed: () {
-                    HapticFeedback.heavyImpact();
+                    tryVibrate();
                     showModalBottomSheet(
                       context: context,
                       isScrollControlled: true,
@@ -421,7 +420,7 @@ class FavoriteButton extends StatelessWidget {
           builder: (_, value, _) {
             return IconButton(
               onPressed: () {
-                HapticFeedback.heavyImpact();
+                tryVibrate();
                 toggleFavoriteState(currentSong);
               },
               icon: Icon(

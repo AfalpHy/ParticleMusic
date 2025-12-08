@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
@@ -147,10 +146,10 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                 playQueue.insert(newIndex, item);
               },
               onReorderStart: (_) {
-                HapticFeedback.heavyImpact();
+                tryVibrate();
               },
               onReorderEnd: (_) {
-                HapticFeedback.heavyImpact();
+                tryVibrate();
               },
               proxyDecorator:
                   (Widget child, int index, Animation<double> animation) {

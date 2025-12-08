@@ -11,7 +11,6 @@ import 'package:particle_music/mobile/pages/playlists_page.dart';
 import 'package:particle_music/mobile/player_bar.dart';
 import 'package:particle_music/setting.dart';
 import 'package:particle_music/mobile/pages/songs_page.dart';
-import 'package:flutter/services.dart';
 import 'package:flutter_switch/flutter_switch.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
@@ -120,7 +119,7 @@ class MobileMainPage extends StatelessWidget {
                     splashColor: Colors.transparent,
                     highlightColor: Colors.transparent,
                     onTap: () {
-                      HapticFeedback.heavyImpact();
+                      tryVibrate();
                       homeBody.value = 1;
                     },
 
@@ -150,7 +149,7 @@ class MobileMainPage extends StatelessWidget {
                     splashColor: Colors.transparent,
                     highlightColor: Colors.transparent,
                     onTap: () {
-                      HapticFeedback.heavyImpact();
+                      tryVibrate();
                       homeBody.value = 3;
                     },
                     child: Column(
@@ -308,7 +307,7 @@ class HomePage extends StatelessWidget {
                       inactiveColor: Colors.grey.shade300,
                       value: value,
                       onToggle: (value) async {
-                        HapticFeedback.heavyImpact();
+                        tryVibrate();
                         timedPause.value = value;
                         if (value) {
                           displayTimedPauseSetting(context);
@@ -348,7 +347,7 @@ class HomePage extends StatelessWidget {
                                 inactiveColor: Colors.grey.shade300,
                                 value: value,
                                 onToggle: (value) {
-                                  HapticFeedback.heavyImpact();
+                                  tryVibrate();
                                   pauseAfterCompleted.value = value;
                                 },
                               );
@@ -502,6 +501,30 @@ class HomePage extends StatelessWidget {
               },
             );
           },
+        ),
+        ListTile(
+          leading: ImageIcon(vibrationImage, color: mainColor, size: 30),
+          title: const Text('Vibration'),
+          trailing: ValueListenableBuilder(
+            valueListenable: vibrationOnNoitifier,
+            builder: (context, value, child) {
+              return SizedBox(
+                width: 50,
+                child: FlutterSwitch(
+                  width: 45,
+                  height: 20,
+                  toggleSize: 15,
+                  activeColor: mainColor,
+                  inactiveColor: Colors.grey.shade300,
+                  value: value,
+                  onToggle: (value) async {
+                    tryVibrate();
+                    vibrationOnNoitifier.value = value;
+                  },
+                ),
+              );
+            },
+          ),
         ),
       ],
     );

@@ -6,6 +6,8 @@ import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
+ValueNotifier<bool> vibrationOnNoitifier = ValueNotifier(true);
+
 ValueNotifier<bool> timedPause = ValueNotifier(false);
 ValueNotifier<int> remainTimes = ValueNotifier(0);
 ValueNotifier<bool> pauseAfterCompleted = ValueNotifier(false);

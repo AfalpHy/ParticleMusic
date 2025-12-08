@@ -1,6 +1,5 @@
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/playlists.dart';
@@ -23,7 +22,7 @@ class PlaylistsPage extends StatelessWidget {
         actions: [
           IconButton(
             onPressed: () {
-              HapticFeedback.heavyImpact();
+              tryVibrate();
 
               showModalBottomSheet(
                 context: context,
@@ -172,10 +171,10 @@ class PlaylistsPage extends StatelessWidget {
           playlistsManager.update();
         },
         onReorderStart: (_) {
-          HapticFeedback.heavyImpact();
+          tryVibrate();
         },
         onReorderEnd: (_) {
-          HapticFeedback.heavyImpact();
+          tryVibrate();
         },
         proxyDecorator: (Widget child, int index, Animation<double> animation) {
           return Material(

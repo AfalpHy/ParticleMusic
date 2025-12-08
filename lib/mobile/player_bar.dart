@@ -1,8 +1,4 @@
-// --------------------
-// Bottom Player Bar
-// --------------------
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
@@ -83,7 +79,7 @@ class PlayerBar extends StatelessWidget {
                         ),
 
                         onPressed: () {
-                          HapticFeedback.heavyImpact();
+                          tryVibrate();
                           audioHandler.togglePlay();
                         },
                       ),
@@ -97,7 +93,7 @@ class PlayerBar extends StatelessWidget {
                           size: 30,
                         ),
                         onPressed: () {
-                          HapticFeedback.heavyImpact();
+                          tryVibrate();
                           showModalBottomSheet(
                             context: context,
                             isScrollControlled: true,
