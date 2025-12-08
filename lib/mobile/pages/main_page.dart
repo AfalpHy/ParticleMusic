@@ -269,7 +269,8 @@ class HomePage extends StatelessWidget {
       physics: ClampingScrollPhysics(),
       children: [
         ListTile(
-          leading: Icon(Icons.timer_outlined, color: mainColor),
+          leading: ImageIcon(timerImage, color: mainColor, size: 30),
+
           title: Text('Timed Pause'),
           trailing: SizedBox(
             width: 150,
@@ -361,7 +362,7 @@ class HomePage extends StatelessWidget {
           },
         ),
         ListTile(
-          leading: Icon(Icons.info_outline_rounded, color: mainColor),
+          leading: ImageIcon(infoImage, color: mainColor, size: 30),
           title: const Text('Open Source Licenses'),
           onTap: () {
             Navigator.of(context, rootNavigator: true).push(
@@ -389,7 +390,7 @@ class HomePage extends StatelessWidget {
           },
         ),
         ListTile(
-          leading: Icon(Icons.refresh_rounded, color: mainColor),
+          leading: ImageIcon(reloadImage, color: mainColor, size: 30),
           title: const Text('Reload'),
           onTap: () async {
             if (await showConfirmDialog(context, 'Reload Action')) {
@@ -398,7 +399,7 @@ class HomePage extends StatelessWidget {
           },
         ),
         ListTile(
-          leading: ImageIcon(folderImage, color: mainColor),
+          leading: ImageIcon(folderImage, color: mainColor, size: 30),
           title: const Text('Select Music Folders'),
           onTap: () {
             if (Platform.isIOS) {

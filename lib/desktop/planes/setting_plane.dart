@@ -64,7 +64,7 @@ class SettingPlaneState extends State<SettingPlane> {
                     child: Material(
                       color: Color.fromARGB(255, 235, 240, 245),
                       child: ListTile(
-                        leading: Icon(Icons.refresh_rounded, color: mainColor),
+                        leading: ImageIcon(reloadImage, color: mainColor),
                         title: const Text('Reload'),
                         onTap: () async {
                           if (await showConfirmDialog(
@@ -211,10 +211,7 @@ class SettingPlaneState extends State<SettingPlane> {
                     child: Material(
                       color: Color.fromARGB(255, 235, 240, 245),
                       child: ListTile(
-                        leading: Icon(
-                          Icons.info_outline_rounded,
-                          color: mainColor,
-                        ),
+                        leading: ImageIcon(infoImage, color: mainColor),
                         title: const Text('Open Source Licenses'),
                         onTap: () {
                           planeManager.pushPlane(-2);
