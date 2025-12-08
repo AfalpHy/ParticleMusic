@@ -288,6 +288,8 @@ class ArtistsPage extends StatelessWidget {
         final artist = mapEntryList[index].key;
         final songList = mapEntryList[index].value;
         return ListTile(
+          contentPadding: EdgeInsets.symmetric(horizontal: 20),
+
           leading: CoverArtWidget(
             size: 50,
             borderRadius: 25,
