@@ -85,7 +85,7 @@ class AlbumsPage extends StatelessWidget {
                 controller: textController,
                 suggestions: [],
                 searchInputDecoration: SearchInputDecoration(
-                  hintText: 'Search Artists',
+                  hintText: 'Search Albums',
                   prefixIcon: Icon(Icons.search),
                   suffixIcon: IconButton(
                     onPressed: () {
