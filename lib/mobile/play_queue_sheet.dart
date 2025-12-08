@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
-import '../audio_handler.dart';
+import 'package:particle_music/cover_art_widget.dart';
 
 class PlayQueueSheet extends StatefulWidget {
   const PlayQueueSheet({super.key});
@@ -11,22 +12,15 @@ class PlayQueueSheet extends StatefulWidget {
 }
 
 class PlayQueueSheetState extends State<PlayQueueSheet> {
-  List<GlobalKey> playQueueGlobalKeys = [];
   final scrollController = ScrollController();
-  double lineHeight = 0;
 
   @override
   void initState() {
     super.initState();
-    playQueueGlobalKeys = List.generate(playQueue.length, (_) => GlobalKey());
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      lineHeight =
-          (playQueueGlobalKeys[0].currentContext!.findRenderObject()
-                  as RenderBox)
-              .size
-              .height;
-
-      scrollController.jumpTo(lineHeight * audioHandler.currentIndex);
+      if (audioHandler.currentIndex > 3) {
+        scrollController.jumpTo(56.0 * audioHandler.currentIndex - 168);
+      }
     });
   }
 
@@ -79,7 +73,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                       setState(() {
                         WidgetsBinding.instance.addPostFrameCallback((_) {
                           scrollController.animateTo(
-                            lineHeight * audioHandler.currentIndex,
+                            56.0 * audioHandler.currentIndex - 168,
                             duration: Duration(
                               milliseconds: 300,
                             ), // smooth animation
@@ -106,6 +100,17 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                   },
                 ),
                 IconButton(
+                  color: Colors.black,
+                  onPressed: () {
+                    scrollController.animateTo(
+                      56.0 * audioHandler.currentIndex - 168,
+                      duration: Duration(milliseconds: 300),
+                      curve: Curves.linear,
+                    );
+                  },
+                  icon: Icon(Icons.my_location_rounded, size: 20),
+                ),
+                IconButton(
                   onPressed: () async {
                     if (await showConfirmDialog(context, 'Clear Action')) {
                       audioHandler.clear();
@@ -126,7 +131,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
           Expanded(
             child: ReorderableListView.builder(
               scrollController: scrollController,
-
+              itemExtent: 56,
               onReorder: (oldIndex, newIndex) {
                 if (newIndex > oldIndex) newIndex -= 1;
                 if (oldIndex == audioHandler.currentIndex) {
@@ -160,13 +165,18 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
               itemBuilder: (_, index) {
                 final song = playQueue[index];
                 return ListTile(
-                  key: playQueueGlobalKeys[index],
+                  key: ValueKey(song),
                   contentPadding: EdgeInsets.fromLTRB(15, 0, 0, 0),
+                  leading: CoverArtWidget(
+                    size: 40,
+                    borderRadius: 4,
+                    source: getCoverArt(song),
+                  ),
                   title: ValueListenableBuilder(
                     valueListenable: currentSongNotifier,
                     builder: (_, currentSong, _) {
                       return Text(
-                        "${getTitle(song)} - ${getArtist(song)}",
+                        getTitle(song),
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           color: song == currentSong
@@ -179,10 +189,10 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                       );
                     },
                   ),
-
-                  visualDensity: const VisualDensity(
-                    horizontal: 0,
-                    vertical: -4,
+                  subtitle: Text(
+                    "${getArtist(song)} - ${getAlbum(song)}",
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 12, color: Colors.grey),
                   ),
                   onTap: () async {
                     audioHandler.currentIndex = index;
