@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:lpinyin/lpinyin.dart';
 import 'package:marquee/marquee.dart';
 import 'package:path/path.dart';
 import 'package:smooth_corner/smooth_corner.dart';
@@ -34,6 +35,8 @@ const AssetImage nextButtonImage = AssetImage('assets/images/next_button.png');
 const AssetImage pauseCircleImage = AssetImage(
   'assets/images/pause_circle.png',
 );
+const AssetImage pictureImage = AssetImage('assets/images/picture.png');
+
 const AssetImage playCircleFillImage = AssetImage(
   'assets/images/play_circle_fill.png',
 );
@@ -251,4 +254,25 @@ String formatDuration(Duration duration) {
   final minutes = twoDigits(duration.inMinutes.remainder(60));
   final seconds = twoDigits(duration.inSeconds.remainder(60));
   return "$minutes:$seconds";
+}
+
+bool isEnglish(String s) {
+  final c = s[0];
+  return RegExp(r'^[A-Za-z]').hasMatch(c);
+}
+
+int compareMixed(String a, String b) {
+  final aIsEng = isEnglish(a);
+  final bIsEng = isEnglish(b);
+
+  if (aIsEng && !bIsEng) return -1;
+  if (!aIsEng && bIsEng) return 1;
+
+  if (aIsEng && bIsEng) {
+    return a.toLowerCase().compareTo(b.toLowerCase());
+  }
+
+  final pa = PinyinHelper.getPinyinE(a);
+  final pb = PinyinHelper.getPinyinE(b);
+  return pa.compareTo(pb);
 }

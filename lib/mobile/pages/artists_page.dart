@@ -8,7 +8,6 @@ import 'package:particle_music/load_library.dart';
 import 'package:particle_music/mobile/pages/song_list_page.dart';
 import 'package:searchfield/searchfield.dart';
 import 'package:smooth_corner/smooth_corner.dart';
-import 'package:lpinyin/lpinyin.dart';
 
 final _isListViewNotifier = ValueNotifier(true);
 final _isAscendingNotifier = ValueNotifier(true);
@@ -25,27 +24,6 @@ class ArtistsPage extends StatelessWidget {
 
   ArtistsPage({super.key}) {
     updateCurrentMapEntryList();
-  }
-
-  bool isEnglish(String s) {
-    final c = s[0];
-    return RegExp(r'^[A-Za-z]').hasMatch(c);
-  }
-
-  int compareMixed(String a, String b) {
-    final aIsEng = isEnglish(a);
-    final bIsEng = isEnglish(b);
-
-    if (aIsEng && !bIsEng) return -1;
-    if (!aIsEng && bIsEng) return 1;
-
-    if (aIsEng && bIsEng) {
-      return a.toLowerCase().compareTo(b.toLowerCase());
-    }
-
-    final pa = PinyinHelper.getPinyinE(a);
-    final pb = PinyinHelper.getPinyinE(b);
-    return pa.compareTo(pb);
   }
 
   void updateCurrentMapEntryList() {
@@ -223,6 +201,11 @@ class ArtistsPage extends StatelessWidget {
                 return SizedBox.shrink();
               }
               return ListTile(
+                leading: const ImageIcon(pictureImage, color: Colors.black),
+                title: Text(
+                  'Picture Size',
+                  style: TextStyle(fontWeight: FontWeight.bold),
+                ),
                 trailing: ValueListenableBuilder(
                   valueListenable: _crossAxisCountNotifier,
                   builder: (context, value, child) {
@@ -331,7 +314,7 @@ class ArtistsPage extends StatelessWidget {
         double radius = crossAxisCount == 2
             ? appWidth * 0.025
             : appWidth * 0.015;
-        double childAspectRatio = crossAxisCount == 2 ? 0.9 : 0.8;
+        double childAspectRatio = crossAxisCount == 2 ? 0.85 : 0.8;
         return GridView.builder(
           padding: EdgeInsets.symmetric(horizontal: 16),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
