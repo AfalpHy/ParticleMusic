@@ -18,7 +18,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       if (audioHandler.currentIndex > 3) {
-        scrollController.jumpTo(56.0 * audioHandler.currentIndex - 168);
+        scrollController.jumpTo(54.0 * audioHandler.currentIndex - 162);
       }
     });
   }
@@ -72,7 +72,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                       setState(() {
                         WidgetsBinding.instance.addPostFrameCallback((_) {
                           scrollController.animateTo(
-                            56.0 * audioHandler.currentIndex - 168,
+                            54.0 * audioHandler.currentIndex - 162,
                             duration: Duration(
                               milliseconds: 300,
                             ), // smooth animation
@@ -102,7 +102,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                   color: Colors.black,
                   onPressed: () {
                     scrollController.animateTo(
-                      56.0 * audioHandler.currentIndex - 168,
+                      54.0 * audioHandler.currentIndex - 162,
                       duration: Duration(milliseconds: 300),
                       curve: Curves.linear,
                     );
@@ -130,7 +130,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
           Expanded(
             child: ReorderableListView.builder(
               scrollController: scrollController,
-              itemExtent: 56,
+              itemExtent: 54,
               onReorder: (oldIndex, newIndex) {
                 if (newIndex > oldIndex) newIndex -= 1;
                 if (oldIndex == audioHandler.currentIndex) {
