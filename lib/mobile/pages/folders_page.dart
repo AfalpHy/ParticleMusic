@@ -3,7 +3,6 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:particle_music/mobile/pages/song_list_page.dart';
-import 'package:smooth_corner/smooth_corner.dart';
 
 class FoldersPage extends StatelessWidget {
   const FoldersPage({super.key});
@@ -25,25 +24,18 @@ class FoldersPage extends StatelessWidget {
         itemBuilder: (_, index) {
           final folder = folderPaths[index];
           final songList = folder2SongList[folder]!;
-          return SmoothClipRRect(
-            borderRadius: BorderRadius.circular(10),
-            child: ListTile(
-              leading: CoverArtWidget(
-                size: 40,
-                borderRadius: 4,
-                source: songList.isNotEmpty
-                    ? getCoverArt(songList.first)
-                    : null,
-              ),
-              title: Text(folder),
-              onTap: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute(
-                    builder: (_) => SongListPage(folder: folder),
-                  ),
-                );
-              },
+          return ListTile(
+            leading: CoverArtWidget(
+              size: 40,
+              borderRadius: 4,
+              source: songList.isNotEmpty ? getCoverArt(songList.first) : null,
             ),
+            title: Text(folder),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => SongListPage(folder: folder)),
+              );
+            },
           );
         },
       ),

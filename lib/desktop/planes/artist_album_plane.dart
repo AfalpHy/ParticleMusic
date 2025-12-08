@@ -21,20 +21,20 @@ class ArtistAlbumPlaneState extends State<ArtistAlbumPlane> {
   late bool isArtist;
   late Widget searchField;
   late Map<String, List<AudioMetadata>> songListMap;
-  late ValueNotifier<Map<String, List<AudioMetadata>>> songListMapNotifer;
+  late ValueNotifier<Map<String, List<AudioMetadata>>> songListMapNotifier;
 
   @override
   void initState() {
     super.initState();
     isArtist = widget.isArtist;
     songListMap = isArtist ? artist2SongList : album2SongList;
-    songListMapNotifer = ValueNotifier(songListMap);
+    songListMapNotifier = ValueNotifier(songListMap);
 
     searchField = titleSearchField(
       'Search ${isArtist ? 'Artists' : 'Albums'}',
       textController: TextEditingController(),
       onChanged: (value) {
-        songListMapNotifer.value = Map.fromEntries(
+        songListMapNotifier.value = Map.fromEntries(
           songListMap.entries.where(
             (e) => (e.key.toLowerCase().contains(value.toLowerCase())),
           ),
@@ -100,7 +100,7 @@ class ArtistAlbumPlaneState extends State<ArtistAlbumPlane> {
                           ),
                         ),
                         subtitle: ValueListenableBuilder(
-                          valueListenable: songListMapNotifer,
+                          valueListenable: songListMapNotifier,
                           builder: (context, currentSongListMap, child) {
                             return Text(
                               '${currentSongListMap.length} in total',
@@ -124,7 +124,7 @@ class ArtistAlbumPlaneState extends State<ArtistAlbumPlane> {
                   padding: const EdgeInsets.symmetric(horizontal: 40),
 
                   sliver: ValueListenableBuilder(
-                    valueListenable: songListMapNotifer,
+                    valueListenable: songListMapNotifier,
                     builder: (context, currentSongListMap, child) {
                       return SliverGrid.builder(
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(

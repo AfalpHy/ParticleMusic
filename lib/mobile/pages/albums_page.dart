@@ -11,7 +11,7 @@ class AlbumsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final songListMapNotifer = ValueNotifier(album2SongList);
+    final songListMapNotifier = ValueNotifier(album2SongList);
     final textController = TextEditingController();
     final ValueNotifier<bool> isSearchingNotifier = ValueNotifier(false);
     return Scaffold(
@@ -43,7 +43,7 @@ class AlbumsPage extends StatelessWidget {
                               suffixIcon: IconButton(
                                 onPressed: () {
                                   isSearchingNotifier.value = false;
-                                  songListMapNotifer.value = album2SongList;
+                                  songListMapNotifier.value = album2SongList;
                                   textController.clear();
                                   FocusScope.of(context).unfocus();
                                 },
@@ -60,7 +60,7 @@ class AlbumsPage extends StatelessWidget {
                               ),
                             ),
                             onSearchTextChanged: (value) {
-                              songListMapNotifer.value = Map.fromEntries(
+                              songListMapNotifier.value = Map.fromEntries(
                                 album2SongList.entries.where(
                                   (e) => (e.key.toLowerCase().contains(
                                     value.toLowerCase(),
@@ -85,7 +85,7 @@ class AlbumsPage extends StatelessWidget {
         ],
       ),
       body: ValueListenableBuilder(
-        valueListenable: songListMapNotifer,
+        valueListenable: songListMapNotifier,
         builder: (context, currentSongListMap, child) {
           return GridView.builder(
             padding: EdgeInsets.symmetric(horizontal: 16),

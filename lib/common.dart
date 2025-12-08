@@ -23,6 +23,8 @@ const AssetImage fullscreenExitImage = AssetImage(
   'assets/images/fullscreen_exit.png',
 );
 const AssetImage fullscreenImage = AssetImage('assets/images/fullscreen.png');
+const AssetImage gridImage = AssetImage('assets/images/grid.png');
+const AssetImage listImage = AssetImage('assets/images/list.png');
 const AssetImage loopImage = AssetImage('assets/images/loop.png');
 const AssetImage maximizeImage = AssetImage('assets/images/maximize.png');
 const AssetImage minimizeImage = AssetImage('assets/images/minimize.png');
@@ -48,6 +50,7 @@ const AssetImage previousButtonImage = AssetImage(
 const AssetImage reorderImage = AssetImage('assets/images/reorder.png');
 const AssetImage repeatImage = AssetImage('assets/images/repeat.png');
 const AssetImage selectImage = AssetImage('assets/images/select.png');
+const AssetImage sequenceImage = AssetImage('assets/images/sequence.png');
 const AssetImage shuffleImage = AssetImage('assets/images/shuffle.png');
 const AssetImage songsImage = AssetImage('assets/images/songs.png');
 const AssetImage unmaximizeImage = AssetImage('assets/images/unmaximize.png');
