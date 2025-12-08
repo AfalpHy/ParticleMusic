@@ -62,6 +62,7 @@ class SongListTile extends StatelessWidget {
             child: Text(
               "${getArtist(song)} - ${getAlbum(song)}",
               overflow: TextOverflow.ellipsis,
+              style: TextStyle(fontSize: 12),
             ),
           ),
         ],
@@ -299,6 +300,7 @@ class SelectableSongListTile extends StatelessWidget {
                     child: Text(
                       "${getArtist(song)} - ${getAlbum(song)}",
                       overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 12),
                     ),
                   ),
                 ],

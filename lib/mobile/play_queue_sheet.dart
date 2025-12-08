@@ -192,7 +192,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                   subtitle: Text(
                     "${getArtist(song)} - ${getAlbum(song)}",
                     overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 12, color: Colors.grey),
+                    style: TextStyle(fontSize: 12),
                   ),
                   onTap: () async {
                     audioHandler.currentIndex = index;
