@@ -94,20 +94,13 @@ Future<void> main() async {
 
   await libraryLoader.initial();
   await libraryLoader.load();
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
+  runApp(
+    MaterialApp(
       theme: Platform.isWindows
           ? ThemeData(fontFamily: 'Microsoft YaHei')
           : null,
       title: 'Particle Music',
       home: isMobile ? MobileMainPage() : DesktopMainPage(),
-    );
-  }
+    ),
+  );
 }

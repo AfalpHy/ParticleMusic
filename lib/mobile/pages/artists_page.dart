@@ -287,21 +287,23 @@ class ArtistsPage extends StatelessWidget {
       itemBuilder: (context, index) {
         final artist = mapEntryList[index].key;
         final songList = mapEntryList[index].value;
-        return ListTile(
-          contentPadding: EdgeInsets.symmetric(horizontal: 20),
+        return Center(
+          child: ListTile(
+            contentPadding: EdgeInsets.symmetric(horizontal: 20),
 
-          leading: CoverArtWidget(
-            size: 50,
-            borderRadius: 25,
-            source: getCoverArt(songList.first),
+            leading: CoverArtWidget(
+              size: 50,
+              borderRadius: 25,
+              source: getCoverArt(songList.first),
+            ),
+            title: Text(artist),
+            trailing: Text('${songList.length} songs'),
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => SongListPage(artist: artist)),
+              );
+            },
           ),
-          title: Text(artist),
-          trailing: Text('${songList.length} songs'),
-          onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => SongListPage(artist: artist)),
-            );
-          },
         );
       },
     );

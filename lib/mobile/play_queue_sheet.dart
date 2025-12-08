@@ -193,6 +193,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(fontSize: 12),
                   ),
+                  visualDensity: VisualDensity(vertical: -4),
                   onTap: () async {
                     audioHandler.currentIndex = index;
                     await audioHandler.load();

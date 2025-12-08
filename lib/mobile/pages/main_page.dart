@@ -37,6 +37,8 @@ class SwipeObserver extends NavigatorObserver {
   }
 }
 
+final swipeObserver = SwipeObserver();
+
 class MobileMainPage extends StatelessWidget {
   final GlobalKey<NavigatorState> homeNavigatorKey =
       GlobalKey<NavigatorState>();
@@ -62,7 +64,7 @@ class MobileMainPage extends StatelessWidget {
           },
           child: Navigator(
             key: homeNavigatorKey,
-            observers: [SwipeObserver()],
+            observers: [swipeObserver],
             onGenerateRoute: (settings) {
               return MaterialPageRoute(builder: (_) => const HomePage());
             },

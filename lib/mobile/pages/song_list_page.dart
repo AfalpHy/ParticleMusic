@@ -339,10 +339,12 @@ class _SongListPageState extends State<SongListPage> {
                     itemExtent: 60,
                     itemCount: currentSongList.length,
                     itemBuilder: (context, index) {
-                      return SongListTile(
-                        index: index,
-                        source: currentSongList,
-                        playlist: widget.playlist,
+                      return Center(
+                        child: SongListTile(
+                          index: index,
+                          source: currentSongList,
+                          playlist: widget.playlist,
+                        ),
                       );
                     },
                   );
