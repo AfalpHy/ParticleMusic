@@ -1,19 +1,19 @@
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/desktop/plane_manager.dart';
+import 'package:particle_music/desktop/panel_manager.dart';
 import 'package:particle_music/desktop/title_bar.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
-class SettingPlane extends StatefulWidget {
-  const SettingPlane({super.key});
+class SettingPanel extends StatefulWidget {
+  const SettingPanel({super.key});
 
   @override
-  State<StatefulWidget> createState() => SettingPlaneState();
+  State<StatefulWidget> createState() => SettingPanelState();
 }
 
-class SettingPlaneState extends State<SettingPlane> {
+class SettingPanelState extends State<SettingPanel> {
   late Widget searchField;
 
   @override
@@ -237,7 +237,7 @@ class SettingPlaneState extends State<SettingPlane> {
                         leading: ImageIcon(infoImage, color: mainColor),
                         title: const Text('Open Source Licenses'),
                         onTap: () {
-                          planeManager.pushPlane(-2);
+                          panelManager.pushPanel(-2);
                         },
                       ),
                     ),
@@ -252,14 +252,14 @@ class SettingPlaneState extends State<SettingPlane> {
   }
 }
 
-class LicensePagePlane extends StatefulWidget {
-  const LicensePagePlane({super.key});
+class LicensePagePanel extends StatefulWidget {
+  const LicensePagePanel({super.key});
 
   @override
-  State<StatefulWidget> createState() => LicensePagePlaneState();
+  State<StatefulWidget> createState() => LicensePagePanelState();
 }
 
-class LicensePagePlaneState extends State<LicensePagePlane> {
+class LicensePagePanelState extends State<LicensePagePanel> {
   late Widget searchField;
 
   @override

@@ -3,22 +3,22 @@ import 'package:flutter/material.dart';
 import 'package:flutter_switch/flutter_switch.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/desktop/plane_manager.dart';
+import 'package:particle_music/desktop/panel_manager.dart';
 import 'package:particle_music/desktop/title_bar.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:particle_music/metadata.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
-class ArtistAlbumPlane extends StatefulWidget {
+class ArtistAlbumPanel extends StatefulWidget {
   final bool isArtist;
 
-  const ArtistAlbumPlane({super.key, required this.isArtist});
+  const ArtistAlbumPanel({super.key, required this.isArtist});
 
   @override
-  State<StatefulWidget> createState() => ArtistAlbumPlaneState();
+  State<StatefulWidget> createState() => ArtistAlbumPanelState();
 }
 
-class ArtistAlbumPlaneState extends State<ArtistAlbumPlane> {
+class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
   late bool isArtist;
   late Widget searchField;
   late Map<String, List<AudioMetadata>> songListMap;
@@ -61,7 +61,7 @@ class ArtistAlbumPlaneState extends State<ArtistAlbumPlane> {
 
   @override
   Widget build(BuildContext context) {
-    final planeWidth = (MediaQuery.widthOf(context) - 300);
+    final panelWidth = (MediaQuery.widthOf(context) - 300);
 
     return ValueListenableBuilder(
       valueListenable: useBigPictureNotifier,
@@ -69,11 +69,11 @@ class ArtistAlbumPlaneState extends State<ArtistAlbumPlane> {
         int crossAxisCount;
         double coverArtWidth;
         if (value) {
-          crossAxisCount = (planeWidth / 240).toInt();
-          coverArtWidth = planeWidth / crossAxisCount - 40;
+          crossAxisCount = (panelWidth / 240).toInt();
+          coverArtWidth = panelWidth / crossAxisCount - 40;
         } else {
-          crossAxisCount = (planeWidth / 120).toInt();
-          coverArtWidth = planeWidth / crossAxisCount - 30;
+          crossAxisCount = (panelWidth / 120).toInt();
+          coverArtWidth = panelWidth / crossAxisCount - 30;
         }
 
         return Material(
@@ -199,7 +199,7 @@ class ArtistAlbumPlaneState extends State<ArtistAlbumPlane> {
                                         },
                                       ),
                                       onTap: () {
-                                        planeManager.pushPlane(
+                                        panelManager.pushPanel(
                                           isArtist ? 3 : 4,
                                           title: key,
                                         );

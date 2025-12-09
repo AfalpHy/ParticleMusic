@@ -5,7 +5,7 @@ import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/desktop/plane_manager.dart';
+import 'package:particle_music/desktop/panel_manager.dart';
 import 'package:particle_music/metadata.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:path/path.dart' as p;
@@ -178,7 +178,7 @@ class LibraryLoader {
     await load();
 
     if (!isMobile) {
-      planeManager.reload();
+      panelManager.reload();
       playlistsManager.changeNotifier.value++;
     }
   }

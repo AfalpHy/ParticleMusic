@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
-import 'package:particle_music/desktop/plane_manager.dart';
+import 'package:particle_music/desktop/panel_manager.dart';
 import 'package:particle_music/metadata.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:smooth_corner/smooth_corner.dart';
@@ -109,7 +109,7 @@ class Sidebar extends StatelessWidget {
                         content: 'Artists',
 
                         onTap: () {
-                          planeManager.pushPlane(1);
+                          panelManager.pushPanel(1);
                         },
                       ),
                     ),
@@ -126,7 +126,7 @@ class Sidebar extends StatelessWidget {
                         content: 'Albums',
 
                         onTap: () {
-                          planeManager.pushPlane(2);
+                          panelManager.pushPanel(2);
                         },
                       ),
                     ),
@@ -143,7 +143,7 @@ class Sidebar extends StatelessWidget {
                         content: 'Songs',
 
                         onTap: () {
-                          planeManager.pushPlane(0);
+                          panelManager.pushPanel(0);
                         },
                       ),
                     ),
@@ -160,7 +160,7 @@ class Sidebar extends StatelessWidget {
                         content: 'Folders',
 
                         onTap: () {
-                          planeManager.pushPlane(-4);
+                          panelManager.pushPanel(-4);
                         },
                       ),
                     ),
@@ -196,7 +196,7 @@ class Sidebar extends StatelessWidget {
                         ),
 
                         onTap: () {
-                          planeManager.pushPlane(-3);
+                          panelManager.pushPanel(-3);
                         },
                       ),
                     ),
@@ -269,7 +269,7 @@ class Sidebar extends StatelessWidget {
             content: playlist.name,
 
             onTap: () {
-              planeManager.pushPlane(index + 5);
+              panelManager.pushPanel(index + 5);
             },
           ),
           menuProvider: (_) {
@@ -284,7 +284,7 @@ class Sidebar extends StatelessWidget {
                     image: MenuImage.icon(Icons.delete),
                     callback: () async {
                       if (await showConfirmDialog(context, 'Delete Action')) {
-                        planeManager.removePlaylistPlane(playlist);
+                        panelManager.removePlaylistPanel(playlist);
                         playlistsManager.deletePlaylistByIndex(index);
                       }
                     },

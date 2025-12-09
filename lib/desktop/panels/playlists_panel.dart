@@ -2,20 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter_switch/flutter_switch.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/desktop/plane_manager.dart';
+import 'package:particle_music/desktop/panel_manager.dart';
 import 'package:particle_music/desktop/title_bar.dart';
 import 'package:particle_music/metadata.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
-class PlaylistsPlane extends StatefulWidget {
-  const PlaylistsPlane({super.key});
+class PlaylistsPanel extends StatefulWidget {
+  const PlaylistsPanel({super.key});
 
   @override
-  State<StatefulWidget> createState() => PlaylistsPlaneState();
+  State<StatefulWidget> createState() => PlaylistsPanelState();
 }
 
-class PlaylistsPlaneState extends State<PlaylistsPlane> {
+class PlaylistsPanelState extends State<PlaylistsPanel> {
   final playlistsNotifier = ValueNotifier(playlistsManager.playlists);
   final textController = TextEditingController();
   late Widget searchField;
@@ -59,7 +59,7 @@ class PlaylistsPlaneState extends State<PlaylistsPlane> {
 
   @override
   Widget build(BuildContext context) {
-    final planeWidth = (MediaQuery.widthOf(context) - 300);
+    final panelWidth = (MediaQuery.widthOf(context) - 300);
 
     return ValueListenableBuilder(
       valueListenable: useBigPictureNotifier,
@@ -67,11 +67,11 @@ class PlaylistsPlaneState extends State<PlaylistsPlane> {
         int crossAxisCount;
         double coverArtWidth;
         if (value) {
-          crossAxisCount = (planeWidth / 240).toInt();
-          coverArtWidth = planeWidth / crossAxisCount - 40;
+          crossAxisCount = (panelWidth / 240).toInt();
+          coverArtWidth = panelWidth / crossAxisCount - 40;
         } else {
-          crossAxisCount = (planeWidth / 120).toInt();
-          coverArtWidth = planeWidth / crossAxisCount - 30;
+          crossAxisCount = (panelWidth / 120).toInt();
+          coverArtWidth = panelWidth / crossAxisCount - 30;
         }
 
         return Material(
@@ -203,7 +203,7 @@ class PlaylistsPlaneState extends State<PlaylistsPlane> {
                                                   source: null,
                                                 ),
                                           onTap: () {
-                                            planeManager.pushPlane(
+                                            panelManager.pushPanel(
                                               playlistsManager.playlists
                                                       .indexOf(playlist) +
                                                   5,

@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:particle_music/desktop/planes/song_list_plane.dart';
+import 'package:particle_music/desktop/panels/song_list_panel.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
-class FoldersPlane extends StatelessWidget {
-  const FoldersPlane({super.key});
+class FoldersPanel extends StatelessWidget {
+  const FoldersPanel({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -30,7 +30,7 @@ class FoldersPlane extends StatelessWidget {
                           if (songList == null) {
                             return SizedBox.shrink();
                           }
-                          return SongListPlane(
+                          return SongListPanel(
                             key: ValueKey(currentFolder),
                             folder: currentFolder,
                           );

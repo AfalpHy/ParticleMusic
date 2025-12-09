@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/pages/lyrics_page.dart';
-import 'package:particle_music/desktop/plane_manager.dart';
+import 'package:particle_music/desktop/panel_manager.dart';
 import 'package:searchfield/searchfield.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -138,7 +138,7 @@ class TitleBar extends StatelessWidget {
                     IconButton(
                       color: Colors.black54,
                       onPressed: () {
-                        planeManager.popPlane();
+                        panelManager.popPanel();
                       },
                       icon: Icon(Icons.arrow_back_ios_rounded, size: 20),
                     )
@@ -207,7 +207,7 @@ class TitleBar extends StatelessWidget {
                     IconButton(
                       color: Colors.black54,
                       onPressed: () {
-                        planeManager.pushPlane(-1);
+                        panelManager.pushPanel(-1);
                       },
                       icon: Icon(Icons.settings_outlined, size: 20),
                     ),

@@ -16,13 +16,13 @@ import 'package:particle_music/playlists.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 import 'package:super_context_menu/super_context_menu.dart';
 
-class SongListPlane extends StatefulWidget {
+class SongListPanel extends StatefulWidget {
   final Playlist? playlist;
   final String? artist;
   final String? album;
   final String? folder;
 
-  const SongListPlane({
+  const SongListPanel({
     super.key,
     this.playlist,
     this.artist,
@@ -31,10 +31,10 @@ class SongListPlane extends StatefulWidget {
   });
 
   @override
-  State<StatefulWidget> createState() => _SongListPlane();
+  State<StatefulWidget> createState() => _SongListPanel();
 }
 
-class _SongListPlane extends State<SongListPlane> {
+class _SongListPanel extends State<SongListPanel> {
   final ValueNotifier<List<AudioMetadata>> currentSongListNotifier =
       ValueNotifier([]);
   final textController = TextEditingController();

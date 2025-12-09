@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/desktop/bottom_control.dart';
 import 'package:particle_music/desktop/keyboard.dart';
-import 'package:particle_music/desktop/plane_manager.dart';
+import 'package:particle_music/desktop/panel_manager.dart';
 import 'package:particle_music/desktop/pages/play_queue_page.dart';
 import 'package:particle_music/desktop/sidebar.dart';
 import 'package:particle_music/desktop/pages/lyrics_page.dart';
@@ -93,11 +93,11 @@ class DesktopMainPage extends StatelessWidget with TrayListener {
                         TitleBar(isMainPage: true),
                         Expanded(
                           child: ValueListenableBuilder(
-                            valueListenable: planeManager.updatePlane,
+                            valueListenable: panelManager.updatePanel,
                             builder: (_, _, _) {
                               return IndexedStack(
-                                index: planeManager.planeStack.length - 1,
-                                children: planeManager.planeStack,
+                                index: panelManager.panelStack.length - 1,
+                                children: panelManager.panelStack,
                               );
                             },
                           ),

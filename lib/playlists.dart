@@ -157,15 +157,15 @@ void toggleFavoriteState(AudioMetadata song) {
   }
 }
 
-class Add2PlaylistPlane extends StatefulWidget {
+class Add2PlaylistPanel extends StatefulWidget {
   final List<AudioMetadata> songs;
-  const Add2PlaylistPlane({super.key, required this.songs});
+  const Add2PlaylistPanel({super.key, required this.songs});
 
   @override
-  State<StatefulWidget> createState() => _Add2PlaylistPlaneState();
+  State<StatefulWidget> createState() => _Add2PlaylistPanelState();
 }
 
-class _Add2PlaylistPlaneState extends State<Add2PlaylistPlane> {
+class _Add2PlaylistPanelState extends State<Add2PlaylistPanel> {
   @override
   void initState() {
     super.initState();
@@ -323,7 +323,7 @@ void showAddPlaylistSheet(BuildContext context, List<AudioMetadata> songs) {
     context: context,
     isScrollControlled: true,
     builder: (_) {
-      return mySheet(Add2PlaylistPlane(songs: songs));
+      return mySheet(Add2PlaylistPanel(songs: songs));
     },
   );
 }
@@ -346,7 +346,7 @@ void showAddPlaylistDialog(
           child: Column(
             children: [
               SizedBox(height: 10),
-              Expanded(child: Add2PlaylistPlane(songs: songs)),
+              Expanded(child: Add2PlaylistPanel(songs: songs)),
             ],
           ),
         ),
