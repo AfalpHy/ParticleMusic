@@ -116,24 +116,29 @@ class ArtistAlbumPlaneState extends State<ArtistAlbumPlane> {
                             },
                           ),
                           trailing: SizedBox(
-                            width: 100,
-                            child: Row(
+                            width: 120,
+                            child: Column(
                               children: [
-                                Spacer(),
-                                Text(value ? 'Large' : 'Small'),
-                                SizedBox(width: 10),
-                                FlutterSwitch(
-                                  width: 45,
-                                  height: 20,
-                                  toggleSize: 15,
-                                  activeColor: mainColor,
-                                  inactiveColor: Colors.grey.shade300,
-                                  value: value,
-                                  onToggle: (value) async {
-                                    useBigPictureNotifier.value = value;
-                                  },
+                                SizedBox(height: 20),
+                                Row(
+                                  children: [
+                                    Spacer(),
+                                    Text(value ? 'Large' : 'Small'),
+                                    SizedBox(width: 10),
+                                    FlutterSwitch(
+                                      width: 45,
+                                      height: 20,
+                                      toggleSize: 15,
+                                      activeColor: mainColor,
+                                      inactiveColor: Colors.grey.shade300,
+                                      value: value,
+                                      onToggle: (value) async {
+                                        useBigPictureNotifier.value = value;
+                                      },
+                                    ),
+                                    Spacer(),
+                                  ],
                                 ),
-                                Spacer(),
                               ],
                             ),
                           ),
