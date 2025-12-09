@@ -382,7 +382,7 @@ class HomePage extends StatelessWidget {
                   ),
                   child: const LicensePage(
                     applicationName: 'Particle Music',
-                    applicationVersion: '1.0.2',
+                    applicationVersion: '1.0.3',
                     applicationLegalese: '© 2025 AfalpHy',
                   ),
                 ),
