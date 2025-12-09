@@ -43,18 +43,41 @@ class SettingPlaneState extends State<SettingPlane> {
 
       child: Column(
         children: [
-          SizedBox(height: 30),
           Expanded(
             child: ListView(
               children: [
                 Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 30),
-                  child: Text(
-                    'Settings',
-                    style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+                  child: SizedBox(
+                    height: 64,
+                    child: Center(
+                      child: ListTile(
+                        leading: Icon(
+                          Icons.settings_outlined,
+                          size: 35,
+                          color: mainColor,
+                        ),
+                        title: Text(
+                          'Settings',
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ),
                   ),
                 ),
-                SizedBox(height: 30),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 20),
+
+                  child: Divider(
+                    thickness: 1,
+                    height: 1,
+                    color: Colors.grey.shade300,
+                  ),
+                ),
+                SizedBox(height: 10),
 
                 Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 30),
