@@ -86,6 +86,10 @@ class LibraryLoader {
     } else {
       for (String folderPath in folderPaths) {
         final folder = Directory(folderPath);
+        if (!folder.existsSync()) {
+          folder2SongList[folderPath] = [];
+          continue;
+        }
         List<AudioMetadata> songList = [];
 
         for (final file in folder.listSync()) {
