@@ -44,6 +44,16 @@ class LibraryLoader {
       File("${_appSupportDir.path}/playlists.txt"),
     );
 
+    List<dynamic> allPlaylists = await playlistsManager.getAllPlaylists();
+
+    for (String name in allPlaylists) {
+      final playlist = Playlist(
+        name: name,
+        file: File("${_appSupportDir.path}/$name.json"),
+      );
+      playlistsManager.addPlaylist(playlist);
+    }
+
     if (!Platform.isIOS) {
       folderPathsFile = File("${_appSupportDir.path}/folder_paths.txt");
       if (!folderPathsFile.existsSync()) {
@@ -136,15 +146,7 @@ class LibraryLoader {
   }
 
   Future<void> _loadPlaylists() async {
-    List<dynamic> allPlaylists = await playlistsManager.getAllPlaylists();
-
-    for (String name in allPlaylists) {
-      final playlist = Playlist(
-        name: name,
-        file: File("${_appSupportDir.path}/$name.json"),
-      );
-      playlistsManager.addPlaylist(playlist);
-
+    for (final playlist in playlistsManager.playlists) {
       final contents = await playlist.file.readAsString();
       if (contents != "") {
         List<dynamic> decoded = jsonDecode(contents);
@@ -152,13 +154,14 @@ class LibraryLoader {
           AudioMetadata? song = filePath2LibrarySong[basename];
           if (song != null) {
             playlist.songs.add(song);
-            if (name == 'Favorite') {
+            if (playlist.name == 'Favorite') {
               songIsFavorite[song]!.value = true;
             }
           }
         }
       }
     }
+    playlistsManager.changeNotifier.value++;
   }
 
   Future<void> reload() async {
@@ -173,13 +176,14 @@ class LibraryLoader {
     artist2SongList = {};
     album2SongList = {};
 
-    playlistsManager.clear();
+    for (final playlist in playlistsManager.playlists) {
+      playlist.songs = [];
+    }
 
     await load();
 
     if (!isMobile) {
       panelManager.reload();
-      playlistsManager.changeNotifier.value++;
     }
   }
 

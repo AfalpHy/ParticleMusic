@@ -85,11 +85,6 @@ class PlaylistsManager {
     update();
   }
 
-  void clear() {
-    playlists = [];
-    playlistsMap = {};
-  }
-
   void update() {
     file.writeAsString(jsonEncode(playlists.map((pl) => pl.name).toList()));
     changeNotifier.value++;
