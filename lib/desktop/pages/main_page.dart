@@ -6,7 +6,7 @@ import 'package:flutter/services.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/desktop/bottom_control.dart';
 import 'package:particle_music/desktop/keyboard.dart';
-import 'package:particle_music/desktop/panel_manager.dart';
+import 'package:particle_music/desktop/panels/panel_manager.dart';
 import 'package:particle_music/desktop/pages/play_queue_page.dart';
 import 'package:particle_music/desktop/sidebar.dart';
 import 'package:particle_music/desktop/pages/lyrics_page.dart';

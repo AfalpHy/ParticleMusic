@@ -93,14 +93,49 @@ Future<void> main() async {
   );
 
   await libraryLoader.initial();
-  await libraryLoader.load();
+  final ValueNotifier<bool> completeNotifier = ValueNotifier(false);
+
   runApp(
     MaterialApp(
       theme: Platform.isWindows
           ? ThemeData(fontFamily: 'Microsoft YaHei')
           : null,
       title: 'Particle Music',
-      home: isMobile ? MobileMainPage() : DesktopMainPage(),
+      home: ValueListenableBuilder(
+        valueListenable: completeNotifier,
+        builder: (context, value, child) {
+          if (value) {
+            return isMobile ? MobileMainPage() : DesktopMainPage();
+          }
+          return Scaffold(
+            backgroundColor: Color.fromARGB(255, 235, 240, 245),
+            body: Center(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  CircularProgressIndicator(color: mainColor),
+                  ValueListenableBuilder(
+                    valueListenable: currentLoadingFolderNotifier,
+                    builder: (context, value, child) {
+                      return Text('Loading Folder: $value');
+                    },
+                  ),
+                  ValueListenableBuilder(
+                    valueListenable: loadedCountNotifier,
+                    builder: (context, value, child) {
+                      return Text('Loaded Songs: $value');
+                    },
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
     ),
   );
+  WidgetsBinding.instance.addPostFrameCallback((_) async {
+    await libraryLoader.load();
+    completeNotifier.value = true;
+  });
 }

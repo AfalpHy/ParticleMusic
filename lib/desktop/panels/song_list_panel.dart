@@ -244,6 +244,7 @@ class _SongListPanel extends State<SongListPanel> {
           children: [
             Material(
               elevation: 5,
+              color: Color.fromARGB(255, 235, 240, 245),
               shape: SmoothRectangleBorder(
                 smoothness: 1,
                 borderRadius: BorderRadius.circular(10),

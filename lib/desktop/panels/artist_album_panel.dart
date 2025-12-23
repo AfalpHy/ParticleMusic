@@ -3,7 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_switch/flutter_switch.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/desktop/panel_manager.dart';
+import 'package:particle_music/desktop/panels/panel_manager.dart';
 import 'package:particle_music/desktop/title_bar.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:particle_music/metadata.dart';
@@ -180,6 +180,7 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
                                 children: [
                                   Material(
                                     elevation: 1,
+                                    color: Color.fromARGB(255, 235, 240, 245),
                                     shape: SmoothRectangleBorder(
                                       smoothness: 1,
                                       borderRadius: BorderRadius.circular(10),

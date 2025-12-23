@@ -1,11 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/desktop/panel_manager.dart';
+import 'package:particle_music/desktop/panels/panel_manager.dart';
 import 'package:particle_music/metadata.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:path/path.dart' as p;
@@ -18,6 +19,8 @@ Map<String, AudioMetadata> filePath2LibrarySong = {};
 List<String> folderPaths = [];
 Map<String, List<AudioMetadata>> folder2SongList = {};
 ValueNotifier<int> foldersChangeNotifier = ValueNotifier(0);
+ValueNotifier<int> loadedCountNotifier = ValueNotifier(0);
+ValueNotifier<String> currentLoadingFolderNotifier = ValueNotifier('');
 
 Map<String, List<AudioMetadata>> artist2SongList = {};
 Map<String, List<AudioMetadata>> album2SongList = {};
@@ -69,7 +72,7 @@ class LibraryLoader {
 
   Future<void> load() async {
     if (Platform.isIOS) {
-      for (var file in _docs.listSync()) {
+      await for (final file in _docs.list()) {
         if (!(file.path.endsWith('.mp3') ||
             file.path.endsWith('.flac') ||
             file.path.endsWith('.ogg') ||
@@ -78,7 +81,9 @@ class LibraryLoader {
         }
 
         try {
-          final song = readMetadata(File(file.path), getImage: true);
+          final song = await Isolate.run(
+            () => readMetadata(File(file.path), getImage: true),
+          );
           librarySongs.add(song);
           if (Platform.isIOS) {
             filePath2LibrarySong[p.basename(file.path)] = song;
@@ -89,6 +94,7 @@ class LibraryLoader {
           songIsUpdated[song] = ValueNotifier(0);
 
           _add2ArtistAndAlbum(song);
+          loadedCountNotifier.value++;
         } catch (error) {
           continue; // skip unreadable files
         }
@@ -100,9 +106,11 @@ class LibraryLoader {
           folder2SongList[folderPath] = [];
           continue;
         }
+        currentLoadingFolderNotifier.value = folderPath;
+
         List<AudioMetadata> songList = [];
 
-        for (final file in folder.listSync()) {
+        await for (final file in folder.list()) {
           if (!(file.path.endsWith('.mp3') ||
               file.path.endsWith('.flac') ||
               file.path.endsWith('.ogg') ||
@@ -111,7 +119,9 @@ class LibraryLoader {
           }
 
           try {
-            final song = readMetadata(File(file.path), getImage: true);
+            final song = await Isolate.run(
+              () => readMetadata(File(file.path), getImage: true),
+            );
             librarySongs.add(song);
             filePath2LibrarySong[file.path] = song;
             songList.add(song);
@@ -119,6 +129,7 @@ class LibraryLoader {
             songIsUpdated[song] = ValueNotifier(0);
 
             _add2ArtistAndAlbum(song);
+            loadedCountNotifier.value++;
           } catch (error) {
             continue; // skip unreadable files
           }
