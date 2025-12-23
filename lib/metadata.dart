@@ -22,10 +22,6 @@ void showSongMetadataDialog(BuildContext context, AudioMetadata song) async {
   artistTextController.text = originalArtist;
   final albumTextController = TextEditingController();
   albumTextController.text = originalAlbum;
-  final buttonStyle = ElevatedButton.styleFrom(
-    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-    padding: EdgeInsets.all(10),
-  );
 
   final ValueNotifier<Picture?> coverArtNotifier = ValueNotifier(
     getCoverArt(song),
@@ -35,161 +31,33 @@ void showSongMetadataDialog(BuildContext context, AudioMetadata song) async {
     context: context,
     builder: (context) {
       return Dialog(
+        backgroundColor: Color.fromARGB(255, 235, 240, 245),
         shape: SmoothRectangleBorder(
           smoothness: 1,
           borderRadius: BorderRadius.circular(10),
         ),
         child: SizedBox(
-          height: 600,
-          width: 400,
+          height: 280,
+          width: 600,
           child: Padding(
-            padding: const EdgeInsets.fromLTRB(30, 20, 30, 20),
+            padding: const EdgeInsets.fromLTRB(30, 10, 30, 20),
             child: Column(
               children: [
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Edit Metadata',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-                  ),
-                ),
-                SizedBox(height: 5),
-                Divider(thickness: 0.5, height: 1, color: Colors.grey),
-                SizedBox(height: 10),
-
-                ValueListenableBuilder(
-                  valueListenable: coverArtNotifier,
-                  builder: (context, coverArt, child) {
-                    return CoverArtWidget(
-                      source: coverArt,
-                      size: 200,
-                      borderRadius: 10,
-                    );
-                  },
-                ),
-                SizedBox(height: 10),
                 Row(
+                  mainAxisAlignment: MainAxisAlignment.end,
                   children: [
-                    Spacer(),
-                    ElevatedButton(
-                      onPressed: () async {
-                        final result = await FilePicker.platform.pickFiles(
-                          type: FileType.image,
-                          allowMultiple: false,
-                        );
-                        if (result == null || result.files.isEmpty) return;
-
-                        final file = result.files.first;
-
-                        final Uint8List bytes =
-                            file.bytes ?? await File(file.path!).readAsBytes();
-
-                        // mimeType is not that important, use image/jpeg as default
-                        String mimeType = 'image/jpeg';
-                        if (file.extension != null) {
-                          final ext = file.extension!.toLowerCase();
-                          if (ext == 'png') {
-                            mimeType = 'image/png';
-                          } else if (ext == 'gif') {
-                            mimeType = 'image/gif';
-                          } else if (ext == 'bmp') {
-                            mimeType = 'image/bmp';
-                          } else if (ext == 'webp') {
-                            mimeType = 'image/webp';
-                          }
-                        }
-
-                        coverArtNotifier.value = Picture(
-                          bytes,
-                          mimeType,
-                          PictureType.coverFront,
-                        );
-                      },
-                      style: buttonStyle,
-                      child: Text("Change"),
-                    ),
-                    SizedBox(width: 20),
-                    ElevatedButton(
-                      onPressed: () {
-                        coverArtNotifier.value = null;
-                      },
-                      style: buttonStyle,
-
-                      child: Text("Remove"),
+                    Text(
+                      'Edit Metadata',
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        fontSize: 20,
+                      ),
                     ),
                     Spacer(),
-                  ],
-                ),
 
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Title:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-                SizedBox(height: 5),
-                TextField(
-                  controller: titleTextController,
-                  decoration: InputDecoration(
-                    border: OutlineInputBorder(),
-                    isDense: true,
-                  ),
-                  onChanged: (value) {},
-                ),
+                    IconButton(
+                      icon: Icon(Icons.check_rounded),
 
-                Spacer(),
-
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Artist:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-
-                SizedBox(height: 5),
-                TextField(
-                  controller: artistTextController,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    isDense: true,
-                  ),
-                ),
-
-                Spacer(),
-
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Album:',
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                ),
-                SizedBox(height: 5),
-
-                TextField(
-                  controller: albumTextController,
-                  decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
-                    isDense: true,
-                  ),
-                ),
-                Spacer(),
-
-                Row(
-                  children: [
-                    Spacer(),
-                    ElevatedButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      style: buttonStyle,
-
-                      child: const Text('Cancel'),
-                    ),
-                    SizedBox(width: 30),
-                    ElevatedButton(
                       onPressed: () async {
                         if (song == currentSongNotifier.value) {
                           showCenterMessage(
@@ -261,11 +129,134 @@ void showSongMetadataDialog(BuildContext context, AudioMetadata song) async {
                           }
                         }
                       },
-                      style: buttonStyle,
-
-                      child: const Text('Update'),
                     ),
                   ],
+                ),
+
+                Divider(thickness: 0.3, height: 1, color: Colors.black),
+                SizedBox(height: 5),
+                Expanded(
+                  child: Row(
+                    children: [
+                      ValueListenableBuilder(
+                        valueListenable: coverArtNotifier,
+                        builder: (context, coverArt, child) {
+                          return Tooltip(
+                            message: 'Replace Picture',
+                            child: MouseRegion(
+                              cursor: SystemMouseCursors.click,
+                              child: GestureDetector(
+                                onTap: () async {
+                                  final result = await FilePicker.platform
+                                      .pickFiles(
+                                        type: FileType.image,
+                                        allowMultiple: false,
+                                      );
+                                  if (result == null || result.files.isEmpty) {
+                                    return;
+                                  }
+
+                                  final file = result.files.first;
+
+                                  final Uint8List bytes =
+                                      file.bytes ??
+                                      await File(file.path!).readAsBytes();
+
+                                  // mimeType is not that important, use image/jpeg as default
+                                  String mimeType = 'image/jpeg';
+                                  if (file.extension != null) {
+                                    final ext = file.extension!.toLowerCase();
+                                    if (ext == 'png') {
+                                      mimeType = 'image/png';
+                                    } else if (ext == 'gif') {
+                                      mimeType = 'image/gif';
+                                    } else if (ext == 'bmp') {
+                                      mimeType = 'image/bmp';
+                                    } else if (ext == 'webp') {
+                                      mimeType = 'image/webp';
+                                    }
+                                  }
+
+                                  coverArtNotifier.value = Picture(
+                                    bytes,
+                                    mimeType,
+                                    PictureType.coverFront,
+                                  );
+                                },
+                                child: CoverArtWidget(
+                                  source: coverArt,
+                                  size: 180,
+                                  borderRadius: 10,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      ),
+                      SizedBox(width: 30),
+                      Expanded(
+                        child: Column(
+                          children: [
+                            Spacer(),
+
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Title:',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+                            TextField(
+                              style: TextStyle(fontSize: 12),
+                              controller: titleTextController,
+                              decoration: InputDecoration(
+                                border: OutlineInputBorder(),
+                                isDense: true,
+                              ),
+                              onChanged: (value) {},
+                            ),
+                            Spacer(),
+
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Artist:',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+
+                            TextField(
+                              style: TextStyle(fontSize: 12),
+                              controller: artistTextController,
+                              decoration: const InputDecoration(
+                                border: OutlineInputBorder(),
+                                isDense: true,
+                              ),
+                            ),
+                            Spacer(),
+
+                            Align(
+                              alignment: Alignment.centerLeft,
+                              child: Text(
+                                'Album:',
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+                            ),
+
+                            TextField(
+                              style: TextStyle(fontSize: 12),
+                              controller: albumTextController,
+                              decoration: const InputDecoration(
+                                border: OutlineInputBorder(),
+                                isDense: true,
+                              ),
+                            ),
+                            Spacer(),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
                 ),
               ],
             ),

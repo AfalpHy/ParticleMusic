@@ -160,7 +160,7 @@ Future<bool> showConfirmDialog(BuildContext context, String action) async {
               ElevatedButton(
                 onPressed: () => Navigator.pop(context, false),
                 style: ElevatedButton.styleFrom(
-                  elevation: 1,
+                  elevation: 2,
                   backgroundColor: Colors.grey.shade50,
                   shadowColor: Colors.black54,
                   foregroundColor: Colors.black,
@@ -175,7 +175,7 @@ Future<bool> showConfirmDialog(BuildContext context, String action) async {
               ElevatedButton(
                 onPressed: () => Navigator.pop(context, true),
                 style: ElevatedButton.styleFrom(
-                  elevation: 1,
+                  elevation: 2,
                   backgroundColor: Colors.grey.shade50,
                   shadowColor: Colors.black54,
                   foregroundColor: Colors.red,

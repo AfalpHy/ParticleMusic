@@ -116,6 +116,12 @@ class SettingPanelState extends State<SettingPanel> {
                             context: context,
                             builder: (context) {
                               return Dialog(
+                                backgroundColor: Color.fromARGB(
+                                  255,
+                                  235,
+                                  240,
+                                  245,
+                                ),
                                 shape: SmoothRectangleBorder(
                                   smoothness: 1,
                                   borderRadius: BorderRadius.circular(10),
@@ -188,6 +194,8 @@ class SettingPanelState extends State<SettingPanel> {
                                               }
                                             },
                                             style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.white,
+                                              foregroundColor: Colors.black,
                                               shape: RoundedRectangleBorder(
                                                 borderRadius:
                                                     BorderRadius.circular(5),
@@ -202,6 +210,8 @@ class SettingPanelState extends State<SettingPanel> {
                                               Navigator.of(context).pop();
                                             },
                                             style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.white,
+                                              foregroundColor: Colors.black,
                                               shape: RoundedRectangleBorder(
                                                 borderRadius:
                                                     BorderRadius.circular(5),

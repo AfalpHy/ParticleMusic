@@ -7,7 +7,6 @@ import 'package:particle_music/desktop/panels/panel_manager.dart';
 import 'package:particle_music/desktop/title_bar.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:particle_music/metadata.dart';
-import 'package:smooth_corner/smooth_corner.dart';
 
 class ArtistAlbumPanel extends StatefulWidget {
   final bool isArtist;
@@ -178,16 +177,9 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
                               final songList = currentSongListMap[key];
                               return Column(
                                 children: [
-                                  Material(
-                                    elevation: 1,
-                                    color: Color.fromARGB(255, 235, 240, 245),
-                                    shape: SmoothRectangleBorder(
-                                      smoothness: 1,
-                                      borderRadius: BorderRadius.circular(10),
-                                    ),
-                                    child: InkWell(
-                                      splashColor: Colors.transparent,
-                                      highlightColor: Colors.transparent,
+                                  MouseRegion(
+                                    cursor: SystemMouseCursors.click,
+                                    child: GestureDetector(
                                       child: ValueListenableBuilder(
                                         valueListenable:
                                             songIsUpdated[songList!.first]!,

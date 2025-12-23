@@ -179,7 +179,7 @@ class _Add2PlaylistPanelState extends State<Add2PlaylistPanel> {
               child: ImageIcon(addImage, size: 40),
             ),
           ),
-          title: Text('Create Playlist'),
+          title: Text('Create Playlist', style: TextStyle(fontSize: 14)),
           onTap: () async {
             if (isMobile) {
               if (await showCreatePlaylistSheet(context)) {
@@ -192,10 +192,13 @@ class _Add2PlaylistPanelState extends State<Add2PlaylistPanel> {
             }
           },
         ),
-        Divider(thickness: 0.5, height: 1, color: Colors.grey.shade300),
+        SizedBox(height: 5),
+        Divider(height: 1, color: Colors.grey.shade300),
+        SizedBox(height: 5),
         Expanded(
           child: ListView.builder(
             itemCount: playlistsManager.length(),
+            itemExtent: 54,
             itemBuilder: (_, index) {
               final playlist = playlistsManager.getPlaylistByIndex(index);
               return ListTile(
@@ -206,7 +209,7 @@ class _Add2PlaylistPanelState extends State<Add2PlaylistPanel> {
                       ? getCoverArt(playlist.songs.first)
                       : null,
                 ),
-                title: Text(playlist.name),
+                title: Text(playlist.name, style: TextStyle(fontSize: 14)),
 
                 onTap: () {
                   for (var song in widget.songs) {
@@ -279,6 +282,7 @@ Future<bool> showCreatePlaylistDialog(BuildContext context) async {
     context: context,
     builder: (context) {
       return AlertDialog(
+        backgroundColor: Color.fromARGB(255, 235, 240, 245),
         title: const Text('Create Playlist'),
         shape: SmoothRectangleBorder(
           smoothness: 1,
@@ -287,9 +291,11 @@ Future<bool> showCreatePlaylistDialog(BuildContext context) async {
         content: TextField(
           controller: controller,
           autofocus: true,
+          style: TextStyle(fontSize: 12),
           decoration: const InputDecoration(
             border: OutlineInputBorder(),
             labelText: "Playlist Name",
+            isDense: true,
           ),
         ),
         actions: [
@@ -331,6 +337,7 @@ void showAddPlaylistDialog(
     context: context,
     builder: (context) {
       return Dialog(
+        backgroundColor: Color.fromARGB(255, 235, 240, 245),
         shape: SmoothRectangleBorder(
           smoothness: 1,
           borderRadius: BorderRadius.circular(10),
@@ -338,11 +345,9 @@ void showAddPlaylistDialog(
         child: SizedBox(
           height: 500,
           width: 400,
-          child: Column(
-            children: [
-              SizedBox(height: 10),
-              Expanded(child: Add2PlaylistPanel(songs: songs)),
-            ],
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+            child: Add2PlaylistPanel(songs: songs),
           ),
         ),
       );

@@ -114,12 +114,15 @@ Future<void> main() async {
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   CircularProgressIndicator(color: mainColor),
+                  SizedBox(height: 15),
                   ValueListenableBuilder(
                     valueListenable: currentLoadingFolderNotifier,
                     builder: (context, value, child) {
                       return Text('Loading Folder: $value');
                     },
                   ),
+                  SizedBox(height: 5),
+
                   ValueListenableBuilder(
                     valueListenable: loadedCountNotifier,
                     builder: (context, value, child) {
