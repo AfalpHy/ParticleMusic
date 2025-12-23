@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:math';
 import 'dart:ui';
 
@@ -13,6 +14,8 @@ import 'package:particle_music/lyrics.dart';
 import 'package:particle_music/seekbar.dart';
 
 final ValueNotifier<bool> displayLyricsPageNotifier = ValueNotifier(false);
+final ValueNotifier<bool> immersiveModeNotifier = ValueNotifier(false);
+Timer? immersiveModeTimer;
 
 class LyricsPage extends StatefulWidget {
   const LyricsPage({super.key});

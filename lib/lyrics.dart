@@ -76,8 +76,8 @@ class LyricLineWidget extends StatelessWidget {
               final pageHeight = MediaQuery.heightOf(context);
               final pageWidth = MediaQuery.widthOf(context);
               final fontSizeOffset = min(
-                (pageHeight - 700) * 0.06,
-                (pageWidth - 1050) * 0.03,
+                (pageHeight - 700) * 0.05,
+                (pageWidth - 1050) * 0.025,
               );
               return Text(
                 text,

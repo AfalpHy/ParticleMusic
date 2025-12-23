@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
@@ -112,7 +113,46 @@ class DesktopMainPage extends StatelessWidget with TrayListener {
           ],
         ),
 
-        LyricsPage(),
+        ValueListenableBuilder(
+          valueListenable: displayLyricsPageNotifier,
+          builder: (context, value, child) {
+            if (!value) {
+              immersiveModeTimer?.cancel();
+              immersiveModeTimer = null;
+            } else {
+              immersiveModeTimer = Timer(
+                const Duration(milliseconds: 5000),
+                () {
+                  immersiveModeNotifier.value = true;
+                  immersiveModeTimer = null;
+                },
+              );
+            }
+            return IgnorePointer(
+              ignoring: !value,
+              child: ValueListenableBuilder(
+                valueListenable: immersiveModeNotifier,
+                builder: (context, value, child) {
+                  return MouseRegion(
+                    cursor: value ? SystemMouseCursors.none : MouseCursor.defer,
+                    onHover: (event) {
+                      immersiveModeNotifier.value = false;
+                      immersiveModeTimer?.cancel();
+                      immersiveModeTimer = Timer(
+                        const Duration(milliseconds: 5000),
+                        () {
+                          immersiveModeNotifier.value = true;
+                          immersiveModeTimer = null;
+                        },
+                      );
+                    },
+                    child: LyricsPage(),
+                  );
+                },
+              ),
+            );
+          },
+        ),
 
         ValueListenableBuilder(
           valueListenable: displayPlayQueuePageNotifier,
