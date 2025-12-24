@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:flutter/scheduler.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
@@ -335,7 +336,7 @@ class LyricsListViewState extends State<LyricsListView>
   }
 }
 
-class KaraokeText extends StatelessWidget {
+class KaraokeText extends StatefulWidget {
   final LyricLine line;
   final Duration position;
   final double fontSize;
@@ -350,10 +351,44 @@ class KaraokeText extends StatelessWidget {
   });
 
   @override
+  State<KaraokeText> createState() => KaraokeTextState();
+}
+
+class KaraokeTextState extends State<KaraokeText>
+    with SingleTickerProviderStateMixin {
+  late final Ticker ticker;
+
+  Duration displayPosition = Duration.zero;
+  DateTime lastSyncTime = DateTime.now();
+
+  @override
+  void initState() {
+    super.initState();
+
+    displayPosition = widget.position;
+
+    ticker = createTicker((_) {
+      final elapsed = DateTime.now().difference(lastSyncTime);
+      lastSyncTime = DateTime.now();
+      if (isPlayingNotifier.value) {
+        displayPosition += elapsed;
+      }
+
+      setState(() {});
+    })..start();
+  }
+
+  @override
+  void dispose() {
+    ticker.dispose();
+    super.dispose();
+  }
+
+  @override
   Widget build(BuildContext context) {
     return RichText(
-      textAlign: expanded ? TextAlign.left : TextAlign.center,
-      text: TextSpan(children: line.tokens.map(buildTokenSpan).toList()),
+      textAlign: widget.expanded ? TextAlign.left : TextAlign.center,
+      text: TextSpan(children: widget.line.tokens.map(buildTokenSpan).toList()),
     );
   }
 
@@ -362,16 +397,17 @@ class KaraokeText extends StatelessWidget {
     final end = token.end;
 
     double progress;
-    if (position <= start) {
+    if (displayPosition <= start) {
       progress = 0;
-    } else if (position >= end!) {
+    } else if (displayPosition >= end!) {
       progress = 1;
     } else {
       progress =
-          (position - start).inMilliseconds / (end - start).inMilliseconds;
+          (displayPosition - start).inMilliseconds /
+          (end - start).inMilliseconds;
     }
 
-    final style = TextStyle(fontSize: fontSize, color: Colors.white);
+    final style = TextStyle(fontSize: widget.fontSize, color: Colors.white);
 
     return WidgetSpan(
       alignment: PlaceholderAlignment.baseline,
