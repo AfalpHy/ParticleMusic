@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/load_library.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
 ValueNotifier<bool> vibrationOnNoitifier = ValueNotifier(true);
@@ -13,6 +16,81 @@ ValueNotifier<int> remainTimes = ValueNotifier(0);
 ValueNotifier<bool> pauseAfterCompleted = ValueNotifier(false);
 bool needPause = false;
 Timer? pauseTimer;
+
+final artistsIsListViewNotifier = ValueNotifier(true);
+final artistsIsAscendingNotifier = ValueNotifier(true);
+final artistsUseLargePictureNotifier = ValueNotifier(false);
+
+final albumsIsAscendingNotifier = ValueNotifier(true);
+final albumsUseLargePictureNotifier = ValueNotifier(false);
+
+late Setting setting;
+
+class Setting {
+  final File file;
+  Setting(this.file) {
+    if (!(file.existsSync())) {
+      writeSetting();
+    }
+  }
+
+  Future<void> readSetting() async {
+    final content = await file.readAsString();
+
+    final Map<String, dynamic> json =
+        jsonDecode(content) as Map<String, dynamic>;
+
+    artistsIsListViewNotifier.value =
+        json['artistsIsList'] as bool? ?? artistsIsListViewNotifier.value;
+
+    artistsIsAscendingNotifier.value =
+        json['artistsIsAscend'] as bool? ?? artistsIsAscendingNotifier.value;
+
+    artistsUseLargePictureNotifier.value =
+        json['artistsUseLargePicture'] as bool? ??
+        artistsUseLargePictureNotifier.value;
+
+    albumsIsAscendingNotifier.value =
+        json['albumsIsAscend'] as bool? ?? albumsIsAscendingNotifier.value;
+
+    albumsUseLargePictureNotifier.value =
+        json['albumsUseLargePicture'] as bool? ??
+        albumsUseLargePictureNotifier.value;
+  }
+
+  Future<void> writeSetting() async {
+    await file.writeAsString(
+      jsonEncode({
+        'artistsIsList': artistsIsListViewNotifier.value,
+        'artistsIsAscend': artistsIsAscendingNotifier.value,
+        'artistsUseLargePicture': artistsUseLargePictureNotifier.value,
+
+        'albumsIsAscend': albumsIsAscendingNotifier.value,
+        'albumsUseLargePicture': albumsUseLargePictureNotifier.value,
+      }),
+    );
+  }
+
+  void sortArtists() {
+    artistMapEntryList.sort((a, b) {
+      if (artistsIsAscendingNotifier.value) {
+        return compareMixed(a.key, b.key);
+      } else {
+        return compareMixed(b.key, a.key);
+      }
+    });
+  }
+
+  void sortAlbums() {
+    albumMapEntryList.sort((a, b) {
+      if (albumsIsAscendingNotifier.value) {
+        return compareMixed(a.key, b.key);
+      } else {
+        return compareMixed(b.key, a.key);
+      }
+    });
+  }
+}
 
 void displayTimedPauseSetting(BuildContext context) {
   showModalBottomSheet(

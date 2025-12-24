@@ -9,6 +9,7 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/panels/panel_manager.dart';
 import 'package:particle_music/metadata.dart';
 import 'package:particle_music/playlists.dart';
+import 'package:particle_music/setting.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -17,12 +18,14 @@ Map<String, AudioMetadata> filePath2LibrarySong = {};
 
 List<String> folderPaths = [];
 Map<String, List<AudioMetadata>> folder2SongList = {};
-ValueNotifier<int> foldersChangeNotifier = ValueNotifier(0);
-ValueNotifier<int> loadedCountNotifier = ValueNotifier(0);
-ValueNotifier<String> currentLoadingFolderNotifier = ValueNotifier('');
+final ValueNotifier<int> foldersChangeNotifier = ValueNotifier(0);
+final ValueNotifier<int> loadedCountNotifier = ValueNotifier(0);
+final ValueNotifier<String> currentLoadingFolderNotifier = ValueNotifier('');
 
 Map<String, List<AudioMetadata>> artist2SongList = {};
 Map<String, List<AudioMetadata>> album2SongList = {};
+List<MapEntry<String, List<AudioMetadata>>> artistMapEntryList = [];
+List<MapEntry<String, List<AudioMetadata>>> albumMapEntryList = [];
 
 late Directory appDocs;
 
@@ -68,6 +71,9 @@ class LibraryLoader {
       List<dynamic> result = jsonDecode(folderPathsContent);
       folderPaths = result.cast<String>();
     }
+
+    setting = Setting(File("${_appSupportDir.path}/setting.json"));
+    setting.readSetting();
   }
 
   Future<void> load() async {
@@ -122,6 +128,12 @@ class LibraryLoader {
       folder2SongList[folderPath] = songList;
     }
 
+    artistMapEntryList = artist2SongList.entries.toList();
+    setting.sortArtists();
+
+    albumMapEntryList = album2SongList.entries.toList();
+    setting.sortAlbums();
+
     await _loadPlaylists();
     loadingLibraryNotifier.value = false;
   }
@@ -171,6 +183,8 @@ class LibraryLoader {
 
     artist2SongList = {};
     album2SongList = {};
+    artistMapEntryList = [];
+    albumMapEntryList = [];
 
     for (final playlist in playlistsManager.playlists) {
       playlist.songs = [];

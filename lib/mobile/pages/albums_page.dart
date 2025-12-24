@@ -5,38 +5,23 @@ import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:particle_music/mobile/pages/song_list_page.dart';
+import 'package:particle_music/setting.dart';
 import 'package:searchfield/searchfield.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
-final _isAscendingNotifier = ValueNotifier(true);
-final _crossAxisCountNotifier = ValueNotifier(3);
-
 class AlbumsPage extends StatelessWidget {
-  final List<MapEntry<String, List<AudioMetadata>>> mapEntryList =
-      album2SongList.entries.toList();
-
   final ValueNotifier<List<MapEntry<String, List<AudioMetadata>>>>
-  currentMapEntryListNotifier = ValueNotifier([]);
+  currentMapEntryListNotifier = ValueNotifier(albumMapEntryList);
 
   final textController = TextEditingController();
 
-  AlbumsPage({super.key}) {
-    updateCurrentMapEntryList();
-  }
+  AlbumsPage({super.key});
 
   void updateCurrentMapEntryList() {
     final value = textController.text;
-    currentMapEntryListNotifier.value =
-        mapEntryList
-            .where((e) => (e.key.toLowerCase().contains(value.toLowerCase())))
-            .toList()
-          ..sort((a, b) {
-            if (_isAscendingNotifier.value) {
-              return compareMixed(a.key, b.key);
-            } else {
-              return compareMixed(b.key, a.key);
-            }
-          });
+    currentMapEntryListNotifier.value = albumMapEntryList
+        .where((e) => (e.key.toLowerCase().contains(value.toLowerCase())))
+        .toList();
   }
 
   @override
@@ -150,15 +135,15 @@ class AlbumsPage extends StatelessWidget {
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             trailing: ValueListenableBuilder(
-              valueListenable: _crossAxisCountNotifier,
-              builder: (context, value, child) {
+              valueListenable: albumsUseLargePictureNotifier,
+              builder: (context, useLargePicture, child) {
                 return SizedBox(
                   width: 100,
 
                   child: Row(
                     children: [
                       Spacer(),
-                      Text(value == 2 ? 'Big' : 'Small'),
+                      Text(useLargePicture ? 'Large' : 'Small'),
                       SizedBox(width: 10),
                       FlutterSwitch(
                         width: 45,
@@ -166,11 +151,11 @@ class AlbumsPage extends StatelessWidget {
                         toggleSize: 15,
                         activeColor: mainColor,
                         inactiveColor: Colors.grey.shade300,
-                        value: value == 3,
+                        value: useLargePicture,
                         onToggle: (value) async {
                           tryVibrate();
-                          _crossAxisCountNotifier.value = value ? 3 : 2;
-                          updateCurrentMapEntryList();
+                          albumsUseLargePictureNotifier.value = value;
+                          setting.writeSetting();
                         },
                       ),
                     ],
@@ -188,7 +173,7 @@ class AlbumsPage extends StatelessWidget {
             ),
             visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
             trailing: ValueListenableBuilder(
-              valueListenable: _isAscendingNotifier,
+              valueListenable: albumsIsAscendingNotifier,
               builder: (context, value, child) {
                 return SizedBox(
                   width: 120,
@@ -207,7 +192,9 @@ class AlbumsPage extends StatelessWidget {
                         value: value,
                         onToggle: (value) async {
                           tryVibrate();
-                          _isAscendingNotifier.value = value;
+                          albumsIsAscendingNotifier.value = value;
+                          setting.writeSetting();
+                          setting.sortAlbums();
                           updateCurrentMapEntryList();
                         },
                       ),
@@ -224,17 +211,15 @@ class AlbumsPage extends StatelessWidget {
 
   Widget gridView(List<MapEntry<String, List<AudioMetadata>>> mapEntryList) {
     return ValueListenableBuilder(
-      valueListenable: _crossAxisCountNotifier,
-      builder: (context, crossAxisCount, child) {
-        double size = crossAxisCount == 2 ? appWidth * 0.40 : appWidth * 0.25;
-        double radius = crossAxisCount == 2
-            ? appWidth * 0.025
-            : appWidth * 0.015;
-        double childAspectRatio = crossAxisCount == 2 ? 0.85 : 0.8;
+      valueListenable: albumsUseLargePictureNotifier,
+      builder: (context, useLargePicture, child) {
+        double size = useLargePicture ? appWidth * 0.40 : appWidth * 0.25;
+        double radius = useLargePicture ? appWidth * 0.025 : appWidth * 0.015;
+        double childAspectRatio = useLargePicture ? 0.85 : 0.8;
         return GridView.builder(
           padding: EdgeInsets.symmetric(horizontal: 16),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: crossAxisCount,
+            crossAxisCount: useLargePicture ? 2 : 3,
             childAspectRatio: childAspectRatio,
           ),
           itemCount: mapEntryList.length,
