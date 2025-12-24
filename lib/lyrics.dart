@@ -27,6 +27,7 @@ class LyricLine {
 }
 
 List<LyricLine> lyrics = [];
+bool _isKaraoke = false;
 
 /// Each lyric line listens to currentIndexNotifier
 class LyricLineWidget extends StatelessWidget {
@@ -83,27 +84,28 @@ class LyricLineWidget extends StatelessWidget {
                   ? 0
                   : min((pageHeight - 700) * 0.05, (pageWidth - 1050) * 0.025);
 
-              return isCurrent && line.tokens.isNotEmpty
-                  ? StreamBuilder<Duration>(
-                      stream: audioHandler.getPositionStream(),
-                      builder: (context, snapshot) {
-                        return KaraokeText(
-                          key: UniqueKey(),
-                          line: line,
-                          position: snapshot.data ?? Duration.zero,
-                          fontSize: fontSize + fontSizeOffset,
-                          expanded: expanded,
-                        );
-                      },
-                    )
-                  : Text(
-                      line.text,
-                      textAlign: expanded ? TextAlign.left : TextAlign.center,
-                      style: TextStyle(
-                        fontSize: fontSize + fontSizeOffset,
-                        color: Colors.white.withAlpha(64),
-                      ),
+              if (isCurrent && _isKaraoke) {
+                return StreamBuilder<Duration>(
+                  stream: audioHandler.getPositionStream(),
+                  builder: (context, snapshot) {
+                    return KaraokeText(
+                      key: UniqueKey(),
+                      line: line,
+                      position: snapshot.data ?? Duration.zero,
+                      fontSize: fontSize + fontSizeOffset,
+                      expanded: expanded,
                     );
+                  },
+                );
+              }
+              return Text(
+                line.text,
+                textAlign: expanded ? TextAlign.left : TextAlign.center,
+                style: TextStyle(
+                  fontSize: fontSize + fontSizeOffset,
+                  color: isCurrent ? Colors.white : Colors.white.withAlpha(64),
+                ),
+              );
             },
           ),
         ),
@@ -121,6 +123,7 @@ Duration parseTime(RegExpMatch m) {
 
 Future<void> parseLyricsFile(AudioMetadata song) async {
   lyrics = [];
+  _isKaraoke = false;
   List<String> lines = [];
   if (song.lyrics == null) {
     String path = song.file.path;
@@ -166,6 +169,9 @@ Future<void> parseLyricsFile(AudioMetadata song) async {
       textBuffer.write(token);
     }
     if (tokens.isNotEmpty) {
+      if (tokens.length > 1) {
+        _isKaraoke = true;
+      }
       lyrics.add(LyricLine(lineStart, textBuffer.toString(), tokens));
     }
   }
