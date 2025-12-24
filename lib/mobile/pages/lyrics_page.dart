@@ -58,7 +58,7 @@ class LyricsPage extends StatelessWidget {
                                   textStyle: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 20,
-                                    color: Colors.black,
+                                    color: Colors.grey.shade50,
                                   ),
                                 ),
                               ),
@@ -73,7 +73,7 @@ class LyricsPage extends StatelessWidget {
                                   maxLines: 1,
                                   textStyle: TextStyle(
                                     fontSize: 14,
-                                    color: Colors.black54,
+                                    color: Colors.grey.shade100,
                                   ),
                                 ),
                               ),
@@ -131,8 +131,8 @@ class LyricsPage extends StatelessWidget {
                   end: Alignment.bottomCenter,
                   colors: [
                     Colors.transparent, // fade out at top
-                    Colors.black, // fully visible
-                    Colors.black, // fully visible
+                    Colors.grey.shade50, // fully visible
+                    Colors.grey.shade50, // fully visible
                     Colors.transparent, // fade out at bottom
                   ],
                   stops: [0.0, 0.1, 0.8, 1.0], // adjust fade height
@@ -143,6 +143,7 @@ class LyricsPage extends StatelessWidget {
               child: LyricsListView(
                 key: ValueKey(currentSong),
                 expanded: false,
+                lyrics: List.from(lyrics),
               ),
             ),
           ),
@@ -156,7 +157,7 @@ class LyricsPage extends StatelessWidget {
                 filterBackgroundNotifier.value =
                     !filterBackgroundNotifier.value;
               },
-              icon: Icon(Icons.filter, color: Colors.black),
+              icon: Icon(Icons.filter, color: Colors.grey.shade50),
             ),
             Spacer(),
 
@@ -229,12 +230,12 @@ class LyricsPage extends StatelessWidget {
                   },
                 );
               },
-              icon: Icon(Icons.more_vert, color: Colors.black),
+              icon: Icon(Icons.more_vert, color: Colors.grey.shade50),
             ),
             SizedBox(width: 25),
           ],
         ),
-        SeekBar(),
+        SeekBar(light: true),
 
         // -------- Play Controls --------
         Padding(
@@ -247,7 +248,7 @@ class LyricsPage extends StatelessWidget {
                   valueListenable: playModeNotifier,
                   builder: (_, playMode, _) {
                     return IconButton(
-                      color: Colors.black,
+                      color: Colors.grey.shade50,
                       icon: ImageIcon(
                         playMode == 0
                             ? loopImage
@@ -290,14 +291,14 @@ class LyricsPage extends StatelessWidget {
 
               Expanded(
                 child: IconButton(
-                  color: Colors.black,
+                  color: Colors.grey.shade50,
                   icon: const ImageIcon(previousButtonImage, size: 32),
                   onPressed: audioHandler.skipToPrevious,
                 ),
               ),
               Expanded(
                 child: IconButton(
-                  color: Colors.black,
+                  color: Colors.grey.shade50,
                   icon: ValueListenableBuilder(
                     valueListenable: isPlayingNotifier,
                     builder: (_, isPlaying, _) {
@@ -314,7 +315,7 @@ class LyricsPage extends StatelessWidget {
               ),
               Expanded(
                 child: IconButton(
-                  color: Colors.black,
+                  color: Colors.grey.shade50,
                   icon: const ImageIcon(nextButtonImage, size: 32),
                   onPressed: audioHandler.skipToNext,
                 ),
@@ -324,7 +325,7 @@ class LyricsPage extends StatelessWidget {
                   icon: Icon(
                     Icons.playlist_play_rounded,
                     size: 32,
-                    color: Colors.black,
+                    color: Colors.grey.shade50,
                   ),
                   onPressed: () {
                     tryVibrate();
@@ -359,8 +360,8 @@ class LyricsPage extends StatelessWidget {
                       end: Alignment.bottomCenter,
                       colors: [
                         Colors.transparent, // fade out at top
-                        Colors.black, // fully visible
-                        Colors.black, // fully visible
+                        Colors.grey.shade50, // fully visible
+                        Colors.grey.shade50, // fully visible
                         Colors.transparent, // fade out at bottom
                       ],
                       stops: [0.0, 0.1, 0.7, 1.0], // adjust fade height
@@ -370,6 +371,7 @@ class LyricsPage extends StatelessWidget {
                   child: LyricsListView(
                     key: ValueKey(currentSong),
                     expanded: true,
+                    lyrics: List.from(lyrics),
                   ),
                 ),
               ),
@@ -381,7 +383,7 @@ class LyricsPage extends StatelessWidget {
           children: [
             Spacer(),
             IconButton(
-              color: Colors.black,
+              color: Colors.grey.shade50,
               icon: ValueListenableBuilder(
                 valueListenable: isPlayingNotifier,
                 builder: (_, isPlaying, _) {
@@ -425,7 +427,7 @@ class FavoriteButton extends StatelessWidget {
               },
               icon: Icon(
                 isFavorite.value ? Icons.favorite : Icons.favorite_outline,
-                color: isFavorite.value ? Colors.red : Colors.black,
+                color: isFavorite.value ? Colors.red : Colors.grey.shade50,
                 size: size,
               ),
             );

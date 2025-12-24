@@ -10,24 +10,33 @@ import 'package:particle_music/common.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
-class LyricLine {
-  final Duration timestamp;
+class LyricToken {
+  final Duration start;
   final String text;
-  LyricLine(this.timestamp, this.text);
+  Duration? end;
+  LyricToken(this.start, this.text);
+}
+
+class LyricLine {
+  final Duration start;
+  final String text;
+  Duration? end;
+  List<LyricToken> tokens = [];
+  LyricLine(this.start, this.text, this.tokens);
 }
 
 List<LyricLine> lyrics = [];
 
 /// Each lyric line listens to currentIndexNotifier
 class LyricLineWidget extends StatelessWidget {
-  final String text;
   final int index;
+  final LyricLine line;
   final ValueNotifier<int> currentIndexNotifier;
   final bool expanded;
 
   const LyricLineWidget({
     super.key,
-    required this.text,
+    required this.line,
     required this.index,
     required this.currentIndexNotifier,
     required this.expanded,
@@ -35,11 +44,14 @@ class LyricLineWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final pageHeight = MediaQuery.heightOf(context);
+    final pageWidth = MediaQuery.widthOf(context);
+
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: () {
-          audioHandler.seek(lyrics[index].timestamp);
+          audioHandler.seek(line.start);
         },
         customBorder: SmoothRectangleBorder(
           smoothness: 1,
@@ -47,7 +59,12 @@ class LyricLineWidget extends StatelessWidget {
         ),
         child: Padding(
           padding: expanded
-              ? const EdgeInsets.fromLTRB(25, 10, 0, 10)
+              ? EdgeInsets.fromLTRB(
+                  25,
+                  10 + (isMobile ? 0 : (pageHeight - 700) * 0.025),
+                  0,
+                  10 + (isMobile ? 0 : (pageHeight - 700) * 0.025),
+                )
               : const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
           child: ValueListenableBuilder(
             valueListenable: currentIndexNotifier,
@@ -60,42 +77,43 @@ class LyricLineWidget extends StatelessWidget {
               if (expanded) {
                 fontSize += 4;
               }
-              if (isMobile) {
-                return Text(
-                  text,
-                  textAlign: expanded ? TextAlign.left : TextAlign.center,
-                  style: TextStyle(
-                    fontSize: fontSize,
-                    fontWeight: isCurrent ? FontWeight.bold : FontWeight.normal,
-                    color: isCurrent
-                        ? Colors.black
-                        : const Color.fromARGB(128, 0, 0, 0),
-                  ),
-                );
-              }
-              final pageHeight = MediaQuery.heightOf(context);
-              final pageWidth = MediaQuery.widthOf(context);
-              final fontSizeOffset = min(
-                (pageHeight - 700) * 0.05,
-                (pageWidth - 1050) * 0.025,
-              );
-              return Text(
-                text,
-                textAlign: expanded ? TextAlign.left : TextAlign.center,
-                style: TextStyle(
-                  fontSize: fontSize + fontSizeOffset,
 
-                  color: isCurrent
-                      ? Colors.grey.shade50
-                      : Colors.white.withAlpha(64),
-                ),
-              );
+              final fontSizeOffset = isMobile
+                  ? 0
+                  : min((pageHeight - 700) * 0.05, (pageWidth - 1050) * 0.025);
+              return isCurrent
+                  ? StreamBuilder<Duration>(
+                      stream: audioHandler.getPositionStream(),
+                      builder: (context, snapshot) {
+                        return KaraokeText(
+                          line: line,
+                          position: snapshot.data ?? Duration.zero,
+                          fontSize: fontSize + fontSizeOffset,
+                          expanded: expanded,
+                        );
+                      },
+                    )
+                  : Text(
+                      line.text,
+                      textAlign: expanded ? TextAlign.left : TextAlign.center,
+                      style: TextStyle(
+                        fontSize: fontSize + fontSizeOffset,
+                        color: Colors.white.withAlpha(64),
+                      ),
+                    );
             },
           ),
         ),
       ),
     );
   }
+}
+
+Duration parseTime(RegExpMatch m) {
+  final min = int.parse(m.group(1)!);
+  final sec = int.parse(m.group(2)!);
+  final ms = int.parse(m.group(3)!.padRight(3, '0'));
+  return Duration(minutes: min, seconds: sec, milliseconds: ms);
 }
 
 Future<void> parseLyricsFile(AudioMetadata song) async {
@@ -106,7 +124,7 @@ Future<void> parseLyricsFile(AudioMetadata song) async {
     path = "${path.substring(0, path.lastIndexOf('.'))}.lrc";
     final file = File(path);
     if (!file.existsSync()) {
-      lyrics.add(LyricLine(Duration.zero, 'lyrics file does not exist'));
+      lyrics.add(LyricLine(Duration.zero, 'lyrics file does not exist', []));
       return;
     }
     lines = await file.readAsLines(); // read file line by line
@@ -114,33 +132,59 @@ Future<void> parseLyricsFile(AudioMetadata song) async {
     lines = song.lyrics!.split(RegExp(r'[\n]'));
   }
 
-  final regex = RegExp(r'\[(\d{2}):(\d{2})(?::(\d{2,3})|.(\d{2,3}))\](.*)');
+  final lineTimeRegex = RegExp(r'^\[(\d{2}):(\d{2})[.:](\d{2,3})\]');
+  final wordRegex = RegExp(r'\[(\d{2}):(\d{2})[.:](\d{2,3})\]([^\[]*)');
 
   for (var line in lines) {
-    final match = regex.firstMatch(line);
-    if (match != null) {
-      final min = int.parse(match.group(1)!);
-      final sec = int.parse(match.group(2)!);
-      final ms = match.group(3) != null
-          ? int.parse(match.group(3)!.padRight(3, '0'))
-          : int.parse(match.group(4)!.padRight(3, '0'));
-      final text = match.group(5)!.trim();
-      if (text == '') {
-        continue;
+    final lineMatch = lineTimeRegex.firstMatch(line);
+    if (lineMatch == null) continue;
+
+    final lineStart = parseTime(lineMatch);
+    if (lyrics.isNotEmpty && lyrics.last.end == null) {
+      lyrics.last.end = lineStart;
+      lyrics.last.tokens.last.end = lineStart;
+    }
+
+    final tokenMatches = wordRegex.allMatches(line);
+
+    final tokens = <LyricToken>[];
+    final textBuffer = StringBuffer();
+
+    for (final match in tokenMatches) {
+      final start = parseTime(match);
+      final token = match.group(4)!;
+
+      if (token.isEmpty) continue;
+
+      if (tokens.isNotEmpty) {
+        tokens.last.end = start;
       }
-      lyrics.add(
-        LyricLine(Duration(minutes: min, seconds: sec, milliseconds: ms), text),
-      );
+      tokens.add(LyricToken(start, token));
+      textBuffer.write(token);
+    }
+    if (tokens.isNotEmpty) {
+      lyrics.add(LyricLine(lineStart, textBuffer.toString(), tokens));
     }
   }
   if (lyrics.isEmpty) {
-    lyrics.add(LyricLine(Duration.zero, 'lyrics parsing failed'));
+    lyrics.add(LyricLine(Duration.zero, 'lyrics parsing failed', []));
+  } else {
+    if (lyrics.last.end == null) {
+      lyrics.last.end = song.duration!;
+      lyrics.last.tokens.last.end = song.duration!;
+    }
   }
 }
 
 class LyricsListView extends StatefulWidget {
   final bool expanded;
-  const LyricsListView({super.key, required this.expanded});
+  final List<LyricLine> lyrics;
+
+  const LyricsListView({
+    super.key,
+    required this.expanded,
+    required this.lyrics,
+  });
 
   @override
   State<LyricsListView> createState() => LyricsListViewState();
@@ -163,7 +207,9 @@ class LyricsListViewState extends State<LyricsListView>
       return;
     }
     int tmp = currentIndexNotifier.value;
-    int current = lyrics.lastIndexWhere((line) => position >= line.timestamp);
+    int current = widget.lyrics.lastIndexWhere(
+      (line) => position >= line.start,
+    );
     currentIndexNotifier.value = current;
 
     if (!userDragging && (tmp != current || userDragged)) {
@@ -259,7 +305,7 @@ class LyricsListViewState extends State<LyricsListView>
           },
           child: ScrollablePositionedList.builder(
             physics: ClampingScrollPhysics(),
-            itemCount: lyrics.length + 2,
+            itemCount: widget.lyrics.length + 2,
             itemScrollController: itemScrollController,
             itemBuilder: (context, index) {
               if (index == 0) {
@@ -268,7 +314,7 @@ class LyricsListViewState extends State<LyricsListView>
                       ? parentHeight * 0.35
                       : parentHeight * 0.4,
                 );
-              } else if (index == lyrics.length + 1) {
+              } else if (index == widget.lyrics.length + 1) {
                 return SizedBox(
                   height: widget.expanded
                       ? parentHeight * 0.6
@@ -276,8 +322,8 @@ class LyricsListViewState extends State<LyricsListView>
                 );
               }
               return LyricLineWidget(
-                text: lyrics[index - 1].text,
                 index: index - 1,
+                line: widget.lyrics[index - 1],
                 currentIndexNotifier: currentIndexNotifier,
                 expanded: widget.expanded,
               );
@@ -285,6 +331,62 @@ class LyricsListViewState extends State<LyricsListView>
           ),
         );
       },
+    );
+  }
+}
+
+class KaraokeText extends StatelessWidget {
+  final LyricLine line;
+  final Duration position;
+  final double fontSize;
+  final bool expanded;
+
+  const KaraokeText({
+    super.key,
+    required this.line,
+    required this.position,
+    required this.fontSize,
+    required this.expanded,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return RichText(
+      textAlign: expanded ? TextAlign.left : TextAlign.center,
+      text: TextSpan(children: line.tokens.map(buildTokenSpan).toList()),
+    );
+  }
+
+  InlineSpan buildTokenSpan(LyricToken token) {
+    final start = token.start;
+    final end = token.end;
+
+    double progress;
+    if (position <= start) {
+      progress = 0;
+    } else if (position >= end!) {
+      progress = 1;
+    } else {
+      progress =
+          (position - start).inMilliseconds / (end - start).inMilliseconds;
+    }
+
+    final style = TextStyle(fontSize: fontSize, color: Colors.white);
+
+    return WidgetSpan(
+      alignment: PlaceholderAlignment.baseline,
+      baseline: TextBaseline.alphabetic,
+      child: ShaderMask(
+        blendMode: BlendMode.srcIn,
+        shaderCallback: (bounds) {
+          final p = progress.clamp(0.0, 1.0);
+          return LinearGradient(
+            colors: [Colors.white, Colors.white, Colors.white.withAlpha(64)],
+            stops: [0, p, p],
+          ).createShader(Rect.fromLTWH(0, 0, bounds.width, bounds.height));
+        },
+        child: Text(token.text, style: style),
+      ),
     );
   }
 }

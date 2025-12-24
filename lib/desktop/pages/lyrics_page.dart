@@ -118,6 +118,7 @@ class LyricsPageState extends State<LyricsPage> {
                                     child: LyricsListView(
                                       key: ValueKey(currentSong),
                                       expanded: true,
+                                      lyrics: List.from(lyrics),
                                     ),
                                   ),
                                 ),
@@ -152,7 +153,7 @@ class LyricsPageState extends State<LyricsPage> {
   ) {
     return Column(
       children: [
-        SizedBox(height: pageHight * 0.025),
+        SizedBox(height: pageHight * 0.01),
         SizedBox(
           width: width - 30,
 

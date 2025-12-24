@@ -141,25 +141,8 @@ abstract class MyAudioHandler extends BaseAudioHandler {
     g /= count;
     b /= count;
     int luminance = image.getLuminanceRgb(r, g, b).toInt();
-    int minLuminace = 50;
     int maxLuminace = 200;
-    if (luminance < minLuminace) {
-      r += minLuminace - luminance;
-      g += minLuminace - luminance;
-      b += minLuminace - luminance;
-      coverArtAverageColor = Color.fromARGB(
-        255,
-        r.toInt(),
-        g.toInt(),
-        b.toInt(),
-      );
-      // make coverArtFilterColor more brighter
-      if (isMobile) {
-        r += 25;
-        g += 25;
-        b += 25;
-      }
-    } else if (luminance > maxLuminace) {
+    if (luminance > maxLuminace) {
       r -= luminance - maxLuminace;
       g -= luminance - maxLuminace;
       b -= luminance - maxLuminace;
