@@ -246,9 +246,9 @@ class HomePage extends StatelessWidget {
           leading: const ImageIcon(folderImage, size: 35, color: mainColor),
           title: Text('Folders'),
           onTap: () {
-            Navigator.of(
-              context,
-            ).push(MaterialPageRoute(builder: (_) => FoldersPage()));
+            Navigator.of(context).push(
+              MaterialPageRoute(builder: (_) => FoldersPage(key: UniqueKey())),
+            );
           },
         ),
 
@@ -453,10 +453,29 @@ class HomePage extends StatelessWidget {
                             Spacer(),
                             ElevatedButton(
                               onPressed: () async {
-                                final result = await FilePicker.platform
+                                String? result = await FilePicker.platform
                                     .getDirectoryPath();
                                 if (result == null) {
                                   return;
+                                }
+
+                                if (Platform.isIOS) {
+                                  if (result.contains(appDocs.path)) {
+                                    result = result.substring(
+                                      result.indexOf('Documents'),
+                                    );
+                                    result = result.replaceFirst(
+                                      'Documents',
+                                      'Particle Music',
+                                    );
+                                  } else if (context.mounted) {
+                                    showCenterMessage(
+                                      context,
+                                      'No access permission',
+                                      duration: 2000,
+                                    );
+                                    return;
+                                  }
                                 }
                                 if (folderPaths.contains(result) &&
                                     context.mounted) {
@@ -465,25 +484,9 @@ class HomePage extends StatelessWidget {
                                     'The folder already exists',
                                     duration: 2000,
                                   );
+                                  return;
                                 }
-
-                                if (Platform.isIOS) {
-                                  if (result.contains(appDocs.path)) {
-                                    libraryLoader.addFolder(
-                                      result.substring(
-                                        appDocs.parent.path.length,
-                                      ),
-                                    );
-                                  } else if (context.mounted) {
-                                    showCenterMessage(
-                                      context,
-                                      'No access permission',
-                                      duration: 2000,
-                                    );
-                                  }
-                                } else {
-                                  libraryLoader.addFolder(result);
-                                }
+                                libraryLoader.addFolder(result);
                               },
                               style: ElevatedButton.styleFrom(
                                 shape: RoundedRectangleBorder(

@@ -72,7 +72,9 @@ class LibraryLoader {
     for (String folderPath in folderPaths) {
       late Directory folder;
       if (Platform.isIOS) {
-        folder = Directory("${appDocs.parent.path}/$folderPath");
+        folder = Directory(
+          "${appDocs.parent.path}/${folderPath.replaceFirst('Particle Music', 'Documents')}",
+        );
       } else {
         folder = Directory(folderPath);
       }
