@@ -93,7 +93,6 @@ Future<void> main() async {
   );
 
   await libraryLoader.initial();
-  final ValueNotifier<bool> completeNotifier = ValueNotifier(false);
 
   runApp(
     MaterialApp(
@@ -102,9 +101,9 @@ Future<void> main() async {
           : null,
       title: 'Particle Music',
       home: ValueListenableBuilder(
-        valueListenable: completeNotifier,
+        valueListenable: loadingLibraryNotifier,
         builder: (context, value, child) {
-          if (value) {
+          if (!value) {
             return isMobile ? MobileMainPage() : DesktopMainPage();
           }
           return Scaffold(
@@ -139,6 +138,6 @@ Future<void> main() async {
   );
   WidgetsBinding.instance.addPostFrameCallback((_) async {
     await libraryLoader.load();
-    completeNotifier.value = true;
+    loadingLibraryNotifier.value = false;
   });
 }

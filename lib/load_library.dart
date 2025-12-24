@@ -26,6 +26,8 @@ Map<String, List<AudioMetadata>> album2SongList = {};
 
 late Directory appDocs;
 
+final ValueNotifier<bool> loadingLibraryNotifier = ValueNotifier(true);
+
 class LibraryLoader {
   late Directory _appSupportDir;
   late File _folderPathsFile;
@@ -69,6 +71,8 @@ class LibraryLoader {
   }
 
   Future<void> load() async {
+    loadingLibraryNotifier.value = true;
+    loadedCountNotifier.value = 0;
     for (String folderPath in folderPaths) {
       late Directory folder;
       if (Platform.isIOS) {
@@ -119,6 +123,7 @@ class LibraryLoader {
     }
 
     await _loadPlaylists();
+    loadingLibraryNotifier.value = false;
   }
 
   void _add2ArtistAndAlbum(AudioMetadata song) {
