@@ -246,9 +246,9 @@ class HomePage extends StatelessWidget {
           leading: const ImageIcon(folderImage, size: 35, color: mainColor),
           title: Text('Folders'),
           onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(builder: (_) => FoldersPage(key: UniqueKey())),
-            );
+            Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => FoldersPage()));
           },
         ),
 
