@@ -73,7 +73,7 @@ class LibraryLoader {
     }
 
     setting = Setting(File("${_appSupportDir.path}/setting.json"));
-    setting.readSetting();
+    await setting.readSetting();
   }
 
   Future<void> load() async {

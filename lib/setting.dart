@@ -58,8 +58,8 @@ class Setting {
         albumsUseLargePictureNotifier.value;
   }
 
-  Future<void> writeSetting() async {
-    await file.writeAsString(
+  void writeSetting() {
+    file.writeAsStringSync(
       jsonEncode({
         'artistsIsList': artistsIsListViewNotifier.value,
         'artistsIsAscend': artistsIsAscendingNotifier.value,
