@@ -82,11 +82,13 @@ class LyricLineWidget extends StatelessWidget {
               final fontSizeOffset = isMobile
                   ? 0
                   : min((pageHeight - 700) * 0.05, (pageWidth - 1050) * 0.025);
-              return isCurrent
+
+              return isCurrent && line.tokens.isNotEmpty
                   ? StreamBuilder<Duration>(
                       stream: audioHandler.getPositionStream(),
                       builder: (context, snapshot) {
                         return KaraokeText(
+                          key: UniqueKey(),
                           line: line,
                           position: snapshot.data ?? Duration.zero,
                           fontSize: fontSize + fontSizeOffset,
