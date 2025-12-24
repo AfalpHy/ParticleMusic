@@ -5,7 +5,7 @@ import 'dart:io';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
-import 'package:path/path.dart' as p;
+import 'package:particle_music/load_library.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 import 'cover_art_widget.dart';
 
@@ -128,8 +128,11 @@ class Playlist {
 
   void update() {
     if (Platform.isIOS) {
+      int prefixLength = appDocs.path.length;
       file.writeAsStringSync(
-        jsonEncode(songs.map((s) => p.basename(s.file.path)).toList()),
+        jsonEncode(
+          songs.map((s) => s.file.path.substring(prefixLength)).toList(),
+        ),
       );
     } else {
       file.writeAsStringSync(

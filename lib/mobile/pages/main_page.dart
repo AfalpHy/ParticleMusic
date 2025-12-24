@@ -403,10 +403,6 @@ class HomePage extends StatelessWidget {
           leading: ImageIcon(folderImage, color: mainColor, size: 30),
           title: const Text('Select Music Folders'),
           onTap: () {
-            if (Platform.isIOS) {
-              showCenterMessage(context, 'Not supported yet', duration: 2000);
-              return;
-            }
             showDialog(
               context: context,
               builder: (context) {
@@ -459,16 +455,34 @@ class HomePage extends StatelessWidget {
                               onPressed: () async {
                                 final result = await FilePicker.platform
                                     .getDirectoryPath();
-                                if (result != null) {
-                                  if (!folderPaths.contains(result)) {
-                                    libraryLoader.addFolder(result);
+                                if (result == null) {
+                                  return;
+                                }
+                                if (folderPaths.contains(result) &&
+                                    context.mounted) {
+                                  showCenterMessage(
+                                    context,
+                                    'The folder already exists',
+                                    duration: 2000,
+                                  );
+                                }
+
+                                if (Platform.isIOS) {
+                                  if (result.contains(appDocs.path)) {
+                                    libraryLoader.addFolder(
+                                      result.substring(
+                                        appDocs.parent.path.length,
+                                      ),
+                                    );
                                   } else if (context.mounted) {
                                     showCenterMessage(
                                       context,
-                                      'The folder already exists',
+                                      'No access permission',
                                       duration: 2000,
                                     );
                                   }
+                                } else {
+                                  libraryLoader.addFolder(result);
                                 }
                               },
                               style: ElevatedButton.styleFrom(
