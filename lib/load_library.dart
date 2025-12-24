@@ -8,6 +8,7 @@ import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/panels/panel_manager.dart';
 import 'package:particle_music/metadata.dart';
+import 'package:particle_music/mobile/pages/main_page.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/setting.dart';
 import 'package:path_provider/path_provider.dart';
@@ -135,6 +136,11 @@ class LibraryLoader {
     setting.sortAlbums();
 
     await _loadPlaylists();
+
+    if (isMobile) {
+      swipeObserver.resetDeep();
+    }
+
     loadingLibraryNotifier.value = false;
   }
 

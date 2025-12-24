@@ -19,6 +19,7 @@ final ValueNotifier<int> homeBody = ValueNotifier<int>(1);
 
 class SwipeObserver extends NavigatorObserver {
   int deep = 0;
+
   @override
   void didPush(Route route, Route? previousRoute) {
     if (route is PageRoute && deep == 1) {
@@ -34,6 +35,10 @@ class SwipeObserver extends NavigatorObserver {
   void didPop(Route route, Route? previousRoute) {
     deep--;
     super.didPop(route, previousRoute);
+  }
+
+  void resetDeep() {
+    deep = 0;
   }
 }
 

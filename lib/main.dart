@@ -136,8 +136,6 @@ Future<void> main() async {
       ),
     ),
   );
-  WidgetsBinding.instance.addPostFrameCallback((_) async {
-    await libraryLoader.load();
-    loadingLibraryNotifier.value = false;
-  });
+
+  await libraryLoader.load();
 }
