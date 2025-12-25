@@ -98,192 +98,184 @@ class TitleBar extends StatelessWidget {
           : Colors.transparent,
       child: SizedBox(
         height: 75,
-        child: ValueListenableBuilder(
-          valueListenable: immersiveModeNotifier,
-          builder: (context, value, child) {
-            if (value) {
-              return SizedBox.shrink();
-            }
-            return Stack(
-              children: [
-                GestureDetector(
-                  behavior: HitTestBehavior.translucent,
-                  onPanStart: (details) => windowManager.startDragging(),
-                  onDoubleTap: () async {
-                    if (isFullScreenNotifier.value) {
-                      return;
-                    }
-                    isMaximizedNotifier.value
-                        ? windowManager.unmaximize()
-                        : windowManager.maximize();
-                  },
-                  child: Container(),
-                ),
+        child: Stack(
+          children: [
+            GestureDetector(
+              behavior: HitTestBehavior.translucent,
+              onPanStart: (details) => windowManager.startDragging(),
+              onDoubleTap: () async {
+                if (isFullScreenNotifier.value) {
+                  return;
+                }
+                isMaximizedNotifier.value
+                    ? windowManager.unmaximize()
+                    : windowManager.maximize();
+              },
+              child: Container(),
+            ),
 
-                if (isMainPage)
-                  Center(
-                    child: ValueListenableBuilder(
-                      valueListenable: updateTitleSearchField,
-                      builder: (_, _, _) {
-                        if (titleSearchFieldStack.isEmpty) {
-                          return SizedBox.shrink();
-                        }
-                        return IndexedStack(
-                          index: titleSearchFieldStack.length - 1,
-                          children: titleSearchFieldStack,
-                        );
+            if (isMainPage)
+              Center(
+                child: ValueListenableBuilder(
+                  valueListenable: updateTitleSearchField,
+                  builder: (_, _, _) {
+                    if (titleSearchFieldStack.isEmpty) {
+                      return SizedBox.shrink();
+                    }
+                    return IndexedStack(
+                      index: titleSearchFieldStack.length - 1,
+                      children: titleSearchFieldStack,
+                    );
+                  },
+                ),
+              ),
+            Center(
+              child: Row(
+                children: [
+                  SizedBox(width: 30),
+
+                  if (isMainPage)
+                    IconButton(
+                      color: Colors.black54,
+                      onPressed: () {
+                        panelManager.popPanel();
+                      },
+                      icon: Icon(Icons.arrow_back_ios_rounded, size: 20),
+                    )
+                  else
+                    ValueListenableBuilder(
+                      valueListenable: isFullScreenNotifier,
+                      builder: (context, isFullScreen, child) {
+                        return isFullScreen
+                            ? SizedBox.shrink()
+                            : IconButton(
+                                onPressed: () {
+                                  displayLyricsPageNotifier.value = false;
+                                },
+                                icon: ImageIcon(
+                                  arrowDownImage,
+                                  color: Colors.grey.shade50,
+                                ),
+                              );
                       },
                     ),
-                  ),
-                Center(
-                  child: Row(
-                    children: [
-                      SizedBox(width: 30),
 
-                      if (isMainPage)
-                        IconButton(
-                          color: Colors.black54,
-                          onPressed: () {
-                            panelManager.popPanel();
-                          },
-                          icon: Icon(Icons.arrow_back_ios_rounded, size: 20),
-                        )
-                      else
-                        ValueListenableBuilder(
-                          valueListenable: isFullScreenNotifier,
-                          builder: (context, isFullScreen, child) {
-                            return isFullScreen
-                                ? SizedBox.shrink()
-                                : IconButton(
-                                    onPressed: () {
-                                      displayLyricsPageNotifier.value = false;
-                                    },
-                                    icon: ImageIcon(
-                                      arrowDownImage,
-                                      color: Colors.grey.shade50,
-                                    ),
-                                  );
-                          },
-                        ),
-
-                      if (!isMainPage)
-                        IconButton(
-                          onPressed: () async {
-                            if (isFullScreenNotifier.value) {
-                              await windowManager.setFullScreen(false);
-                              isFullScreenNotifier.value = false;
-                            } else {
-                              if (isMaximizedNotifier.value) {
-                                if (context.mounted) {
-                                  showCenterMessage(
-                                    context,
-                                    'Enter fullscreen with maximized window will cause bug',
-                                    duration: 3000,
-                                  );
-                                }
-                                return;
-                              }
-                              await windowManager.setFullScreen(true);
-                              isFullScreenNotifier.value = true;
+                  if (!isMainPage)
+                    IconButton(
+                      onPressed: () async {
+                        if (isFullScreenNotifier.value) {
+                          await windowManager.setFullScreen(false);
+                          isFullScreenNotifier.value = false;
+                        } else {
+                          if (isMaximizedNotifier.value) {
+                            if (context.mounted) {
+                              showCenterMessage(
+                                context,
+                                'Enter fullscreen with maximized window will cause bug',
+                                duration: 3000,
+                              );
                             }
-                          },
-                          icon: ValueListenableBuilder(
-                            valueListenable: isFullScreenNotifier,
-                            builder: (context, isFullScreen, child) {
-                              return isFullScreen
-                                  ? ImageIcon(
-                                      fullscreenExitImage,
-                                      color: isMainPage
-                                          ? Colors.black54
-                                          : Colors.grey.shade50,
-                                    )
-                                  : ImageIcon(
-                                      fullscreenImage,
-                                      color: isMainPage
-                                          ? Colors.black54
-                                          : Colors.grey.shade50,
-                                    );
-                            },
-                          ),
-                        ),
-
-                      Spacer(),
-
-                      if (isMainPage)
-                        IconButton(
-                          color: Colors.black54,
-                          onPressed: () {
-                            panelManager.pushPanel(-1);
-                          },
-                          icon: Icon(Icons.settings_outlined, size: 20),
-                        ),
-
-                      ValueListenableBuilder(
+                            return;
+                          }
+                          await windowManager.setFullScreen(true);
+                          isFullScreenNotifier.value = true;
+                        }
+                      },
+                      icon: ValueListenableBuilder(
                         valueListenable: isFullScreenNotifier,
                         builder: (context, isFullScreen, child) {
                           return isFullScreen
-                              ? SizedBox.shrink()
-                              : Row(
-                                  children: [
-                                    IconButton(
-                                      onPressed: () {
-                                        windowManager.minimize();
-                                      },
-                                      icon: ImageIcon(
-                                        minimizeImage,
-                                        color: isMainPage
-                                            ? Colors.black54
-                                            : Colors.grey.shade50,
-                                      ),
-                                    ),
-                                    ValueListenableBuilder(
-                                      valueListenable: isMaximizedNotifier,
-                                      builder: (context, value, child) {
-                                        return IconButton(
-                                          onPressed: () async {
-                                            isMaximizedNotifier.value
-                                                ? windowManager.unmaximize()
-                                                : windowManager.maximize();
-                                          },
-                                          icon: value
-                                              ? ImageIcon(
-                                                  unmaximizeImage,
-                                                  color: isMainPage
-                                                      ? Colors.black54
-                                                      : Colors.grey.shade50,
-                                                )
-                                              : ImageIcon(
-                                                  maximizeImage,
-                                                  color: isMainPage
-                                                      ? Colors.black54
-                                                      : Colors.grey.shade50,
-                                                ),
-                                        );
-                                      },
-                                    ),
-                                    IconButton(
-                                      onPressed: () {
-                                        windowManager.close();
-                                      },
-                                      icon: ImageIcon(
-                                        closeImage,
-                                        color: isMainPage
-                                            ? Colors.black54
-                                            : Colors.grey.shade50,
-                                      ),
-                                    ),
-                                  ],
+                              ? ImageIcon(
+                                  fullscreenExitImage,
+                                  color: isMainPage
+                                      ? Colors.black54
+                                      : Colors.grey.shade50,
+                                )
+                              : ImageIcon(
+                                  fullscreenImage,
+                                  color: isMainPage
+                                      ? Colors.black54
+                                      : Colors.grey.shade50,
                                 );
                         },
                       ),
+                    ),
 
-                      SizedBox(width: 30),
-                    ],
+                  Spacer(),
+
+                  if (isMainPage)
+                    IconButton(
+                      color: Colors.black54,
+                      onPressed: () {
+                        panelManager.pushPanel(-1);
+                      },
+                      icon: Icon(Icons.settings_outlined, size: 20),
+                    ),
+
+                  ValueListenableBuilder(
+                    valueListenable: isFullScreenNotifier,
+                    builder: (context, isFullScreen, child) {
+                      return isFullScreen
+                          ? SizedBox.shrink()
+                          : Row(
+                              children: [
+                                IconButton(
+                                  onPressed: () {
+                                    windowManager.minimize();
+                                  },
+                                  icon: ImageIcon(
+                                    minimizeImage,
+                                    color: isMainPage
+                                        ? Colors.black54
+                                        : Colors.grey.shade50,
+                                  ),
+                                ),
+                                ValueListenableBuilder(
+                                  valueListenable: isMaximizedNotifier,
+                                  builder: (context, value, child) {
+                                    return IconButton(
+                                      onPressed: () async {
+                                        isMaximizedNotifier.value
+                                            ? windowManager.unmaximize()
+                                            : windowManager.maximize();
+                                      },
+                                      icon: value
+                                          ? ImageIcon(
+                                              unmaximizeImage,
+                                              color: isMainPage
+                                                  ? Colors.black54
+                                                  : Colors.grey.shade50,
+                                            )
+                                          : ImageIcon(
+                                              maximizeImage,
+                                              color: isMainPage
+                                                  ? Colors.black54
+                                                  : Colors.grey.shade50,
+                                            ),
+                                    );
+                                  },
+                                ),
+                                IconButton(
+                                  onPressed: () {
+                                    windowManager.close();
+                                  },
+                                  icon: ImageIcon(
+                                    closeImage,
+                                    color: isMainPage
+                                        ? Colors.black54
+                                        : Colors.grey.shade50,
+                                  ),
+                                ),
+                              ],
+                            );
+                    },
                   ),
-                ),
-              ],
-            );
-          },
+
+                  SizedBox(width: 30),
+                ],
+              ),
+            ),
+          ],
         ),
       ),
     );

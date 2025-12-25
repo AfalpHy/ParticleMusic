@@ -29,91 +29,6 @@ class LyricLine {
 List<LyricLine> lyrics = [];
 bool _isKaraoke = false;
 
-/// Each lyric line listens to currentIndexNotifier
-class LyricLineWidget extends StatelessWidget {
-  final int index;
-  final LyricLine line;
-  final ValueNotifier<int> currentIndexNotifier;
-  final bool expanded;
-
-  const LyricLineWidget({
-    super.key,
-    required this.line,
-    required this.index,
-    required this.currentIndexNotifier,
-    required this.expanded,
-  });
-
-  @override
-  Widget build(BuildContext context) {
-    final pageHeight = MediaQuery.heightOf(context);
-    final pageWidth = MediaQuery.widthOf(context);
-
-    return Material(
-      color: Colors.transparent,
-      child: InkWell(
-        onTap: () {
-          audioHandler.seek(line.start);
-        },
-        customBorder: SmoothRectangleBorder(
-          smoothness: 1,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: Padding(
-          padding: expanded
-              ? EdgeInsets.fromLTRB(
-                  25,
-                  10 + (isMobile ? 0 : (pageHeight - 700) * 0.025),
-                  0,
-                  10 + (isMobile ? 0 : (pageHeight - 700) * 0.025),
-                )
-              : const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
-          child: ValueListenableBuilder(
-            valueListenable: currentIndexNotifier,
-            builder: (context, value, child) {
-              final isCurrent = value == index;
-              double fontSize = 14;
-              if (isCurrent) {
-                fontSize += 4;
-              }
-              if (expanded) {
-                fontSize += 4;
-              }
-
-              final fontSizeOffset = isMobile
-                  ? 0
-                  : min((pageHeight - 700) * 0.05, (pageWidth - 1050) * 0.025);
-
-              if (isCurrent && _isKaraoke) {
-                return StreamBuilder<Duration>(
-                  stream: audioHandler.getPositionStream(),
-                  builder: (context, snapshot) {
-                    return KaraokeText(
-                      key: UniqueKey(),
-                      line: line,
-                      position: snapshot.data ?? Duration.zero,
-                      fontSize: fontSize + fontSizeOffset,
-                      expanded: expanded,
-                    );
-                  },
-                );
-              }
-              return Text(
-                line.text,
-                textAlign: expanded ? TextAlign.left : TextAlign.center,
-                style: TextStyle(
-                  fontSize: fontSize + fontSizeOffset,
-                  color: isCurrent ? Colors.white : Colors.white.withAlpha(64),
-                ),
-              );
-            },
-          ),
-        ),
-      ),
-    );
-  }
-}
-
 Duration parseTime(RegExpMatch m) {
   final min = int.parse(m.group(1)!);
   final sec = int.parse(m.group(2)!);
@@ -160,15 +75,19 @@ Future<void> parseLyricsFile(AudioMetadata song) async {
       final start = parseTime(match);
       final token = match.group(4)!;
 
-      if (token.isEmpty) continue;
-
       if (tokens.isNotEmpty) {
         tokens.last.end = start;
       }
-      tokens.add(LyricToken(start, token));
-      textBuffer.write(token);
+
+      if (token.isNotEmpty) {
+        tokens.add(LyricToken(start, token));
+        textBuffer.write(token);
+      }
     }
     if (tokens.isNotEmpty) {
+      if (tokens.length == 1 && tokens[0].text.trim().isEmpty) {
+        continue;
+      }
       if (tokens.length > 1) {
         _isKaraoke = true;
       }
@@ -344,6 +263,91 @@ class LyricsListViewState extends State<LyricsListView>
   }
 }
 
+/// Each lyric line listens to currentIndexNotifier
+class LyricLineWidget extends StatelessWidget {
+  final int index;
+  final LyricLine line;
+  final ValueNotifier<int> currentIndexNotifier;
+  final bool expanded;
+
+  const LyricLineWidget({
+    super.key,
+    required this.line,
+    required this.index,
+    required this.currentIndexNotifier,
+    required this.expanded,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final pageHeight = MediaQuery.heightOf(context);
+    final pageWidth = MediaQuery.widthOf(context);
+
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: () {
+          audioHandler.seek(line.start);
+        },
+        customBorder: SmoothRectangleBorder(
+          smoothness: 1,
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Padding(
+          padding: expanded
+              ? EdgeInsets.fromLTRB(
+                  25,
+                  10 + (isMobile ? 0 : (pageHeight - 700) * 0.025),
+                  0,
+                  10 + (isMobile ? 0 : (pageHeight - 700) * 0.025),
+                )
+              : const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
+          child: ValueListenableBuilder(
+            valueListenable: currentIndexNotifier,
+            builder: (context, value, child) {
+              final isCurrent = value == index;
+              double fontSize = 14;
+              if (isCurrent) {
+                fontSize += 4;
+              }
+              if (expanded) {
+                fontSize += 4;
+              }
+
+              final fontSizeOffset = isMobile
+                  ? 0
+                  : min((pageHeight - 700) * 0.05, (pageWidth - 1050) * 0.025);
+
+              if (isCurrent && _isKaraoke) {
+                return StreamBuilder<Duration>(
+                  stream: audioHandler.getPositionStream(),
+                  builder: (context, snapshot) {
+                    return KaraokeText(
+                      key: UniqueKey(),
+                      line: line,
+                      position: snapshot.data ?? Duration.zero,
+                      fontSize: fontSize + fontSizeOffset,
+                      expanded: expanded,
+                    );
+                  },
+                );
+              }
+              return Text(
+                line.text,
+                textAlign: expanded ? TextAlign.left : TextAlign.center,
+                style: TextStyle(
+                  fontSize: fontSize + fontSizeOffset,
+                  color: isCurrent ? Colors.white : Colors.white.withAlpha(96),
+                ),
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+}
+
 class KaraokeText extends StatefulWidget {
   final LyricLine line;
   final Duration position;
@@ -425,7 +429,7 @@ class KaraokeTextState extends State<KaraokeText>
         shaderCallback: (bounds) {
           final p = progress.clamp(0.0, 1.0);
           return LinearGradient(
-            colors: [Colors.white, Colors.white, Colors.white.withAlpha(64)],
+            colors: [Colors.white, Colors.white, Colors.white.withAlpha(96)],
             stops: [0, p, p],
           ).createShader(Rect.fromLTWH(0, 0, bounds.width, bounds.height));
         },

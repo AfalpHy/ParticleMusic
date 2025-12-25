@@ -133,7 +133,13 @@ class LyricsPageState extends State<LyricsPage> {
                       left: 0,
                       right: 0,
                       top: 0,
-                      child: TitleBar(isMainPage: false),
+                      child: ValueListenableBuilder<bool>(
+                        valueListenable: immersiveModeNotifier,
+                        builder: (context, value, child) {
+                          return Offstage(offstage: value, child: child);
+                        },
+                        child: TitleBar(isMainPage: false),
+                      ),
                     ),
                   ],
                 ),

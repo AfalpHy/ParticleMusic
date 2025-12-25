@@ -146,9 +146,10 @@ class DesktopMainPage extends StatelessWidget with TrayListener {
                         },
                       );
                     },
-                    child: LyricsPage(),
+                    child: child,
                   );
                 },
+                child: LyricsPage(),
               ),
             );
           },
