@@ -24,6 +24,8 @@ final artistsUseLargePictureNotifier = ValueNotifier(false);
 final albumsIsAscendingNotifier = ValueNotifier(true);
 final albumsUseLargePictureNotifier = ValueNotifier(false);
 
+final playlistsUseLargePictureNotifier = ValueNotifier(true);
+
 late Setting setting;
 
 class Setting {
@@ -57,6 +59,10 @@ class Setting {
         json['albumsUseLargePicture'] as bool? ??
         albumsUseLargePictureNotifier.value;
 
+    playlistsUseLargePictureNotifier.value =
+        json['playlistsUseLargePicture'] as bool? ??
+        playlistsUseLargePictureNotifier.value;
+
     vibrationOnNoitifier.value =
         json['vibrationOn'] as bool? ?? vibrationOnNoitifier.value;
   }
@@ -70,6 +76,8 @@ class Setting {
 
         'albumsIsAscend': albumsIsAscendingNotifier.value,
         'albumsUseLargePicture': albumsUseLargePictureNotifier.value,
+
+        'playlistsUseLargePicture': playlistsUseLargePictureNotifier.value,
 
         'vibrationOn': vibrationOnNoitifier.value,
       }),

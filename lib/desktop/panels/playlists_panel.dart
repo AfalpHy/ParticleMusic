@@ -6,6 +6,7 @@ import 'package:particle_music/desktop/panels/panel_manager.dart';
 import 'package:particle_music/desktop/title_bar.dart';
 import 'package:particle_music/metadata.dart';
 import 'package:particle_music/playlists.dart';
+import 'package:particle_music/setting.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
 class PlaylistsPanel extends StatefulWidget {
@@ -19,8 +20,6 @@ class PlaylistsPanelState extends State<PlaylistsPanel> {
   final playlistsNotifier = ValueNotifier(playlistsManager.playlists);
   final textController = TextEditingController();
   late Widget searchField;
-
-  final useBigPictureNotifier = ValueNotifier(true);
 
   void filterPlaylists() {
     playlistsNotifier.value = playlistsManager.playlists.where((playlist) {
@@ -62,7 +61,7 @@ class PlaylistsPanelState extends State<PlaylistsPanel> {
     final panelWidth = (MediaQuery.widthOf(context) - 300);
 
     return ValueListenableBuilder(
-      valueListenable: useBigPictureNotifier,
+      valueListenable: playlistsUseLargePictureNotifier,
       builder: (context, value, child) {
         int crossAxisCount;
         double coverArtWidth;
@@ -125,7 +124,8 @@ class PlaylistsPanelState extends State<PlaylistsPanel> {
                                       inactiveColor: Colors.grey.shade300,
                                       value: value,
                                       onToggle: (value) async {
-                                        useBigPictureNotifier.value = value;
+                                        playlistsUseLargePictureNotifier.value =
+                                            value;
                                       },
                                     ),
                                     Spacer(),
