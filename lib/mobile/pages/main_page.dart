@@ -541,9 +541,10 @@ class HomePage extends StatelessWidget {
                   activeColor: mainColor,
                   inactiveColor: Colors.grey.shade300,
                   value: value,
-                  onToggle: (value) async {
+                  onToggle: (value) {
                     tryVibrate();
                     vibrationOnNoitifier.value = value;
+                    setting.saveSetting();
                   },
                 ),
               );

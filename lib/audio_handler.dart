@@ -56,11 +56,7 @@ abstract class MyAudioHandler extends BaseAudioHandler {
         (json['playQueueTmp'] as List<dynamic>?)?.cast<String>() ?? [];
     for (final path in tmp) {
       AudioMetadata? song;
-      if (Platform.isIOS) {
-        song = filePath2LibrarySong[path.substring(appDocs.path.length)];
-      } else {
-        song = filePath2LibrarySong[path];
-      }
+      song = filePath2LibrarySong[path];
       if (song != null) {
         _playQueueTmp.add(song);
       }
@@ -69,11 +65,7 @@ abstract class MyAudioHandler extends BaseAudioHandler {
     tmp = (json['playQueue'] as List<dynamic>?)?.cast<String>() ?? [];
     for (final path in tmp) {
       AudioMetadata? song;
-      if (Platform.isIOS) {
-        song = filePath2LibrarySong[path.substring(appDocs.path.length)];
-      } else {
-        song = filePath2LibrarySong[path];
-      }
+      song = filePath2LibrarySong[path];
       if (song != null) {
         playQueue.add(song);
       }
