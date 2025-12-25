@@ -100,9 +100,11 @@ abstract class MyAudioHandler extends BaseAudioHandler {
     final Map<String, dynamic> json =
         jsonDecode(content) as Map<String, dynamic>;
 
-    currentIndex = json['currentIndex'] as int;
-    playModeNotifier.value = json['playMode'] as int;
-    volumeNotifier.value = json['volume'] as double;
+    currentIndex = json['currentIndex'] as int? ?? -1;
+    playModeNotifier.value = json['playMode'] as int? ?? 0;
+    _tmpPlayMode = json['tmpPlayMode'] as int? ?? 0;
+
+    volumeNotifier.value = json['volume'] as double? ?? 0.3;
 
     if (currentIndex != -1 && playQueue.isNotEmpty) {
       // reload may make some songs not in the library to be removed
@@ -121,6 +123,7 @@ abstract class MyAudioHandler extends BaseAudioHandler {
       jsonEncode({
         'currentIndex': currentIndex,
         'playMode': playModeNotifier.value,
+        'tmpPlayMode': _tmpPlayMode,
         'volume': volumeNotifier.value,
       }),
     );
