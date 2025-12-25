@@ -169,8 +169,8 @@ abstract class MyAudioHandler extends BaseAudioHandler {
       shuffle();
     }
     await load();
-    await play();
     savePlayQueueState();
+    await play();
   }
 
   void shuffle() {
