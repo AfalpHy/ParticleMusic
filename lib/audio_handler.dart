@@ -113,6 +113,10 @@ abstract class MyAudioHandler extends BaseAudioHandler {
     volumeNotifier.value = json['volume'] as double;
 
     if (currentIndex != -1 && playQueue.isNotEmpty) {
+      // reload may make some songs not in the library to be removed
+      if (currentIndex >= playQueue.length) {
+        currentIndex = 0;
+      }
       await load();
     }
     if (!isMobile) {
@@ -162,15 +166,14 @@ abstract class MyAudioHandler extends BaseAudioHandler {
     }
   }
 
-  Future<void> loadPlayQueue(List<AudioMetadata> source) async {
+  Future<void> setPlayQueue(List<AudioMetadata> source) async {
     playQueue = List.from(source);
     if (playModeNotifier.value == 1 ||
         (playModeNotifier.value == 2 && audioHandler._tmpPlayMode == 1)) {
       shuffle();
     }
-    await load();
     savePlayQueueState();
-    await play();
+    await load();
   }
 
   void shuffle() {

@@ -69,7 +69,8 @@ class SongListTile extends StatelessWidget {
       visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
       onTap: () async {
         audioHandler.currentIndex = index;
-        await audioHandler.loadPlayQueue(source);
+        await audioHandler.setPlayQueue(source);
+        await audioHandler.play();
       },
       trailing: IconButton(
         icon: Icon(Icons.more_vert, size: 15),
