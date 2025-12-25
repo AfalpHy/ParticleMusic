@@ -35,15 +35,17 @@ class SongListPanel extends StatefulWidget {
 }
 
 class _SongListPanel extends State<SongListPanel> {
+  late String title;
+  late List<AudioMetadata> songList;
+  Playlist? playlist;
+  Timer? timer;
+
   final ValueNotifier<List<AudioMetadata>> currentSongListNotifier =
       ValueNotifier([]);
-  final textController = TextEditingController();
-  Playlist? playlist;
-  String title = 'Songs';
 
   final listIsScrollingNotifier = ValueNotifier(false);
   final scrollController = ScrollController();
-  Timer? timer;
+  final textController = TextEditingController();
 
   int continuousSelectBeginIndex = 0;
 
@@ -55,7 +57,7 @@ class _SongListPanel extends State<SongListPanel> {
 
   void updateSongList() {
     final value = textController.text;
-    currentSongListNotifier.value = filterSongs(playlist!.songs, value);
+    currentSongListNotifier.value = filterSongs(songList, value);
   }
 
   @override
@@ -66,44 +68,26 @@ class _SongListPanel extends State<SongListPanel> {
         ? const EdgeInsets.symmetric(horizontal: 30)
         : const EdgeInsets.fromLTRB(30, 0, 10, 0);
     if (playlist != null) {
-      currentSongListNotifier.value = playlist!.songs;
+      songList = playlist!.songs;
       title = playlist!.name;
-      onChanged = (value) {
-        currentSongListNotifier.value = filterSongs(playlist!.songs, value);
-      };
     } else if (widget.artist != null) {
-      currentSongListNotifier.value = artist2SongList[widget.artist]!;
+      songList = artist2SongList[widget.artist]!;
       title = widget.artist!;
-      onChanged = (value) {
-        currentSongListNotifier.value = filterSongs(
-          artist2SongList[widget.artist]!,
-          value,
-        );
-      };
     } else if (widget.album != null) {
-      currentSongListNotifier.value = album2SongList[widget.album]!;
+      songList = album2SongList[widget.album]!;
       title = widget.album!;
-      onChanged = (value) {
-        currentSongListNotifier.value = filterSongs(
-          album2SongList[widget.album]!,
-          value,
-        );
-      };
     } else if (widget.folder != null) {
-      currentSongListNotifier.value = folder2SongList[widget.folder]!;
+      songList = folder2SongList[widget.folder]!;
       title = widget.folder!;
-      onChanged = (value) {
-        currentSongListNotifier.value = filterSongs(
-          folder2SongList[widget.folder]!,
-          value,
-        );
-      };
     } else {
-      currentSongListNotifier.value = librarySongs;
-      onChanged = (value) {
-        currentSongListNotifier.value = filterSongs(librarySongs, value);
-      };
+      songList = librarySongs;
+      title = 'Songs';
     }
+    currentSongListNotifier.value = songList;
+
+    onChanged = (value) {
+      currentSongListNotifier.value = filterSongs(songList, value);
+    };
 
     playlist?.changeNotifier.addListener(updateSongList);
     searchField = titleSearchField(
@@ -203,10 +187,6 @@ class _SongListPanel extends State<SongListPanel> {
                         itemCount: currentSongList.length,
                         onReorder: (oldIndex, newIndex) {
                           if (newIndex > oldIndex) newIndex -= 1;
-                          final checkBoxitem = isSelectedList.removeAt(
-                            oldIndex,
-                          );
-                          isSelectedList.insert(newIndex, checkBoxitem);
 
                           final item = playlist!.songs.removeAt(oldIndex);
                           playlist!.songs.insert(newIndex, item);

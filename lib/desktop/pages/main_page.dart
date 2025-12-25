@@ -63,17 +63,11 @@ class DesktopMainPage extends StatelessWidget with TrayListener {
     } else if (menuItem.key == 'exit') {
       exit(0);
     } else if (menuItem.key == 'skipToPrevious') {
-      if (playQueue.isNotEmpty) {
-        await audioHandler.skipToPrevious();
-      }
+      await audioHandler.skipToPrevious();
     } else if (menuItem.key == 'togglePlay') {
-      if (playQueue.isNotEmpty) {
-        await audioHandler.togglePlay();
-      }
+      await audioHandler.togglePlay();
     } else if (menuItem.key == 'skipToNext') {
-      if (playQueue.isNotEmpty) {
-        await audioHandler.skipToNext();
-      }
+      await audioHandler.skipToNext();
     }
   }
 

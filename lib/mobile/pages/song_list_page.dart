@@ -40,6 +40,8 @@ class _SongListPageState extends State<SongListPage> {
   String? album;
   String? folder;
 
+  Timer? timer;
+
   final ValueNotifier<List<AudioMetadata>> currentSongListNotifier =
       ValueNotifier([]);
 
@@ -72,7 +74,7 @@ class _SongListPageState extends State<SongListPage> {
       songList = album2SongList[album]!;
       title = album!;
     } else if (folder != null) {
-      songList = folder2SongList[widget.folder]!;
+      songList = folder2SongList[folder]!;
       title = folder!;
     } else {
       songList = librarySongs;
@@ -256,7 +258,6 @@ class _SongListPageState extends State<SongListPage> {
   }
 
   Widget normalSongList() {
-    Timer? timer;
     return Stack(
       children: [
         NotificationListener<UserScrollNotification>(
