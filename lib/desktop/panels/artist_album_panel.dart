@@ -145,7 +145,7 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
                                       value: value,
                                       onToggle: (value) async {
                                         isAscendingNotifier.value = value;
-                                        setting.writeSetting();
+                                        setting.saveSetting();
                                         if (isArtist) {
                                           setting.sortArtists();
                                         } else {
@@ -177,7 +177,7 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
                                       value: value,
                                       onToggle: (value) async {
                                         useLargePictureNotifier.value = value;
-                                        setting.writeSetting();
+                                        setting.saveSetting();
                                       },
                                     );
                                   },

@@ -168,7 +168,7 @@ class ArtistsPage extends StatelessWidget {
                         onToggle: (value) async {
                           tryVibrate();
                           artistsIsListViewNotifier.value = value;
-                          setting.writeSetting();
+                          setting.saveSetting();
                         },
                       ),
                     ],
@@ -211,7 +211,7 @@ class ArtistsPage extends StatelessWidget {
                             onToggle: (value) async {
                               tryVibrate();
                               artistsUseLargePictureNotifier.value = value;
-                              setting.writeSetting();
+                              setting.saveSetting();
                             },
                           ),
                         ],
@@ -251,7 +251,7 @@ class ArtistsPage extends StatelessWidget {
                         onToggle: (value) async {
                           tryVibrate();
                           artistsIsAscendingNotifier.value = value;
-                          setting.writeSetting();
+                          setting.saveSetting();
                           setting.sortArtists();
 
                           updateCurrentMapEntryList();

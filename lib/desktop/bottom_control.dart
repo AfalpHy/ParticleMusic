@@ -246,6 +246,9 @@ class BottomControl extends StatelessWidget {
                       volumeNotifier.value = value;
                       audioHandler.setVolume(value);
                     },
+                    onChangeEnd: (value) {
+                      audioHandler.savePlayState();
+                    },
                   ),
                 );
               },

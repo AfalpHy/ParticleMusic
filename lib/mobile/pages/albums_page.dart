@@ -155,7 +155,7 @@ class AlbumsPage extends StatelessWidget {
                         onToggle: (value) async {
                           tryVibrate();
                           albumsUseLargePictureNotifier.value = value;
-                          setting.writeSetting();
+                          setting.saveSetting();
                         },
                       ),
                     ],
@@ -193,7 +193,7 @@ class AlbumsPage extends StatelessWidget {
                         onToggle: (value) async {
                           tryVibrate();
                           albumsIsAscendingNotifier.value = value;
-                          setting.writeSetting();
+                          setting.saveSetting();
                           setting.sortAlbums();
                           updateCurrentMapEntryList();
                         },

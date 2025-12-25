@@ -30,11 +30,11 @@ class Setting {
   final File file;
   Setting(this.file) {
     if (!(file.existsSync())) {
-      writeSetting();
+      saveSetting();
     }
   }
 
-  Future<void> readSetting() async {
+  Future<void> loadSetting() async {
     final content = await file.readAsString();
 
     final Map<String, dynamic> json =
@@ -58,7 +58,7 @@ class Setting {
         albumsUseLargePictureNotifier.value;
   }
 
-  void writeSetting() {
+  void saveSetting() {
     file.writeAsStringSync(
       jsonEncode({
         'artistsIsList': artistsIsListViewNotifier.value,

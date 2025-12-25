@@ -26,18 +26,6 @@ class PlayQueuePageState extends State<PlayQueuePage> {
   @override
   void initState() {
     super.initState();
-    displayPlayQueuePageNotifier.addListener(() {
-      if (displayPlayQueuePageNotifier.value) {
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          // using animateTo to avoid overscroll
-          scrollController.animateTo(
-            64.0 * audioHandler.currentIndex,
-            duration: Duration(milliseconds: 1),
-            curve: Curves.linear,
-          );
-        });
-      }
-    });
   }
 
   @override

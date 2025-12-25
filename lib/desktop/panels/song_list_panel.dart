@@ -466,14 +466,7 @@ class ListItemChildState extends State<ListItemChild> {
             ? IconButton(
                 onPressed: () async {
                   audioHandler.currentIndex = widget.index;
-                  playQueue = List.from(widget.currentSongList);
-                  if (playModeNotifier.value == 1 ||
-                      (playModeNotifier.value == 2 &&
-                          audioHandler.tmpPlayMode == 1)) {
-                    audioHandler.shuffle();
-                  }
-                  await audioHandler.load();
-                  await audioHandler.play();
+                  await audioHandler.loadPlayQueue(widget.currentSongList);
                 },
                 icon: Icon(Icons.play_arrow_rounded),
               )

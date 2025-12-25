@@ -73,8 +73,10 @@ class LibraryLoader {
       folderPaths = result.cast<String>();
     }
 
-    setting = Setting(File("${_appSupportDir.path}/setting.json"));
-    await setting.readSetting();
+    setting = Setting(File("${_appSupportDir.path}/setting.txt"));
+    await setting.loadSetting();
+
+    audioHandler.initStateFiles(_appSupportDir.path);
   }
 
   Future<void> load() async {
@@ -141,6 +143,9 @@ class LibraryLoader {
       swipeObserver.resetDeep();
     }
 
+    await audioHandler.loadPlayQueueState();
+    await audioHandler.loadPlayState();
+
     loadingLibraryNotifier.value = false;
   }
 
@@ -179,7 +184,7 @@ class LibraryLoader {
   }
 
   Future<void> reload() async {
-    audioHandler.clear();
+    audioHandler.clearForReload();
 
     librarySongs = [];
     filePath2LibrarySong = {};

@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart' as just_audio;
@@ -5,6 +6,7 @@ import 'package:audioplayers/audioplayers.dart' as audioplayers;
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/load_library.dart';
 import 'package:particle_music/lyrics.dart';
 import 'package:particle_music/setting.dart';
 import 'package:path_provider/path_provider.dart';
@@ -19,16 +21,114 @@ List<AudioMetadata> playQueue = [];
 Color coverArtAverageColor = Colors.grey;
 Color coverArtFilterColor = coverArtAverageColor.withAlpha(180);
 
-ValueNotifier<AudioMetadata?> currentSongNotifier = ValueNotifier(null);
-ValueNotifier<bool> isPlayingNotifier = ValueNotifier(false);
-ValueNotifier<int> playModeNotifier = ValueNotifier(0);
-late final ValueNotifier<double> volumeNotifier;
+final ValueNotifier<AudioMetadata?> currentSongNotifier = ValueNotifier(null);
+final ValueNotifier<bool> isPlayingNotifier = ValueNotifier(false);
+final ValueNotifier<int> playModeNotifier = ValueNotifier(0);
+final ValueNotifier<double> volumeNotifier = ValueNotifier(0.3);
 
 abstract class MyAudioHandler extends BaseAudioHandler {
   int currentIndex = -1;
-  List<AudioMetadata> playQueueTmp = [];
-  int tmpPlayMode = 0;
+  List<AudioMetadata> _playQueueTmp = [];
+  int _tmpPlayMode = 0;
   bool isloading = false;
+
+  late final File _playQueueState;
+  late final File _playState;
+
+  void initStateFiles(String supportPath) {
+    _playQueueState = File("$supportPath/playQueueState.txt");
+    if (!(_playQueueState.existsSync())) {
+      savePlayQueueState();
+    }
+    _playState = File("$supportPath/playState.txt");
+    if (!(_playState.existsSync())) {
+      savePlayState();
+    }
+  }
+
+  Future<void> loadPlayQueueState() async {
+    final content = await _playQueueState.readAsString();
+
+    final Map<String, dynamic> json =
+        jsonDecode(content) as Map<String, dynamic>;
+
+    List<String> tmp =
+        (json['playQueueTmp'] as List<dynamic>?)?.cast<String>() ?? [];
+    for (final path in tmp) {
+      AudioMetadata? song;
+      if (Platform.isIOS) {
+        song = filePath2LibrarySong[path.substring(appDocs.path.length)];
+      } else {
+        song = filePath2LibrarySong[path];
+      }
+      if (song != null) {
+        _playQueueTmp.add(song);
+      }
+    }
+
+    tmp = (json['playQueue'] as List<dynamic>?)?.cast<String>() ?? [];
+    for (final path in tmp) {
+      AudioMetadata? song;
+      if (Platform.isIOS) {
+        song = filePath2LibrarySong[path.substring(appDocs.path.length)];
+      } else {
+        song = filePath2LibrarySong[path];
+      }
+      if (song != null) {
+        playQueue.add(song);
+      }
+    }
+  }
+
+  void savePlayQueueState() {
+    if (Platform.isIOS) {
+      int prefixLength = appDocs.path.length;
+      _playQueueState.writeAsStringSync(
+        jsonEncode({
+          'playQueueTmp': _playQueueTmp
+              .map((s) => s.file.path.substring(prefixLength))
+              .toList(),
+          'playQueue': playQueue
+              .map((s) => s.file.path.substring(prefixLength))
+              .toList(),
+        }),
+      );
+    } else {
+      _playQueueState.writeAsStringSync(
+        jsonEncode({
+          'playQueueTmp': _playQueueTmp.map((s) => s.file.path).toList(),
+          'playQueue': playQueue.map((s) => s.file.path).toList(),
+        }),
+      );
+    }
+  }
+
+  Future<void> loadPlayState() async {
+    final content = await _playState.readAsString();
+    final Map<String, dynamic> json =
+        jsonDecode(content) as Map<String, dynamic>;
+
+    currentIndex = json['currentIndex'] as int;
+    playModeNotifier.value = json['playMode'] as int;
+    volumeNotifier.value = json['volume'] as double;
+
+    if (currentIndex != -1 && playQueue.isNotEmpty) {
+      await load();
+    }
+    if (!isMobile) {
+      setVolume(volumeNotifier.value);
+    }
+  }
+
+  void savePlayState() {
+    _playState.writeAsStringSync(
+      jsonEncode({
+        'currentIndex': currentIndex,
+        'playMode': playModeNotifier.value,
+        'volume': volumeNotifier.value,
+      }),
+    );
+  }
 
   bool insert2Next(int index, List<AudioMetadata> source) {
     final tmp = source[index];
@@ -47,10 +147,11 @@ abstract class MyAudioHandler extends BaseAudioHandler {
       }
     } else {
       playQueue.insert(currentIndex + 1, tmp);
-      if (playQueueTmp.isNotEmpty) {
-        playQueueTmp.add(tmp);
+      if (_playQueueTmp.isNotEmpty) {
+        _playQueueTmp.add(tmp);
       }
     }
+    savePlayQueueState();
     return true;
   }
 
@@ -61,11 +162,22 @@ abstract class MyAudioHandler extends BaseAudioHandler {
     }
   }
 
+  Future<void> loadPlayQueue(List<AudioMetadata> source) async {
+    playQueue = List.from(source);
+    if (playModeNotifier.value == 1 ||
+        (playModeNotifier.value == 2 && audioHandler._tmpPlayMode == 1)) {
+      shuffle();
+    }
+    await load();
+    await play();
+    savePlayQueueState();
+  }
+
   void shuffle() {
     if (playQueue.isEmpty) {
       return;
     }
-    playQueueTmp = List.from(playQueue);
+    _playQueueTmp = List.from(playQueue);
     final others = List.of(playQueue)..removeAt(currentIndex);
     others.shuffle();
     playQueue = [playQueue[currentIndex], ...others];
@@ -78,37 +190,51 @@ abstract class MyAudioHandler extends BaseAudioHandler {
     playMode %= 2;
     playModeNotifier.value = playMode;
     if (playMode == 0) {
-      playQueue = List.from(playQueueTmp);
-      playQueueTmp = [];
+      playQueue = List.from(_playQueueTmp);
+      _playQueueTmp = [];
       currentIndex = playQueue.indexOf(currentSongNotifier.value!);
+      savePlayQueueState();
     } else if (playMode == 1) {
       shuffle();
+      savePlayQueueState();
     }
+    savePlayState();
   }
 
   void toggleRepeat() {
     if (playModeNotifier.value != 2) {
-      tmpPlayMode = playModeNotifier.value;
+      _tmpPlayMode = playModeNotifier.value;
       playModeNotifier.value = 2;
     } else {
-      playModeNotifier.value = tmpPlayMode;
+      playModeNotifier.value = _tmpPlayMode;
     }
+    savePlayState();
   }
 
   void delete(int index) {
     AudioMetadata tmp = playQueue[index];
-    if (playQueueTmp.isNotEmpty) {
-      playQueueTmp.remove(tmp);
+    if (_playQueueTmp.isNotEmpty) {
+      _playQueueTmp.remove(tmp);
     }
     playQueue.removeAt(index);
+    savePlayQueueState();
   }
 
   void clear() {
     stop();
     playQueue = [];
-    playQueueTmp = [];
+    _playQueueTmp = [];
     lyrics = [];
     currentIndex = -1;
+    currentSongNotifier.value = null;
+    savePlayQueueState();
+    savePlayState();
+  }
+
+  void clearForReload() {
+    stop();
+    playQueue = [];
+    _playQueueTmp = [];
     currentSongNotifier.value = null;
   }
 
@@ -176,6 +302,8 @@ abstract class MyAudioHandler extends BaseAudioHandler {
 
   Future<void> load() async {
     if (currentIndex < 0 || currentIndex >= playQueue.length) return;
+    // save currentIndex
+    savePlayState();
 
     final currentSong = playQueue[currentIndex];
 
@@ -233,8 +361,6 @@ class WLAudioHandler extends MyAudioHandler {
   final _player = audioplayers.AudioPlayer();
 
   WLAudioHandler() {
-    _player.setVolume(0.3);
-    volumeNotifier = ValueNotifier(0.3);
     _player.onPlayerStateChanged.map(transformState).pipe(playbackState);
 
     _player.onPlayerComplete.listen((_) async {
@@ -364,10 +490,6 @@ class AIMAudioHandler extends MyAudioHandler {
   final _player = just_audio.AudioPlayer();
 
   AIMAudioHandler() {
-    if (Platform.isMacOS) {
-      _player.setVolume(0.3);
-      volumeNotifier = ValueNotifier(0.3);
-    }
     _player.playbackEventStream.map(transformEvent).pipe(playbackState);
 
     _player.processingStateStream.listen((state) async {

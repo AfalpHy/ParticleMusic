@@ -324,6 +324,9 @@ class LyricsPageState extends State<LyricsPage> {
                           volumeNotifier.value = value;
                           audioHandler.setVolume(value);
                         },
+                        onChangeEnd: (value) {
+                          audioHandler.savePlayState();
+                        },
                       ),
                     );
                   },
