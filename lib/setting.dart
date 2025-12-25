@@ -56,6 +56,9 @@ class Setting {
     albumsUseLargePictureNotifier.value =
         json['albumsUseLargePicture'] as bool? ??
         albumsUseLargePictureNotifier.value;
+
+    vibrationOnNoitifier.value =
+        json['vibrationOn'] as bool? ?? vibrationOnNoitifier.value;
   }
 
   void saveSetting() {
@@ -67,6 +70,8 @@ class Setting {
 
         'albumsIsAscend': albumsIsAscendingNotifier.value,
         'albumsUseLargePicture': albumsUseLargePictureNotifier.value,
+
+        'vibrationOn': vibrationOnNoitifier.value,
       }),
     );
   }
