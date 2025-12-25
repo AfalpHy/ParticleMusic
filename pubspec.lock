@@ -30,7 +30,7 @@ packages:
     description:
       path: "."
       ref: main
-      resolved-ref: "2a6b3314e2688a234237ff9615a674a03fc5c09f"
+      resolved-ref: "1183519cde6e6f84820f5be8bd51666c1269c279"
       url: "https://github.com/AfalpHy/audio_metadata_reader.git"
     source: git
     version: "1.4.2"
@@ -191,18 +191,18 @@ packages:
     dependency: transitive
     description:
       name: cross_file
-      sha256: "942a4791cd385a68ccb3b32c71c427aba508a1bb949b86dff2adbe4049f16239"
+      sha256: "701dcfc06da0882883a2657c445103380e53e647060ad8d9dfb710c100996608"
       url: "https://pub.dev"
     source: hosted
-    version: "0.3.5"
+    version: "0.3.5+1"
   crypto:
     dependency: transitive
     description:
       name: crypto
-      sha256: "1e445881f28f22d6140f181e07737b22f1e099a5e1ff94b0af2f9e4a463f4855"
+      sha256: c8ea0233063ba03258fbcf2ca4d6dadfefe14f02fab57702265467a19f27fadf
       url: "https://pub.dev"
     source: hosted
-    version: "3.0.6"
+    version: "3.0.7"
   dbus:
     dependency: transitive
     description:
@@ -271,10 +271,10 @@ packages:
     dependency: "direct main"
     description:
       name: file_picker
-      sha256: f2d9f173c2c14635cc0e9b14c143c49ef30b4934e8d1d274d6206fcb0086a06f
+      sha256: d974b6ba2606371ac71dd94254beefb6fa81185bde0b59bdc1df09885da85fde
       url: "https://pub.dev"
     source: hosted
-    version: "10.3.3"
+    version: "10.3.8"
   fixnum:
     dependency: transitive
     description:
@@ -308,10 +308,10 @@ packages:
     dependency: transitive
     description:
       name: flutter_plugin_android_lifecycle
-      sha256: "306f0596590e077338312f38837f595c04f28d6cdeeac392d3d74df2f0003687"
+      sha256: ee8068e0e1cd16c4a82714119918efdeed33b3ba7772c54b5d094ab53f9b7fd1
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.32"
+    version: "2.0.33"
   flutter_switch:
     dependency: "direct main"
     description:
@@ -334,10 +334,10 @@ packages:
     dependency: transitive
     description:
       name: http
-      sha256: bb2ce4590bc2667c96f318d68cac1b5a7987ec819351d32b1c987239a815e007
+      sha256: "87721a4a50b19c7f1d49001e51409bddc46303966ce89a65af4f4e6004896412"
       url: "https://pub.dev"
     source: hosted
-    version: "1.5.0"
+    version: "1.6.0"
   http_parser:
     dependency: transitive
     description:
@@ -350,10 +350,10 @@ packages:
     dependency: "direct main"
     description:
       name: image
-      sha256: "4e973fcf4caae1a4be2fa0a13157aa38a8f9cb049db6529aa00b4d71abc4d928"
+      sha256: "492bd52f6c4fbb6ee41f781ff27765ce5f627910e1e0cbecfa3d9add5562604c"
       url: "https://pub.dev"
     source: hosted
-    version: "4.5.4"
+    version: "4.7.2"
   intl:
     dependency: transitive
     description:
@@ -534,18 +534,18 @@ packages:
     dependency: transitive
     description:
       name: path_provider_android
-      sha256: e122c5ea805bb6773bb12ce667611265980940145be920cd09a4b0ec0285cb16
+      sha256: f2c65e21139ce2c3dad46922be8272bb5963516045659e71bb16e151c93b580e
       url: "https://pub.dev"
     source: hosted
-    version: "2.2.20"
+    version: "2.2.22"
   path_provider_foundation:
     dependency: transitive
     description:
       name: path_provider_foundation
-      sha256: efaec349ddfc181528345c56f8eda9d6cccd71c177511b132c6a0ddaefaa2738
+      sha256: "6d13aece7b3f5c5a9731eaf553ff9dcbc2eff41087fd2df587fd0fed9a3eb0c4"
       url: "https://pub.dev"
     source: hosted
-    version: "2.4.3"
+    version: "2.5.1"
   path_provider_linux:
     dependency: transitive
     description:
