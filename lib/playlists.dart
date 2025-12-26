@@ -104,7 +104,7 @@ class Playlist {
   File file;
   File settingFile;
   ValueNotifier<int> changeNotifier = ValueNotifier(0);
-  ValueNotifier<int> orderTypeNotifire = ValueNotifier(0);
+  ValueNotifier<int> sortTypeNotifire = ValueNotifier(0);
 
   Playlist({
     required this.name,
@@ -165,12 +165,12 @@ class Playlist {
     final Map<String, dynamic> json =
         jsonDecode(content) as Map<String, dynamic>;
 
-    orderTypeNotifire.value = json['orderType'] as int? ?? 0;
+    sortTypeNotifire.value = json['sortType'] as int? ?? 0;
   }
 
   void saveSetting() {
     settingFile.writeAsStringSync(
-      jsonEncode({'orderType': orderTypeNotifire.value}),
+      jsonEncode({'sortType': sortTypeNotifire.value}),
     );
   }
 }

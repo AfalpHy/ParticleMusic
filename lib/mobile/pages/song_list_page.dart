@@ -7,89 +7,27 @@ import 'package:flutter/rendering.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/load_library.dart';
 import 'package:particle_music/my_location.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/mobile/song_list_tile.dart';
+import 'package:particle_music/base_song_list.dart';
 import 'package:searchfield/searchfield.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
-class SongListPage extends StatefulWidget {
-  final Playlist? playlist;
-  final String? artist;
-  final String? album;
-  final String? folder;
-
+class SongListPage extends BaseSongListWidget {
   const SongListPage({
     super.key,
-    this.playlist,
-    this.artist,
-    this.album,
-    this.folder,
+    super.playlist,
+    super.artist,
+    super.album,
+    super.folder,
   });
 
   @override
-  State<StatefulWidget> createState() => _SongListPageState();
+  State<SongListPage> createState() => _SongListPageState();
 }
 
-class _SongListPageState extends State<SongListPage> {
-  late String title;
-  late List<AudioMetadata> songList;
-  Playlist? playlist;
-  String? artist;
-  String? album;
-  String? folder;
-
-  Timer? timer;
-
-  final ValueNotifier<List<AudioMetadata>> currentSongListNotifier =
-      ValueNotifier([]);
-
-  final listIsScrollingNotifier = ValueNotifier(false);
-  final scrollController = ScrollController();
-  final textController = TextEditingController();
-
-  void updateSongList() {
-    final value = textController.text;
-    currentSongListNotifier.value = filterSongs(songList, value);
-  }
-
-  @override
-  void initState() {
-    super.initState();
-
-    playlist = widget.playlist;
-    artist = widget.artist;
-    album = widget.album;
-    folder = widget.folder;
-
-    if (playlist != null) {
-      songList = playlist!.songs;
-      title = playlist!.name;
-      playlist!.changeNotifier.addListener(updateSongList);
-    } else if (artist != null) {
-      songList = artist2SongList[artist]!;
-      title = artist!;
-    } else if (album != null) {
-      songList = album2SongList[album]!;
-      title = album!;
-    } else if (folder != null) {
-      songList = folder2SongList[folder]!;
-      title = folder!;
-    } else {
-      songList = librarySongs;
-      title = 'Songs';
-    }
-
-    currentSongListNotifier.value = songList;
-  }
-
-  @override
-  void dispose() {
-    playlist?.changeNotifier.removeListener(updateSongList);
-    super.dispose();
-  }
-
+class _SongListPageState extends BaseSongListState<SongListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -232,6 +170,75 @@ class _SongListPageState extends State<SongListPage> {
                     playlist: playlist,
                   ),
                 ),
+              );
+            },
+          ),
+          ListTile(
+            leading: const ImageIcon(sequenceImage, color: Colors.black),
+            title: Text(
+              'Sort songs',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+            onTap: () {
+              Navigator.pop(context);
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                useRootNavigator: true,
+                builder: (context) {
+                  List<String> orderText = [
+                    'Default',
+                    'Title Ascending',
+                    'Title Descending',
+                    'Artist Ascending',
+                    'Artist Descending',
+                    'Album Ascending',
+                    'Album Descending',
+                    'Duration Ascending',
+                    'Duration Descending',
+                  ];
+                  List<Widget> orderWidget = [];
+                  for (int i = 0; i < orderText.length; i++) {
+                    String text = orderText[i];
+                    orderWidget.add(
+                      ValueListenableBuilder(
+                        valueListenable: sortTypeNotifier,
+                        builder: (context, value, child) {
+                          return ListTile(
+                            title: Text(text),
+                            onTap: () {
+                              sortTypeNotifier.value = i;
+                              playlist?.saveSetting();
+                              updateSongList();
+                            },
+                            trailing: value == i ? Icon(Icons.check) : null,
+                            dense: true,
+                            visualDensity: VisualDensity(
+                              horizontal: 0,
+                              vertical: -4,
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  }
+                  return mySheet(
+                    Column(
+                      children: [
+                        ListTile(title: Text('Select sorting type')),
+                        Divider(
+                          thickness: 0.5,
+                          height: 1,
+                          color: Colors.grey.shade300,
+                        ),
+
+                        ...orderWidget,
+                      ],
+                    ),
+                    height: 400,
+                  );
+                },
               );
             },
           ),

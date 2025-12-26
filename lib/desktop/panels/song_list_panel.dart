@@ -10,129 +10,41 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/desktop/keyboard.dart';
 import 'package:particle_music/desktop/title_bar.dart';
-import 'package:particle_music/load_library.dart';
 import 'package:particle_music/metadata.dart';
 import 'package:particle_music/my_location.dart';
 import 'package:particle_music/playlists.dart';
+import 'package:particle_music/base_song_list.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 import 'package:super_context_menu/super_context_menu.dart';
 
-class SongListPanel extends StatefulWidget {
-  final Playlist? playlist;
-  final String? artist;
-  final String? album;
-  final String? folder;
-
+class SongListPanel extends BaseSongListWidget {
   const SongListPanel({
     super.key,
-    this.playlist,
-    this.artist,
-    this.album,
-    this.folder,
+    super.playlist,
+    super.artist,
+    super.album,
+    super.folder,
   });
 
   @override
-  State<StatefulWidget> createState() => _SongListPanel();
+  State<SongListPanel> createState() => _SongListPanel();
 }
 
-class _SongListPanel extends State<SongListPanel> {
-  late String title;
-  late List<AudioMetadata> songList;
-  Playlist? playlist;
-  Timer? timer;
-
-  final ValueNotifier<List<AudioMetadata>> currentSongListNotifier =
-      ValueNotifier([]);
-
-  final listIsScrollingNotifier = ValueNotifier(false);
-  final scrollController = ScrollController();
-  final textController = TextEditingController();
-
-  ValueNotifier<int> orderTypeNotifier = ValueNotifier(0);
-
+class _SongListPanel extends BaseSongListState<SongListPanel> {
   int continuousSelectBeginIndex = 0;
 
   late Widget searchField;
 
   late EdgeInsets padding;
 
-  void updateSongList() {
-    final value = textController.text;
-    final filteredSongs = filterSongs(songList, value);
-    switch (orderTypeNotifier.value) {
-      case 1: // Title Ascending
-        filteredSongs.sort((a, b) {
-          return compareMixed(getTitle(a), getTitle(b));
-        });
-        break;
-      case 2: // Title Descending
-        filteredSongs.sort((a, b) {
-          return compareMixed(getTitle(b), getTitle(a));
-        });
-        break;
-      case 3: // Artist Ascending
-        filteredSongs.sort((a, b) {
-          return compareMixed(getArtist(a), getArtist(b));
-        });
-        break;
-      case 4: // Artist Descending
-        filteredSongs.sort((a, b) {
-          return compareMixed(getArtist(b), getArtist(a));
-        });
-        break;
-      case 5: // Album Ascending
-        filteredSongs.sort((a, b) {
-          return compareMixed(getAlbum(a), getAlbum(b));
-        });
-        break;
-      case 6: // Album Descending
-        filteredSongs.sort((a, b) {
-          return compareMixed(getAlbum(b), getAlbum(a));
-        });
-        break;
-      case 7: // Duration Ascending
-        filteredSongs.sort((a, b) {
-          return a.duration!.compareTo(b.duration!);
-        });
-        break;
-      case 8: // Duration Descending
-        filteredSongs.sort((a, b) {
-          return b.duration!.compareTo(a.duration!);
-        });
-        break;
-      default:
-        break;
-    }
-    currentSongListNotifier.value = filteredSongs;
-  }
-
   @override
   void initState() {
     super.initState();
-    playlist = widget.playlist;
-    padding = widget.folder == null
+
+    padding = folder == null
         ? const EdgeInsets.symmetric(horizontal: 30)
         : const EdgeInsets.fromLTRB(30, 0, 10, 0);
-    if (playlist != null) {
-      songList = playlist!.songs;
-      title = playlist!.name;
-      orderTypeNotifier = playlist!.orderTypeNotifire;
-    } else if (widget.artist != null) {
-      songList = artist2SongList[widget.artist]!;
-      title = widget.artist!;
-    } else if (widget.album != null) {
-      songList = album2SongList[widget.album]!;
-      title = widget.album!;
-    } else if (widget.folder != null) {
-      songList = folder2SongList[widget.folder]!;
-      title = widget.folder!;
-    } else {
-      songList = librarySongs;
-      title = 'Songs';
-    }
-    updateSongList();
 
-    playlist?.changeNotifier.addListener(updateSongList);
     searchField = titleSearchField(
       'Search Songs',
       textController: textController,
@@ -148,7 +60,6 @@ class _SongListPanel extends State<SongListPanel> {
 
   @override
   void dispose() {
-    playlist?.changeNotifier.removeListener(updateSongList);
     titleSearchFieldStack.remove(searchField);
     WidgetsBinding.instance.addPostFrameCallback((_) {
       updateTitleSearchField.value++;
@@ -209,7 +120,7 @@ class _SongListPanel extends State<SongListPanel> {
                         itemBuilder: (context, index) {
                           return playlist != null &&
                                   textController.text == '' &&
-                                  orderTypeNotifier.value == 0
+                                  sortTypeNotifier.value == 0
                               ? ReorderableDragStartListener(
                                   // reusing the same widget to avoid unnecessary rebuild
                                   key: ValueKey(currentSongList[index]),
@@ -249,7 +160,7 @@ class _SongListPanel extends State<SongListPanel> {
           ),
 
           Positioned(
-            right: widget.folder == null ? 120 : 100,
+            right: folder == null ? 120 : 100,
             bottom: 100,
             child: MyLocation(
               scrollController: scrollController,
@@ -409,12 +320,12 @@ class _SongListPanel extends State<SongListPanel> {
             child: InkWell(
               borderRadius: BorderRadius.circular(5),
               onTap: () {
-                if (orderTypeNotifier.value > 4) {
-                  orderTypeNotifier.value = 1;
-                } else if (orderTypeNotifier.value < 4) {
-                  orderTypeNotifier.value++;
+                if (sortTypeNotifier.value > 4) {
+                  sortTypeNotifier.value = 1;
+                } else if (sortTypeNotifier.value < 4) {
+                  sortTypeNotifier.value++;
                 } else {
-                  orderTypeNotifier.value = 0;
+                  sortTypeNotifier.value = 0;
                 }
                 playlist?.saveSetting();
                 updateSongList();
@@ -422,7 +333,7 @@ class _SongListPanel extends State<SongListPanel> {
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 5),
                 child: ValueListenableBuilder(
-                  valueListenable: orderTypeNotifier,
+                  valueListenable: sortTypeNotifier,
                   builder: (context, value, child) {
                     String text = 'Title & Artist';
                     switch (value) {
@@ -460,12 +371,12 @@ class _SongListPanel extends State<SongListPanel> {
             child: InkWell(
               borderRadius: BorderRadius.circular(5),
               onTap: () {
-                if (orderTypeNotifier.value == 5) {
-                  orderTypeNotifier.value = 6;
-                } else if (orderTypeNotifier.value == 6) {
-                  orderTypeNotifier.value = 0;
+                if (sortTypeNotifier.value == 5) {
+                  sortTypeNotifier.value = 6;
+                } else if (sortTypeNotifier.value == 6) {
+                  sortTypeNotifier.value = 0;
                 } else {
-                  orderTypeNotifier.value = 5;
+                  sortTypeNotifier.value = 5;
                 }
                 playlist?.saveSetting();
                 updateSongList();
@@ -476,7 +387,7 @@ class _SongListPanel extends State<SongListPanel> {
                   children: [
                     Text('Album', overflow: TextOverflow.ellipsis),
                     ValueListenableBuilder(
-                      valueListenable: orderTypeNotifier,
+                      valueListenable: sortTypeNotifier,
                       builder: (context, value, child) {
                         if (value == 5 || value == 6) {
                           return ImageIcon(
@@ -506,12 +417,12 @@ class _SongListPanel extends State<SongListPanel> {
             child: InkWell(
               borderRadius: BorderRadius.circular(5),
               onTap: () {
-                if (orderTypeNotifier.value == 7) {
-                  orderTypeNotifier.value = 8;
-                } else if (orderTypeNotifier.value == 8) {
-                  orderTypeNotifier.value = 0;
+                if (sortTypeNotifier.value == 7) {
+                  sortTypeNotifier.value = 8;
+                } else if (sortTypeNotifier.value == 8) {
+                  sortTypeNotifier.value = 0;
                 } else {
-                  orderTypeNotifier.value = 7;
+                  sortTypeNotifier.value = 7;
                 }
                 playlist?.saveSetting();
                 updateSongList();
@@ -522,7 +433,7 @@ class _SongListPanel extends State<SongListPanel> {
                   children: [
                     Text('Duration', overflow: TextOverflow.ellipsis),
                     ValueListenableBuilder(
-                      valueListenable: orderTypeNotifier,
+                      valueListenable: sortTypeNotifier,
                       builder: (context, value, child) {
                         if (value == 7 || value == 8) {
                           return ImageIcon(
