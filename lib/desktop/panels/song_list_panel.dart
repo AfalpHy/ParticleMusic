@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:auto_size_text/auto_size_text.dart';
@@ -366,7 +367,9 @@ class _SongListPanel extends State<SongListPanel> {
                         if (currentSongListNotifier.value.isEmpty) {
                           return;
                         }
-                        audioHandler.currentIndex = 0;
+                        audioHandler.currentIndex = Random().nextInt(
+                          currentSongListNotifier.value.length,
+                        );
                         playModeNotifier.value = 1;
                         await audioHandler.setPlayQueue(
                           currentSongListNotifier.value,
