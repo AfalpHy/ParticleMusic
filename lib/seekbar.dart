@@ -45,15 +45,17 @@ class SeekBarState extends State<SeekBar> {
                       formatDuration(
                         Duration(milliseconds: sliderValue.toInt()),
                       ),
-                      style: widget.light
-                          ? TextStyle(color: Colors.grey.shade50)
-                          : null,
+                      style: TextStyle(
+                        color: widget.light ? Colors.grey.shade50 : null,
+                        fontSize: isMobile ? null : 12.5,
+                      ),
                     ),
                     Text(
                       formatDuration(duration),
-                      style: widget.light
-                          ? TextStyle(color: Colors.grey.shade50)
-                          : null,
+                      style: TextStyle(
+                        color: widget.light ? Colors.grey.shade50 : null,
+                        fontSize: isMobile ? null : 12.5,
+                      ),
                     ),
                   ],
                 ),

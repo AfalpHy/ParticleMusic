@@ -224,7 +224,7 @@ class BottomControl extends StatelessWidget {
         Center(
           child: SizedBox(
             height: 20,
-            width: 140,
+            width: 120,
             child: ValueListenableBuilder(
               valueListenable: volumeNotifier,
               builder: (context, value, child) {
