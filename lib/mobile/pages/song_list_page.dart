@@ -208,7 +208,6 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
                             onTap: () {
                               sortTypeNotifier.value = i;
                               playlist?.saveSetting();
-                              updateSongList();
                             },
                             trailing: value == i ? Icon(Icons.check) : null,
                             dense: true,

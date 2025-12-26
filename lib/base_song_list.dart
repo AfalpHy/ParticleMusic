@@ -64,7 +64,6 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
       songList = playlist!.songs;
       title = playlist!.name;
       sortTypeNotifier = playlist!.sortTypeNotifire;
-      sortTypeNotifier.addListener(updateSongList);
       playlist!.changeNotifier.addListener(updateSongList);
     } else if (artist != null) {
       songList = artist2SongList[artist]!;
@@ -80,14 +79,15 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
       title = 'Songs';
     }
     updateSongList();
+    sortTypeNotifier.addListener(updateSongList);
   }
 
   @override
   void dispose() {
     if (playlist != null) {
-      sortTypeNotifier.removeListener(updateSongList);
       playlist!.changeNotifier.removeListener(updateSongList);
     }
+    sortTypeNotifier.removeListener(updateSongList);
     scrollController.dispose();
     textController.dispose();
     super.dispose();
