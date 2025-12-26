@@ -258,6 +258,53 @@ List<AudioMetadata> filterSongs(List<AudioMetadata> songList, String value) {
   }).toList();
 }
 
+void sortSongs(int sortType, List<AudioMetadata> songList) {
+  switch (sortType) {
+    case 1: // Title Ascending
+      songList.sort((a, b) {
+        return compareMixed(getTitle(a), getTitle(b));
+      });
+      break;
+    case 2: // Title Descending
+      songList.sort((a, b) {
+        return compareMixed(getTitle(b), getTitle(a));
+      });
+      break;
+    case 3: // Artist Ascending
+      songList.sort((a, b) {
+        return compareMixed(getArtist(a), getArtist(b));
+      });
+      break;
+    case 4: // Artist Descending
+      songList.sort((a, b) {
+        return compareMixed(getArtist(b), getArtist(a));
+      });
+      break;
+    case 5: // Album Ascending
+      songList.sort((a, b) {
+        return compareMixed(getAlbum(a), getAlbum(b));
+      });
+      break;
+    case 6: // Album Descending
+      songList.sort((a, b) {
+        return compareMixed(getAlbum(b), getAlbum(a));
+      });
+      break;
+    case 7: // Duration Ascending
+      songList.sort((a, b) {
+        return a.duration!.compareTo(b.duration!);
+      });
+      break;
+    case 8: // Duration Descending
+      songList.sort((a, b) {
+        return b.duration!.compareTo(a.duration!);
+      });
+      break;
+    default:
+      break;
+  }
+}
+
 String formatDuration(Duration duration) {
   String twoDigits(int n) => n.toString().padLeft(2, "0");
   final minutes = twoDigits(duration.inMinutes.remainder(60));

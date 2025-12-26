@@ -372,6 +372,9 @@ class SelectableSongListPage extends StatefulWidget {
 
 class SelectableSongListPageState extends State<SelectableSongListPage> {
   final textController = TextEditingController();
+
+  ValueNotifier<int> sortTypeNotifier = ValueNotifier(0);
+
   final ValueNotifier<bool> isSearch = ValueNotifier(false);
 
   Widget searchField() {
@@ -381,7 +384,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
         return value
             ? Expanded(
                 child: Padding(
-                  padding: const EdgeInsets.fromLTRB(20, 0, 20, 0),
+                  padding: const EdgeInsets.fromLTRB(50, 0, 0, 0),
                   child: SizedBox(
                     height: 30,
                     child: SearchField(
@@ -428,12 +431,130 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
     );
   }
 
+  Widget moreButton(BuildContext context) {
+    return IconButton(
+      icon: Icon(Icons.more_vert),
+      onPressed: () {
+        tryVibrate();
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          useRootNavigator: true,
+          builder: (context) {
+            return moreSheet(context);
+          },
+        ).then((value) {
+          if (value == true && context.mounted) {
+            Navigator.pop(context);
+          }
+        });
+      },
+    );
+  }
+
+  Widget moreSheet(BuildContext context) {
+    return mySheet(
+      Column(
+        children: [
+          ListTile(
+            title: SizedBox(
+              height: 40,
+              width: appWidth * 0.9,
+              child: Row(
+                children: [
+                  Expanded(
+                    child: MyAutoSizeText(
+                      'Select',
+                      maxLines: 1,
+                      textStyle: TextStyle(fontSize: 15),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+          Divider(thickness: 0.5, height: 1, color: Colors.grey.shade300),
+
+          ListTile(
+            leading: const ImageIcon(sequenceImage, color: Colors.black),
+            title: Text(
+              'Sort songs',
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+            onTap: () {
+              Navigator.pop(context);
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                useRootNavigator: true,
+                builder: (context) {
+                  List<String> orderText = [
+                    'Default',
+                    'Title Ascending',
+                    'Title Descending',
+                    'Artist Ascending',
+                    'Artist Descending',
+                    'Album Ascending',
+                    'Album Descending',
+                    'Duration Ascending',
+                    'Duration Descending',
+                  ];
+                  List<Widget> orderWidget = [];
+                  for (int i = 0; i < orderText.length; i++) {
+                    String text = orderText[i];
+                    orderWidget.add(
+                      ValueListenableBuilder(
+                        valueListenable: sortTypeNotifier,
+                        builder: (context, value, child) {
+                          return ListTile(
+                            title: Text(text),
+                            onTap: () {
+                              sortTypeNotifier.value = i;
+                              setState(() {});
+                            },
+                            trailing: value == i ? Icon(Icons.check) : null,
+                            dense: true,
+                            visualDensity: VisualDensity(
+                              horizontal: 0,
+                              vertical: -4,
+                            ),
+                          );
+                        },
+                      ),
+                    );
+                  }
+                  return mySheet(
+                    Column(
+                      children: [
+                        ListTile(title: Text('Select sorting type')),
+                        Divider(
+                          thickness: 0.5,
+                          height: 1,
+                          color: Colors.grey.shade300,
+                        ),
+
+                        ...orderWidget,
+                      ],
+                    ),
+                    height: 400,
+                  );
+                },
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     List<AudioMetadata> songList = filterSongs(
       widget.songList,
       textController.text,
     );
+    sortSongs(sortTypeNotifier.value, songList);
     final playlist = widget.playlist;
     final List<ValueNotifier<bool>> isSelectedList = List.generate(
       songList.length,
@@ -453,7 +574,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
       appBar: AppBar(
         backgroundColor: Colors.grey.shade50,
         scrolledUnderElevation: 0,
-        actions: [searchField()],
+        actions: [searchField(), moreButton(context)],
       ),
       body: Column(
         children: [
@@ -489,59 +610,49 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
             ],
           ),
           Expanded(
-            child: playlist == null || textController.text.isNotEmpty
-                ? ListView.builder(
-                    itemCount: songList.length,
-                    itemBuilder: (_, index) {
-                      return SelectableSongListTile(
-                        index: index,
-                        source: songList,
-                        isSelected: isSelectedList[index],
-                        selectedNum: selectedNum,
-                      );
-                    },
-                  )
-                : ReorderableListView.builder(
-                    buildDefaultDragHandles: false,
-                    onReorder: (oldIndex, newIndex) {
-                      if (newIndex > oldIndex) newIndex -= 1;
-                      final checkBoxitem = isSelectedList.removeAt(oldIndex);
-                      isSelectedList.insert(newIndex, checkBoxitem);
+            child: ReorderableListView.builder(
+              buildDefaultDragHandles: false,
+              onReorder: (oldIndex, newIndex) {
+                if (newIndex > oldIndex) newIndex -= 1;
+                final checkBoxitem = isSelectedList.removeAt(oldIndex);
+                isSelectedList.insert(newIndex, checkBoxitem);
 
-                      final item = widget.songList.removeAt(oldIndex);
-                      widget.songList.insert(newIndex, item);
-                      songList = widget.songList;
+                final item = widget.songList.removeAt(oldIndex);
+                widget.songList.insert(newIndex, item);
+                songList = widget.songList;
 
-                      playlist.update();
-                    },
-                    onReorderStart: (_) {
-                      tryVibrate();
-                    },
-                    onReorderEnd: (_) {
-                      tryVibrate();
-                    },
-                    proxyDecorator:
-                        (Widget child, int index, Animation<double> animation) {
-                          return Material(
-                            elevation: 0.1,
-                            color: Colors
-                                .grey
-                                .shade100, // background color while moving
-                            child: child,
-                          );
-                        },
-                    itemCount: widget.songList.length,
-                    itemBuilder: (_, index) {
-                      return SelectableSongListTile(
-                        key: ValueKey(widget.songList[index]),
-                        index: index,
-                        source: widget.songList,
-                        isSelected: isSelectedList[index],
-                        selectedNum: selectedNum,
-                        reorderable: true,
-                      );
-                    },
-                  ),
+                playlist!.update();
+              },
+              onReorderStart: (_) {
+                tryVibrate();
+              },
+              onReorderEnd: (_) {
+                tryVibrate();
+              },
+              proxyDecorator:
+                  (Widget child, int index, Animation<double> animation) {
+                    return Material(
+                      elevation: 0.1,
+                      color:
+                          Colors.grey.shade100, // background color while moving
+                      child: child,
+                    );
+                  },
+              itemCount: songList.length,
+              itemBuilder: (_, index) {
+                return SelectableSongListTile(
+                  key: ValueKey(songList[index]),
+                  index: index,
+                  source: songList,
+                  isSelected: isSelectedList[index],
+                  selectedNum: selectedNum,
+                  reorderable:
+                      playlist != null &&
+                      textController.text.isEmpty &&
+                      sortTypeNotifier.value == 0,
+                );
+              },
+            ),
           ),
         ],
       ),

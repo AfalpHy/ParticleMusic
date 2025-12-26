@@ -47,50 +47,7 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
   void updateSongList() {
     final value = textController.text;
     final filteredSongs = filterSongs(songList, value);
-    switch (sortTypeNotifier.value) {
-      case 1: // Title Ascending
-        filteredSongs.sort((a, b) {
-          return compareMixed(getTitle(a), getTitle(b));
-        });
-        break;
-      case 2: // Title Descending
-        filteredSongs.sort((a, b) {
-          return compareMixed(getTitle(b), getTitle(a));
-        });
-        break;
-      case 3: // Artist Ascending
-        filteredSongs.sort((a, b) {
-          return compareMixed(getArtist(a), getArtist(b));
-        });
-        break;
-      case 4: // Artist Descending
-        filteredSongs.sort((a, b) {
-          return compareMixed(getArtist(b), getArtist(a));
-        });
-        break;
-      case 5: // Album Ascending
-        filteredSongs.sort((a, b) {
-          return compareMixed(getAlbum(a), getAlbum(b));
-        });
-        break;
-      case 6: // Album Descending
-        filteredSongs.sort((a, b) {
-          return compareMixed(getAlbum(b), getAlbum(a));
-        });
-        break;
-      case 7: // Duration Ascending
-        filteredSongs.sort((a, b) {
-          return a.duration!.compareTo(b.duration!);
-        });
-        break;
-      case 8: // Duration Descending
-        filteredSongs.sort((a, b) {
-          return b.duration!.compareTo(a.duration!);
-        });
-        break;
-      default:
-        break;
-    }
+    sortSongs(sortTypeNotifier.value, filteredSongs);
     currentSongListNotifier.value = filteredSongs;
   }
 
