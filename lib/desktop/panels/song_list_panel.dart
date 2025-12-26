@@ -174,55 +174,12 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
     );
   }
 
-  Widget mainCover() {
-    if (playlist == null) {
-      return songList.isNotEmpty
-          ? ValueListenableBuilder(
-              valueListenable: songIsUpdated[songList.first]!,
-              builder: (_, _, _) {
-                return CoverArtWidget(
-                  size: 180,
-                  borderRadius: 10,
-                  source: getCoverArt(songList.first),
-                );
-              },
-            )
-          : CoverArtWidget(size: 200, borderRadius: 10, source: null);
-    } else {
-      return ValueListenableBuilder(
-        valueListenable: playlist!.changeNotifier,
-        builder: (context, value, child) {
-          return songList.isNotEmpty
-              ? ValueListenableBuilder(
-                  valueListenable: songIsUpdated[songList.first]!,
-                  builder: (_, _, _) {
-                    return CoverArtWidget(
-                      size: 180,
-                      borderRadius: 10,
-                      source: getCoverArt(songList.first),
-                    );
-                  },
-                )
-              : CoverArtWidget(size: 200, borderRadius: 10, source: null);
-        },
-      );
-    }
-  }
-
   Widget titleHeader() {
     return SizedBox(
       height: 200,
       child: Row(
         children: [
-          Material(
-            elevation: 5,
-            color: Color.fromARGB(255, 235, 240, 245),
-            shape: SmoothRectangleBorder(
-              smoothness: 1,
-              borderRadius: BorderRadius.circular(10),
-            ),
-            child: mainCover(),
-          ),
+          mainCover(180),
           SizedBox(width: 10),
           Expanded(
             child: Column(

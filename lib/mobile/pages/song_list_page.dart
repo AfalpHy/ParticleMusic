@@ -4,7 +4,6 @@ import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/my_location.dart';
@@ -12,7 +11,6 @@ import 'package:particle_music/playlists.dart';
 import 'package:particle_music/mobile/song_list_tile.dart';
 import 'package:particle_music/base_song_list.dart';
 import 'package:searchfield/searchfield.dart';
-import 'package:smooth_corner/smooth_corner.dart';
 
 class SongListPage extends BaseSongListWidget {
   const SongListPage({
@@ -295,27 +293,7 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
                     Row(
                       children: [
                         SizedBox(width: 20),
-
-                        Material(
-                          elevation: 5,
-                          shape: SmoothRectangleBorder(
-                            smoothness: 1,
-                            borderRadius: BorderRadius.circular(9),
-                          ),
-                          child: ValueListenableBuilder(
-                            valueListenable: currentSongListNotifier,
-                            builder: (context, currentSongList, child) {
-                              return CoverArtWidget(
-                                size: 120,
-                                borderRadius: 9,
-                                source: currentSongList.isNotEmpty
-                                    ? getCoverArt(currentSongList.first)
-                                    : null,
-                              );
-                            },
-                          ),
-                        ),
-
+                        mainCover(120),
                         Expanded(
                           child: ListTile(
                             title: AutoSizeText(

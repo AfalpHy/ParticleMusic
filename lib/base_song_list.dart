@@ -3,8 +3,11 @@ import 'dart:async';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/load_library.dart';
+import 'package:particle_music/metadata.dart';
 import 'package:particle_music/playlists.dart';
+import 'package:smooth_corner/smooth_corner.dart';
 
 abstract class BaseSongListWidget extends StatefulWidget {
   final Playlist? playlist;
@@ -128,5 +131,33 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
     scrollController.dispose();
     textController.dispose();
     super.dispose();
+  }
+
+  Widget mainCover(double size) {
+    return Material(
+      elevation: 5,
+      shape: SmoothRectangleBorder(
+        smoothness: 1,
+        borderRadius: BorderRadius.circular(10),
+      ),
+      child: ValueListenableBuilder(
+        valueListenable: currentSongListNotifier,
+        builder: (_, _, _) {
+          if (songList.isEmpty) {
+            return CoverArtWidget(size: size, borderRadius: 10, source: null);
+          }
+          return ValueListenableBuilder(
+            valueListenable: songIsUpdated[songList.first]!,
+            builder: (_, _, _) {
+              return CoverArtWidget(
+                size: size,
+                borderRadius: 10,
+                source: getCoverArt(songList.first),
+              );
+            },
+          );
+        },
+      ),
+    );
   }
 }
