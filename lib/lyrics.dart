@@ -21,7 +21,6 @@ class LyricToken {
 class LyricLine {
   final Duration start;
   final String text;
-  Duration? end;
   List<LyricToken> tokens = [];
   LyricLine(this.start, this.text, this.tokens);
 }
@@ -61,8 +60,8 @@ Future<void> parseLyricsFile(AudioMetadata song) async {
     if (lineMatch == null) continue;
 
     final lineStart = parseTime(lineMatch);
-    if (lyrics.isNotEmpty && lyrics.last.end == null) {
-      lyrics.last.end = lineStart;
+
+    if (lyrics.isNotEmpty && lyrics.last.tokens.last.end == null) {
       lyrics.last.tokens.last.end = lineStart;
     }
 
@@ -97,9 +96,8 @@ Future<void> parseLyricsFile(AudioMetadata song) async {
   if (lyrics.isEmpty) {
     lyrics.add(LyricLine(Duration.zero, 'lyrics parsing failed', []));
   } else {
-    if (lyrics.last.end == null) {
-      lyrics.last.end = song.duration!;
-      lyrics.last.tokens.last.end = song.duration!;
+    if (lyrics.last.tokens.last.end == null) {
+      lyrics.last.tokens.last.end = song.duration;
     }
   }
 }
