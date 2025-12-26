@@ -285,7 +285,6 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                   sortTypeNotifier.value = 0;
                 }
                 playlist?.saveSetting();
-                updateSongList();
               },
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 5),
@@ -336,7 +335,6 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                   sortTypeNotifier.value = 5;
                 }
                 playlist?.saveSetting();
-                updateSongList();
               },
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 5),
@@ -382,7 +380,6 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                   sortTypeNotifier.value = 7;
                 }
                 playlist?.saveSetting();
-                updateSongList();
               },
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 5),
