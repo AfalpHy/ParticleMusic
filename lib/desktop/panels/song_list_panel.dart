@@ -47,17 +47,62 @@ class _SongListPanel extends State<SongListPanel> {
   final scrollController = ScrollController();
   final textController = TextEditingController();
 
+  ValueNotifier<int> orderTypeNotifier = ValueNotifier(0);
+
   int continuousSelectBeginIndex = 0;
 
   late Widget searchField;
-
-  late Function(String) onChanged;
 
   late EdgeInsets padding;
 
   void updateSongList() {
     final value = textController.text;
-    currentSongListNotifier.value = filterSongs(songList, value);
+    final filteredSongs = filterSongs(songList, value);
+    switch (orderTypeNotifier.value) {
+      case 1: // Title Ascending
+        filteredSongs.sort((a, b) {
+          return compareMixed(getTitle(a), getTitle(b));
+        });
+        break;
+      case 2: // Title Descending
+        filteredSongs.sort((a, b) {
+          return compareMixed(getTitle(b), getTitle(a));
+        });
+        break;
+      case 3: // Artist Ascending
+        filteredSongs.sort((a, b) {
+          return compareMixed(getArtist(a), getArtist(b));
+        });
+        break;
+      case 4: // Artist Descending
+        filteredSongs.sort((a, b) {
+          return compareMixed(getArtist(b), getArtist(a));
+        });
+        break;
+      case 5: // Album Ascending
+        filteredSongs.sort((a, b) {
+          return compareMixed(getAlbum(a), getAlbum(b));
+        });
+        break;
+      case 6: // Album Descending
+        filteredSongs.sort((a, b) {
+          return compareMixed(getAlbum(b), getAlbum(a));
+        });
+        break;
+      case 7: // Duration Ascending
+        filteredSongs.sort((a, b) {
+          return a.duration!.compareTo(b.duration!);
+        });
+        break;
+      case 8: // Duration Descending
+        filteredSongs.sort((a, b) {
+          return b.duration!.compareTo(a.duration!);
+        });
+        break;
+      default:
+        break;
+    }
+    currentSongListNotifier.value = filteredSongs;
   }
 
   @override
@@ -70,6 +115,7 @@ class _SongListPanel extends State<SongListPanel> {
     if (playlist != null) {
       songList = playlist!.songs;
       title = playlist!.name;
+      orderTypeNotifier = playlist!.orderTypeNotifire;
     } else if (widget.artist != null) {
       songList = artist2SongList[widget.artist]!;
       title = widget.artist!;
@@ -83,17 +129,15 @@ class _SongListPanel extends State<SongListPanel> {
       songList = librarySongs;
       title = 'Songs';
     }
-    currentSongListNotifier.value = songList;
-
-    onChanged = (value) {
-      currentSongListNotifier.value = filterSongs(songList, value);
-    };
+    updateSongList();
 
     playlist?.changeNotifier.addListener(updateSongList);
     searchField = titleSearchField(
       'Search Songs',
       textController: textController,
-      onChanged: onChanged,
+      onChanged: (_) {
+        updateSongList();
+      },
     );
     titleSearchFieldStack.add(searchField);
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -162,7 +206,9 @@ class _SongListPanel extends State<SongListPanel> {
                       return SliverReorderableList(
                         itemExtent: 60,
                         itemBuilder: (context, index) {
-                          return playlist != null && textController.text == ''
+                          return playlist != null &&
+                                  textController.text == '' &&
+                                  orderTypeNotifier.value == 0
                               ? ReorderableDragStartListener(
                                   // reusing the same widget to avoid unnecessary rebuild
                                   key: ValueKey(currentSongList[index]),
@@ -216,49 +262,136 @@ class _SongListPanel extends State<SongListPanel> {
     );
   }
 
-  Widget titleHeader() {
-    return ValueListenableBuilder(
-      valueListenable: currentSongListNotifier,
-      builder: (context, songList, child) {
-        return Row(
-          children: [
-            Material(
-              elevation: 5,
-              color: Color.fromARGB(255, 235, 240, 245),
-              shape: SmoothRectangleBorder(
-                smoothness: 1,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: songList.isNotEmpty
-                  ? ValueListenableBuilder(
-                      valueListenable: songIsUpdated[songList.first]!,
-                      builder: (_, _, _) {
-                        return CoverArtWidget(
-                          size: 200,
-                          borderRadius: 10,
-                          source: getCoverArt(songList.first),
-                        );
-                      },
-                    )
-                  : CoverArtWidget(size: 200, borderRadius: 10, source: null),
-            ),
+  Widget mainCover() {
+    if (playlist == null) {
+      return songList.isNotEmpty
+          ? ValueListenableBuilder(
+              valueListenable: songIsUpdated[songList.first]!,
+              builder: (_, _, _) {
+                return CoverArtWidget(
+                  size: 180,
+                  borderRadius: 10,
+                  source: getCoverArt(songList.first),
+                );
+              },
+            )
+          : CoverArtWidget(size: 200, borderRadius: 10, source: null);
+    } else {
+      return ValueListenableBuilder(
+        valueListenable: playlist!.changeNotifier,
+        builder: (context, value, child) {
+          return songList.isNotEmpty
+              ? ValueListenableBuilder(
+                  valueListenable: songIsUpdated[songList.first]!,
+                  builder: (_, _, _) {
+                    return CoverArtWidget(
+                      size: 180,
+                      borderRadius: 10,
+                      source: getCoverArt(songList.first),
+                    );
+                  },
+                )
+              : CoverArtWidget(size: 200, borderRadius: 10, source: null);
+        },
+      );
+    }
+  }
 
-            Expanded(
-              child: ListTile(
-                title: AutoSizeText(
-                  title,
-                  maxLines: 1,
-                  minFontSize: 20,
-                  maxFontSize: 20,
-                  overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text("${songList.length} songs"),
-              ),
+  Widget titleHeader() {
+    return SizedBox(
+      height: 200,
+      child: Row(
+        children: [
+          Material(
+            elevation: 5,
+            color: Color.fromARGB(255, 235, 240, 245),
+            shape: SmoothRectangleBorder(
+              smoothness: 1,
+              borderRadius: BorderRadius.circular(10),
             ),
-          ],
-        );
-      },
+            child: mainCover(),
+          ),
+          SizedBox(width: 10),
+          Expanded(
+            child: Column(
+              children: [
+                SizedBox(height: 30),
+                ListTile(
+                  title: AutoSizeText(
+                    title,
+                    maxLines: 1,
+                    minFontSize: 20,
+                    maxFontSize: 20,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  subtitle: ValueListenableBuilder(
+                    valueListenable: currentSongListNotifier,
+                    builder: (context, songList, child) {
+                      return Text("${songList.length} songs");
+                    },
+                  ),
+                ),
+                Spacer(),
+
+                Row(
+                  children: [
+                    SizedBox(width: 10),
+                    ElevatedButton(
+                      onPressed: () async {
+                        if (currentSongListNotifier.value.isEmpty) {
+                          return;
+                        }
+                        audioHandler.currentIndex = 0;
+                        playModeNotifier.value = 0;
+                        await audioHandler.setPlayQueue(
+                          currentSongListNotifier.value,
+                        );
+                        await audioHandler.play();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color.fromARGB(255, 240, 245, 250),
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        padding: EdgeInsets.all(10),
+                      ),
+                      child: Text('Play All'),
+                    ),
+                    SizedBox(width: 15),
+
+                    ElevatedButton(
+                      onPressed: () async {
+                        if (currentSongListNotifier.value.isEmpty) {
+                          return;
+                        }
+                        audioHandler.currentIndex = 0;
+                        playModeNotifier.value = 1;
+                        await audioHandler.setPlayQueue(
+                          currentSongListNotifier.value,
+                        );
+                        await audioHandler.play();
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Color.fromARGB(255, 240, 245, 250),
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(5),
+                        ),
+                        padding: EdgeInsets.all(10),
+                      ),
+                      child: Text('Shuffle'),
+                    ),
+                    SizedBox(width: 10),
+                  ],
+                ),
+                SizedBox(height: 30),
+              ],
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -269,13 +402,96 @@ class _SongListPanel extends State<SongListPanel> {
         children: [
           SizedBox(width: 60, child: Center(child: Text('#'))),
 
-          Expanded(child: Text('Title', overflow: TextOverflow.ellipsis)),
+          Expanded(
+            child: InkWell(
+              borderRadius: BorderRadius.circular(5),
+              onTap: () {
+                if (orderTypeNotifier.value > 4) {
+                  orderTypeNotifier.value = 1;
+                } else if (orderTypeNotifier.value < 4) {
+                  orderTypeNotifier.value++;
+                } else {
+                  orderTypeNotifier.value = 0;
+                }
+                playlist?.saveSetting();
+                updateSongList();
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 5),
+                child: ValueListenableBuilder(
+                  valueListenable: orderTypeNotifier,
+                  builder: (context, value, child) {
+                    String text = 'Title & Artist';
+                    switch (value) {
+                      case 1:
+                      case 2:
+                        text = 'Title';
+                        break;
+                      case 3:
+                      case 4:
+                        text = 'Artist';
+                        break;
+                    }
+                    return Row(
+                      children: [
+                        Text(text, overflow: TextOverflow.ellipsis),
+                        if (value > 0 && value <= 4)
+                          ImageIcon(
+                            (value == 1 || value == 3)
+                                ? longArrowUpImage
+                                : longArrowDownImage,
+                            size: 20,
+                            color: Colors.black54,
+                          ),
+                      ],
+                    );
+                  },
+                ),
+              ),
+            ),
+          ),
 
-          SizedBox(width: 30),
+          SizedBox(width: 10),
 
-          Expanded(child: Text('Album', overflow: TextOverflow.ellipsis)),
+          Expanded(
+            child: InkWell(
+              borderRadius: BorderRadius.circular(5),
+              onTap: () {
+                if (orderTypeNotifier.value == 5) {
+                  orderTypeNotifier.value = 6;
+                } else if (orderTypeNotifier.value == 6) {
+                  orderTypeNotifier.value = 0;
+                } else {
+                  orderTypeNotifier.value = 5;
+                }
+                playlist?.saveSetting();
+                updateSongList();
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 5),
+                child: Row(
+                  children: [
+                    Text('Album', overflow: TextOverflow.ellipsis),
+                    ValueListenableBuilder(
+                      valueListenable: orderTypeNotifier,
+                      builder: (context, value, child) {
+                        if (value == 5 || value == 6) {
+                          return ImageIcon(
+                            value == 5 ? longArrowUpImage : longArrowDownImage,
+                            size: 20,
+                            color: Colors.black54,
+                          );
+                        }
+                        return SizedBox.shrink();
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          ),
 
-          SizedBox(width: 20),
+          SizedBox(width: 10),
 
           SizedBox(
             width: 80,
@@ -283,8 +499,42 @@ class _SongListPanel extends State<SongListPanel> {
           ),
 
           SizedBox(
-            width: 80,
-            child: Text('Duration', overflow: TextOverflow.ellipsis),
+            width: 90,
+            child: InkWell(
+              borderRadius: BorderRadius.circular(5),
+              onTap: () {
+                if (orderTypeNotifier.value == 7) {
+                  orderTypeNotifier.value = 8;
+                } else if (orderTypeNotifier.value == 8) {
+                  orderTypeNotifier.value = 0;
+                } else {
+                  orderTypeNotifier.value = 7;
+                }
+                playlist?.saveSetting();
+                updateSongList();
+              },
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 5),
+                child: Row(
+                  children: [
+                    Text('Duration', overflow: TextOverflow.ellipsis),
+                    ValueListenableBuilder(
+                      valueListenable: orderTypeNotifier,
+                      builder: (context, value, child) {
+                        if (value == 7 || value == 8) {
+                          return ImageIcon(
+                            value == 7 ? longArrowUpImage : longArrowDownImage,
+                            size: 20,
+                            color: Colors.black54,
+                          );
+                        }
+                        return SizedBox.shrink();
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            ),
           ),
         ],
       ),
@@ -525,80 +775,81 @@ class ListItemChildState extends State<ListItemChild> {
         builder: (context, value, child) {
           return Material(
             color: value ? Colors.white : Color.fromARGB(255, 235, 240, 245),
-            child: MouseRegion(
-              onEnter: (event) {
-                showPlayButtonNotifier.value = true;
-              },
-              onExit: (event) {
-                showPlayButtonNotifier.value = false;
-              },
-              child: InkWell(
-                highlightColor: Colors.transparent,
-                splashColor: Colors.transparent,
-                mouseCursor: SystemMouseCursors.basic,
-
-                onTap: widget.onTap,
-                child: ValueListenableBuilder(
-                  valueListenable: songIsUpdated[song]!,
-                  builder: (_, _, _) {
-                    return Row(
-                      children: [
-                        SizedBox(
-                          width: 60,
-                          child: Center(child: indexOrPlayButton()),
-                        ),
-
-                        Expanded(child: songListTile(song)),
-
-                        SizedBox(width: 30),
-
-                        Expanded(
-                          child: Text(
-                            getAlbum(song),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-
-                        SizedBox(width: 20),
-                        SizedBox(
-                          width: 80,
-                          child: Align(
-                            alignment: AlignmentGeometry.centerLeft,
-                            child: IconButton(
-                              onPressed: () {
-                                toggleFavoriteState(song);
-                              },
-                              icon: ValueListenableBuilder(
-                                valueListenable: songIsFavorite[song]!,
-                                builder: (context, value, child) {
-                                  return value
-                                      ? Icon(
-                                          Icons.favorite_rounded,
-                                          color: Colors.red,
-                                          size: 20,
-                                        )
-                                      : Icon(Icons.favorite_outline, size: 20);
-                                },
-                              ),
-                            ),
-                          ),
-                        ),
-
-                        SizedBox(
-                          width: 80,
-                          child: Text(
-                            formatDuration(getDuration(song)),
-                            overflow: TextOverflow.ellipsis,
-                          ),
-                        ),
-                      ],
-                    );
-                  },
-                ),
-              ),
-            ),
+            child: child,
           );
         },
+        child: MouseRegion(
+          onEnter: (event) {
+            showPlayButtonNotifier.value = true;
+          },
+          onExit: (event) {
+            showPlayButtonNotifier.value = false;
+          },
+          child: InkWell(
+            highlightColor: Colors.transparent,
+            splashColor: Colors.transparent,
+            mouseCursor: SystemMouseCursors.basic,
+
+            onTap: widget.onTap,
+            child: ValueListenableBuilder(
+              valueListenable: songIsUpdated[song]!,
+              builder: (_, _, _) {
+                return Row(
+                  children: [
+                    SizedBox(
+                      width: 60,
+                      child: Center(child: indexOrPlayButton()),
+                    ),
+
+                    Expanded(child: songListTile(song)),
+
+                    SizedBox(width: 10),
+
+                    Expanded(
+                      child: Text(
+                        getAlbum(song),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+
+                    SizedBox(width: 10),
+                    SizedBox(
+                      width: 80,
+                      child: Align(
+                        alignment: AlignmentGeometry.centerLeft,
+                        child: IconButton(
+                          onPressed: () {
+                            toggleFavoriteState(song);
+                          },
+                          icon: ValueListenableBuilder(
+                            valueListenable: songIsFavorite[song]!,
+                            builder: (context, value, child) {
+                              return value
+                                  ? Icon(
+                                      Icons.favorite_rounded,
+                                      color: Colors.red,
+                                      size: 20,
+                                    )
+                                  : Icon(Icons.favorite_outline, size: 20);
+                            },
+                          ),
+                        ),
+                      ),
+                    ),
+
+                    SizedBox(
+                      width: 90,
+                      child: Text(
+                        formatDuration(getDuration(song)),
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        ),
       ),
     );
   }

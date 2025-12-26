@@ -225,10 +225,7 @@ class ArtistsPage extends StatelessWidget {
 
           ListTile(
             leading: const ImageIcon(sequenceImage, color: Colors.black),
-            title: Text(
-              'Sequence',
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
+            title: Text('Order', style: TextStyle(fontWeight: FontWeight.bold)),
             visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
             trailing: ValueListenableBuilder(
               valueListenable: artistsIsAscendingNotifier,

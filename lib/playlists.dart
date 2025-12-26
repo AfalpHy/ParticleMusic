@@ -54,7 +54,14 @@ class PlaylistsManager {
     }
 
     File playlistFile = File("${file.parent.path}/$name.json");
-    addPlaylist(Playlist(name: name, file: playlistFile));
+    File playlistSettingFile = File("${file.parent.path}/${name}_setting.txt");
+    addPlaylist(
+      Playlist(
+        name: name,
+        file: playlistFile,
+        settingFile: playlistSettingFile,
+      ),
+    );
 
     update();
   }
@@ -95,11 +102,22 @@ class Playlist {
   String name;
   List<AudioMetadata> songs = [];
   File file;
+  File settingFile;
   ValueNotifier<int> changeNotifier = ValueNotifier(0);
+  ValueNotifier<int> orderTypeNotifire = ValueNotifier(0);
 
-  Playlist({required this.name, required this.file}) {
+  Playlist({
+    required this.name,
+    required this.file,
+    required this.settingFile,
+  }) {
     if (!file.existsSync()) {
       file.createSync();
+    }
+    if (!settingFile.existsSync()) {
+      saveSetting();
+    } else {
+      loadSetting();
     }
   }
 
@@ -140,6 +158,20 @@ class Playlist {
       );
     }
     changeNotifier.value++;
+  }
+
+  void loadSetting() {
+    final content = settingFile.readAsStringSync();
+    final Map<String, dynamic> json =
+        jsonDecode(content) as Map<String, dynamic>;
+
+    orderTypeNotifire.value = json['orderType'] as int? ?? 0;
+  }
+
+  void saveSetting() {
+    settingFile.writeAsStringSync(
+      jsonEncode({'orderType': orderTypeNotifire.value}),
+    );
   }
 }
 

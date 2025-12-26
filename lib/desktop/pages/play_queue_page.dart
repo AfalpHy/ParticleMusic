@@ -374,22 +374,23 @@ class PlayQueueItemChildState extends State<PlayQueueItemChild> {
         builder: (context, value, child) {
           return Material(
             color: value ? Colors.grey.shade300 : Colors.transparent,
-            child: MouseRegion(
-              onEnter: (_) {
-                showPlayButtonNotifier.value = true;
-              },
-              onExit: (_) {
-                showPlayButtonNotifier.value = false;
-              },
-              child: InkWell(
-                highlightColor: Colors.transparent,
-                splashColor: Colors.transparent,
-                onTap: widget.onTap,
-                child: songListTile(),
-              ),
-            ),
+            child: child,
           );
         },
+        child: MouseRegion(
+          onEnter: (_) {
+            showPlayButtonNotifier.value = true;
+          },
+          onExit: (_) {
+            showPlayButtonNotifier.value = false;
+          },
+          child: InkWell(
+            highlightColor: Colors.transparent,
+            splashColor: Colors.transparent,
+            onTap: widget.onTap,
+            child: songListTile(),
+          ),
+        ),
       ),
     );
   }

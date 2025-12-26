@@ -59,6 +59,7 @@ class LibraryLoader {
       final playlist = Playlist(
         name: name,
         file: File("${_appSupportDir.path}/$name.json"),
+        settingFile: File("${_appSupportDir.path}/${name}_setting.json"),
       );
       playlistsManager.addPlaylist(playlist);
     }

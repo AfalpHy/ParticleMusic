@@ -29,6 +29,12 @@ const AssetImage fullscreenImage = AssetImage('assets/images/fullscreen.png');
 const AssetImage gridImage = AssetImage('assets/images/grid.png');
 const AssetImage infoImage = AssetImage('assets/images/info.png');
 const AssetImage listImage = AssetImage('assets/images/list.png');
+const AssetImage longArrowDownImage = AssetImage(
+  'assets/images/long_arrow_down.png',
+);
+const AssetImage longArrowUpImage = AssetImage(
+  'assets/images/long_arrow_up.png',
+);
 const AssetImage loopImage = AssetImage('assets/images/loop.png');
 const AssetImage maximizeImage = AssetImage('assets/images/maximize.png');
 const AssetImage minimizeImage = AssetImage('assets/images/minimize.png');
