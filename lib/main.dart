@@ -7,6 +7,7 @@ import 'package:particle_music/desktop/desktop_lyrics.dart';
 import 'package:particle_music/desktop/pages/main_page.dart';
 import 'package:particle_music/desktop/single_instance.dart';
 import 'package:particle_music/load_library.dart';
+import 'package:particle_music/logger.dart';
 import 'package:particle_music/mobile/pages/main_page.dart';
 import 'package:audio_service/audio_service.dart';
 import 'dart:async';
@@ -19,6 +20,7 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   if (isMobile) {
+    await logger.init();
     await SystemChrome.setPreferredOrientations([
       DeviceOrientation.portraitUp, // only allow portrait
     ]);
@@ -42,8 +44,12 @@ Future<void> main() async {
       return;
     }
 
+    await logger.init();
+
+    logger.output('App init');
+
     if (kReleaseMode) {
-      await singleInstance.init();
+      await startAsSingleInstance();
     }
 
     WindowOptions windowOptions = WindowOptions(
@@ -136,6 +142,6 @@ Future<void> main() async {
       ),
     ),
   );
-
+  logger.output('App start');
   await libraryLoader.load();
 }
