@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:particle_music/mobile/pages/albums_page.dart';
 import 'package:particle_music/mobile/pages/artists_page.dart';
@@ -216,12 +217,14 @@ class HomePage extends StatelessWidget {
   }
 
   Widget buildLibrary(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return ListView(
       physics: ClampingScrollPhysics(),
       children: [
         ListTile(
           leading: const ImageIcon(playlistsImage, size: 35, color: mainColor),
-          title: Text('Playlists'),
+          title: Text(l10n.playlists),
           onTap: () {
             Navigator.of(
               context,
@@ -230,7 +233,7 @@ class HomePage extends StatelessWidget {
         ),
         ListTile(
           leading: const ImageIcon(artistImage, size: 35, color: mainColor),
-          title: Text('Artists'),
+          title: Text(l10n.artists),
           onTap: () {
             Navigator.of(
               context,
@@ -239,7 +242,7 @@ class HomePage extends StatelessWidget {
         ),
         ListTile(
           leading: const ImageIcon(albumImage, size: 35, color: mainColor),
-          title: Text('Albums'),
+          title: Text(l10n.albums),
           onTap: () {
             Navigator.of(
               context,
@@ -249,7 +252,7 @@ class HomePage extends StatelessWidget {
 
         ListTile(
           leading: const ImageIcon(folderImage, size: 35, color: mainColor),
-          title: Text('Folders'),
+          title: Text(l10n.folders),
           onTap: () {
             Navigator.of(
               context,
@@ -259,7 +262,7 @@ class HomePage extends StatelessWidget {
 
         ListTile(
           leading: const ImageIcon(songsImage, size: 35, color: mainColor),
-          title: Text('Songs'),
+          title: Text(l10n.songs),
           onTap: () {
             Navigator.of(
               context,
@@ -271,6 +274,8 @@ class HomePage extends StatelessWidget {
   }
 
   Widget buildSetting(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return ListView(
       physics: ClampingScrollPhysics(),
       children: [
@@ -519,6 +524,66 @@ class HomePage extends StatelessWidget {
                         ),
                         SizedBox(height: 10),
                       ],
+                    ),
+                  ),
+                );
+              },
+            );
+          },
+        ),
+        ListTile(
+          leading: ImageIcon(infoImage, color: mainColor),
+          title: Text(l10n.language),
+          onTap: () {
+            showDialog(
+              context: context,
+              builder: (context) {
+                return Dialog(
+                  backgroundColor: Color.fromARGB(255, 235, 240, 245),
+                  shape: SmoothRectangleBorder(
+                    smoothness: 1,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: SizedBox(
+                    height: 300,
+                    width: 100,
+                    child: ValueListenableBuilder(
+                      valueListenable: localeNotifier,
+                      builder: (context, value, child) {
+                        final l10n = AppLocalizations.of(context);
+
+                        return ListView(
+                          children: [
+                            ListTile(
+                              title: Text(l10n.followSystem),
+                              onTap: () {
+                                localeNotifier.value = null;
+                              },
+                              trailing: value == null
+                                  ? Icon(Icons.check)
+                                  : null,
+                            ),
+                            ListTile(
+                              title: Text('English'),
+                              onTap: () {
+                                localeNotifier.value = Locale('en');
+                              },
+                              trailing: value == Locale('en')
+                                  ? Icon(Icons.check)
+                                  : null,
+                            ),
+                            ListTile(
+                              title: Text('中文'),
+                              onTap: () {
+                                localeNotifier.value = Locale('zh');
+                              },
+                              trailing: value == Locale('zh')
+                                  ? Icon(Icons.check)
+                                  : null,
+                            ),
+                          ],
+                        );
+                      },
                     ),
                   ),
                 );

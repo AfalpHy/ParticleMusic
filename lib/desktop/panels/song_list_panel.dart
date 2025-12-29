@@ -10,6 +10,7 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/desktop/keyboard.dart';
 import 'package:particle_music/desktop/title_bar.dart';
+import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/metadata.dart';
 import 'package:particle_music/my_location.dart';
 import 'package:particle_music/playlists.dart';
@@ -187,7 +188,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                 SizedBox(height: 30),
                 ListTile(
                   title: AutoSizeText(
-                    title,
+                    isLibrary ? AppLocalizations.of(context).songs : title,
                     maxLines: 1,
                     minFontSize: 20,
                     maxFontSize: 20,

@@ -1,0 +1,14 @@
+{
+  "artists": "艺术家",
+  "albums": "专辑",
+  "folders": "文件夹",
+  "songs": "所有歌曲",
+  "playlists": "歌单",
+  "language": "语言",
+  "playQueue": "播放列表",
+  "followSystem": "跟随系统",
+  "settings": "设置",
+  "reload": "重新加载",
+  "selectMusicFolder": "选择音乐文件夹",
+  "openSourceLicense": "开源许可证"
+}

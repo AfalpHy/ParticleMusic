@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
+import 'package:particle_music/l10n/generated/app_localizations.dart';
 
 class PlayQueueSheet extends StatefulWidget {
   const PlayQueueSheet({super.key});
@@ -25,6 +26,8 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return mySheet(
       Column(
         children: [
@@ -43,7 +46,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
               children: [
                 SizedBox(width: 15),
                 Text(
-                  'Play Queue',
+                  l10n.playQueue,
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 Spacer(),

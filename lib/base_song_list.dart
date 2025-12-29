@@ -33,6 +33,8 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
   String? album;
   String? folder;
 
+  bool isLibrary = false;
+
   Timer? timer;
 
   final ValueNotifier<List<AudioMetadata>> currentSongListNotifier =
@@ -76,7 +78,7 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
       title = folder!;
     } else {
       songList = librarySongs;
-      title = 'Songs';
+      isLibrary = true;
     }
     updateSongList();
     sortTypeNotifier.addListener(updateSongList);

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/desktop/panels/panel_manager.dart';
+import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/metadata.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:smooth_corner/smooth_corner.dart';
@@ -64,6 +65,8 @@ class Sidebar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Material(
       color: Color.fromARGB(255, 240, 245, 250),
       child: SizedBox(
@@ -106,7 +109,7 @@ class Sidebar extends StatelessWidget {
                           size: 30,
                           color: mainColor,
                         ),
-                        content: 'Artists',
+                        content: l10n.artists,
 
                         onTap: () {
                           panelManager.pushPanel(1);
@@ -123,7 +126,7 @@ class Sidebar extends StatelessWidget {
                           size: 30,
                           color: mainColor,
                         ),
-                        content: 'Albums',
+                        content: l10n.albums,
 
                         onTap: () {
                           panelManager.pushPanel(2);
@@ -140,7 +143,7 @@ class Sidebar extends StatelessWidget {
                           size: 30,
                           color: mainColor,
                         ),
-                        content: 'Songs',
+                        content: l10n.songs,
 
                         onTap: () {
                           panelManager.pushPanel(0);
@@ -157,7 +160,7 @@ class Sidebar extends StatelessWidget {
                           size: 30,
                           color: mainColor,
                         ),
-                        content: 'Folders',
+                        content: l10n.folders,
 
                         onTap: () {
                           panelManager.pushPanel(-4);
@@ -183,7 +186,7 @@ class Sidebar extends StatelessWidget {
                           size: 30,
                           color: mainColor,
                         ),
-                        content: 'Playlists',
+                        content: l10n.playlists,
                         contentPadding: EdgeInsets.fromLTRB(16, 0, 8, 0),
 
                         trailing: IconButton(

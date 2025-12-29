@@ -2,10 +2,12 @@ import 'dart:io';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/desktop_lyrics.dart';
 import 'package:particle_music/desktop/pages/main_page.dart';
 import 'package:particle_music/desktop/single_instance.dart';
+import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:particle_music/logger.dart';
 import 'package:particle_music/mobile/pages/main_page.dart';
@@ -101,45 +103,58 @@ Future<void> main() async {
   await libraryLoader.initial();
 
   runApp(
-    MaterialApp(
-      theme: Platform.isWindows
-          ? ThemeData(fontFamily: 'Microsoft YaHei')
-          : null,
-      title: 'Particle Music',
-      home: ValueListenableBuilder(
-        valueListenable: loadingLibraryNotifier,
-        builder: (context, value, child) {
-          if (!value) {
-            return isMobile ? MobileMainPage() : DesktopMainPage();
-          }
-          return Scaffold(
-            backgroundColor: Color.fromARGB(255, 235, 240, 245),
-            body: Center(
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  CircularProgressIndicator(color: mainColor),
-                  SizedBox(height: 15),
-                  ValueListenableBuilder(
-                    valueListenable: currentLoadingFolderNotifier,
-                    builder: (context, value, child) {
-                      return Text('Loading Folder: $value');
-                    },
-                  ),
-                  SizedBox(height: 5),
+    ValueListenableBuilder(
+      valueListenable: localeNotifier,
+      builder: (_, locale, _) {
+        return MaterialApp(
+          locale: locale,
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: const [
+            AppLocalizations.delegate,
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          theme: Platform.isWindows
+              ? ThemeData(fontFamily: 'Microsoft YaHei')
+              : null,
+          title: 'Particle Music',
+          home: ValueListenableBuilder(
+            valueListenable: loadingLibraryNotifier,
+            builder: (context, value, child) {
+              if (!value) {
+                return isMobile ? MobileMainPage() : DesktopMainPage();
+              }
+              return Scaffold(
+                backgroundColor: Color.fromARGB(255, 235, 240, 245),
+                body: Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      CircularProgressIndicator(color: mainColor),
+                      SizedBox(height: 15),
+                      ValueListenableBuilder(
+                        valueListenable: currentLoadingFolderNotifier,
+                        builder: (context, value, child) {
+                          return Text('Loading Folder: $value');
+                        },
+                      ),
+                      SizedBox(height: 5),
 
-                  ValueListenableBuilder(
-                    valueListenable: loadedCountNotifier,
-                    builder: (context, value, child) {
-                      return Text('Loaded Songs: $value');
-                    },
+                      ValueListenableBuilder(
+                        valueListenable: loadedCountNotifier,
+                        builder: (context, value, child) {
+                          return Text('Loaded Songs: $value');
+                        },
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
-          );
-        },
-      ),
+                ),
+              );
+            },
+          ),
+        );
+      },
     ),
   );
   logger.output('App start');

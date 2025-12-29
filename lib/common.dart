@@ -11,6 +11,7 @@ import 'package:path/path.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
 final isMobile = Platform.isAndroid || Platform.isIOS;
+final ValueNotifier<Locale?> localeNotifier = ValueNotifier(null);
 
 const Color mainColor = Color.fromARGB(255, 120, 230, 230);
 late double appWidth;

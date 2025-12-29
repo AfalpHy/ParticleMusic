@@ -21,7 +21,7 @@ class Logger {
     final dir = await getApplicationSupportDirectory();
     final time = formatForFileName(DateTime.now());
     _file = File('${dir.path}/logs/$time.log');
-    _file.writeAsStringSync('');
+    _file.createSync(recursive: true);
   }
 
   void output(String msg) {

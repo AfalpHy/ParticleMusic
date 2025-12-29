@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/my_location.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/mobile/song_list_tile.dart';
@@ -296,7 +297,9 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
                         Expanded(
                           child: ListTile(
                             title: AutoSizeText(
-                              title,
+                              isLibrary
+                                  ? AppLocalizations.of(context).songs
+                                  : title,
                               maxLines: 1,
                               minFontSize: 20,
                               maxFontSize: 20,

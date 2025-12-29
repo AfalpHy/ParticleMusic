@@ -1,0 +1,14 @@
+{
+  "artists": "Artists",
+  "albums": "Albums",
+  "folders": "Folders",
+  "songs": "Songs",
+  "playlists": "Playlists",
+  "language": "Language",
+  "playQueue": "Play Queue",
+  "followSystem": "Follow System",
+  "settings": "Settings",
+  "reload": "Reload",
+  "selectMusicFolder": "Select Music Folders",
+  "openSourceLicense": "Open Source License"
+}

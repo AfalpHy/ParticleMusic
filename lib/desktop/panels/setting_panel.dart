@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/panels/panel_manager.dart';
 import 'package:particle_music/desktop/title_bar.dart';
+import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
@@ -38,6 +39,8 @@ class SettingPanelState extends State<SettingPanel> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Material(
       color: Color.fromARGB(255, 235, 240, 245),
 
@@ -58,7 +61,7 @@ class SettingPanelState extends State<SettingPanel> {
                           color: mainColor,
                         ),
                         title: Text(
-                          'Settings',
+                          l10n.settings,
                           style: TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -88,7 +91,7 @@ class SettingPanelState extends State<SettingPanel> {
                       color: Color.fromARGB(255, 235, 240, 245),
                       child: ListTile(
                         leading: ImageIcon(reloadImage, color: mainColor),
-                        title: const Text('Reload'),
+                        title: Text(l10n.reload),
                         onTap: () async {
                           if (await showConfirmDialog(
                             context,
@@ -110,7 +113,7 @@ class SettingPanelState extends State<SettingPanel> {
                       color: Color.fromARGB(255, 235, 240, 245),
                       child: ListTile(
                         leading: ImageIcon(folderImage, color: mainColor),
-                        title: const Text('Select Music Folders'),
+                        title: Text(l10n.selectMusicFolder),
                         onTap: () {
                           showDialog(
                             context: context,
@@ -245,9 +248,89 @@ class SettingPanelState extends State<SettingPanel> {
                       color: Color.fromARGB(255, 235, 240, 245),
                       child: ListTile(
                         leading: ImageIcon(infoImage, color: mainColor),
-                        title: const Text('Open Source Licenses'),
+                        title: Text(l10n.openSourceLicense),
                         onTap: () {
                           panelManager.pushPanel(-2);
+                        },
+                      ),
+                    ),
+                  ),
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 30),
+                  child: SmoothClipRRect(
+                    smoothness: 1,
+                    borderRadius: BorderRadius.circular(15),
+                    child: Material(
+                      color: Color.fromARGB(255, 235, 240, 245),
+                      child: ListTile(
+                        leading: ImageIcon(infoImage, color: mainColor),
+                        title: Text(l10n.language),
+                        onTap: () {
+                          showDialog(
+                            context: context,
+                            builder: (context) {
+                              return Dialog(
+                                backgroundColor: Color.fromARGB(
+                                  255,
+                                  235,
+                                  240,
+                                  245,
+                                ),
+                                shape: SmoothRectangleBorder(
+                                  smoothness: 1,
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                child: SizedBox(
+                                  height: 300,
+                                  width: 100,
+                                  child: ValueListenableBuilder(
+                                    valueListenable: localeNotifier,
+                                    builder: (context, value, child) {
+                                      final l10n = AppLocalizations.of(context);
+
+                                      return ListView(
+                                        children: [
+                                          ListTile(
+                                            title: Text(l10n.followSystem),
+                                            onTap: () {
+                                              localeNotifier.value = null;
+                                            },
+                                            trailing: value == null
+                                                ? Icon(Icons.check)
+                                                : null,
+                                          ),
+                                          ListTile(
+                                            title: Text('English'),
+                                            onTap: () {
+                                              localeNotifier.value = Locale(
+                                                'en',
+                                              );
+                                            },
+                                            trailing: value == Locale('en')
+                                                ? Icon(Icons.check)
+                                                : null,
+                                          ),
+                                          ListTile(
+                                            title: Text('中文'),
+                                            onTap: () {
+                                              localeNotifier.value = Locale(
+                                                'zh',
+                                              );
+                                            },
+                                            trailing: value == Locale('zh')
+                                                ? Icon(Icons.check)
+                                                : null,
+                                          ),
+                                        ],
+                                      );
+                                    },
+                                  ),
+                                ),
+                              );
+                            },
+                          );
                         },
                       ),
                     ),

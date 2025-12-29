@@ -4,6 +4,7 @@ import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/panels/panel_manager.dart';
 import 'package:particle_music/desktop/title_bar.dart';
+import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/metadata.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/setting.dart';
@@ -59,6 +60,7 @@ class PlaylistsPanelState extends State<PlaylistsPanel> {
   @override
   Widget build(BuildContext context) {
     final panelWidth = (MediaQuery.widthOf(context) - 300);
+    final l10n = AppLocalizations.of(context);
 
     return ValueListenableBuilder(
       valueListenable: playlistsUseLargePictureNotifier,
@@ -91,7 +93,7 @@ class PlaylistsPanelState extends State<PlaylistsPanel> {
                             color: mainColor,
                           ),
                           title: Text(
-                            'Playlists',
+                            l10n.playlists,
                             style: TextStyle(
                               fontSize: 20,
                               fontWeight: FontWeight.bold,

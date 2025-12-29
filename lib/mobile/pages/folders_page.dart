@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
+import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:particle_music/mobile/pages/song_list_page.dart';
 
@@ -9,6 +10,8 @@ class FoldersPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       resizeToAvoidBottomInset: false,
@@ -16,7 +19,7 @@ class FoldersPage extends StatelessWidget {
         backgroundColor: Colors.grey.shade50,
         elevation: 0,
         scrolledUnderElevation: 0,
-        title: Text('Folders'),
+        title: Text(l10n.folders),
         centerTitle: true,
       ),
       body: ListView.builder(

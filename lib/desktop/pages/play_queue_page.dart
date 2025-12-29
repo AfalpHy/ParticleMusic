@@ -4,6 +4,7 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/desktop/keyboard.dart';
 import 'package:particle_music/desktop/pages/lyrics_page.dart';
+import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:super_context_menu/super_context_menu.dart';
 import '../../audio_handler.dart';
@@ -30,6 +31,8 @@ class PlayQueuePageState extends State<PlayQueuePage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     if (playQueue.length != isSelectedList.length) {
       isSelectedList = List.generate(
         playQueue.length,
@@ -46,7 +49,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
           children: [
             SizedBox(width: 15),
             Text(
-              'Play Queue',
+              l10n.playQueue,
               style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
             ),
             Spacer(),
