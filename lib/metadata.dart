@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
+import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
 Map<AudioMetadata, ValueNotifier<int>> songIsUpdated = {};
@@ -26,6 +27,7 @@ void showSongMetadataDialog(BuildContext context, AudioMetadata song) async {
   final ValueNotifier<Picture?> coverArtNotifier = ValueNotifier(
     getCoverArt(song),
   );
+  final l10n = AppLocalizations.of(context);
 
   await showDialog(
     context: context,
@@ -47,7 +49,7 @@ void showSongMetadataDialog(BuildContext context, AudioMetadata song) async {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     Text(
-                      'Edit Metadata',
+                      l10n.editMetadata,
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 20,
@@ -69,7 +71,7 @@ void showSongMetadataDialog(BuildContext context, AudioMetadata song) async {
                         }
                         if (await showConfirmDialog(
                           context,
-                          'Update Metadata Action',
+                          l10n.updateMedata,
                         )) {
                           if (titleTextController.text != originalTitle ||
                               artistTextController.text != originalArtist ||
@@ -142,7 +144,7 @@ void showSongMetadataDialog(BuildContext context, AudioMetadata song) async {
                         valueListenable: coverArtNotifier,
                         builder: (context, coverArt, child) {
                           return Tooltip(
-                            message: 'Replace Picture',
+                            message: l10n.replacePicture,
                             child: MouseRegion(
                               cursor: SystemMouseCursors.click,
                               child: GestureDetector(
@@ -202,7 +204,7 @@ void showSongMetadataDialog(BuildContext context, AudioMetadata song) async {
                             Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
-                                'Title:',
+                                "${l10n.title}:",
                                 style: TextStyle(fontWeight: FontWeight.bold),
                               ),
                             ),
@@ -220,7 +222,7 @@ void showSongMetadataDialog(BuildContext context, AudioMetadata song) async {
                             Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
-                                'Artist:',
+                                "${l10n.artist}:",
                                 style: TextStyle(fontWeight: FontWeight.bold),
                               ),
                             ),
@@ -238,7 +240,7 @@ void showSongMetadataDialog(BuildContext context, AudioMetadata song) async {
                             Align(
                               alignment: Alignment.centerLeft,
                               child: Text(
-                                'Album:',
+                                "${l10n.album}:",
                                 style: TextStyle(fontWeight: FontWeight.bold),
                               ),
                             ),

@@ -116,6 +116,12 @@ abstract class AppLocalizations {
   /// **'Album'**
   String get album;
 
+  /// No description provided for @folder.
+  ///
+  /// In en, this message translates to:
+  /// **'Folder'**
+  String get folder;
+
   /// No description provided for @artists.
   ///
   /// In en, this message translates to:
@@ -415,6 +421,126 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Add to Playlists'**
   String get add2Playlists;
+
+  /// No description provided for @added2Playlists.
+  ///
+  /// In en, this message translates to:
+  /// **'Added to playlist'**
+  String get added2Playlists;
+
+  /// No description provided for @selectAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Select All'**
+  String get selectAll;
+
+  /// No description provided for @complete.
+  ///
+  /// In en, this message translates to:
+  /// **'Complete'**
+  String get complete;
+
+  /// No description provided for @continueMsg.
+  ///
+  /// In en, this message translates to:
+  /// **'Are you sure you want to continue?'**
+  String get continueMsg;
+
+  /// No description provided for @cancel.
+  ///
+  /// In en, this message translates to:
+  /// **'Cancel'**
+  String get cancel;
+
+  /// No description provided for @confirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Confirm'**
+  String get confirm;
+
+  /// No description provided for @addFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Folder'**
+  String get addFolder;
+
+  /// No description provided for @replacePicture.
+  ///
+  /// In en, this message translates to:
+  /// **'Replace Picture'**
+  String get replacePicture;
+
+  /// No description provided for @unknown.
+  ///
+  /// In en, this message translates to:
+  /// **'Unknown'**
+  String get unknown;
+
+  /// No description provided for @updateMedata.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Metadata'**
+  String get updateMedata;
+
+  /// No description provided for @defaultText.
+  ///
+  /// In en, this message translates to:
+  /// **'Default'**
+  String get defaultText;
+
+  /// No description provided for @titleAscending.
+  ///
+  /// In en, this message translates to:
+  /// **'Title Ascending'**
+  String get titleAscending;
+
+  /// No description provided for @titleDescending.
+  ///
+  /// In en, this message translates to:
+  /// **'Title Descending'**
+  String get titleDescending;
+
+  /// No description provided for @artistAscending.
+  ///
+  /// In en, this message translates to:
+  /// **'Artist Ascending'**
+  String get artistAscending;
+
+  /// No description provided for @artistDescending.
+  ///
+  /// In en, this message translates to:
+  /// **'Artist Descending'**
+  String get artistDescending;
+
+  /// No description provided for @albumAscending.
+  ///
+  /// In en, this message translates to:
+  /// **'Album Ascending'**
+  String get albumAscending;
+
+  /// No description provided for @albumDescending.
+  ///
+  /// In en, this message translates to:
+  /// **'Album Descending'**
+  String get albumDescending;
+
+  /// No description provided for @durationAscending.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration Ascending'**
+  String get durationAscending;
+
+  /// No description provided for @durationDescending.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration Descending'**
+  String get durationDescending;
+
+  /// No description provided for @selectSortingType.
+  ///
+  /// In en, this message translates to:
+  /// **'Select sorting type'**
+  String get selectSortingType;
 }
 
 class _AppLocalizationsDelegate

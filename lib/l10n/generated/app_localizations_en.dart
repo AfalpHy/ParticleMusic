@@ -18,6 +18,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get album => 'Album';
 
   @override
+  String get folder => 'Folder';
+
+  @override
   String get artists => 'Artists';
 
   @override
@@ -174,4 +177,64 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get add2Playlists => 'Add to Playlists';
+
+  @override
+  String get added2Playlists => 'Added to playlist';
+
+  @override
+  String get selectAll => 'Select All';
+
+  @override
+  String get complete => 'Complete';
+
+  @override
+  String get continueMsg => 'Are you sure you want to continue?';
+
+  @override
+  String get cancel => 'Cancel';
+
+  @override
+  String get confirm => 'Confirm';
+
+  @override
+  String get addFolder => 'Add Folder';
+
+  @override
+  String get replacePicture => 'Replace Picture';
+
+  @override
+  String get unknown => 'Unknown';
+
+  @override
+  String get updateMedata => 'Update Metadata';
+
+  @override
+  String get defaultText => 'Default';
+
+  @override
+  String get titleAscending => 'Title Ascending';
+
+  @override
+  String get titleDescending => 'Title Descending';
+
+  @override
+  String get artistAscending => 'Artist Ascending';
+
+  @override
+  String get artistDescending => 'Artist Descending';
+
+  @override
+  String get albumAscending => 'Album Ascending';
+
+  @override
+  String get albumDescending => 'Album Descending';
+
+  @override
+  String get durationAscending => 'Duration Ascending';
+
+  @override
+  String get durationDescending => 'Duration Descending';
+
+  @override
+  String get selectSortingType => 'Select sorting type';
 }

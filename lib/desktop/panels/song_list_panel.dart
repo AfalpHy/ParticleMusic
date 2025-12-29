@@ -19,12 +19,14 @@ import 'package:smooth_corner/smooth_corner.dart';
 import 'package:super_context_menu/super_context_menu.dart';
 
 class SongListPanel extends BaseSongListWidget {
+  final Widget? foldersWidget;
   const SongListPanel({
     super.key,
     super.playlist,
     super.artist,
     super.album,
     super.folder,
+    this.foldersWidget,
   });
 
   @override
@@ -33,8 +35,6 @@ class SongListPanel extends BaseSongListWidget {
 
 class _SongListPanel extends BaseSongListState<SongListPanel> {
   int continuousSelectBeginIndex = 0;
-
-  late Widget searchField;
 
   late EdgeInsets padding;
 
@@ -45,137 +45,153 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
     padding = folder == null
         ? const EdgeInsets.symmetric(horizontal: 30)
         : const EdgeInsets.fromLTRB(30, 0, 10, 0);
-
-    searchField = titleSearchField(
-      'Search Songs',
-      textController: textController,
-      onChanged: (_) {
-        updateSongList();
-      },
-    );
-    titleSearchFieldStack.add(searchField);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      updateTitleSearchField.value++;
-    });
-  }
-
-  @override
-  void dispose() {
-    titleSearchFieldStack.remove(searchField);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      updateTitleSearchField.value++;
-    });
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Color.fromARGB(255, 235, 240, 245),
-      child: Stack(
-        children: [
-          NotificationListener<UserScrollNotification>(
-            onNotification: (notification) {
-              if (notification.direction != ScrollDirection.idle) {
-                listIsScrollingNotifier.value = true;
-                if (timer != null) {
-                  timer!.cancel();
-                  timer = null;
-                }
-              } else {
-                if (listIsScrollingNotifier.value) {
-                  timer ??= Timer(const Duration(milliseconds: 3000), () {
-                    listIsScrollingNotifier.value = false;
-                    timer = null;
-                  });
-                }
-              }
-              return false;
+    final l10n = AppLocalizations.of(context);
+
+    return Column(
+      children: [
+        TitleBar(
+          searchField: titleSearchField(
+            l10n.searchSongs,
+            textController: textController,
+            onChanged: (_) {
+              updateSongList();
             },
-            child: CustomScrollView(
-              controller: scrollController,
-              slivers: [
-                SliverToBoxAdapter(
-                  child: Padding(padding: padding, child: titleHeader()),
+          ),
+        ),
+        Expanded(
+          child: Row(
+            children: [
+              Expanded(child: contentWidget(context)),
+
+              if (widget.foldersWidget != null) ...[
+                SizedBox(width: 5),
+
+                VerticalDivider(
+                  thickness: 0.5,
+                  width: 1,
+                  color: Colors.grey.shade400,
                 ),
+                SizedBox(width: 10),
 
-                SliverToBoxAdapter(
-                  child: Padding(padding: padding, child: contentHeader()),
-                ),
+                widget.foldersWidget!,
 
-                SliverPadding(
-                  padding: padding,
-                  sliver: ValueListenableBuilder(
-                    valueListenable: currentSongListNotifier,
-                    builder: (context, currentSongList, child) {
-                      final List<ValueNotifier<bool>> isSelectedList =
-                          List.generate(
-                            currentSongList.length,
-                            (_) => ValueNotifier(false),
-                          );
-
-                      continuousSelectBeginIndex = 0;
-
-                      return SliverReorderableList(
-                        itemExtent: 60,
-                        itemBuilder: (context, index) {
-                          return playlist != null &&
-                                  textController.text == '' &&
-                                  sortTypeNotifier.value == 0
-                              ? ReorderableDragStartListener(
-                                  // reusing the same widget to avoid unnecessary rebuild
-                                  key: ValueKey(currentSongList[index]),
-                                  index: index,
-                                  child: listItem(
-                                    context,
-                                    currentSongList,
-                                    index,
-                                    isSelectedList,
-                                  ),
-                                )
-                              : SizedBox(
-                                  key: ValueKey(index),
-                                  child: listItem(
-                                    context,
-                                    currentSongList,
-                                    index,
-                                    isSelectedList,
-                                  ),
-                                );
-                        },
-                        itemCount: currentSongList.length,
-                        onReorder: (oldIndex, newIndex) {
-                          if (newIndex > oldIndex) newIndex -= 1;
-
-                          final item = playlist!.songs.removeAt(oldIndex);
-                          playlist!.songs.insert(newIndex, item);
-
-                          playlist!.update();
-                        },
-                      );
-                    },
-                  ),
-                ),
+                SizedBox(width: 10),
               ],
-            ),
+            ],
           ),
-
-          Positioned(
-            right: folder == null ? 120 : 100,
-            bottom: 100,
-            child: MyLocation(
-              scrollController: scrollController,
-              listIsScrollingNotifier: listIsScrollingNotifier,
-              currentSongListNotifier: currentSongListNotifier,
-              offset: 200 - (MediaQuery.heightOf(context) - 280) / 2,
-            ),
-          ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
-  Widget titleHeader() {
+  Widget contentWidget(BuildContext context) {
+    return Stack(
+      children: [
+        NotificationListener<UserScrollNotification>(
+          onNotification: (notification) {
+            if (notification.direction != ScrollDirection.idle) {
+              listIsScrollingNotifier.value = true;
+              if (timer != null) {
+                timer!.cancel();
+                timer = null;
+              }
+            } else {
+              if (listIsScrollingNotifier.value) {
+                timer ??= Timer(const Duration(milliseconds: 3000), () {
+                  listIsScrollingNotifier.value = false;
+                  timer = null;
+                });
+              }
+            }
+            return false;
+          },
+          child: CustomScrollView(
+            controller: scrollController,
+            slivers: [
+              SliverToBoxAdapter(
+                child: Padding(padding: padding, child: header()),
+              ),
+
+              SliverToBoxAdapter(
+                child: Padding(padding: padding, child: label()),
+              ),
+
+              SliverPadding(
+                padding: padding,
+                sliver: ValueListenableBuilder(
+                  valueListenable: currentSongListNotifier,
+                  builder: (context, currentSongList, child) {
+                    final List<ValueNotifier<bool>> isSelectedList =
+                        List.generate(
+                          currentSongList.length,
+                          (_) => ValueNotifier(false),
+                        );
+
+                    continuousSelectBeginIndex = 0;
+
+                    return SliverReorderableList(
+                      itemExtent: 60,
+                      itemBuilder: (context, index) {
+                        return playlist != null &&
+                                textController.text == '' &&
+                                sortTypeNotifier.value == 0
+                            ? ReorderableDragStartListener(
+                                // reusing the same widget to avoid unnecessary rebuild
+                                key: ValueKey(currentSongList[index]),
+                                index: index,
+                                child: listItem(
+                                  context,
+                                  currentSongList,
+                                  index,
+                                  isSelectedList,
+                                ),
+                              )
+                            : SizedBox(
+                                key: ValueKey(index),
+                                child: listItem(
+                                  context,
+                                  currentSongList,
+                                  index,
+                                  isSelectedList,
+                                ),
+                              );
+                      },
+                      itemCount: currentSongList.length,
+                      onReorder: (oldIndex, newIndex) {
+                        if (newIndex > oldIndex) newIndex -= 1;
+
+                        final item = playlist!.songs.removeAt(oldIndex);
+                        playlist!.songs.insert(newIndex, item);
+
+                        playlist!.update();
+                      },
+                    );
+                  },
+                ),
+              ),
+            ],
+          ),
+        ),
+
+        Positioned(
+          right: folder == null ? 120 : 100,
+          bottom: 100,
+          child: MyLocation(
+            scrollController: scrollController,
+            listIsScrollingNotifier: listIsScrollingNotifier,
+            currentSongListNotifier: currentSongListNotifier,
+            offset: 200 - (MediaQuery.heightOf(context) - 280) / 2,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget header() {
     final l10n = AppLocalizations.of(context);
 
     return SizedBox(
@@ -192,7 +208,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                   title: AutoSizeText(
                     isLibrary
                         ? l10n.songs
-                        : playlist?.name == 'Favorite'
+                        : playlist == playlistsManager.playlists[0]
                         ? l10n.favorite
                         : title,
                     maxLines: 1,
@@ -273,7 +289,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
     );
   }
 
-  Widget contentHeader() {
+  Widget label() {
     final l10n = AppLocalizations.of(context);
 
     return SizedBox(
@@ -547,7 +563,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                 title: l10n.delete,
                 image: MenuImage.icon(Icons.delete_rounded),
                 callback: () async {
-                  if (await showConfirmDialog(context, 'Delete Action')) {
+                  if (await showConfirmDialog(context, l10n.delete)) {
                     final List<AudioMetadata> tmpSongList = [];
                     for (int i = isSelectedList.length - 1; i >= 0; i--) {
                       if (isSelectedList[i].value) {

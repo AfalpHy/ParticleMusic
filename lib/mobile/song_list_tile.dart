@@ -191,7 +191,7 @@ class SongListTile extends StatelessWidget {
                                   onTap: () async {
                                     if (await showConfirmDialog(
                                       context,
-                                      'Delete Action',
+                                      l10n.delete,
                                     )) {
                                       playlist!.remove([song]);
                                       if (context.mounted) {

@@ -83,21 +83,18 @@ class DesktopMainPage extends StatelessWidget with TrayListener {
                   Sidebar(),
 
                   Expanded(
-                    child: Column(
-                      children: [
-                        TitleBar(isMainPage: true),
-                        Expanded(
-                          child: ValueListenableBuilder(
-                            valueListenable: panelManager.updatePanel,
-                            builder: (_, _, _) {
-                              return IndexedStack(
-                                index: panelManager.panelStack.length - 1,
-                                children: panelManager.panelStack,
-                              );
-                            },
+                    child: ValueListenableBuilder(
+                      valueListenable: panelManager.updatePanel,
+                      builder: (_, _, _) {
+                        return Material(
+                          color: Color.fromARGB(255, 235, 240, 245),
+
+                          child: IndexedStack(
+                            index: panelManager.panelStack.length - 1,
+                            children: panelManager.panelStack,
                           ),
-                        ),
-                      ],
+                        );
+                      },
                     ),
                   ),
                 ],

@@ -18,6 +18,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get album => '专辑';
 
   @override
+  String get folder => '文件夹';
+
+  @override
   String get artists => '艺术家';
 
   @override
@@ -174,4 +177,64 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get add2Playlists => '添加到歌单';
+
+  @override
+  String get added2Playlists => '已添加到歌单';
+
+  @override
+  String get selectAll => '全选';
+
+  @override
+  String get complete => '完成';
+
+  @override
+  String get continueMsg => '确认要继续吗?';
+
+  @override
+  String get cancel => '取消';
+
+  @override
+  String get confirm => '确认';
+
+  @override
+  String get addFolder => '添加文件夹';
+
+  @override
+  String get replacePicture => '替换图片';
+
+  @override
+  String get unknown => '未知';
+
+  @override
+  String get updateMedata => '更新元素据';
+
+  @override
+  String get defaultText => '默认';
+
+  @override
+  String get titleAscending => '标题升序';
+
+  @override
+  String get titleDescending => '标题降序';
+
+  @override
+  String get artistAscending => '艺术家升序';
+
+  @override
+  String get artistDescending => '艺术家降序';
+
+  @override
+  String get albumAscending => '专辑升序';
+
+  @override
+  String get albumDescending => '专辑降序';
+
+  @override
+  String get durationAscending => '时长升序';
+
+  @override
+  String get durationDescending => '时长降序';
+
+  @override
+  String get selectSortingType => '选择排序类型';
 }

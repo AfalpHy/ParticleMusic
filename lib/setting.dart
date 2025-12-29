@@ -116,6 +116,7 @@ void displayTimedPauseSetting(BuildContext context) {
     useRootNavigator: true,
     builder: (context) {
       Duration currentDuration = Duration();
+      final l10n = AppLocalizations.of(context);
 
       return mySheet(
         height: 350,
@@ -148,7 +149,7 @@ void displayTimedPauseSetting(BuildContext context) {
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    child: const Text("Cancel"),
+                    child: Text(l10n.cancel),
                   ),
                   SizedBox(width: 30),
                   ElevatedButton(
@@ -191,7 +192,7 @@ void displayTimedPauseSetting(BuildContext context) {
                         borderRadius: BorderRadius.circular(10),
                       ),
                     ),
-                    child: const Text("Confirm"),
+                    child: Text(l10n.confirm),
                   ),
 
                   Spacer(),
@@ -236,7 +237,7 @@ class SettingsList extends StatelessWidget {
       ),
       title: Text(l10n.reload),
       onTap: () async {
-        if (await showConfirmDialog(context, 'Reload Action')) {
+        if (await showConfirmDialog(context, l10n.reload)) {
           await libraryLoader.reload();
         }
       },
@@ -349,7 +350,7 @@ class SettingsList extends StatelessWidget {
                             ),
                             padding: EdgeInsets.all(10),
                           ),
-                          child: Text('Add Folder'),
+                          child: Text(l10n.addFolder),
                         ),
                         SizedBox(width: 20),
                         ElevatedButton(
@@ -364,7 +365,7 @@ class SettingsList extends StatelessWidget {
                             ),
                             padding: EdgeInsets.all(10),
                           ),
-                          child: Text('Complete'),
+                          child: Text(l10n.complete),
                         ),
                         Spacer(),
                       ],

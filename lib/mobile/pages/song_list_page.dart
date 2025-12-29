@@ -62,7 +62,7 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
                       controller: textController,
                       suggestions: const [],
                       searchInputDecoration: SearchInputDecoration(
-                        hintText: 'Search songs',
+                        hintText: AppLocalizations.of(context).searchSongs,
                         prefixIcon: const Icon(Icons.search),
                         suffixIcon: IconButton(
                           onPressed: () {
@@ -193,15 +193,15 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
                 useRootNavigator: true,
                 builder: (context) {
                   List<String> orderText = [
-                    'Default',
-                    'Title Ascending',
-                    'Title Descending',
-                    'Artist Ascending',
-                    'Artist Descending',
-                    'Album Ascending',
-                    'Album Descending',
-                    'Duration Ascending',
-                    'Duration Descending',
+                    l10n.defaultText,
+                    l10n.titleAscending,
+                    l10n.titleDescending,
+                    l10n.artistAscending,
+                    l10n.artistDescending,
+                    l10n.albumAscending,
+                    l10n.albumDescending,
+                    l10n.durationAscending,
+                    l10n.durationDescending,
                   ];
                   List<Widget> orderWidget = [];
                   for (int i = 0; i < orderText.length; i++) {
@@ -230,7 +230,7 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
                   return mySheet(
                     Column(
                       children: [
-                        ListTile(title: Text('Select sorting type')),
+                        ListTile(title: Text(l10n.selectSortingType)),
                         Divider(
                           thickness: 0.5,
                           height: 1,
@@ -255,7 +255,7 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
               ),
               visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
               onTap: () async {
-                if (await showConfirmDialog(context, 'Delete Action')) {
+                if (await showConfirmDialog(context, l10n.delete)) {
                   playlistsManager.deletePlaylist(playlist!);
                   if (context.mounted) {
                     Navigator.pop(context, true);
@@ -307,7 +307,7 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
                             title: AutoSizeText(
                               isLibrary
                                   ? l10n.songs
-                                  : playlist?.name == 'Favorite'
+                                  : playlist == playlistsManager.playlists[0]
                                   ? l10n.favorite
                                   : title,
                               maxLines: 1,
@@ -395,6 +395,8 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
     return ValueListenableBuilder<bool>(
       valueListenable: isSearch,
       builder: (context, value, child) {
+        final l10n = AppLocalizations.of(context);
+
         return value
             ? Expanded(
                 child: Padding(
@@ -406,7 +408,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                       controller: textController,
                       suggestions: const [],
                       searchInputDecoration: SearchInputDecoration(
-                        hintText: 'Search songs',
+                        hintText: l10n.searchSongs,
                         prefixIcon: const Icon(Icons.search),
                         suffixIcon: IconButton(
                           onPressed: () {
@@ -505,16 +507,18 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                 isScrollControlled: true,
                 useRootNavigator: true,
                 builder: (context) {
+                  final l10n = AppLocalizations.of(context);
+
                   List<String> orderText = [
-                    'Default',
-                    'Title Ascending',
-                    'Title Descending',
-                    'Artist Ascending',
-                    'Artist Descending',
-                    'Album Ascending',
-                    'Album Descending',
-                    'Duration Ascending',
-                    'Duration Descending',
+                    l10n.defaultText,
+                    l10n.titleAscending,
+                    l10n.titleDescending,
+                    l10n.artistAscending,
+                    l10n.artistDescending,
+                    l10n.albumAscending,
+                    l10n.albumDescending,
+                    l10n.durationAscending,
+                    l10n.durationDescending,
                   ];
                   List<Widget> orderWidget = [];
                   for (int i = 0; i < orderText.length; i++) {
@@ -543,7 +547,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                   return mySheet(
                     Column(
                       children: [
-                        ListTile(title: Text('Select sorting type')),
+                        ListTile(title: Text(l10n.selectSortingType)),
                         Divider(
                           thickness: 0.5,
                           height: 1,
@@ -615,14 +619,14 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                   );
                 },
               ),
-              Text('Select All', style: TextStyle(fontSize: 16)),
+              Text(l10n.selectAll, style: TextStyle(fontSize: 16)),
               Spacer(),
 
               GestureDetector(
                 onTap: () {
                   Navigator.of(context).pop();
                 },
-                child: Text('Complete', style: TextStyle(fontSize: 16)),
+                child: Text(l10n.complete, style: TextStyle(fontSize: 16)),
               ),
               SizedBox(width: 10),
             ],
@@ -712,7 +716,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                       children: [
                         ImageIcon(playnextCircleImage, color: iconColor),
 
-                        Text("Play Next", style: TextStyle(color: textColor)),
+                        Text(l10n.playNext, style: TextStyle(color: textColor)),
                       ],
                     ),
                   ),
@@ -737,7 +741,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                         ImageIcon(playlistAddImage, color: iconColor),
 
                         Text(
-                          "Add to Playlists",
+                          l10n.add2Playlists,
                           style: TextStyle(color: textColor),
                         ),
                       ],
@@ -753,7 +757,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                               tryVibrate();
                               if (await showConfirmDialog(
                                 context,
-                                'Delete Action',
+                                l10n.delete,
                               )) {
                                 List<AudioMetadata> songs = [];
                                 for (

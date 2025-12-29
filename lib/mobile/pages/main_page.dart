@@ -39,11 +39,16 @@ class SwipeObserver extends NavigatorObserver {
 
 final swipeObserver = SwipeObserver();
 
-class MobileMainPage extends StatelessWidget {
+class MobileMainPage extends StatefulWidget {
+  const MobileMainPage({super.key});
+
+  @override
+  State<StatefulWidget> createState() => MobileMainPageState();
+}
+
+class MobileMainPageState extends State<MobileMainPage> {
   final GlobalKey<NavigatorState> homeNavigatorKey =
       GlobalKey<NavigatorState>();
-
-  MobileMainPage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -184,12 +189,14 @@ class MobileMainPage extends StatelessWidget {
   }
 }
 
-// --------------------
-// Home Page
-// --------------------
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
+  @override
+  State<StatefulWidget> createState() => HomePageState();
+}
+
+class HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:lpinyin/lpinyin.dart';
 import 'package:marquee/marquee.dart';
+import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/setting.dart';
 import 'package:path/path.dart';
 import 'package:smooth_corner/smooth_corner.dart';
@@ -145,6 +146,8 @@ void showCenterMessage(
 }
 
 Future<bool> showConfirmDialog(BuildContext context, String action) async {
+  final l10n = AppLocalizations.of(context);
+
   final result = await showDialog<bool>(
     context: context,
     barrierDismissible: false,
@@ -156,10 +159,7 @@ Future<bool> showConfirmDialog(BuildContext context, String action) async {
         ),
         backgroundColor: Colors.white,
         title: Text(action),
-        content: const Text(
-          'Are you sure you want to continue?',
-          style: TextStyle(fontSize: 14),
-        ),
+        content: Text(l10n.continueMsg, style: TextStyle(fontSize: 14)),
         actions: [
           Row(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -176,7 +176,7 @@ Future<bool> showConfirmDialog(BuildContext context, String action) async {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                child: const Text('Cancel'),
+                child: Text(l10n.cancel),
               ),
               const SizedBox(width: 20),
               ElevatedButton(
@@ -191,7 +191,7 @@ Future<bool> showConfirmDialog(BuildContext context, String action) async {
                     borderRadius: BorderRadius.circular(10),
                   ),
                 ),
-                child: const Text('Confirm'),
+                child: Text(l10n.confirm),
               ),
             ],
           ),

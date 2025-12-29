@@ -74,7 +74,7 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
       songList = album2SongList[album]!;
       title = album!;
     } else if (folder != null) {
-      songList = folder2SongList[folder]!;
+      songList = folder2SongList[folder] ?? [];
       title = folder!;
     } else {
       songList = librarySongs;

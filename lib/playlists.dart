@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 import 'cover_art_widget.dart';
@@ -203,6 +204,8 @@ class _Add2PlaylistPanelState extends State<Add2PlaylistPanel> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Column(
       children: [
         ListTile(
@@ -214,7 +217,7 @@ class _Add2PlaylistPanelState extends State<Add2PlaylistPanel> {
               child: ImageIcon(addImage, size: 40),
             ),
           ),
-          title: Text('Create Playlist', style: TextStyle(fontSize: 14)),
+          title: Text(l10n.createPlaylist, style: TextStyle(fontSize: 14)),
           onTap: () async {
             if (isMobile) {
               if (await showCreatePlaylistSheet(context)) {
@@ -244,7 +247,10 @@ class _Add2PlaylistPanelState extends State<Add2PlaylistPanel> {
                       ? getCoverArt(playlist.songs.first)
                       : null,
                 ),
-                title: Text(playlist.name, style: TextStyle(fontSize: 14)),
+                title: Text(
+                  index == 0 ? l10n.favorite : playlist.name,
+                  style: TextStyle(fontSize: 14),
+                ),
 
                 onTap: () {
                   for (var song in widget.songs) {
@@ -252,7 +258,7 @@ class _Add2PlaylistPanelState extends State<Add2PlaylistPanel> {
                   }
                   showCenterMessage(
                     context,
-                    'Added to Playlist',
+                    l10n.added2Playlists,
                     duration: 1500,
                   );
                   Navigator.pop(context);
@@ -267,6 +273,8 @@ class _Add2PlaylistPanelState extends State<Add2PlaylistPanel> {
 }
 
 Future<bool> showCreatePlaylistSheet(BuildContext context) async {
+  final l10n = AppLocalizations.of(context);
+
   final controller = TextEditingController();
   final name = await showModalBottomSheet(
     context: context,
@@ -286,7 +294,6 @@ Future<bool> showCreatePlaylistSheet(BuildContext context) async {
                   autofocus: true,
                   decoration: const InputDecoration(
                     border: OutlineInputBorder(),
-                    labelText: "Playlist Name",
                   ),
                 ),
               ),
@@ -295,7 +302,7 @@ Future<bool> showCreatePlaylistSheet(BuildContext context) async {
                 onPressed: () {
                   Navigator.pop(context, controller.text); // close with value
                 },
-                child: const Text("Complete"),
+                child: Text(l10n.confirm),
               ),
             ],
           ),
@@ -311,6 +318,8 @@ Future<bool> showCreatePlaylistSheet(BuildContext context) async {
 }
 
 Future<bool> showCreatePlaylistDialog(BuildContext context) async {
+  final l10n = AppLocalizations.of(context);
+
   final controller = TextEditingController();
 
   final result = await showDialog<String>(
@@ -318,7 +327,7 @@ Future<bool> showCreatePlaylistDialog(BuildContext context) async {
     builder: (context) {
       return AlertDialog(
         backgroundColor: Color.fromARGB(255, 235, 240, 245),
-        title: const Text('Create Playlist'),
+        title: Text(l10n.createPlaylist),
         shape: SmoothRectangleBorder(
           smoothness: 1,
           borderRadius: BorderRadius.circular(10),
@@ -329,18 +338,17 @@ Future<bool> showCreatePlaylistDialog(BuildContext context) async {
           style: TextStyle(fontSize: 12),
           decoration: const InputDecoration(
             border: OutlineInputBorder(),
-            labelText: "Playlist Name",
             isDense: true,
           ),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(context), // cancel
-            child: const Text('Cancel'),
+            child: Text(l10n.cancel),
           ),
           TextButton(
             onPressed: () => Navigator.pop(context, controller.text), // submit
-            child: const Text('Complete'),
+            child: Text(l10n.confirm),
           ),
         ],
       );

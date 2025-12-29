@@ -68,7 +68,7 @@ class PlaylistsPage extends StatelessWidget {
                     },
                   ),
                   title: AutoSizeText(
-                    playlist.name == 'Favorite' ? l10n.favorite : playlist.name,
+                    index == 0 ? l10n.favorite : playlist.name,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     minFontSize: 15,

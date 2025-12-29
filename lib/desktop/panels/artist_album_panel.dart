@@ -21,7 +21,6 @@ class ArtistAlbumPanel extends StatefulWidget {
 
 class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
   late bool isArtist;
-  late Widget searchField;
 
   late final ValueNotifier<List<MapEntry<String, List<AudioMetadata>>>>
   currentMapEntryListNotifier;
@@ -53,242 +52,234 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
     useLargePictureNotifier = isArtist
         ? artistsUseLargePictureNotifier
         : albumsUseLargePictureNotifier;
-
-    searchField = titleSearchField(
-      'Search ${isArtist ? 'Artists' : 'Albums'}',
-      textController: textController,
-      onChanged: (value) {
-        updateCurrentMapEntryList();
-      },
-    );
-    titleSearchFieldStack.add(searchField);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      updateTitleSearchField.value++;
-    });
-  }
-
-  @override
-  void dispose() {
-    titleSearchFieldStack.remove(searchField);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      updateTitleSearchField.value++;
-    });
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    return Column(
+      children: [
+        TitleBar(
+          searchField: titleSearchField(
+            isArtist ? l10n.searchArtists : l10n.searchAlbums,
+            textController: textController,
+            onChanged: (value) {
+              updateCurrentMapEntryList();
+            },
+          ),
+        ),
+        Expanded(child: contentWidget(context)),
+      ],
+    );
+  }
+
+  Widget contentWidget(BuildContext context) {
     final panelWidth = (MediaQuery.widthOf(context) - 300);
     final l10n = AppLocalizations.of(context);
 
-    return Material(
-      color: Color.fromARGB(255, 235, 240, 245),
+    return Column(
+      children: [
+        Expanded(
+          child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 30),
+                  child: ListTile(
+                    leading: isArtist
+                        ? const ImageIcon(
+                            artistImage,
+                            size: 50,
+                            color: mainColor,
+                          )
+                        : const ImageIcon(
+                            albumImage,
+                            size: 50,
+                            color: mainColor,
+                          ),
+                    title: Text(
+                      isArtist ? l10n.artists : l10n.albums,
+                      style: TextStyle(
+                        fontSize: 20,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    subtitle: ValueListenableBuilder(
+                      valueListenable: currentMapEntryListNotifier,
+                      builder: (context, mapEntryList, child) {
+                        return Text(
+                          isArtist
+                              ? l10n.artistsCount(mapEntryList.length)
+                              : l10n.albumsCount(mapEntryList.length),
+                          style: TextStyle(fontSize: 12),
+                        );
+                      },
+                    ),
+                    trailing: SizedBox(
+                      width: 240,
+                      child: Column(
+                        children: [
+                          SizedBox(height: 20),
+                          Row(
+                            children: [
+                              Spacer(),
+                              ValueListenableBuilder(
+                                valueListenable: isAscendingNotifier,
+                                builder: (context, value, child) {
+                                  return Text(
+                                    value ? l10n.ascending : l10n.descending,
+                                  );
+                                },
+                              ),
+                              SizedBox(width: 10),
+                              ValueListenableBuilder(
+                                valueListenable: isAscendingNotifier,
+                                builder: (context, value, child) {
+                                  return FlutterSwitch(
+                                    width: 45,
+                                    height: 20,
+                                    toggleSize: 15,
+                                    activeColor: mainColor,
+                                    inactiveColor: Colors.grey.shade300,
+                                    value: value,
+                                    onToggle: (value) async {
+                                      isAscendingNotifier.value = value;
+                                      setting.saveSetting();
+                                      if (isArtist) {
+                                        setting.sortArtists();
+                                      } else {
+                                        setting.sortAlbums();
+                                      }
+                                      updateCurrentMapEntryList();
+                                    },
+                                  );
+                                },
+                              ),
+                              SizedBox(width: 10),
 
-      child: Column(
-        children: [
-          Expanded(
-            child: CustomScrollView(
-              slivers: [
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 30),
-                    child: ListTile(
-                      leading: isArtist
-                          ? const ImageIcon(
-                              artistImage,
-                              size: 50,
-                              color: mainColor,
-                            )
-                          : const ImageIcon(
-                              albumImage,
-                              size: 50,
-                              color: mainColor,
-                            ),
-                      title: Text(
-                        isArtist ? l10n.artists : l10n.albums,
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
+                              ValueListenableBuilder(
+                                valueListenable: useLargePictureNotifier,
+                                builder: (context, value, child) {
+                                  return Text(value ? l10n.large : l10n.small);
+                                },
+                              ),
+                              SizedBox(width: 10),
+                              ValueListenableBuilder(
+                                valueListenable: useLargePictureNotifier,
+                                builder: (context, value, child) {
+                                  return FlutterSwitch(
+                                    width: 45,
+                                    height: 20,
+                                    toggleSize: 15,
+                                    activeColor: mainColor,
+                                    inactiveColor: Colors.grey.shade300,
+                                    value: value,
+                                    onToggle: (value) async {
+                                      useLargePictureNotifier.value = value;
+                                      setting.saveSetting();
+                                    },
+                                  );
+                                },
+                              ),
+                              Spacer(),
+                            ],
+                          ),
+                        ],
                       ),
-                      subtitle: ValueListenableBuilder(
-                        valueListenable: currentMapEntryListNotifier,
-                        builder: (context, mapEntryList, child) {
-                          return Text(
-                            isArtist
-                                ? l10n.artistsCount(mapEntryList.length)
-                                : l10n.albumsCount(mapEntryList.length),
-                            style: TextStyle(fontSize: 12),
-                          );
-                        },
-                      ),
-                      trailing: SizedBox(
-                        width: 240,
-                        child: Column(
-                          children: [
-                            SizedBox(height: 20),
-                            Row(
+                    ),
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 30),
+
+                  child: Divider(
+                    thickness: 1,
+                    height: 1,
+                    color: Colors.grey.shade300,
+                  ),
+                ),
+              ),
+              SliverToBoxAdapter(child: SizedBox(height: 15)),
+
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 40),
+
+                sliver: ValueListenableBuilder(
+                  valueListenable: useLargePictureNotifier,
+                  builder: (context, value, child) {
+                    int crossAxisCount;
+                    double coverArtWidth;
+                    if (value) {
+                      crossAxisCount = (panelWidth / 240).toInt();
+                      coverArtWidth = panelWidth / crossAxisCount - 40;
+                    } else {
+                      crossAxisCount = (panelWidth / 120).toInt();
+                      coverArtWidth = panelWidth / crossAxisCount - 30;
+                    }
+                    return ValueListenableBuilder(
+                      valueListenable: currentMapEntryListNotifier,
+                      builder: (context, mapEntryList, child) {
+                        return SliverGrid.builder(
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: crossAxisCount,
+                                childAspectRatio: 1.05,
+                              ),
+                          itemCount: mapEntryList.length,
+                          itemBuilder: (context, index) {
+                            final key = mapEntryList[index].key;
+                            final songList = mapEntryList[index].value;
+                            return Column(
                               children: [
-                                Spacer(),
-                                ValueListenableBuilder(
-                                  valueListenable: isAscendingNotifier,
-                                  builder: (context, value, child) {
-                                    return Text(
-                                      value ? l10n.ascending : l10n.descending,
-                                    );
-                                  },
-                                ),
-                                SizedBox(width: 10),
-                                ValueListenableBuilder(
-                                  valueListenable: isAscendingNotifier,
-                                  builder: (context, value, child) {
-                                    return FlutterSwitch(
-                                      width: 45,
-                                      height: 20,
-                                      toggleSize: 15,
-                                      activeColor: mainColor,
-                                      inactiveColor: Colors.grey.shade300,
-                                      value: value,
-                                      onToggle: (value) async {
-                                        isAscendingNotifier.value = value;
-                                        setting.saveSetting();
-                                        if (isArtist) {
-                                          setting.sortArtists();
-                                        } else {
-                                          setting.sortAlbums();
-                                        }
-                                        updateCurrentMapEntryList();
-                                      },
-                                    );
-                                  },
-                                ),
-                                SizedBox(width: 10),
-
-                                ValueListenableBuilder(
-                                  valueListenable: useLargePictureNotifier,
-                                  builder: (context, value, child) {
-                                    return Text(
-                                      value ? l10n.large : l10n.small,
-                                    );
-                                  },
-                                ),
-                                SizedBox(width: 10),
-                                ValueListenableBuilder(
-                                  valueListenable: useLargePictureNotifier,
-                                  builder: (context, value, child) {
-                                    return FlutterSwitch(
-                                      width: 45,
-                                      height: 20,
-                                      toggleSize: 15,
-                                      activeColor: mainColor,
-                                      inactiveColor: Colors.grey.shade300,
-                                      value: value,
-                                      onToggle: (value) async {
-                                        useLargePictureNotifier.value = value;
-                                        setting.saveSetting();
-                                      },
-                                    );
-                                  },
-                                ),
-                                Spacer(),
-                              ],
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                SliverToBoxAdapter(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 30),
-
-                    child: Divider(
-                      thickness: 1,
-                      height: 1,
-                      color: Colors.grey.shade300,
-                    ),
-                  ),
-                ),
-                SliverToBoxAdapter(child: SizedBox(height: 15)),
-
-                SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 40),
-
-                  sliver: ValueListenableBuilder(
-                    valueListenable: useLargePictureNotifier,
-                    builder: (context, value, child) {
-                      int crossAxisCount;
-                      double coverArtWidth;
-                      if (value) {
-                        crossAxisCount = (panelWidth / 240).toInt();
-                        coverArtWidth = panelWidth / crossAxisCount - 40;
-                      } else {
-                        crossAxisCount = (panelWidth / 120).toInt();
-                        coverArtWidth = panelWidth / crossAxisCount - 30;
-                      }
-                      return ValueListenableBuilder(
-                        valueListenable: currentMapEntryListNotifier,
-                        builder: (context, mapEntryList, child) {
-                          return SliverGrid.builder(
-                            gridDelegate:
-                                SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: crossAxisCount,
-                                  childAspectRatio: 1.05,
-                                ),
-                            itemCount: mapEntryList.length,
-                            itemBuilder: (context, index) {
-                              final key = mapEntryList[index].key;
-                              final songList = mapEntryList[index].value;
-                              return Column(
-                                children: [
-                                  MouseRegion(
-                                    cursor: SystemMouseCursors.click,
-                                    child: GestureDetector(
-                                      child: ValueListenableBuilder(
-                                        valueListenable:
-                                            songIsUpdated[songList.first]!,
-                                        builder: (_, _, _) {
-                                          return CoverArtWidget(
-                                            size: coverArtWidth,
-                                            borderRadius: 10,
-                                            source: getCoverArt(songList.first),
-                                          );
-                                        },
-                                      ),
-                                      onTap: () {
-                                        panelManager.pushPanel(
-                                          isArtist ? 3 : 4,
-                                          title: key,
+                                MouseRegion(
+                                  cursor: SystemMouseCursors.click,
+                                  child: GestureDetector(
+                                    child: ValueListenableBuilder(
+                                      valueListenable:
+                                          songIsUpdated[songList.first]!,
+                                      builder: (_, _, _) {
+                                        return CoverArtWidget(
+                                          size: coverArtWidth,
+                                          borderRadius: 10,
+                                          source: getCoverArt(songList.first),
                                         );
                                       },
                                     ),
+                                    onTap: () {
+                                      panelManager.pushPanel(
+                                        isArtist ? 3 : 4,
+                                        title: key,
+                                      );
+                                    },
                                   ),
-                                  SizedBox(
-                                    width: coverArtWidth - 20,
-                                    child: Center(
-                                      child: Text(
-                                        key,
-                                        style: TextStyle(
-                                          overflow: TextOverflow.ellipsis,
-                                        ),
+                                ),
+                                SizedBox(
+                                  width: coverArtWidth - 20,
+                                  child: Center(
+                                    child: Text(
+                                      key,
+                                      style: TextStyle(
+                                        overflow: TextOverflow.ellipsis,
                                       ),
                                     ),
                                   ),
-                                ],
-                              );
-                            },
-                          );
-                        },
-                      );
-                    },
-                  ),
+                                ),
+                              ],
+                            );
+                          },
+                        );
+                      },
+                    );
+                  },
                 ),
-              ],
-            ),
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 }

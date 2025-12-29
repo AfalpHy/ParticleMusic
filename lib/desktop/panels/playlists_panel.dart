@@ -20,7 +20,6 @@ class PlaylistsPanel extends StatefulWidget {
 class PlaylistsPanelState extends State<PlaylistsPanel> {
   final playlistsNotifier = ValueNotifier(playlistsManager.playlists);
   final textController = TextEditingController();
-  late Widget searchField;
 
   void filterPlaylists() {
     playlistsNotifier.value = playlistsManager.playlists.where((playlist) {
@@ -34,31 +33,35 @@ class PlaylistsPanelState extends State<PlaylistsPanel> {
   void initState() {
     super.initState();
     playlistsManager.changeNotifier.addListener(filterPlaylists);
-    searchField = titleSearchField(
-      'Search Playlists',
-      textController: textController,
-      onChanged: (_) {
-        filterPlaylists();
-      },
-    );
-    titleSearchFieldStack.add(searchField);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      updateTitleSearchField.value++;
-    });
   }
 
   @override
   void dispose() {
     playlistsManager.changeNotifier.removeListener(filterPlaylists);
-    titleSearchFieldStack.remove(searchField);
-    WidgetsBinding.instance.addPostFrameCallback((_) {
-      updateTitleSearchField.value++;
-    });
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    return Column(
+      children: [
+        TitleBar(
+          searchField: titleSearchField(
+            l10n.searchPlaylists,
+            textController: textController,
+            onChanged: (_) {
+              filterPlaylists();
+            },
+          ),
+        ),
+        Expanded(child: contentWidget(context)),
+      ],
+    );
+  }
+
+  Widget contentWidget(BuildContext context) {
     final panelWidth = (MediaQuery.widthOf(context) - 300);
     final l10n = AppLocalizations.of(context);
 
@@ -75,169 +78,167 @@ class PlaylistsPanelState extends State<PlaylistsPanel> {
           coverArtWidth = panelWidth / crossAxisCount - 30;
         }
 
-        return Material(
-          color: Color.fromARGB(255, 235, 240, 245),
+        return Column(
+          children: [
+            Expanded(
+              child: CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 30),
+                      child: ListTile(
+                        leading: const ImageIcon(
+                          playlistsImage,
+                          size: 50,
+                          color: mainColor,
+                        ),
+                        title: Text(
+                          l10n.playlists,
+                          style: TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        subtitle: ValueListenableBuilder(
+                          valueListenable: playlistsNotifier,
+                          builder: (context, playlists, child) {
+                            return Text(
+                              l10n.playlistsCount(playlists.length),
+                              style: TextStyle(fontSize: 12),
+                            );
+                          },
+                        ),
+                        trailing: SizedBox(
+                          width: 120,
+                          child: Column(
+                            children: [
+                              SizedBox(height: 20),
+                              Row(
+                                children: [
+                                  Spacer(),
+                                  Text(value ? l10n.large : l10n.small),
+                                  SizedBox(width: 10),
+                                  FlutterSwitch(
+                                    width: 45,
+                                    height: 20,
+                                    toggleSize: 15,
+                                    activeColor: mainColor,
+                                    inactiveColor: Colors.grey.shade300,
+                                    value: value,
+                                    onToggle: (value) async {
+                                      playlistsUseLargePictureNotifier.value =
+                                          value;
+                                    },
+                                  ),
+                                  Spacer(),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  SliverToBoxAdapter(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 30),
 
-          child: Column(
-            children: [
-              Expanded(
-                child: CustomScrollView(
-                  slivers: [
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 30),
-                        child: ListTile(
-                          leading: const ImageIcon(
-                            playlistsImage,
-                            size: 50,
-                            color: mainColor,
-                          ),
-                          title: Text(
-                            l10n.playlists,
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          subtitle: ValueListenableBuilder(
-                            valueListenable: playlistsNotifier,
-                            builder: (context, playlists, child) {
-                              return Text(
-                                l10n.playlistsCount(playlists.length),
-                                style: TextStyle(fontSize: 12),
-                              );
-                            },
-                          ),
-                          trailing: SizedBox(
-                            width: 120,
-                            child: Column(
-                              children: [
-                                SizedBox(height: 20),
-                                Row(
+                      child: Divider(
+                        thickness: 1,
+                        height: 1,
+                        color: Colors.grey.shade300,
+                      ),
+                    ),
+                  ),
+                  SliverToBoxAdapter(child: SizedBox(height: 15)),
+
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 40),
+
+                    sliver: ValueListenableBuilder(
+                      valueListenable: playlistsNotifier,
+                      builder: (context, playlists, child) {
+                        return SliverGrid.builder(
+                          gridDelegate:
+                              SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: crossAxisCount,
+                                childAspectRatio: 1.05,
+                              ),
+                          itemCount: playlists.length,
+                          itemBuilder: (context, index) {
+                            final playlist = playlists[index];
+                            return ValueListenableBuilder(
+                              valueListenable: playlist.changeNotifier,
+                              builder: (context, value, child) {
+                                return Column(
                                   children: [
-                                    Spacer(),
-                                    Text(value ? l10n.large : l10n.small),
-                                    SizedBox(width: 10),
-                                    FlutterSwitch(
-                                      width: 45,
-                                      height: 20,
-                                      toggleSize: 15,
-                                      activeColor: mainColor,
-                                      inactiveColor: Colors.grey.shade300,
-                                      value: value,
-                                      onToggle: (value) async {
-                                        playlistsUseLargePictureNotifier.value =
-                                            value;
-                                      },
+                                    Material(
+                                      elevation: 1,
+                                      shape: SmoothRectangleBorder(
+                                        smoothness: 1,
+                                        borderRadius: BorderRadius.circular(10),
+                                      ),
+                                      child: InkWell(
+                                        splashColor: Colors.transparent,
+                                        highlightColor: Colors.transparent,
+                                        child: playlist.songs.isNotEmpty
+                                            ? ValueListenableBuilder(
+                                                valueListenable:
+                                                    songIsUpdated[playlist
+                                                        .songs
+                                                        .first]!,
+                                                builder: (_, _, _) {
+                                                  return CoverArtWidget(
+                                                    size: coverArtWidth,
+                                                    borderRadius: 10,
+                                                    source: getCoverArt(
+                                                      playlist.songs.first,
+                                                    ),
+                                                  );
+                                                },
+                                              )
+                                            : CoverArtWidget(
+                                                size: coverArtWidth,
+                                                borderRadius: 10,
+                                                source: null,
+                                              ),
+                                        onTap: () {
+                                          panelManager.pushPanel(
+                                            playlistsManager.playlists.indexOf(
+                                                  playlist,
+                                                ) +
+                                                5,
+                                          );
+                                        },
+                                      ),
                                     ),
-                                    Spacer(),
+                                    SizedBox(
+                                      width: coverArtWidth - 20,
+                                      child: Center(
+                                        child: Text(
+                                          playlist ==
+                                                  playlistsManager.playlists[0]
+                                              ? l10n.favorite
+                                              : playlist.name,
+                                          style: TextStyle(
+                                            overflow: TextOverflow.ellipsis,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
                                   ],
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                      ),
+                                );
+                              },
+                            );
+                          },
+                        );
+                      },
                     ),
-                    SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 30),
-
-                        child: Divider(
-                          thickness: 1,
-                          height: 1,
-                          color: Colors.grey.shade300,
-                        ),
-                      ),
-                    ),
-                    SliverToBoxAdapter(child: SizedBox(height: 15)),
-
-                    SliverPadding(
-                      padding: const EdgeInsets.symmetric(horizontal: 40),
-
-                      sliver: ValueListenableBuilder(
-                        valueListenable: playlistsNotifier,
-                        builder: (context, playlists, child) {
-                          return SliverGrid.builder(
-                            gridDelegate:
-                                SliverGridDelegateWithFixedCrossAxisCount(
-                                  crossAxisCount: crossAxisCount,
-                                  childAspectRatio: 1.05,
-                                ),
-                            itemCount: playlists.length,
-                            itemBuilder: (context, index) {
-                              final playlist = playlists[index];
-                              return ValueListenableBuilder(
-                                valueListenable: playlist.changeNotifier,
-                                builder: (context, value, child) {
-                                  return Column(
-                                    children: [
-                                      Material(
-                                        elevation: 1,
-                                        shape: SmoothRectangleBorder(
-                                          smoothness: 1,
-                                          borderRadius: BorderRadius.circular(
-                                            10,
-                                          ),
-                                        ),
-                                        child: InkWell(
-                                          splashColor: Colors.transparent,
-                                          highlightColor: Colors.transparent,
-                                          child: playlist.songs.isNotEmpty
-                                              ? ValueListenableBuilder(
-                                                  valueListenable:
-                                                      songIsUpdated[playlist
-                                                          .songs
-                                                          .first]!,
-                                                  builder: (_, _, _) {
-                                                    return CoverArtWidget(
-                                                      size: coverArtWidth,
-                                                      borderRadius: 10,
-                                                      source: getCoverArt(
-                                                        playlist.songs.first,
-                                                      ),
-                                                    );
-                                                  },
-                                                )
-                                              : CoverArtWidget(
-                                                  size: coverArtWidth,
-                                                  borderRadius: 10,
-                                                  source: null,
-                                                ),
-                                          onTap: () {
-                                            panelManager.pushPanel(
-                                              playlistsManager.playlists
-                                                      .indexOf(playlist) +
-                                                  5,
-                                            );
-                                          },
-                                        ),
-                                      ),
-                                      SizedBox(
-                                        width: coverArtWidth - 20,
-                                        child: Center(
-                                          child: Text(
-                                            playlist.name,
-                                            style: TextStyle(
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  );
-                                },
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
+                  ),
+                ],
               ),
-            ],
-          ),
+            ),
+          ],
         );
       },
     );

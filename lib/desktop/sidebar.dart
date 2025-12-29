@@ -270,9 +270,7 @@ class Sidebar extends StatelessWidget {
                     : CoverArtWidget(size: 30, borderRadius: 3, source: null);
               },
             ),
-            content: playlist.name == 'Favorite'
-                ? l10n.favorite
-                : playlist.name,
+            content: index == 0 ? l10n.favorite : playlist.name,
 
             onTap: () {
               panelManager.pushPanel(index + 5);
@@ -282,9 +280,7 @@ class Sidebar extends StatelessWidget {
             return Menu(
               children: [
                 MenuAction(
-                  title: playlist.name == 'Favorite'
-                      ? l10n.favorite
-                      : playlist.name,
+                  title: index == 0 ? l10n.favorite : playlist.name,
                   callback: () {},
                 ),
 
@@ -294,7 +290,7 @@ class Sidebar extends StatelessWidget {
                     title: l10n.delete,
                     image: MenuImage.icon(Icons.delete),
                     callback: () async {
-                      if (await showConfirmDialog(context, 'Delete Action')) {
+                      if (await showConfirmDialog(context, l10n.delete)) {
                         panelManager.removePlaylistPanel(playlist);
                         playlistsManager.deletePlaylistByIndex(index);
                       }
