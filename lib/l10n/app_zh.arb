@@ -10,5 +10,12 @@
   "settings": "设置",
   "reload": "重新加载",
   "selectMusicFolder": "选择音乐文件夹",
-  "openSourceLicense": "开源许可证"
+  "openSourceLicense": "开源许可证",
+  "sleepTimer": "定时关闭",
+  "pauseAfterCurrentTrack": "播完整首歌再关闭",
+  "vibration": "振动",
+  "library": "音乐库",
+  "select": "批量选择",
+  "sortSongs": "歌曲排序",
+  "delete": "删除"
 }

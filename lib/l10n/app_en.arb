@@ -10,5 +10,12 @@
   "settings": "Settings",
   "reload": "Reload",
   "selectMusicFolder": "Select Music Folders",
-  "openSourceLicense": "Open Source License"
+  "openSourceLicense": "Open Source License",
+  "sleepTimer": "Sleep Timer",
+  "pauseAfterCurrentTrack": "Pause After Current Track",
+  "vibration": "Vibration",
+  "library": "Library",
+  "select": "Select",
+  "sortSongs": "Sort Songs",
+  "delete": "Delete"
 }

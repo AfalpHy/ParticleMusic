@@ -43,4 +43,25 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get openSourceLicense => '开源许可证';
+
+  @override
+  String get sleepTimer => '定时关闭';
+
+  @override
+  String get pauseAfterCurrentTrack => '播完整首歌再关闭';
+
+  @override
+  String get vibration => '振动';
+
+  @override
+  String get library => '音乐库';
+
+  @override
+  String get select => '批量选择';
+
+  @override
+  String get sortSongs => '歌曲排序';
+
+  @override
+  String get delete => '删除';
 }

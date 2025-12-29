@@ -123,6 +123,8 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
   }
 
   Widget moreSheet(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return mySheet(
       Column(
         children: [
@@ -133,17 +135,17 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
               child: Row(
                 children: [
                   if (playlist != null)
-                    Text('Playlist: ', style: TextStyle(fontSize: 15)),
+                    Text("${l10n.playlists} ", style: TextStyle(fontSize: 15)),
                   if (artist != null)
-                    Text('Artist: ', style: TextStyle(fontSize: 15)),
+                    Text("${l10n.artists} ", style: TextStyle(fontSize: 15)),
                   if (album != null)
-                    Text('Album: ', style: TextStyle(fontSize: 15)),
+                    Text("${l10n.albums} ", style: TextStyle(fontSize: 15)),
                   if (folder != null)
-                    Text('Folder: ', style: TextStyle(fontSize: 15)),
+                    Text("${l10n.folders} ", style: TextStyle(fontSize: 15)),
 
                   Expanded(
                     child: MyAutoSizeText(
-                      title,
+                      isLibrary ? AppLocalizations.of(context).songs : title,
                       maxLines: 1,
                       textStyle: TextStyle(fontSize: 15),
                     ),
@@ -156,7 +158,7 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
           ListTile(
             leading: const ImageIcon(selectImage, color: Colors.black),
             title: Text(
-              'Select',
+              l10n.select,
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
@@ -175,7 +177,7 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
           ListTile(
             leading: const ImageIcon(sequenceImage, color: Colors.black),
             title: Text(
-              'Sort songs',
+              l10n.sortSongs,
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
@@ -244,7 +246,7 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
             ListTile(
               leading: const ImageIcon(deleteImage, color: Colors.black),
               title: Text(
-                'Delete',
+                l10n.delete,
                 style: TextStyle(fontWeight: FontWeight.bold),
               ),
               visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
@@ -455,6 +457,8 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
   }
 
   Widget moreSheet(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return mySheet(
       Column(
         children: [
@@ -466,7 +470,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                 children: [
                   Expanded(
                     child: MyAutoSizeText(
-                      'Select',
+                      l10n.select,
                       maxLines: 1,
                       textStyle: TextStyle(fontSize: 15),
                     ),
@@ -480,7 +484,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
           ListTile(
             leading: const ImageIcon(sequenceImage, color: Colors.black),
             title: Text(
-              'Sort songs',
+              l10n.sortSongs,
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
@@ -552,6 +556,8 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     List<AudioMetadata> songList = filterSongs(
       widget.songList,
       textController.text,
@@ -767,7 +773,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                               ImageIcon(deleteImage, color: iconColor),
 
                               Text(
-                                "Delete",
+                                l10n.delete,
                                 style: TextStyle(color: textColor),
                               ),
                             ],

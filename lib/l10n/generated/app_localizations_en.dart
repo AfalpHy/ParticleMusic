@@ -43,4 +43,25 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get openSourceLicense => 'Open Source License';
+
+  @override
+  String get sleepTimer => 'Sleep Timer';
+
+  @override
+  String get pauseAfterCurrentTrack => 'Pause After Current Track';
+
+  @override
+  String get vibration => 'Vibration';
+
+  @override
+  String get library => 'Library';
+
+  @override
+  String get select => 'Select';
+
+  @override
+  String get sortSongs => 'Sort Songs';
+
+  @override
+  String get delete => 'Delete';
 }

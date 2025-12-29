@@ -169,6 +169,48 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Open Source License'**
   String get openSourceLicense;
+
+  /// No description provided for @sleepTimer.
+  ///
+  /// In en, this message translates to:
+  /// **'Sleep Timer'**
+  String get sleepTimer;
+
+  /// No description provided for @pauseAfterCurrentTrack.
+  ///
+  /// In en, this message translates to:
+  /// **'Pause After Current Track'**
+  String get pauseAfterCurrentTrack;
+
+  /// No description provided for @vibration.
+  ///
+  /// In en, this message translates to:
+  /// **'Vibration'**
+  String get vibration;
+
+  /// No description provided for @library.
+  ///
+  /// In en, this message translates to:
+  /// **'Library'**
+  String get library;
+
+  /// No description provided for @select.
+  ///
+  /// In en, this message translates to:
+  /// **'Select'**
+  String get select;
+
+  /// No description provided for @sortSongs.
+  ///
+  /// In en, this message translates to:
+  /// **'Sort Songs'**
+  String get sortSongs;
+
+  /// No description provided for @delete.
+  ///
+  /// In en, this message translates to:
+  /// **'Delete'**
+  String get delete;
 }
 
 class _AppLocalizationsDelegate
