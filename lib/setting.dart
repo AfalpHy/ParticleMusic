@@ -306,19 +306,40 @@ class SettingsList extends StatelessWidget {
                         Spacer(),
                         ElevatedButton(
                           onPressed: () async {
-                            final result = await FilePicker.platform
+                            String? result = await FilePicker.platform
                                 .getDirectoryPath();
-                            if (result != null) {
-                              if (!folderPaths.contains(result)) {
-                                libraryLoader.addFolder(result);
+                            if (result == null) {
+                              return;
+                            }
+
+                            if (Platform.isIOS) {
+                              if (result.contains(appDocs.path)) {
+                                result = result.substring(
+                                  result.indexOf('Documents'),
+                                );
+                                result = result.replaceFirst(
+                                  'Documents',
+                                  'Particle Music',
+                                );
                               } else if (context.mounted) {
                                 showCenterMessage(
                                   context,
-                                  'The folder already exists',
+                                  'No access permission',
                                   duration: 2000,
                                 );
+                                return;
                               }
                             }
+                            if (folderPaths.contains(result) &&
+                                context.mounted) {
+                              showCenterMessage(
+                                context,
+                                'The folder already exists',
+                                duration: 2000,
+                              );
+                              return;
+                            }
+                            libraryLoader.addFolder(result);
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Colors.white,
