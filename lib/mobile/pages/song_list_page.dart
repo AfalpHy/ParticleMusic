@@ -145,7 +145,11 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
 
                   Expanded(
                     child: MyAutoSizeText(
-                      isLibrary ? AppLocalizations.of(context).songs : title,
+                      isLibrary
+                          ? AppLocalizations.of(context).songs
+                          : playlist?.name == 'Favorite'
+                          ? l10n.favorite
+                          : title,
                       maxLines: 1,
                       textStyle: TextStyle(fontSize: 15),
                     ),

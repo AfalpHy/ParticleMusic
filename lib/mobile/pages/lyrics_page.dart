@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/lyrics.dart';
 import 'package:particle_music/mobile/play_queue_sheet.dart';
 import 'package:particle_music/playlists.dart';
@@ -104,6 +105,8 @@ class LyricsPage extends StatelessWidget {
   }
 
   Widget artPage(BuildContext context, AudioMetadata? currentSong) {
+    final l10n = AppLocalizations.of(context);
+
     return Column(
       children: [
         Material(
@@ -204,7 +207,7 @@ class LyricsPage extends StatelessWidget {
                                     color: Colors.black,
                                   ),
                                   title: Text(
-                                    'Add to Playlists',
+                                    l10n.add2Playlists,
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                     ),
@@ -262,10 +265,10 @@ class LyricsPage extends StatelessWidget {
                           audioHandler.switchPlayMode();
                           switch (playModeNotifier.value) {
                             case 0:
-                              showCenterMessage(context, "loop");
+                              showCenterMessage(context, l10n.loop);
                               break;
                             default:
-                              showCenterMessage(context, "shuffle");
+                              showCenterMessage(context, l10n.shuffle);
                               break;
                           }
                         }
@@ -274,13 +277,13 @@ class LyricsPage extends StatelessWidget {
                         audioHandler.toggleRepeat();
                         switch (playModeNotifier.value) {
                           case 0:
-                            showCenterMessage(context, "loop");
+                            showCenterMessage(context, l10n.loop);
                             break;
                           case 1:
-                            showCenterMessage(context, "shuffle");
+                            showCenterMessage(context, l10n.shuffle);
                             break;
                           default:
-                            showCenterMessage(context, "repeat");
+                            showCenterMessage(context, l10n.repeat);
                             break;
                         }
                       },

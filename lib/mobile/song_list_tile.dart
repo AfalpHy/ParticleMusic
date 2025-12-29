@@ -1,6 +1,7 @@
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/playlists.dart';
 import '../audio_handler.dart';
 import '../cover_art_widget.dart';
@@ -21,6 +22,8 @@ class SongListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final song = source[index];
     final isFavorite = songIsFavorite[song]!;
+    final l10n = AppLocalizations.of(context);
+
     return ListTile(
       contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
       leading: CoverArtWidget(
@@ -116,7 +119,7 @@ class SongListTile extends StatelessWidget {
                               color: Colors.black,
                             ),
                             title: Text(
-                              'Add to Playlists',
+                              l10n.add2Playlists,
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                             visualDensity: const VisualDensity(
@@ -135,7 +138,7 @@ class SongListTile extends StatelessWidget {
                               color: Colors.black,
                             ),
                             title: Text(
-                              'Play Now',
+                              l10n.playNow,
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                             visualDensity: const VisualDensity(
@@ -153,7 +156,7 @@ class SongListTile extends StatelessWidget {
                               color: Colors.black,
                             ),
                             title: Text(
-                              'Play Next',
+                              l10n.playNext,
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                             visualDensity: const VisualDensity(
@@ -176,7 +179,7 @@ class SongListTile extends StatelessWidget {
                                     color: Colors.black,
                                   ),
                                   title: Text(
-                                    'Delete',
+                                    l10n.delete,
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                     ),

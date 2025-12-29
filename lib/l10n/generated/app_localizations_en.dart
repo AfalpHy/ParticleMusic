@@ -9,6 +9,15 @@ class AppLocalizationsEn extends AppLocalizations {
   AppLocalizationsEn([String locale = 'en']) : super(locale);
 
   @override
+  String get title => 'Title';
+
+  @override
+  String get artist => 'Artist';
+
+  @override
+  String get album => 'Album';
+
+  @override
   String get artists => 'Artists';
 
   @override
@@ -64,4 +73,105 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get delete => 'Delete';
+
+  @override
+  String get remove => 'Remove';
+
+  @override
+  String get createPlaylist => 'Create Playlist';
+
+  @override
+  String get order => 'Order';
+
+  @override
+  String get reorder => 'Reorder';
+
+  @override
+  String songsCount(int count) {
+    return '$count songs';
+  }
+
+  @override
+  String artistsCount(int count) {
+    return '$count in total';
+  }
+
+  @override
+  String albumsCount(int count) {
+    return '$count in total';
+  }
+
+  @override
+  String playlistsCount(int count) {
+    return '$count in total';
+  }
+
+  @override
+  String get searchSongs => 'Search Songs';
+
+  @override
+  String get searchArtists => 'Search Artists';
+
+  @override
+  String get searchAlbums => 'Search Albums';
+
+  @override
+  String get searchPlaylists => 'Search Playlists';
+
+  @override
+  String get ascending => 'Ascending';
+
+  @override
+  String get descending => 'Descending';
+
+  @override
+  String get pictureSize => 'Picture Size';
+
+  @override
+  String get large => 'Large';
+
+  @override
+  String get small => 'Small';
+
+  @override
+  String get view => 'View';
+
+  @override
+  String get list => 'List';
+
+  @override
+  String get grid => 'Grid';
+
+  @override
+  String get favorited => 'Favorited';
+
+  @override
+  String get favorite => 'Favorite';
+
+  @override
+  String get duration => 'Duration';
+
+  @override
+  String get loop => 'Loop';
+
+  @override
+  String get shuffle => 'Shuffle';
+
+  @override
+  String get repeat => 'Repeat';
+
+  @override
+  String get playAll => 'Play All';
+
+  @override
+  String get playNow => 'Play Now';
+
+  @override
+  String get playNext => 'Play Next';
+
+  @override
+  String get editMetadata => 'Edit Metadata';
+
+  @override
+  String get add2Playlists => 'Add to Playlists';
 }

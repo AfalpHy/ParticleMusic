@@ -115,7 +115,9 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
                         valueListenable: currentMapEntryListNotifier,
                         builder: (context, mapEntryList, child) {
                           return Text(
-                            '${mapEntryList.length} in total',
+                            isArtist
+                                ? l10n.artistsCount(mapEntryList.length)
+                                : l10n.albumsCount(mapEntryList.length),
                             style: TextStyle(fontSize: 12),
                           );
                         },
@@ -131,7 +133,9 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
                                 ValueListenableBuilder(
                                   valueListenable: isAscendingNotifier,
                                   builder: (context, value, child) {
-                                    return Text(value ? 'Ascend' : 'Descend');
+                                    return Text(
+                                      value ? l10n.ascending : l10n.descending,
+                                    );
                                   },
                                 ),
                                 SizedBox(width: 10),
@@ -163,7 +167,9 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
                                 ValueListenableBuilder(
                                   valueListenable: useLargePictureNotifier,
                                   builder: (context, value, child) {
-                                    return Text(value ? 'Large' : 'Small');
+                                    return Text(
+                                      value ? l10n.large : l10n.small,
+                                    );
                                   },
                                 ),
                                 SizedBox(width: 10),

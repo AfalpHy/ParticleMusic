@@ -2,6 +2,7 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/mobile/pages/song_list_page.dart';
 import 'package:smooth_corner/smooth_corner.dart';
@@ -11,13 +12,15 @@ class PlaylistsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Scaffold(
       backgroundColor: Colors.grey.shade50,
       appBar: AppBar(
         backgroundColor: Colors.grey.shade50,
         elevation: 0,
         scrolledUnderElevation: 0,
-        title: const Text("Playlists"),
+        title: Text(l10n.playlists),
         centerTitle: true,
         actions: [
           IconButton(
@@ -74,7 +77,7 @@ class PlaylistsPage extends StatelessWidget {
                   subtitle: ValueListenableBuilder(
                     valueListenable: playlist.changeNotifier,
                     builder: (_, _, _) {
-                      return Text("${playlist.songs.length} songs");
+                      return Text(l10n.songsCount(playlist.songs.length));
                     },
                   ),
                   onTap: () {
@@ -99,7 +102,7 @@ class PlaylistsPage extends StatelessWidget {
                         child: ImageIcon(addImage, size: 50),
                       ),
                     ),
-                    title: Text('Create Playlist'),
+                    title: Text(l10n.createPlaylist),
                     onTap: () {
                       showCreatePlaylistSheet(context);
                     },
@@ -115,6 +118,8 @@ class PlaylistsPage extends StatelessWidget {
   }
 
   Widget playlistsMoreSheet(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return mySheet(
       Column(
         children: [
@@ -127,7 +132,7 @@ class PlaylistsPage extends StatelessWidget {
                 child: ImageIcon(addImage, size: 50),
               ),
             ),
-            title: Text('Create Playlist'),
+            title: Text(l10n.createPlaylist),
             visualDensity: const VisualDensity(horizontal: 0, vertical: 4),
             onTap: () {
               showCreatePlaylistSheet(context);
@@ -137,7 +142,7 @@ class PlaylistsPage extends StatelessWidget {
           ListTile(
             leading: const ImageIcon(reorderImage, color: Colors.black),
             title: Text(
-              'Reorder',
+              l10n.reorder,
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
@@ -214,7 +219,11 @@ class PlaylistsPage extends StatelessWidget {
                   subtitle: ValueListenableBuilder(
                     valueListenable: playlist.changeNotifier,
                     builder: (_, _, _) {
-                      return Text("${playlist.songs.length} songs");
+                      return Text(
+                        AppLocalizations.of(
+                          context,
+                        ).songsCount(playlist.songs.length),
+                      );
                     },
                   ),
                 ),

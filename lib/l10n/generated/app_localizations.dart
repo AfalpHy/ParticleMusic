@@ -98,6 +98,24 @@ abstract class AppLocalizations {
     Locale('zh'),
   ];
 
+  /// No description provided for @title.
+  ///
+  /// In en, this message translates to:
+  /// **'Title'**
+  String get title;
+
+  /// No description provided for @artist.
+  ///
+  /// In en, this message translates to:
+  /// **'Artist'**
+  String get artist;
+
+  /// No description provided for @album.
+  ///
+  /// In en, this message translates to:
+  /// **'Album'**
+  String get album;
+
   /// No description provided for @artists.
   ///
   /// In en, this message translates to:
@@ -211,6 +229,192 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Delete'**
   String get delete;
+
+  /// No description provided for @remove.
+  ///
+  /// In en, this message translates to:
+  /// **'Remove'**
+  String get remove;
+
+  /// No description provided for @createPlaylist.
+  ///
+  /// In en, this message translates to:
+  /// **'Create Playlist'**
+  String get createPlaylist;
+
+  /// No description provided for @order.
+  ///
+  /// In en, this message translates to:
+  /// **'Order'**
+  String get order;
+
+  /// No description provided for @reorder.
+  ///
+  /// In en, this message translates to:
+  /// **'Reorder'**
+  String get reorder;
+
+  /// Number of songs in library
+  ///
+  /// In en, this message translates to:
+  /// **'{count} songs'**
+  String songsCount(int count);
+
+  /// Number of songs in library
+  ///
+  /// In en, this message translates to:
+  /// **'{count} in total'**
+  String artistsCount(int count);
+
+  /// Number of songs in library
+  ///
+  /// In en, this message translates to:
+  /// **'{count} in total'**
+  String albumsCount(int count);
+
+  /// Number of songs in library
+  ///
+  /// In en, this message translates to:
+  /// **'{count} in total'**
+  String playlistsCount(int count);
+
+  /// No description provided for @searchSongs.
+  ///
+  /// In en, this message translates to:
+  /// **'Search Songs'**
+  String get searchSongs;
+
+  /// No description provided for @searchArtists.
+  ///
+  /// In en, this message translates to:
+  /// **'Search Artists'**
+  String get searchArtists;
+
+  /// No description provided for @searchAlbums.
+  ///
+  /// In en, this message translates to:
+  /// **'Search Albums'**
+  String get searchAlbums;
+
+  /// No description provided for @searchPlaylists.
+  ///
+  /// In en, this message translates to:
+  /// **'Search Playlists'**
+  String get searchPlaylists;
+
+  /// No description provided for @ascending.
+  ///
+  /// In en, this message translates to:
+  /// **'Ascending'**
+  String get ascending;
+
+  /// No description provided for @descending.
+  ///
+  /// In en, this message translates to:
+  /// **'Descending'**
+  String get descending;
+
+  /// No description provided for @pictureSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Picture Size'**
+  String get pictureSize;
+
+  /// No description provided for @large.
+  ///
+  /// In en, this message translates to:
+  /// **'Large'**
+  String get large;
+
+  /// No description provided for @small.
+  ///
+  /// In en, this message translates to:
+  /// **'Small'**
+  String get small;
+
+  /// No description provided for @view.
+  ///
+  /// In en, this message translates to:
+  /// **'View'**
+  String get view;
+
+  /// No description provided for @list.
+  ///
+  /// In en, this message translates to:
+  /// **'List'**
+  String get list;
+
+  /// No description provided for @grid.
+  ///
+  /// In en, this message translates to:
+  /// **'Grid'**
+  String get grid;
+
+  /// No description provided for @favorited.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorited'**
+  String get favorited;
+
+  /// No description provided for @favorite.
+  ///
+  /// In en, this message translates to:
+  /// **'Favorite'**
+  String get favorite;
+
+  /// No description provided for @duration.
+  ///
+  /// In en, this message translates to:
+  /// **'Duration'**
+  String get duration;
+
+  /// No description provided for @loop.
+  ///
+  /// In en, this message translates to:
+  /// **'Loop'**
+  String get loop;
+
+  /// No description provided for @shuffle.
+  ///
+  /// In en, this message translates to:
+  /// **'Shuffle'**
+  String get shuffle;
+
+  /// No description provided for @repeat.
+  ///
+  /// In en, this message translates to:
+  /// **'Repeat'**
+  String get repeat;
+
+  /// No description provided for @playAll.
+  ///
+  /// In en, this message translates to:
+  /// **'Play All'**
+  String get playAll;
+
+  /// No description provided for @playNow.
+  ///
+  /// In en, this message translates to:
+  /// **'Play Now'**
+  String get playNow;
+
+  /// No description provided for @playNext.
+  ///
+  /// In en, this message translates to:
+  /// **'Play Next'**
+  String get playNext;
+
+  /// No description provided for @editMetadata.
+  ///
+  /// In en, this message translates to:
+  /// **'Edit Metadata'**
+  String get editMetadata;
+
+  /// No description provided for @add2Playlists.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to Playlists'**
+  String get add2Playlists;
 }
 
 class _AppLocalizationsDelegate

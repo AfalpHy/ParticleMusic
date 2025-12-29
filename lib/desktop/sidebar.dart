@@ -245,6 +245,7 @@ class Sidebar extends StatelessWidget {
   }
 
   Widget playlistItem(BuildContext context, int index) {
+    final l10n = AppLocalizations.of(context);
     return ValueListenableBuilder(
       valueListenable: playlistsManager.changeNotifier,
       builder: (context, value, child) {
@@ -269,7 +270,9 @@ class Sidebar extends StatelessWidget {
                     : CoverArtWidget(size: 30, borderRadius: 3, source: null);
               },
             ),
-            content: playlist.name,
+            content: playlist.name == 'Favorite'
+                ? l10n.favorite
+                : playlist.name,
 
             onTap: () {
               panelManager.pushPanel(index + 5);
@@ -278,12 +281,17 @@ class Sidebar extends StatelessWidget {
           menuProvider: (_) {
             return Menu(
               children: [
-                MenuAction(title: playlist.name, callback: () {}),
+                MenuAction(
+                  title: playlist.name == 'Favorite'
+                      ? l10n.favorite
+                      : playlist.name,
+                  callback: () {},
+                ),
 
                 if (playlist.name != 'Favorite') MenuSeparator(),
                 if (playlist.name != 'Favorite')
                   MenuAction(
-                    title: 'Delete',
+                    title: l10n.delete,
                     image: MenuImage.icon(Icons.delete),
                     callback: () async {
                       if (await showConfirmDialog(context, 'Delete Action')) {

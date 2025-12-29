@@ -1,4 +1,7 @@
 {
+  "title": "Title",
+  "artist": "Artist",
+  "album": "Album",
   "artists": "Artists",
   "albums": "Albums",
   "folders": "Folders",
@@ -17,5 +20,68 @@
   "library": "Library",
   "select": "Select",
   "sortSongs": "Sort Songs",
-  "delete": "Delete"
+  "delete": "Delete",
+  "remove": "Remove",
+  "createPlaylist": "Create Playlist",
+  "order": "Order",
+  "reorder": "Reorder",
+  "songsCount": "{count} songs",
+  "@songsCount": {
+    "description": "Number of songs in library",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "artistsCount": "{count} in total",
+  "@artistsCount": {
+    "description": "Number of songs in library",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "albumsCount": "{count} in total",
+  "@albumsCount": {
+    "description": "Number of songs in library",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "playlistsCount": "{count} in total",
+  "@playlistsCount": {
+    "description": "Number of songs in library",
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "searchSongs": "Search Songs",
+  "searchArtists": "Search Artists",
+  "searchAlbums": "Search Albums",
+  "searchPlaylists": "Search Playlists",
+  "ascending": "Ascending",
+  "descending": "Descending",
+  "pictureSize": "Picture Size",
+  "large": "Large",
+  "small": "Small",
+  "view": "View",
+  "list": "List",
+  "grid": "Grid",
+  "favorited": "Favorited",
+  "favorite": "Favorite",
+  "duration": "Duration",
+  "loop": "Loop",
+  "shuffle": "Shuffle",
+  "repeat": "Repeat",
+  "playAll": "Play All",
+  "playNow": "Play Now",
+  "playNext": "Play Next",
+  "editMetadata": "Edit Metadata",
+  "add2Playlists": "Add to Playlists"
 }

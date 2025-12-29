@@ -72,10 +72,10 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                       audioHandler.switchPlayMode();
                       switch (playModeNotifier.value) {
                         case 0:
-                          showCenterMessage(context, "loop");
+                          showCenterMessage(context, l10n.loop);
                           break;
                         default:
-                          showCenterMessage(context, "shuffle");
+                          showCenterMessage(context, l10n.shuffle);
                           break;
                       }
                     }
@@ -94,13 +94,13 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                     audioHandler.toggleRepeat();
                     switch (playModeNotifier.value) {
                       case 0:
-                        showCenterMessage(context, "loop");
+                        showCenterMessage(context, l10n.loop);
                         break;
                       case 1:
-                        showCenterMessage(context, "shuffle");
+                        showCenterMessage(context, l10n.shuffle);
                         break;
                       default:
-                        showCenterMessage(context, "repeat");
+                        showCenterMessage(context, l10n.repeat);
                         break;
                     }
                     setState(() {
@@ -195,6 +195,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
   ) {
     final song = playQueue[index];
     final isSelected = isSelectedList[index];
+    final l10n = AppLocalizations.of(context);
 
     return ContextMenuWidget(
       key: ValueKey(song),
@@ -242,7 +243,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
         return Menu(
           children: [
             MenuAction(
-              title: 'Add to Playlists',
+              title: l10n.add2Playlists,
               image: MenuImage.icon(Icons.playlist_add_rounded),
               callback: () {
                 final List<AudioMetadata> tmpSongList = [];
@@ -255,7 +256,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
               },
             ),
             MenuAction(
-              title: 'Remove',
+              title: l10n.remove,
               image: MenuImage.icon(Icons.close_rounded),
               callback: () async {
                 bool removeCurrent = false;

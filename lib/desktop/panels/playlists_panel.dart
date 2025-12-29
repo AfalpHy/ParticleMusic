@@ -103,7 +103,7 @@ class PlaylistsPanelState extends State<PlaylistsPanel> {
                             valueListenable: playlistsNotifier,
                             builder: (context, playlists, child) {
                               return Text(
-                                '${playlists.length} in total',
+                                l10n.playlistsCount(playlists.length),
                                 style: TextStyle(fontSize: 12),
                               );
                             },
@@ -116,7 +116,7 @@ class PlaylistsPanelState extends State<PlaylistsPanel> {
                                 Row(
                                   children: [
                                     Spacer(),
-                                    Text(value ? 'Large' : 'Small'),
+                                    Text(value ? l10n.large : l10n.small),
                                     SizedBox(width: 10),
                                     FlutterSwitch(
                                       width: 45,

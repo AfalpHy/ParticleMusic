@@ -66,10 +66,10 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                       audioHandler.switchPlayMode();
                       switch (playModeNotifier.value) {
                         case 0:
-                          showCenterMessage(context, "loop");
+                          showCenterMessage(context, l10n.loop);
                           break;
                         default:
-                          showCenterMessage(context, "shuffle");
+                          showCenterMessage(context, l10n.shuffle);
                           break;
                       }
                       setState(() {
@@ -89,13 +89,13 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                     audioHandler.toggleRepeat();
                     switch (playModeNotifier.value) {
                       case 0:
-                        showCenterMessage(context, "loop");
+                        showCenterMessage(context, l10n.loop);
                         break;
                       case 1:
-                        showCenterMessage(context, "shuffle");
+                        showCenterMessage(context, l10n.shuffle);
                         break;
                       default:
-                        showCenterMessage(context, "repeat");
+                        showCenterMessage(context, l10n.repeat);
                         break;
                     }
                     setState(() {});

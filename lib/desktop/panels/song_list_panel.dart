@@ -176,6 +176,8 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
   }
 
   Widget titleHeader() {
+    final l10n = AppLocalizations.of(context);
+
     return SizedBox(
       height: 200,
       child: Row(
@@ -188,7 +190,11 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                 SizedBox(height: 30),
                 ListTile(
                   title: AutoSizeText(
-                    isLibrary ? AppLocalizations.of(context).songs : title,
+                    isLibrary
+                        ? AppLocalizations.of(context).songs
+                        : playlist?.name == 'Favorite'
+                        ? l10n.favorite
+                        : title,
                     maxLines: 1,
                     minFontSize: 20,
                     maxFontSize: 20,
@@ -198,7 +204,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                   subtitle: ValueListenableBuilder(
                     valueListenable: currentSongListNotifier,
                     builder: (context, songList, child) {
-                      return Text("${songList.length} songs");
+                      return Text(l10n.songsCount(songList.length));
                     },
                   ),
                 ),
@@ -227,7 +233,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                         ),
                         padding: EdgeInsets.all(10),
                       ),
-                      child: Text('Play All'),
+                      child: Text(l10n.playAll),
                     ),
                     SizedBox(width: 15),
 
@@ -253,7 +259,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                         ),
                         padding: EdgeInsets.all(10),
                       ),
-                      child: Text('Shuffle'),
+                      child: Text(l10n.shuffle),
                     ),
                     SizedBox(width: 10),
                   ],
@@ -268,6 +274,8 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
   }
 
   Widget contentHeader() {
+    final l10n = AppLocalizations.of(context);
+
     return SizedBox(
       height: 50,
       child: Row(
@@ -292,15 +300,15 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                 child: ValueListenableBuilder(
                   valueListenable: sortTypeNotifier,
                   builder: (context, value, child) {
-                    String text = 'Title & Artist';
+                    String text = '${l10n.title} & ${l10n.artist}';
                     switch (value) {
                       case 1:
                       case 2:
-                        text = 'Title';
+                        text = l10n.title;
                         break;
                       case 3:
                       case 4:
-                        text = 'Artist';
+                        text = text = l10n.artist;
                         break;
                     }
                     return Row(
@@ -341,7 +349,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                 padding: const EdgeInsets.symmetric(vertical: 5),
                 child: Row(
                   children: [
-                    Text('Album', overflow: TextOverflow.ellipsis),
+                    Text(l10n.album, overflow: TextOverflow.ellipsis),
                     ValueListenableBuilder(
                       valueListenable: sortTypeNotifier,
                       builder: (context, value, child) {
@@ -365,7 +373,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
 
           SizedBox(
             width: 80,
-            child: Text('Favorited', overflow: TextOverflow.ellipsis),
+            child: Text(l10n.favorited, overflow: TextOverflow.ellipsis),
           ),
 
           SizedBox(
@@ -386,7 +394,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                 padding: const EdgeInsets.symmetric(vertical: 5),
                 child: Row(
                   children: [
-                    Text('Duration', overflow: TextOverflow.ellipsis),
+                    Text(l10n.duration, overflow: TextOverflow.ellipsis),
                     ValueListenableBuilder(
                       valueListenable: sortTypeNotifier,
                       builder: (context, value, child) {
@@ -417,6 +425,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
     List<ValueNotifier<bool>> isSelectedList,
   ) {
     final isSelected = isSelectedList[index];
+    final l10n = AppLocalizations.of(context);
 
     return ContextMenuWidget(
       child: ListItemChild(
@@ -473,7 +482,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
         return Menu(
           children: [
             MenuAction(
-              title: 'Play Now',
+              title: l10n.playNow,
               image: MenuImage.icon(Icons.play_arrow_rounded),
               callback: () async {
                 AudioMetadata? tmp;
@@ -490,7 +499,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
               },
             ),
             MenuAction(
-              title: 'Play Next',
+              title: l10n.playNext,
               image: MenuImage.icon(Icons.navigate_next_rounded),
               callback: () async {
                 bool needPlay = false;
@@ -510,7 +519,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
             ),
 
             MenuAction(
-              title: 'Add to Playlists',
+              title: l10n.add2Playlists,
               image: MenuImage.icon(Icons.playlist_add_rounded),
               callback: () {
                 final List<AudioMetadata> tmpSongList = [];
@@ -527,7 +536,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
 
             if (selectedCnt == 1)
               MenuAction(
-                title: 'Edit Metadata',
+                title: l10n.editMetadata,
                 image: MenuImage.icon(Icons.edit_rounded),
                 callback: () {
                   showSongMetadataDialog(context, currentSongList[index]);
@@ -535,7 +544,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
               ),
             if (playlist != null)
               MenuAction(
-                title: 'Delete',
+                title: l10n.delete,
                 image: MenuImage.icon(Icons.delete_rounded),
                 callback: () async {
                   if (await showConfirmDialog(context, 'Delete Action')) {

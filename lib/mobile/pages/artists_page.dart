@@ -79,7 +79,7 @@ class ArtistsPage extends StatelessWidget {
                 controller: textController,
                 suggestions: [],
                 searchInputDecoration: SearchInputDecoration(
-                  hintText: 'Search Artists',
+                  hintText: AppLocalizations.of(context).searchArtists,
                   prefixIcon: Icon(Icons.search),
                   suffixIcon: IconButton(
                     onPressed: () {
@@ -132,10 +132,12 @@ class ArtistsPage extends StatelessWidget {
   }
 
   Widget moreSheet(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return mySheet(
       Column(
         children: [
-          ListTile(title: Text('Settings')),
+          ListTile(title: Text(l10n.settings)),
           Divider(thickness: 0.5, height: 1, color: Colors.grey.shade300),
           ListTile(
             leading: ValueListenableBuilder(
@@ -146,7 +148,10 @@ class ArtistsPage extends StatelessWidget {
                     : const ImageIcon(gridImage, color: Colors.black);
               },
             ),
-            title: Text('View', style: TextStyle(fontWeight: FontWeight.bold)),
+            title: Text(
+              l10n.view,
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
             onTap: () {
               artistsIsListViewNotifier.value = true;
@@ -159,7 +164,7 @@ class ArtistsPage extends StatelessWidget {
                   child: Row(
                     children: [
                       Spacer(),
-                      Text(value ? 'List' : 'Grid'),
+                      Text(value ? l10n.list : l10n.grid),
                       SizedBox(width: 10),
                       FlutterSwitch(
                         width: 45,
@@ -190,19 +195,19 @@ class ArtistsPage extends StatelessWidget {
               return ListTile(
                 leading: const ImageIcon(pictureImage, color: Colors.black),
                 title: Text(
-                  'Picture Size',
+                  l10n.pictureSize,
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 trailing: ValueListenableBuilder(
                   valueListenable: artistsUseLargePictureNotifier,
-                  builder: (context, value, child) {
+                  builder: (context, useLargePicture, child) {
                     return SizedBox(
                       width: 100,
 
                       child: Row(
                         children: [
                           Spacer(),
-                          Text(value ? 'Large' : 'Small'),
+                          Text(useLargePicture ? l10n.large : l10n.small),
                           SizedBox(width: 10),
                           FlutterSwitch(
                             width: 45,
@@ -228,7 +233,10 @@ class ArtistsPage extends StatelessWidget {
 
           ListTile(
             leading: const ImageIcon(sequenceImage, color: Colors.black),
-            title: Text('Order', style: TextStyle(fontWeight: FontWeight.bold)),
+            title: Text(
+              l10n.order,
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
             trailing: ValueListenableBuilder(
               valueListenable: artistsIsAscendingNotifier,
@@ -239,7 +247,7 @@ class ArtistsPage extends StatelessWidget {
                   child: Row(
                     children: [
                       Spacer(),
-                      Text(value ? 'Ascend' : 'Descend'),
+                      Text(value ? l10n.ascending : l10n.descending),
                       SizedBox(width: 10),
                       FlutterSwitch(
                         width: 45,
@@ -285,7 +293,9 @@ class ArtistsPage extends StatelessWidget {
               source: getCoverArt(songList.first),
             ),
             title: Text(artist),
-            trailing: Text('${songList.length} songs'),
+            trailing: Text(
+              AppLocalizations.of(context).songsCount(songList.length),
+            ),
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => SongListPage(artist: artist)),
@@ -350,7 +360,9 @@ class ArtistsPage extends StatelessWidget {
                       ),
 
                       Text(
-                        '${songList.length} songs',
+                        AppLocalizations.of(
+                          context,
+                        ).songsCount(songList.length),
                         style: TextStyle(fontSize: 12),
                       ),
                     ],

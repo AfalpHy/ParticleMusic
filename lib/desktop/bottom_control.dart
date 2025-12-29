@@ -6,6 +6,7 @@ import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/desktop/pages/lyrics_page.dart';
 import 'package:particle_music/desktop/pages/play_queue_page.dart';
 import 'package:particle_music/full_width_track_shape.dart';
+import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/seekbar.dart';
 
 String? lyricsWinId;
@@ -62,6 +63,8 @@ class BottomControl extends StatelessWidget {
   }
 
   Widget playControls(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return Stack(
       children: [
         Positioned(
@@ -92,10 +95,10 @@ class BottomControl extends StatelessWidget {
                         audioHandler.switchPlayMode();
                         switch (playModeNotifier.value) {
                           case 0:
-                            showCenterMessage(context, "loop");
+                            showCenterMessage(context, l10n.loop);
                             break;
                           default:
-                            showCenterMessage(context, "shuffle");
+                            showCenterMessage(context, l10n.shuffle);
                             break;
                         }
                       }
@@ -107,13 +110,13 @@ class BottomControl extends StatelessWidget {
                       audioHandler.toggleRepeat();
                       switch (playModeNotifier.value) {
                         case 0:
-                          showCenterMessage(context, "loop");
+                          showCenterMessage(context, l10n.loop);
                           break;
                         case 1:
-                          showCenterMessage(context, "shuffle");
+                          showCenterMessage(context, l10n.shuffle);
                           break;
                         default:
-                          showCenterMessage(context, "repeat");
+                          showCenterMessage(context, l10n.repeat);
                           break;
                       }
                     },

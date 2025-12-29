@@ -72,7 +72,7 @@ class AlbumsPage extends StatelessWidget {
                 controller: textController,
                 suggestions: [],
                 searchInputDecoration: SearchInputDecoration(
-                  hintText: 'Search Albums',
+                  hintText: AppLocalizations.of(context).searchAlbums,
                   prefixIcon: Icon(Icons.search),
                   suffixIcon: IconButton(
                     onPressed: () {
@@ -125,16 +125,18 @@ class AlbumsPage extends StatelessWidget {
   }
 
   Widget moreSheet(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
     return mySheet(
       Column(
         children: [
-          ListTile(title: Text('Settings')),
+          ListTile(title: Text(l10n.settings)),
           Divider(thickness: 0.5, height: 1, color: Colors.grey.shade300),
 
           ListTile(
             leading: const ImageIcon(pictureImage, color: Colors.black),
             title: Text(
-              'Picture Size',
+              l10n.pictureSize,
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             trailing: ValueListenableBuilder(
@@ -146,7 +148,7 @@ class AlbumsPage extends StatelessWidget {
                   child: Row(
                     children: [
                       Spacer(),
-                      Text(useLargePicture ? 'Large' : 'Small'),
+                      Text(useLargePicture ? l10n.large : l10n.small),
                       SizedBox(width: 10),
                       FlutterSwitch(
                         width: 45,
@@ -170,7 +172,10 @@ class AlbumsPage extends StatelessWidget {
 
           ListTile(
             leading: const ImageIcon(sequenceImage, color: Colors.black),
-            title: Text('Order', style: TextStyle(fontWeight: FontWeight.bold)),
+            title: Text(
+              l10n.order,
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
             visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
             trailing: ValueListenableBuilder(
               valueListenable: albumsIsAscendingNotifier,
@@ -181,7 +186,7 @@ class AlbumsPage extends StatelessWidget {
                   child: Row(
                     children: [
                       Spacer(),
-                      Text(value ? 'Ascend' : 'Descend'),
+                      Text(value ? l10n.ascending : l10n.descending),
                       SizedBox(width: 10),
                       FlutterSwitch(
                         width: 45,
@@ -226,6 +231,7 @@ class AlbumsPage extends StatelessWidget {
           itemBuilder: (context, index) {
             final album = mapEntryList[index].key;
             final songList = mapEntryList[index].value;
+
             return Column(
               children: [
                 Material(
@@ -262,7 +268,9 @@ class AlbumsPage extends StatelessWidget {
                       ),
 
                       Text(
-                        '${songList.length} songs',
+                        AppLocalizations.of(
+                          context,
+                        ).songsCount(songList.length),
                         style: TextStyle(fontSize: 12),
                       ),
                     ],
