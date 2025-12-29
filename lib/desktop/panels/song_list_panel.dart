@@ -191,7 +191,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                 ListTile(
                   title: AutoSizeText(
                     isLibrary
-                        ? AppLocalizations.of(context).songs
+                        ? l10n.songs
                         : playlist?.name == 'Favorite'
                         ? l10n.favorite
                         : title,
@@ -203,8 +203,8 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                   ),
                   subtitle: ValueListenableBuilder(
                     valueListenable: currentSongListNotifier,
-                    builder: (context, songList, child) {
-                      return Text(l10n.songsCount(songList.length));
+                    builder: (context, currentSongList, child) {
+                      return Text(l10n.songsCount(currentSongList.length));
                     },
                   ),
                 ),

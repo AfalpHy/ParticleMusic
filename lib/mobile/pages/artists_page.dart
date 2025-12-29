@@ -215,7 +215,7 @@ class ArtistsPage extends StatelessWidget {
                             toggleSize: 15,
                             activeColor: mainColor,
                             inactiveColor: Colors.grey.shade300,
-                            value: value,
+                            value: useLargePicture,
                             onToggle: (value) async {
                               tryVibrate();
                               artistsUseLargePictureNotifier.value = value;

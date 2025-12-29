@@ -135,13 +135,13 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
               child: Row(
                 children: [
                   if (playlist != null)
-                    Text("${l10n.playlists} ", style: TextStyle(fontSize: 15)),
+                    Text("${l10n.playlists}: ", style: TextStyle(fontSize: 15)),
                   if (artist != null)
-                    Text("${l10n.artists} ", style: TextStyle(fontSize: 15)),
+                    Text("${l10n.artists}: ", style: TextStyle(fontSize: 15)),
                   if (album != null)
-                    Text("${l10n.albums} ", style: TextStyle(fontSize: 15)),
+                    Text("${l10n.albums}: ", style: TextStyle(fontSize: 15)),
                   if (folder != null)
-                    Text("${l10n.folders} ", style: TextStyle(fontSize: 15)),
+                    Text("${l10n.folders}: ", style: TextStyle(fontSize: 15)),
 
                   Expanded(
                     child: MyAutoSizeText(
@@ -269,6 +269,8 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
   }
 
   Widget normalSongList() {
+    final l10n = AppLocalizations.of(context);
+
     return Stack(
       children: [
         NotificationListener<UserScrollNotification>(
@@ -304,7 +306,9 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
                           child: ListTile(
                             title: AutoSizeText(
                               isLibrary
-                                  ? AppLocalizations.of(context).songs
+                                  ? l10n.songs
+                                  : playlist?.name == 'Favorite'
+                                  ? l10n.favorite
                                   : title,
                               maxLines: 1,
                               minFontSize: 20,
@@ -315,7 +319,9 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
                             subtitle: ValueListenableBuilder(
                               valueListenable: currentSongListNotifier,
                               builder: (context, currentSongList, child) {
-                                return Text("${currentSongList.length} songs");
+                                return Text(
+                                  l10n.songsCount(currentSongList.length),
+                                );
                               },
                             ),
                           ),
