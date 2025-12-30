@@ -72,5 +72,7 @@
   "albumDescending": "专辑降序",
   "durationAscending": "时长升序",
   "durationDescending": "时长降序",
-  "selectSortingType": "选择排序类型"
+  "selectSortingType": "选择排序类型",
+  "loadingFolder": "正在加载的文件夹",
+  "loadedSongs": "已加载歌曲"
 }

@@ -541,6 +541,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Select sorting type'**
   String get selectSortingType;
+
+  /// No description provided for @loadingFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading Folder'**
+  String get loadingFolder;
+
+  /// No description provided for @loadedSongs.
+  ///
+  /// In en, this message translates to:
+  /// **'Loaded Songs'**
+  String get loadedSongs;
 }
 
 class _AppLocalizationsDelegate

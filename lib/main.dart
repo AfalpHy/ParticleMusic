@@ -105,7 +105,7 @@ Future<void> main() async {
   runApp(
     ValueListenableBuilder(
       valueListenable: localeNotifier,
-      builder: (_, locale, _) {
+      builder: (context, locale, _) {
         return MaterialApp(
           locale: locale,
           supportedLocales: AppLocalizations.supportedLocales,
@@ -125,6 +125,8 @@ Future<void> main() async {
               if (!value) {
                 return isMobile ? MobileMainPage() : DesktopMainPage();
               }
+              final l10n = AppLocalizations.of(context);
+
               return Scaffold(
                 backgroundColor: Color.fromARGB(255, 235, 240, 245),
                 body: Center(
@@ -136,7 +138,7 @@ Future<void> main() async {
                       ValueListenableBuilder(
                         valueListenable: currentLoadingFolderNotifier,
                         builder: (context, value, child) {
-                          return Text('Loading Folder: $value');
+                          return Text('${l10n.loadingFolder}: $value');
                         },
                       ),
                       SizedBox(height: 5),
@@ -144,7 +146,7 @@ Future<void> main() async {
                       ValueListenableBuilder(
                         valueListenable: loadedCountNotifier,
                         builder: (context, value, child) {
-                          return Text('Loaded Songs: $value');
+                          return Text('${l10n.loadedSongs}: $value');
                         },
                       ),
                     ],

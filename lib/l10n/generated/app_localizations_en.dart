@@ -237,4 +237,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get selectSortingType => 'Select sorting type';
+
+  @override
+  String get loadingFolder => 'Loading Folder';
+
+  @override
+  String get loadedSongs => 'Loaded Songs';
 }

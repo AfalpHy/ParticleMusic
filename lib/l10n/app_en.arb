@@ -104,5 +104,7 @@
   "albumDescending": "Album Descending",
   "durationAscending": "Duration Ascending",
   "durationDescending": "Duration Descending",
-  "selectSortingType": "Select sorting type"
+  "selectSortingType": "Select sorting type",
+  "loadingFolder": "Loading Folder",
+  "loadedSongs": "Loaded Songs"
 }

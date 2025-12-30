@@ -237,4 +237,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get selectSortingType => '选择排序类型';
+
+  @override
+  String get loadingFolder => '正在加载的文件夹';
+
+  @override
+  String get loadedSongs => '已加载歌曲';
 }
