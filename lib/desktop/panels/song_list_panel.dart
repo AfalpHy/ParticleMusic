@@ -385,11 +385,11 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
             ),
           ),
 
-          SizedBox(width: 10),
-
           SizedBox(
             width: 80,
-            child: Text(l10n.favorited, overflow: TextOverflow.ellipsis),
+            child: Center(
+              child: Text(l10n.favorited, overflow: TextOverflow.ellipsis),
+            ),
           ),
 
           SizedBox(
@@ -706,11 +706,9 @@ class ListItemChildState extends State<ListItemChild> {
                       ),
                     ),
 
-                    SizedBox(width: 10),
                     SizedBox(
                       width: 80,
-                      child: Align(
-                        alignment: AlignmentGeometry.centerLeft,
+                      child: Center(
                         child: IconButton(
                           onPressed: () {
                             toggleFavoriteState(song);
