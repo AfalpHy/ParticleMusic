@@ -30,6 +30,7 @@ const AssetImage fullscreenExitImage = AssetImage(
 const AssetImage fullscreenImage = AssetImage('assets/images/fullscreen.png');
 const AssetImage gridImage = AssetImage('assets/images/grid.png');
 const AssetImage infoImage = AssetImage('assets/images/info.png');
+const AssetImage languageImage = AssetImage('assets/images/language.png');
 const AssetImage listImage = AssetImage('assets/images/list.png');
 const AssetImage longArrowDownImage = AssetImage(
   'assets/images/long_arrow_down.png',
@@ -101,15 +102,11 @@ class MyAutoSizeText extends AutoSizeText {
        );
 }
 
-Widget mySheet(
-  Widget child, {
-  double height = 500,
-  Color color = Colors.white,
-}) {
+Widget mySheet(Widget child, {double height = 500}) {
   return SmoothClipRRect(
     smoothness: 1,
     borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
-    child: Container(height: height, color: color, child: child),
+    child: Container(height: height, color: Colors.grey.shade50, child: child),
   );
 }
 
@@ -157,7 +154,7 @@ Future<bool> showConfirmDialog(BuildContext context, String action) async {
           smoothness: 1,
           borderRadius: BorderRadius.circular(10),
         ),
-        backgroundColor: Colors.white,
+        backgroundColor: Color.fromARGB(255, 240, 245, 250),
         title: Text(action),
         content: Text(l10n.continueMsg, style: TextStyle(fontSize: 14)),
         actions: [
@@ -168,7 +165,7 @@ Future<bool> showConfirmDialog(BuildContext context, String action) async {
                 onPressed: () => Navigator.pop(context, false),
                 style: ElevatedButton.styleFrom(
                   elevation: 2,
-                  backgroundColor: Colors.grey.shade50,
+                  backgroundColor: Color.fromARGB(255, 240, 245, 250),
                   shadowColor: Colors.black54,
                   foregroundColor: Colors.black,
                   shape: SmoothRectangleBorder(
@@ -183,7 +180,7 @@ Future<bool> showConfirmDialog(BuildContext context, String action) async {
                 onPressed: () => Navigator.pop(context, true),
                 style: ElevatedButton.styleFrom(
                   elevation: 2,
-                  backgroundColor: Colors.grey.shade50,
+                  backgroundColor: Color.fromARGB(255, 240, 245, 250),
                   shadowColor: Colors.black54,
                   foregroundColor: Colors.red,
                   shape: SmoothRectangleBorder(

@@ -98,7 +98,7 @@ class PlaylistsPage extends StatelessWidget {
                       smoothness: 1,
                       borderRadius: BorderRadius.circular(5),
                       child: Container(
-                        color: const Color.fromARGB(255, 245, 235, 245),
+                        color: Colors.grey.shade200,
                         child: ImageIcon(addImage, size: 50),
                       ),
                     ),
@@ -128,7 +128,7 @@ class PlaylistsPage extends StatelessWidget {
               smoothness: 1,
               borderRadius: BorderRadius.circular(5),
               child: Container(
-                color: const Color.fromARGB(255, 245, 235, 245),
+                color: Colors.grey.shade200,
                 child: ImageIcon(addImage, size: 50),
               ),
             ),

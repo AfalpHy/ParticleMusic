@@ -384,7 +384,7 @@ class SettingsList extends StatelessWidget {
   Widget languageListTile(BuildContext context, AppLocalizations l10n) {
     return ListTile(
       leading: ImageIcon(
-        infoImage,
+        languageImage,
         color: mainColor,
         size: isMobile ? 30 : null,
       ),
