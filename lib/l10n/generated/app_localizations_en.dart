@@ -243,4 +243,16 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get loadedSongs => 'Loaded Songs';
+
+  @override
+  String get canNotUpdate => 'Can not update the song that is playing';
+
+  @override
+  String get updateSuccessfully => 'Update Successfully';
+
+  @override
+  String get updateFailed => 'Update failed';
+
+  @override
+  String get nothingNeedToUpdate => 'Nothing need to update';
 }

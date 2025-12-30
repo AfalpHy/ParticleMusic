@@ -553,6 +553,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Loaded Songs'**
   String get loadedSongs;
+
+  /// No description provided for @canNotUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Can not update the song that is playing'**
+  String get canNotUpdate;
+
+  /// No description provided for @updateSuccessfully.
+  ///
+  /// In en, this message translates to:
+  /// **'Update Successfully'**
+  String get updateSuccessfully;
+
+  /// No description provided for @updateFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Update failed'**
+  String get updateFailed;
+
+  /// No description provided for @nothingNeedToUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Nothing need to update'**
+  String get nothingNeedToUpdate;
 }
 
 class _AppLocalizationsDelegate

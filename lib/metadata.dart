@@ -64,7 +64,7 @@ void showSongMetadataDialog(BuildContext context, AudioMetadata song) async {
                         if (song == currentSongNotifier.value) {
                           showCenterMessage(
                             context,
-                            'Can not modify the song that is playing',
+                            l10n.canNotUpdate,
                             duration: 2000,
                           );
                           return;
@@ -101,7 +101,7 @@ void showSongMetadataDialog(BuildContext context, AudioMetadata song) async {
                               if (context.mounted) {
                                 showCenterMessage(
                                   context,
-                                  'Update successfully',
+                                  l10n.updateSuccessfully,
                                   duration: 2000,
                                 );
                               }
@@ -109,7 +109,7 @@ void showSongMetadataDialog(BuildContext context, AudioMetadata song) async {
                               if (context.mounted) {
                                 showCenterMessage(
                                   context,
-                                  'Update failed',
+                                  l10n.updateFailed,
                                   duration: 2000,
                                 );
                               }
@@ -120,7 +120,7 @@ void showSongMetadataDialog(BuildContext context, AudioMetadata song) async {
                             if (context.mounted) {
                               showCenterMessage(
                                 context,
-                                'Nothing need to update',
+                                l10n.nothingNeedToUpdate,
                                 duration: 2000,
                               );
                             }

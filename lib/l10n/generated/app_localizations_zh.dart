@@ -243,4 +243,16 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get loadedSongs => '已加载歌曲';
+
+  @override
+  String get canNotUpdate => '无法修改正在播放的歌曲';
+
+  @override
+  String get updateSuccessfully => '更新成功';
+
+  @override
+  String get updateFailed => '更新失败';
+
+  @override
+  String get nothingNeedToUpdate => '没有需要更新的内容';
 }

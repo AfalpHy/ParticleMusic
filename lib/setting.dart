@@ -69,6 +69,12 @@ class Setting {
 
     vibrationOnNoitifier.value =
         json['vibrationOn'] as bool? ?? vibrationOnNoitifier.value;
+
+    final languageCode = json['language'] as String? ?? '';
+
+    if (languageCode.isNotEmpty) {
+      localeNotifier.value = Locale(languageCode);
+    }
   }
 
   void saveSetting() {
@@ -84,6 +90,9 @@ class Setting {
         'playlistsUseLargePicture': playlistsUseLargePictureNotifier.value,
 
         'vibrationOn': vibrationOnNoitifier.value,
+        'language': localeNotifier.value == null
+            ? ''
+            : localeNotifier.value!.languageCode,
       }),
     );
   }
@@ -402,41 +411,47 @@ class SettingsList extends StatelessWidget {
               child: SizedBox(
                 height: 300,
                 width: 100,
-                child: ValueListenableBuilder(
-                  valueListenable: localeNotifier,
-                  builder: (context, value, child) {
-                    final l10n = AppLocalizations.of(context);
+                child: Padding(
+                  padding: const EdgeInsets.all(10.0),
+                  child: ValueListenableBuilder(
+                    valueListenable: localeNotifier,
+                    builder: (context, value, child) {
+                      final l10n = AppLocalizations.of(context);
 
-                    return ListView(
-                      children: [
-                        ListTile(
-                          title: Text(l10n.followSystem),
-                          onTap: () {
-                            localeNotifier.value = null;
-                          },
-                          trailing: value == null ? Icon(Icons.check) : null,
-                        ),
-                        ListTile(
-                          title: Text('English'),
-                          onTap: () {
-                            localeNotifier.value = Locale('en');
-                          },
-                          trailing: value == Locale('en')
-                              ? Icon(Icons.check)
-                              : null,
-                        ),
-                        ListTile(
-                          title: Text('中文'),
-                          onTap: () {
-                            localeNotifier.value = Locale('zh');
-                          },
-                          trailing: value == Locale('zh')
-                              ? Icon(Icons.check)
-                              : null,
-                        ),
-                      ],
-                    );
-                  },
+                      return ListView(
+                        children: [
+                          ListTile(
+                            title: Text(l10n.followSystem),
+                            onTap: () {
+                              localeNotifier.value = null;
+                              setting.saveSetting();
+                            },
+                            trailing: value == null ? Icon(Icons.check) : null,
+                          ),
+                          ListTile(
+                            title: Text('English'),
+                            onTap: () {
+                              localeNotifier.value = Locale('en');
+                              setting.saveSetting();
+                            },
+                            trailing: value == Locale('en')
+                                ? Icon(Icons.check)
+                                : null,
+                          ),
+                          ListTile(
+                            title: Text('中文'),
+                            onTap: () {
+                              localeNotifier.value = Locale('zh');
+                              setting.saveSetting();
+                            },
+                            trailing: value == Locale('zh')
+                                ? Icon(Icons.check)
+                                : null,
+                          ),
+                        ],
+                      );
+                    },
+                  ),
                 ),
               ),
             );

@@ -97,6 +97,7 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
 
   Widget mainCover(double size) {
     return Material(
+      color: Colors.transparent,
       elevation: 5,
       shape: SmoothRectangleBorder(
         smoothness: 1,

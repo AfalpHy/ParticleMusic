@@ -106,5 +106,9 @@
   "durationDescending": "Duration Descending",
   "selectSortingType": "Select sorting type",
   "loadingFolder": "Loading Folder",
-  "loadedSongs": "Loaded Songs"
+  "loadedSongs": "Loaded Songs",
+  "canNotUpdate": "Can not update the song that is playing",
+  "updateSuccessfully": "Update Successfully",
+  "updateFailed": "Update failed",
+  "nothingNeedToUpdate": "Nothing need to update"
 }
