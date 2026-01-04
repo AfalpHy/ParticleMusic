@@ -133,9 +133,20 @@ class LyricsListViewState extends State<LyricsListView>
       return;
     }
     int tmp = currentIndexNotifier.value;
-    int current = widget.lyrics.lastIndexWhere(
-      (line) => position >= line.start,
-    );
+    int current = -1;
+    int i = 0;
+    if (tmp > -1 && position >= widget.lyrics[tmp].start) {
+      i = tmp;
+    }
+    for (; i < widget.lyrics.length; i++) {
+      final line = widget.lyrics[i];
+      if (position < line.start) {
+        break;
+      }
+      if (current == -1 || line.start > widget.lyrics[current].start) {
+        current = i;
+      }
+    }
     currentIndexNotifier.value = current;
 
     if (!userDragging && (tmp != current || userDragged)) {
