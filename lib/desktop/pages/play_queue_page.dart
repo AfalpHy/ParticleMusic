@@ -131,7 +131,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
             ),
             IconButton(
               onPressed: () async {
-                if (await showConfirmDialog(context, 'Clear Action')) {
+                if (await showConfirmDialog(context, l10n.clear)) {
                   audioHandler.clear();
 
                   displayPlayQueuePageNotifier.value = false;

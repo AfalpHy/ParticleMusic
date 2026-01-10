@@ -255,4 +255,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get nothingNeedToUpdate => '没有需要更新的内容';
+
+  @override
+  String get clear => '清空';
 }

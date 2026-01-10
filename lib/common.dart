@@ -156,7 +156,7 @@ Future<bool> showConfirmDialog(BuildContext context, String action) async {
           smoothness: 1,
           borderRadius: BorderRadius.circular(10),
         ),
-        backgroundColor: Color.fromARGB(255, 240, 245, 250),
+        backgroundColor: commonColor,
         title: Text(action),
         content: Text(l10n.continueMsg, style: TextStyle(fontSize: 14)),
         actions: [
@@ -167,7 +167,7 @@ Future<bool> showConfirmDialog(BuildContext context, String action) async {
                 onPressed: () => Navigator.pop(context, false),
                 style: ElevatedButton.styleFrom(
                   elevation: 2,
-                  backgroundColor: Color.fromARGB(255, 240, 245, 250),
+                  backgroundColor: commonColor,
                   shadowColor: Colors.black54,
                   foregroundColor: Colors.black,
                   shape: SmoothRectangleBorder(
@@ -182,7 +182,7 @@ Future<bool> showConfirmDialog(BuildContext context, String action) async {
                 onPressed: () => Navigator.pop(context, true),
                 style: ElevatedButton.styleFrom(
                   elevation: 2,
-                  backgroundColor: Color.fromARGB(255, 240, 245, 250),
+                  backgroundColor: commonColor,
                   shadowColor: Colors.black54,
                   foregroundColor: Colors.red,
                   shape: SmoothRectangleBorder(

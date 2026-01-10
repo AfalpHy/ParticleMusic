@@ -114,7 +114,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                 ),
                 IconButton(
                   onPressed: () async {
-                    if (await showConfirmDialog(context, 'Clear Action')) {
+                    if (await showConfirmDialog(context, l10n.clear)) {
                       audioHandler.clear();
 
                       while (context.mounted && Navigator.canPop(context)) {

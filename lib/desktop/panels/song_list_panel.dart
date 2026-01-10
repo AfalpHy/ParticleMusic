@@ -242,7 +242,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                         await audioHandler.play();
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color.fromARGB(255, 240, 245, 250),
+                        backgroundColor: Colors.white,
                         foregroundColor: Colors.black,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(5),
@@ -268,7 +268,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                         await audioHandler.play();
                       },
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Color.fromARGB(255, 240, 245, 250),
+                        backgroundColor: Colors.white,
                         foregroundColor: Colors.black,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(5),
@@ -682,6 +682,7 @@ class ListItemChildState extends State<ListItemChild> {
           child: InkWell(
             highlightColor: Colors.transparent,
             splashColor: Colors.transparent,
+            mouseCursor: SystemMouseCursors.basic,
             hoverColor: Colors.white,
 
             onTap: widget.onTap,

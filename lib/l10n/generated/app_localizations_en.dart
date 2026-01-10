@@ -255,4 +255,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get nothingNeedToUpdate => 'Nothing need to update';
+
+  @override
+  String get clear => 'Clear';
 }

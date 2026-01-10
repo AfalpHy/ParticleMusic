@@ -110,5 +110,6 @@
   "canNotUpdate": "Can not update the song that is playing",
   "updateSuccessfully": "Update Successfully",
   "updateFailed": "Update failed",
-  "nothingNeedToUpdate": "Nothing need to update"
+  "nothingNeedToUpdate": "Nothing need to update",
+  "clear": "Clear"
 }
