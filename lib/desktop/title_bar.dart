@@ -1,29 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/desktop/my_window_listener.dart';
 import 'package:particle_music/desktop/pages/lyrics_page.dart';
 import 'package:particle_music/desktop/panels/panel_manager.dart';
 import 'package:searchfield/searchfield.dart';
 import 'package:window_manager/window_manager.dart';
-
-ValueNotifier<bool> isMaximizedNotifier = ValueNotifier(false);
-ValueNotifier<bool> isFullScreenNotifier = ValueNotifier(false);
-
-class MyWindowListener extends WindowListener {
-  @override
-  void onWindowMaximize() {
-    isMaximizedNotifier.value = true;
-  }
-
-  @override
-  void onWindowUnmaximize() {
-    isMaximizedNotifier.value = false;
-  }
-
-  @override
-  void onWindowClose() {
-    windowManager.hide();
-  }
-}
 
 Widget titleSearchField(
   String hintText, {

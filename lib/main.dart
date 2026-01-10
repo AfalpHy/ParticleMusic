@@ -5,6 +5,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/desktop_lyrics.dart';
+import 'package:particle_music/desktop/keyboard.dart';
+import 'package:particle_music/desktop/my_tray_listener.dart';
+import 'package:particle_music/desktop/my_window_listener.dart';
 import 'package:particle_music/desktop/pages/main_page.dart';
 import 'package:particle_music/desktop/single_instance.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
@@ -87,6 +90,11 @@ Future<void> main() async {
         ],
       ),
     );
+
+    keyboardInit();
+
+    windowManager.addListener(MyWindowListener());
+    trayManager.addListener(MyTrayListener());
   }
 
   audioHandler = await AudioService.init(

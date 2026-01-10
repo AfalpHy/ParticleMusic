@@ -1,76 +1,17 @@
 import 'dart:async';
-import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/bottom_control.dart';
-import 'package:particle_music/desktop/keyboard.dart';
 import 'package:particle_music/desktop/panels/panel_manager.dart';
 import 'package:particle_music/desktop/pages/play_queue_page.dart';
 import 'package:particle_music/desktop/sidebar.dart';
 import 'package:particle_music/desktop/pages/lyrics_page.dart';
-import 'package:particle_music/desktop/title_bar.dart';
 import 'package:smooth_corner/smooth_corner.dart';
-import 'package:tray_manager/tray_manager.dart';
-import 'package:window_manager/window_manager.dart';
 
-class DesktopMainPage extends StatelessWidget with TrayListener {
-  DesktopMainPage({super.key}) {
-    HardwareKeyboard.instance.addHandler((event) {
-      if (event is KeyDownEvent) {
-        if (event.logicalKey.keyLabel == 'Shift Left' ||
-            event.logicalKey.keyLabel == 'Shift Right') {
-          shiftIsPressed = true;
-        }
-        if (event.logicalKey.keyLabel == 'Control Left' ||
-            event.logicalKey.keyLabel == 'Control Right') {
-          ctrlIsPressed = true;
-        }
-      } else if (event is KeyUpEvent) {
-        if (event.logicalKey.keyLabel == 'Shift Left' ||
-            event.logicalKey.keyLabel == 'Shift Right') {
-          shiftIsPressed = false;
-        }
-        if (event.logicalKey.keyLabel == 'Control Left' ||
-            event.logicalKey.keyLabel == 'Control Right') {
-          ctrlIsPressed = false;
-        }
-      }
-      return false;
-    });
-
-    windowManager.addListener(MyWindowListener());
-    trayManager.addListener(this);
-  }
-
-  @override
-  void onTrayIconMouseDown() async {
-    windowManager.show();
-  }
-
-  @override
-  void onTrayIconRightMouseDown() {
-    // ignore: deprecated_member_use
-    trayManager.popUpContextMenu(bringAppToFront: true);
-  }
-
-  @override
-  void onTrayMenuItemClick(MenuItem menuItem) async {
-    if (menuItem.key == 'show') {
-      await windowManager.show();
-    } else if (menuItem.key == 'exit') {
-      exit(0);
-    } else if (menuItem.key == 'skipToPrevious') {
-      await audioHandler.skipToPrevious();
-    } else if (menuItem.key == 'togglePlay') {
-      await audioHandler.togglePlay();
-    } else if (menuItem.key == 'skipToNext') {
-      await audioHandler.skipToNext();
-    }
-  }
+class DesktopMainPage extends StatelessWidget {
+  const DesktopMainPage({super.key});
 
   @override
   Widget build(BuildContext context) {
