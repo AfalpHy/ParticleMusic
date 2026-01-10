@@ -668,7 +668,7 @@ class ListItemChildState extends State<ListItemChild> {
         valueListenable: widget.isSelected,
         builder: (context, value, child) {
           return Material(
-            color: value ? Colors.white : commonColor,
+            color: value ? Colors.white : Colors.transparent,
             child: child,
           );
         },
@@ -682,7 +682,7 @@ class ListItemChildState extends State<ListItemChild> {
           child: InkWell(
             highlightColor: Colors.transparent,
             splashColor: Colors.transparent,
-            mouseCursor: SystemMouseCursors.basic,
+            hoverColor: Colors.white,
 
             onTap: widget.onTap,
             child: ValueListenableBuilder(

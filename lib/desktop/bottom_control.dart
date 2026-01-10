@@ -17,7 +17,7 @@ class BottomControl extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Color.fromARGB(255, 235, 245, 250),
+      color: Colors.white,
       height: 75,
       child: Stack(
         children: [currentSongTile(), playControls(context), volumeControl()],
