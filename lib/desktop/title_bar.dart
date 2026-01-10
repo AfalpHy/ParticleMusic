@@ -66,7 +66,7 @@ Widget titleSearchField(
             },
           ),
           filled: true,
-          fillColor: Color.fromARGB(255, 215, 225, 235),
+          fillColor: Color.fromARGB(255, 220, 225, 235),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(10),
             borderSide: BorderSide.none,

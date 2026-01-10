@@ -128,7 +128,7 @@ Future<void> main() async {
               final l10n = AppLocalizations.of(context);
 
               return Scaffold(
-                backgroundColor: Color.fromARGB(255, 235, 240, 245),
+                backgroundColor: commonColor,
                 body: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,

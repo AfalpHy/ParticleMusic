@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:particle_music/audio_handler.dart';
+import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/bottom_control.dart';
 import 'package:particle_music/desktop/keyboard.dart';
 import 'package:particle_music/desktop/panels/panel_manager.dart';
@@ -87,7 +88,7 @@ class DesktopMainPage extends StatelessWidget with TrayListener {
                       valueListenable: panelManager.updatePanel,
                       builder: (_, _, _) {
                         return Material(
-                          color: Color.fromARGB(255, 235, 240, 245),
+                          color: commonColor,
 
                           child: IndexedStack(
                             index: panelManager.panelStack.length - 1,

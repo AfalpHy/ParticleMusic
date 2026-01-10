@@ -229,10 +229,7 @@ class SettingsList extends StatelessWidget {
       child: SmoothClipRRect(
         smoothness: 1,
         borderRadius: BorderRadius.circular(15),
-        child: Material(
-          color: Color.fromARGB(255, 235, 240, 245),
-          child: child,
-        ),
+        child: Material(color: commonColor, child: child),
       ),
     );
   }
@@ -269,7 +266,7 @@ class SettingsList extends StatelessWidget {
           context: context,
           builder: (context) {
             return Dialog(
-              backgroundColor: Color.fromARGB(255, 235, 240, 245),
+              backgroundColor: commonColor,
               shape: SmoothRectangleBorder(
                 smoothness: 1,
                 borderRadius: BorderRadius.circular(10),
@@ -403,7 +400,7 @@ class SettingsList extends StatelessWidget {
           context: context,
           builder: (context) {
             return Dialog(
-              backgroundColor: Color.fromARGB(255, 235, 240, 245),
+              backgroundColor: commonColor,
               shape: SmoothRectangleBorder(
                 smoothness: 1,
                 borderRadius: BorderRadius.circular(10),

@@ -15,6 +15,8 @@ final isMobile = Platform.isAndroid || Platform.isIOS;
 final ValueNotifier<Locale?> localeNotifier = ValueNotifier(null);
 
 const Color mainColor = Color.fromARGB(255, 120, 230, 230);
+final Color commonColor = Color.fromARGB(255, 235, 240, 245);
+
 late double appWidth;
 
 const AssetImage addImage = AssetImage('assets/images/add.png');

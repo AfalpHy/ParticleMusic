@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/title_bar.dart';
 import 'package:particle_music/setting.dart';
 
@@ -51,9 +52,7 @@ class LicensePagePanelState extends State<LicensePagePanel> {
         Expanded(
           child: Theme(
             data: ThemeData(
-              colorScheme: ColorScheme.light(
-                surface: Color.fromARGB(255, 235, 240, 245),
-              ),
+              colorScheme: ColorScheme.light(surface: commonColor),
               listTileTheme: ListTileThemeData(
                 selectedColor: Color.fromARGB(255, 75, 200, 200),
               ),

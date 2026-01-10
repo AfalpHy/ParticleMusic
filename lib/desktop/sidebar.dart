@@ -10,6 +10,7 @@ import 'package:super_context_menu/super_context_menu.dart';
 import 'package:window_manager/window_manager.dart';
 
 final ValueNotifier<String> sidebarHighlighLabel = ValueNotifier('_songs');
+final sideBarColor = Color.fromARGB(255, 240, 245, 250);
 
 class Sidebar extends StatelessWidget {
   final ScrollController _scrollController = ScrollController();
@@ -32,9 +33,7 @@ class Sidebar extends StatelessWidget {
           valueListenable: sidebarHighlighLabel,
           builder: (context, value, child) {
             return Material(
-              color: value == label
-                  ? Colors.white
-                  : Color.fromARGB(255, 240, 245, 250),
+              color: value == label ? Colors.white : sideBarColor,
               child: InkWell(
                 onTap: onTap,
                 splashColor: Colors.transparent,
@@ -68,7 +67,7 @@ class Sidebar extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return Material(
-      color: Color.fromARGB(255, 240, 245, 250),
+      color: sideBarColor,
       child: SizedBox(
         width: 220,
         child: Column(

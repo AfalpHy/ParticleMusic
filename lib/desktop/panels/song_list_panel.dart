@@ -668,7 +668,7 @@ class ListItemChildState extends State<ListItemChild> {
         valueListenable: widget.isSelected,
         builder: (context, value, child) {
           return Material(
-            color: value ? Colors.white : Color.fromARGB(255, 235, 240, 245),
+            color: value ? Colors.white : commonColor,
             child: child,
           );
         },
