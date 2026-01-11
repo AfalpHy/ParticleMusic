@@ -23,7 +23,7 @@ class PlayerBar extends StatelessWidget {
             borderRadius: BorderRadius.circular(25), // rounded half-circle ends
 
             child: Material(
-              color: Color.fromARGB(210, 240, 255, 255),
+              color: coverArtAverageColor.withAlpha(215),
               child: InkWell(
                 onTap: () {
                   showModalBottomSheet(
