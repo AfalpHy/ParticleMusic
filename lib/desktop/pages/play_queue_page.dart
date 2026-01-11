@@ -349,7 +349,7 @@ class PlayQueueItemChildState extends State<PlayQueueItemChild> {
             style: TextStyle(
               color: song == currentSong ? textColor : null,
               fontWeight: song == currentSong ? FontWeight.bold : null,
-              fontSize: 14,
+              fontSize: 15,
             ),
           );
         },
@@ -357,7 +357,7 @@ class PlayQueueItemChildState extends State<PlayQueueItemChild> {
       subtitle: Text(
         "${getArtist(song)} - ${getAlbum(song)}",
         overflow: TextOverflow.ellipsis,
-        style: TextStyle(fontSize: 12, color: Colors.grey),
+        style: TextStyle(fontSize: 12),
       ),
       trailing: Text(
         formatDuration(getDuration(song)),

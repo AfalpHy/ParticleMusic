@@ -32,7 +32,7 @@ final albumsUseLargePictureNotifier = ValueNotifier(false);
 
 final playlistsUseLargePictureNotifier = ValueNotifier(true);
 
-final enableCustomColorNotifier = ValueNotifier(true);
+final enableCustomColorNotifier = ValueNotifier(false);
 final colorChangeNotifier = ValueNotifier(0);
 
 late Setting setting;

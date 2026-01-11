@@ -640,7 +640,7 @@ class ListItemChildState extends State<ListItemChild> {
           builder: (_, currentSong, _) {
             final color = enableCustomColorNotifier.value
                 ? textColor
-                : coverArtAverageColor;
+                : Colors.black;
             return ListTile(
               contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
               visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
