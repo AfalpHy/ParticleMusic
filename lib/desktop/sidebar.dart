@@ -185,8 +185,8 @@ class Sidebar extends StatelessWidget {
                               thickness: 0.5,
                               height: 1,
                               color: enableCustomColorNotifier.value
-                                  ? coverArtAverageColor
-                                  : dividerColor,
+                                  ? dividerColor
+                                  : coverArtAverageColor,
                             );
                           },
                         ),

@@ -635,12 +635,12 @@ class ListItemChildState extends State<ListItemChild> {
     return ValueListenableBuilder(
       valueListenable: colorChangeNotifier,
       builder: (_, _, _) {
-        final color = enableCustomColorNotifier.value
-            ? textColor
-            : coverArtAverageColor;
         return ValueListenableBuilder(
           valueListenable: currentSongNotifier,
           builder: (_, currentSong, _) {
+            final color = enableCustomColorNotifier.value
+                ? textColor
+                : coverArtAverageColor;
             return ListTile(
               contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
               visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
