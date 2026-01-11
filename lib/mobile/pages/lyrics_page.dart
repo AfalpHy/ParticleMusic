@@ -34,7 +34,9 @@ class LyricsPage extends StatelessWidget {
                     valueListenable: filterBackgroundNotifier,
                     builder: (context, value, child) {
                       return value
-                          ? Container(color: coverArtFilterColor)
+                          ? Container(
+                              color: coverArtAverageColor.withAlpha(180),
+                            )
                           : Container(color: coverArtAverageColor);
                     },
                   ),

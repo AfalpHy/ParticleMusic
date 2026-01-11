@@ -87,7 +87,7 @@ class PlaylistsPanelState extends State<PlaylistsPanel> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 30),
                       child: ListTile(
-                        leading: const ImageIcon(
+                        leading: ImageIcon(
                           playlistsImage,
                           size: 50,
                           color: iconColor,

@@ -15,6 +15,7 @@ import 'package:particle_music/metadata.dart';
 import 'package:particle_music/my_location.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/base_song_list.dart';
+import 'package:particle_music/setting.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 import 'package:super_context_menu/super_context_menu.dart';
 
@@ -193,12 +194,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
 
   Widget header() {
     final l10n = AppLocalizations.of(context);
-    final buttonStyle = ElevatedButton.styleFrom(
-      backgroundColor: buttonColor,
-      foregroundColor: Colors.black,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
-      padding: EdgeInsets.all(10),
-    );
+
     return SizedBox(
       height: 200,
       child: Row(
@@ -231,45 +227,66 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                 ),
                 Spacer(),
 
-                Row(
-                  children: [
-                    SizedBox(width: 10),
-                    ElevatedButton(
-                      onPressed: () async {
-                        if (currentSongListNotifier.value.isEmpty) {
-                          return;
-                        }
-                        audioHandler.currentIndex = 0;
-                        playModeNotifier.value = 0;
-                        await audioHandler.setPlayQueue(
-                          currentSongListNotifier.value,
+                ValueListenableBuilder(
+                  valueListenable: colorChangeNotifier,
+                  builder: (_, _, _) {
+                    return ValueListenableBuilder(
+                      valueListenable: currentSongNotifier,
+                      builder: (_, _, _) {
+                        final buttonStyle = ElevatedButton.styleFrom(
+                          backgroundColor: enableCustomColorNotifier.value
+                              ? buttonColor
+                              : coverArtAverageColor.withAlpha(75),
+                          foregroundColor: Colors.black,
+                          shadowColor: Colors.black12,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(5),
+                          ),
+                          padding: EdgeInsets.all(10),
                         );
-                        await audioHandler.play();
-                      },
-                      style: buttonStyle,
-                      child: Text(l10n.playAll),
-                    ),
-                    SizedBox(width: 15),
+                        return Row(
+                          children: [
+                            SizedBox(width: 10),
+                            ElevatedButton(
+                              onPressed: () async {
+                                if (currentSongListNotifier.value.isEmpty) {
+                                  return;
+                                }
+                                audioHandler.currentIndex = 0;
+                                playModeNotifier.value = 0;
+                                await audioHandler.setPlayQueue(
+                                  currentSongListNotifier.value,
+                                );
+                                await audioHandler.play();
+                              },
+                              style: buttonStyle,
+                              child: Text(l10n.playAll),
+                            ),
+                            SizedBox(width: 15),
 
-                    ElevatedButton(
-                      onPressed: () async {
-                        if (currentSongListNotifier.value.isEmpty) {
-                          return;
-                        }
-                        audioHandler.currentIndex = Random().nextInt(
-                          currentSongListNotifier.value.length,
+                            ElevatedButton(
+                              onPressed: () async {
+                                if (currentSongListNotifier.value.isEmpty) {
+                                  return;
+                                }
+                                audioHandler.currentIndex = Random().nextInt(
+                                  currentSongListNotifier.value.length,
+                                );
+                                playModeNotifier.value = 1;
+                                await audioHandler.setPlayQueue(
+                                  currentSongListNotifier.value,
+                                );
+                                await audioHandler.play();
+                              },
+                              style: buttonStyle,
+                              child: Text(l10n.shuffle),
+                            ),
+                            SizedBox(width: 10),
+                          ],
                         );
-                        playModeNotifier.value = 1;
-                        await audioHandler.setPlayQueue(
-                          currentSongListNotifier.value,
-                        );
-                        await audioHandler.play();
                       },
-                      style: buttonStyle,
-                      child: Text(l10n.shuffle),
-                    ),
-                    SizedBox(width: 10),
-                  ],
+                    );
+                  },
                 ),
                 SizedBox(height: 30),
               ],
@@ -615,35 +632,49 @@ class ListItemChildState extends State<ListItemChild> {
   }
 
   Widget songListTile(AudioMetadata song) {
-    return ListTile(
-      contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-      visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-      leading: CoverArtWidget(
-        size: 40,
-        borderRadius: 4,
-        source: getCoverArt(song),
-      ),
-      title: ValueListenableBuilder(
-        valueListenable: currentSongNotifier,
-        builder: (_, currentSong, _) {
-          return Text(
-            getTitle(song),
-            overflow: TextOverflow.ellipsis,
-            style: song == currentSong
-                ? TextStyle(
-                    color: textColor,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15,
-                  )
-                : TextStyle(fontSize: 15),
-          );
-        },
-      ),
-      subtitle: Text(
-        getArtist(song),
-        overflow: TextOverflow.ellipsis,
-        style: TextStyle(fontSize: 12, color: Colors.grey),
-      ),
+    return ValueListenableBuilder(
+      valueListenable: colorChangeNotifier,
+      builder: (_, _, _) {
+        final color = enableCustomColorNotifier.value
+            ? textColor
+            : coverArtAverageColor;
+        return ValueListenableBuilder(
+          valueListenable: currentSongNotifier,
+          builder: (_, currentSong, _) {
+            return ListTile(
+              contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
+              visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+              leading: CoverArtWidget(
+                size: 40,
+                borderRadius: 4,
+                source: getCoverArt(song),
+              ),
+              title: Text(
+                getTitle(song),
+                overflow: TextOverflow.ellipsis,
+                style: song == currentSong
+                    ? TextStyle(
+                        color: color,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 15,
+                      )
+                    : TextStyle(fontSize: 15),
+              ),
+              subtitle: Text(
+                getArtist(song),
+                overflow: TextOverflow.ellipsis,
+                style: song == currentSong
+                    ? TextStyle(
+                        color: color,
+                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
+                      )
+                    : TextStyle(fontSize: 12),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -654,86 +685,102 @@ class ListItemChildState extends State<ListItemChild> {
 
     return SmoothClipRRect(
       smoothness: 1,
-      borderRadius: BorderRadius.circular(15),
+      borderRadius: BorderRadius.circular(10),
       child: ValueListenableBuilder(
-        valueListenable: widget.isSelected,
-        builder: (context, value, child) {
-          return Material(
-            color: value ? Colors.white : Colors.transparent,
-            child: child,
-          );
-        },
-        child: MouseRegion(
-          onEnter: (event) {
-            showPlayButtonNotifier.value = true;
-          },
-          onExit: (event) {
-            showPlayButtonNotifier.value = false;
-          },
-          child: InkWell(
-            highlightColor: Colors.transparent,
-            splashColor: Colors.transparent,
-            mouseCursor: SystemMouseCursors.basic,
-            hoverColor: Colors.white,
+        valueListenable: colorChangeNotifier,
+        builder: (_, _, _) {
+          return ValueListenableBuilder(
+            valueListenable: widget.isSelected,
+            builder: (context, value, child) {
+              return ValueListenableBuilder(
+                valueListenable: currentSongNotifier,
+                builder: (_, _, _) {
+                  return Material(
+                    color: value
+                        ? (enableCustomColorNotifier.value
+                              ? Colors.white
+                              : coverArtAverageColor.withAlpha(75))
+                        : Colors.transparent,
+                    child: child,
+                  );
+                },
+              );
+            },
+            child: MouseRegion(
+              onEnter: (event) {
+                showPlayButtonNotifier.value = true;
+              },
+              onExit: (event) {
+                showPlayButtonNotifier.value = false;
+              },
+              child: InkWell(
+                highlightColor: Colors.transparent,
+                splashColor: Colors.transparent,
+                hoverColor: enableCustomColorNotifier.value
+                    ? Colors.white
+                    : null,
+                mouseCursor: SystemMouseCursors.basic,
 
-            onTap: widget.onTap,
-            child: ValueListenableBuilder(
-              valueListenable: songIsUpdated[song]!,
-              builder: (_, _, _) {
-                return Row(
-                  children: [
-                    SizedBox(
-                      width: 60,
-                      child: Center(child: indexOrPlayButton()),
-                    ),
+                onTap: widget.onTap,
+                child: ValueListenableBuilder(
+                  valueListenable: songIsUpdated[song]!,
+                  builder: (_, _, _) {
+                    return Row(
+                      children: [
+                        SizedBox(
+                          width: 60,
+                          child: Center(child: indexOrPlayButton()),
+                        ),
 
-                    Expanded(child: songListTile(song)),
+                        Expanded(child: songListTile(song)),
 
-                    SizedBox(width: 10),
+                        SizedBox(width: 10),
 
-                    Expanded(
-                      child: Text(
-                        getAlbum(song),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-
-                    SizedBox(
-                      width: 80,
-                      child: Center(
-                        child: IconButton(
-                          onPressed: () {
-                            toggleFavoriteState(song);
-                          },
-                          icon: ValueListenableBuilder(
-                            valueListenable: songIsFavorite[song]!,
-                            builder: (context, value, child) {
-                              return value
-                                  ? Icon(
-                                      Icons.favorite_rounded,
-                                      color: Colors.red,
-                                      size: 20,
-                                    )
-                                  : Icon(Icons.favorite_outline, size: 20);
-                            },
+                        Expanded(
+                          child: Text(
+                            getAlbum(song),
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
-                      ),
-                    ),
 
-                    SizedBox(
-                      width: 90,
-                      child: Text(
-                        formatDuration(getDuration(song)),
-                        overflow: TextOverflow.ellipsis,
-                      ),
-                    ),
-                  ],
-                );
-              },
+                        SizedBox(
+                          width: 80,
+                          child: Center(
+                            child: IconButton(
+                              onPressed: () {
+                                toggleFavoriteState(song);
+                              },
+                              icon: ValueListenableBuilder(
+                                valueListenable: songIsFavorite[song]!,
+                                builder: (context, value, child) {
+                                  return value
+                                      ? Icon(
+                                          Icons.favorite_rounded,
+                                          color: Colors.red,
+                                          size: 20,
+                                        )
+                                      : Icon(Icons.favorite_outline, size: 20);
+                                },
+                              ),
+                            ),
+                          ),
+                        ),
+
+                        SizedBox(
+                          width: 90,
+                          child: Text(
+                            formatDuration(getDuration(song)),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    );
+                  },
+                ),
+              ),
             ),
-          ),
-        ),
+          );
+        },
       ),
     );
   }

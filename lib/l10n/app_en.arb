@@ -111,5 +111,8 @@
   "updateSuccessfully": "Update Successfully",
   "updateFailed": "Update failed",
   "nothingNeedToUpdate": "Nothing need to update",
-  "clear": "Clear"
+  "clear": "Clear",
+  "palette": "Palette",
+  "customMode": "Custom Mode",
+  "iconColor": "Icon Color"
 }

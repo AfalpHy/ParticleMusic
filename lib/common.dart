@@ -14,12 +14,14 @@ import 'package:smooth_corner/smooth_corner.dart';
 final isMobile = Platform.isAndroid || Platform.isIOS;
 final ValueNotifier<Locale?> localeNotifier = ValueNotifier(null);
 
-const Color iconColor = Color.fromARGB(255, 120, 230, 230);
-const Color textColor = Color.fromARGB(255, 75, 200, 200);
-const Color buttonColor = Colors.white;
-const Color switchColor = Color.fromARGB(255, 120, 230, 230);
+Color iconColor = Colors.black;
+Color textColor = Colors.black;
+Color buttonColor = Colors.white70;
+Color switchColor = Colors.black87;
 
-Color panelColor = Colors.grey.shade100;
+Color selectedColor = Colors.grey;
+Color commonColor = Colors.grey.shade100;
+Color dividerColor = Colors.grey;
 
 late double appWidth;
 
@@ -49,6 +51,7 @@ const AssetImage maximizeImage = AssetImage('assets/images/maximize.png');
 const AssetImage minimizeImage = AssetImage('assets/images/minimize.png');
 const AssetImage musicNoteImage = AssetImage('assets/images/music_note.png');
 const AssetImage nextButtonImage = AssetImage('assets/images/next_button.png');
+const AssetImage paletteImage = AssetImage('assets/images/palette.png');
 const AssetImage pauseCircleImage = AssetImage(
   'assets/images/pause_circle.png',
 );
@@ -158,9 +161,9 @@ Future<bool> showConfirmDialog(BuildContext context, String action) async {
       return AlertDialog(
         shape: SmoothRectangleBorder(
           smoothness: 1,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(5),
         ),
-        backgroundColor: panelColor,
+        backgroundColor: commonColor.withAlpha(255),
         title: Text(action),
         content: Text(l10n.continueMsg, style: TextStyle(fontSize: 14)),
         actions: [

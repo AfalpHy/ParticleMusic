@@ -8,7 +8,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_switch/flutter_switch.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/desktop/bottom_control.dart';
 import 'package:particle_music/desktop/panels/panel_manager.dart';
+import 'package:particle_music/desktop/sidebar.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:smooth_corner/smooth_corner.dart';
@@ -29,6 +31,9 @@ final albumsIsAscendingNotifier = ValueNotifier(true);
 final albumsUseLargePictureNotifier = ValueNotifier(false);
 
 final playlistsUseLargePictureNotifier = ValueNotifier(true);
+
+final enableCustomColorNotifier = ValueNotifier(true);
+final colorChangeNotifier = ValueNotifier(0);
 
 late Setting setting;
 
@@ -75,6 +80,22 @@ class Setting {
     if (languageCode.isNotEmpty) {
       localeNotifier.value = Locale(languageCode);
     }
+
+    enableCustomColorNotifier.value =
+        json['enableCustomColor'] as bool? ?? enableCustomColorNotifier.value;
+
+    final vivid = !enableCustomColorNotifier.value;
+    commonColor = vivid
+        ? commonColor.withAlpha(120)
+        : commonColor.withAlpha(255);
+    if (!isMobile) {
+      sideBarColor = vivid
+          ? sideBarColor.withAlpha(120)
+          : sideBarColor.withAlpha(255);
+      bottomColor = vivid
+          ? bottomColor.withAlpha(120)
+          : bottomColor.withAlpha(255);
+    }
   }
 
   void saveSetting() {
@@ -93,6 +114,7 @@ class Setting {
         'language': localeNotifier.value == null
             ? ''
             : localeNotifier.value!.languageCode,
+        'enableCustomColor': enableCustomColorNotifier.value,
       }),
     );
   }
@@ -228,8 +250,8 @@ class SettingsList extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 30),
       child: SmoothClipRRect(
         smoothness: 1,
-        borderRadius: BorderRadius.circular(15),
-        child: Material(color: panelColor, child: child),
+        borderRadius: BorderRadius.circular(10),
+        child: Material(color: Colors.transparent, child: child),
       ),
     );
   }
@@ -266,7 +288,7 @@ class SettingsList extends StatelessWidget {
           context: context,
           builder: (context) {
             return Dialog(
-              backgroundColor: panelColor,
+              backgroundColor: commonColor.withAlpha(255),
               shape: SmoothRectangleBorder(
                 smoothness: 1,
                 borderRadius: BorderRadius.circular(10),
@@ -400,10 +422,10 @@ class SettingsList extends StatelessWidget {
           context: context,
           builder: (context) {
             return Dialog(
-              backgroundColor: panelColor,
+              backgroundColor: commonColor.withAlpha(255),
               shape: SmoothRectangleBorder(
                 smoothness: 1,
-                borderRadius: BorderRadius.circular(10),
+                borderRadius: BorderRadius.circular(5),
               ),
               child: SizedBox(
                 height: 300,
@@ -458,6 +480,107 @@ class SettingsList extends StatelessWidget {
     );
   }
 
+  Widget paletteListTile(BuildContext context, AppLocalizations l10n) {
+    return Theme(
+      data: Theme.of(context).copyWith(
+        highlightColor: Colors.transparent,
+        splashColor: Colors.transparent,
+      ),
+      child: ListTile(
+        leading: ImageIcon(
+          paletteImage,
+          color: iconColor,
+          size: isMobile ? 30 : null,
+        ),
+        title: Text(l10n.palette),
+        onTap: () async {
+          showDialog(
+            context: context,
+            builder: (context) {
+              return Dialog(
+                backgroundColor: commonColor.withAlpha(255),
+                shape: SmoothRectangleBorder(
+                  smoothness: 1,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: SizedBox(
+                  height: 300,
+                  width: 300,
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+                    child: Column(
+                      children: [
+                        ListTile(
+                          title: Text(l10n.customMode),
+                          trailing: SizedBox(
+                            width: 45,
+                            child: ValueListenableBuilder(
+                              valueListenable: enableCustomColorNotifier,
+                              builder: (context, value, child) {
+                                return MouseRegion(
+                                  cursor: SystemMouseCursors.click,
+                                  child: FlutterSwitch(
+                                    height: 20,
+                                    toggleSize: 15,
+                                    activeColor: switchColor,
+                                    inactiveColor: Colors.grey.shade300,
+                                    value: value,
+                                    onToggle: (value) {
+                                      enableCustomColorNotifier.value = value;
+                                      commonColor = value
+                                          ? commonColor.withAlpha(255)
+                                          : commonColor.withAlpha(120);
+                                      sideBarColor = value
+                                          ? sideBarColor.withAlpha(255)
+                                          : sideBarColor.withAlpha(120);
+                                      bottomColor = value
+                                          ? bottomColor.withAlpha(255)
+                                          : bottomColor.withAlpha(120);
+                                      colorChangeNotifier.value++;
+                                      setting.saveSetting();
+                                    },
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+
+                        ListTile(
+                          title: Text(l10n.iconColor),
+
+                          trailing: Padding(
+                            padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
+                            child: InkWell(
+                              child: SmoothClipRRect(
+                                borderRadius: BorderRadius.circular(3),
+                                child: Container(
+                                  height: 25,
+                                  width: 25,
+                                  color: iconColor,
+                                ),
+                              ),
+                              onTap: () {
+                                showCenterMessage(
+                                  context,
+                                  'Not implemented yet',
+                                );
+                              },
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              );
+            },
+          );
+        },
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -489,13 +612,31 @@ class SettingsList extends StatelessWidget {
         if (!isMobile)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-
-            child: Divider(
-              thickness: 1,
-              height: 1,
-              color: Colors.grey.shade300,
+            child: ValueListenableBuilder(
+              valueListenable: enableCustomColorNotifier,
+              builder: (context, enable, child) {
+                if (enable) {
+                  return Divider(
+                    thickness: 0.5,
+                    height: 1,
+                    color: dividerColor,
+                  );
+                }
+                return ValueListenableBuilder(
+                  valueListenable: currentSongNotifier,
+                  builder: (_, _, _) {
+                    return Divider(
+                      thickness: 0.5,
+                      height: 1,
+                      color: coverArtAverageColor,
+                    );
+                  },
+                );
+              },
             ),
           ),
+
+        if (!isMobile) SizedBox(height: 10),
 
         isMobile
             ? ListTile(
@@ -676,6 +817,10 @@ class SettingsList extends StatelessWidget {
                   : SizedBox();
             },
           ),
+
+        isMobile
+            ? paletteListTile(context, l10n)
+            : paddingForDesktop(paletteListTile(context, l10n)),
       ],
     );
   }

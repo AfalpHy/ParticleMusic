@@ -342,11 +342,11 @@ Future<bool> showCreatePlaylistDialog(BuildContext context) async {
     context: context,
     builder: (context) {
       return AlertDialog(
-        backgroundColor: panelColor,
+        backgroundColor: commonColor.withAlpha(255),
         title: Center(child: Text(l10n.createPlaylist)),
         shape: SmoothRectangleBorder(
           smoothness: 1,
-          borderRadius: BorderRadius.circular(10),
+          borderRadius: BorderRadius.circular(5),
         ),
         content: TextField(
           controller: controller,
@@ -410,7 +410,7 @@ void showAddPlaylistDialog(
     context: context,
     builder: (context) {
       return Dialog(
-        backgroundColor: panelColor,
+        backgroundColor: commonColor.withAlpha(255),
         shape: SmoothRectangleBorder(
           smoothness: 1,
           borderRadius: BorderRadius.circular(10),

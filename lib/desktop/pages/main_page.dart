@@ -1,8 +1,11 @@
 import 'dart:async';
 import 'dart:math';
+import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/desktop/bottom_control.dart';
 import 'package:particle_music/desktop/panels/panel_manager.dart';
 import 'package:particle_music/desktop/pages/play_queue_page.dart';
@@ -16,7 +19,31 @@ class DesktopMainPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Stack(
+      fit: StackFit.expand,
+
       children: [
+        ValueListenableBuilder(
+          valueListenable: currentSongNotifier,
+          builder: (context, currentSong, child) {
+            return CoverArtWidget(source: getCoverArt(currentSong));
+          },
+        ),
+        ValueListenableBuilder(
+          valueListenable: currentSongNotifier,
+          builder: (context, value, child) {
+            final pageWidth = MediaQuery.widthOf(context);
+            final pageHight = MediaQuery.heightOf(context);
+            return ClipRect(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(
+                  sigmaX: pageWidth * 0.03,
+                  sigmaY: pageHight * 0.03,
+                ),
+                child: Container(color: coverArtAverageColor.withAlpha(180)),
+              ),
+            );
+          },
+        ),
         Column(
           children: [
             Expanded(
@@ -29,8 +56,7 @@ class DesktopMainPage extends StatelessWidget {
                       valueListenable: panelManager.updatePanel,
                       builder: (_, _, _) {
                         return Material(
-                          color: panelColor,
-
+                          color: commonColor,
                           child: IndexedStack(
                             index: panelManager.panelStack.length - 1,
                             children: panelManager.panelStack,
@@ -42,7 +68,7 @@ class DesktopMainPage extends StatelessWidget {
                 ],
               ),
             ),
-            Material(child: BottomControl()),
+            Material(color: bottomColor, child: BottomControl()),
           ],
         ),
 

@@ -258,4 +258,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get clear => 'Clear';
+
+  @override
+  String get palette => 'Palette';
+
+  @override
+  String get customMode => 'Custom Mode';
+
+  @override
+  String get iconColor => 'Icon Color';
 }

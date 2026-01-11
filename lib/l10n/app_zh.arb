@@ -79,5 +79,8 @@
   "updateSuccessfully": "更新成功",
   "updateFailed": "更新失败",
   "nothingNeedToUpdate": "没有需要更新的内容",
-  "clear": "清空"
+  "clear": "清空",
+  "palette": "调色板",
+  "customMode": "自定义模式",
+  "iconColor": "图标颜色"
 }

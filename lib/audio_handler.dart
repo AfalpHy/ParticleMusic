@@ -19,7 +19,6 @@ late MyAudioHandler audioHandler;
 List<AudioMetadata> playQueue = [];
 
 Color coverArtAverageColor = Colors.grey;
-Color coverArtFilterColor = coverArtAverageColor.withAlpha(180);
 
 final ValueNotifier<AudioMetadata?> currentSongNotifier = ValueNotifier(null);
 final ValueNotifier<bool> isPlayingNotifier = ValueNotifier(false);
@@ -238,7 +237,6 @@ abstract class MyAudioHandler extends BaseAudioHandler {
 
   void computeCoverArtColors(AudioMetadata currentSong) {
     coverArtAverageColor = Colors.grey;
-    coverArtFilterColor = coverArtAverageColor.withAlpha(180);
 
     if (currentSong.pictures.isEmpty) return;
 
@@ -282,7 +280,6 @@ abstract class MyAudioHandler extends BaseAudioHandler {
         b.toInt(),
       );
     }
-    coverArtFilterColor = coverArtAverageColor.withAlpha(180);
   }
 
   Future<Uri> saveAlbumCover(Uint8List bytes) async {

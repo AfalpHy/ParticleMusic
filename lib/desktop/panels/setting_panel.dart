@@ -22,7 +22,12 @@ class SettingPanelState extends State<SettingPanel> {
   }
 
   Widget contentWidget(BuildContext context) {
-    return SettingsList();
+    return ValueListenableBuilder(
+      valueListenable: colorChangeNotifier,
+      builder: (context, value, child) {
+        return SettingsList();
+      },
+    );
   }
 }
 
@@ -52,7 +57,7 @@ class LicensePagePanelState extends State<LicensePagePanel> {
         Expanded(
           child: Theme(
             data: ThemeData(
-              colorScheme: ColorScheme.light(surface: panelColor),
+              colorScheme: ColorScheme.light(surface: commonColor),
               listTileTheme: ListTileThemeData(
                 selectedColor: Color.fromARGB(255, 75, 200, 200),
               ),

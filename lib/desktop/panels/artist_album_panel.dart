@@ -88,16 +88,8 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
                   padding: const EdgeInsets.symmetric(horizontal: 30),
                   child: ListTile(
                     leading: isArtist
-                        ? const ImageIcon(
-                            artistImage,
-                            size: 50,
-                            color: iconColor,
-                          )
-                        : const ImageIcon(
-                            albumImage,
-                            size: 50,
-                            color: iconColor,
-                          ),
+                        ? ImageIcon(artistImage, size: 50, color: iconColor)
+                        : ImageIcon(albumImage, size: 50, color: iconColor),
                     title: Text(
                       isArtist ? l10n.artists : l10n.albums,
                       style: TextStyle(

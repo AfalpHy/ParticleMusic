@@ -583,6 +583,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Clear'**
   String get clear;
+
+  /// No description provided for @palette.
+  ///
+  /// In en, this message translates to:
+  /// **'Palette'**
+  String get palette;
+
+  /// No description provided for @customMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom Mode'**
+  String get customMode;
+
+  /// No description provided for @iconColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Icon Color'**
+  String get iconColor;
 }
 
 class _AppLocalizationsDelegate

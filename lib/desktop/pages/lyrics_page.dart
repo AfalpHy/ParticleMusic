@@ -48,7 +48,6 @@ class LyricsPageState extends State<LyricsPage> {
               final coverArtSize = min(pageWidth * 0.3, pageHight * 0.6);
 
               return Material(
-                color: coverArtAverageColor,
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
@@ -59,7 +58,9 @@ class LyricsPageState extends State<LyricsPage> {
                           sigmaX: pageWidth * 0.03,
                           sigmaY: pageHight * 0.03,
                         ),
-                        child: Container(color: coverArtFilterColor),
+                        child: Container(
+                          color: coverArtAverageColor.withAlpha(180),
+                        ),
                       ),
                     ),
                     Row(

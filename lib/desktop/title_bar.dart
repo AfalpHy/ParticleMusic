@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/my_window_listener.dart';
 import 'package:particle_music/desktop/pages/lyrics_page.dart';
 import 'package:particle_music/desktop/panels/panel_manager.dart';
+import 'package:particle_music/setting.dart';
 import 'package:searchfield/searchfield.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -25,35 +27,49 @@ Widget titleSearchField(
     child: SizedBox(
       width: 350,
       height: 35,
-      child: TextField(
-        controller: textController,
-        style: TextStyle(fontSize: 14),
-        decoration: SearchInputDecoration(
-          hint: Text(hintText, style: TextStyle(fontSize: 14)),
-          contentPadding: EdgeInsets.all(0),
-          prefixIcon: const Icon(Icons.search),
-          suffixIcon: ValueListenableBuilder(
-            valueListenable: displayCancelNotifier,
-            builder: (context, value, child) {
-              return value
-                  ? IconButton(
-                      onPressed: () {
-                        textController!.clear();
-                        onChanged!('');
-                      },
-                      icon: const Icon(Icons.close, size: 20),
-                    )
-                  : SizedBox.shrink();
+      child: ValueListenableBuilder(
+        valueListenable: colorChangeNotifier,
+        builder: (_, _, _) {
+          return ValueListenableBuilder(
+            valueListenable: currentSongNotifier,
+            builder: (_, _, _) {
+              final fillColor = enableCustomColorNotifier.value
+                  ? Colors.white
+                  : coverArtAverageColor.withAlpha(75);
+              return TextField(
+                controller: textController,
+                style: TextStyle(fontSize: 14),
+                decoration: SearchInputDecoration(
+                  hint: Text(hintText, style: TextStyle(fontSize: 14)),
+                  contentPadding: EdgeInsets.all(0),
+                  prefixIcon: const Icon(Icons.search),
+                  suffixIcon: ValueListenableBuilder(
+                    valueListenable: displayCancelNotifier,
+                    builder: (context, value, child) {
+                      return value
+                          ? IconButton(
+                              onPressed: () {
+                                textController!.clear();
+                                onChanged!('');
+                              },
+                              icon: const Icon(Icons.close, size: 20),
+                            )
+                          : SizedBox.shrink();
+                    },
+                  ),
+                  filled: true,
+                  fillColor: fillColor,
+                  hoverColor: Colors.transparent,
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(10),
+                    borderSide: BorderSide.none,
+                  ),
+                ),
+                onChanged: onChanged,
+              );
             },
-          ),
-          filled: true,
-          fillColor: Colors.grey.shade200,
-          border: OutlineInputBorder(
-            borderRadius: BorderRadius.circular(10),
-            borderSide: BorderSide.none,
-          ),
-        ),
-        onChanged: onChanged,
+          );
+        },
       ),
     ),
   );

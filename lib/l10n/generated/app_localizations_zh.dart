@@ -258,4 +258,13 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get clear => '清空';
+
+  @override
+  String get palette => '调色板';
+
+  @override
+  String get customMode => '自定义模式';
+
+  @override
+  String get iconColor => '图标颜色';
 }

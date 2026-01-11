@@ -1,16 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/desktop/panels/panel_manager.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/metadata.dart';
 import 'package:particle_music/playlists.dart';
+import 'package:particle_music/setting.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 import 'package:super_context_menu/super_context_menu.dart';
 import 'package:window_manager/window_manager.dart';
 
 final ValueNotifier<String> sidebarHighlighLabel = ValueNotifier('_songs');
-final sideBarColor = Color.fromARGB(255, 240, 240, 240);
+Color sideBarColor = Color.fromARGB(255, 240, 240, 240);
 
 class Sidebar extends StatelessWidget {
   final ScrollController _scrollController = ScrollController();
@@ -31,33 +33,37 @@ class Sidebar extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
         child: ValueListenableBuilder(
           valueListenable: sidebarHighlighLabel,
-          builder: (context, value, child) {
-            return Material(
-              color: value == label ? Colors.white : sideBarColor,
-              child: InkWell(
-                onTap: onTap,
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
-                hoverColor: Colors.white,
-                child: ListTile(
-                  leading: leading,
-                  title: Text(
-                    content,
-                    style: TextStyle(
-                      fontSize: 15,
-                      overflow: TextOverflow.ellipsis,
-                    ),
-                  ),
-                  contentPadding: contentPadding,
-                  visualDensity: const VisualDensity(
-                    horizontal: 0,
-                    vertical: -3.5,
-                  ),
-                  trailing: trailing,
-                ),
-              ),
+          builder: (context, highlightLabel, child) {
+            return ValueListenableBuilder(
+              valueListenable: currentSongNotifier,
+              builder: (_, _, _) {
+                return Material(
+                  color: highlightLabel == label
+                      ? (enableCustomColorNotifier.value
+                            ? Colors.white
+                            : coverArtAverageColor.withAlpha(75))
+                      : Colors.transparent,
+                  child: child,
+                );
+              },
             );
           },
+          child: InkWell(
+            onTap: onTap,
+            splashColor: Colors.transparent,
+            highlightColor: Colors.transparent,
+            hoverColor: enableCustomColorNotifier.value ? Colors.white : null,
+            child: ListTile(
+              leading: leading,
+              title: Text(
+                content,
+                style: TextStyle(fontSize: 15, overflow: TextOverflow.ellipsis),
+              ),
+              contentPadding: contentPadding,
+              visualDensity: const VisualDensity(horizontal: 0, vertical: -3.5),
+              trailing: trailing,
+            ),
+          ),
         ),
       ),
     );
@@ -104,7 +110,7 @@ class Sidebar extends StatelessWidget {
                     SliverToBoxAdapter(
                       child: sidebarItem(
                         label: '_artists',
-                        leading: const ImageIcon(
+                        leading: ImageIcon(
                           artistImage,
                           size: 30,
                           color: iconColor,
@@ -121,7 +127,7 @@ class Sidebar extends StatelessWidget {
                       child: sidebarItem(
                         label: '_albums',
 
-                        leading: const ImageIcon(
+                        leading: ImageIcon(
                           albumImage,
                           size: 30,
                           color: iconColor,
@@ -138,7 +144,7 @@ class Sidebar extends StatelessWidget {
                       child: sidebarItem(
                         label: '_songs',
 
-                        leading: const ImageIcon(
+                        leading: ImageIcon(
                           songsImage,
                           size: 30,
                           color: iconColor,
@@ -155,7 +161,7 @@ class Sidebar extends StatelessWidget {
                       child: sidebarItem(
                         label: '_folders',
 
-                        leading: const ImageIcon(
+                        leading: ImageIcon(
                           folderImage,
                           size: 30,
                           color: iconColor,
@@ -170,10 +176,20 @@ class Sidebar extends StatelessWidget {
 
                     SliverToBoxAdapter(child: SizedBox(height: 10)),
                     SliverToBoxAdapter(
-                      child: Divider(
-                        thickness: 0.5,
-                        height: 1,
-                        color: Colors.grey.shade300,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        child: ValueListenableBuilder(
+                          valueListenable: currentSongNotifier,
+                          builder: (_, _, _) {
+                            return Divider(
+                              thickness: 0.5,
+                              height: 1,
+                              color: enableCustomColorNotifier.value
+                                  ? coverArtAverageColor
+                                  : dividerColor,
+                            );
+                          },
+                        ),
                       ),
                     ),
                     SliverToBoxAdapter(child: SizedBox(height: 10)),
@@ -181,7 +197,7 @@ class Sidebar extends StatelessWidget {
                     SliverToBoxAdapter(
                       child: sidebarItem(
                         label: '_playlists',
-                        leading: const ImageIcon(
+                        leading: ImageIcon(
                           playlistsImage,
                           size: 30,
                           color: iconColor,

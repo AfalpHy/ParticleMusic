@@ -17,8 +17,7 @@ class BottomControl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      color: bottomColor,
+    return SizedBox(
       height: 75,
       child: Stack(
         children: [currentSongTile(), playControls(context), volumeControl()],
@@ -33,29 +32,36 @@ class BottomControl extends StatelessWidget {
         width: 300,
         child: ValueListenableBuilder(
           valueListenable: currentSongNotifier,
-          builder: (_, currentSong, _) {
-            return ListTile(
-              leading: CoverArtWidget(
-                size: 50,
-                borderRadius: 5,
-                source: getCoverArt(currentSong),
+          builder: (context, currentSong, _) {
+            return Theme(
+              data: Theme.of(context).copyWith(
+                highlightColor: Colors.transparent,
+                splashColor: Colors.transparent,
+                hoverColor: Colors.transparent,
               ),
-              title: Text(
-                getTitle(currentSong),
-                overflow: TextOverflow.ellipsis,
+              child: ListTile(
+                leading: CoverArtWidget(
+                  size: 50,
+                  borderRadius: 5,
+                  source: getCoverArt(currentSong),
+                ),
+                title: Text(
+                  getTitle(currentSong),
+                  overflow: TextOverflow.ellipsis,
+                ),
+                subtitle: currentSong != null
+                    ? Text(
+                        "${getArtist(currentSong)} - ${getAlbum(currentSong)}",
+                        overflow: TextOverflow.ellipsis,
+                      )
+                    : null,
+                onTap: () {
+                  if (playQueue.isEmpty) {
+                    return;
+                  }
+                  displayLyricsPageNotifier.value = true;
+                },
               ),
-              subtitle: currentSong != null
-                  ? Text(
-                      "${getArtist(currentSong)} - ${getAlbum(currentSong)}",
-                      overflow: TextOverflow.ellipsis,
-                    )
-                  : null,
-              onTap: () {
-                if (playQueue.isEmpty) {
-                  return;
-                }
-                displayLyricsPageNotifier.value = true;
-              },
             );
           },
         ),

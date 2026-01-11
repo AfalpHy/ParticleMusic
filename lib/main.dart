@@ -17,6 +17,7 @@ import 'package:particle_music/mobile/pages/main_page.dart';
 import 'package:audio_service/audio_service.dart';
 import 'dart:async';
 import 'package:flutter/services.dart';
+import 'package:particle_music/setting.dart';
 import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
 import 'audio_handler.dart';
@@ -131,12 +132,17 @@ Future<void> main() async {
             valueListenable: loadingLibraryNotifier,
             builder: (context, value, child) {
               if (!value) {
-                return isMobile ? MobileMainPage() : DesktopMainPage();
+                return ValueListenableBuilder(
+                  valueListenable: colorChangeNotifier,
+                  builder: (_, _, _) {
+                    return isMobile ? MobileMainPage() : DesktopMainPage();
+                  },
+                );
               }
               final l10n = AppLocalizations.of(context);
 
               return Scaffold(
-                backgroundColor: panelColor,
+                backgroundColor: commonColor,
                 body: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
