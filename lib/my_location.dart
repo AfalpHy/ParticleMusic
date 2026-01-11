@@ -33,7 +33,7 @@ class MyLocation extends StatelessWidget {
               builder: (_, isScrolling, _) {
                 return isScrolling && index >= 0
                     ? IconButton(
-                        color: mainColor,
+                        color: iconColor,
                         onPressed: () {
                           scrollController.animateTo(
                             60 * index.toDouble() + offset,

@@ -107,7 +107,7 @@ class Sidebar extends StatelessWidget {
                         leading: const ImageIcon(
                           artistImage,
                           size: 30,
-                          color: mainColor,
+                          color: iconColor,
                         ),
                         content: l10n.artists,
 
@@ -124,7 +124,7 @@ class Sidebar extends StatelessWidget {
                         leading: const ImageIcon(
                           albumImage,
                           size: 30,
-                          color: mainColor,
+                          color: iconColor,
                         ),
                         content: l10n.albums,
 
@@ -141,7 +141,7 @@ class Sidebar extends StatelessWidget {
                         leading: const ImageIcon(
                           songsImage,
                           size: 30,
-                          color: mainColor,
+                          color: iconColor,
                         ),
                         content: l10n.songs,
 
@@ -158,7 +158,7 @@ class Sidebar extends StatelessWidget {
                         leading: const ImageIcon(
                           folderImage,
                           size: 30,
-                          color: mainColor,
+                          color: iconColor,
                         ),
                         content: l10n.folders,
 
@@ -184,7 +184,7 @@ class Sidebar extends StatelessWidget {
                         leading: const ImageIcon(
                           playlistsImage,
                           size: 30,
-                          color: mainColor,
+                          color: iconColor,
                         ),
                         content: l10n.playlists,
                         contentPadding: EdgeInsets.fromLTRB(16, 0, 8, 0),

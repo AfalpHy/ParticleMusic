@@ -154,7 +154,7 @@ class AlbumsPage extends StatelessWidget {
                         width: 45,
                         height: 20,
                         toggleSize: 15,
-                        activeColor: mainColor,
+                        activeColor: switchColor,
                         inactiveColor: Colors.grey.shade300,
                         value: useLargePicture,
                         onToggle: (value) async {
@@ -192,7 +192,7 @@ class AlbumsPage extends StatelessWidget {
                         width: 45,
                         height: 20,
                         toggleSize: 15,
-                        activeColor: mainColor,
+                        activeColor: switchColor,
                         inactiveColor: Colors.grey.shade300,
                         value: value,
                         onToggle: (value) async {

@@ -90,7 +90,7 @@ class PlaylistsPanelState extends State<PlaylistsPanel> {
                         leading: const ImageIcon(
                           playlistsImage,
                           size: 50,
-                          color: mainColor,
+                          color: iconColor,
                         ),
                         title: Text(
                           l10n.playlists,
@@ -122,7 +122,7 @@ class PlaylistsPanelState extends State<PlaylistsPanel> {
                                     width: 45,
                                     height: 20,
                                     toggleSize: 15,
-                                    activeColor: mainColor,
+                                    activeColor: switchColor,
                                     inactiveColor: Colors.grey.shade300,
                                     value: value,
                                     onToggle: (value) async {

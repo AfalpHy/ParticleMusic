@@ -52,7 +52,7 @@ class LicensePagePanelState extends State<LicensePagePanel> {
         Expanded(
           child: Theme(
             data: ThemeData(
-              colorScheme: ColorScheme.light(surface: commonColor),
+              colorScheme: ColorScheme.light(surface: panelColor),
               listTileTheme: ListTileThemeData(
                 selectedColor: Color.fromARGB(255, 75, 200, 200),
               ),

@@ -309,7 +309,7 @@ Future<bool> showCreatePlaylistSheet(BuildContext context) async {
                 },
                 style: ElevatedButton.styleFrom(
                   elevation: 2,
-                  backgroundColor: Color.fromARGB(255, 240, 245, 250),
+                  backgroundColor: buttonColor,
                   shadowColor: Colors.black54,
                   foregroundColor: Colors.black,
 
@@ -342,7 +342,7 @@ Future<bool> showCreatePlaylistDialog(BuildContext context) async {
     context: context,
     builder: (context) {
       return AlertDialog(
-        backgroundColor: commonColor,
+        backgroundColor: panelColor,
         title: Center(child: Text(l10n.createPlaylist)),
         shape: SmoothRectangleBorder(
           smoothness: 1,
@@ -368,7 +368,7 @@ Future<bool> showCreatePlaylistDialog(BuildContext context) async {
               onPressed: () => Navigator.pop(context, controller.text),
               style: ElevatedButton.styleFrom(
                 elevation: 2,
-                backgroundColor: Color.fromARGB(255, 240, 245, 250),
+                backgroundColor: buttonColor,
                 shadowColor: Colors.black54,
                 foregroundColor: Colors.black,
 
@@ -410,7 +410,7 @@ void showAddPlaylistDialog(
     context: context,
     builder: (context) {
       return Dialog(
-        backgroundColor: commonColor,
+        backgroundColor: panelColor,
         shape: SmoothRectangleBorder(
           smoothness: 1,
           borderRadius: BorderRadius.circular(10),

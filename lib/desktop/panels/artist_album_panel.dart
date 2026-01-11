@@ -91,12 +91,12 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
                         ? const ImageIcon(
                             artistImage,
                             size: 50,
-                            color: mainColor,
+                            color: iconColor,
                           )
                         : const ImageIcon(
                             albumImage,
                             size: 50,
-                            color: mainColor,
+                            color: iconColor,
                           ),
                     title: Text(
                       isArtist ? l10n.artists : l10n.albums,
@@ -140,7 +140,7 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
                                     width: 45,
                                     height: 20,
                                     toggleSize: 15,
-                                    activeColor: mainColor,
+                                    activeColor: switchColor,
                                     inactiveColor: Colors.grey.shade300,
                                     value: value,
                                     onToggle: (value) async {
@@ -172,7 +172,7 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
                                     width: 45,
                                     height: 20,
                                     toggleSize: 15,
-                                    activeColor: mainColor,
+                                    activeColor: switchColor,
                                     inactiveColor: Colors.grey.shade300,
                                     value: value,
                                     onToggle: (value) async {

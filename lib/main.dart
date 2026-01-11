@@ -136,12 +136,12 @@ Future<void> main() async {
               final l10n = AppLocalizations.of(context);
 
               return Scaffold(
-                backgroundColor: commonColor,
+                backgroundColor: panelColor,
                 body: Center(
                   child: Column(
                     mainAxisSize: MainAxisSize.min,
                     children: [
-                      CircularProgressIndicator(color: mainColor),
+                      CircularProgressIndicator(color: iconColor),
                       SizedBox(height: 15),
                       ValueListenableBuilder(
                         valueListenable: currentLoadingFolderNotifier,

@@ -10,6 +10,7 @@ import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/seekbar.dart';
 
 String? lyricsWinId;
+Color bottomColor = Colors.grey.shade50;
 
 class BottomControl extends StatelessWidget {
   const BottomControl({super.key});
@@ -17,7 +18,7 @@ class BottomControl extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      color: Colors.grey.shade50,
+      color: bottomColor,
       height: 75,
       child: Stack(
         children: [currentSongTile(), playControls(context), volumeControl()],

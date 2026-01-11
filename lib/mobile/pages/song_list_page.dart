@@ -682,10 +682,8 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
         valueListenable: selectedNum,
         builder: (context, value, child) {
           final valid = value > 0;
-          final iconColor = valid ? mainColor : Colors.black54;
-          final textColor = valid
-              ? Color.fromARGB(255, 75, 200, 200)
-              : Colors.black54;
+          final localIconColor = valid ? iconColor : Colors.black54;
+          final localTextColor = valid ? textColor : Colors.black54;
           return SizedBox(
             height: 80,
             child: Row(
@@ -714,9 +712,12 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        ImageIcon(playnextCircleImage, color: iconColor),
+                        ImageIcon(playnextCircleImage, color: localIconColor),
 
-                        Text(l10n.playNext, style: TextStyle(color: textColor)),
+                        Text(
+                          l10n.playNext,
+                          style: TextStyle(color: localTextColor),
+                        ),
                       ],
                     ),
                   ),
@@ -738,11 +739,11 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        ImageIcon(playlistAddImage, color: iconColor),
+                        ImageIcon(playlistAddImage, color: localIconColor),
 
                         Text(
                           l10n.add2Playlists,
-                          style: TextStyle(color: textColor),
+                          style: TextStyle(color: localTextColor),
                         ),
                       ],
                     ),
@@ -784,11 +785,11 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              ImageIcon(deleteImage, color: iconColor),
+                              ImageIcon(deleteImage, color: localIconColor),
 
                               Text(
                                 l10n.delete,
-                                style: TextStyle(color: textColor),
+                                style: TextStyle(color: localTextColor),
                               ),
                             ],
                           ),

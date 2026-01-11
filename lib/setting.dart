@@ -150,7 +150,7 @@ void displayTimedPauseSetting(BuildContext context) {
                     },
                     style: ElevatedButton.styleFrom(
                       elevation: 1,
-                      backgroundColor: Colors.grey.shade50,
+                      backgroundColor: buttonColor,
                       shadowColor: Colors.black54,
                       foregroundColor: Colors.black,
                       shape: SmoothRectangleBorder(
@@ -193,7 +193,7 @@ void displayTimedPauseSetting(BuildContext context) {
                     },
                     style: ElevatedButton.styleFrom(
                       elevation: 1,
-                      backgroundColor: Colors.grey.shade50,
+                      backgroundColor: buttonColor,
                       shadowColor: Colors.black54,
                       foregroundColor: Colors.black,
                       shape: SmoothRectangleBorder(
@@ -229,7 +229,7 @@ class SettingsList extends StatelessWidget {
       child: SmoothClipRRect(
         smoothness: 1,
         borderRadius: BorderRadius.circular(15),
-        child: Material(color: commonColor, child: child),
+        child: Material(color: panelColor, child: child),
       ),
     );
   }
@@ -238,7 +238,7 @@ class SettingsList extends StatelessWidget {
     return ListTile(
       leading: ImageIcon(
         reloadImage,
-        color: mainColor,
+        color: iconColor,
         size: isMobile ? 30 : null,
       ),
       title: Text(l10n.reload),
@@ -257,7 +257,7 @@ class SettingsList extends StatelessWidget {
     return ListTile(
       leading: ImageIcon(
         folderImage,
-        color: mainColor,
+        color: iconColor,
         size: isMobile ? 30 : null,
       ),
       title: Text(l10n.selectMusicFolder),
@@ -266,7 +266,7 @@ class SettingsList extends StatelessWidget {
           context: context,
           builder: (context) {
             return Dialog(
-              backgroundColor: commonColor,
+              backgroundColor: panelColor,
               shape: SmoothRectangleBorder(
                 smoothness: 1,
                 borderRadius: BorderRadius.circular(10),
@@ -349,7 +349,7 @@ class SettingsList extends StatelessWidget {
                             libraryLoader.addFolder(result);
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
+                            backgroundColor: buttonColor,
                             foregroundColor: Colors.black,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(5),
@@ -364,7 +364,7 @@ class SettingsList extends StatelessWidget {
                             Navigator.of(context).pop();
                           },
                           style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
+                            backgroundColor: buttonColor,
                             foregroundColor: Colors.black,
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(5),
@@ -391,7 +391,7 @@ class SettingsList extends StatelessWidget {
     return ListTile(
       leading: ImageIcon(
         languageImage,
-        color: mainColor,
+        color: iconColor,
         size: isMobile ? 30 : null,
       ),
       title: Text(l10n.language),
@@ -400,7 +400,7 @@ class SettingsList extends StatelessWidget {
           context: context,
           builder: (context) {
             return Dialog(
-              backgroundColor: commonColor,
+              backgroundColor: panelColor,
               shape: SmoothRectangleBorder(
                 smoothness: 1,
                 borderRadius: BorderRadius.circular(10),
@@ -475,7 +475,7 @@ class SettingsList extends StatelessWidget {
                   leading: Icon(
                     Icons.settings_outlined,
                     size: 35,
-                    color: mainColor,
+                    color: iconColor,
                   ),
                   title: Text(
                     l10n.settings,
@@ -499,7 +499,7 @@ class SettingsList extends StatelessWidget {
 
         isMobile
             ? ListTile(
-                leading: ImageIcon(infoImage, color: mainColor, size: 30),
+                leading: ImageIcon(infoImage, color: iconColor, size: 30),
                 title: Text(
                   l10n.openSourceLicense,
                   style: TextStyle(fontSize: 15),
@@ -531,7 +531,7 @@ class SettingsList extends StatelessWidget {
               )
             : paddingForDesktop(
                 ListTile(
-                  leading: ImageIcon(infoImage, color: mainColor),
+                  leading: ImageIcon(infoImage, color: iconColor),
                   title: Text(
                     l10n.openSourceLicense,
                     style: TextStyle(fontSize: 15),
@@ -556,7 +556,7 @@ class SettingsList extends StatelessWidget {
 
         if (isMobile)
           ListTile(
-            leading: ImageIcon(vibrationImage, color: mainColor, size: 30),
+            leading: ImageIcon(vibrationImage, color: iconColor, size: 30),
             title: Text(l10n.vibration),
             trailing: ValueListenableBuilder(
               valueListenable: vibrationOnNoitifier,
@@ -567,7 +567,7 @@ class SettingsList extends StatelessWidget {
                     width: 45,
                     height: 20,
                     toggleSize: 15,
-                    activeColor: mainColor,
+                    activeColor: switchColor,
                     inactiveColor: Colors.grey.shade300,
                     value: value,
                     onToggle: (value) {
@@ -583,7 +583,7 @@ class SettingsList extends StatelessWidget {
 
         if (isMobile)
           ListTile(
-            leading: ImageIcon(timerImage, color: mainColor, size: 30),
+            leading: ImageIcon(timerImage, color: iconColor, size: 30),
 
             title: Text(l10n.sleepTimer),
             trailing: SizedBox(
@@ -618,7 +618,7 @@ class SettingsList extends StatelessWidget {
                         width: 45,
                         height: 20,
                         toggleSize: 15,
-                        activeColor: mainColor,
+                        activeColor: switchColor,
                         inactiveColor: Colors.grey.shade300,
                         value: value,
                         onToggle: (value) async {
@@ -659,7 +659,7 @@ class SettingsList extends StatelessWidget {
                                   width: 45,
                                   height: 20,
                                   toggleSize: 15,
-                                  activeColor: mainColor,
+                                  activeColor: switchColor,
                                   inactiveColor: Colors.grey.shade300,
                                   value: value,
                                   onToggle: (value) {

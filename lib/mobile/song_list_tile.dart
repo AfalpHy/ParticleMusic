@@ -38,9 +38,7 @@ class SongListTile extends StatelessWidget {
             getTitle(song),
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: song == currentSong
-                  ? Color.fromARGB(255, 75, 200, 200)
-                  : null,
+              color: song == currentSong ? textColor : null,
               fontWeight: song == currentSong ? FontWeight.bold : null,
             ),
           );

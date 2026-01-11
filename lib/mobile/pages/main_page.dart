@@ -137,13 +137,13 @@ class MobileMainPageState extends State<MobileMainPage> {
                       children: [
                         Icon(
                           Icons.library_music_outlined,
-                          color: which == 1 ? mainColor : Colors.black54,
+                          color: which == 1 ? iconColor : Colors.black54,
                         ),
 
                         Text(
                           l10n.library,
                           style: TextStyle(
-                            color: which == 1 ? mainColor : Colors.black54,
+                            color: which == 1 ? iconColor : Colors.black54,
                           ),
                         ),
                       ],
@@ -167,13 +167,13 @@ class MobileMainPageState extends State<MobileMainPage> {
                       children: [
                         Icon(
                           Icons.settings_outlined,
-                          color: which == 3 ? mainColor : Colors.black54,
+                          color: which == 3 ? iconColor : Colors.black54,
                         ),
 
                         Text(
                           l10n.settings,
                           style: TextStyle(
-                            color: which == 3 ? mainColor : Colors.black54,
+                            color: which == 3 ? iconColor : Colors.black54,
                           ),
                         ),
                       ],
@@ -226,7 +226,7 @@ class HomePageState extends State<HomePage> {
       physics: ClampingScrollPhysics(),
       children: [
         ListTile(
-          leading: const ImageIcon(playlistsImage, size: 35, color: mainColor),
+          leading: const ImageIcon(playlistsImage, size: 35, color: iconColor),
           title: Text(l10n.playlists),
           onTap: () {
             Navigator.of(
@@ -235,7 +235,7 @@ class HomePageState extends State<HomePage> {
           },
         ),
         ListTile(
-          leading: const ImageIcon(artistImage, size: 35, color: mainColor),
+          leading: const ImageIcon(artistImage, size: 35, color: iconColor),
           title: Text(l10n.artists),
           onTap: () {
             Navigator.of(
@@ -244,7 +244,7 @@ class HomePageState extends State<HomePage> {
           },
         ),
         ListTile(
-          leading: const ImageIcon(albumImage, size: 35, color: mainColor),
+          leading: const ImageIcon(albumImage, size: 35, color: iconColor),
           title: Text(l10n.albums),
           onTap: () {
             Navigator.of(
@@ -254,7 +254,7 @@ class HomePageState extends State<HomePage> {
         ),
 
         ListTile(
-          leading: const ImageIcon(folderImage, size: 35, color: mainColor),
+          leading: const ImageIcon(folderImage, size: 35, color: iconColor),
           title: Text(l10n.folders),
           onTap: () {
             Navigator.of(
@@ -264,7 +264,7 @@ class HomePageState extends State<HomePage> {
         ),
 
         ListTile(
-          leading: const ImageIcon(songsImage, size: 35, color: mainColor),
+          leading: const ImageIcon(songsImage, size: 35, color: iconColor),
           title: Text(l10n.songs),
           onTap: () {
             Navigator.of(

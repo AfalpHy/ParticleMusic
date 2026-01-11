@@ -193,7 +193,12 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
 
   Widget header() {
     final l10n = AppLocalizations.of(context);
-
+    final buttonStyle = ElevatedButton.styleFrom(
+      backgroundColor: buttonColor,
+      foregroundColor: Colors.black,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(5)),
+      padding: EdgeInsets.all(10),
+    );
     return SizedBox(
       height: 200,
       child: Row(
@@ -241,14 +246,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                         );
                         await audioHandler.play();
                       },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        padding: EdgeInsets.all(10),
-                      ),
+                      style: buttonStyle,
                       child: Text(l10n.playAll),
                     ),
                     SizedBox(width: 15),
@@ -267,14 +265,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                         );
                         await audioHandler.play();
                       },
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.white,
-                        foregroundColor: Colors.black,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(5),
-                        ),
-                        padding: EdgeInsets.all(10),
-                      ),
+                      style: buttonStyle,
                       child: Text(l10n.shuffle),
                     ),
                     SizedBox(width: 10),
@@ -640,7 +631,7 @@ class ListItemChildState extends State<ListItemChild> {
             overflow: TextOverflow.ellipsis,
             style: song == currentSong
                 ? TextStyle(
-                    color: Color.fromARGB(255, 75, 200, 200),
+                    color: textColor,
                     fontWeight: FontWeight.bold,
                     fontSize: 15,
                   )

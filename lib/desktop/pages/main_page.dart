@@ -29,7 +29,7 @@ class DesktopMainPage extends StatelessWidget {
                       valueListenable: panelManager.updatePanel,
                       builder: (_, _, _) {
                         return Material(
-                          color: commonColor,
+                          color: panelColor,
 
                           child: IndexedStack(
                             index: panelManager.panelStack.length - 1,
