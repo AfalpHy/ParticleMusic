@@ -284,5 +284,5 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bottomColor => 'Bottom Color';
 
   @override
-  String get reset => 'reset';
+  String get reset => 'Reset';
 }

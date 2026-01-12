@@ -635,7 +635,7 @@ abstract class AppLocalizations {
   /// No description provided for @reset.
   ///
   /// In en, this message translates to:
-  /// **'reset'**
+  /// **'Reset'**
   String get reset;
 }
 

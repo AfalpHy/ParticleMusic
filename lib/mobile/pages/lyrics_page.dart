@@ -10,6 +10,7 @@ import 'package:particle_music/lyrics.dart';
 import 'package:particle_music/mobile/play_queue_sheet.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/seekbar.dart';
+import 'package:particle_music/setting.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
 final ValueNotifier<bool> filterBackgroundNotifier = ValueNotifier(true);
@@ -226,6 +227,8 @@ class LyricsPage extends StatelessWidget {
                                     ]);
                                   },
                                 ),
+                                sleepTimerListTile(context, l10n, false),
+                                pauseAfterCTListTile(context, l10n),
                               ],
                             ),
                           ),

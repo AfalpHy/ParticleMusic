@@ -287,6 +287,103 @@ void displayTimedPauseSetting(BuildContext context) {
   });
 }
 
+Widget sleepTimerListTile(
+  BuildContext context,
+  AppLocalizations l10n,
+  bool inSetting,
+) {
+  return ListTile(
+    leading: ImageIcon(
+      timerImage,
+      color: inSetting ? iconColor : Colors.black,
+      size: inSetting ? 30 : null,
+    ),
+
+    title: Text(
+      l10n.sleepTimer,
+      style: TextStyle(fontWeight: inSetting ? null : FontWeight.bold),
+    ),
+    trailing: SizedBox(
+      width: 150,
+      child: Row(
+        children: [
+          Spacer(),
+          ValueListenableBuilder(
+            valueListenable: remainTimes,
+            builder: (context, value, child) {
+              final hours = (value ~/ 3600).toString().padLeft(2, '0');
+              final minutes = ((value % 3600) ~/ 60).toString().padLeft(2, '0');
+              final secs = (value % 60).toString().padLeft(2, '0');
+              return ValueListenableBuilder(
+                valueListenable: timedPause,
+                builder: (context, on, child) {
+                  return value > 0 || on
+                      ? Text('$hours:$minutes:$secs')
+                      : SizedBox();
+                },
+              );
+            },
+          ),
+          SizedBox(width: 10),
+          ValueListenableBuilder(
+            valueListenable: timedPause,
+            builder: (context, value, child) {
+              return MySwitch(
+                value: value,
+                onToggle: (value) async {
+                  tryVibrate();
+                  timedPause.value = value;
+                  if (value) {
+                    displayTimedPauseSetting(context);
+                  } else {
+                    pauseTimer?.cancel();
+                    pauseTimer = null;
+                    remainTimes.value = 0;
+                  }
+                },
+              );
+            },
+          ),
+        ],
+      ),
+    ),
+  );
+}
+
+Widget pauseAfterCTListTile(BuildContext context, AppLocalizations l10n) {
+  return ValueListenableBuilder(
+    valueListenable: timedPause,
+    builder: (_, value, _) {
+      return value
+          ? ListTile(
+              trailing: SizedBox(
+                width: 200,
+                child: Row(
+                  children: [
+                    Spacer(),
+                    Text(l10n.pauseAfterCurrentTrack),
+                    SizedBox(width: 10),
+                    ValueListenableBuilder(
+                      valueListenable: pauseAfterCompleted,
+                      builder: (_, value, _) {
+                        return MySwitch(
+                          value: value,
+                          onToggle: (value) {
+                            tryVibrate();
+                            pauseAfterCompleted.value = value;
+                          },
+                        );
+                      },
+                    ),
+                  ],
+                ),
+              ),
+            )
+          : SizedBox();
+    },
+  );
+}
+
 class SettingsList extends StatelessWidget {
   const SettingsList({super.key});
 
@@ -863,91 +960,9 @@ class SettingsList extends StatelessWidget {
             ),
           ),
 
-        if (isMobile)
-          ListTile(
-            leading: ImageIcon(timerImage, color: iconColor, size: 30),
+        if (isMobile) sleepTimerListTile(context, l10n, true),
 
-            title: Text(l10n.sleepTimer),
-            trailing: SizedBox(
-              width: 150,
-              child: Row(
-                children: [
-                  Spacer(),
-                  ValueListenableBuilder(
-                    valueListenable: remainTimes,
-                    builder: (context, value, child) {
-                      final hours = (value ~/ 3600).toString().padLeft(2, '0');
-                      final minutes = ((value % 3600) ~/ 60).toString().padLeft(
-                        2,
-                        '0',
-                      );
-                      final secs = (value % 60).toString().padLeft(2, '0');
-                      return ValueListenableBuilder(
-                        valueListenable: timedPause,
-                        builder: (context, on, child) {
-                          return value > 0 || on
-                              ? Text('$hours:$minutes:$secs')
-                              : SizedBox();
-                        },
-                      );
-                    },
-                  ),
-                  SizedBox(width: 10),
-                  ValueListenableBuilder(
-                    valueListenable: timedPause,
-                    builder: (context, value, child) {
-                      return MySwitch(
-                        value: value,
-                        onToggle: (value) async {
-                          tryVibrate();
-                          timedPause.value = value;
-                          if (value) {
-                            displayTimedPauseSetting(context);
-                          } else {
-                            pauseTimer?.cancel();
-                            pauseTimer = null;
-                            remainTimes.value = 0;
-                          }
-                        },
-                      );
-                    },
-                  ),
-                ],
-              ),
-            ),
-          ),
-        if (isMobile)
-          ValueListenableBuilder(
-            valueListenable: timedPause,
-            builder: (_, value, _) {
-              return value
-                  ? ListTile(
-                      trailing: SizedBox(
-                        width: 200,
-                        child: Row(
-                          children: [
-                            Spacer(),
-                            Text(l10n.pauseAfterCurrentTrack),
-                            SizedBox(width: 10),
-                            ValueListenableBuilder(
-                              valueListenable: pauseAfterCompleted,
-                              builder: (_, value, _) {
-                                return MySwitch(
-                                  value: value,
-                                  onToggle: (value) {
-                                    tryVibrate();
-                                    pauseAfterCompleted.value = value;
-                                  },
-                                );
-                              },
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  : SizedBox();
-            },
-          ),
+        if (isMobile) pauseAfterCTListTile(context, l10n),
 
         isMobile
             ? paletteListTile(context, l10n)
