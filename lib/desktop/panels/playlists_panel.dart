@@ -126,7 +126,7 @@ class PlaylistsPanelState extends State<PlaylistsPanel> {
                                           value;
                                     },
                                   ),
-                                  Spacer(),
+                                  SizedBox(width: 10),
                                 ],
                               ),
                             ],

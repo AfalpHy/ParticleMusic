@@ -82,5 +82,11 @@
   "clear": "清空",
   "palette": "调色板",
   "customMode": "自定义模式",
-  "iconColor": "图标颜色"
+  "iconColor": "图标颜色",
+  "textColor": "重点文本颜色",
+  "switchColor": "开关颜色",
+  "panelColor": "面板颜色",
+  "sidebarColor": "边栏颜色",
+  "bottomColor": "底部颜色",
+  "reset": "重置"
 }

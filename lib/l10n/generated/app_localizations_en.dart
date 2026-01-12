@@ -267,4 +267,22 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get iconColor => 'Icon Color';
+
+  @override
+  String get textColor => 'Highlight Text Color';
+
+  @override
+  String get switchColor => 'Switch Color';
+
+  @override
+  String get panelColor => 'Panel Color';
+
+  @override
+  String get sidebarColor => 'Sidebar Color';
+
+  @override
+  String get bottomColor => 'Bottom Color';
+
+  @override
+  String get reset => 'reset';
 }

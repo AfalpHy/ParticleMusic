@@ -650,9 +650,6 @@ class ListItemChildState extends State<ListItemChild> {
         return ValueListenableBuilder(
           valueListenable: currentSongNotifier,
           builder: (_, currentSong, _) {
-            final color = enableCustomColorNotifier.value
-                ? textColor
-                : Colors.black;
             return ListTile(
               contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
               visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
@@ -666,7 +663,7 @@ class ListItemChildState extends State<ListItemChild> {
                 overflow: TextOverflow.ellipsis,
                 style: song == currentSong
                     ? TextStyle(
-                        color: color,
+                        color: textColor,
                         fontWeight: FontWeight.bold,
                         fontSize: 15,
                       )
@@ -677,7 +674,7 @@ class ListItemChildState extends State<ListItemChild> {
                 overflow: TextOverflow.ellipsis,
                 style: song == currentSong
                     ? TextStyle(
-                        color: color,
+                        color: textColor,
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
                       )

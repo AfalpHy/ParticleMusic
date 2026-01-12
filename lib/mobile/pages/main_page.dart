@@ -211,9 +211,14 @@ class HomePageState extends State<HomePage> {
         ),
       ),
       body: ValueListenableBuilder(
-        valueListenable: homeBody,
+        valueListenable: colorChangeNotifier,
         builder: (context, value, child) {
-          return value == 1 ? buildLibrary(context) : SettingsList();
+          return ValueListenableBuilder(
+            valueListenable: homeBody,
+            builder: (context, value, child) {
+              return value == 1 ? buildLibrary(context) : SettingsList();
+            },
+          );
         },
       ),
     );

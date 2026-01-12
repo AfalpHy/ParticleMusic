@@ -5,6 +5,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/bottom_control.dart';
@@ -52,14 +53,14 @@ class Setting {
       textColor = customTextColor;
       switchColor = customSwitchColor;
       panelColor = customPanelColor;
-      sideBarColor = customSideBarColor;
+      sidebarColor = customSidebarColor;
       bottomColor = customBottomColor;
     } else {
       iconColor = vividIconColor;
       textColor = vividTextColor;
       switchColor = vividSwitchColor;
       panelColor = vividPanelColor;
-      sideBarColor = vividSideBarColor;
+      sidebarColor = vividSidebarColor;
       bottomColor = vividBottomColor;
     }
   }
@@ -103,6 +104,36 @@ class Setting {
     enableCustomColorNotifier.value =
         json['enableCustomColor'] as bool? ?? enableCustomColorNotifier.value;
 
+    final iconValue = json['customIconColor'];
+    if (iconValue is int) {
+      customIconColor = Color(iconValue);
+    }
+
+    final textValue = json['customTextColor'];
+    if (textValue is int) {
+      customTextColor = Color(textValue);
+    }
+
+    final switchValue = json['customSwitchColor'];
+    if (switchValue is int) {
+      customSwitchColor = Color(switchValue);
+    }
+
+    final panelValue = json['customPanelColor'];
+    if (panelValue is int) {
+      customPanelColor = Color(panelValue);
+    }
+
+    final sidebarValue = json['customSidebarColor'];
+    if (sidebarValue is int) {
+      customSidebarColor = Color(sidebarValue);
+    }
+
+    final bottomValue = json['customBottomColor'];
+    if (bottomValue is int) {
+      customBottomColor = Color(bottomValue);
+    }
+
     setColor();
   }
 
@@ -123,6 +154,12 @@ class Setting {
             ? ''
             : localeNotifier.value!.languageCode,
         'enableCustomColor': enableCustomColorNotifier.value,
+        'customIconColor': customIconColor.toARGB32(),
+        'customTextColor': customTextColor.toARGB32(),
+        'customSwitchColor': customSwitchColor.toARGB32(),
+        'customPanelColor': customPanelColor.toARGB32(),
+        'customSidebarColor': customSidebarColor.toARGB32(),
+        'customBottomColor': customBottomColor.toARGB32(),
       }),
     );
   }
@@ -488,6 +525,119 @@ class SettingsList extends StatelessWidget {
     );
   }
 
+  Widget colorListTile(BuildContext context, AppLocalizations l10n, int type) {
+    return ValueListenableBuilder(
+      valueListenable: colorChangeNotifier,
+      builder: (context, value, child) {
+        String title;
+        Color pikerColor;
+        switch (type) {
+          case 0:
+            title = l10n.iconColor;
+            pikerColor = customIconColor;
+            break;
+          case 1:
+            title = l10n.textColor;
+            pikerColor = customTextColor;
+            break;
+          case 2:
+            title = l10n.switchColor;
+            pikerColor = customSwitchColor;
+            break;
+          case 3:
+            title = l10n.panelColor;
+            pikerColor = customPanelColor;
+            break;
+          case 4:
+            title = l10n.sidebarColor;
+            pikerColor = customSidebarColor;
+            break;
+          default:
+            title = l10n.bottomColor;
+            pikerColor = customBottomColor;
+            break;
+        }
+        return ListTile(
+          title: Text(title),
+          trailing: Padding(
+            padding: const EdgeInsets.fromLTRB(0, 0, 5, 0),
+            child: Material(
+              elevation: 3,
+              shape: SmoothRectangleBorder(
+                smoothness: 1,
+                borderRadius: BorderRadius.circular(3),
+              ),
+              child: InkWell(
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+                child: SmoothClipRRect(
+                  borderRadius: BorderRadius.circular(3),
+                  child: Container(height: 35, width: 35, color: pikerColor),
+                ),
+                onTap: () {
+                  showDialog(
+                    context: context,
+                    barrierDismissible: false,
+                    builder: (_) => AlertDialog(
+                      backgroundColor: commonColor,
+                      title: Text(title),
+                      shape: SmoothRectangleBorder(
+                        smoothness: 1,
+                        borderRadius: BorderRadius.circular(10),
+                      ),
+                      content: SingleChildScrollView(
+                        child: ColorPicker(
+                          colorPickerWidth: 200,
+
+                          pickerColor: pikerColor,
+                          onColorChanged: (color) {
+                            switch (type) {
+                              case 0:
+                                customIconColor = color;
+                                break;
+                              case 1:
+                                customTextColor = color;
+                                break;
+                              case 2:
+                                customSwitchColor = color;
+                                break;
+                              case 3:
+                                customPanelColor = color;
+                                break;
+                              case 4:
+                                customSidebarColor = color;
+                                break;
+                              default:
+                                customBottomColor = color;
+                            }
+                            setting.setColor();
+                            colorChangeNotifier.value++;
+                          },
+                        ),
+                      ),
+                      actions: [
+                        TextButton(
+                          onPressed: () {
+                            setting.saveSetting();
+                            Navigator.pop(context);
+                          },
+                          child: Text(
+                            l10n.confirm,
+                            style: TextStyle(color: Colors.black),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   Widget paletteListTile(BuildContext context, AppLocalizations l10n) {
     return Theme(
       data: Theme.of(context).copyWith(
@@ -512,7 +662,7 @@ class SettingsList extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: SizedBox(
-                  height: 300,
+                  height: isMobile ? 250 : 400,
                   width: 300,
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
@@ -544,28 +694,31 @@ class SettingsList extends StatelessWidget {
                             ),
                           ),
 
-                        ListTile(
-                          title: Text(l10n.iconColor),
+                        colorListTile(context, l10n, 0),
+                        colorListTile(context, l10n, 1),
+                        colorListTile(context, l10n, 2),
+                        if (!isMobile) colorListTile(context, l10n, 3),
+                        if (!isMobile) colorListTile(context, l10n, 4),
+                        if (!isMobile) colorListTile(context, l10n, 5),
 
-                          trailing: Padding(
-                            padding: const EdgeInsets.fromLTRB(0, 0, 10, 0),
-                            child: InkWell(
-                              child: SmoothClipRRect(
-                                borderRadius: BorderRadius.circular(3),
-                                child: Container(
-                                  height: 25,
-                                  width: 25,
-                                  color: iconColor,
-                                ),
-                              ),
-                              onTap: () {
-                                showCenterMessage(
-                                  context,
-                                  'Not implemented yet',
-                                );
-                              },
-                            ),
-                          ),
+                        ListTile(
+                          title: Text(l10n.reset),
+                          onTap: () {
+                            customIconColor = Colors.black;
+                            customTextColor = Colors.black;
+                            customSwitchColor = Colors.black87;
+                            customPanelColor = Colors.grey.shade100;
+                            customSidebarColor = Color.fromARGB(
+                              255,
+                              240,
+                              240,
+                              240,
+                            );
+                            customBottomColor = Colors.grey.shade50;
+                            setting.setColor();
+                            colorChangeNotifier.value++;
+                            setting.saveSetting();
+                          },
                         ),
                       ],
                     ),

@@ -601,6 +601,42 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Icon Color'**
   String get iconColor;
+
+  /// No description provided for @textColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Highlight Text Color'**
+  String get textColor;
+
+  /// No description provided for @switchColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch Color'**
+  String get switchColor;
+
+  /// No description provided for @panelColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Panel Color'**
+  String get panelColor;
+
+  /// No description provided for @sidebarColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Sidebar Color'**
+  String get sidebarColor;
+
+  /// No description provided for @bottomColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Bottom Color'**
+  String get bottomColor;
+
+  /// No description provided for @reset.
+  ///
+  /// In en, this message translates to:
+  /// **'reset'**
+  String get reset;
 }
 
 class _AppLocalizationsDelegate

@@ -114,5 +114,11 @@
   "clear": "Clear",
   "palette": "Palette",
   "customMode": "Custom Mode",
-  "iconColor": "Icon Color"
+  "iconColor": "Icon Color",
+  "textColor": "Highlight Text Color",
+  "switchColor": "Switch Color",
+  "panelColor": "Panel Color",
+  "sidebarColor": "Sidebar Color",
+  "bottomColor": "Bottom Color",
+  "reset": "reset"
 }

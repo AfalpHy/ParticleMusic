@@ -15,7 +15,7 @@ class MySwitch extends StatelessWidget {
       width: 45,
       height: 20,
       toggleSize: 15,
-      activeColor: enableCustomColorNotifier.value
+      activeColor: enableCustomColorNotifier.value || isMobile
           ? switchColor
           : vividSwitchColor,
       inactiveColor: Colors.grey.shade300,

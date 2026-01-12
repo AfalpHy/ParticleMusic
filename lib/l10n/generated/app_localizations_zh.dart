@@ -267,4 +267,22 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get iconColor => '图标颜色';
+
+  @override
+  String get textColor => '重点文本颜色';
+
+  @override
+  String get switchColor => '开关颜色';
+
+  @override
+  String get panelColor => '面板颜色';
+
+  @override
+  String get sidebarColor => '边栏颜色';
+
+  @override
+  String get bottomColor => '底部颜色';
+
+  @override
+  String get reset => '重置';
 }

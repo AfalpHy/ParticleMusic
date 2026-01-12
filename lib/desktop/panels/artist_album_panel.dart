@@ -165,7 +165,7 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
                                   );
                                 },
                               ),
-                              Spacer(),
+                              SizedBox(width: 10),
                             ],
                           ),
                         ],
