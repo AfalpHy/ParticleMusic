@@ -30,7 +30,7 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: commonColor,
       resizeToAvoidBottomInset: false,
       appBar: searchAndMore(context),
       body: normalSongList(),
@@ -39,7 +39,7 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
 
   PreferredSizeWidget searchAndMore(BuildContext context) {
     return AppBar(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: commonColor,
       scrolledUnderElevation: 0,
       actions: [searchField(), moreButton(context)],
     );
@@ -584,9 +584,9 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
       }
     });
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: commonColor,
       appBar: AppBar(
-        backgroundColor: Colors.grey.shade50,
+        backgroundColor: commonColor,
         scrolledUnderElevation: 0,
         actions: [searchField(), moreButton(context)],
       ),
@@ -674,8 +674,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
         valueListenable: selectedNum,
         builder: (context, value, child) {
           final valid = value > 0;
-          final localIconColor = valid ? iconColor : Colors.black54;
-          final localTextColor = valid ? textColor : Colors.black54;
+          final color = valid ? iconColor : Colors.black54;
           return SizedBox(
             height: 80,
             child: Row(
@@ -704,12 +703,9 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        ImageIcon(playnextCircleImage, color: localIconColor),
+                        ImageIcon(playnextCircleImage, color: color),
 
-                        Text(
-                          l10n.playNext,
-                          style: TextStyle(color: localTextColor),
-                        ),
+                        Text(l10n.playNext, style: TextStyle(color: color)),
                       ],
                     ),
                   ),
@@ -731,11 +727,11 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        ImageIcon(playlistAddImage, color: localIconColor),
+                        ImageIcon(playlistAddImage, color: color),
 
                         Text(
                           l10n.add2Playlists,
-                          style: TextStyle(color: localTextColor),
+                          style: TextStyle(color: color),
                         ),
                       ],
                     ),
@@ -777,12 +773,9 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                           child: Column(
                             mainAxisAlignment: MainAxisAlignment.center,
                             children: [
-                              ImageIcon(deleteImage, color: localIconColor),
+                              ImageIcon(deleteImage, color: color),
 
-                              Text(
-                                l10n.delete,
-                                style: TextStyle(color: localTextColor),
-                              ),
+                              Text(l10n.delete, style: TextStyle(color: color)),
                             ],
                           ),
                         ),

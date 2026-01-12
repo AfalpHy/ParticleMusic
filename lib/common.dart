@@ -126,7 +126,7 @@ Widget mySheet(Widget child, {double height = 500}) {
   return SmoothClipRRect(
     smoothness: 1,
     borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
-    child: Container(height: height, color: Colors.grey.shade50, child: child),
+    child: Container(height: height, color: Colors.grey.shade100, child: child),
   );
 }
 

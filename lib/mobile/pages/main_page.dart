@@ -114,10 +114,10 @@ class MobileMainPageState extends State<MobileMainPage> {
       valueListenable: homeBody,
       builder: (context, which, _) {
         final l10n = AppLocalizations.of(context);
-
+        final color = iconColor;
         // must use Material to avoid layout problem
         return Material(
-          color: Colors.grey.shade50,
+          color: commonColor,
 
           child: Row(
             children: [
@@ -137,13 +137,13 @@ class MobileMainPageState extends State<MobileMainPage> {
                       children: [
                         Icon(
                           Icons.library_music_outlined,
-                          color: which == 1 ? iconColor : Colors.black54,
+                          color: which == 1 ? color : Colors.black54,
                         ),
 
                         Text(
                           l10n.library,
                           style: TextStyle(
-                            color: which == 1 ? iconColor : Colors.black54,
+                            color: which == 1 ? color : Colors.black54,
                           ),
                         ),
                       ],
@@ -167,13 +167,13 @@ class MobileMainPageState extends State<MobileMainPage> {
                       children: [
                         Icon(
                           Icons.settings_outlined,
-                          color: which == 3 ? iconColor : Colors.black54,
+                          color: which == 3 ? color : Colors.black54,
                         ),
 
                         Text(
                           l10n.settings,
                           style: TextStyle(
-                            color: which == 3 ? iconColor : Colors.black54,
+                            color: which == 3 ? color : Colors.black54,
                           ),
                         ),
                       ],
@@ -200,9 +200,9 @@ class HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: commonColor,
       appBar: AppBar(
-        backgroundColor: Colors.grey.shade50,
+        backgroundColor: commonColor,
         elevation: 0,
         scrolledUnderElevation: 0,
         title: const Text(

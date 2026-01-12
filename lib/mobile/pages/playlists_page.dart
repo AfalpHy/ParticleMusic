@@ -15,9 +15,9 @@ class PlaylistsPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: commonColor,
       appBar: AppBar(
-        backgroundColor: Colors.grey.shade50,
+        backgroundColor: commonColor,
         elevation: 0,
         scrolledUnderElevation: 0,
         title: Text(l10n.playlists),
@@ -162,11 +162,8 @@ class PlaylistsPage extends StatelessWidget {
 
   Widget reorderPlaylistsPage(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
-      appBar: AppBar(
-        backgroundColor: Colors.grey.shade50,
-        scrolledUnderElevation: 0,
-      ),
+      backgroundColor: commonColor,
+      appBar: AppBar(backgroundColor: commonColor, scrolledUnderElevation: 0),
       body: ReorderableListView.builder(
         buildDefaultDragHandles: false,
         onReorder: (oldIndex, newIndex) {

@@ -13,10 +13,10 @@ class FoldersPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      backgroundColor: Colors.grey.shade50,
+      backgroundColor: commonColor,
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        backgroundColor: Colors.grey.shade50,
+        backgroundColor: commonColor,
         elevation: 0,
         scrolledUnderElevation: 0,
         title: Text(l10n.folders),
