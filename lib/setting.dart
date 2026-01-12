@@ -5,7 +5,6 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_switch/flutter_switch.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/bottom_control.dart';
@@ -13,6 +12,7 @@ import 'package:particle_music/desktop/panels/panel_manager.dart';
 import 'package:particle_music/desktop/sidebar.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/load_library.dart';
+import 'package:particle_music/my_switch.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
 ValueNotifier<bool> vibrationOnNoitifier = ValueNotifier(true);
@@ -42,6 +42,25 @@ class Setting {
   Setting(this.file) {
     if (!(file.existsSync())) {
       saveSetting();
+    }
+  }
+
+  void setColor() {
+    // mobile hasn't vivid color mode
+    if (isMobile || enableCustomColorNotifier.value) {
+      iconColor = customIconColor;
+      textColor = customTextColor;
+      switchColor = customSwitchColor;
+      panelColor = customPanelColor;
+      sideBarColor = customSideBarColor;
+      bottomColor = customBottomColor;
+    } else {
+      iconColor = vividIconColor;
+      textColor = vividTextColor;
+      switchColor = vividSwitchColor;
+      panelColor = vividPanelColor;
+      sideBarColor = vividSideBarColor;
+      bottomColor = vividBottomColor;
     }
   }
 
@@ -84,18 +103,7 @@ class Setting {
     enableCustomColorNotifier.value =
         json['enableCustomColor'] as bool? ?? enableCustomColorNotifier.value;
 
-    final vivid = !enableCustomColorNotifier.value;
-    commonColor = vivid
-        ? commonColor.withAlpha(120)
-        : commonColor.withAlpha(255);
-    if (!isMobile) {
-      sideBarColor = vivid
-          ? sideBarColor.withAlpha(120)
-          : sideBarColor.withAlpha(255);
-      bottomColor = vivid
-          ? bottomColor.withAlpha(120)
-          : bottomColor.withAlpha(255);
-    }
+    setColor();
   }
 
   void saveSetting() {
@@ -288,7 +296,7 @@ class SettingsList extends StatelessWidget {
           context: context,
           builder: (context) {
             return Dialog(
-              backgroundColor: commonColor.withAlpha(255),
+              backgroundColor: commonColor,
               shape: SmoothRectangleBorder(
                 smoothness: 1,
                 borderRadius: BorderRadius.circular(10),
@@ -422,7 +430,7 @@ class SettingsList extends StatelessWidget {
           context: context,
           builder: (context) {
             return Dialog(
-              backgroundColor: commonColor.withAlpha(255),
+              backgroundColor: commonColor,
               shape: SmoothRectangleBorder(
                 smoothness: 1,
                 borderRadius: BorderRadius.circular(5),
@@ -498,7 +506,7 @@ class SettingsList extends StatelessWidget {
             context: context,
             builder: (context) {
               return Dialog(
-                backgroundColor: commonColor.withAlpha(255),
+                backgroundColor: commonColor,
                 shape: SmoothRectangleBorder(
                   smoothness: 1,
                   borderRadius: BorderRadius.circular(10),
@@ -510,41 +518,31 @@ class SettingsList extends StatelessWidget {
                     padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
                     child: Column(
                       children: [
-                        ListTile(
-                          title: Text(l10n.customMode),
-                          trailing: SizedBox(
-                            width: 45,
-                            child: ValueListenableBuilder(
-                              valueListenable: enableCustomColorNotifier,
-                              builder: (context, value, child) {
-                                return MouseRegion(
-                                  cursor: SystemMouseCursors.click,
-                                  child: FlutterSwitch(
-                                    height: 20,
-                                    toggleSize: 15,
-                                    activeColor: switchColor,
-                                    inactiveColor: Colors.grey.shade300,
-                                    value: value,
-                                    onToggle: (value) {
-                                      enableCustomColorNotifier.value = value;
-                                      commonColor = value
-                                          ? commonColor.withAlpha(255)
-                                          : commonColor.withAlpha(120);
-                                      sideBarColor = value
-                                          ? sideBarColor.withAlpha(255)
-                                          : sideBarColor.withAlpha(120);
-                                      bottomColor = value
-                                          ? bottomColor.withAlpha(255)
-                                          : bottomColor.withAlpha(120);
-                                      colorChangeNotifier.value++;
-                                      setting.saveSetting();
-                                    },
-                                  ),
-                                );
-                              },
+                        if (!isMobile)
+                          ListTile(
+                            title: Text(l10n.customMode),
+                            trailing: SizedBox(
+                              width: 45,
+                              child: ValueListenableBuilder(
+                                valueListenable: enableCustomColorNotifier,
+                                builder: (context, value, child) {
+                                  return MouseRegion(
+                                    cursor: SystemMouseCursors.click,
+
+                                    child: MySwitch(
+                                      value: value,
+                                      onToggle: (value) {
+                                        enableCustomColorNotifier.value = value;
+                                        setting.setColor();
+                                        colorChangeNotifier.value++;
+                                        setting.saveSetting();
+                                      },
+                                    ),
+                                  );
+                                },
+                              ),
                             ),
                           ),
-                        ),
 
                         ListTile(
                           title: Text(l10n.iconColor),
@@ -613,22 +611,17 @@ class SettingsList extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: ValueListenableBuilder(
-              valueListenable: enableCustomColorNotifier,
-              builder: (context, enable, child) {
-                if (enable) {
-                  return Divider(
-                    thickness: 0.5,
-                    height: 1,
-                    color: dividerColor,
-                  );
-                }
+              valueListenable: colorChangeNotifier,
+              builder: (_, _, _) {
                 return ValueListenableBuilder(
                   valueListenable: currentSongNotifier,
                   builder: (_, _, _) {
                     return Divider(
                       thickness: 0.5,
                       height: 1,
-                      color: coverArtAverageColor,
+                      color: enableCustomColorNotifier.value
+                          ? dividerColor
+                          : coverArtAverageColor,
                     );
                   },
                 );
@@ -704,12 +697,7 @@ class SettingsList extends StatelessWidget {
               builder: (context, value, child) {
                 return SizedBox(
                   width: 50,
-                  child: FlutterSwitch(
-                    width: 45,
-                    height: 20,
-                    toggleSize: 15,
-                    activeColor: switchColor,
-                    inactiveColor: Colors.grey.shade300,
+                  child: MySwitch(
                     value: value,
                     onToggle: (value) {
                       tryVibrate();
@@ -755,12 +743,7 @@ class SettingsList extends StatelessWidget {
                   ValueListenableBuilder(
                     valueListenable: timedPause,
                     builder: (context, value, child) {
-                      return FlutterSwitch(
-                        width: 45,
-                        height: 20,
-                        toggleSize: 15,
-                        activeColor: switchColor,
-                        inactiveColor: Colors.grey.shade300,
+                      return MySwitch(
                         value: value,
                         onToggle: (value) async {
                           tryVibrate();
@@ -796,12 +779,7 @@ class SettingsList extends StatelessWidget {
                             ValueListenableBuilder(
                               valueListenable: pauseAfterCompleted,
                               builder: (_, value, _) {
-                                return FlutterSwitch(
-                                  width: 45,
-                                  height: 20,
-                                  toggleSize: 15,
-                                  activeColor: switchColor,
-                                  inactiveColor: Colors.grey.shade300,
+                                return MySwitch(
                                   value: value,
                                   onToggle: (value) {
                                     tryVibrate();

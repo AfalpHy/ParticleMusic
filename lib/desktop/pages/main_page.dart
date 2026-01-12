@@ -56,7 +56,7 @@ class DesktopMainPage extends StatelessWidget {
                       valueListenable: panelManager.updatePanel,
                       builder: (_, _, _) {
                         return Material(
-                          color: commonColor,
+                          color: panelColor,
                           child: IndexedStack(
                             index: panelManager.panelStack.length - 1,
                             children: panelManager.panelStack,
@@ -68,7 +68,7 @@ class DesktopMainPage extends StatelessWidget {
                 ],
               ),
             ),
-            Material(color: bottomColor, child: BottomControl()),
+            BottomControl(),
           ],
         ),
 

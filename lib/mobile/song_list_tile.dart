@@ -239,7 +239,7 @@ class SelectableSongListTile extends StatelessWidget {
           builder: (context, value, child) {
             return Checkbox(
               value: value,
-              activeColor: Color.fromARGB(255, 75, 200, 200),
+              activeColor: iconColor,
               onChanged: (value) {
                 isSelected.value = value!;
                 selectedNum.value += value ? 1 : -1;
@@ -265,9 +265,7 @@ class SelectableSongListTile extends StatelessWidget {
                     getTitle(song),
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: song == currentSong
-                          ? Color.fromARGB(255, 75, 200, 200)
-                          : null,
+                      color: song == currentSong ? textColor : null,
                       fontWeight: song == currentSong ? FontWeight.bold : null,
                     ),
                   );

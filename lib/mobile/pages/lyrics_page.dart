@@ -194,7 +194,7 @@ class LyricsPage extends StatelessWidget {
                           ),
 
                           Divider(
-                            color: Colors.grey.shade300,
+                            color: dividerColor,
                             thickness: 0.5,
                             height: 1,
                           ),

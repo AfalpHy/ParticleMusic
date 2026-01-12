@@ -37,29 +37,34 @@ class FoldersPanel extends StatelessWidget {
                       borderRadius: BorderRadius.circular(10),
                       child: ValueListenableBuilder(
                         valueListenable: colorChangeNotifier,
-                        builder: (context, value, child) {
+                        builder: (_, value, child) {
                           return ValueListenableBuilder(
                             valueListenable: currentFolderNotifier,
-                            builder: (context, currentFolder, child) {
-                              return Material(
-                                color: currentFolder == folder
-                                    ? (enableCustomColorNotifier.value
-                                          ? Colors.white
-                                          : coverArtAverageColor.withAlpha(75))
-                                    : Colors.transparent,
-                                child: ListTile(
-                                  title: Text(
-                                    folder,
-                                    style: TextStyle(fontSize: 12),
-                                  ),
-                                  onTap: () {
-                                    currentFolderNotifier.value = folder;
-                                  },
-                                ),
+                            builder: (_, currentFolder, _) {
+                              return ValueListenableBuilder(
+                                valueListenable: currentSongNotifier,
+                                builder: (_, _, _) {
+                                  return Material(
+                                    color: currentFolder == folder
+                                        ? (enableCustomColorNotifier.value
+                                              ? Colors.white
+                                              : coverArtAverageColor.withAlpha(
+                                                  75,
+                                                ))
+                                        : Colors.transparent,
+                                    child: child,
+                                  );
+                                },
                               );
                             },
                           );
                         },
+                        child: ListTile(
+                          title: Text(folder, style: TextStyle(fontSize: 12)),
+                          onTap: () {
+                            currentFolderNotifier.value = folder;
+                          },
+                        ),
                       ),
                     );
                   },

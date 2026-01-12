@@ -11,16 +11,21 @@ import 'package:particle_music/seekbar.dart';
 
 String? lyricsWinId;
 Color bottomColor = Colors.grey.shade50;
+Color customBottomColor = Colors.grey.shade50;
+Color vividBottomColor = bottomColor.withAlpha(120);
 
 class BottomControl extends StatelessWidget {
   const BottomControl({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      height: 75,
-      child: Stack(
-        children: [currentSongTile(), playControls(context), volumeControl()],
+    return Material(
+      color: bottomColor,
+      child: SizedBox(
+        height: 75,
+        child: Stack(
+          children: [currentSongTile(), playControls(context), volumeControl()],
+        ),
       ),
     );
   }

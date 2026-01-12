@@ -1,6 +1,6 @@
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_switch/flutter_switch.dart';
+import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/panels/panel_manager.dart';
@@ -8,6 +8,7 @@ import 'package:particle_music/desktop/title_bar.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:particle_music/metadata.dart';
+import 'package:particle_music/my_switch.dart';
 import 'package:particle_music/setting.dart';
 
 class ArtistAlbumPanel extends StatefulWidget {
@@ -128,12 +129,7 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
                               ValueListenableBuilder(
                                 valueListenable: isAscendingNotifier,
                                 builder: (context, value, child) {
-                                  return FlutterSwitch(
-                                    width: 45,
-                                    height: 20,
-                                    toggleSize: 15,
-                                    activeColor: switchColor,
-                                    inactiveColor: Colors.grey.shade300,
+                                  return MySwitch(
                                     value: value,
                                     onToggle: (value) async {
                                       isAscendingNotifier.value = value;
@@ -160,12 +156,7 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
                               ValueListenableBuilder(
                                 valueListenable: useLargePictureNotifier,
                                 builder: (context, value, child) {
-                                  return FlutterSwitch(
-                                    width: 45,
-                                    height: 20,
-                                    toggleSize: 15,
-                                    activeColor: switchColor,
-                                    inactiveColor: Colors.grey.shade300,
+                                  return MySwitch(
                                     value: value,
                                     onToggle: (value) async {
                                       useLargePictureNotifier.value = value;
@@ -187,10 +178,22 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 30),
 
-                  child: Divider(
-                    thickness: 1,
-                    height: 1,
-                    color: Colors.grey.shade300,
+                  child: ValueListenableBuilder(
+                    valueListenable: colorChangeNotifier,
+                    builder: (context, value, child) {
+                      return ValueListenableBuilder(
+                        valueListenable: currentSongNotifier,
+                        builder: (context, value, child) {
+                          return Divider(
+                            thickness: 1,
+                            height: 1,
+                            color: enableCustomColorNotifier.value
+                                ? dividerColor
+                                : coverArtAverageColor,
+                          );
+                        },
+                      );
+                    },
                   ),
                 ),
               ),

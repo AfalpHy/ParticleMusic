@@ -158,7 +158,7 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
               ),
             ),
           ),
-          Divider(thickness: 0.5, height: 1, color: Colors.grey.shade300),
+          Divider(thickness: 0.5, height: 1, color: dividerColor),
           ListTile(
             leading: const ImageIcon(selectImage, color: Colors.black),
             title: Text(
@@ -231,11 +231,7 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
                     Column(
                       children: [
                         ListTile(title: Text(l10n.selectSortingType)),
-                        Divider(
-                          thickness: 0.5,
-                          height: 1,
-                          color: Colors.grey.shade300,
-                        ),
+                        Divider(thickness: 0.5, height: 1, color: dividerColor),
 
                         ...orderWidget,
                       ],
@@ -491,7 +487,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
               ),
             ),
           ),
-          Divider(thickness: 0.5, height: 1, color: Colors.grey.shade300),
+          Divider(thickness: 0.5, height: 1, color: dividerColor),
 
           ListTile(
             leading: const ImageIcon(sequenceImage, color: Colors.black),
@@ -548,11 +544,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                     Column(
                       children: [
                         ListTile(title: Text(l10n.selectSortingType)),
-                        Divider(
-                          thickness: 0.5,
-                          height: 1,
-                          color: Colors.grey.shade300,
-                        ),
+                        Divider(thickness: 0.5, height: 1, color: dividerColor),
 
                         ...orderWidget,
                       ],
@@ -607,7 +599,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                 builder: (context, value, child) {
                   return Checkbox(
                     value: value,
-                    activeColor: Color.fromARGB(255, 75, 200, 200),
+                    activeColor: iconColor,
                     onChanged: (value) {
                       for (var isSelected in isSelectedList) {
                         isSelected.value = value!;

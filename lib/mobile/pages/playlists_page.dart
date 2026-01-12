@@ -138,7 +138,7 @@ class PlaylistsPage extends StatelessWidget {
               showCreatePlaylistSheet(context);
             },
           ),
-          Divider(thickness: 0.5, height: 1, color: Colors.grey.shade300),
+          Divider(thickness: 0.5, height: 1, color: dividerColor),
           ListTile(
             leading: const ImageIcon(reorderImage, color: Colors.black),
             title: Text(

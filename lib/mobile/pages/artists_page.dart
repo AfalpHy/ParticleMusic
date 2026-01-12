@@ -1,11 +1,11 @@
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_switch/flutter_switch.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:particle_music/mobile/pages/song_list_page.dart';
+import 'package:particle_music/my_switch.dart';
 import 'package:particle_music/setting.dart';
 import 'package:searchfield/searchfield.dart';
 import 'package:smooth_corner/smooth_corner.dart';
@@ -138,7 +138,7 @@ class ArtistsPage extends StatelessWidget {
       Column(
         children: [
           ListTile(title: Text(l10n.settings)),
-          Divider(thickness: 0.5, height: 1, color: Colors.grey.shade300),
+          Divider(thickness: 0.5, height: 1, color: dividerColor),
           ListTile(
             leading: ValueListenableBuilder(
               valueListenable: artistsIsListViewNotifier,
@@ -166,12 +166,7 @@ class ArtistsPage extends StatelessWidget {
                       Spacer(),
                       Text(value ? l10n.list : l10n.grid),
                       SizedBox(width: 10),
-                      FlutterSwitch(
-                        width: 45,
-                        height: 20,
-                        toggleSize: 15,
-                        activeColor: switchColor,
-                        inactiveColor: Colors.grey.shade300,
+                      MySwitch(
                         value: value,
                         onToggle: (value) async {
                           tryVibrate();
@@ -209,12 +204,7 @@ class ArtistsPage extends StatelessWidget {
                           Spacer(),
                           Text(useLargePicture ? l10n.large : l10n.small),
                           SizedBox(width: 10),
-                          FlutterSwitch(
-                            width: 45,
-                            height: 20,
-                            toggleSize: 15,
-                            activeColor: switchColor,
-                            inactiveColor: Colors.grey.shade300,
+                          MySwitch(
                             value: useLargePicture,
                             onToggle: (value) async {
                               tryVibrate();
@@ -249,12 +239,7 @@ class ArtistsPage extends StatelessWidget {
                       Spacer(),
                       Text(value ? l10n.ascending : l10n.descending),
                       SizedBox(width: 10),
-                      FlutterSwitch(
-                        width: 45,
-                        height: 20,
-                        toggleSize: 15,
-                        activeColor: switchColor,
-                        inactiveColor: Colors.grey.shade300,
+                      MySwitch(
                         value: value,
                         onToggle: (value) async {
                           tryVibrate();

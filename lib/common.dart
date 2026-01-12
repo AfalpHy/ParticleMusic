@@ -16,12 +16,23 @@ final ValueNotifier<Locale?> localeNotifier = ValueNotifier(null);
 
 Color iconColor = Colors.black;
 Color textColor = Colors.black;
-Color buttonColor = Colors.white70;
 Color switchColor = Colors.black87;
+Color panelColor = Colors.grey.shade100;
 
-Color selectedColor = Colors.grey;
+Color customIconColor = Colors.black;
+Color customTextColor = Colors.black;
+Color customSwitchColor = Colors.black87;
+Color customPanelColor = Colors.grey.shade100;
+
+Color vividIconColor = Colors.black;
+Color vividTextColor = Colors.black;
+Color vividSwitchColor = Colors.black87;
+Color vividPanelColor = panelColor.withAlpha(120);
+
+Color searchFieldColor = Colors.white;
+Color buttonColor = Colors.white70;
 Color commonColor = Colors.grey.shade100;
-Color dividerColor = Colors.grey;
+Color dividerColor = Colors.grey.shade300;
 
 late double appWidth;
 
@@ -163,7 +174,7 @@ Future<bool> showConfirmDialog(BuildContext context, String action) async {
           smoothness: 1,
           borderRadius: BorderRadius.circular(5),
         ),
-        backgroundColor: commonColor.withAlpha(255),
+        backgroundColor: commonColor,
         title: Text(action),
         content: Text(l10n.continueMsg, style: TextStyle(fontSize: 14)),
         actions: [

@@ -13,6 +13,8 @@ import 'package:window_manager/window_manager.dart';
 
 final ValueNotifier<String> sidebarHighlighLabel = ValueNotifier('_songs');
 Color sideBarColor = Color.fromARGB(255, 240, 240, 240);
+Color customSideBarColor = Color.fromARGB(255, 240, 240, 240);
+Color vividSideBarColor = sideBarColor.withAlpha(120);
 
 class Sidebar extends StatelessWidget {
   final ScrollController _scrollController = ScrollController();

@@ -71,10 +71,22 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
               if (widget.foldersWidget != null) ...[
                 SizedBox(width: 5),
 
-                VerticalDivider(
-                  thickness: 0.5,
-                  width: 1,
-                  color: Colors.grey.shade400,
+                ValueListenableBuilder(
+                  valueListenable: colorChangeNotifier,
+                  builder: (context, value, child) {
+                    return ValueListenableBuilder(
+                      valueListenable: currentSongNotifier,
+                      builder: (context, value, child) {
+                        return VerticalDivider(
+                          thickness: 1,
+                          width: 1,
+                          color: enableCustomColorNotifier.value
+                              ? dividerColor
+                              : coverArtAverageColor,
+                        );
+                      },
+                    );
+                  },
                 ),
                 SizedBox(width: 10),
 
