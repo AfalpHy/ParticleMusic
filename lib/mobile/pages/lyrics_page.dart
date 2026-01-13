@@ -149,7 +149,6 @@ class LyricsPage extends StatelessWidget {
               child: LyricsListView(
                 key: ValueKey(currentSong),
                 expanded: false,
-                lyrics: List.from(lyrics),
               ),
             ),
           ),
@@ -379,7 +378,6 @@ class LyricsPage extends StatelessWidget {
                   child: LyricsListView(
                     key: ValueKey(currentSong),
                     expanded: true,
-                    lyrics: List.from(lyrics),
                   ),
                 ),
               ),

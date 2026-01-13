@@ -18,7 +18,7 @@ extension WindowControllerExtension on WindowController {
           );
           break;
         case 'set_isKaraoke':
-          isKaraoke = call.arguments as bool;
+          desktopLyricsIsKaraoke = call.arguments as bool;
           break;
         case 'set_lyricLine':
           if (call.arguments == null) {

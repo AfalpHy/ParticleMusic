@@ -69,7 +69,7 @@ class LyricLine {
 }
 
 List<LyricLine> lyrics = [];
-bool _isKaraoke = false;
+bool isKaraoke = false;
 
 Duration parseTime(RegExpMatch m) {
   final min = int.parse(m.group(1)!);
@@ -80,7 +80,7 @@ Duration parseTime(RegExpMatch m) {
 
 Future<void> parseLyricsFile(AudioMetadata song) async {
   lyrics = [];
-  _isKaraoke = false;
+  isKaraoke = false;
   List<String> lines = [];
   if (song.lyrics == null) {
     String path = song.file.path;
@@ -131,7 +131,7 @@ Future<void> parseLyricsFile(AudioMetadata song) async {
         continue;
       }
       if (tokens.length > 1) {
-        _isKaraoke = true;
+        isKaraoke = true;
       }
       lyrics.add(LyricLine(lineStart, textBuffer.toString(), tokens));
     }
@@ -147,13 +147,8 @@ Future<void> parseLyricsFile(AudioMetadata song) async {
 
 class LyricsListView extends StatefulWidget {
   final bool expanded;
-  final List<LyricLine> lyrics;
 
-  const LyricsListView({
-    super.key,
-    required this.expanded,
-    required this.lyrics,
-  });
+  const LyricsListView({super.key, required this.expanded});
 
   @override
   State<LyricsListView> createState() => LyricsListViewState();
@@ -180,15 +175,15 @@ class LyricsListViewState extends State<LyricsListView>
     int tmp = currentIndexNotifier.value;
     int current = -1;
     int i = 0;
-    if (tmp > -1 && position >= widget.lyrics[tmp].start) {
+    if (tmp > -1 && position >= lyrics[tmp].start) {
       i = tmp;
     }
-    for (; i < widget.lyrics.length; i++) {
-      final line = widget.lyrics[i];
+    for (; i < lyrics.length; i++) {
+      final line = lyrics[i];
       if (position < line.start) {
         break;
       }
-      if (current == -1 || line.start > widget.lyrics[current].start) {
+      if (current == -1 || line.start > lyrics[current].start) {
         current = i;
       }
     }
@@ -198,8 +193,8 @@ class LyricsListViewState extends State<LyricsListView>
       indexChangeTime = DateTime.now();
       if (lyricsWindowId != null) {
         final controller = WindowController.fromWindowId(lyricsWindowId!);
-        controller.sendLyricLine(current >= 0 ? widget.lyrics[current] : null);
-        controller.sendIsKaraoke(_isKaraoke);
+        controller.sendLyricLine(current >= 0 ? lyrics[current] : null);
+        controller.sendIsKaraoke(isKaraoke);
       }
     }
 
@@ -301,7 +296,7 @@ class LyricsListViewState extends State<LyricsListView>
           },
           child: ScrollablePositionedList.builder(
             physics: ClampingScrollPhysics(),
-            itemCount: widget.lyrics.length + 2,
+            itemCount: lyrics.length + 2,
             itemScrollController: itemScrollController,
             itemBuilder: (context, index) {
               if (index == 0) {
@@ -310,7 +305,7 @@ class LyricsListViewState extends State<LyricsListView>
                       ? parentHeight * 0.35
                       : parentHeight * 0.4,
                 );
-              } else if (index == widget.lyrics.length + 1) {
+              } else if (index == lyrics.length + 1) {
                 return SizedBox(
                   height: widget.expanded
                       ? parentHeight * 0.6
@@ -319,7 +314,7 @@ class LyricsListViewState extends State<LyricsListView>
               }
               return LyricLineWidget(
                 index: index - 1,
-                line: widget.lyrics[index - 1],
+                line: lyrics[index - 1],
                 currentIndexNotifier: currentIndexNotifier,
                 expanded: widget.expanded,
                 tickNotifier: tickNotifier,
@@ -413,7 +408,7 @@ class LyricLineWidget extends StatelessWidget {
                           (pageWidth - 1050) * 0.025,
                         );
 
-                  if (isCurrent && _isKaraoke) {
+                  if (isCurrent && isKaraoke) {
                     return StreamBuilder<Duration>(
                       stream: audioHandler.getPositionStream(),
                       builder: (context, snapshot) {

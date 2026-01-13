@@ -16,7 +16,7 @@ final ValueNotifier<LyricLine?> lyricLineNotifier = ValueNotifier(null);
 final ValueNotifier<Duration> currentPositionNotifier = ValueNotifier(
   Duration.zero,
 );
-bool isKaraoke = false;
+bool desktopLyricsIsKaraoke = false;
 
 Future<void> initDesktopLyrics() async {
   final controller = await WindowController.create(
@@ -78,7 +78,7 @@ class DesktopLyrics extends StatelessWidget {
                             );
                           }
 
-                          if (isKaraoke) {
+                          if (desktopLyricsIsKaraoke) {
                             return ValueListenableBuilder(
                               valueListenable: currentPositionNotifier,
                               builder: (context, value, child) {

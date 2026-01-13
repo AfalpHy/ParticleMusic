@@ -3,10 +3,12 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
+import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
+import 'package:particle_music/desktop/desktop_lyrics.dart';
 import 'package:particle_music/desktop/pages/play_queue_page.dart';
 import 'package:particle_music/desktop/title_bar.dart';
 import 'package:particle_music/full_width_track_shape.dart';
@@ -120,7 +122,6 @@ class LyricsPageState extends State<LyricsPage> {
                                     child: LyricsListView(
                                       key: ValueKey(currentSong),
                                       expanded: true,
-                                      lyrics: List.from(lyrics),
                                     ),
                                   ),
                                 ),
@@ -295,6 +296,7 @@ class LyricsPageState extends State<LyricsPage> {
           child: Row(
             children: [
               Spacer(),
+
               SizedBox(
                 width: 40,
                 child: IconButton(
@@ -336,7 +338,24 @@ class LyricsPageState extends State<LyricsPage> {
                   },
                 ),
               ),
-              SizedBox(width: 40),
+              SizedBox(
+                width: 40,
+                child: IconButton(
+                  onPressed: () async {
+                    final controller = WindowController.fromWindowId(
+                      lyricsWindowId!,
+                    );
+                    if (lyricsWindowVisible) {
+                      await controller.hide();
+                    } else {
+                      await controller.show();
+                    }
+                    lyricsWindowVisible = !lyricsWindowVisible;
+                  },
+                  icon: Icon(Icons.lyrics_rounded, size: 15),
+                  color: Colors.grey.shade50,
+                ),
+              ),
               Spacer(),
             ],
           ),
