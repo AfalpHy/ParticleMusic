@@ -1,15 +1,15 @@
-// import 'package:desktop_multi_window/desktop_multi_window.dart';
+import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
+import 'package:particle_music/desktop/desktop_lyrics.dart';
 import 'package:particle_music/desktop/pages/lyrics_page.dart';
 import 'package:particle_music/desktop/pages/play_queue_page.dart';
 import 'package:particle_music/full_width_track_shape.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/seekbar.dart';
 
-String? lyricsWinId;
 Color bottomColor = Colors.grey.shade50;
 Color customBottomColor = Colors.grey.shade50;
 Color vividBottomColor = bottomColor.withAlpha(120);
@@ -24,7 +24,7 @@ class BottomControl extends StatelessWidget {
       child: SizedBox(
         height: 75,
         child: Stack(
-          children: [currentSongTile(), playControls(context), volumeControl()],
+          children: [currentSongTile(), playControls(context), otherControls()],
         ),
       ),
     );
@@ -171,11 +171,8 @@ class BottomControl extends StatelessWidget {
                 },
               ),
               IconButton(
-                icon: Icon(
-                  Icons.playlist_play_rounded,
-                  size: 25,
-                  color: Colors.black,
-                ),
+                color: Colors.black,
+                icon: Icon(Icons.playlist_play_rounded, size: 25),
                 onPressed: () {
                   if (playQueue.isEmpty) {
                     return;
@@ -214,28 +211,26 @@ class BottomControl extends StatelessWidget {
     );
   }
 
-  Widget volumeControl() {
+  Widget otherControls() {
     return Row(
       children: [
         Spacer(),
-        // IconButton(
-        //   onPressed: () async {
-        //     if (lyricsWinId == null) {
-        //       final controller = await WindowController.create(
-        //         WindowConfiguration(
-        //           hiddenAtLaunch: false,
-        //           arguments: 'desktop_lyrics',
-        //         ),
-        //       );
-        //       lyricsWinId = controller.windowId;
-        //     } else {
-        //       final controller = WindowController.fromWindowId(lyricsWinId!);
-        //       controller.show();
-        //     }
-        //   },
-        //   icon: Icon(Icons.lyrics_rounded, size: 20),
-        // ),
-        IconButton(onPressed: () {}, icon: Icon(Icons.volume_down)),
+        IconButton(
+          onPressed: () async {
+            final controller = WindowController.fromWindowId(lyricsWindowId!);
+            if (lyricsWindowVisible) {
+              await controller.hide();
+            } else {
+              await controller.show();
+            }
+            lyricsWindowVisible = !lyricsWindowVisible;
+          },
+          icon: Icon(Icons.lyrics_rounded, size: 20, color: Colors.black),
+        ),
+        IconButton(
+          onPressed: () {},
+          icon: Icon(Icons.volume_down, color: Colors.black),
+        ),
         Center(
           child: SizedBox(
             height: 20,

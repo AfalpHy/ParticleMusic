@@ -233,7 +233,7 @@ class TitleBar extends StatelessWidget {
                               ),
                               IconButton(
                                 onPressed: () {
-                                  windowManager.close();
+                                  windowManager.hide();
                                 },
                                 icon: ImageIcon(
                                   closeImage,

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/desktop_lyrics.dart';
+import 'package:particle_music/desktop/extensions/window_controller_extension.dart';
 import 'package:particle_music/desktop/keyboard.dart';
 import 'package:particle_music/desktop/my_tray_listener.dart';
 import 'package:particle_music/desktop/my_window_listener.dart';
@@ -34,7 +35,8 @@ Future<void> main() async {
     await windowManager.ensureInitialized();
     final windowController = await WindowController.fromCurrentEngine();
 
-    if (windowController.arguments.isNotEmpty) {
+    if (windowController.arguments == 'desktop_lyrics') {
+      await windowController.desktopLyricsCustomInitialize();
       WindowOptions windowOptions = WindowOptions(
         size: Size(800, 120),
         center: true,
@@ -50,6 +52,7 @@ Future<void> main() async {
       return;
     }
 
+    await windowController.mainCustomInitialize();
     await logger.init();
 
     logger.output('App init');
@@ -65,7 +68,6 @@ Future<void> main() async {
       titleBarStyle: TitleBarStyle.hidden,
     );
     await windowManager.waitUntilReadyToShow(windowOptions, () async {
-      await windowManager.setPreventClose(true);
       await windowManager.show();
       await windowManager.focus();
       // it's weird on linux: it needs 52 extra pixels, and setMinimumSize should be invoked at last
@@ -175,4 +177,5 @@ Future<void> main() async {
   );
   logger.output('App start');
   await libraryLoader.load();
+  await initDesktopLyrics();
 }

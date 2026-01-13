@@ -3,11 +3,14 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
+import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/desktop/desktop_lyrics.dart';
+import 'package:particle_music/desktop/extensions/window_controller_extension.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
@@ -17,14 +20,52 @@ class LyricToken {
   final Duration start;
   final String text;
   Duration? end;
-  LyricToken(this.start, this.text);
+
+  LyricToken(this.start, this.text, [this.end]);
+
+  Map<String, dynamic> toMap() {
+    return {
+      'start': start.inMilliseconds,
+      'end': end?.inMilliseconds,
+      'text': text,
+    };
+  }
+
+  factory LyricToken.fromMap(Map raw) {
+    final map = Map<String, dynamic>.from(raw);
+
+    return LyricToken(
+      Duration(milliseconds: map['start'] as int),
+      map['text'] as String,
+      map['end'] != null ? Duration(milliseconds: map['end'] as int) : null,
+    );
+  }
 }
 
 class LyricLine {
   final Duration start;
   final String text;
-  List<LyricToken> tokens = [];
+  final List<LyricToken> tokens;
+
   LyricLine(this.start, this.text, this.tokens);
+
+  Map<String, dynamic> toMap() {
+    return {
+      'start': start.inMilliseconds,
+      'text': text,
+      'tokens': tokens.map((t) => t.toMap()).toList(),
+    };
+  }
+
+  factory LyricLine.fromMap(Map raw) {
+    final map = Map<String, dynamic>.from(raw);
+
+    return LyricLine(
+      Duration(milliseconds: map['start'] as int),
+      map['text'] as String,
+      (map['tokens'] as List).map((e) => LyricToken.fromMap(e as Map)).toList(),
+    );
+  }
 }
 
 List<LyricLine> lyrics = [];
@@ -155,6 +196,11 @@ class LyricsListViewState extends State<LyricsListView>
 
     if (tmp != current) {
       indexChangeTime = DateTime.now();
+      if (lyricsWindowId != null) {
+        final controller = WindowController.fromWindowId(lyricsWindowId!);
+        controller.sendLyricLine(current >= 0 ? widget.lyrics[current] : null);
+        controller.sendIsKaraoke(_isKaraoke);
+      }
     }
 
     if (!userDragging && (tmp != current || userDragged)) {

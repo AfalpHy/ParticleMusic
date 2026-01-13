@@ -1,11 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
+import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart' as just_audio;
 import 'package:audioplayers/audioplayers.dart' as audioplayers;
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/desktop/desktop_lyrics.dart';
+import 'package:particle_music/desktop/extensions/window_controller_extension.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:particle_music/lyrics.dart';
 import 'package:particle_music/setting.dart';
@@ -358,6 +361,14 @@ class WLAudioHandler extends MyAudioHandler {
   WLAudioHandler() {
     _player.onPlayerStateChanged.map(transformState).pipe(playbackState);
 
+    _player.onPositionChanged.listen((Duration position) {
+      if (lyricsWindowId == null) {
+        return;
+      }
+      final controller = WindowController.fromWindowId(lyricsWindowId!);
+      controller.sendPosition(position);
+    });
+
     _player.onPlayerComplete.listen((_) async {
       bool needPauseTmp = needPause;
 
@@ -486,6 +497,16 @@ class AIMAudioHandler extends MyAudioHandler {
 
   AIMAudioHandler() {
     _player.playbackEventStream.map(transformEvent).pipe(playbackState);
+
+    if (Platform.isMacOS) {
+      _player.positionStream.listen((Duration position) {
+        if (lyricsWindowId == null) {
+          return;
+        }
+        final controller = WindowController.fromWindowId(lyricsWindowId!);
+        controller.sendPosition(position);
+      });
+    }
 
     _player.processingStateStream.listen((state) async {
       if (state == just_audio.ProcessingState.completed) {
