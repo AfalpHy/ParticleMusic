@@ -42,7 +42,8 @@ Future<void> main() async {
         center: true,
         backgroundColor: Colors.transparent,
         titleBarStyle: TitleBarStyle.hidden,
-        skipTaskbar: true,
+        // prevent hiding the Dock on macOS
+        skipTaskbar: Platform.isMacOS ? false : true,
         alwaysOnTop: true,
       );
       await windowManager.waitUntilReadyToShow(windowOptions, () async {
