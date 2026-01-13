@@ -225,6 +225,7 @@ abstract class MyAudioHandler extends BaseAudioHandler {
     playQueue = [];
     _playQueueTmp = [];
     lyrics = [];
+    currentLyricLine = null;
     currentIndex = -1;
     currentSongNotifier.value = null;
     savePlayQueueState();
@@ -500,7 +501,7 @@ class AIMAudioHandler extends MyAudioHandler {
 
     if (Platform.isMacOS) {
       _player.positionStream.listen((Duration position) {
-        if (lyricsWindowId == null) {
+        if (lyricsWindowId == null || !lyricsWindowVisible) {
           return;
         }
         final controller = WindowController.fromWindowId(lyricsWindowId!);

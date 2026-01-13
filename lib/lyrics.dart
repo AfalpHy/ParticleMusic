@@ -67,6 +67,7 @@ class LyricLine {
 }
 
 List<LyricLine> lyrics = [];
+LyricLine? currentLyricLine;
 bool isKaraoke = false;
 
 Duration parseTime(RegExpMatch m) {
@@ -145,8 +146,12 @@ Future<void> parseLyricsFile(AudioMetadata song) async {
 
 class LyricsListView extends StatefulWidget {
   final bool expanded;
-
-  const LyricsListView({super.key, required this.expanded});
+  final List<LyricLine> lyrics;
+  const LyricsListView({
+    super.key,
+    required this.expanded,
+    required this.lyrics,
+  });
 
   @override
   State<LyricsListView> createState() => LyricsListViewState();
@@ -160,10 +165,11 @@ class LyricsListViewState extends State<LyricsListView>
   bool userDragging = false;
   bool userDragged = false;
 
+  List<LyricLine> lyrics = [];
   bool jump = true;
   Timer? timer;
 
-  void scroll2CurrentIndex(Duration position) {
+  void scroll2CurrentIndex(Duration position) async {
     // return when loading song and rebuilding this widget
     if (audioHandler.isloading) {
       return;
@@ -184,12 +190,14 @@ class LyricsListViewState extends State<LyricsListView>
       }
     }
     currentIndexNotifier.value = current;
+    final tmpLyricLine = currentLyricLine;
+    currentLyricLine = current >= 0 ? lyrics[current] : null;
 
-    if (tmp != current) {
-      if (lyricsWindowId != null) {
+    if (currentLyricLine != tmpLyricLine) {
+      if (lyricsWindowId != null && lyricsWindowVisible) {
         final controller = WindowController.fromWindowId(lyricsWindowId!);
-        controller.sendLyricLine(current >= 0 ? lyrics[current] : null);
-        controller.sendIsKaraoke(isKaraoke);
+        await controller.sendLyricLine(currentLyricLine);
+        await controller.sendIsKaraoke(isKaraoke);
       }
     }
 
@@ -219,6 +227,7 @@ class LyricsListViewState extends State<LyricsListView>
   void initState() {
     super.initState();
     WidgetsBinding.instance.addObserver(this);
+    lyrics = widget.lyrics;
     positionSub = audioHandler.getPositionStream().listen(
       (position) => scroll2CurrentIndex(position),
     );
@@ -409,6 +418,7 @@ class KaraokeText extends StatefulWidget {
   final Duration position;
   final double fontSize;
   final bool expanded;
+  final bool isDesktopLyrics;
 
   const KaraokeText({
     super.key,
@@ -416,6 +426,7 @@ class KaraokeText extends StatefulWidget {
     required this.position,
     required this.fontSize,
     required this.expanded,
+    this.isDesktopLyrics = false,
   });
 
   @override
@@ -480,16 +491,40 @@ class KaraokeTextState extends State<KaraokeText>
     return WidgetSpan(
       alignment: PlaceholderAlignment.baseline,
       baseline: TextBaseline.alphabetic,
-      child: ShaderMask(
-        blendMode: BlendMode.srcIn,
-        shaderCallback: (bounds) {
-          final p = progress.clamp(0.0, 1.0);
-          return LinearGradient(
-            colors: [Colors.white, Colors.white, Colors.white.withAlpha(96)],
-            stops: [0, p, p],
-          ).createShader(Rect.fromLTWH(0, 0, bounds.width, bounds.height));
-        },
-        child: Text(token.text, style: style),
+      child: Stack(
+        children: [
+          Text(
+            token.text,
+            style: TextStyle(
+              fontSize: widget.fontSize,
+              color: Colors.transparent,
+              shadows: widget.isDesktopLyrics
+                  ? const [
+                      Shadow(
+                        offset: Offset(0, 1),
+                        blurRadius: 1,
+                        color: Colors.black54,
+                      ),
+                    ]
+                  : null,
+            ),
+          ),
+          ShaderMask(
+            blendMode: BlendMode.srcIn,
+            shaderCallback: (bounds) {
+              final p = progress.clamp(0.0, 1.0);
+              return LinearGradient(
+                colors: [
+                  Colors.white,
+                  Colors.white,
+                  Colors.white.withAlpha(96),
+                ],
+                stops: [0, p, p],
+              ).createShader(Rect.fromLTWH(0, 0, bounds.width, bounds.height));
+            },
+            child: Text(token.text, style: style),
+          ),
+        ],
       ),
     );
   }

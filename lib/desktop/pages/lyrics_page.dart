@@ -9,6 +9,7 @@ import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/desktop/desktop_lyrics.dart';
+import 'package:particle_music/desktop/extensions/window_controller_extension.dart';
 import 'package:particle_music/desktop/pages/play_queue_page.dart';
 import 'package:particle_music/desktop/title_bar.dart';
 import 'package:particle_music/full_width_track_shape.dart';
@@ -122,6 +123,7 @@ class LyricsPageState extends State<LyricsPage> {
                                     child: LyricsListView(
                                       key: ValueKey(currentSong),
                                       expanded: true,
+                                      lyrics: List.from(lyrics),
                                     ),
                                   ),
                                 ),
@@ -348,6 +350,8 @@ class LyricsPageState extends State<LyricsPage> {
                     if (lyricsWindowVisible) {
                       await controller.hide();
                     } else {
+                      await controller.sendLyricLine(currentLyricLine);
+                      await controller.sendIsKaraoke(isKaraoke);
                       await controller.show();
                     }
                     lyricsWindowVisible = !lyricsWindowVisible;

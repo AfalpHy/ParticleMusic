@@ -72,8 +72,15 @@ class DesktopLyrics extends StatelessWidget {
                             return Text(
                               'Particle Music',
                               style: TextStyle(
-                                color: Colors.grey.shade300,
-                                fontSize: 30,
+                                fontSize: 40,
+                                color: Colors.white,
+                                shadows: [
+                                  Shadow(
+                                    offset: Offset(0, 1),
+                                    blurRadius: 1,
+                                    color: Colors.black87,
+                                  ),
+                                ],
                               ),
                             );
                           }
@@ -86,8 +93,9 @@ class DesktopLyrics extends StatelessWidget {
                                   key: UniqueKey(),
                                   line: lyricline,
                                   position: value,
-                                  fontSize: 30,
+                                  fontSize: 40,
                                   expanded: false,
+                                  isDesktopLyrics: true,
                                 );
                               },
                             );
@@ -95,8 +103,15 @@ class DesktopLyrics extends StatelessWidget {
                             return Text(
                               lyricline.text,
                               style: TextStyle(
-                                fontSize: 30,
-                                color: Colors.grey.shade300,
+                                fontSize: 40,
+                                color: Colors.white,
+                                shadows: [
+                                  Shadow(
+                                    offset: Offset(0, 1),
+                                    blurRadius: 1,
+                                    color: Colors.black87,
+                                  ),
+                                ],
                               ),
                             );
                           }
