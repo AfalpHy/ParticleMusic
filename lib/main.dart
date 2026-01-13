@@ -69,7 +69,9 @@ Future<void> main() async {
       titleBarStyle: TitleBarStyle.hidden,
     );
     await windowManager.waitUntilReadyToShow(windowOptions, () async {
-      await windowManager.setAsFrameless();
+      if (Platform.isMacOS) {
+        await windowManager.setAsFrameless();
+      }
       await windowManager.show();
       await windowManager.focus();
       // it's weird on linux: it needs 52 extra pixels, and setMinimumSize should be invoked at last
