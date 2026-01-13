@@ -14,4 +14,9 @@ class MyWindowListener extends WindowListener {
   void onWindowUnmaximize() {
     isMaximizedNotifier.value = false;
   }
+
+  @override
+  void onWindowClose() {
+    windowManager.hide();
+  }
 }

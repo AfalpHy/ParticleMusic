@@ -67,11 +67,10 @@ Future<void> main() async {
       center: true,
       backgroundColor: Colors.transparent,
       titleBarStyle: TitleBarStyle.hidden,
+      windowButtonVisibility: false,
     );
     await windowManager.waitUntilReadyToShow(windowOptions, () async {
-      if (Platform.isMacOS) {
-        await windowManager.setAsFrameless();
-      }
+      await windowManager.setPreventClose(true);
       await windowManager.show();
       await windowManager.focus();
       // it's weird on linux: it needs 52 extra pixels, and setMinimumSize should be invoked at last
