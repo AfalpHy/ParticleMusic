@@ -185,7 +185,7 @@ class LibraryLoader {
   }
 
   Future<void> reload() async {
-    audioHandler.clearForReload();
+    await audioHandler.clearForReload();
 
     librarySongs = [];
     filePath2LibrarySong = {};

@@ -132,7 +132,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
             IconButton(
               onPressed: () async {
                 if (await showConfirmDialog(context, l10n.clear)) {
-                  audioHandler.clear();
+                  await audioHandler.clear();
 
                   displayPlayQueuePageNotifier.value = false;
                   displayLyricsPageNotifier.value = false;
@@ -276,7 +276,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
 
                 setState(() {});
                 if (playQueue.isEmpty) {
-                  audioHandler.clear();
+                  await audioHandler.clear();
                   displayPlayQueuePageNotifier.value = false;
                   displayLyricsPageNotifier.value = false;
                 } else if (removeCurrent) {

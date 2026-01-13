@@ -220,22 +220,25 @@ abstract class MyAudioHandler extends BaseAudioHandler {
     savePlayQueueState();
   }
 
-  void clear() {
+  Future<void> clear() async {
     stop();
     playQueue = [];
     _playQueueTmp = [];
     lyrics = [];
     currentLyricLine = null;
+    await sendCurrentLyricLine();
     currentIndex = -1;
     currentSongNotifier.value = null;
     savePlayQueueState();
     savePlayState();
   }
 
-  void clearForReload() {
+  Future<void> clearForReload() async {
     stop();
     playQueue = [];
     _playQueueTmp = [];
+    currentLyricLine = null;
+    await sendCurrentLyricLine();
     currentSongNotifier.value = null;
   }
 

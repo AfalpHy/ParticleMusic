@@ -25,6 +25,12 @@ Future<void> initDesktopLyrics() async {
   lyricsWindowId = controller.windowId;
 }
 
+Future<void> sendCurrentLyricLine() async {
+  final controller = WindowController.fromWindowId(lyricsWindowId!);
+  await controller.sendLyricLine(currentLyricLine);
+  await controller.sendIsKaraoke(isKaraoke);
+}
+
 class DesktopLyrics extends StatelessWidget {
   const DesktopLyrics({super.key});
 

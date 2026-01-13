@@ -115,7 +115,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                 IconButton(
                   onPressed: () async {
                     if (await showConfirmDialog(context, l10n.clear)) {
-                      audioHandler.clear();
+                      await audioHandler.clear();
 
                       while (context.mounted && Navigator.canPop(context)) {
                         if (context.mounted) {
@@ -209,10 +209,10 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                         audioHandler.currentIndex -= 1;
                       } else if (index == audioHandler.currentIndex) {
                         if (playQueue.isEmpty) {
-                          audioHandler.clear();
                           while (Navigator.canPop(context)) {
                             Navigator.pop(context);
                           }
+                          await audioHandler.clear();
                         } else {
                           if (index == playQueue.length) {
                             audioHandler.currentIndex = 0;

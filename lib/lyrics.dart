@@ -3,14 +3,12 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
-import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/desktop_lyrics.dart';
-import 'package:particle_music/desktop/extensions/window_controller_extension.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
@@ -195,9 +193,7 @@ class LyricsListViewState extends State<LyricsListView>
 
     if (currentLyricLine != tmpLyricLine) {
       if (lyricsWindowId != null && lyricsWindowVisible) {
-        final controller = WindowController.fromWindowId(lyricsWindowId!);
-        await controller.sendLyricLine(currentLyricLine);
-        await controller.sendIsKaraoke(isKaraoke);
+        sendCurrentLyricLine();
       }
     }
 
