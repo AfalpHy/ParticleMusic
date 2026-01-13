@@ -14,8 +14,6 @@ import 'package:particle_music/desktop/extensions/window_controller_extension.da
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
-DateTime indexChangeTime = DateTime.fromMillisecondsSinceEpoch(0);
-
 class LyricToken {
   final Duration start;
   final String text;
@@ -164,8 +162,6 @@ class LyricsListViewState extends State<LyricsListView>
 
   bool jump = true;
   Timer? timer;
-  late final Ticker ticker;
-  final ValueNotifier<int> tickNotifier = ValueNotifier<int>(0);
 
   void scroll2CurrentIndex(Duration position) {
     // return when loading song and rebuilding this widget
@@ -190,7 +186,6 @@ class LyricsListViewState extends State<LyricsListView>
     currentIndexNotifier.value = current;
 
     if (tmp != current) {
-      indexChangeTime = DateTime.now();
       if (lyricsWindowId != null) {
         final controller = WindowController.fromWindowId(lyricsWindowId!);
         controller.sendLyricLine(current >= 0 ? lyrics[current] : null);
@@ -227,9 +222,6 @@ class LyricsListViewState extends State<LyricsListView>
     positionSub = audioHandler.getPositionStream().listen(
       (position) => scroll2CurrentIndex(position),
     );
-    ticker = createTicker((_) {
-      tickNotifier.value++;
-    })..start();
   }
 
   @override
@@ -238,7 +230,6 @@ class LyricsListViewState extends State<LyricsListView>
     // Stop listening when lyrics page is closed
     positionSub?.cancel();
     positionSub = null;
-    ticker.dispose();
 
     timer?.cancel();
     timer = null;
@@ -317,7 +308,6 @@ class LyricsListViewState extends State<LyricsListView>
                 line: lyrics[index - 1],
                 currentIndexNotifier: currentIndexNotifier,
                 expanded: widget.expanded,
-                tickNotifier: tickNotifier,
               );
             },
           ),
@@ -333,7 +323,6 @@ class LyricLineWidget extends StatelessWidget {
   final LyricLine line;
   final ValueNotifier<int> currentIndexNotifier;
   final bool expanded;
-  final ValueNotifier<int> tickNotifier;
 
   const LyricLineWidget({
     super.key,
@@ -341,25 +330,7 @@ class LyricLineWidget extends StatelessWidget {
     required this.index,
     required this.currentIndexNotifier,
     required this.expanded,
-    required this.tickNotifier,
   });
-
-  double staggeredOffset(int currentIndex, double lineHeight) {
-    if (index <= currentIndex) return 0;
-
-    final elapsed =
-        DateTime.now().difference(indexChangeTime).inMilliseconds / 1000.0;
-
-    if (elapsed < 0.3) return lineHeight;
-    const perLineDelay = 0.05;
-    final distance = index - currentIndex;
-    final delay = distance * perLineDelay;
-
-    const duration = 0.2;
-    final t = ((elapsed - 0.3 - delay) / duration).clamp(0.0, 1.0);
-
-    return lineHeight - t * lineHeight;
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -380,64 +351,50 @@ class LyricLineWidget extends StatelessWidget {
           padding: expanded
               ? EdgeInsets.fromLTRB(
                   25,
-                  25 + (isMobile ? 0 : (pageHeight - 700) * 0.025),
+                  10 + (isMobile ? 0 : (pageHeight - 700) * 0.025),
                   0,
-                  25 + (isMobile ? 0 : (pageHeight - 700) * 0.025),
+                  10 + (isMobile ? 0 : (pageHeight - 700) * 0.025),
                 )
               : const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
           child: ValueListenableBuilder(
             valueListenable: currentIndexNotifier,
             builder: (context, currentIndex, child) {
-              return ValueListenableBuilder(
-                valueListenable: tickNotifier,
-                builder: (context, value, child) {
-                  final isCurrent = currentIndex == index;
+              final isCurrent = currentIndex == index;
 
-                  double fontSize = 12;
-                  if (isCurrent) {
-                    fontSize += 6;
-                  }
-                  if (expanded) {
-                    fontSize += 8;
-                  }
+              double fontSize = 14;
+              if (isCurrent) {
+                fontSize += 4;
+              }
+              if (expanded) {
+                fontSize += 4;
+              }
 
-                  fontSize += isMobile
-                      ? 0
-                      : min(
-                          (pageHeight - 700) * 0.05,
-                          (pageWidth - 1050) * 0.025,
-                        );
+              fontSize += isMobile
+                  ? 0
+                  : min((pageHeight - 700) * 0.05, (pageWidth - 1050) * 0.025);
 
-                  if (isCurrent && isKaraoke) {
-                    return StreamBuilder<Duration>(
-                      stream: audioHandler.getPositionStream(),
-                      builder: (context, snapshot) {
-                        return KaraokeText(
-                          key: UniqueKey(),
-                          line: line,
-                          position: snapshot.data ?? Duration.zero,
-                          fontSize: fontSize,
-                          expanded: expanded,
-                        );
-                      },
+              if (isCurrent && isKaraoke) {
+                return StreamBuilder<Duration>(
+                  stream: audioHandler.getPositionStream(),
+                  builder: (context, snapshot) {
+                    return KaraokeText(
+                      key: UniqueKey(),
+                      line: line,
+                      position: snapshot.data ?? Duration.zero,
+                      fontSize: fontSize,
+                      expanded: expanded,
                     );
-                  }
+                  },
+                );
+              }
 
-                  final offsetY = staggeredOffset(currentIndex, fontSize * 0.7);
-                  return Transform.translate(
-                    offset: Offset(0, offsetY),
-                    child: Text(
-                      line.text,
-                      textAlign: expanded ? TextAlign.left : TextAlign.center,
-                      style: TextStyle(
-                        fontSize: fontSize,
-                        color: isCurrent
-                            ? Colors.white
-                            : Colors.white.withAlpha(96),
-                      ),
-                    ),
-                  );
-                },
+              return Text(
+                line.text,
+                textAlign: expanded ? TextAlign.left : TextAlign.center,
+                style: TextStyle(
+                  fontSize: fontSize,
+                  color: isCurrent ? Colors.white : Colors.white.withAlpha(96),
+                ),
               );
             },
           ),
