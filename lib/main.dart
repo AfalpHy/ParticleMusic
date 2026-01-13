@@ -38,7 +38,7 @@ Future<void> main() async {
     if (windowController.arguments == 'desktop_lyrics') {
       await windowController.desktopLyricsCustomInitialize();
       WindowOptions windowOptions = WindowOptions(
-        size: Size(800, 120),
+        size: Platform.isLinux ? Size(850, 175) : Size(800, 120),
         center: true,
         backgroundColor: Colors.transparent,
         titleBarStyle: TitleBarStyle.hidden,
@@ -109,7 +109,7 @@ Future<void> main() async {
         : AIMAudioHandler(),
     config: const AudioServiceConfig(
       androidNotificationChannelId: 'com.afalphy.particle_music',
-      androidNotificationChannelName: 'Music Playback',
+      androidNotificationChannelName: 'Particle Music',
       androidNotificationOngoing: true,
     ),
   );

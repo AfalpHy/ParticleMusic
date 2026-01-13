@@ -125,23 +125,20 @@ class DesktopLyrics extends StatelessWidget {
                       ),
                     ),
                     if (!value)
-                      Row(
-                        children: [
-                          Spacer(),
-                          IconButton(
-                            onPressed: () async {
-                              final controllers =
-                                  await WindowController.getAll();
-                              for (final controller in controllers) {
-                                if (controller.arguments.isEmpty) {
-                                  controller.hideDesktopLyrics();
-                                }
+                      Align(
+                        alignment: Alignment.topRight,
+                        child: IconButton(
+                          onPressed: () async {
+                            final controllers = await WindowController.getAll();
+                            for (final controller in controllers) {
+                              if (controller.arguments.isEmpty) {
+                                controller.hideDesktopLyrics();
                               }
-                              windowManager.hide();
-                            },
-                            icon: Icon(Icons.close),
-                          ),
-                        ],
+                            }
+                            windowManager.hide();
+                          },
+                          icon: Icon(Icons.close),
+                        ),
                       ),
                   ],
                 ),

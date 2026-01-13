@@ -255,10 +255,10 @@ packages:
     dependency: transitive
     description:
       name: ffi
-      sha256: "289279317b4b16eb2bb7e271abccd4bf84ec9bdcbe999e278a94b804f5630418"
+      sha256: d07d37192dbf97461359c1518788f203b0c9102cfd2c35a716b823741219542c
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.4"
+    version: "2.1.5"
   file:
     dependency: transitive
     description:
@@ -879,10 +879,11 @@ packages:
   tray_manager:
     dependency: "direct main"
     description:
-      name: tray_manager
-      sha256: c5fd83b0ae4d80be6eaedfad87aaefab8787b333b8ebd064b0e442a81006035b
-      url: "https://pub.dev"
-    source: hosted
+      path: "packages/tray_manager"
+      ref: main
+      resolved-ref: "9a46de815da48759c01d8427f28d3fc024af05d0"
+      url: "https://github.com/AfalpHy/tray_manager.git"
+    source: git
     version: "0.5.2"
   typed_data:
     dependency: transitive
