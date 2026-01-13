@@ -50,7 +50,7 @@ dependencies:
   audio_service_mpris: ^0.2.0
   audio_service_win:
     git:
-      url: https://github.com/GerryDush/audio_service_win.git
+      url: https://github.com/AfalpHy/audio_service_win.git
       ref: main
   path_provider: ^2.1.5
   image: ^4.5.4

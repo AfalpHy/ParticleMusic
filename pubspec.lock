@@ -71,8 +71,8 @@ packages:
     description:
       path: "."
       ref: main
-      resolved-ref: "9a6934ad857edd985efb4eb1bc632a1b6f457315"
-      url: "https://github.com/GerryDush/audio_service_win.git"
+      resolved-ref: "07cc34cda5c4bc68dc61cbd0b1ef885c34bb27a7"
+      url: "https://github.com/AfalpHy/audio_service_win.git"
     source: git
     version: "0.0.2"
   audio_session:
