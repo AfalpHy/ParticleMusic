@@ -79,6 +79,8 @@ Future<void> main() async {
       );
     });
 
+    await trayManager.setToolTip('Particle Music');
+
     await trayManager.setIcon(
       Platform.isWindows ? 'assets/app_icon.ico' : 'assets/app_icon.png',
     );
