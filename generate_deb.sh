@@ -2,7 +2,7 @@
 
 # ---------- CONFIG ----------
 APP_NAME="ParticleMusic"           # Executable name
-APP_VERSION="1.0.5"               # Debian version
+APP_VERSION="1.0.6"               # Debian version
 MAINTAINER="AfalpHy"
 EXECUTABLE="build/linux/x64/release/bundle/$APP_NAME"
 DATA="build/linux/x64/release/bundle/data"
@@ -57,6 +57,6 @@ EOL
 
 # Build .deb
 dpkg-deb --build "$PACKAGE_DIR"
-mv "${PACKAGE_DIR}.deb" "build/${APP_NAME}_${APP_VERSION}_amd64.deb"
+mv "${PACKAGE_DIR}.deb" "build/${APP_NAME}-${APP_VERSION}-linux-amd64.deb"
 
-echo "Debian package created: build/${APP_NAME}_${APP_VERSION}_amd64.deb"
+echo "Debian package created: build/${APP_NAME}-${APP_VERSION}-linux-amd64.deb"
