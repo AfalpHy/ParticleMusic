@@ -189,5 +189,7 @@ Future<void> main() async {
   );
   logger.output('App start');
   await libraryLoader.load();
-  await initDesktopLyrics();
+  if (!isMobile) {
+    await initDesktopLyrics();
+  }
 }
