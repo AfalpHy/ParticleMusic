@@ -134,11 +134,13 @@ Future<void> main() async {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          theme: ThemeData(
-            textTheme: (Platform.isWindows || Platform.isLinux)
-                ? GoogleFonts.notoSansTextTheme(ThemeData.light().textTheme)
-                : null,
-          ),
+          theme: Platform.isWindows
+              ? ThemeData(
+                  textTheme: GoogleFonts.notoSansTextTheme(
+                    ThemeData.light().textTheme,
+                  ).apply(fontFamilyFallback: ['Microsoft YaHei']),
+                )
+              : null,
           title: 'Particle Music',
           home: ValueListenableBuilder(
             valueListenable: loadingLibraryNotifier,
