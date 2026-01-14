@@ -3,6 +3,7 @@ import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/desktop_lyrics.dart';
 import 'package:particle_music/desktop/extensions/window_controller_extension.dart';
@@ -133,9 +134,11 @@ Future<void> main() async {
             GlobalWidgetsLocalizations.delegate,
             GlobalCupertinoLocalizations.delegate,
           ],
-          theme: Platform.isWindows
-              ? ThemeData(fontFamily: 'Microsoft YaHei')
-              : null,
+          theme: ThemeData(
+            textTheme: (Platform.isWindows || Platform.isLinux)
+                ? GoogleFonts.notoSansTextTheme(ThemeData.light().textTheme)
+                : null,
+          ),
           title: 'Particle Music',
           home: ValueListenableBuilder(
             valueListenable: loadingLibraryNotifier,
