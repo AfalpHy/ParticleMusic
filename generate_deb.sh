@@ -52,6 +52,7 @@ Exec=/usr/local/bin/$APP_NAME
 Icon=$APP_NAME
 Type=Application
 Categories=Utility;
+StartupWMClass=Com.afalphy.particle_music
 EOL
 
 # Build .deb
