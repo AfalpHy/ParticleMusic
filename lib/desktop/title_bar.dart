@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
@@ -233,7 +235,12 @@ class TitleBar extends StatelessWidget {
                               ),
                               IconButton(
                                 onPressed: () {
-                                  windowManager.hide();
+                                  if (Platform.isMacOS) {
+                                    // macOS will always keep the dock visible, so minimize it instead of hiding it.
+                                    windowManager.minimize();
+                                  } else {
+                                    windowManager.hide();
+                                  }
                                 },
                                 icon: ImageIcon(
                                   closeImage,
