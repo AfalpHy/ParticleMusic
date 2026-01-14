@@ -226,7 +226,9 @@ abstract class MyAudioHandler extends BaseAudioHandler {
     _playQueueTmp = [];
     lyrics = [];
     currentLyricLine = null;
-    await sendCurrentLyricLine();
+    if (!isMobile) {
+      await sendCurrentLyricLine();
+    }
     currentIndex = -1;
     currentSongNotifier.value = null;
     savePlayQueueState();
@@ -238,7 +240,9 @@ abstract class MyAudioHandler extends BaseAudioHandler {
     playQueue = [];
     _playQueueTmp = [];
     currentLyricLine = null;
-    await sendCurrentLyricLine();
+    if (!isMobile) {
+      await sendCurrentLyricLine();
+    }
     currentSongNotifier.value = null;
   }
 
