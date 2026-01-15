@@ -90,11 +90,11 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.afalphy" "\0"
-            VALUE "FileDescription", "particle_music" "\0"
+            VALUE "FileDescription", "Particle Music" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "particle_music" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2025 com.afalphy. All rights reserved." "\0"
-            VALUE "OriginalFilename", "particle_music.exe" "\0"
+            VALUE "InternalName", "ParticleMusic" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2025-2026 com.afalphy. All rights reserved." "\0"
+            VALUE "OriginalFilename", "ParticleMusic.exe" "\0"
             VALUE "ProductName", "particle_music" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
