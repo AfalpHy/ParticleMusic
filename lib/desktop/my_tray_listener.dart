@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/desktop/desktop_lyrics.dart';
@@ -26,9 +24,8 @@ class MyTrayListener extends TrayListener {
     } else if (menuItem.key == 'exit') {
       final controller = WindowController.fromWindowId(lyricsWindowId!);
       controller.close();
-      // make app exit normally on Winodws
-      await Future.delayed(const Duration(milliseconds: 50));
-      exit(0);
+      await windowManager.setPreventClose(false);
+      windowManager.close();
     } else if (menuItem.key == 'skipToPrevious') {
       await audioHandler.skipToPrevious();
     } else if (menuItem.key == 'togglePlay') {
