@@ -60,7 +60,7 @@ Future<void> main() async {
     logger.output('App init');
 
     if (kReleaseMode) {
-      await startAsSingleInstance();
+      await SingleInstance.start();
     }
 
     WindowOptions windowOptions = WindowOptions(
