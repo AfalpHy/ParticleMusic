@@ -33,8 +33,6 @@ dependencies:
 
   flutter_localizations:
     sdk: flutter
-  intl: any
-  just_audio: ^0.10.5
   audioplayers: ^6.5.1
   provider: ^6.1.5+1
   file_picker: ^10.3.3

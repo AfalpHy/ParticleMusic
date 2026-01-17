@@ -13,8 +13,6 @@ import 'package:particle_music/seekbar.dart';
 import 'package:particle_music/setting.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
-final ValueNotifier<bool> filterBackgroundNotifier = ValueNotifier(true);
-
 class LyricsPage extends StatelessWidget {
   const LyricsPage({super.key});
 
@@ -31,16 +29,7 @@ class LyricsPage extends StatelessWidget {
               ClipRect(
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-                  child: ValueListenableBuilder(
-                    valueListenable: filterBackgroundNotifier,
-                    builder: (context, value, child) {
-                      return value
-                          ? Container(
-                              color: coverArtAverageColor.withAlpha(180),
-                            )
-                          : Container(color: coverArtAverageColor);
-                    },
-                  ),
+                  child: Container(color: coverArtAverageColor.withAlpha(180)),
                 ),
               ),
               Column(
@@ -157,14 +146,6 @@ class LyricsPage extends StatelessWidget {
 
         Row(
           children: [
-            SizedBox(width: 25),
-            IconButton(
-              onPressed: () {
-                filterBackgroundNotifier.value =
-                    !filterBackgroundNotifier.value;
-              },
-              icon: Icon(Icons.filter, color: Colors.grey.shade50),
-            ),
             Spacer(),
 
             FavoriteButton(),

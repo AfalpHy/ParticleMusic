@@ -109,9 +109,8 @@ Future<void> main() async {
   }
 
   audioHandler = await AudioService.init(
-    builder: () => Platform.isWindows || Platform.isLinux
-        ? WLAudioHandler()
-        : AIMAudioHandler(),
+    builder: () => MyAudioHandler(),
+
     config: const AudioServiceConfig(
       androidNotificationChannelId: 'com.afalphy.particle_music',
       androidNotificationChannelName: 'Particle Music',

@@ -33,7 +33,6 @@ late Directory appDocs;
 final ValueNotifier<bool> loadingLibraryNotifier = ValueNotifier(true);
 
 class LibraryLoader {
-  late Directory _appSupportDir;
   late File _folderPathsFile;
 
   Future<void> initial() async {
@@ -48,9 +47,9 @@ class LibraryLoader {
       }
     }
 
-    _appSupportDir = await getApplicationSupportDirectory();
+    Directory appSupportDir = await getApplicationSupportDirectory();
     playlistsManager = PlaylistsManager(
-      File("${_appSupportDir.path}/playlists.txt"),
+      File("${appSupportDir.path}/playlists.txt"),
     );
 
     List<dynamic> allPlaylists = await playlistsManager.getAllPlaylists();
@@ -58,13 +57,13 @@ class LibraryLoader {
     for (String name in allPlaylists) {
       final playlist = Playlist(
         name: name,
-        file: File("${_appSupportDir.path}/$name.json"),
-        settingFile: File("${_appSupportDir.path}/${name}_setting.json"),
+        file: File("${appSupportDir.path}/$name.json"),
+        settingFile: File("${appSupportDir.path}/${name}_setting.json"),
       );
       playlistsManager.addPlaylist(playlist);
     }
 
-    _folderPathsFile = File("${_appSupportDir.path}/folder_paths.txt");
+    _folderPathsFile = File("${appSupportDir.path}/folder_paths.txt");
     if (!_folderPathsFile.existsSync()) {
       _folderPathsFile.createSync();
     }
@@ -74,10 +73,10 @@ class LibraryLoader {
       folderPaths = result.cast<String>();
     }
 
-    setting = Setting(File("${_appSupportDir.path}/setting.txt"));
+    setting = Setting(File("${appSupportDir.path}/setting.txt"));
     await setting.loadSetting();
 
-    audioHandler.initStateFiles(_appSupportDir.path);
+    audioHandler.initStateFiles(appSupportDir.path);
   }
 
   Future<void> load() async {
