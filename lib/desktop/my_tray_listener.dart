@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/desktop/desktop_lyrics.dart';
@@ -28,6 +30,10 @@ class MyTrayListener extends TrayListener {
       // make sure the music stops after exiting
       await audioHandler.stop();
       windowManager.close();
+      // only exit can quit on macos
+      if (Platform.isMacOS) {
+        exit(0);
+      }
     } else if (menuItem.key == 'skipToPrevious') {
       await audioHandler.skipToPrevious();
     } else if (menuItem.key == 'togglePlay') {
