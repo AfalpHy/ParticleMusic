@@ -25,6 +25,8 @@ class MyTrayListener extends TrayListener {
       final controller = WindowController.fromWindowId(lyricsWindowId!);
       controller.close();
       await windowManager.setPreventClose(false);
+      // make sure the music stops after exiting
+      await audioHandler.stop();
       windowManager.close();
     } else if (menuItem.key == 'skipToPrevious') {
       await audioHandler.skipToPrevious();
