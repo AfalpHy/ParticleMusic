@@ -16,7 +16,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
 # In Windows, build-name is used as the major, minor, and patch parts
 # of the product and file versions while build-number is used as the build suffix.
-version: 1.0.6+1
+version: 1.0.6+0
 
 environment:
   sdk: ^3.9.0
@@ -69,6 +69,7 @@ dependencies:
   lpinyin: ^2.0.3
   flutter_colorpicker: ^1.1.0
   google_fonts: ^7.0.2
+  msix: ^3.16.12
 
 dev_dependencies:
   flutter_test:
@@ -126,3 +127,12 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
+msix_config:
+  display_name: Particle Music
+  publisher_display_name: AfalpHy
+  identity_name: com.afalphy.particle-music
+  msix_version: 1.0.6.0
+  logo_path: windows\runner\resources\app_icon.ico
+  # This PFX is private. Replace it with your own PFX to generate an MSIX package.
+  certificate_path: ParticleMusicCert.pfx
+  certificate_password: ParticleMusic
