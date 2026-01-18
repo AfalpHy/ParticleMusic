@@ -89,8 +89,9 @@ class MyAudioHandler extends BaseAudioHandler {
         ProcessingState.ready: AudioProcessingState.ready,
         ProcessingState.completed: AudioProcessingState.completed,
       }[event.processingState]!,
-      updatePosition: _player.position,
-      bufferedPosition: _player.bufferedPosition,
+      speed: _player.playing ? 1 : 0,
+      updatePosition: event.updatePosition,
+      bufferedPosition: event.bufferedPosition,
     );
   }
 
