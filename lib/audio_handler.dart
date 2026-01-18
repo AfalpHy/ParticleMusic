@@ -1,9 +1,9 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter/material.dart';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:audio_service/audio_service.dart';
+import 'package:just_audio/just_audio.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/desktop_lyrics.dart';
 import 'package:particle_music/desktop/extensions/window_controller_extension.dart';
@@ -39,53 +39,58 @@ class MyAudioHandler extends BaseAudioHandler {
 
   MyAudioHandler() {
     if (!isMobile) {
-      _player.onPositionChanged.listen((Duration position) {
+      _player.positionStream.listen((Duration position) {
         lyricsWindowController?.sendPosition(position);
       });
     }
+    _player.playbackEventStream.map(transformEvent).pipe(playbackState);
 
-    _player.onPlayerStateChanged.listen((state) async {
-      if (state == PlayerState.playing) {
-        isPlayingNotifier.value = true;
-        needPause = false;
-        playbackState.add(
-          transformState(_player.state, await _player.getCurrentPosition()),
-        );
-      } else if (state == PlayerState.paused || state == PlayerState.stopped) {
-        isPlayingNotifier.value = false;
-        needPause = false;
-        playbackState.add(
-          transformState(_player.state, await _player.getCurrentPosition()),
-        );
-      } else if (state == PlayerState.completed) {
+    _player.processingStateStream.listen((state) async {
+      if (state == ProcessingState.completed) {
+        bool needPauseTmp = needPause;
+
         if (playModeNotifier.value == 2) {
           // repeat
           await load();
         } else {
           await skipToNext(); // automatically go to next song
         }
+
+        if (needPauseTmp) {
+          await pause();
+        }
       }
+    });
+
+    _player.playingStream.listen((isPlaying) {
+      needPause = false;
+      isPlayingNotifier.value = isPlaying;
+    });
+
+    currentSongNotifier.addListener(() {
+      needPause = false;
     });
   }
 
-  PlaybackState transformState(PlayerState state, Duration? updatePosition) {
+  PlaybackState transformEvent(PlaybackEvent event) {
     return PlaybackState(
       controls: [
         MediaControl.skipToPrevious,
-        state == PlayerState.playing ? MediaControl.pause : MediaControl.play,
+        _player.playing ? MediaControl.pause : MediaControl.play,
         MediaControl.skipToNext,
         MediaControl.stop,
       ],
       systemActions: {MediaAction.seek},
-      playing: state == PlayerState.playing,
+      playing: _player.playing,
       processingState: {
-        PlayerState.stopped: AudioProcessingState.idle,
-        PlayerState.playing: AudioProcessingState.ready,
-        PlayerState.paused: AudioProcessingState.ready,
-        PlayerState.completed: AudioProcessingState.completed,
-        PlayerState.disposed: AudioProcessingState.idle,
-      }[state]!,
-      updatePosition: updatePosition ?? Duration.zero,
+        ProcessingState.idle: AudioProcessingState.idle,
+        ProcessingState.loading: AudioProcessingState.loading,
+        ProcessingState.buffering: AudioProcessingState.buffering,
+        ProcessingState.ready: AudioProcessingState.ready,
+        ProcessingState.completed: AudioProcessingState.completed,
+      }[event.processingState]!,
+      updatePosition: _player.position,
+      bufferedPosition: _player.bufferedPosition,
     );
   }
 
@@ -388,18 +393,17 @@ class MyAudioHandler extends BaseAudioHandler {
         duration: currentSong.duration,
       ),
     );
-    playbackState.add(transformState(_player.state, Duration.zero));
 
-    await _player.setSource(
-      DeviceFileSource(currentSongNotifier.value!.file.path),
+    final audioSource = ProgressiveAudioSource(
+      Uri.file(currentSongNotifier.value!.file.path),
+      options: ProgressiveAudioSourceOptions(
+        darwinAssetOptions: DarwinAssetOptions(
+          preferPreciseDurationAndTiming: true,
+        ),
+      ),
     );
 
-    if (needPause) {
-      await _player.pause();
-      needPause = false;
-    } else if (isPlayingNotifier.value) {
-      await _player.resume();
-    }
+    await _player.setAudioSource(audioSource);
 
     isloading = false;
   }
@@ -407,7 +411,7 @@ class MyAudioHandler extends BaseAudioHandler {
   @override
   Future<void> play() async {
     if (playQueue.isEmpty) return;
-    await _player.resume();
+    await _player.play();
   }
 
   @override
@@ -417,10 +421,7 @@ class MyAudioHandler extends BaseAudioHandler {
   Future<void> stop() async => await _player.stop();
 
   @override
-  Future<void> seek(Duration position) async {
-    await _player.seek(position);
-    playbackState.add(transformState(_player.state, position));
-  }
+  Future<void> seek(Duration position) async => await _player.seek(position);
 
   @override
   Future<void> skipToNext() async {
@@ -436,16 +437,16 @@ class MyAudioHandler extends BaseAudioHandler {
     await load();
   }
 
-  Stream<Duration> getPositionStream() {
-    return _player.onPositionChanged;
+  Future<void> togglePlay() async {
+    if (_player.playing) {
+      await pause();
+    } else {
+      await play();
+    }
   }
 
-  Future<void> togglePlay() async {
-    if (_player.state == PlayerState.playing) {
-      await _player.pause();
-    } else {
-      await _player.resume();
-    }
+  Stream<Duration> getPositionStream() {
+    return _player.positionStream;
   }
 
   void setVolume(double volume) {

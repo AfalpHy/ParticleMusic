@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:just_audio_media_kit/just_audio_media_kit.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/desktop_lyrics.dart';
 import 'package:particle_music/desktop/extensions/window_controller_extension.dart';
@@ -108,6 +109,7 @@ Future<void> main() async {
     trayManager.addListener(MyTrayListener());
   }
 
+  JustAudioMediaKit.ensureInitialized();
   audioHandler = await AudioService.init(
     builder: () => MyAudioHandler(),
 
