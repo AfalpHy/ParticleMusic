@@ -191,10 +191,8 @@ class LyricsListViewState extends State<LyricsListView>
     final tmpLyricLine = currentLyricLine;
     currentLyricLine = current >= 0 ? lyrics[current] : null;
 
-    if (currentLyricLine != tmpLyricLine) {
-      if (lyricsWindowId != null && lyricsWindowVisible) {
-        sendCurrentLyricLine();
-      }
+    if (!isMobile && lyricsWindowVisible && currentLyricLine != tmpLyricLine) {
+      sendCurrentLyricLine();
     }
 
     if (!userDragging && (tmp != current || userDragged)) {

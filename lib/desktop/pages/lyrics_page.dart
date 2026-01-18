@@ -3,7 +3,6 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
-import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
@@ -343,14 +342,11 @@ class LyricsPageState extends State<LyricsPage> {
                 width: 40,
                 child: IconButton(
                   onPressed: () async {
-                    final controller = WindowController.fromWindowId(
-                      lyricsWindowId!,
-                    );
                     if (lyricsWindowVisible) {
-                      await controller.hide();
+                      await lyricsWindowController!.hide();
                     } else {
-                      sendCurrentLyricLine();
-                      await controller.show();
+                      await sendCurrentLyricLine();
+                      await lyricsWindowController!.show();
                     }
                     lyricsWindowVisible = !lyricsWindowVisible;
                   },

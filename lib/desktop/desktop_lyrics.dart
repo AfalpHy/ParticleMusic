@@ -9,7 +9,7 @@ import 'package:window_manager/window_manager.dart';
 
 final ValueNotifier<bool> lyricsIsTransparentNotifier = ValueNotifier(false);
 
-String? lyricsWindowId;
+WindowController? lyricsWindowController;
 bool lyricsWindowVisible = false;
 
 final ValueNotifier<LyricLine?> lyricLineNotifier = ValueNotifier(null);
@@ -19,16 +19,14 @@ final ValueNotifier<Duration> currentPositionNotifier = ValueNotifier(
 bool desktopLyricsIsKaraoke = false;
 
 Future<void> initDesktopLyrics() async {
-  final controller = await WindowController.create(
+  lyricsWindowController = await WindowController.create(
     WindowConfiguration(hiddenAtLaunch: true, arguments: 'desktop_lyrics'),
   );
-  lyricsWindowId = controller.windowId;
 }
 
 Future<void> sendCurrentLyricLine() async {
-  final controller = WindowController.fromWindowId(lyricsWindowId!);
-  await controller.sendLyricLine(currentLyricLine);
-  await controller.sendIsKaraoke(isKaraoke);
+  await lyricsWindowController?.sendIsKaraoke(isKaraoke);
+  await lyricsWindowController?.sendLyricLine(currentLyricLine);
 }
 
 class DesktopLyrics extends StatelessWidget {
