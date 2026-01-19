@@ -24,10 +24,11 @@ class MyTrayListener extends TrayListener {
     if (menuItem.key == 'show') {
       await windowManager.show();
     } else if (menuItem.key == 'exit') {
-      lyricsWindowController!.close();
-      await windowManager.setPreventClose(false);
       // make sure the music stops after exiting
       await audioHandler.stop();
+
+      lyricsWindowController!.close();
+      await windowManager.setPreventClose(false);
       await SingleInstance.end();
       windowManager.close();
 

@@ -40,7 +40,9 @@ class MyAudioHandler extends BaseAudioHandler {
   MyAudioHandler() {
     if (!isMobile) {
       _player.positionStream.listen((Duration position) {
-        lyricsWindowController?.sendPosition(position);
+        if (lyricsWindowVisible) {
+          lyricsWindowController?.sendPosition(position);
+        }
       });
     }
     _player.playbackEventStream.map(transformEvent).pipe(playbackState);
@@ -365,6 +367,9 @@ class MyAudioHandler extends BaseAudioHandler {
   }
 
   Future<void> load() async {
+    if (isloading) {
+      return;
+    }
     if (currentIndex < 0 || currentIndex >= playQueue.length) return;
     isloading = true;
 
@@ -419,7 +424,7 @@ class MyAudioHandler extends BaseAudioHandler {
   Future<void> pause() async => await _player.pause();
 
   @override
-  Future<void> stop() async => await _player.stop();
+  Future<void> stop() async => await _player.pause();
 
   @override
   Future<void> seek(Duration position) async => await _player.seek(position);

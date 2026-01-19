@@ -14,7 +14,7 @@ extension WindowControllerExtension on WindowController {
           return await windowManager.close();
         case 'update_position':
           currentPositionNotifier.value = Duration(
-            milliseconds: call.arguments as int,
+            microseconds: call.arguments as int,
           );
           break;
         case 'set_isKaraoke':
@@ -55,7 +55,7 @@ extension WindowControllerExtension on WindowController {
   }
 
   Future<void> sendPosition(Duration position) {
-    return invokeMethod('update_position', position.inMilliseconds);
+    return invokeMethod('update_position', position.inMicroseconds);
   }
 
   Future<void> sendIsKaraoke(bool isKaraoke) {

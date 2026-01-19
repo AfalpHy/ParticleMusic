@@ -391,14 +391,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.10.5"
-  just_audio_media_kit:
-    dependency: "direct main"
-    description:
-      name: just_audio_media_kit
-      sha256: f3cf04c3a50339709e87e90b4e841eef4364ab4be2bdbac0c54cc48679f84d23
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.1.0"
   just_audio_platform_interface:
     dependency: transitive
     description:
@@ -415,6 +407,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.4.16"
+  just_audio_windows_linux:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: master
+      resolved-ref: c82af3a21ddb6be9acd2b073530c2cfb85e85cc2
+      url: "https://github.com/AfalpHy/just_audio_windows_linux.git"
+    source: git
+    version: "0.0.1"
   leak_tracker:
     dependency: transitive
     description:
@@ -447,14 +448,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "6.0.0"
-  logging:
-    dependency: transitive
-    description:
-      name: logging
-      sha256: c8245ada5f1717ed44271ed1c26b8ce85ca3228fd2ffdb75468ab01979309d61
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.3.0"
   lpinyin:
     dependency: "direct main"
     description:
@@ -487,30 +480,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.11.1"
-  media_kit:
-    dependency: transitive
-    description:
-      name: media_kit
-      sha256: ae9e79597500c7ad6083a3c7b7b7544ddabfceacce7ae5c9709b0ec16a5d6643
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.2.6"
-  media_kit_libs_linux:
-    dependency: "direct main"
-    description:
-      name: media_kit_libs_linux
-      sha256: "2b473399a49ec94452c4d4ae51cfc0f6585074398d74216092bf3d54aac37ecf"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.2.1"
-  media_kit_libs_windows_audio:
-    dependency: "direct main"
-    description:
-      name: media_kit_libs_windows_audio
-      sha256: c2fd558cc87b9d89a801141fcdffe02e338a3b21a41a18fbd63d5b221a1b8e53
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.9"
   menu_base:
     dependency: transitive
     description:
@@ -727,14 +696,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.28.0"
-  safe_local_storage:
-    dependency: transitive
-    description:
-      name: safe_local_storage
-      sha256: e9a21b6fec7a8aa62cc2585ff4c1b127df42f3185adbd2aca66b47abe2e80236
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.1"
   screen_retriever:
     dependency: transitive
     description:
@@ -941,22 +902,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.0"
-  universal_platform:
-    dependency: transitive
-    description:
-      name: universal_platform
-      sha256: "64e16458a0ea9b99260ceb5467a214c1f298d647c659af1bff6d3bf82536b1ec"
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.1.0"
-  uri_parser:
-    dependency: transitive
-    description:
-      name: uri_parser
-      sha256: "051c62e5f693de98ca9f130ee707f8916e2266945565926be3ff20659f7853ce"
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.0.2"
   uuid:
     dependency: transitive
     description:
@@ -1038,5 +983,5 @@ packages:
     source: hosted
     version: "3.1.3"
 sdks:
-  dart: ">=3.9.0 <4.0.0"
+  dart: ">=3.10.0 <4.0.0"
   flutter: ">=3.35.0"

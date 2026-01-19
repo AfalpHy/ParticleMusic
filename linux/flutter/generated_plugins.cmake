@@ -5,7 +5,7 @@
 list(APPEND FLUTTER_PLUGIN_LIST
   desktop_multi_window
   irondash_engine_context
-  media_kit_libs_linux
+  just_audio_windows_linux
   screen_retriever_linux
   super_native_extensions
   tray_manager

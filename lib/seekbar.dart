@@ -111,9 +111,11 @@ class SeekBarState extends State<SeekBar> {
                     if (currentSongNotifier.value == null) {
                       return;
                     }
-                    await audioHandler.seek(
-                      Duration(milliseconds: dragValue!.toInt()),
-                    );
+                    if (dragValue != null) {
+                      await audioHandler.seek(
+                        Duration(milliseconds: dragValue!.toInt()),
+                      );
+                    }
                     setState(() {
                       dragValue = null;
                       isDragging = false;

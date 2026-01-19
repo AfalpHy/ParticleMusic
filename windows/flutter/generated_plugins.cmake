@@ -6,7 +6,7 @@ list(APPEND FLUTTER_PLUGIN_LIST
   audio_service_win
   desktop_multi_window
   irondash_engine_context
-  media_kit_libs_windows_audio
+  just_audio_windows_linux
   permission_handler_windows
   screen_retriever_windows
   super_native_extensions
