@@ -12,7 +12,7 @@ final ValueNotifier<bool> lyricsIsTransparentNotifier = ValueNotifier(false);
 WindowController? lyricsWindowController;
 bool lyricsWindowVisible = false;
 
-final ValueNotifier<LyricLine?> lyricLineNotifier = ValueNotifier(null);
+LyricLine? desktopLyricLine;
 final ValueNotifier<Duration> currentPositionNotifier = ValueNotifier(
   Duration.zero,
 );
@@ -70,9 +70,9 @@ class DesktopLyrics extends StatelessWidget {
                   children: [
                     Center(
                       child: ValueListenableBuilder(
-                        valueListenable: lyricLineNotifier,
-                        builder: (context, lyricline, child) {
-                          if (lyricline == null) {
+                        valueListenable: currentPositionNotifier,
+                        builder: (context, value, child) {
+                          if (desktopLyricLine == null) {
                             return Text(
                               'Particle Music',
                               style: TextStyle(
@@ -90,22 +90,17 @@ class DesktopLyrics extends StatelessWidget {
                           }
 
                           if (desktopLyricsIsKaraoke) {
-                            return ValueListenableBuilder(
-                              valueListenable: currentPositionNotifier,
-                              builder: (context, value, child) {
-                                return KaraokeText(
-                                  key: UniqueKey(),
-                                  line: lyricline,
-                                  position: value,
-                                  fontSize: 40,
-                                  expanded: false,
-                                  isDesktopLyrics: true,
-                                );
-                              },
+                            return KaraokeText(
+                              key: ValueKey(desktopLyricLine),
+                              line: desktopLyricLine!,
+                              position: value,
+                              fontSize: 40,
+                              expanded: false,
+                              isDesktopLyrics: true,
                             );
                           } else {
                             return Text(
-                              lyricline.text,
+                              desktopLyricLine!.text,
                               style: TextStyle(
                                 fontSize: 40,
                                 color: Colors.white,

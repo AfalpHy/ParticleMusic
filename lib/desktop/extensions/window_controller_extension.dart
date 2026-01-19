@@ -1,5 +1,6 @@
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/services.dart';
+import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/desktop/desktop_lyrics.dart';
 import 'package:particle_music/lyrics.dart';
 import 'package:window_manager/window_manager.dart';
@@ -22,11 +23,14 @@ extension WindowControllerExtension on WindowController {
           break;
         case 'set_lyricLine':
           if (call.arguments == null) {
-            lyricLineNotifier.value = null;
+            desktopLyricLine = null;
             return;
           }
           final raw = call.arguments as Map;
-          lyricLineNotifier.value = LyricLine.fromMap(raw);
+          desktopLyricLine = LyricLine.fromMap(raw);
+          break;
+        case 'set_playing':
+          isPlayingNotifier.value = call.arguments as bool;
           break;
         default:
           throw MissingPluginException('Not implemented: ${call.method}');
@@ -64,6 +68,10 @@ extension WindowControllerExtension on WindowController {
 
   Future<void> sendLyricLine(LyricLine? lyricline) {
     return invokeMethod('set_lyricLine', lyricline?.toMap());
+  }
+
+  Future<void> sendPlaying(bool playing) {
+    return invokeMethod('set_playing', playing);
   }
 
   Future<void> hideDesktopLyrics() {

@@ -9,6 +9,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/desktop_lyrics.dart';
+import 'package:particle_music/desktop/extensions/window_controller_extension.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
@@ -192,7 +193,10 @@ class LyricsListViewState extends State<LyricsListView>
     currentLyricLine = current >= 0 ? lyrics[current] : null;
 
     if (!isMobile && lyricsWindowVisible && currentLyricLine != tmpLyricLine) {
-      sendCurrentLyricLine();
+      await sendCurrentLyricLine();
+      lyricsWindowController?.sendPosition(
+        currentLyricLine == null ? Duration.zero : currentLyricLine!.start,
+      );
     }
 
     if (!userDragging && (tmp != current || userDragged)) {
@@ -377,17 +381,12 @@ class LyricLineWidget extends StatelessWidget {
                   : min((pageHeight - 700) * 0.05, (pageWidth - 1050) * 0.025);
 
               if (isCurrent && isKaraoke) {
-                return StreamBuilder<Duration>(
-                  stream: audioHandler.getPositionStream(),
-                  builder: (context, snapshot) {
-                    return KaraokeText(
-                      key: UniqueKey(),
-                      line: line,
-                      position: snapshot.data ?? Duration.zero,
-                      fontSize: fontSize,
-                      expanded: expanded,
-                    );
-                  },
+                return KaraokeText(
+                  key: UniqueKey(),
+                  line: line,
+                  position: audioHandler.getPosition(),
+                  fontSize: fontSize,
+                  expanded: expanded,
                 );
               }
 

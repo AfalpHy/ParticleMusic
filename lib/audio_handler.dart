@@ -38,13 +38,6 @@ class MyAudioHandler extends BaseAudioHandler {
   late final File _playState;
 
   MyAudioHandler() {
-    if (!isMobile) {
-      _player.positionStream.listen((Duration position) {
-        if (lyricsWindowVisible) {
-          lyricsWindowController?.sendPosition(position);
-        }
-      });
-    }
     _player.playbackEventStream.map(transformEvent).pipe(playbackState);
 
     _player.processingStateStream.listen((state) async {
@@ -67,6 +60,7 @@ class MyAudioHandler extends BaseAudioHandler {
     _player.playingStream.listen((isPlaying) {
       needPause = false;
       isPlayingNotifier.value = isPlaying;
+      lyricsWindowController?.sendPlaying(isPlaying);
     });
 
     currentSongNotifier.addListener(() {
@@ -427,7 +421,10 @@ class MyAudioHandler extends BaseAudioHandler {
   Future<void> stop() async => await _player.pause();
 
   @override
-  Future<void> seek(Duration position) async => await _player.seek(position);
+  Future<void> seek(Duration position) async {
+    lyricsWindowController?.sendPosition(position);
+    await _player.seek(position);
+  }
 
   @override
   Future<void> skipToNext() async {
@@ -453,6 +450,10 @@ class MyAudioHandler extends BaseAudioHandler {
 
   Stream<Duration> getPositionStream() {
     return _player.positionStream;
+  }
+
+  Duration getPosition() {
+    return _player.position;
   }
 
   void setVolume(double volume) {
