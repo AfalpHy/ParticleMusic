@@ -423,6 +423,7 @@ class MyAudioHandler extends BaseAudioHandler {
   @override
   Future<void> seek(Duration position) async {
     await _player.seek(position);
+    updateLyricsNotifier.value++;
     updateDesktopLyrics();
   }
 

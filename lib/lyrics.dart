@@ -12,6 +12,8 @@ import 'package:particle_music/desktop/desktop_lyrics.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
+final updateLyricsNotifier = ValueNotifier(0);
+
 class LyricToken {
   final Duration start;
   final String text;
@@ -382,11 +384,17 @@ class LyricLineWidget extends StatelessWidget {
                   : min((pageHeight - 700) * 0.05, (pageWidth - 1050) * 0.025);
 
               if (isCurrent && isKaraoke) {
-                return KaraokeText(
-                  line: line,
-                  position: audioHandler.getPosition(),
-                  fontSize: fontSize,
-                  expanded: expanded,
+                return ValueListenableBuilder(
+                  valueListenable: updateLyricsNotifier,
+                  builder: (context, value, child) {
+                    return KaraokeText(
+                      key: UniqueKey(),
+                      line: line,
+                      position: audioHandler.getPosition(),
+                      fontSize: fontSize,
+                      expanded: expanded,
+                    );
+                  },
                 );
               }
               return Text(
@@ -443,9 +451,8 @@ class KaraokeTextState extends State<KaraokeText>
       lastSyncTime = DateTime.now();
       if (isPlayingNotifier.value) {
         displayPosition += elapsed;
+        setState(() {});
       }
-
-      setState(() {});
     })..start();
   }
 
