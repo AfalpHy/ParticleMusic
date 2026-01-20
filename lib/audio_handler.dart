@@ -281,7 +281,7 @@ class MyAudioHandler extends BaseAudioHandler {
     lyrics = [];
     currentLyricLine = null;
     if (!isMobile) {
-      await sendCurrentLyricLine();
+      await updateDesktopLyrics();
     }
     currentIndex = -1;
     currentSongNotifier.value = null;
@@ -295,7 +295,7 @@ class MyAudioHandler extends BaseAudioHandler {
     _playQueueTmp = [];
     currentLyricLine = null;
     if (!isMobile) {
-      await sendCurrentLyricLine();
+      await updateDesktopLyrics();
     }
     currentSongNotifier.value = null;
   }
@@ -422,8 +422,8 @@ class MyAudioHandler extends BaseAudioHandler {
 
   @override
   Future<void> seek(Duration position) async {
-    lyricsWindowController?.sendPosition(position);
     await _player.seek(position);
+    updateDesktopLyrics();
   }
 
   @override

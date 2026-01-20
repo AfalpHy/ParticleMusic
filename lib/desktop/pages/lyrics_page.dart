@@ -345,7 +345,7 @@ class LyricsPageState extends State<LyricsPage> {
                     if (lyricsWindowVisible) {
                       await lyricsWindowController!.hide();
                     } else {
-                      await sendCurrentLyricLine();
+                      await updateDesktopLyrics();
                       await lyricsWindowController!.show();
                     }
                     lyricsWindowVisible = !lyricsWindowVisible;

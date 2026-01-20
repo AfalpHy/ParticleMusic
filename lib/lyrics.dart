@@ -9,7 +9,6 @@ import 'package:flutter/scheduler.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/desktop_lyrics.dart';
-import 'package:particle_music/desktop/extensions/window_controller_extension.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
@@ -175,11 +174,8 @@ class LyricsListViewState extends State<LyricsListView>
     }
     int tmp = currentIndexNotifier.value;
     int current = -1;
-    int i = 0;
-    if (tmp > -1 && position >= lyrics[tmp].start) {
-      i = tmp;
-    }
-    for (; i < lyrics.length; i++) {
+
+    for (int i = 0; i < lyrics.length; i++) {
       final line = lyrics[i];
       if (position < line.start) {
         break;
@@ -188,15 +184,16 @@ class LyricsListViewState extends State<LyricsListView>
         current = i;
       }
     }
+
+    if (current == -1) {
+      return;
+    }
     currentIndexNotifier.value = current;
     final tmpLyricLine = currentLyricLine;
-    currentLyricLine = current >= 0 ? lyrics[current] : null;
+    currentLyricLine = lyrics[current];
 
     if (!isMobile && lyricsWindowVisible && currentLyricLine != tmpLyricLine) {
-      await sendCurrentLyricLine();
-      lyricsWindowController?.sendPosition(
-        currentLyricLine == null ? Duration.zero : currentLyricLine!.start,
-      );
+      await updateDesktopLyrics();
     }
 
     if (!userDragging && (tmp != current || userDragged)) {
@@ -226,6 +223,10 @@ class LyricsListViewState extends State<LyricsListView>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     lyrics = widget.lyrics;
+    currentLyricLine = null;
+    if (!isMobile && lyricsWindowVisible) {
+      updateDesktopLyrics();
+    }
     positionSub = audioHandler.getPositionStream().listen(
       (position) => scroll2CurrentIndex(position),
     );
@@ -382,14 +383,12 @@ class LyricLineWidget extends StatelessWidget {
 
               if (isCurrent && isKaraoke) {
                 return KaraokeText(
-                  key: UniqueKey(),
                   line: line,
                   position: audioHandler.getPosition(),
                   fontSize: fontSize,
                   expanded: expanded,
                 );
               }
-
               return Text(
                 line.text,
                 textAlign: expanded ? TextAlign.left : TextAlign.center,

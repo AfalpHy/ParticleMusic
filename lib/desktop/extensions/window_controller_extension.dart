@@ -14,9 +14,10 @@ extension WindowControllerExtension on WindowController {
         case 'window_close':
           return await windowManager.close();
         case 'update_position':
-          currentPositionNotifier.value = Duration(
+          desktopLyrcisCurrentPosition = Duration(
             microseconds: call.arguments as int,
           );
+          updateDesktopLyricsNotifier.value++;
           break;
         case 'set_isKaraoke':
           desktopLyricsIsKaraoke = call.arguments as bool;

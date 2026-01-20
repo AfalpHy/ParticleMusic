@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
+import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/desktop/extensions/window_controller_extension.dart';
 import 'package:particle_music/lyrics.dart';
 import 'package:smooth_corner/smooth_corner.dart';
@@ -13,10 +14,10 @@ WindowController? lyricsWindowController;
 bool lyricsWindowVisible = false;
 
 LyricLine? desktopLyricLine;
-final ValueNotifier<Duration> currentPositionNotifier = ValueNotifier(
-  Duration.zero,
-);
+Duration desktopLyrcisCurrentPosition = Duration.zero;
 bool desktopLyricsIsKaraoke = false;
+
+final updateDesktopLyricsNotifier = ValueNotifier(0);
 
 Future<void> initDesktopLyrics() async {
   lyricsWindowController = await WindowController.create(
@@ -24,9 +25,10 @@ Future<void> initDesktopLyrics() async {
   );
 }
 
-Future<void> sendCurrentLyricLine() async {
-  await lyricsWindowController?.sendIsKaraoke(isKaraoke);
+Future<void> updateDesktopLyrics() async {
   await lyricsWindowController?.sendLyricLine(currentLyricLine);
+  await lyricsWindowController?.sendIsKaraoke(isKaraoke);
+  await lyricsWindowController?.sendPosition(audioHandler.getPosition());
 }
 
 class DesktopLyrics extends StatelessWidget {
@@ -70,7 +72,7 @@ class DesktopLyrics extends StatelessWidget {
                   children: [
                     Center(
                       child: ValueListenableBuilder(
-                        valueListenable: currentPositionNotifier,
+                        valueListenable: updateDesktopLyricsNotifier,
                         builder: (context, value, child) {
                           if (desktopLyricLine == null) {
                             return Text(
@@ -91,9 +93,8 @@ class DesktopLyrics extends StatelessWidget {
 
                           if (desktopLyricsIsKaraoke) {
                             return KaraokeText(
-                              key: ValueKey(desktopLyricLine),
                               line: desktopLyricLine!,
-                              position: value,
+                              position: desktopLyrcisCurrentPosition,
                               fontSize: 40,
                               expanded: false,
                               isDesktopLyrics: true,
