@@ -436,8 +436,9 @@ class SettingsList extends StatelessWidget {
                 borderRadius: BorderRadius.circular(10),
               ),
               child: SizedBox(
-                height: 500,
-                width: 400,
+                height: 400,
+                width: isMobile ? 300 : 400,
+
                 child: Column(
                   children: [
                     SizedBox(height: 10),
@@ -457,6 +458,12 @@ class SettingsList extends StatelessWidget {
                             itemBuilder: (_, index) {
                               return ListTile(
                                 title: Text(folderPaths[index]),
+                                contentPadding: EdgeInsets.fromLTRB(
+                                  20,
+                                  0,
+                                  10,
+                                  0,
+                                ),
 
                                 trailing: IconButton(
                                   onPressed: () {
