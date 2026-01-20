@@ -418,7 +418,7 @@ class MyAudioHandler extends BaseAudioHandler {
   Future<void> pause() async => await _player.pause();
 
   @override
-  Future<void> stop() async => await _player.pause();
+  Future<void> stop() async => await _player.stop();
 
   @override
   Future<void> seek(Duration position) async {
