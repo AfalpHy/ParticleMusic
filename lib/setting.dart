@@ -3,9 +3,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/bottom_control.dart';
@@ -684,9 +684,16 @@ class SettingsList extends StatelessWidget {
                       ),
                       content: SingleChildScrollView(
                         child: ColorPicker(
-                          colorPickerWidth: 200,
-
-                          pickerColor: pikerColor,
+                          color: pikerColor,
+                          pickersEnabled: const {
+                            ColorPickerType.wheel: true, // 色轮
+                            ColorPickerType.accent: false,
+                            ColorPickerType.primary: false,
+                          },
+                          showColorCode: true,
+                          colorCodeHasColor: true,
+                          enableOpacity: true,
+                          opacityTrackHeight: 15,
                           onColorChanged: (color) {
                             switch (type) {
                               case 0:
