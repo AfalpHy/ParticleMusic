@@ -567,7 +567,7 @@ class SettingsList extends StatelessWidget {
               backgroundColor: commonColor,
               shape: SmoothRectangleBorder(
                 smoothness: 1,
-                borderRadius: BorderRadius.circular(5),
+                borderRadius: BorderRadius.circular(10),
               ),
               child: SizedBox(
                 height: 300,
@@ -772,17 +772,23 @@ class SettingsList extends StatelessWidget {
                               width: 45,
                               child: ValueListenableBuilder(
                                 valueListenable: enableCustomColorNotifier,
-                                builder: (context, value, child) {
+                                builder: (context, enableCustomColor, child) {
                                   return MouseRegion(
                                     cursor: SystemMouseCursors.click,
 
-                                    child: MySwitch(
-                                      value: value,
-                                      onToggle: (value) {
-                                        enableCustomColorNotifier.value = value;
-                                        setting.setColor();
-                                        colorChangeNotifier.value++;
-                                        setting.saveSetting();
+                                    child: ValueListenableBuilder(
+                                      valueListenable: colorChangeNotifier,
+                                      builder: (context, value, child) {
+                                        return MySwitch(
+                                          value: enableCustomColor,
+                                          onToggle: (value) {
+                                            enableCustomColorNotifier.value =
+                                                value;
+                                            setting.setColor();
+                                            colorChangeNotifier.value++;
+                                            setting.saveSetting();
+                                          },
+                                        );
                                       },
                                     ),
                                   );

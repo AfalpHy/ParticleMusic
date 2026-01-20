@@ -346,7 +346,7 @@ Future<bool> showCreatePlaylistDialog(BuildContext context) async {
         title: Center(child: Text(l10n.createPlaylist)),
         shape: SmoothRectangleBorder(
           smoothness: 1,
-          borderRadius: BorderRadius.circular(5),
+          borderRadius: BorderRadius.circular(10),
         ),
         content: TextField(
           controller: controller,

@@ -172,7 +172,7 @@ Future<bool> showConfirmDialog(BuildContext context, String action) async {
       return AlertDialog(
         shape: SmoothRectangleBorder(
           smoothness: 1,
-          borderRadius: BorderRadius.circular(5),
+          borderRadius: BorderRadius.circular(10),
         ),
         backgroundColor: commonColor,
         title: Text(action),
