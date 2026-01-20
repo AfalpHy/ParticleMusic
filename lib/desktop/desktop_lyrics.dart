@@ -93,7 +93,7 @@ class DesktopLyrics extends StatelessWidget {
 
                           if (desktopLyricsIsKaraoke) {
                             return KaraokeText(
-                              key: UniqueKey(),
+                              key: ValueKey(desktopLyricLine),
                               line: desktopLyricLine!,
                               position: desktopLyrcisCurrentPosition,
                               fontSize: 40,
