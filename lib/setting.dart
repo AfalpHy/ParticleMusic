@@ -461,7 +461,7 @@ class SettingsList extends StatelessWidget {
                                 contentPadding: EdgeInsets.fromLTRB(
                                   20,
                                   0,
-                                  10,
+                                  5,
                                   0,
                                 ),
 
