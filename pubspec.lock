@@ -412,7 +412,7 @@ packages:
     description:
       path: "."
       ref: master
-      resolved-ref: "6cda415a3bb36ef04fa3a0513f675debc1fd6432"
+      resolved-ref: d7639bb12b9b90940262c16dc0e636bfa0db2ff5
       url: "https://github.com/AfalpHy/just_audio_windows_linux.git"
     source: git
     version: "0.0.1"
