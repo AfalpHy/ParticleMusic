@@ -10,7 +10,7 @@ Install Flutter by following the [official Flutter installation guide](https://d
 sudo apt install clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev
 
 # audio decoder lib for the ogg format
-sudo apt install libvorbis-dev libopus-dev
+sudo apt install libvorbis-dev libopusfile-dev
 
 git clone https://github.com/AfalpHy/ParticleMusic.git
 cd ParticleMusic
