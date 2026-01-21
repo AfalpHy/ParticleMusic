@@ -9,6 +9,7 @@ import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/desktop/keyboard.dart';
+import 'package:particle_music/desktop/pages/main_page.dart';
 import 'package:particle_music/desktop/title_bar.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/metadata.dart';
@@ -75,14 +76,14 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                   valueListenable: colorChangeNotifier,
                   builder: (context, value, child) {
                     return ValueListenableBuilder(
-                      valueListenable: currentSongNotifier,
+                      valueListenable: backgroundSongNotifier,
                       builder: (context, value, child) {
                         return VerticalDivider(
                           thickness: 1,
                           width: 1,
                           color: enableCustomColorNotifier.value
                               ? dividerColor
-                              : currentCoverArtColor,
+                              : backgroundColor,
                         );
                       },
                     );
@@ -243,12 +244,12 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                   valueListenable: colorChangeNotifier,
                   builder: (_, _, _) {
                     return ValueListenableBuilder(
-                      valueListenable: currentSongNotifier,
+                      valueListenable: backgroundSongNotifier,
                       builder: (_, _, _) {
                         final buttonStyle = ElevatedButton.styleFrom(
                           backgroundColor: enableCustomColorNotifier.value
                               ? buttonColor
-                              : currentCoverArtColor.withAlpha(75),
+                              : backgroundColor.withAlpha(75),
                           foregroundColor: Colors.black,
                           shadowColor: Colors.black12,
                           shape: RoundedRectangleBorder(
@@ -702,13 +703,13 @@ class ListItemChildState extends State<ListItemChild> {
             valueListenable: widget.isSelected,
             builder: (context, value, child) {
               return ValueListenableBuilder(
-                valueListenable: currentSongNotifier,
+                valueListenable: backgroundSongNotifier,
                 builder: (_, _, _) {
                   return Material(
                     color: value
                         ? (enableCustomColorNotifier.value
                               ? Colors.white
-                              : currentCoverArtColor.withAlpha(75))
+                              : backgroundColor.withAlpha(75))
                         : Colors.transparent,
                     child: child,
                   );

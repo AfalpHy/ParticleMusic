@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/my_window_listener.dart';
 import 'package:particle_music/desktop/pages/lyrics_page.dart';
+import 'package:particle_music/desktop/pages/main_page.dart';
 import 'package:particle_music/desktop/panels/panel_manager.dart';
 import 'package:particle_music/setting.dart';
 import 'package:searchfield/searchfield.dart';
@@ -31,11 +31,11 @@ Widget titleSearchField(
         valueListenable: colorChangeNotifier,
         builder: (_, _, _) {
           return ValueListenableBuilder(
-            valueListenable: currentSongNotifier,
+            valueListenable: backgroundSongNotifier,
             builder: (_, _, _) {
               final fillColor = enableCustomColorNotifier.value
                   ? searchFieldColor
-                  : currentCoverArtColor.withAlpha(75);
+                  : backgroundColor.withAlpha(75);
               return TextField(
                 controller: textController,
                 style: TextStyle(fontSize: 14),
@@ -183,7 +183,7 @@ class TitleBar extends StatelessWidget {
                   IconButton(
                     color: Colors.black54,
                     onPressed: () {
-                      panelManager.pushPanel(-1);
+                      panelManager.pushPanel('settings');
                     },
                     icon: Icon(Icons.settings_outlined, size: 20),
                   ),

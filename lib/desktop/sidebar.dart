@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
+import 'package:particle_music/desktop/pages/main_page.dart';
 import 'package:particle_music/desktop/panels/panel_manager.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/metadata.dart';
@@ -37,13 +37,13 @@ class Sidebar extends StatelessWidget {
           valueListenable: sidebarHighlighLabel,
           builder: (context, highlightLabel, child) {
             return ValueListenableBuilder(
-              valueListenable: currentSongNotifier,
+              valueListenable: backgroundSongNotifier,
               builder: (_, _, _) {
                 return Material(
                   color: highlightLabel == label
                       ? (enableCustomColorNotifier.value
                             ? Colors.white
-                            : currentCoverArtColor.withAlpha(75))
+                            : backgroundColor.withAlpha(75))
                       : Colors.transparent,
                   child: child,
                 );
@@ -111,7 +111,7 @@ class Sidebar extends StatelessWidget {
                   slivers: [
                     SliverToBoxAdapter(
                       child: sidebarItem(
-                        label: '_artists',
+                        label: 'artists',
                         leading: ImageIcon(
                           artistImage,
                           size: 30,
@@ -120,14 +120,14 @@ class Sidebar extends StatelessWidget {
                         content: l10n.artists,
 
                         onTap: () {
-                          panelManager.pushPanel(1);
+                          panelManager.pushPanel('artists');
                         },
                       ),
                     ),
 
                     SliverToBoxAdapter(
                       child: sidebarItem(
-                        label: '_albums',
+                        label: 'albums',
 
                         leading: ImageIcon(
                           albumImage,
@@ -137,14 +137,14 @@ class Sidebar extends StatelessWidget {
                         content: l10n.albums,
 
                         onTap: () {
-                          panelManager.pushPanel(2);
+                          panelManager.pushPanel('albums');
                         },
                       ),
                     ),
 
                     SliverToBoxAdapter(
                       child: sidebarItem(
-                        label: '_songs',
+                        label: 'songs',
 
                         leading: ImageIcon(
                           songsImage,
@@ -154,14 +154,14 @@ class Sidebar extends StatelessWidget {
                         content: l10n.songs,
 
                         onTap: () {
-                          panelManager.pushPanel(0);
+                          panelManager.pushPanel('songs');
                         },
                       ),
                     ),
 
                     SliverToBoxAdapter(
                       child: sidebarItem(
-                        label: '_folders',
+                        label: 'folders',
 
                         leading: ImageIcon(
                           folderImage,
@@ -171,7 +171,7 @@ class Sidebar extends StatelessWidget {
                         content: l10n.folders,
 
                         onTap: () {
-                          panelManager.pushPanel(-4);
+                          panelManager.pushPanel('folders');
                         },
                       ),
                     ),
@@ -181,14 +181,14 @@ class Sidebar extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         child: ValueListenableBuilder(
-                          valueListenable: currentSongNotifier,
+                          valueListenable: backgroundSongNotifier,
                           builder: (_, _, _) {
                             return Divider(
                               thickness: 0.5,
                               height: 1,
                               color: enableCustomColorNotifier.value
                                   ? dividerColor
-                                  : currentCoverArtColor,
+                                  : backgroundColor,
                             );
                           },
                         ),
@@ -198,7 +198,7 @@ class Sidebar extends StatelessWidget {
 
                     SliverToBoxAdapter(
                       child: sidebarItem(
-                        label: '_playlists',
+                        label: 'playlists',
                         leading: ImageIcon(
                           playlistsImage,
                           size: 30,
@@ -217,7 +217,7 @@ class Sidebar extends StatelessWidget {
                         ),
 
                         onTap: () {
-                          panelManager.pushPanel(-3);
+                          panelManager.pushPanel('playlists');
                         },
                       ),
                     ),
@@ -270,7 +270,7 @@ class Sidebar extends StatelessWidget {
         final playlist = playlistsManager.getPlaylistByIndex(index);
         return ContextMenuWidget(
           child: sidebarItem(
-            label: '__${playlist.name}',
+            label: '_${playlist.name}',
             leading: ValueListenableBuilder(
               valueListenable: playlist.changeNotifier,
               builder: (_, _, _) {
@@ -291,7 +291,7 @@ class Sidebar extends StatelessWidget {
             content: index == 0 ? l10n.favorite : playlist.name,
 
             onTap: () {
-              panelManager.pushPanel(index + 5);
+              panelManager.pushPanel('_${playlist.name}');
             },
           ),
           menuProvider: (_) {

@@ -1,8 +1,8 @@
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
-import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/desktop/pages/main_page.dart';
 import 'package:particle_music/desktop/panels/panel_manager.dart';
 import 'package:particle_music/desktop/title_bar.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
@@ -182,14 +182,14 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
                     valueListenable: colorChangeNotifier,
                     builder: (context, value, child) {
                       return ValueListenableBuilder(
-                        valueListenable: currentSongNotifier,
+                        valueListenable: backgroundSongNotifier,
                         builder: (context, value, child) {
                           return Divider(
                             thickness: 1,
                             height: 1,
                             color: enableCustomColorNotifier.value
                                 ? dividerColor
-                                : currentCoverArtColor,
+                                : backgroundColor,
                           );
                         },
                       );
@@ -245,8 +245,8 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
                                     ),
                                     onTap: () {
                                       panelManager.pushPanel(
-                                        isArtist ? 3 : 4,
-                                        title: key,
+                                        isArtist ? 'artist' : 'album',
+                                        content: key,
                                       );
                                     },
                                   ),

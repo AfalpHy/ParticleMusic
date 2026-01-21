@@ -7,6 +7,8 @@ import 'package:just_audio/just_audio.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/desktop_lyrics.dart';
 import 'package:particle_music/desktop/extensions/window_controller_extension.dart';
+import 'package:particle_music/desktop/pages/main_page.dart';
+import 'package:particle_music/desktop/panels/panel_manager.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:particle_music/lyrics.dart';
 import 'package:particle_music/setting.dart';
@@ -64,6 +66,20 @@ class MyAudioHandler extends BaseAudioHandler {
 
     currentSongNotifier.addListener(() {
       needPause = false;
+      if (!isMobile) {
+        for (int i = 0; i < panelManager.backgroundSongStack.length; i++) {
+          if (panelManager.bgColorUseCurrentSongStack[i]) {
+            panelManager.backgroundSongStack[i] = currentSongNotifier.value;
+          }
+        }
+        if (panelManager.bgColorUseCurrentSongStack.isNotEmpty &&
+            panelManager.bgColorUseCurrentSongStack.last) {
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            backgroundSongNotifier.value = currentSongNotifier.value;
+            backgroundColor = currentCoverArtColor;
+          });
+        }
+      }
     });
   }
 

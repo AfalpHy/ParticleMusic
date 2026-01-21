@@ -9,6 +9,7 @@ import 'package:flutter/material.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/bottom_control.dart';
+import 'package:particle_music/desktop/pages/main_page.dart';
 import 'package:particle_music/desktop/panels/panel_manager.dart';
 import 'package:particle_music/desktop/sidebar.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
@@ -884,14 +885,14 @@ class SettingsList extends StatelessWidget {
               valueListenable: colorChangeNotifier,
               builder: (_, _, _) {
                 return ValueListenableBuilder(
-                  valueListenable: currentSongNotifier,
+                  valueListenable: backgroundSongNotifier,
                   builder: (_, _, _) {
                     return Divider(
                       thickness: 0.5,
                       height: 1,
                       color: enableCustomColorNotifier.value
                           ? dividerColor
-                          : currentCoverArtColor,
+                          : backgroundColor,
                     );
                   },
                 );
@@ -941,7 +942,7 @@ class SettingsList extends StatelessWidget {
                     style: TextStyle(fontSize: 15),
                   ),
                   onTap: () {
-                    panelManager.pushPanel(-2);
+                    panelManager.pushPanel('licenses');
                   },
                 ),
               ),

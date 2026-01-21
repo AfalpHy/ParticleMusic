@@ -174,6 +174,13 @@ class Playlist {
       jsonEncode({'sortType': sortTypeNotifire.value}),
     );
   }
+
+  AudioMetadata? getFirstSong() {
+    if (songs.isEmpty) {
+      return null;
+    }
+    return songs.first;
+  }
 }
 
 Map<AudioMetadata, ValueNotifier<bool>> songIsFavorite = {};

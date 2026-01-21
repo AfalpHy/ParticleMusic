@@ -393,3 +393,10 @@ Color computeCoverArtColor(AudioMetadata? song) {
   }
   return Color.fromARGB(255, r.toInt(), g.toInt(), b.toInt());
 }
+
+AudioMetadata? getFirstSong(List<AudioMetadata> songs) {
+  if (songs.isEmpty) {
+    return null;
+  }
+  return songs.first;
+}

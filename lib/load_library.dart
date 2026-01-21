@@ -146,6 +146,9 @@ class LibraryLoader {
     await audioHandler.loadPlayQueueState();
     await audioHandler.loadPlayState();
 
+    if (!isMobile) {
+      panelManager.pushPanel('songs');
+    }
     loadingLibraryNotifier.value = false;
   }
 

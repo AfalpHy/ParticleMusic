@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:particle_music/audio_handler.dart';
+import 'package:particle_music/common.dart';
+import 'package:particle_music/desktop/pages/main_page.dart';
+import 'package:particle_music/desktop/panels/panel_manager.dart';
 import 'package:particle_music/desktop/panels/song_list_panel.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/load_library.dart';
@@ -42,15 +44,13 @@ class FoldersPanel extends StatelessWidget {
                             valueListenable: currentFolderNotifier,
                             builder: (_, currentFolder, _) {
                               return ValueListenableBuilder(
-                                valueListenable: currentSongNotifier,
+                                valueListenable: backgroundSongNotifier,
                                 builder: (_, _, _) {
                                   return Material(
                                     color: currentFolder == folder
                                         ? (enableCustomColorNotifier.value
                                               ? Colors.white
-                                              : currentCoverArtColor.withAlpha(
-                                                  75,
-                                                ))
+                                              : backgroundColor.withAlpha(75))
                                         : Colors.transparent,
                                     child: child,
                                   );
@@ -63,6 +63,15 @@ class FoldersPanel extends StatelessWidget {
                           title: Text(folder, style: TextStyle(fontSize: 12)),
                           onTap: () {
                             currentFolderNotifier.value = folder;
+                            final backgroundSong = getFirstSong(
+                              folder2SongList[folder]!,
+                            );
+                            panelManager.backgroundSongStack.last =
+                                backgroundSong;
+                            backgroundSongNotifier.value = backgroundSong;
+                            backgroundColor = computeCoverArtColor(
+                              backgroundSong,
+                            );
                           },
                         ),
                       ),

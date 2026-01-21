@@ -2,8 +2,8 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:ui';
 
+import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
-import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/desktop/bottom_control.dart';
@@ -12,6 +12,9 @@ import 'package:particle_music/desktop/pages/play_queue_page.dart';
 import 'package:particle_music/desktop/sidebar.dart';
 import 'package:particle_music/desktop/pages/lyrics_page.dart';
 import 'package:smooth_corner/smooth_corner.dart';
+
+ValueNotifier<AudioMetadata?> backgroundSongNotifier = ValueNotifier(null);
+Color backgroundColor = Colors.grey;
 
 class DesktopMainPage extends StatelessWidget {
   const DesktopMainPage({super.key});
@@ -23,23 +26,24 @@ class DesktopMainPage extends StatelessWidget {
 
       children: [
         ValueListenableBuilder(
-          valueListenable: currentSongNotifier,
-          builder: (context, currentSong, child) {
-            return CoverArtWidget(source: getCoverArt(currentSong));
+          valueListenable: backgroundSongNotifier,
+          builder: (context, backgroundSong, child) {
+            return CoverArtWidget(source: getCoverArt(backgroundSong));
           },
         ),
         ValueListenableBuilder(
-          valueListenable: currentSongNotifier,
-          builder: (context, value, child) {
+          valueListenable: backgroundSongNotifier,
+          builder: (context, backgroundSong, child) {
             final pageWidth = MediaQuery.widthOf(context);
             final pageHight = MediaQuery.heightOf(context);
+
             return ClipRect(
               child: BackdropFilter(
                 filter: ImageFilter.blur(
                   sigmaX: pageWidth * 0.03,
                   sigmaY: pageHight * 0.03,
                 ),
-                child: Container(color: currentCoverArtColor.withAlpha(180)),
+                child: Container(color: backgroundColor.withAlpha(180)),
               ),
             );
           },
