@@ -204,11 +204,10 @@ class LibraryLoader {
       playlist.songs = [];
     }
 
-    await load();
-
     if (!isMobile) {
       panelManager.reload();
     }
+    await load();
   }
 
   void addFolder(String path) {

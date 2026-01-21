@@ -11,7 +11,7 @@ import 'package:smooth_corner/smooth_corner.dart';
 import 'package:super_context_menu/super_context_menu.dart';
 import 'package:window_manager/window_manager.dart';
 
-final ValueNotifier<String> sidebarHighlighLabel = ValueNotifier('_songs');
+final ValueNotifier<String> sidebarHighlighLabel = ValueNotifier('');
 Color sidebarColor = Color.fromARGB(255, 240, 240, 240);
 Color customSidebarColor = Color.fromARGB(255, 240, 240, 240);
 Color vividSidebarColor = sidebarColor.withAlpha(120);
@@ -37,7 +37,7 @@ class Sidebar extends StatelessWidget {
           valueListenable: sidebarHighlighLabel,
           builder: (context, highlightLabel, child) {
             return ValueListenableBuilder(
-              valueListenable: backgroundSongNotifier,
+              valueListenable: updateBackgroundNotifier,
               builder: (_, _, _) {
                 return Material(
                   color: highlightLabel == label
@@ -181,7 +181,7 @@ class Sidebar extends StatelessWidget {
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 10),
                         child: ValueListenableBuilder(
-                          valueListenable: backgroundSongNotifier,
+                          valueListenable: updateBackgroundNotifier,
                           builder: (_, _, _) {
                             return Divider(
                               thickness: 0.5,

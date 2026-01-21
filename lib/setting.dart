@@ -885,7 +885,7 @@ class SettingsList extends StatelessWidget {
               valueListenable: colorChangeNotifier,
               builder: (_, _, _) {
                 return ValueListenableBuilder(
-                  valueListenable: backgroundSongNotifier,
+                  valueListenable: updateBackgroundNotifier,
                   builder: (_, _, _) {
                     return Divider(
                       thickness: 0.5,

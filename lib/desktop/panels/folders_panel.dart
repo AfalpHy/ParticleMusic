@@ -44,7 +44,7 @@ class FoldersPanel extends StatelessWidget {
                             valueListenable: currentFolderNotifier,
                             builder: (_, currentFolder, _) {
                               return ValueListenableBuilder(
-                                valueListenable: backgroundSongNotifier,
+                                valueListenable: updateBackgroundNotifier,
                                 builder: (_, _, _) {
                                   return Material(
                                     color: currentFolder == folder
@@ -63,15 +63,16 @@ class FoldersPanel extends StatelessWidget {
                           title: Text(folder, style: TextStyle(fontSize: 12)),
                           onTap: () {
                             currentFolderNotifier.value = folder;
-                            final backgroundSong = getFirstSong(
+                            backgroundSong = getFirstSong(
                               folder2SongList[folder]!,
                             );
                             panelManager.backgroundSongStack.last =
                                 backgroundSong;
-                            backgroundSongNotifier.value = backgroundSong;
+
                             backgroundColor = computeCoverArtColor(
                               backgroundSong,
                             );
+                            updateBackgroundNotifier.value++;
                           },
                         ),
                       ),

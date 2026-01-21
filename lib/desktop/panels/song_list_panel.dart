@@ -76,7 +76,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                   valueListenable: colorChangeNotifier,
                   builder: (context, value, child) {
                     return ValueListenableBuilder(
-                      valueListenable: backgroundSongNotifier,
+                      valueListenable: updateBackgroundNotifier,
                       builder: (context, value, child) {
                         return VerticalDivider(
                           thickness: 1,
@@ -244,7 +244,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                   valueListenable: colorChangeNotifier,
                   builder: (_, _, _) {
                     return ValueListenableBuilder(
-                      valueListenable: backgroundSongNotifier,
+                      valueListenable: updateBackgroundNotifier,
                       builder: (_, _, _) {
                         final buttonStyle = ElevatedButton.styleFrom(
                           backgroundColor: enableCustomColorNotifier.value
@@ -703,7 +703,7 @@ class ListItemChildState extends State<ListItemChild> {
             valueListenable: widget.isSelected,
             builder: (context, value, child) {
               return ValueListenableBuilder(
-                valueListenable: backgroundSongNotifier,
+                valueListenable: updateBackgroundNotifier,
                 builder: (_, _, _) {
                   return Material(
                     color: value

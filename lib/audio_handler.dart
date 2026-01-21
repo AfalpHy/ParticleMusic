@@ -75,8 +75,9 @@ class MyAudioHandler extends BaseAudioHandler {
         if (panelManager.bgColorUseCurrentSongStack.isNotEmpty &&
             panelManager.bgColorUseCurrentSongStack.last) {
           WidgetsBinding.instance.addPostFrameCallback((_) {
-            backgroundSongNotifier.value = currentSongNotifier.value;
+            backgroundSong = currentSongNotifier.value;
             backgroundColor = currentCoverArtColor;
+            updateBackgroundNotifier.value++;
           });
         }
       }

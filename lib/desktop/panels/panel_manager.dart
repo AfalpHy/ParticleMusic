@@ -24,7 +24,6 @@ class PanelManager {
     sidebarHighlighLabel.value = label;
     sidebarHighlighLabelStack.add(label);
 
-    AudioMetadata? backgroundSong;
     bool bgColorUseCurrentSong = false;
     if (label == 'artists' && content != null) {
       backgroundSong = artist2SongList[content]!.first;
@@ -49,7 +48,6 @@ class PanelManager {
       bgColorUseCurrentSong = true;
     }
 
-    backgroundSongNotifier.value = backgroundSong;
     backgroundColor = computeCoverArtColor(backgroundSong);
 
     backgroundSongStack.add(backgroundSong);
@@ -68,6 +66,7 @@ class PanelManager {
     }
 
     updatePanel.value++;
+    updateBackgroundNotifier.value++;
   }
 
   void popPanel() {
@@ -80,10 +79,11 @@ class PanelManager {
     bgColorUseCurrentSongStack.removeLast();
 
     sidebarHighlighLabel.value = sidebarHighlighLabelStack.last;
-    backgroundSongNotifier.value = backgroundSongStack.last;
-    backgroundColor = computeCoverArtColor(backgroundSongNotifier.value);
+    backgroundSong = backgroundSongStack.last;
+    backgroundColor = computeCoverArtColor(backgroundSong);
 
     updatePanel.value++;
+    updateBackgroundNotifier.value++;
   }
 
   void removePlaylistPanel(Playlist playlist) {
@@ -98,10 +98,11 @@ class PanelManager {
     }
 
     sidebarHighlighLabel.value = sidebarHighlighLabelStack.last;
-    backgroundSongNotifier.value = backgroundSongStack.last;
-    backgroundColor = computeCoverArtColor(backgroundSongNotifier.value);
+    backgroundSong = backgroundSongStack.last;
+    backgroundColor = computeCoverArtColor(backgroundSong);
 
     updatePanel.value++;
+    updateBackgroundNotifier.value++;
   }
 
   void reload() {

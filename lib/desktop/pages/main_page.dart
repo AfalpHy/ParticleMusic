@@ -13,7 +13,8 @@ import 'package:particle_music/desktop/sidebar.dart';
 import 'package:particle_music/desktop/pages/lyrics_page.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
-ValueNotifier<AudioMetadata?> backgroundSongNotifier = ValueNotifier(null);
+ValueNotifier<int> updateBackgroundNotifier = ValueNotifier(0);
+AudioMetadata? backgroundSong;
 Color backgroundColor = Colors.grey;
 
 class DesktopMainPage extends StatelessWidget {
@@ -26,14 +27,14 @@ class DesktopMainPage extends StatelessWidget {
 
       children: [
         ValueListenableBuilder(
-          valueListenable: backgroundSongNotifier,
-          builder: (context, backgroundSong, child) {
+          valueListenable: updateBackgroundNotifier,
+          builder: (context, value, child) {
             return CoverArtWidget(source: getCoverArt(backgroundSong));
           },
         ),
         ValueListenableBuilder(
-          valueListenable: backgroundSongNotifier,
-          builder: (context, backgroundSong, child) {
+          valueListenable: updateBackgroundNotifier,
+          builder: (context, value, child) {
             final pageWidth = MediaQuery.widthOf(context);
             final pageHight = MediaQuery.heightOf(context);
 

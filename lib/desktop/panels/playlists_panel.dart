@@ -143,7 +143,7 @@ class PlaylistsPanelState extends State<PlaylistsPanel> {
                         valueListenable: colorChangeNotifier,
                         builder: (context, value, child) {
                           return ValueListenableBuilder(
-                            valueListenable: backgroundSongNotifier,
+                            valueListenable: updateBackgroundNotifier,
                             builder: (context, value, child) {
                               return Divider(
                                 thickness: 1,

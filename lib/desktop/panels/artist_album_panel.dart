@@ -182,7 +182,7 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
                     valueListenable: colorChangeNotifier,
                     builder: (context, value, child) {
                       return ValueListenableBuilder(
-                        valueListenable: backgroundSongNotifier,
+                        valueListenable: updateBackgroundNotifier,
                         builder: (context, value, child) {
                           return Divider(
                             thickness: 1,
@@ -245,7 +245,7 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
                                     ),
                                     onTap: () {
                                       panelManager.pushPanel(
-                                        isArtist ? 'artist' : 'album',
+                                        isArtist ? 'artists' : 'albums',
                                         content: key,
                                       );
                                     },

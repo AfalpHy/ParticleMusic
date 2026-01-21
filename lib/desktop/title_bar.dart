@@ -31,7 +31,7 @@ Widget titleSearchField(
         valueListenable: colorChangeNotifier,
         builder: (_, _, _) {
           return ValueListenableBuilder(
-            valueListenable: backgroundSongNotifier,
+            valueListenable: updateBackgroundNotifier,
             builder: (_, _, _) {
               final fillColor = enableCustomColorNotifier.value
                   ? searchFieldColor
