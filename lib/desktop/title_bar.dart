@@ -35,7 +35,7 @@ Widget titleSearchField(
             builder: (_, _, _) {
               final fillColor = enableCustomColorNotifier.value
                   ? searchFieldColor
-                  : coverArtAverageColor.withAlpha(75);
+                  : currentCoverArtColor.withAlpha(75);
               return TextField(
                 controller: textController,
                 style: TextStyle(fontSize: 14),

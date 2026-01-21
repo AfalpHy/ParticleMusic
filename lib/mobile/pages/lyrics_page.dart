@@ -29,7 +29,7 @@ class LyricsPage extends StatelessWidget {
               ClipRect(
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-                  child: Container(color: coverArtAverageColor.withAlpha(180)),
+                  child: Container(color: currentCoverArtColor.withAlpha(180)),
                 ),
               ),
               Column(

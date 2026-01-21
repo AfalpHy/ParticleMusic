@@ -4,6 +4,7 @@ import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:image/image.dart' as image;
 import 'package:lpinyin/lpinyin.dart';
 import 'package:marquee/marquee.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
@@ -355,4 +356,40 @@ void tryVibrate() {
   if (vibrationOnNoitifier.value) {
     HapticFeedback.heavyImpact();
   }
+}
+
+Color computeCoverArtColor(AudioMetadata? song) {
+  if (song == null) {
+    return Colors.grey;
+  }
+  if (song.pictures.isEmpty) return Colors.grey;
+
+  final bytes = song.pictures.first.bytes;
+
+  final decoded = image.decodeImage(bytes);
+  if (decoded == null) return Colors.grey;
+
+  // simple average of top pixels
+  double r = 0, g = 0, b = 0, count = 0;
+  for (int y = 0; y < decoded.height; y += 5) {
+    for (int x = 0; x < decoded.width; x += 5) {
+      final pixel = decoded.getPixel(x, y);
+
+      r += pixel.r.toDouble();
+      g += pixel.g.toDouble();
+      b += pixel.b.toDouble();
+      count++;
+    }
+  }
+  r /= count;
+  g /= count;
+  b /= count;
+  int luminance = image.getLuminanceRgb(r, g, b).toInt();
+  int maxLuminace = 200;
+  if (luminance > maxLuminace) {
+    r -= luminance - maxLuminace;
+    g -= luminance - maxLuminace;
+    b -= luminance - maxLuminace;
+  }
+  return Color.fromARGB(255, r.toInt(), g.toInt(), b.toInt());
 }

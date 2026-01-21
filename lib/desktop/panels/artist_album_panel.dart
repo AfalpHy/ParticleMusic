@@ -189,7 +189,7 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
                             height: 1,
                             color: enableCustomColorNotifier.value
                                 ? dividerColor
-                                : coverArtAverageColor,
+                                : currentCoverArtColor,
                           );
                         },
                       );

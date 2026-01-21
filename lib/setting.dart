@@ -891,7 +891,7 @@ class SettingsList extends StatelessWidget {
                       height: 1,
                       color: enableCustomColorNotifier.value
                           ? dividerColor
-                          : coverArtAverageColor,
+                          : currentCoverArtColor,
                     );
                   },
                 );

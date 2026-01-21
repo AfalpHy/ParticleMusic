@@ -48,7 +48,7 @@ class FoldersPanel extends StatelessWidget {
                                     color: currentFolder == folder
                                         ? (enableCustomColorNotifier.value
                                               ? Colors.white
-                                              : coverArtAverageColor.withAlpha(
+                                              : currentCoverArtColor.withAlpha(
                                                   75,
                                                 ))
                                         : Colors.transparent,

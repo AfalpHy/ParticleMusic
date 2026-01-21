@@ -82,7 +82,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                           width: 1,
                           color: enableCustomColorNotifier.value
                               ? dividerColor
-                              : coverArtAverageColor,
+                              : currentCoverArtColor,
                         );
                       },
                     );
@@ -248,7 +248,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                         final buttonStyle = ElevatedButton.styleFrom(
                           backgroundColor: enableCustomColorNotifier.value
                               ? buttonColor
-                              : coverArtAverageColor.withAlpha(75),
+                              : currentCoverArtColor.withAlpha(75),
                           foregroundColor: Colors.black,
                           shadowColor: Colors.black12,
                           shape: RoundedRectangleBorder(
@@ -708,7 +708,7 @@ class ListItemChildState extends State<ListItemChild> {
                     color: value
                         ? (enableCustomColorNotifier.value
                               ? Colors.white
-                              : coverArtAverageColor.withAlpha(75))
+                              : currentCoverArtColor.withAlpha(75))
                         : Colors.transparent,
                     child: child,
                   );

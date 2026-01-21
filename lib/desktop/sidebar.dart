@@ -43,7 +43,7 @@ class Sidebar extends StatelessWidget {
                   color: highlightLabel == label
                       ? (enableCustomColorNotifier.value
                             ? Colors.white
-                            : coverArtAverageColor.withAlpha(75))
+                            : currentCoverArtColor.withAlpha(75))
                       : Colors.transparent,
                   child: child,
                 );
@@ -188,7 +188,7 @@ class Sidebar extends StatelessWidget {
                               height: 1,
                               color: enableCustomColorNotifier.value
                                   ? dividerColor
-                                  : coverArtAverageColor,
+                                  : currentCoverArtColor,
                             );
                           },
                         ),

@@ -39,7 +39,7 @@ class DesktopMainPage extends StatelessWidget {
                   sigmaX: pageWidth * 0.03,
                   sigmaY: pageHight * 0.03,
                 ),
-                child: Container(color: coverArtAverageColor.withAlpha(180)),
+                child: Container(color: currentCoverArtColor.withAlpha(180)),
               ),
             );
           },

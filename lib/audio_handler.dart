@@ -12,14 +12,13 @@ import 'package:particle_music/lyrics.dart';
 import 'package:particle_music/setting.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:async';
-import 'package:image/image.dart' as image;
 import 'package:flutter/services.dart';
 
 late MyAudioHandler audioHandler;
 
 List<AudioMetadata> playQueue = [];
 
-Color coverArtAverageColor = Colors.grey;
+Color currentCoverArtColor = Colors.grey;
 
 final ValueNotifier<AudioMetadata?> currentSongNotifier = ValueNotifier(null);
 final ValueNotifier<bool> isPlayingNotifier = ValueNotifier(false);
@@ -300,53 +299,6 @@ class MyAudioHandler extends BaseAudioHandler {
     currentSongNotifier.value = null;
   }
 
-  void computeCoverArtColors(AudioMetadata currentSong) {
-    coverArtAverageColor = Colors.grey;
-
-    if (currentSong.pictures.isEmpty) return;
-
-    final bytes = currentSong.pictures.first.bytes;
-
-    final decoded = image.decodeImage(bytes);
-    if (decoded == null) return;
-
-    // simple average of top pixels
-    double r = 0, g = 0, b = 0, count = 0;
-    for (int y = 0; y < decoded.height; y += 5) {
-      for (int x = 0; x < decoded.width; x += 5) {
-        final pixel = decoded.getPixel(x, y);
-
-        r += pixel.r.toDouble();
-        g += pixel.g.toDouble();
-        b += pixel.b.toDouble();
-        count++;
-      }
-    }
-    r /= count;
-    g /= count;
-    b /= count;
-    int luminance = image.getLuminanceRgb(r, g, b).toInt();
-    int maxLuminace = 200;
-    if (luminance > maxLuminace) {
-      r -= luminance - maxLuminace;
-      g -= luminance - maxLuminace;
-      b -= luminance - maxLuminace;
-      coverArtAverageColor = Color.fromARGB(
-        255,
-        r.toInt(),
-        g.toInt(),
-        b.toInt(),
-      );
-    } else {
-      coverArtAverageColor = Color.fromARGB(
-        255,
-        r.toInt(),
-        g.toInt(),
-        b.toInt(),
-      );
-    }
-  }
-
   Future<Uri> saveAlbumCover(Uint8List bytes) async {
     final dir = await getTemporaryDirectory();
     String filePath = '${dir.path}/particle_music_cover';
@@ -374,7 +326,7 @@ class MyAudioHandler extends BaseAudioHandler {
 
     await parseLyricsFile(currentSong);
 
-    computeCoverArtColors(currentSong);
+    currentCoverArtColor = computeCoverArtColor(currentSong);
 
     currentSongNotifier.value = currentSong;
 

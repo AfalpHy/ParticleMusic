@@ -60,7 +60,7 @@ class LyricsPageState extends State<LyricsPage> {
                           sigmaY: pageHight * 0.03,
                         ),
                         child: Container(
-                          color: coverArtAverageColor.withAlpha(180),
+                          color: currentCoverArtColor.withAlpha(180),
                         ),
                       ),
                     ),
