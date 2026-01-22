@@ -359,7 +359,6 @@ class MyAudioHandler extends BaseAudioHandler {
         }
       }
       _playLastSyncTime = null;
-      _playDuration = Duration.zero;
     }
 
     isloading = true;
@@ -405,6 +404,7 @@ class MyAudioHandler extends BaseAudioHandler {
     if (isPlayingNotifier.value) {
       _playLastSyncTime = DateTime.now();
     }
+    _playDuration = Duration.zero;
     isloading = false;
   }
 
