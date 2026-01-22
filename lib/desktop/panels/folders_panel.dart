@@ -46,11 +46,13 @@ class FoldersPanel extends StatelessWidget {
                               return ValueListenableBuilder(
                                 valueListenable: updateBackgroundNotifier,
                                 builder: (_, _, _) {
+                                  final highLightColor =
+                                      enableCustomColorNotifier.value
+                                      ? selectedItemColor
+                                      : backgroundColor.withAlpha(75);
                                   return Material(
                                     color: currentFolder == folder
-                                        ? (enableCustomColorNotifier.value
-                                              ? Colors.white
-                                              : backgroundColor.withAlpha(75))
+                                        ? highLightColor
                                         : Colors.transparent,
                                     child: child,
                                   );

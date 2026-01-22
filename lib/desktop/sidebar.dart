@@ -39,11 +39,12 @@ class Sidebar extends StatelessWidget {
             return ValueListenableBuilder(
               valueListenable: updateBackgroundNotifier,
               builder: (_, _, _) {
+                final highlightColor = enableCustomColorNotifier.value
+                    ? selectedItemColor
+                    : backgroundColor.withAlpha(75);
                 return Material(
                   color: highlightLabel == label
-                      ? (enableCustomColorNotifier.value
-                            ? Colors.white
-                            : backgroundColor.withAlpha(75))
+                      ? highlightColor
                       : Colors.transparent,
                   child: child,
                 );
@@ -54,7 +55,6 @@ class Sidebar extends StatelessWidget {
             onTap: onTap,
             splashColor: Colors.transparent,
             highlightColor: Colors.transparent,
-            hoverColor: enableCustomColorNotifier.value ? Colors.white : null,
             child: ListTile(
               leading: leading,
               title: Text(

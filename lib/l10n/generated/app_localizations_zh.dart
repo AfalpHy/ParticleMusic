@@ -284,5 +284,17 @@ class AppLocalizationsZh extends AppLocalizations {
   String get bottomColor => '底部颜色';
 
   @override
+  String get searchFieldColor => '搜索框颜色';
+
+  @override
+  String get buttonColor => '按钮颜色';
+
+  @override
+  String get dividerColor => '分割条颜色';
+
+  @override
+  String get selectedItemColor => '被选中项颜色';
+
+  @override
   String get reset => '重置';
 }

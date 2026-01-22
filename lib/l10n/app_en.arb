@@ -120,5 +120,9 @@
   "panelColor": "Panel Color",
   "sidebarColor": "Sidebar Color",
   "bottomColor": "Bottom Color",
+  "searchFieldColor": "Search Field Color",
+  "buttonColor": "Button Color",
+  "dividerColor": "Divider Color",
+  "selectedItemColor": "Selected Item Color",
   "reset": "Reset"
 }

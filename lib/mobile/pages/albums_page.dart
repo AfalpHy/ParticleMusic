@@ -85,7 +85,7 @@ class AlbumsPage extends StatelessWidget {
                     padding: EdgeInsets.zero,
                   ),
                   filled: true,
-                  fillColor: Colors.grey.shade100,
+                  fillColor: searchFieldColor,
                   contentPadding: EdgeInsets.zero,
                   isDense: true,
                   border: OutlineInputBorder(

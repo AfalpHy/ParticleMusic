@@ -284,5 +284,17 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bottomColor => 'Bottom Color';
 
   @override
+  String get searchFieldColor => 'Search Field Color';
+
+  @override
+  String get buttonColor => 'Button Color';
+
+  @override
+  String get dividerColor => 'Divider Color';
+
+  @override
+  String get selectedItemColor => 'Selected Item Color';
+
+  @override
   String get reset => 'Reset';
 }

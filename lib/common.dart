@@ -15,10 +15,16 @@ import 'package:smooth_corner/smooth_corner.dart';
 final isMobile = Platform.isAndroid || Platform.isIOS;
 final ValueNotifier<Locale?> localeNotifier = ValueNotifier(null);
 
+Color commonColor = Colors.grey.shade100;
+
 Color iconColor = Colors.black;
 Color textColor = Colors.black;
 Color switchColor = Colors.black87;
 Color panelColor = Colors.grey.shade100;
+Color searchFieldColor = Colors.white;
+Color buttonColor = Colors.white70;
+Color dividerColor = Colors.grey;
+Color selectedItemColor = Colors.white;
 
 Color customIconColor = Colors.black;
 Color customTextColor = Colors.black;
@@ -29,11 +35,6 @@ Color vividIconColor = Colors.black;
 Color vividTextColor = Colors.black;
 Color vividSwitchColor = Colors.black87;
 Color vividPanelColor = panelColor.withAlpha(120);
-
-Color searchFieldColor = Colors.white;
-Color buttonColor = Colors.white70;
-Color commonColor = Colors.grey.shade100;
-Color dividerColor = Colors.grey.shade300;
 
 late double appWidth;
 

@@ -75,7 +75,7 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
                           padding: EdgeInsets.zero,
                         ),
                         filled: true,
-                        fillColor: Colors.grey.shade100,
+                        fillColor: searchFieldColor,
                         contentPadding: EdgeInsets.zero,
                         isDense: true,
                         border: OutlineInputBorder(
@@ -417,7 +417,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                           padding: EdgeInsets.zero,
                         ),
                         filled: true,
-                        fillColor: Colors.grey.shade100,
+                        fillColor: searchFieldColor,
                         contentPadding: EdgeInsets.zero,
                         isDense: true,
                         border: OutlineInputBorder(

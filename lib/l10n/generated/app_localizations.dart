@@ -632,6 +632,30 @@ abstract class AppLocalizations {
   /// **'Bottom Color'**
   String get bottomColor;
 
+  /// No description provided for @searchFieldColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Search Field Color'**
+  String get searchFieldColor;
+
+  /// No description provided for @buttonColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Button Color'**
+  String get buttonColor;
+
+  /// No description provided for @dividerColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Divider Color'**
+  String get dividerColor;
+
+  /// No description provided for @selectedItemColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Selected Item Color'**
+  String get selectedItemColor;
+
   /// No description provided for @reset.
   ///
   /// In en, this message translates to:

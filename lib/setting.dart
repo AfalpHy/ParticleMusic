@@ -135,6 +135,25 @@ class Setting {
       customBottomColor = Color(bottomValue);
     }
 
+    final searchFieldValue = json['searchFieldColor'];
+    if (searchFieldValue is int) {
+      searchFieldColor = Color(searchFieldValue);
+    }
+
+    final buttonValue = json['buttonColor'];
+    if (buttonValue is int) {
+      buttonColor = Color(buttonValue);
+    }
+
+    final dividerValue = json['dividerColor'];
+    if (dividerValue is int) {
+      dividerColor = Color(dividerValue);
+    }
+
+    final selectedItemValue = json['selectedItemColor'];
+    if (selectedItemValue is int) {
+      selectedItemColor = Color(selectedItemValue);
+    }
     setColor();
   }
 
@@ -161,6 +180,10 @@ class Setting {
         'customPanelColor': customPanelColor.toARGB32(),
         'customSidebarColor': customSidebarColor.toARGB32(),
         'customBottomColor': customBottomColor.toARGB32(),
+        'searchFieldColor': searchFieldColor.toARGB32(),
+        'buttonColor': buttonColor.toARGB32(),
+        'dividerColor': dividerColor.toARGB32(),
+        'selectedItemColor': selectedItemColor.toARGB32(),
       }),
     );
   }
@@ -657,9 +680,25 @@ class SettingsList extends StatelessWidget {
             title = l10n.sidebarColor;
             pikerColor = customSidebarColor;
             break;
-          default:
+          case 5:
             title = l10n.bottomColor;
             pikerColor = customBottomColor;
+            break;
+          case 6:
+            title = l10n.searchFieldColor;
+            pikerColor = searchFieldColor;
+            break;
+          case 7:
+            title = l10n.buttonColor;
+            pikerColor = buttonColor;
+            break;
+          case 8:
+            title = l10n.dividerColor;
+            pikerColor = dividerColor;
+            break;
+          default:
+            title = l10n.selectedItemColor;
+            pikerColor = selectedItemColor;
             break;
         }
         return ListTile(
@@ -719,8 +758,20 @@ class SettingsList extends StatelessWidget {
                               case 4:
                                 customSidebarColor = color;
                                 break;
-                              default:
+                              case 5:
                                 customBottomColor = color;
+                                break;
+                              case 6:
+                                searchFieldColor = color;
+                                break;
+                              case 7:
+                                buttonColor = color;
+                                break;
+                              case 8:
+                                dividerColor = color;
+                                break;
+                              default:
+                                selectedItemColor = color;
                             }
                             setting.setColor();
                             colorChangeNotifier.value++;
@@ -778,7 +829,7 @@ class SettingsList extends StatelessWidget {
                   width: 300,
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
-                    child: Column(
+                    child: ListView(
                       children: [
                         if (!isMobile)
                           ListTile(
@@ -818,6 +869,10 @@ class SettingsList extends StatelessWidget {
                         if (!isMobile) colorListTile(context, l10n, 3),
                         if (!isMobile) colorListTile(context, l10n, 4),
                         if (!isMobile) colorListTile(context, l10n, 5),
+                        if (!isMobile) colorListTile(context, l10n, 6),
+                        if (!isMobile) colorListTile(context, l10n, 7),
+                        if (!isMobile) colorListTile(context, l10n, 8),
+                        if (!isMobile) colorListTile(context, l10n, 9),
 
                         ListTile(
                           title: Text(l10n.reset),
@@ -833,6 +888,12 @@ class SettingsList extends StatelessWidget {
                               240,
                             );
                             customBottomColor = Colors.grey.shade50;
+
+                            searchFieldColor = Colors.white;
+                            buttonColor = Colors.white70;
+                            dividerColor = Colors.grey;
+                            selectedItemColor = Colors.white;
+
                             setting.setColor();
                             colorChangeNotifier.value++;
                             setting.saveSetting();

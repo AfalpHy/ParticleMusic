@@ -79,7 +79,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                       valueListenable: updateBackgroundNotifier,
                       builder: (context, value, child) {
                         return VerticalDivider(
-                          thickness: 1,
+                          thickness: 0.5,
                           width: 1,
                           color: enableCustomColorNotifier.value
                               ? dividerColor
@@ -705,12 +705,11 @@ class ListItemChildState extends State<ListItemChild> {
               return ValueListenableBuilder(
                 valueListenable: updateBackgroundNotifier,
                 builder: (_, _, _) {
+                  final highlightColor = enableCustomColorNotifier.value
+                      ? selectedItemColor
+                      : backgroundColor.withAlpha(75);
                   return Material(
-                    color: value
-                        ? (enableCustomColorNotifier.value
-                              ? Colors.white
-                              : backgroundColor.withAlpha(75))
-                        : Colors.transparent,
+                    color: value ? highlightColor : Colors.transparent,
                     child: child,
                   );
                 },
@@ -726,9 +725,6 @@ class ListItemChildState extends State<ListItemChild> {
               child: InkWell(
                 highlightColor: Colors.transparent,
                 splashColor: Colors.transparent,
-                hoverColor: enableCustomColorNotifier.value
-                    ? Colors.white
-                    : null,
                 mouseCursor: SystemMouseCursors.basic,
 
                 onTap: widget.onTap,
