@@ -7,6 +7,9 @@ class HistoryPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SongListPage(history: AppLocalizations.of(context).history);
+    return SongListPage(
+      key: UniqueKey(),
+      history: AppLocalizations.of(context).history,
+    );
   }
 }
