@@ -19,7 +19,12 @@ class HistoryItem {
   }
 
   factory HistoryItem.fromSong(AudioMetadata song, int times) {
-    return HistoryItem(times, song.file.path, song);
+    String path = song.file.path;
+    if (Platform.isIOS) {
+      int prefixLength = appDocs.path.length;
+      path = path.substring(prefixLength);
+    }
+    return HistoryItem(times, path, song);
   }
 }
 
