@@ -20,6 +20,7 @@ class SongListPage extends BaseSongListWidget {
     super.artist,
     super.album,
     super.folder,
+    super.history,
   });
 
   @override
@@ -173,75 +174,81 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
                   builder: (_) => SelectableSongListPage(
                     songList: songList,
                     playlist: playlist,
+                    isHistory: history != null,
                   ),
                 ),
               );
             },
           ),
-          ListTile(
-            leading: const ImageIcon(sequenceImage, color: Colors.black),
-            title: Text(
-              l10n.sortSongs,
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-            onTap: () {
-              Navigator.pop(context);
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                useRootNavigator: true,
-                builder: (context) {
-                  List<String> orderText = [
-                    l10n.defaultText,
-                    l10n.titleAscending,
-                    l10n.titleDescending,
-                    l10n.artistAscending,
-                    l10n.artistDescending,
-                    l10n.albumAscending,
-                    l10n.albumDescending,
-                    l10n.durationAscending,
-                    l10n.durationDescending,
-                  ];
-                  List<Widget> orderWidget = [];
-                  for (int i = 0; i < orderText.length; i++) {
-                    String text = orderText[i];
-                    orderWidget.add(
-                      ValueListenableBuilder(
-                        valueListenable: sortTypeNotifier,
-                        builder: (context, value, child) {
-                          return ListTile(
-                            title: Text(text),
-                            onTap: () {
-                              sortTypeNotifier.value = i;
-                              playlist?.saveSetting();
-                            },
-                            trailing: value == i ? Icon(Icons.check) : null,
-                            dense: true,
-                            visualDensity: VisualDensity(
-                              horizontal: 0,
-                              vertical: -4,
-                            ),
-                          );
-                        },
-                      ),
-                    );
-                  }
-                  return mySheet(
-                    Column(
-                      children: [
-                        ListTile(title: Text(l10n.selectSortingType)),
-                        Divider(thickness: 0.5, height: 1, color: dividerColor),
+          if (history == null)
+            ListTile(
+              leading: const ImageIcon(sequenceImage, color: Colors.black),
+              title: Text(
+                l10n.sortSongs,
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+              onTap: () {
+                Navigator.pop(context);
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  useRootNavigator: true,
+                  builder: (context) {
+                    List<String> orderText = [
+                      l10n.defaultText,
+                      l10n.titleAscending,
+                      l10n.titleDescending,
+                      l10n.artistAscending,
+                      l10n.artistDescending,
+                      l10n.albumAscending,
+                      l10n.albumDescending,
+                      l10n.durationAscending,
+                      l10n.durationDescending,
+                    ];
+                    List<Widget> orderWidget = [];
+                    for (int i = 0; i < orderText.length; i++) {
+                      String text = orderText[i];
+                      orderWidget.add(
+                        ValueListenableBuilder(
+                          valueListenable: sortTypeNotifier,
+                          builder: (context, value, child) {
+                            return ListTile(
+                              title: Text(text),
+                              onTap: () {
+                                sortTypeNotifier.value = i;
+                                playlist?.saveSetting();
+                              },
+                              trailing: value == i ? Icon(Icons.check) : null,
+                              dense: true,
+                              visualDensity: VisualDensity(
+                                horizontal: 0,
+                                vertical: -4,
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    }
+                    return mySheet(
+                      Column(
+                        children: [
+                          ListTile(title: Text(l10n.selectSortingType)),
+                          Divider(
+                            thickness: 0.5,
+                            height: 1,
+                            color: dividerColor,
+                          ),
 
-                        ...orderWidget,
-                      ],
-                    ),
-                    height: 400,
-                  );
-                },
-              );
-            },
-          ),
+                          ...orderWidget,
+                        ],
+                      ),
+                      height: 400,
+                    );
+                  },
+                );
+              },
+            ),
           if (playlist != null && playlist!.name != 'Favorite')
             ListTile(
               leading: const ImageIcon(deleteImage, color: Colors.black),
@@ -340,6 +347,7 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
                           index: index,
                           source: currentSongList,
                           playlist: widget.playlist,
+                          isHistory: history != null,
                         ),
                       );
                     },
@@ -369,11 +377,12 @@ class SelectableSongListPage extends StatefulWidget {
   final List<AudioMetadata> songList;
 
   final Playlist? playlist;
-
+  final bool isHistory;
   const SelectableSongListPage({
     super.key,
     required this.songList,
     this.playlist,
+    this.isHistory = false,
   });
 
   @override
@@ -489,72 +498,77 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
           ),
           Divider(thickness: 0.5, height: 1, color: dividerColor),
 
-          ListTile(
-            leading: const ImageIcon(sequenceImage, color: Colors.black),
-            title: Text(
-              l10n.sortSongs,
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-            onTap: () {
-              Navigator.pop(context);
-              showModalBottomSheet(
-                context: context,
-                isScrollControlled: true,
-                useRootNavigator: true,
-                builder: (context) {
-                  final l10n = AppLocalizations.of(context);
+          if (!widget.isHistory)
+            ListTile(
+              leading: const ImageIcon(sequenceImage, color: Colors.black),
+              title: Text(
+                l10n.sortSongs,
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+              onTap: () {
+                Navigator.pop(context);
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  useRootNavigator: true,
+                  builder: (context) {
+                    final l10n = AppLocalizations.of(context);
 
-                  List<String> orderText = [
-                    l10n.defaultText,
-                    l10n.titleAscending,
-                    l10n.titleDescending,
-                    l10n.artistAscending,
-                    l10n.artistDescending,
-                    l10n.albumAscending,
-                    l10n.albumDescending,
-                    l10n.durationAscending,
-                    l10n.durationDescending,
-                  ];
-                  List<Widget> orderWidget = [];
-                  for (int i = 0; i < orderText.length; i++) {
-                    String text = orderText[i];
-                    orderWidget.add(
-                      ValueListenableBuilder(
-                        valueListenable: sortTypeNotifier,
-                        builder: (context, value, child) {
-                          return ListTile(
-                            title: Text(text),
-                            onTap: () {
-                              sortTypeNotifier.value = i;
-                              setState(() {});
-                            },
-                            trailing: value == i ? Icon(Icons.check) : null,
-                            dense: true,
-                            visualDensity: VisualDensity(
-                              horizontal: 0,
-                              vertical: -4,
-                            ),
-                          );
-                        },
+                    List<String> orderText = [
+                      l10n.defaultText,
+                      l10n.titleAscending,
+                      l10n.titleDescending,
+                      l10n.artistAscending,
+                      l10n.artistDescending,
+                      l10n.albumAscending,
+                      l10n.albumDescending,
+                      l10n.durationAscending,
+                      l10n.durationDescending,
+                    ];
+                    List<Widget> orderWidget = [];
+                    for (int i = 0; i < orderText.length; i++) {
+                      String text = orderText[i];
+                      orderWidget.add(
+                        ValueListenableBuilder(
+                          valueListenable: sortTypeNotifier,
+                          builder: (context, value, child) {
+                            return ListTile(
+                              title: Text(text),
+                              onTap: () {
+                                sortTypeNotifier.value = i;
+                                setState(() {});
+                              },
+                              trailing: value == i ? Icon(Icons.check) : null,
+                              dense: true,
+                              visualDensity: VisualDensity(
+                                horizontal: 0,
+                                vertical: -4,
+                              ),
+                            );
+                          },
+                        ),
+                      );
+                    }
+                    return mySheet(
+                      Column(
+                        children: [
+                          ListTile(title: Text(l10n.selectSortingType)),
+                          Divider(
+                            thickness: 0.5,
+                            height: 1,
+                            color: dividerColor,
+                          ),
+
+                          ...orderWidget,
+                        ],
                       ),
+                      height: 400,
                     );
-                  }
-                  return mySheet(
-                    Column(
-                      children: [
-                        ListTile(title: Text(l10n.selectSortingType)),
-                        Divider(thickness: 0.5, height: 1, color: dividerColor),
-
-                        ...orderWidget,
-                      ],
-                    ),
-                    height: 400,
-                  );
-                },
-              );
-            },
-          ),
+                  },
+                );
+              },
+            ),
         ],
       ),
     );
@@ -664,6 +678,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                       playlist != null &&
                       textController.text.isEmpty &&
                       sortTypeNotifier.value == 0,
+                  isHistory: widget.isHistory,
                 );
               },
             ),

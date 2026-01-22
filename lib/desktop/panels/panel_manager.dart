@@ -33,9 +33,6 @@ class PanelManager {
     } else if (label == 'albums' && content != null) {
       backgroundSong = album2SongList[content]!.first;
       panelStack.add(SongListPanel(key: UniqueKey(), album: content));
-    } else if (label == 'songs') {
-      backgroundSong = getFirstSong(librarySongs);
-      panelStack.add(SongListPanel(key: UniqueKey()));
     } else if (label == 'folders') {
       if (folderPaths.isNotEmpty) {
         backgroundSong = getFirstSong(folder2SongList[folderPaths.first]!);
@@ -43,6 +40,9 @@ class PanelManager {
         backgroundSong = null;
       }
       panelStack.add(FoldersPanel(key: UniqueKey()));
+    } else if (label == 'songs') {
+      backgroundSong = getFirstSong(librarySongs);
+      panelStack.add(SongListPanel(key: UniqueKey()));
     } else if (label == 'history') {
       backgroundSong = getFirstSong(historyManager.historySongList);
       panelStack.add(HistoryPanel(key: UniqueKey()));

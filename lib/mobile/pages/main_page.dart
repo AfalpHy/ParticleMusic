@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/history.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/mobile/pages/albums_page.dart';
 import 'package:particle_music/mobile/pages/artists_page.dart';
 import 'package:particle_music/mobile/pages/folders_page.dart';
+import 'package:particle_music/mobile/pages/history_page.dart';
 import 'package:particle_music/mobile/pages/playlists_page.dart';
 import 'package:particle_music/mobile/player_bar.dart';
 import 'package:particle_music/setting.dart';
@@ -275,6 +277,23 @@ class HomePageState extends State<HomePage> {
             Navigator.of(
               context,
             ).push(MaterialPageRoute(builder: (_) => SongsPage()));
+          },
+        ),
+
+        ListTile(
+          leading: ImageIcon(historyImage, size: 35, color: iconColor),
+          title: Text(l10n.history),
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => ValueListenableBuilder(
+                  valueListenable: historyChangeNotifier,
+                  builder: (context, value, child) {
+                    return HistoryPage();
+                  },
+                ),
+              ),
+            );
           },
         ),
       ],

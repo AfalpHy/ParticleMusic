@@ -144,23 +144,6 @@ class Sidebar extends StatelessWidget {
 
                     SliverToBoxAdapter(
                       child: sidebarItem(
-                        label: 'songs',
-
-                        leading: ImageIcon(
-                          songsImage,
-                          size: 30,
-                          color: iconColor,
-                        ),
-                        content: l10n.songs,
-
-                        onTap: () {
-                          panelManager.pushPanel('songs');
-                        },
-                      ),
-                    ),
-
-                    SliverToBoxAdapter(
-                      child: sidebarItem(
                         label: 'folders',
 
                         leading: ImageIcon(
@@ -172,6 +155,23 @@ class Sidebar extends StatelessWidget {
 
                         onTap: () {
                           panelManager.pushPanel('folders');
+                        },
+                      ),
+                    ),
+
+                    SliverToBoxAdapter(
+                      child: sidebarItem(
+                        label: 'songs',
+
+                        leading: ImageIcon(
+                          songsImage,
+                          size: 30,
+                          color: iconColor,
+                        ),
+                        content: l10n.songs,
+
+                        onTap: () {
+                          panelManager.pushPanel('songs');
                         },
                       ),
                     ),
