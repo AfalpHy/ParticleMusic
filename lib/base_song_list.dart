@@ -4,6 +4,7 @@ import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/cover_art_widget.dart';
+import 'package:particle_music/history.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:particle_music/metadata.dart';
 import 'package:particle_music/playlists.dart';
@@ -14,6 +15,7 @@ abstract class BaseSongListWidget extends StatefulWidget {
   final String? artist;
   final String? album;
   final String? folder;
+  final String? history;
 
   const BaseSongListWidget({
     super.key,
@@ -21,6 +23,7 @@ abstract class BaseSongListWidget extends StatefulWidget {
     this.artist,
     this.album,
     this.folder,
+    this.history,
   });
 }
 
@@ -32,6 +35,7 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
   String? artist;
   String? album;
   String? folder;
+  String? history;
 
   bool isLibrary = false;
 
@@ -61,6 +65,7 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
     artist = widget.artist;
     album = widget.album;
     folder = widget.folder;
+    history = widget.history;
 
     if (playlist != null) {
       songList = playlist!.songs;
@@ -76,6 +81,9 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
     } else if (folder != null) {
       songList = folder2SongList[folder] ?? [];
       title = folder!;
+    } else if (history != null) {
+      songList = historyManager.historySongList;
+      title = history!;
     } else {
       songList = librarySongs;
       isLibrary = true;

@@ -122,6 +122,12 @@ abstract class AppLocalizations {
   /// **'Folder'**
   String get folder;
 
+  /// No description provided for @history.
+  ///
+  /// In en, this message translates to:
+  /// **'History'**
+  String get history;
+
   /// No description provided for @artists.
   ///
   /// In en, this message translates to:
@@ -373,6 +379,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Duration'**
   String get duration;
+
+  /// No description provided for @times.
+  ///
+  /// In en, this message translates to:
+  /// **'Times'**
+  String get times;
 
   /// No description provided for @loop.
   ///

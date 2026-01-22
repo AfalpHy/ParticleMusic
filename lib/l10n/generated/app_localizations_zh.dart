@@ -9,7 +9,7 @@ class AppLocalizationsZh extends AppLocalizations {
   AppLocalizationsZh([String locale = 'zh']) : super(locale);
 
   @override
-  String get title => '歌名';
+  String get title => '标题';
 
   @override
   String get artist => '艺术家';
@@ -19,6 +19,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get folder => '文件夹';
+
+  @override
+  String get history => '历史记录';
 
   @override
   String get artists => '艺术家';
@@ -153,6 +156,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get duration => '时长';
+
+  @override
+  String get times => '次数';
 
   @override
   String get loop => '列表循环';
@@ -290,7 +296,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get buttonColor => '按钮颜色';
 
   @override
-  String get dividerColor => '分割条颜色';
+  String get dividerColor => '分割线颜色';
 
   @override
   String get selectedItemColor => '被选中项颜色';

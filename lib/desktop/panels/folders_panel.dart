@@ -65,9 +65,13 @@ class FoldersPanel extends StatelessWidget {
                           title: Text(folder, style: TextStyle(fontSize: 12)),
                           onTap: () {
                             currentFolderNotifier.value = folder;
-                            backgroundSong = getFirstSong(
-                              folder2SongList[folder]!,
-                            );
+                            if (folder2SongList[folder] != null) {
+                              backgroundSong = getFirstSong(
+                                folder2SongList[folder]!,
+                              );
+                            } else {
+                              backgroundSong = null;
+                            }
                             panelManager.backgroundSongStack.last =
                                 backgroundSong;
 

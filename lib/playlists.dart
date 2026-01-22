@@ -5,6 +5,9 @@ import 'dart:io';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/desktop/pages/main_page.dart';
+import 'package:particle_music/desktop/panels/panel_manager.dart';
+import 'package:particle_music/desktop/panels/song_list_panel.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:smooth_corner/smooth_corner.dart';
@@ -159,6 +162,25 @@ class Playlist {
       );
     }
     changeNotifier.value++;
+    if (!isMobile) {
+      final panelStack = panelManager.panelStack;
+      final bgSong = songs.isNotEmpty ? songs.first : null;
+      for (int i = panelStack.length - 1; i > 0; i--) {
+        Widget tmp = panelStack[i];
+        if (tmp is SongListPanel && tmp.playlist == this) {
+          panelManager.backgroundSongStack[i] = bgSong;
+        }
+      }
+
+      Widget tmp = panelStack.last;
+      if (tmp is SongListPanel && tmp.playlist == this) {
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          backgroundSong = bgSong;
+          backgroundColor = computeCoverArtColor(bgSong);
+          updateBackgroundNotifier.value++;
+        });
+      }
+    }
   }
 
   void loadSetting() {

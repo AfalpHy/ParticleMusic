@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/panels/panel_manager.dart';
+import 'package:particle_music/history.dart';
 import 'package:particle_music/metadata.dart';
 import 'package:particle_music/mobile/pages/main_page.dart';
 import 'package:particle_music/playlists.dart';
@@ -146,6 +147,8 @@ class LibraryLoader {
     await audioHandler.loadPlayQueueState();
     await audioHandler.loadPlayState();
 
+    await historyManager.init();
+
     if (!isMobile) {
       panelManager.pushPanel('songs');
     }
@@ -203,6 +206,8 @@ class LibraryLoader {
     for (final playlist in playlistsManager.playlists) {
       playlist.songs = [];
     }
+
+    historyManager.clear();
 
     if (!isMobile) {
       panelManager.reload();

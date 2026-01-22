@@ -9,6 +9,7 @@ import 'package:particle_music/desktop/desktop_lyrics.dart';
 import 'package:particle_music/desktop/extensions/window_controller_extension.dart';
 import 'package:particle_music/desktop/pages/main_page.dart';
 import 'package:particle_music/desktop/panels/panel_manager.dart';
+import 'package:particle_music/history.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:particle_music/lyrics.dart';
 import 'package:particle_music/setting.dart';
@@ -34,6 +35,8 @@ class MyAudioHandler extends BaseAudioHandler {
   List<AudioMetadata> _playQueueTmp = [];
   int _tmpPlayMode = 0;
   bool isloading = false;
+  DateTime? _playLastSyncTime;
+  Duration _playDuration = Duration.zero;
 
   late final File _playQueueState;
   late final File _playState;
@@ -59,6 +62,12 @@ class MyAudioHandler extends BaseAudioHandler {
     });
 
     _player.playingStream.listen((isPlaying) {
+      if (isPlaying) {
+        _playLastSyncTime = DateTime.now();
+      } else if (_playLastSyncTime != null) {
+        _playDuration += DateTime.now().difference(_playLastSyncTime!);
+        _playLastSyncTime = null;
+      }
       needPause = false;
       isPlayingNotifier.value = isPlaying;
       lyricsWindowController?.sendPlaying(isPlaying);
@@ -333,7 +342,26 @@ class MyAudioHandler extends BaseAudioHandler {
     if (isloading) {
       return;
     }
-    if (currentIndex < 0 || currentIndex >= playQueue.length) return;
+
+    if (currentSongNotifier.value != null) {
+      if (_playLastSyncTime != null) {
+        _playDuration += DateTime.now().difference(_playLastSyncTime!);
+      }
+      if (currentSongNotifier.value!.duration != null) {
+        double times =
+            _playDuration.inSeconds /
+            currentSongNotifier.value!.duration!.inSeconds;
+        if (times > 0.5) {
+          historyManager.addSongTimes(
+            currentSongNotifier.value!,
+            times.round(),
+          );
+        }
+      }
+      _playLastSyncTime = null;
+      _playDuration = Duration.zero;
+    }
+
     isloading = true;
 
     // save currentIndex
@@ -374,6 +402,9 @@ class MyAudioHandler extends BaseAudioHandler {
 
     await _player.setAudioSource(audioSource);
 
+    if (isPlayingNotifier.value) {
+      _playLastSyncTime = DateTime.now();
+    }
     isloading = false;
   }
 

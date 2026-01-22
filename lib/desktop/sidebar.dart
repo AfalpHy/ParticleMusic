@@ -176,6 +176,23 @@ class Sidebar extends StatelessWidget {
                       ),
                     ),
 
+                    SliverToBoxAdapter(
+                      child: sidebarItem(
+                        label: 'history',
+
+                        leading: ImageIcon(
+                          historyImage,
+                          size: 30,
+                          color: iconColor,
+                        ),
+                        content: l10n.history,
+
+                        onTap: () {
+                          panelManager.pushPanel('history');
+                        },
+                      ),
+                    ),
+
                     SliverToBoxAdapter(child: SizedBox(height: 10)),
                     SliverToBoxAdapter(
                       child: Padding(

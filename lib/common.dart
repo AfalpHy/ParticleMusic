@@ -50,6 +50,7 @@ const AssetImage fullscreenExitImage = AssetImage(
 );
 const AssetImage fullscreenImage = AssetImage('assets/images/fullscreen.png');
 const AssetImage gridImage = AssetImage('assets/images/grid.png');
+const AssetImage historyImage = AssetImage('assets/images/history.png');
 const AssetImage infoImage = AssetImage('assets/images/info.png');
 const AssetImage languageImage = AssetImage('assets/images/language.png');
 const AssetImage listImage = AssetImage('assets/images/list.png');

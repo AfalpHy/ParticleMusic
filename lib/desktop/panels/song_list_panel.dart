@@ -11,6 +11,7 @@ import 'package:particle_music/cover_art_widget.dart';
 import 'package:particle_music/desktop/keyboard.dart';
 import 'package:particle_music/desktop/pages/main_page.dart';
 import 'package:particle_music/desktop/title_bar.dart';
+import 'package:particle_music/history.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/metadata.dart';
 import 'package:particle_music/my_location.dart';
@@ -28,6 +29,7 @@ class SongListPanel extends BaseSongListWidget {
     super.artist,
     super.album,
     super.folder,
+    super.history,
     this.foldersWidget,
   });
 
@@ -209,10 +211,10 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
     final l10n = AppLocalizations.of(context);
 
     return SizedBox(
-      height: 200,
+      height: 185,
       child: Row(
         children: [
-          mainCover(180),
+          mainCover(160),
           SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -322,16 +324,18 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
           Expanded(
             child: InkWell(
               borderRadius: BorderRadius.circular(5),
-              onTap: () {
-                if (sortTypeNotifier.value > 4) {
-                  sortTypeNotifier.value = 1;
-                } else if (sortTypeNotifier.value < 4) {
-                  sortTypeNotifier.value++;
-                } else {
-                  sortTypeNotifier.value = 0;
-                }
-                playlist?.saveSetting();
-              },
+              onTap: history == null
+                  ? () {
+                      if (sortTypeNotifier.value > 4) {
+                        sortTypeNotifier.value = 1;
+                      } else if (sortTypeNotifier.value < 4) {
+                        sortTypeNotifier.value++;
+                      } else {
+                        sortTypeNotifier.value = 0;
+                      }
+                      playlist?.saveSetting();
+                    }
+                  : null,
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 5),
                 child: ValueListenableBuilder(
@@ -372,16 +376,18 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
           Expanded(
             child: InkWell(
               borderRadius: BorderRadius.circular(5),
-              onTap: () {
-                if (sortTypeNotifier.value == 5) {
-                  sortTypeNotifier.value = 6;
-                } else if (sortTypeNotifier.value == 6) {
-                  sortTypeNotifier.value = 0;
-                } else {
-                  sortTypeNotifier.value = 5;
-                }
-                playlist?.saveSetting();
-              },
+              onTap: history == null
+                  ? () {
+                      if (sortTypeNotifier.value == 5) {
+                        sortTypeNotifier.value = 6;
+                      } else if (sortTypeNotifier.value == 6) {
+                        sortTypeNotifier.value = 0;
+                      } else {
+                        sortTypeNotifier.value = 5;
+                      }
+                      playlist?.saveSetting();
+                    }
+                  : null,
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 5),
                 child: Row(
@@ -414,19 +420,21 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
           ),
 
           SizedBox(
-            width: 90,
+            width: history == null ? 90 : 75,
             child: InkWell(
               borderRadius: BorderRadius.circular(5),
-              onTap: () {
-                if (sortTypeNotifier.value == 7) {
-                  sortTypeNotifier.value = 8;
-                } else if (sortTypeNotifier.value == 8) {
-                  sortTypeNotifier.value = 0;
-                } else {
-                  sortTypeNotifier.value = 7;
-                }
-                playlist?.saveSetting();
-              },
+              onTap: history == null
+                  ? () {
+                      if (sortTypeNotifier.value == 7) {
+                        sortTypeNotifier.value = 8;
+                      } else if (sortTypeNotifier.value == 8) {
+                        sortTypeNotifier.value = 0;
+                      } else {
+                        sortTypeNotifier.value = 7;
+                      }
+                      playlist?.saveSetting();
+                    }
+                  : null,
               child: Padding(
                 padding: const EdgeInsets.symmetric(vertical: 5),
                 child: Row(
@@ -450,6 +458,14 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
               ),
             ),
           ),
+          if (history != null)
+            SizedBox(
+              width: 50,
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 5),
+                child: Text(l10n.times, overflow: TextOverflow.ellipsis),
+              ),
+            ),
         ],
       ),
     );
@@ -469,6 +485,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
         index: index,
         isSelected: isSelected,
         currentSongList: currentSongList,
+        isHistory: history != null,
         onTap: () {
           if (ctrlIsPressed) {
             isSelected.value = !isSelected.value;
@@ -606,6 +623,7 @@ class ListItemChild extends StatefulWidget {
   final int index;
   final ValueNotifier<bool> isSelected;
   final List<AudioMetadata> currentSongList;
+  final bool isHistory;
   final void Function() onTap;
 
   const ListItemChild({
@@ -613,6 +631,7 @@ class ListItemChild extends StatefulWidget {
     required this.index,
     required this.isSelected,
     required this.currentSongList,
+    required this.isHistory,
     required this.onTap,
   });
 
@@ -773,12 +792,22 @@ class ListItemChildState extends State<ListItemChild> {
                         ),
 
                         SizedBox(
-                          width: 90,
+                          width: widget.isHistory ? 75 : 90,
                           child: Text(
                             formatDuration(getDuration(song)),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
+
+                        if (widget.isHistory)
+                          SizedBox(
+                            width: 50,
+                            child: Text(
+                              historyManager.historyItemList[index].times
+                                  .toString(),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
                       ],
                     );
                   },

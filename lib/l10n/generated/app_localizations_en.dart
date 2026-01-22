@@ -21,6 +21,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get folder => 'Folder';
 
   @override
+  String get history => 'History';
+
+  @override
   String get artists => 'Artists';
 
   @override
@@ -153,6 +156,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get duration => 'Duration';
+
+  @override
+  String get times => 'Times';
 
   @override
   String get loop => 'Loop';

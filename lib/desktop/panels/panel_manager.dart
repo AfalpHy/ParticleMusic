@@ -5,10 +5,12 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/pages/main_page.dart';
 import 'package:particle_music/desktop/panels/artist_album_panel.dart';
 import 'package:particle_music/desktop/panels/folders_panel.dart';
+import 'package:particle_music/desktop/panels/history_panel.dart';
 import 'package:particle_music/desktop/panels/playlists_panel.dart';
 import 'package:particle_music/desktop/panels/setting_panel.dart';
 import 'package:particle_music/desktop/sidebar.dart';
 import 'package:particle_music/desktop/panels/song_list_panel.dart';
+import 'package:particle_music/history.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:particle_music/playlists.dart';
 
@@ -37,8 +39,13 @@ class PanelManager {
     } else if (label == 'folders') {
       if (folderPaths.isNotEmpty) {
         backgroundSong = getFirstSong(folder2SongList[folderPaths.first]!);
+      } else {
+        backgroundSong = null;
       }
       panelStack.add(FoldersPanel(key: UniqueKey()));
+    } else if (label == 'history') {
+      backgroundSong = getFirstSong(historyManager.historySongList);
+      panelStack.add(HistoryPanel(key: UniqueKey()));
     } else if (label[0] == '_') {
       final playlist = playlistsManager.getPlaylistByName(label.substring(1));
       backgroundSong = getFirstSong(playlist!.songs);
