@@ -333,10 +333,6 @@ class MyAudioHandler extends BaseAudioHandler {
   }
 
   Future<void> load() async {
-    if (isloading) {
-      return;
-    }
-
     if (currentSongNotifier.value != null) {
       if (_playLastSyncTime != null) {
         _playedDuration += DateTime.now().difference(_playLastSyncTime!);
@@ -428,6 +424,8 @@ class MyAudioHandler extends BaseAudioHandler {
   @override
   Future<void> skipToNext() async {
     if (playQueue.isEmpty) return;
+    if (isloading) return;
+
     currentIndex = (currentIndex + 1) % playQueue.length;
     await load();
   }
@@ -435,6 +433,8 @@ class MyAudioHandler extends BaseAudioHandler {
   @override
   Future<void> skipToPrevious() async {
     if (playQueue.isEmpty) return;
+    if (isloading) return;
+
     currentIndex = (currentIndex + playQueue.length - 1) % playQueue.length;
     await load();
   }

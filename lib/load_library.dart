@@ -104,7 +104,8 @@ class LibraryLoader {
         if (!(file.path.endsWith('.mp3') ||
             file.path.endsWith('.flac') ||
             file.path.endsWith('.ogg') ||
-            file.path.endsWith('.wav'))) {
+            file.path.endsWith('.wav') ||
+            file.path.endsWith('.opus'))) {
           continue;
         }
 
