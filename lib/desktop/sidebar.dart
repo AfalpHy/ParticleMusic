@@ -62,7 +62,7 @@ class Sidebar extends StatelessWidget {
                 style: TextStyle(fontSize: 15, overflow: TextOverflow.ellipsis),
               ),
               contentPadding: contentPadding,
-              visualDensity: const VisualDensity(horizontal: 0, vertical: -3.5),
+              visualDensity: const VisualDensity(horizontal: 0, vertical: -3.9),
               trailing: trailing,
             ),
           ),
