@@ -86,7 +86,7 @@ flutter run --release
 # build
 flutter build apk
 ```
-## Screenshot
+## Screenshots
 
 ### On iOS
 <div>
@@ -101,6 +101,12 @@ flutter build apk
     <img src="./screenshot/mobile5.png" width="270" height="540" />
 </div>
 
+<div>
+    <img src="./screenshot/mobile6.png" width="270" height="540" />
+    <img src="./screenshot/mobile7.png" width="270" height="540" />
+    <img src="./screenshot/mobile8.png" width="270" height="540" />
+</div>
+
 ### On Windows
 
 ![My picture](./screenshot/desktop0.png)
@@ -110,3 +116,7 @@ flutter build apk
 ![My picture](./screenshot/desktop4.png)
 ![My picture](./screenshot/desktop5.png)
 ![My picture](./screenshot/desktop6.png)
+![My picture](./screenshot/desktop7.png)
+![My picture](./screenshot/desktop8.png)
+![My picture](./screenshot/desktop9.png)
+![My picture](./screenshot/desktop10.png)
