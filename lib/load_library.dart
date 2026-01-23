@@ -114,8 +114,7 @@ class LibraryLoader {
           );
           librarySongs.add(song);
           if (Platform.isIOS) {
-            filePath2LibrarySong[file.path.substring(appDocs.path.length)] =
-                song;
+            filePath2LibrarySong[getIOSPath(file.path)] = song;
           } else {
             filePath2LibrarySong[file.path] = song;
           }

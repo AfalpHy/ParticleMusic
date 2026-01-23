@@ -152,15 +152,12 @@ class MyAudioHandler extends BaseAudioHandler {
 
   void savePlayQueueState() {
     if (Platform.isIOS) {
-      int prefixLength = appDocs.path.length;
       _playQueueState.writeAsStringSync(
         jsonEncode({
           'playQueueTmp': _playQueueTmp
-              .map((s) => s.file.path.substring(prefixLength))
+              .map((e) => getIOSPath(e.file.path))
               .toList(),
-          'playQueue': playQueue
-              .map((s) => s.file.path.substring(prefixLength))
-              .toList(),
+          'playQueue': playQueue.map((e) => getIOSPath(e.file.path)).toList(),
         }),
       );
     } else {

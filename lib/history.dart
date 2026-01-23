@@ -24,8 +24,7 @@ class RankingItem {
   factory RankingItem.fromSong(AudioMetadata song, int times) {
     String path = song.file.path;
     if (Platform.isIOS) {
-      int prefixLength = appDocs.path.length;
-      path = path.substring(prefixLength);
+      path = getIOSPath(path);
     }
     return RankingItem(times, path, song);
   }
@@ -61,9 +60,7 @@ class HistoryManager {
 
       rankingSongList = rankingItemList.map((e) => e.song).toList();
     } else {
-      rankingFile.writeAsStringSync(
-        jsonEncode(rankingItemList.map((e) => e.toMap()).toList()),
-      );
+      rankingFile.writeAsStringSync(jsonEncode([]));
     }
 
     recentlyFile = File("${appSupportDir.path}/recently.txt");
@@ -79,7 +76,7 @@ class HistoryManager {
         }
       }
     } else {
-      updateRecently();
+      recentlyFile.writeAsStringSync(jsonEncode([]));
     }
   }
 
@@ -126,8 +123,12 @@ class HistoryManager {
   }
 
   void add2Recently(AudioMetadata song) {
-    recentlyPathList.remove(song.file.path);
-    recentlyPathList.insert(0, song.file.path);
+    String filePath = song.file.path;
+    if (Platform.isIOS) {
+      filePath = getIOSPath(filePath);
+    }
+    recentlyPathList.remove(filePath);
+    recentlyPathList.insert(0, filePath);
     recentlySongList.remove(song);
     recentlySongList.insert(0, song);
     if (recentlyPathList.length > 500) {
@@ -147,16 +148,7 @@ class HistoryManager {
   }
 
   void updateRecently() {
-    if (Platform.isIOS) {
-      int prefixLength = appDocs.path.length;
-      recentlyFile.writeAsStringSync(
-        jsonEncode(
-          recentlyPathList.map((path) => path.substring(prefixLength)).toList(),
-        ),
-      );
-    } else {
-      recentlyFile.writeAsStringSync(jsonEncode(recentlyPathList));
-    }
+    recentlyFile.writeAsStringSync(jsonEncode(recentlyPathList));
     recentlyChangeNotifier.value++;
   }
 }

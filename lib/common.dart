@@ -8,6 +8,7 @@ import 'package:image/image.dart' as image;
 import 'package:lpinyin/lpinyin.dart';
 import 'package:marquee/marquee.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
+import 'package:particle_music/load_library.dart';
 import 'package:particle_music/setting.dart';
 import 'package:path/path.dart';
 import 'package:smooth_corner/smooth_corner.dart';
@@ -402,4 +403,9 @@ AudioMetadata? getFirstSong(List<AudioMetadata> songs) {
     return null;
   }
   return songs.first;
+}
+
+String getIOSPath(String path) {
+  int prefixLength = appDocs.path.length;
+  return path.substring(prefixLength);
 }

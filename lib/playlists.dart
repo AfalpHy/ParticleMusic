@@ -8,7 +8,6 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/panels/panel_manager.dart';
 import 'package:particle_music/desktop/panels/song_list_panel.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
-import 'package:particle_music/load_library.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 import 'cover_art_widget.dart';
 
@@ -149,15 +148,12 @@ class Playlist {
 
   void update() {
     if (Platform.isIOS) {
-      int prefixLength = appDocs.path.length;
       file.writeAsStringSync(
-        jsonEncode(
-          songs.map((s) => s.file.path.substring(prefixLength)).toList(),
-        ),
+        jsonEncode(songs.map((e) => getIOSPath(e.file.path)).toList()),
       );
     } else {
       file.writeAsStringSync(
-        jsonEncode(songs.map((s) => s.file.path).toList()),
+        jsonEncode(songs.map((e) => e.file.path).toList()),
       );
     }
     changeNotifier.value++;
