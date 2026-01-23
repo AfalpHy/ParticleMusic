@@ -11,13 +11,13 @@ class SongListTile extends StatelessWidget {
   final int index;
   final List<AudioMetadata> source;
   final Playlist? playlist;
-  final bool isHistory;
+  final bool isRanking;
   const SongListTile({
     super.key,
     required this.index,
     required this.source,
     this.playlist,
-    this.isHistory = false,
+    this.isRanking = false,
   });
 
   @override
@@ -74,14 +74,14 @@ class SongListTile extends StatelessWidget {
         await audioHandler.setPlayQueue(source);
         await audioHandler.play();
       },
-      trailing: isHistory
+      trailing: isRanking
           ? SizedBox(
               width: 80,
               child: Row(
                 children: [
                   Spacer(),
                   Icon(Icons.play_arrow_outlined, size: 15),
-                  Text(historyManager.historyItemList[index].times.toString()),
+                  Text(historyManager.rankingItemList[index].times.toString()),
                   moreButton(context),
                 ],
               ),
@@ -237,7 +237,7 @@ class SelectableSongListTile extends StatelessWidget {
   final ValueNotifier<bool> isSelected;
   final ValueNotifier<int> selectedNum;
   final bool reorderable;
-  final bool isHistory;
+  final bool isRanking;
 
   const SelectableSongListTile({
     super.key,
@@ -246,7 +246,7 @@ class SelectableSongListTile extends StatelessWidget {
     required this.isSelected,
     required this.selectedNum,
     this.reorderable = false,
-    this.isHistory = false,
+    this.isRanking = false,
   });
 
   @override
@@ -328,14 +328,14 @@ class SelectableSongListTile extends StatelessWidget {
           ),
         ),
 
-        if (isHistory)
+        if (isRanking)
           SizedBox(
             width: 60,
             child: Row(
               children: [
                 Spacer(),
                 Icon(Icons.play_arrow_outlined, size: 15),
-                Text(historyManager.historyItemList[index].times.toString()),
+                Text(historyManager.rankingItemList[index].times.toString()),
               ],
             ),
           ),

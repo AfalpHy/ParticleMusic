@@ -122,11 +122,17 @@ abstract class AppLocalizations {
   /// **'Folder'**
   String get folder;
 
-  /// No description provided for @history.
+  /// No description provided for @ranking.
   ///
   /// In en, this message translates to:
-  /// **'History'**
-  String get history;
+  /// **'Ranking'**
+  String get ranking;
+
+  /// No description provided for @recently.
+  ///
+  /// In en, this message translates to:
+  /// **'Recently'**
+  String get recently;
 
   /// No description provided for @artists.
   ///

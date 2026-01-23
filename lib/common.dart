@@ -34,7 +34,7 @@ Color customPanelColor = Colors.grey.shade100;
 Color vividIconColor = Colors.black;
 Color vividTextColor = Colors.black;
 Color vividSwitchColor = Colors.black87;
-Color vividPanelColor = panelColor.withAlpha(120);
+Color vividPanelColor = panelColor.withAlpha(100);
 
 late double appWidth;
 
@@ -50,7 +50,6 @@ const AssetImage fullscreenExitImage = AssetImage(
 );
 const AssetImage fullscreenImage = AssetImage('assets/images/fullscreen.png');
 const AssetImage gridImage = AssetImage('assets/images/grid.png');
-const AssetImage historyImage = AssetImage('assets/images/history.png');
 const AssetImage infoImage = AssetImage('assets/images/info.png');
 const AssetImage languageImage = AssetImage('assets/images/language.png');
 const AssetImage listImage = AssetImage('assets/images/list.png');
@@ -85,6 +84,8 @@ const AssetImage playnextCircleImage = AssetImage(
 const AssetImage previousButtonImage = AssetImage(
   'assets/images/previous_button.png',
 );
+const AssetImage rankingImage = AssetImage('assets/images/ranking.png');
+const AssetImage recentlyImage = AssetImage('assets/images/recently.png');
 const AssetImage reloadImage = AssetImage('assets/images/reload.png');
 const AssetImage reorderImage = AssetImage('assets/images/reorder.png');
 const AssetImage repeatImage = AssetImage('assets/images/repeat.png');

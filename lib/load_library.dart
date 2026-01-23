@@ -147,7 +147,7 @@ class LibraryLoader {
     await audioHandler.loadPlayQueueState();
     await audioHandler.loadPlayState();
 
-    await historyManager.init();
+    await historyManager.load();
 
     if (!isMobile) {
       panelManager.pushPanel('songs');
@@ -206,8 +206,6 @@ class LibraryLoader {
     for (final playlist in playlistsManager.playlists) {
       playlist.songs = [];
     }
-
-    historyManager.clear();
 
     if (!isMobile) {
       panelManager.reload();

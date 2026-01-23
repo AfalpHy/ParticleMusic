@@ -5,8 +5,9 @@ import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/mobile/pages/albums_page.dart';
 import 'package:particle_music/mobile/pages/artists_page.dart';
 import 'package:particle_music/mobile/pages/folders_page.dart';
-import 'package:particle_music/mobile/pages/history_page.dart';
+import 'package:particle_music/mobile/pages/ranking_page.dart';
 import 'package:particle_music/mobile/pages/playlists_page.dart';
+import 'package:particle_music/mobile/pages/recently_page.dart';
 import 'package:particle_music/mobile/player_bar.dart';
 import 'package:particle_music/setting.dart';
 import 'package:particle_music/mobile/pages/songs_page.dart';
@@ -281,15 +282,32 @@ class HomePageState extends State<HomePage> {
         ),
 
         ListTile(
-          leading: ImageIcon(historyImage, size: 35, color: iconColor),
-          title: Text(l10n.history),
+          leading: ImageIcon(rankingImage, size: 35, color: iconColor),
+          title: Text(l10n.ranking),
           onTap: () {
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (_) => ValueListenableBuilder(
-                  valueListenable: historyChangeNotifier,
+                  valueListenable: rankingChangeNotifier,
                   builder: (context, value, child) {
-                    return HistoryPage();
+                    return RankingPage();
+                  },
+                ),
+              ),
+            );
+          },
+        ),
+
+        ListTile(
+          leading: ImageIcon(recentlyImage, size: 35, color: iconColor),
+          title: Text(l10n.recently),
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => ValueListenableBuilder(
+                  valueListenable: recentlyChangeNotifier,
+                  builder: (context, value, child) {
+                    return RecentlyPage();
                   },
                 ),
               ),

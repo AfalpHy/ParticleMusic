@@ -11,7 +11,7 @@ import 'package:particle_music/seekbar.dart';
 
 Color bottomColor = Colors.grey.shade50;
 Color customBottomColor = Colors.grey.shade50;
-Color vividBottomColor = bottomColor.withAlpha(120);
+Color vividBottomColor = bottomColor.withAlpha(100);
 
 class BottomControl extends StatelessWidget {
   const BottomControl({super.key});

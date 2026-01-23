@@ -5,8 +5,9 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/pages/main_page.dart';
 import 'package:particle_music/desktop/panels/artist_album_panel.dart';
 import 'package:particle_music/desktop/panels/folders_panel.dart';
-import 'package:particle_music/desktop/panels/history_panel.dart';
+import 'package:particle_music/desktop/panels/ranking_panel.dart';
 import 'package:particle_music/desktop/panels/playlists_panel.dart';
+import 'package:particle_music/desktop/panels/recently_panel.dart';
 import 'package:particle_music/desktop/panels/setting_panel.dart';
 import 'package:particle_music/desktop/sidebar.dart';
 import 'package:particle_music/desktop/panels/song_list_panel.dart';
@@ -21,6 +22,10 @@ class PanelManager {
   final List<bool> bgColorUseCurrentSongStack = [];
 
   final ValueNotifier<int> updatePanel = ValueNotifier(0);
+
+  bool get isEmpty {
+    return panelStack.isEmpty;
+  }
 
   void pushPanel(String label, {String? content}) {
     sidebarHighlighLabel.value = label;
@@ -43,9 +48,12 @@ class PanelManager {
     } else if (label == 'songs') {
       backgroundSong = getFirstSong(librarySongs);
       panelStack.add(SongListPanel(key: UniqueKey()));
-    } else if (label == 'history') {
-      backgroundSong = getFirstSong(historyManager.historySongList);
-      panelStack.add(HistoryPanel(key: UniqueKey()));
+    } else if (label == 'ranking') {
+      backgroundSong = getFirstSong(historyManager.rankingSongList);
+      panelStack.add(RankingRanel(key: UniqueKey()));
+    } else if (label == 'recently') {
+      backgroundSong = getFirstSong(historyManager.recentlySongList);
+      panelStack.add(RecentlyPanel(key: UniqueKey()));
     } else if (label[0] == '_') {
       final playlist = playlistsManager.getPlaylistByName(label.substring(1));
       backgroundSong = getFirstSong(playlist!.songs);
@@ -86,11 +94,10 @@ class PanelManager {
     bgColorUseCurrentSongStack.removeLast();
 
     sidebarHighlighLabel.value = sidebarHighlighLabelStack.last;
-    backgroundSong = backgroundSongStack.last;
-    backgroundColor = computeCoverArtColor(backgroundSong);
 
     updatePanel.value++;
-    updateBackgroundNotifier.value++;
+
+    updateBackground();
   }
 
   void removePlaylistPanel(Playlist playlist) {
@@ -105,17 +112,22 @@ class PanelManager {
     }
 
     sidebarHighlighLabel.value = sidebarHighlighLabelStack.last;
-    backgroundSong = backgroundSongStack.last;
-    backgroundColor = computeCoverArtColor(backgroundSong);
 
     updatePanel.value++;
-    updateBackgroundNotifier.value++;
+
+    updateBackground();
   }
 
   void reload() {
     panelStack.clear();
     sidebarHighlighLabelStack.clear();
     backgroundSongStack.clear();
+  }
+
+  void updateBackground() {
+    backgroundSong = backgroundSongStack.last;
+    backgroundColor = computeCoverArtColor(backgroundSong);
+    updateBackgroundNotifier.value++;
   }
 }
 

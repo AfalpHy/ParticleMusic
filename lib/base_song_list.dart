@@ -15,7 +15,8 @@ abstract class BaseSongListWidget extends StatefulWidget {
   final String? artist;
   final String? album;
   final String? folder;
-  final String? history;
+  final String? ranking;
+  final String? recently;
 
   const BaseSongListWidget({
     super.key,
@@ -23,7 +24,8 @@ abstract class BaseSongListWidget extends StatefulWidget {
     this.artist,
     this.album,
     this.folder,
-    this.history,
+    this.ranking,
+    this.recently,
   });
 }
 
@@ -35,7 +37,8 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
   String? artist;
   String? album;
   String? folder;
-  String? history;
+  String? ranking;
+  String? recently;
 
   bool isLibrary = false;
 
@@ -65,7 +68,8 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
     artist = widget.artist;
     album = widget.album;
     folder = widget.folder;
-    history = widget.history;
+    ranking = widget.ranking;
+    recently = widget.recently;
 
     if (playlist != null) {
       songList = playlist!.songs;
@@ -81,9 +85,12 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
     } else if (folder != null) {
       songList = folder2SongList[folder] ?? [];
       title = folder!;
-    } else if (history != null) {
-      songList = historyManager.historySongList;
-      title = history!;
+    } else if (ranking != null) {
+      songList = historyManager.rankingSongList;
+      title = ranking!;
+    } else if (recently != null) {
+      songList = historyManager.recentlySongList;
+      title = recently!;
     } else {
       songList = librarySongs;
       isLibrary = true;

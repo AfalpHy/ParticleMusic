@@ -20,7 +20,8 @@ class SongListPage extends BaseSongListWidget {
     super.artist,
     super.album,
     super.folder,
-    super.history,
+    super.ranking,
+    super.recently,
   });
 
   @override
@@ -174,13 +175,14 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
                   builder: (_) => SelectableSongListPage(
                     songList: songList,
                     playlist: playlist,
-                    isHistory: history != null,
+                    isRanking: ranking != null,
+                    isRecently: recently != null,
                   ),
                 ),
               );
             },
           ),
-          if (history == null)
+          if (ranking == null && recently == null)
             ListTile(
               leading: const ImageIcon(sequenceImage, color: Colors.black),
               title: Text(
@@ -347,7 +349,7 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
                           index: index,
                           source: currentSongList,
                           playlist: widget.playlist,
-                          isHistory: history != null,
+                          isRanking: ranking != null,
                         ),
                       );
                     },
@@ -377,12 +379,14 @@ class SelectableSongListPage extends StatefulWidget {
   final List<AudioMetadata> songList;
 
   final Playlist? playlist;
-  final bool isHistory;
+  final bool isRanking;
+  final bool isRecently;
   const SelectableSongListPage({
     super.key,
     required this.songList,
     this.playlist,
-    this.isHistory = false,
+    this.isRanking = false,
+    this.isRecently = false,
   });
 
   @override
@@ -498,7 +502,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
           ),
           Divider(thickness: 0.5, height: 1, color: dividerColor),
 
-          if (!widget.isHistory)
+          if (!widget.isRanking && !widget.isRecently)
             ListTile(
               leading: const ImageIcon(sequenceImage, color: Colors.black),
               title: Text(
@@ -678,7 +682,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                       playlist != null &&
                       textController.text.isEmpty &&
                       sortTypeNotifier.value == 0,
-                  isHistory: widget.isHistory,
+                  isRanking: widget.isRanking,
                 );
               },
             ),

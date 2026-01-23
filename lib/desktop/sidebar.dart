@@ -12,9 +12,9 @@ import 'package:super_context_menu/super_context_menu.dart';
 import 'package:window_manager/window_manager.dart';
 
 final ValueNotifier<String> sidebarHighlighLabel = ValueNotifier('');
-Color sidebarColor = Color.fromARGB(255, 240, 240, 240);
-Color customSidebarColor = Color.fromARGB(255, 240, 240, 240);
-Color vividSidebarColor = sidebarColor.withAlpha(120);
+Color sidebarColor = Colors.grey.shade200;
+Color customSidebarColor = Colors.grey.shade200;
+Color vividSidebarColor = sidebarColor.withAlpha(100);
 
 class Sidebar extends StatelessWidget {
   final ScrollController _scrollController = ScrollController();
@@ -176,27 +176,63 @@ class Sidebar extends StatelessWidget {
                       ),
                     ),
 
+                    SliverToBoxAdapter(child: SizedBox(height: 10)),
+                    SliverToBoxAdapter(
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
+                        child: ValueListenableBuilder(
+                          valueListenable: updateBackgroundNotifier,
+                          builder: (_, _, _) {
+                            return Divider(
+                              thickness: 0.5,
+                              height: 1,
+                              color: enableCustomColorNotifier.value
+                                  ? dividerColor
+                                  : backgroundColor,
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                    SliverToBoxAdapter(child: SizedBox(height: 10)),
+
                     SliverToBoxAdapter(
                       child: sidebarItem(
-                        label: 'history',
+                        label: 'ranking',
 
                         leading: ImageIcon(
-                          historyImage,
+                          rankingImage,
                           size: 30,
                           color: iconColor,
                         ),
-                        content: l10n.history,
+                        content: l10n.ranking,
 
                         onTap: () {
-                          panelManager.pushPanel('history');
+                          panelManager.pushPanel('ranking');
                         },
                       ),
                     ),
 
+                    SliverToBoxAdapter(
+                      child: sidebarItem(
+                        label: 'recently',
+
+                        leading: ImageIcon(
+                          recentlyImage,
+                          size: 30,
+                          color: iconColor,
+                        ),
+                        content: l10n.recently,
+
+                        onTap: () {
+                          panelManager.pushPanel('recently');
+                        },
+                      ),
+                    ),
                     SliverToBoxAdapter(child: SizedBox(height: 10)),
                     SliverToBoxAdapter(
                       child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 10),
+                        padding: const EdgeInsets.symmetric(horizontal: 20),
                         child: ValueListenableBuilder(
                           valueListenable: updateBackgroundNotifier,
                           builder: (_, _, _) {

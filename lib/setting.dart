@@ -881,12 +881,7 @@ class SettingsList extends StatelessWidget {
                             customTextColor = Colors.black;
                             customSwitchColor = Colors.black87;
                             customPanelColor = Colors.grey.shade100;
-                            customSidebarColor = Color.fromARGB(
-                              255,
-                              240,
-                              240,
-                              240,
-                            );
+                            customSidebarColor = Colors.grey.shade200;
                             customBottomColor = Colors.grey.shade50;
 
                             searchFieldColor = Colors.white;

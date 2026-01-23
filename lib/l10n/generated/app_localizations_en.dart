@@ -21,7 +21,10 @@ class AppLocalizationsEn extends AppLocalizations {
   String get folder => 'Folder';
 
   @override
-  String get history => 'History';
+  String get ranking => 'Ranking';
+
+  @override
+  String get recently => 'Recently';
 
   @override
   String get artists => 'Artists';

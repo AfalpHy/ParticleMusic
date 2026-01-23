@@ -7,7 +7,6 @@ import 'package:just_audio/just_audio.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/desktop_lyrics.dart';
 import 'package:particle_music/desktop/extensions/window_controller_extension.dart';
-import 'package:particle_music/desktop/pages/main_page.dart';
 import 'package:particle_music/desktop/panels/panel_manager.dart';
 import 'package:particle_music/history.dart';
 import 'package:particle_music/load_library.dart';
@@ -36,7 +35,7 @@ class MyAudioHandler extends BaseAudioHandler {
   int _tmpPlayMode = 0;
   bool isloading = false;
   DateTime? _playLastSyncTime;
-  Duration _playDuration = Duration.zero;
+  Duration _playedDuration = Duration.zero;
 
   late final File _playQueueState;
   late final File _playState;
@@ -63,9 +62,12 @@ class MyAudioHandler extends BaseAudioHandler {
 
     _player.playingStream.listen((isPlaying) {
       if (isPlaying) {
+        if (_playedDuration == Duration.zero) {
+          historyManager.add2Recently(currentSongNotifier.value!);
+        }
         _playLastSyncTime = DateTime.now();
       } else if (_playLastSyncTime != null) {
-        _playDuration += DateTime.now().difference(_playLastSyncTime!);
+        _playedDuration += DateTime.now().difference(_playLastSyncTime!);
         _playLastSyncTime = null;
       }
       needPause = false;
@@ -81,13 +83,8 @@ class MyAudioHandler extends BaseAudioHandler {
             panelManager.backgroundSongStack[i] = currentSongNotifier.value;
           }
         }
-        if (panelManager.bgColorUseCurrentSongStack.isNotEmpty &&
-            panelManager.bgColorUseCurrentSongStack.last) {
-          WidgetsBinding.instance.addPostFrameCallback((_) {
-            backgroundSong = currentSongNotifier.value;
-            backgroundColor = currentCoverArtColor;
-            updateBackgroundNotifier.value++;
-          });
+        if (!panelManager.isEmpty) {
+          panelManager.updateBackground();
         }
       }
     });
@@ -345,11 +342,11 @@ class MyAudioHandler extends BaseAudioHandler {
 
     if (currentSongNotifier.value != null) {
       if (_playLastSyncTime != null) {
-        _playDuration += DateTime.now().difference(_playLastSyncTime!);
+        _playedDuration += DateTime.now().difference(_playLastSyncTime!);
       }
       if (currentSongNotifier.value!.duration != null) {
         double times =
-            _playDuration.inSeconds /
+            _playedDuration.inSeconds /
             currentSongNotifier.value!.duration!.inSeconds;
         if (times > 0.5) {
           historyManager.addSongTimes(
@@ -358,6 +355,7 @@ class MyAudioHandler extends BaseAudioHandler {
           );
         }
       }
+
       _playLastSyncTime = null;
     }
 
@@ -373,6 +371,9 @@ class MyAudioHandler extends BaseAudioHandler {
     currentCoverArtColor = computeCoverArtColor(currentSong);
 
     currentSongNotifier.value = currentSong;
+    if (isPlayingNotifier.value) {
+      historyManager.add2Recently(currentSong);
+    }
 
     Uri? artUri;
     if (currentSong.pictures.isNotEmpty) {
@@ -391,7 +392,7 @@ class MyAudioHandler extends BaseAudioHandler {
     );
 
     final audioSource = ProgressiveAudioSource(
-      Uri.file(currentSongNotifier.value!.file.path),
+      Uri.file(currentSong.file.path),
       options: ProgressiveAudioSourceOptions(
         darwinAssetOptions: DarwinAssetOptions(
           preferPreciseDurationAndTiming: true,
@@ -404,7 +405,7 @@ class MyAudioHandler extends BaseAudioHandler {
     if (isPlayingNotifier.value) {
       _playLastSyncTime = DateTime.now();
     }
-    _playDuration = Duration.zero;
+    _playedDuration = Duration.zero;
     isloading = false;
   }
 

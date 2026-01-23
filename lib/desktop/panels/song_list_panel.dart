@@ -29,7 +29,8 @@ class SongListPanel extends BaseSongListWidget {
     super.artist,
     super.album,
     super.folder,
-    super.history,
+    super.ranking,
+    super.recently,
     this.foldersWidget,
   });
 
@@ -194,7 +195,11 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
         ),
 
         Positioned(
-          right: folder == null ? 120 : 100,
+          right: folder != null || recently != null
+              ? 100
+              : ranking != null
+              ? 150
+              : 120,
           bottom: 100,
           child: MyLocation(
             scrollController: scrollController,
@@ -324,7 +329,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
           Expanded(
             child: InkWell(
               borderRadius: BorderRadius.circular(5),
-              onTap: history == null
+              onTap: ranking == null && recently == null
                   ? () {
                       if (sortTypeNotifier.value > 4) {
                         sortTypeNotifier.value = 1;
@@ -376,7 +381,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
           Expanded(
             child: InkWell(
               borderRadius: BorderRadius.circular(5),
-              onTap: history == null
+              onTap: ranking == null && recently == null
                   ? () {
                       if (sortTypeNotifier.value == 5) {
                         sortTypeNotifier.value = 6;
@@ -420,10 +425,10 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
           ),
 
           SizedBox(
-            width: history == null ? 90 : 75,
+            width: ranking == null && recently == null ? 90 : 75,
             child: InkWell(
               borderRadius: BorderRadius.circular(5),
-              onTap: history == null
+              onTap: ranking == null && recently == null
                   ? () {
                       if (sortTypeNotifier.value == 7) {
                         sortTypeNotifier.value = 8;
@@ -458,7 +463,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
               ),
             ),
           ),
-          if (history != null)
+          if (ranking != null)
             SizedBox(
               width: 50,
               child: Padding(
@@ -485,7 +490,8 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
         index: index,
         isSelected: isSelected,
         currentSongList: currentSongList,
-        isHistory: history != null,
+        isRanking: ranking != null,
+        isRecently: recently != null,
         onTap: () {
           if (ctrlIsPressed) {
             isSelected.value = !isSelected.value;
@@ -623,7 +629,8 @@ class ListItemChild extends StatefulWidget {
   final int index;
   final ValueNotifier<bool> isSelected;
   final List<AudioMetadata> currentSongList;
-  final bool isHistory;
+  final bool isRanking;
+  final bool isRecently;
   final void Function() onTap;
 
   const ListItemChild({
@@ -631,7 +638,8 @@ class ListItemChild extends StatefulWidget {
     required this.index,
     required this.isSelected,
     required this.currentSongList,
-    required this.isHistory,
+    required this.isRanking,
+    required this.isRecently,
     required this.onTap,
   });
 
@@ -792,18 +800,20 @@ class ListItemChildState extends State<ListItemChild> {
                         ),
 
                         SizedBox(
-                          width: widget.isHistory ? 75 : 90,
+                          width: widget.isRanking || widget.isRecently
+                              ? 75
+                              : 90,
                           child: Text(
                             formatDuration(getDuration(song)),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
 
-                        if (widget.isHistory)
+                        if (widget.isRanking)
                           SizedBox(
                             width: 50,
                             child: Text(
-                              historyManager.historyItemList[index].times
+                              historyManager.rankingItemList[index].times
                                   .toString(),
                               overflow: TextOverflow.ellipsis,
                             ),

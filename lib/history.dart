@@ -3,92 +3,161 @@ import 'dart:io';
 
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
+import 'package:particle_music/common.dart';
+import 'package:particle_music/desktop/panels/panel_manager.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:path_provider/path_provider.dart';
 
-final historyChangeNotifier = ValueNotifier(0);
+final rankingChangeNotifier = ValueNotifier(0);
+final recentlyChangeNotifier = ValueNotifier(0);
 
-class HistoryItem {
+class RankingItem {
   int times;
   String path;
   AudioMetadata song;
-  HistoryItem(this.times, this.path, this.song);
+  RankingItem(this.times, this.path, this.song);
 
   Map<String, dynamic> toMap() {
     return {'times': times, 'path': path};
   }
 
-  factory HistoryItem.fromSong(AudioMetadata song, int times) {
+  factory RankingItem.fromSong(AudioMetadata song, int times) {
     String path = song.file.path;
     if (Platform.isIOS) {
       int prefixLength = appDocs.path.length;
       path = path.substring(prefixLength);
     }
-    return HistoryItem(times, path, song);
+    return RankingItem(times, path, song);
   }
 }
 
 class HistoryManager {
-  late File file;
-  List<HistoryItem> historyItemList = [];
-  List<AudioMetadata> historySongList = [];
+  late File rankingFile;
+  late File recentlyFile;
 
-  Future<void> init() async {
+  List<RankingItem> rankingItemList = [];
+  List<AudioMetadata> rankingSongList = [];
+
+  List<String> recentlyPathList = [];
+  List<AudioMetadata> recentlySongList = [];
+
+  Future<void> load() async {
+    rankingItemList = [];
+    rankingSongList = [];
+
+    recentlyPathList = [];
+    recentlySongList = [];
+
     Directory appSupportDir = await getApplicationSupportDirectory();
-    file = File("${appSupportDir.path}/history.txt");
-    if (file.existsSync()) {
-      String content = file.readAsStringSync();
+    rankingFile = File("${appSupportDir.path}/ranking.txt");
+    if (rankingFile.existsSync()) {
+      String content = rankingFile.readAsStringSync();
       List<dynamic> jsonList = jsonDecode(content);
 
-      historyItemList = jsonList
-          .map((e) => createHistoryItem(e as Map<String, dynamic>))
-          .whereType<HistoryItem>()
+      rankingItemList = jsonList
+          .map((e) => createRankingItem(e as Map<String, dynamic>))
+          .whereType<RankingItem>()
           .toList();
 
-      historySongList = historyItemList.map((e) => e.song).toList();
+      rankingSongList = rankingItemList.map((e) => e.song).toList();
+    } else {
+      rankingFile.writeAsStringSync(
+        jsonEncode(rankingItemList.map((e) => e.toMap()).toList()),
+      );
     }
-    // write and update
-    file.writeAsStringSync(
-      jsonEncode(historyItemList.map((e) => e.toMap()).toList()),
-    );
+
+    recentlyFile = File("${appSupportDir.path}/recently.txt");
+    if (recentlyFile.existsSync()) {
+      String content = recentlyFile.readAsStringSync();
+      List<dynamic> jsonList = jsonDecode(content);
+
+      for (String filePath in jsonList) {
+        AudioMetadata? song = filePath2LibrarySong[filePath];
+        if (song != null) {
+          recentlyPathList.add(filePath);
+          recentlySongList.add(song);
+        }
+      }
+    } else {
+      updateRecently();
+    }
   }
 
-  HistoryItem? createHistoryItem(Map raw) {
+  RankingItem? createRankingItem(Map raw) {
     final map = Map<String, dynamic>.from(raw);
     String path = map['path'] as String;
     AudioMetadata? song = filePath2LibrarySong[path];
     if (song != null) {
-      return HistoryItem(map['times'] as int, path, song);
+      return RankingItem(map['times'] as int, path, song);
     }
     return null;
   }
 
   void addSongTimes(AudioMetadata song, int times) {
     bool exist = false;
-    for (int i = 0; i < historyItemList.length; i++) {
-      if (song == historyItemList[i].song) {
-        historyItemList[i].times += times;
+    for (int i = 0; i < rankingItemList.length; i++) {
+      if (song == rankingItemList[i].song) {
+        rankingItemList[i].times += times;
         exist = true;
         break;
       }
     }
 
     if (!exist) {
-      historyItemList.add(HistoryItem.fromSong(song, times));
+      rankingItemList.add(RankingItem.fromSong(song, times));
     }
 
-    historyItemList.sort((a, b) => b.times.compareTo(a.times));
+    rankingItemList.sort((a, b) => b.times.compareTo(a.times));
 
-    file.writeAsStringSync(
-      jsonEncode(historyItemList.map((e) => e.toMap()).toList()),
+    rankingFile.writeAsStringSync(
+      jsonEncode(rankingItemList.map((e) => e.toMap()).toList()),
     );
 
-    historySongList = historyItemList.map((e) => e.song).toList();
-    historyChangeNotifier.value++;
+    rankingSongList = rankingItemList.map((e) => e.song).toList();
+    if (!isMobile) {
+      for (int i = 0; i < panelManager.panelStack.length; i++) {
+        if (panelManager.sidebarHighlighLabelStack[i] == 'ranking') {
+          panelManager.backgroundSongStack[i] = rankingSongList.first;
+        }
+      }
+      panelManager.updateBackground();
+    }
+    rankingChangeNotifier.value++;
   }
 
-  void clear() {
-    historyItemList = [];
+  void add2Recently(AudioMetadata song) {
+    recentlyPathList.remove(song.file.path);
+    recentlyPathList.insert(0, song.file.path);
+    recentlySongList.remove(song);
+    recentlySongList.insert(0, song);
+    if (recentlyPathList.length > 500) {
+      recentlyPathList.removeLast();
+      recentlySongList.removeLast();
+    }
+    if (!isMobile) {
+      for (int i = 0; i < panelManager.panelStack.length; i++) {
+        if (panelManager.sidebarHighlighLabelStack[i] == 'recently') {
+          panelManager.backgroundSongStack[i] = song;
+        }
+      }
+      panelManager.updateBackground();
+    }
+
+    updateRecently();
+  }
+
+  void updateRecently() {
+    if (Platform.isIOS) {
+      int prefixLength = appDocs.path.length;
+      recentlyFile.writeAsStringSync(
+        jsonEncode(
+          recentlyPathList.map((path) => path.substring(prefixLength)).toList(),
+        ),
+      );
+    } else {
+      recentlyFile.writeAsStringSync(jsonEncode(recentlyPathList));
+    }
+    recentlyChangeNotifier.value++;
   }
 }
 
