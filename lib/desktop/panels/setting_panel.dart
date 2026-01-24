@@ -66,7 +66,7 @@ class LicensePagePanelState extends State<LicensePagePanel> {
             ),
             child: const LicensePage(
               applicationName: 'Particle Music',
-              applicationVersion: '1.0.7',
+              applicationVersion: '1.0.8',
               applicationLegalese: '© 2025-2026 AfalpHy',
             ),
           ),
