@@ -10,6 +10,7 @@ import 'package:particle_music/desktop/extensions/window_controller_extension.da
 import 'package:particle_music/desktop/panels/panel_manager.dart';
 import 'package:particle_music/history.dart';
 import 'package:particle_music/load_library.dart';
+import 'package:particle_music/logger.dart';
 import 'package:particle_music/lyrics.dart';
 import 'package:particle_music/setting.dart';
 import 'package:path_provider/path_provider.dart';
@@ -243,7 +244,6 @@ class MyAudioHandler extends BaseAudioHandler {
       shuffle();
     }
     savePlayQueueState();
-    await load();
   }
 
   void shuffle() {
@@ -393,8 +393,11 @@ class MyAudioHandler extends BaseAudioHandler {
       ),
     );
 
-    await _player.setAudioSource(audioSource);
-
+    try {
+      await _player.setAudioSource(audioSource);
+    } catch (error) {
+      logger.output("[${currentSong.file.path}] $error");
+    }
     if (isPlayingNotifier.value) {
       _playLastSyncTime = DateTime.now();
     }

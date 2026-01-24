@@ -281,9 +281,6 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                   displayLyricsPageNotifier.value = false;
                 } else if (removeCurrent) {
                   await audioHandler.load();
-                  if (isPlayingNotifier.value) {
-                    await audioHandler.play();
-                  }
                 }
               },
             ),

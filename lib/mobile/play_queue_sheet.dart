@@ -198,7 +198,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                   onTap: () async {
                     audioHandler.currentIndex = index;
                     await audioHandler.load();
-                    await audioHandler.play();
+                    audioHandler.play();
                   },
 
                   trailing: IconButton(

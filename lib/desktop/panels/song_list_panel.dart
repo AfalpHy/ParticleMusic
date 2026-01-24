@@ -277,7 +277,8 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                                 await audioHandler.setPlayQueue(
                                   currentSongListNotifier.value,
                                 );
-                                await audioHandler.play();
+                                await audioHandler.load();
+                                audioHandler.play();
                               },
                               style: buttonStyle,
                               child: Text(l10n.playAll),
@@ -296,7 +297,8 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                                 await audioHandler.setPlayQueue(
                                   currentSongListNotifier.value,
                                 );
-                                await audioHandler.play();
+                                await audioHandler.load();
+                                audioHandler.play();
                               },
                               style: buttonStyle,
                               child: Text(l10n.shuffle),
@@ -659,7 +661,8 @@ class ListItemChildState extends State<ListItemChild> {
                 onPressed: () async {
                   audioHandler.currentIndex = widget.index;
                   await audioHandler.setPlayQueue(widget.currentSongList);
-                  await audioHandler.play();
+                  await audioHandler.load();
+                  audioHandler.play();
                 },
                 icon: Icon(Icons.play_arrow_rounded),
               )
