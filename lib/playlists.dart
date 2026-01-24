@@ -270,9 +270,7 @@ class _Add2PlaylistPanelState extends State<Add2PlaylistPanel> {
                 ),
 
                 onTap: () {
-                  for (var song in widget.songs) {
-                    playlist.add([song]);
-                  }
+                  playlist.add(widget.songs);
                   showCenterMessage(
                     context,
                     l10n.added2Playlists,
