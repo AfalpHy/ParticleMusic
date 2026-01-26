@@ -92,11 +92,11 @@ class MyAudioHandler extends BaseAudioHandler {
   }
 
   void initStateFiles() {
-    _playQueueState = File("${appSupportDir.path}/playQueueState.txt");
+    _playQueueState = File("${appSupportDir.path}/play_queue_state.txt");
     if (!(_playQueueState.existsSync())) {
       savePlayQueueState();
     }
-    _playState = File("${appSupportDir.path}/playState.txt");
+    _playState = File("${appSupportDir.path}/play_state.txt");
     if (!(_playState.existsSync())) {
       savePlayState();
     }

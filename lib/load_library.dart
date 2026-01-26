@@ -33,7 +33,7 @@ class LibraryLoader {
       "${appSupportDir.path}/song_metadata_list.txt",
     );
     _librarySongFilePathListFile = File(
-      "${appSupportDir.path}/song_filepath_list.txt",
+      "${appSupportDir.path}/song_file_path_list.txt",
     );
 
     _folderPathListFile = File("${appSupportDir.path}/folder_paths.txt");
