@@ -152,23 +152,16 @@ class MyAudioHandler extends BaseAudioHandler {
   }
 
   void savePlayQueueState() {
-    if (Platform.isIOS) {
-      _playQueueState.writeAsStringSync(
-        jsonEncode({
-          'playQueueTmp': _playQueueTmp
-              .map((e) => getIOSPath(e.file.path))
-              .toList(),
-          'playQueue': playQueue.map((e) => getIOSPath(e.file.path)).toList(),
-        }),
-      );
-    } else {
-      _playQueueState.writeAsStringSync(
-        jsonEncode({
-          'playQueueTmp': _playQueueTmp.map((s) => s.file.path).toList(),
-          'playQueue': playQueue.map((s) => s.file.path).toList(),
-        }),
-      );
-    }
+    _playQueueState.writeAsStringSync(
+      jsonEncode({
+        'playQueueTmp': _playQueueTmp
+            .map((e) => clipFilePathIfNeed(e.file.path))
+            .toList(),
+        'playQueue': playQueue
+            .map((e) => clipFilePathIfNeed(e.file.path))
+            .toList(),
+      }),
+    );
   }
 
   Future<void> loadPlayState() async {

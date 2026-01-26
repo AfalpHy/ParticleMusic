@@ -23,15 +23,15 @@ class FoldersPage extends StatelessWidget {
         centerTitle: true,
       ),
       body: ListView.builder(
-        itemCount: folderPaths.length,
+        itemCount: folderPathList.length,
         itemBuilder: (_, index) {
-          final folder = folderPaths[index];
+          final folder = folderPathList[index];
           final songList = folder2SongList[folder]!;
           return ListTile(
             leading: CoverArtWidget(
               size: 40,
               borderRadius: 4,
-              source: songList.isNotEmpty ? getCoverArt(songList.first) : null,
+              song: getFirstSong(songList),
             ),
             title: Text(folder),
             onTap: () {

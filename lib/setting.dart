@@ -478,10 +478,10 @@ class SettingsList extends StatelessWidget {
                         valueListenable: foldersChangeNotifier,
                         builder: (_, _, _) {
                           return ListView.builder(
-                            itemCount: folderPaths.length,
+                            itemCount: folderPathList.length,
                             itemBuilder: (_, index) {
                               return ListTile(
-                                title: Text(folderPaths[index]),
+                                title: Text(folderPathList[index]),
                                 contentPadding: EdgeInsets.fromLTRB(
                                   20,
                                   0,
@@ -492,7 +492,7 @@ class SettingsList extends StatelessWidget {
                                 trailing: IconButton(
                                   onPressed: () {
                                     libraryLoader.removeFolder(
-                                      folderPaths[index],
+                                      folderPathList[index],
                                     );
                                   },
                                   icon: Icon(Icons.clear_rounded),
@@ -532,7 +532,7 @@ class SettingsList extends StatelessWidget {
                                 return;
                               }
                             }
-                            if (folderPaths.contains(result) &&
+                            if (folderPathList.contains(result) &&
                                 context.mounted) {
                               showCenterMessage(
                                 context,

@@ -27,11 +27,7 @@ class SongListTile extends StatelessWidget {
 
     return ListTile(
       contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
-      leading: CoverArtWidget(
-        size: 40,
-        borderRadius: 4,
-        source: getCoverArt(song),
-      ),
+      leading: CoverArtWidget(size: 40, borderRadius: 4, song: song),
       title: ValueListenableBuilder(
         valueListenable: currentSongNotifier,
         builder: (_, currentSong, _) {
@@ -111,7 +107,7 @@ class SongListTile extends StatelessWidget {
                     leading: CoverArtWidget(
                       size: 50,
                       borderRadius: 5,
-                      source: getCoverArt(song),
+                      song: song,
                     ),
                     title: Text(
                       getTitle(song),
@@ -275,11 +271,7 @@ class SelectableSongListTile extends StatelessWidget {
           child: GestureDetector(
             child: ListTile(
               contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-              leading: CoverArtWidget(
-                size: 40,
-                borderRadius: 4,
-                source: getCoverArt(song),
-              ),
+              leading: CoverArtWidget(size: 40, borderRadius: 4, song: song),
               title: ValueListenableBuilder(
                 valueListenable: currentSongNotifier,
                 builder: (_, currentSong, _) {

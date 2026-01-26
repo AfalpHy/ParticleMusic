@@ -181,8 +181,8 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                       onReorder: (oldIndex, newIndex) {
                         if (newIndex > oldIndex) newIndex -= 1;
 
-                        final item = playlist!.songs.removeAt(oldIndex);
-                        playlist!.songs.insert(newIndex, item);
+                        final item = playlist!.songList.removeAt(oldIndex);
+                        playlist!.songList.insert(newIndex, item);
 
                         playlist!.update();
                       },
@@ -684,11 +684,7 @@ class ListItemChildState extends State<ListItemChild> {
             return ListTile(
               contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
               visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-              leading: CoverArtWidget(
-                size: 40,
-                borderRadius: 4,
-                source: getCoverArt(song),
-              ),
+              leading: CoverArtWidget(size: 40, borderRadius: 4, song: song),
               title: Text(
                 getTitle(song),
                 overflow: TextOverflow.ellipsis,

@@ -582,11 +582,11 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    List<AudioMetadata> songList = filterSongs(
+    List<AudioMetadata> songList = filterSongList(
       widget.songList,
       textController.text,
     );
-    sortSongs(sortTypeNotifier.value, songList);
+    sortSongList(sortTypeNotifier.value, songList);
     final playlist = widget.playlist;
     final List<ValueNotifier<bool>> isSelectedList = List.generate(
       songList.length,
@@ -734,13 +734,13 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                     onTap: () {
                       if (valid) {
                         tryVibrate();
-                        List<AudioMetadata> songs = [];
+                        List<AudioMetadata> songList = [];
                         for (int i = isSelectedList.length - 1; i >= 0; i--) {
                           if (isSelectedList[i].value) {
-                            songs.add(songList[i]);
+                            songList.add(songList[i]);
                           }
                         }
-                        showAddPlaylistSheet(context, songs);
+                        showAddPlaylistSheet(context, songList);
                       }
                     },
                     child: Column(
@@ -767,17 +767,17 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                                 context,
                                 l10n.delete,
                               )) {
-                                List<AudioMetadata> songs = [];
+                                List<AudioMetadata> songList = [];
                                 for (
                                   int i = isSelectedList.length - 1;
                                   i >= 0;
                                   i--
                                 ) {
                                   if (isSelectedList[i].value) {
-                                    songs.add(songList[i]);
+                                    songList.add(songList[i]);
                                   }
                                 }
-                                playlist.remove(songs);
+                                playlist.remove(songList);
                                 if (context.mounted) {
                                   showCenterMessage(
                                     context,

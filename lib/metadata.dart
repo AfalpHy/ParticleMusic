@@ -186,7 +186,7 @@ void showSongMetadataDialog(BuildContext context, AudioMetadata song) async {
                                   );
                                 },
                                 child: CoverArtWidget(
-                                  source: coverArt,
+                                  song: song,
                                   size: 180,
                                   borderRadius: 10,
                                 ),

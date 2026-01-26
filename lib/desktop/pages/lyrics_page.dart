@@ -52,7 +52,7 @@ class LyricsPageState extends State<LyricsPage> {
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    CoverArtWidget(source: getCoverArt(currentSong)),
+                    CoverArtWidget(song: currentSong),
                     ClipRect(
                       child: BackdropFilter(
                         filter: ImageFilter.blur(
@@ -74,7 +74,7 @@ class LyricsPageState extends State<LyricsPage> {
                             CoverArtWidget(
                               size: coverArtSize,
                               borderRadius: coverArtSize * 0.025,
-                              source: getCoverArt(currentSong),
+                              song: currentSong,
                             ),
                             playControls(
                               coverArtSize,

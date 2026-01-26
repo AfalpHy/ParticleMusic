@@ -44,7 +44,7 @@ class PlayerBar extends StatelessWidget {
                     CoverArtWidget(
                       size: 35,
                       borderRadius: 3,
-                      source: getCoverArt(currentSong),
+                      song: currentSong,
                     ),
 
                     const SizedBox(width: 10),

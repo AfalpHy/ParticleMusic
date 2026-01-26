@@ -30,7 +30,6 @@
   "reorder": "Reorder",
   "songsCount": "{count} songs",
   "@songsCount": {
-    "description": "Number of songs in library",
     "placeholders": {
       "count": {
         "type": "int"
@@ -39,7 +38,6 @@
   },
   "artistsCount": "{count} in total",
   "@artistsCount": {
-    "description": "Number of songs in library",
     "placeholders": {
       "count": {
         "type": "int"
@@ -48,7 +46,6 @@
   },
   "albumsCount": "{count} in total",
   "@albumsCount": {
-    "description": "Number of songs in library",
     "placeholders": {
       "count": {
         "type": "int"
@@ -57,7 +54,6 @@
   },
   "playlistsCount": "{count} in total",
   "@playlistsCount": {
-    "description": "Number of songs in library",
     "placeholders": {
       "count": {
         "type": "int"

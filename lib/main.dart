@@ -20,12 +20,16 @@ import 'package:audio_service/audio_service.dart';
 import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:particle_music/setting.dart';
+import 'package:path_provider/path_provider.dart';
 import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
 import 'audio_handler.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  appDocs = await getApplicationDocumentsDirectory();
+  appSupportDir = await getApplicationSupportDirectory();
 
   if (isMobile) {
     await logger.init();
@@ -118,7 +122,7 @@ Future<void> main() async {
     ),
   );
 
-  await libraryLoader.initial();
+  await libraryLoader.init();
 
   runApp(
     ValueListenableBuilder(

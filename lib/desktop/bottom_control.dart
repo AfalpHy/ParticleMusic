@@ -47,7 +47,7 @@ class BottomControl extends StatelessWidget {
                 leading: CoverArtWidget(
                   size: 50,
                   borderRadius: 5,
-                  source: getCoverArt(currentSong),
+                  song: currentSong,
                 ),
                 title: Text(
                   getTitle(currentSong),

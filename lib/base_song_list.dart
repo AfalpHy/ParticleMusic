@@ -55,9 +55,9 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
 
   void updateSongList() {
     final value = textController.text;
-    final filteredSongs = filterSongs(songList, value);
-    sortSongs(sortTypeNotifier.value, filteredSongs);
-    currentSongListNotifier.value = filteredSongs;
+    final filteredSongList = filterSongList(songList, value);
+    sortSongList(sortTypeNotifier.value, filteredSongList);
+    currentSongListNotifier.value = filteredSongList;
   }
 
   @override
@@ -72,7 +72,7 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
     recently = widget.recently;
 
     if (playlist != null) {
-      songList = playlist!.songs;
+      songList = playlist!.songList;
       title = playlist!.name;
       sortTypeNotifier = playlist!.sortTypeNotifire;
       playlist!.changeNotifier.addListener(updateSongList);
@@ -92,7 +92,7 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
       songList = historyManager.recentlySongList;
       title = recently!;
     } else {
-      songList = librarySongs;
+      songList = librarySongList;
       isLibrary = true;
     }
     updateSongList();
@@ -122,7 +122,7 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
         valueListenable: currentSongListNotifier,
         builder: (_, _, _) {
           if (songList.isEmpty) {
-            return CoverArtWidget(size: size, borderRadius: 10, source: null);
+            return CoverArtWidget(size: size, borderRadius: 10, song: null);
           }
           return ValueListenableBuilder(
             valueListenable: songIsUpdated[songList.first]!,
@@ -130,7 +130,7 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
               return CoverArtWidget(
                 size: size,
                 borderRadius: 10,
-                source: getCoverArt(songList.first),
+                song: songList.first,
               );
             },
           );

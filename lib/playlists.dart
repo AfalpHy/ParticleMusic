@@ -25,8 +25,16 @@ class PlaylistsManager {
     }
   }
 
-  Future<List<dynamic>> getAllPlaylists() async {
-    return jsonDecode(await file.readAsString());
+  Future<void> initAllPlaylists() async {
+    List<dynamic> allPlaylists = jsonDecode(await file.readAsString());
+    for (String name in allPlaylists) {
+      final playlist = Playlist(
+        name: name,
+        file: File("${appSupportDir.path}/$name.json"),
+        settingFile: File("${appSupportDir.path}/${name}_setting.json"),
+      );
+      playlistsManager.addPlaylist(playlist);
+    }
   }
 
   int length() {
@@ -102,7 +110,7 @@ class PlaylistsManager {
 
 class Playlist {
   String name;
-  List<AudioMetadata> songs = [];
+  List<AudioMetadata> songList = [];
   File file;
   File settingFile;
   ValueNotifier<int> changeNotifier = ValueNotifier(0);
@@ -123,12 +131,12 @@ class Playlist {
     }
   }
 
-  void add(List<AudioMetadata> songs) {
-    for (AudioMetadata song in songs) {
-      if (this.songs.contains(song)) {
+  void add(List<AudioMetadata> songList) {
+    for (AudioMetadata song in songList) {
+      if (this.songList.contains(song)) {
         continue;
       }
-      this.songs.insert(0, song);
+      this.songList.insert(0, song);
       if (name == 'Favorite') {
         songIsFavorite[song]!.value = true;
       }
@@ -136,9 +144,9 @@ class Playlist {
     update();
   }
 
-  void remove(List<AudioMetadata> songs) {
-    for (AudioMetadata song in songs) {
-      this.songs.remove(song);
+  void remove(List<AudioMetadata> songList) {
+    for (AudioMetadata song in songList) {
+      this.songList.remove(song);
       if (name == 'Favorite') {
         songIsFavorite[song]!.value = false;
       }
@@ -147,19 +155,13 @@ class Playlist {
   }
 
   void update() {
-    if (Platform.isIOS) {
-      file.writeAsStringSync(
-        jsonEncode(songs.map((e) => getIOSPath(e.file.path)).toList()),
-      );
-    } else {
-      file.writeAsStringSync(
-        jsonEncode(songs.map((e) => e.file.path).toList()),
-      );
-    }
+    file.writeAsStringSync(
+      jsonEncode(songList.map((e) => clipFilePathIfNeed(e.file.path)).toList()),
+    );
     changeNotifier.value++;
     if (!isMobile) {
       final panelStack = panelManager.panelStack;
-      final bgSong = songs.isNotEmpty ? songs.first : null;
+      final bgSong = songList.isNotEmpty ? songList.first : null;
       for (int i = panelStack.length - 1; i > 0; i--) {
         Widget tmp = panelStack[i];
         if (tmp is SongListPanel && tmp.playlist == this) {
@@ -186,10 +188,10 @@ class Playlist {
   }
 
   AudioMetadata? getFirstSong() {
-    if (songs.isEmpty) {
+    if (songList.isEmpty) {
       return null;
     }
-    return songs.first;
+    return songList.first;
   }
 }
 
@@ -206,8 +208,8 @@ void toggleFavoriteState(AudioMetadata song) {
 }
 
 class Add2PlaylistPanel extends StatefulWidget {
-  final List<AudioMetadata> songs;
-  const Add2PlaylistPanel({super.key, required this.songs});
+  final List<AudioMetadata> songList;
+  const Add2PlaylistPanel({super.key, required this.songList});
 
   @override
   State<StatefulWidget> createState() => _Add2PlaylistPanelState();
@@ -260,9 +262,7 @@ class _Add2PlaylistPanelState extends State<Add2PlaylistPanel> {
                 leading: CoverArtWidget(
                   size: 40,
                   borderRadius: 4,
-                  source: playlist.songs.isNotEmpty
-                      ? getCoverArt(playlist.songs.first)
-                      : null,
+                  song: getFirstSong(playlist.songList),
                 ),
                 title: Text(
                   index == 0 ? l10n.favorite : playlist.name,
@@ -270,7 +270,7 @@ class _Add2PlaylistPanelState extends State<Add2PlaylistPanel> {
                 ),
 
                 onTap: () {
-                  playlist.add(widget.songs);
+                  playlist.add(widget.songList);
                   showCenterMessage(
                     context,
                     l10n.added2Playlists,
@@ -407,19 +407,19 @@ Future<bool> showCreatePlaylistDialog(BuildContext context) async {
   return false;
 }
 
-void showAddPlaylistSheet(BuildContext context, List<AudioMetadata> songs) {
+void showAddPlaylistSheet(BuildContext context, List<AudioMetadata> songList) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
     builder: (_) {
-      return mySheet(Add2PlaylistPanel(songs: songs));
+      return mySheet(Add2PlaylistPanel(songList: songList));
     },
   );
 }
 
 void showAddPlaylistDialog(
   BuildContext context,
-  List<AudioMetadata> songs,
+  List<AudioMetadata> songList,
 ) async {
   await showDialog(
     context: context,
@@ -435,7 +435,7 @@ void showAddPlaylistDialog(
           width: 400,
           child: Padding(
             padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
-            child: Add2PlaylistPanel(songs: songs),
+            child: Add2PlaylistPanel(songList: songList),
           ),
         ),
       );

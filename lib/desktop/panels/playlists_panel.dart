@@ -189,26 +189,25 @@ class PlaylistsPanelState extends State<PlaylistsPanel> {
                                       child: InkWell(
                                         splashColor: Colors.transparent,
                                         highlightColor: Colors.transparent,
-                                        child: playlist.songs.isNotEmpty
+                                        child: playlist.songList.isNotEmpty
                                             ? ValueListenableBuilder(
                                                 valueListenable:
                                                     songIsUpdated[playlist
-                                                        .songs
+                                                        .songList
                                                         .first]!,
                                                 builder: (_, _, _) {
                                                   return CoverArtWidget(
                                                     size: coverArtWidth,
                                                     borderRadius: 10,
-                                                    source: getCoverArt(
-                                                      playlist.songs.first,
-                                                    ),
+                                                    song:
+                                                        playlist.songList.first,
                                                   );
                                                 },
                                               )
                                             : CoverArtWidget(
                                                 size: coverArtWidth,
                                                 borderRadius: 10,
-                                                source: null,
+                                                song: null,
                                               ),
                                         onTap: () {
                                           panelManager.pushPanel(

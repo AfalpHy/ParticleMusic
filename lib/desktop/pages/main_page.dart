@@ -29,7 +29,7 @@ class DesktopMainPage extends StatelessWidget {
         ValueListenableBuilder(
           valueListenable: updateBackgroundNotifier,
           builder: (context, value, child) {
-            return CoverArtWidget(source: getCoverArt(backgroundSong));
+            return CoverArtWidget(song: backgroundSong);
           },
         ),
         ValueListenableBuilder(

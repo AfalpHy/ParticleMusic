@@ -25,7 +25,7 @@ class LyricsPage extends StatelessWidget {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              CoverArtWidget(source: getCoverArt(currentSong)),
+              CoverArtWidget(song: currentSong),
               ClipRect(
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
@@ -110,7 +110,7 @@ class LyricsPage extends StatelessWidget {
           child: CoverArtWidget(
             size: appWidth * 0.84,
             borderRadius: appWidth * 0.04,
-            source: getCoverArt(currentSong),
+            song: currentSong,
           ),
         ),
 
@@ -163,7 +163,7 @@ class LyricsPage extends StatelessWidget {
                             leading: CoverArtWidget(
                               size: 50,
                               borderRadius: 5,
-                              source: getCoverArt(currentSong),
+                              song: currentSong,
                             ),
                             title: Text(
                               getTitle(currentSong),

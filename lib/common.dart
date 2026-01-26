@@ -8,10 +8,12 @@ import 'package:image/image.dart' as image;
 import 'package:lpinyin/lpinyin.dart';
 import 'package:marquee/marquee.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
-import 'package:particle_music/load_library.dart';
 import 'package:particle_music/setting.dart';
 import 'package:path/path.dart';
 import 'package:smooth_corner/smooth_corner.dart';
+
+late Directory appDocs;
+late Directory appSupportDir;
 
 final isMobile = Platform.isAndroid || Platform.isIOS;
 final ValueNotifier<Locale?> localeNotifier = ValueNotifier(null);
@@ -268,7 +270,7 @@ Picture? getCoverArt(AudioMetadata? song) {
   return song.pictures.isNotEmpty ? song.pictures.first : null;
 }
 
-List<AudioMetadata> filterSongs(List<AudioMetadata> songList, String value) {
+List<AudioMetadata> filterSongList(List<AudioMetadata> songList, String value) {
   return songList.where((song) {
     final songTitle = getTitle(song);
     final songArtist = getArtist(song);
@@ -281,7 +283,7 @@ List<AudioMetadata> filterSongs(List<AudioMetadata> songList, String value) {
   }).toList();
 }
 
-void sortSongs(int sortType, List<AudioMetadata> songList) {
+void sortSongList(int sortType, List<AudioMetadata> songList) {
   switch (sortType) {
     case 1: // Title Ascending
       songList.sort((a, b) {
@@ -398,14 +400,41 @@ Color computeCoverArtColor(AudioMetadata? song) {
   return Color.fromARGB(255, r.toInt(), g.toInt(), b.toInt());
 }
 
-AudioMetadata? getFirstSong(List<AudioMetadata> songs) {
-  if (songs.isEmpty) {
+AudioMetadata? getFirstSong(List<AudioMetadata> songList) {
+  if (songList.isEmpty) {
     return null;
   }
-  return songs.first;
+  return songList.first;
 }
 
-String getIOSPath(String path) {
-  int prefixLength = appDocs.path.length;
-  return path.substring(prefixLength);
+// every installation on iOS may result in a different app documents path
+// due to app container isolation, therefore, keep only relative paths
+String clipFilePathIfNeed(String path) {
+  if (Platform.isIOS) {
+    int prefixLength = appDocs.path.length;
+    return path.substring(prefixLength);
+  }
+  return path;
+}
+
+String revertFilePathIfNeed(String path) {
+  if (Platform.isIOS) {
+    return appDocs.path + path;
+  }
+  return path;
+}
+
+String convertDirectoryPathIfNeed(String path) {
+  if (Platform.isIOS) {
+    int prefixLength = appDocs.path.length;
+    return path.substring(prefixLength);
+  }
+  return path;
+}
+
+String revertDirectoryPathIfNeed(String path) {
+  if (Platform.isIOS) {
+    return "${appDocs.parent.path}/${path.replaceFirst('Particle Music', 'Documents')}";
+  }
+  return path;
 }

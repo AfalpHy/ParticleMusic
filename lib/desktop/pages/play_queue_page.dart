@@ -315,7 +315,7 @@ class PlayQueueItemChildState extends State<PlayQueueItemChild> {
     return ListTile(
       leading: Stack(
         children: [
-          CoverArtWidget(size: 50, borderRadius: 5, source: getCoverArt(song)),
+          CoverArtWidget(size: 50, borderRadius: 5, song: song),
           ValueListenableBuilder(
             valueListenable: showPlayButtonNotifier,
             builder: (context, value, child) {

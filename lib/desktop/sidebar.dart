@@ -327,18 +327,19 @@ class Sidebar extends StatelessWidget {
             leading: ValueListenableBuilder(
               valueListenable: playlist.changeNotifier,
               builder: (_, _, _) {
-                return playlist.songs.isNotEmpty
+                return playlist.songList.isNotEmpty
                     ? ValueListenableBuilder(
-                        valueListenable: songIsUpdated[playlist.songs.first]!,
+                        valueListenable:
+                            songIsUpdated[playlist.songList.first]!,
                         builder: (_, _, _) {
                           return CoverArtWidget(
                             size: 30,
                             borderRadius: 3,
-                            source: getCoverArt(playlist.songs.first),
+                            song: playlist.songList.first,
                           );
                         },
                       )
-                    : CoverArtWidget(size: 30, borderRadius: 3, source: null);
+                    : CoverArtWidget(size: 30, borderRadius: 3, song: null);
               },
             ),
             content: index == 0 ? l10n.favorite : playlist.name,

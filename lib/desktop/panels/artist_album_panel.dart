@@ -239,7 +239,7 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
                                         return CoverArtWidget(
                                           size: coverArtWidth,
                                           borderRadius: 10,
-                                          source: getCoverArt(songList.first),
+                                          song: songList.first,
                                         );
                                       },
                                     ),

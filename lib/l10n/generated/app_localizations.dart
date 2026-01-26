@@ -272,25 +272,25 @@ abstract class AppLocalizations {
   /// **'Reorder'**
   String get reorder;
 
-  /// Number of songs in library
+  /// No description provided for @songsCount.
   ///
   /// In en, this message translates to:
   /// **'{count} songs'**
   String songsCount(int count);
 
-  /// Number of songs in library
+  /// No description provided for @artistsCount.
   ///
   /// In en, this message translates to:
   /// **'{count} in total'**
   String artistsCount(int count);
 
-  /// Number of songs in library
+  /// No description provided for @albumsCount.
   ///
   /// In en, this message translates to:
   /// **'{count} in total'**
   String albumsCount(int count);
 
-  /// Number of songs in library
+  /// No description provided for @playlistsCount.
   ///
   /// In en, this message translates to:
   /// **'{count} in total'**

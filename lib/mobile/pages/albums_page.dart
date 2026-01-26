@@ -236,7 +236,7 @@ class AlbumsPage extends StatelessWidget {
                     child: CoverArtWidget(
                       size: size,
                       borderRadius: radius,
-                      source: getCoverArt(songList.first),
+                      song: songList.first,
                     ),
                     onTap: () {
                       Navigator.of(context).push(

@@ -275,7 +275,7 @@ class ArtistsPage extends StatelessWidget {
             leading: CoverArtWidget(
               size: 50,
               borderRadius: 25,
-              source: getCoverArt(songList.first),
+              song: songList.first,
             ),
             title: Text(artist),
             trailing: Text(
@@ -323,7 +323,7 @@ class ArtistsPage extends StatelessWidget {
                     child: CoverArtWidget(
                       size: size,
                       borderRadius: radius,
-                      source: getCoverArt(songList.first),
+                      song: songList.first,
                     ),
                     onTap: () {
                       Navigator.of(context).push(

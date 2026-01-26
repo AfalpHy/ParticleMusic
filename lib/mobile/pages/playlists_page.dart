@@ -61,9 +61,7 @@ class PlaylistsPage extends StatelessWidget {
                       return CoverArtWidget(
                         size: 50,
                         borderRadius: 5,
-                        source: playlist.songs.isNotEmpty
-                            ? getCoverArt(playlist.songs.first)
-                            : null,
+                        song: getFirstSong(playlist.songList),
                       );
                     },
                   ),
@@ -77,7 +75,7 @@ class PlaylistsPage extends StatelessWidget {
                   subtitle: ValueListenableBuilder(
                     valueListenable: playlist.changeNotifier,
                     builder: (_, _, _) {
-                      return Text(l10n.songsCount(playlist.songs.length));
+                      return Text(l10n.songsCount(playlist.songList.length));
                     },
                   ),
                   onTap: () {
@@ -202,9 +200,7 @@ class PlaylistsPage extends StatelessWidget {
                   leading: CoverArtWidget(
                     size: 50,
                     borderRadius: 5,
-                    source: playlist.songs.isNotEmpty
-                        ? getCoverArt(playlist.songs.first)
-                        : null,
+                    song: getFirstSong(playlist.songList),
                   ),
                   title: AutoSizeText(
                     playlist.name,
@@ -219,7 +215,7 @@ class PlaylistsPage extends StatelessWidget {
                       return Text(
                         AppLocalizations.of(
                           context,
-                        ).songsCount(playlist.songs.length),
+                        ).songsCount(playlist.songList.length),
                       );
                     },
                   ),

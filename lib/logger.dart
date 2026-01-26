@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:path_provider/path_provider.dart';
+import 'package:particle_music/common.dart';
 
 final logger = Logger();
 
@@ -18,9 +18,8 @@ class Logger {
   late File _file;
 
   Future<void> init() async {
-    final dir = await getApplicationSupportDirectory();
     final time = formatForFileName(DateTime.now());
-    _file = File('${dir.path}/logs/$time.log');
+    _file = File('${appSupportDir.path}/logs/$time.log');
     _file.createSync(recursive: true);
   }
 

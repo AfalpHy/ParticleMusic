@@ -19,8 +19,8 @@ class FoldersPanel extends StatelessWidget {
       valueListenable: foldersChangeNotifier,
       builder: (_, _, _) {
         final currentFolderNotifier = ValueNotifier(l10n.folder);
-        if (folderPaths.isNotEmpty) {
-          currentFolderNotifier.value = folderPaths.first;
+        if (folderPathList.isNotEmpty) {
+          currentFolderNotifier.value = folderPathList.first;
         }
         return ValueListenableBuilder(
           valueListenable: currentFolderNotifier,
@@ -32,9 +32,9 @@ class FoldersPanel extends StatelessWidget {
                 width: 200,
 
                 child: ListView.builder(
-                  itemCount: folderPaths.length,
+                  itemCount: folderPathList.length,
                   itemBuilder: (_, index) {
-                    final folder = folderPaths[index];
+                    final folder = folderPathList[index];
                     return SmoothClipRRect(
                       borderRadius: BorderRadius.circular(10),
                       child: ValueListenableBuilder(

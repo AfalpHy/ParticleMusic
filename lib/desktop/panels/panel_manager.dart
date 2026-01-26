@@ -39,14 +39,14 @@ class PanelManager {
       backgroundSong = album2SongList[content]!.first;
       panelStack.add(SongListPanel(key: UniqueKey(), album: content));
     } else if (label == 'folders') {
-      if (folderPaths.isNotEmpty) {
-        backgroundSong = getFirstSong(folder2SongList[folderPaths.first]!);
+      if (folderPathList.isNotEmpty) {
+        backgroundSong = getFirstSong(folder2SongList[folderPathList.first]!);
       } else {
         backgroundSong = null;
       }
       panelStack.add(FoldersPanel(key: UniqueKey()));
     } else if (label == 'songs') {
-      backgroundSong = getFirstSong(librarySongs);
+      backgroundSong = getFirstSong(librarySongList);
       panelStack.add(SongListPanel(key: UniqueKey()));
     } else if (label == 'ranking') {
       backgroundSong = getFirstSong(historyManager.rankingSongList);
@@ -56,7 +56,7 @@ class PanelManager {
       panelStack.add(RecentlyPanel(key: UniqueKey()));
     } else if (label[0] == '_') {
       final playlist = playlistsManager.getPlaylistByName(label.substring(1));
-      backgroundSong = getFirstSong(playlist!.songs);
+      backgroundSong = getFirstSong(playlist!.songList);
       panelStack.add(SongListPanel(key: UniqueKey(), playlist: playlist));
     } else {
       backgroundSong = currentSongNotifier.value;

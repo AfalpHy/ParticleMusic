@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/panels/panel_manager.dart';
 import 'package:particle_music/load_library.dart';
-import 'package:path_provider/path_provider.dart';
 
 final rankingChangeNotifier = ValueNotifier(0);
 final recentlyChangeNotifier = ValueNotifier(0);
@@ -22,11 +21,7 @@ class RankingItem {
   }
 
   factory RankingItem.fromSong(AudioMetadata song, int times) {
-    String path = song.file.path;
-    if (Platform.isIOS) {
-      path = getIOSPath(path);
-    }
-    return RankingItem(times, path, song);
+    return RankingItem(times, clipFilePathIfNeed(song.file.path), song);
   }
 }
 
@@ -47,7 +42,6 @@ class HistoryManager {
     recentlyPathList = [];
     recentlySongList = [];
 
-    Directory appSupportDir = await getApplicationSupportDirectory();
     rankingFile = File("${appSupportDir.path}/ranking.txt");
     if (rankingFile.existsSync()) {
       String content = rankingFile.readAsStringSync();
@@ -123,10 +117,8 @@ class HistoryManager {
   }
 
   void add2Recently(AudioMetadata song) {
-    String filePath = song.file.path;
-    if (Platform.isIOS) {
-      filePath = getIOSPath(filePath);
-    }
+    String filePath = clipFilePathIfNeed(song.file.path);
+
     recentlyPathList.remove(filePath);
     recentlyPathList.insert(0, filePath);
     recentlySongList.remove(song);
