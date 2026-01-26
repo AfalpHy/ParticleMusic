@@ -131,10 +131,6 @@ class LibraryLoader {
             }
 
             filePath2LibrarySong[path] = song;
-          } else {
-            _filePath2Modified.remove(path);
-            filePath2PicturePath.remove(path);
-            filePath2LibrarySong.remove(path);
           }
         }
 
@@ -245,6 +241,7 @@ class LibraryLoader {
       playlist.songList = [];
     }
 
+    historyManager.clear();
     if (!isMobile) {
       panelManager.reload();
     }
@@ -293,8 +290,8 @@ class LibraryLoader {
         : [];
     List<AudioMetadata> result = [];
     for (final path in songFilePathList) {
-      final song = filePath2LibrarySong[path]!;
       if (_filePathValidSet.contains(path)) {
+        final song = filePath2LibrarySong[path]!;
         result.add(song);
       } else {
         final picturePath = filePath2PicturePath[path];
@@ -304,6 +301,8 @@ class LibraryLoader {
             await pictureFile.delete();
           }
         }
+        filePath2LibrarySong.remove(path);
+        filePath2PicturePath.remove(path);
       }
     }
     result.addAll(additionalSongList);

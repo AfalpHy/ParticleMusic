@@ -32,12 +32,6 @@ class HistoryManager {
   List<AudioMetadata> recentlySongList = [];
 
   Future<void> load() async {
-    rankingItemList = [];
-    rankingSongList = [];
-
-    recentlyPathList = [];
-    recentlySongList = [];
-
     rankingFile = File("${appSupportDir.path}/ranking.txt");
     if (rankingFile.existsSync()) {
       String content = rankingFile.readAsStringSync();
@@ -138,5 +132,13 @@ class HistoryManager {
   void updateRecently() {
     recentlyFile.writeAsStringSync(jsonEncode(recentlyPathList));
     recentlyChangeNotifier.value++;
+  }
+
+  void clear() {
+    rankingItemList = [];
+    rankingSongList = [];
+
+    recentlyPathList = [];
+    recentlySongList = [];
   }
 }
