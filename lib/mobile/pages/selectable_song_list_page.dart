@@ -55,7 +55,22 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
   final ValueNotifier<bool> allSelected = ValueNotifier(false);
   final ValueNotifier<int> selectedNumNotifier = ValueNotifier(0);
 
-  List<AudioMetadata> currentSongList = [];
+  List<ValueNotifier<bool>> isSelectedList = [];
+
+  final ValueNotifier<List<AudioMetadata>> currentSongListNotifier =
+      ValueNotifier([]);
+
+  void updateSongList() {
+    final value = textController.text;
+    final filteredSongList = filterSongList(songList, value);
+    sortSongList(sortTypeNotifier.value, filteredSongList);
+    currentSongListNotifier.value = filteredSongList;
+    isSelectedList = List.generate(
+      filteredSongList.length,
+      (_) => ValueNotifier(false),
+    );
+    selectedNumNotifier.value = 0;
+  }
 
   @override
   void initState() {
@@ -71,12 +86,14 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
     isLibrary = widget.isLibrary;
 
     selectedNumNotifier.addListener(() {
-      if (selectedNumNotifier.value == currentSongList.length) {
+      if (selectedNumNotifier.value > 0 &&
+          selectedNumNotifier.value == currentSongListNotifier.value.length) {
         allSelected.value = true;
       } else {
         allSelected.value = false;
       }
     });
+    updateSongList();
   }
 
   Widget moreButton(BuildContext context) {
@@ -164,9 +181,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                               title: Text(text),
                               onTap: () {
                                 sortTypeNotifier.value = i;
-                                setState(() {
-                                  selectedNumNotifier.value = 0;
-                                });
+                                updateSongList();
                               },
                               trailing: value == i ? Icon(Icons.check) : null,
                               dense: true,
@@ -207,14 +222,6 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    currentSongList = filterSongList(songList, textController.text);
-    sortSongList(sortTypeNotifier.value, currentSongList);
-
-    final List<ValueNotifier<bool>> isSelectedList = List.generate(
-      currentSongList.length,
-      (_) => ValueNotifier(false),
-    );
-
     return Scaffold(
       backgroundColor: commonColor,
       appBar: AppBar(
@@ -223,106 +230,110 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
         actions: [
           MySearchField(
             textController: textController,
-            onSearchTextChanged: () => setState(() {
-              selectedNumNotifier.value = 0;
-            }),
+            onSearchTextChanged: updateSongList,
           ),
           moreButton(context),
         ],
       ),
-      body: Column(
-        children: [
-          Row(
+      body: ValueListenableBuilder(
+        valueListenable: currentSongListNotifier,
+        builder: (context, currentSongList, child) {
+          return Column(
             children: [
-              ValueListenableBuilder(
-                valueListenable: allSelected,
-                builder: (context, value, child) {
-                  return Checkbox(
-                    value: value,
-                    activeColor: iconColor,
-                    onChanged: (value) {
-                      for (var isSelected in isSelectedList) {
-                        isSelected.value = value!;
-                      }
-                      selectedNumNotifier.value = value!
-                          ? currentSongList.length
-                          : 0;
+              Row(
+                children: [
+                  ValueListenableBuilder(
+                    valueListenable: allSelected,
+                    builder: (context, value, child) {
+                      return Checkbox(
+                        value: value,
+                        activeColor: iconColor,
+                        onChanged: (value) {
+                          for (var isSelected in isSelectedList) {
+                            isSelected.value = value!;
+                          }
+                          selectedNumNotifier.value = value!
+                              ? currentSongList.length
+                              : 0;
+                        },
+                        shape: const CircleBorder(),
+                        side: BorderSide(color: Colors.grey),
+                      );
                     },
-                    shape: const CircleBorder(),
-                    side: BorderSide(color: Colors.grey),
-                  );
-                },
+                  ),
+                  Text(l10n.selectAll, style: TextStyle(fontSize: 16)),
+                  Spacer(),
+
+                  GestureDetector(
+                    onTap: () {
+                      Navigator.of(context).pop();
+                    },
+                    child: Text(l10n.complete, style: TextStyle(fontSize: 16)),
+                  ),
+                  SizedBox(width: 10),
+                ],
               ),
-              Text(l10n.selectAll, style: TextStyle(fontSize: 16)),
-              Spacer(),
+              Expanded(
+                child: ReorderableListView.builder(
+                  buildDefaultDragHandles: false,
+                  onReorder: (oldIndex, newIndex) {
+                    if (newIndex > oldIndex) newIndex -= 1;
+                    final checkBoxitem = isSelectedList.removeAt(oldIndex);
+                    isSelectedList.insert(newIndex, checkBoxitem);
 
-              GestureDetector(
-                onTap: () {
-                  Navigator.of(context).pop();
-                },
-                child: Text(l10n.complete, style: TextStyle(fontSize: 16)),
-              ),
-              SizedBox(width: 10),
-            ],
-          ),
-          Expanded(
-            child: ReorderableListView.builder(
-              buildDefaultDragHandles: false,
-              onReorder: (oldIndex, newIndex) {
-                if (newIndex > oldIndex) newIndex -= 1;
-                final checkBoxitem = isSelectedList.removeAt(oldIndex);
-                isSelectedList.insert(newIndex, checkBoxitem);
+                    final item = songList.removeAt(oldIndex);
+                    songList.insert(newIndex, item);
+                    // This code is only reached when currentSongList == songList,
+                    // reassign it to avoid calling updateSongList to keep the isSelectedList state
+                    currentSongListNotifier.value = songList;
 
-                final item = songList.removeAt(oldIndex);
-                songList.insert(newIndex, item);
-                // This code is only reached when currentSongList == songList,
-                // reassign it to avoid calling setState to keep the isSelectedList state
-                currentSongList = songList;
-
-                if (isLibrary) {
-                  libraryLoader.updataLibrarySongList();
-                } else if (folder != null) {
-                  libraryLoader.updateFoloderSongList(folder!);
-                } else {
-                  playlist!.update();
-                }
-              },
-              onReorderStart: (_) {
-                tryVibrate();
-              },
-              onReorderEnd: (_) {
-                tryVibrate();
-              },
-              proxyDecorator:
-                  (Widget child, int index, Animation<double> animation) {
-                    return Material(
-                      elevation: 0.1,
-                      color:
-                          Colors.grey.shade100, // background color while moving
-                      child: child,
+                    if (isLibrary) {
+                      libraryLoader.updataLibrarySongList();
+                    } else if (folder != null) {
+                      libraryLoader.updateFoloderSongList(folder!);
+                    } else {
+                      playlist!.update();
+                    }
+                  },
+                  onReorderStart: (_) {
+                    tryVibrate();
+                  },
+                  onReorderEnd: (_) {
+                    tryVibrate();
+                  },
+                  proxyDecorator:
+                      (Widget child, int index, Animation<double> animation) {
+                        return Material(
+                          elevation: 0.1,
+                          color: Colors
+                              .grey
+                              .shade100, // background color while moving
+                          child: child,
+                        );
+                      },
+                  itemCount: currentSongList.length,
+                  itemBuilder: (_, index) {
+                    return SelectableSongListTile(
+                      key: ValueKey(currentSongList[index]),
+                      index: index,
+                      source: currentSongList,
+                      isSelected: isSelectedList[index],
+                      selectedNumNotifier: selectedNumNotifier,
+                      reorderable:
+                          !(artist != null ||
+                              album != null ||
+                              ranking != null ||
+                              recently != null ||
+                              textController.text.isNotEmpty ||
+                              sortTypeNotifier.value > 0),
+                      isRanking: ranking != null,
                     );
                   },
-              itemCount: currentSongList.length,
-              itemBuilder: (_, index) {
-                return SelectableSongListTile(
-                  key: ValueKey(currentSongList[index]),
-                  index: index,
-                  source: currentSongList,
-                  isSelected: isSelectedList[index],
-                  selectedNumNotifier: selectedNumNotifier,
-                  reorderable:
-                      !(artist != null ||
-                          album != null ||
-                          ranking != null ||
-                          recently != null ||
-                          textController.text.isNotEmpty ||
-                          sortTypeNotifier.value > 0),
-                  isRanking: ranking != null,
-                );
-              },
-            ),
-          ),
-        ],
+                ),
+              ),
+            ],
+          );
+        },
       ),
       bottomNavigationBar: ValueListenableBuilder(
         valueListenable: selectedNumNotifier,
@@ -340,7 +351,10 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                         tryVibrate();
                         for (int i = isSelectedList.length - 1; i >= 0; i--) {
                           if (isSelectedList[i].value) {
-                            audioHandler.insert2Next(i, currentSongList);
+                            audioHandler.insert2Next(
+                              i,
+                              currentSongListNotifier.value,
+                            );
                           }
                         }
                         showCenterMessage(
@@ -372,7 +386,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                         List<AudioMetadata> tmpSongList = [];
                         for (int i = isSelectedList.length - 1; i >= 0; i--) {
                           if (isSelectedList[i].value) {
-                            tmpSongList.add(currentSongList[i]);
+                            tmpSongList.add(currentSongListNotifier.value[i]);
                           }
                         }
                         showAddPlaylistSheet(context, tmpSongList);
@@ -405,10 +419,13 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                               i--
                             ) {
                               if (isSelectedList[i].value) {
-                                tmpSongList.add(currentSongList[i]);
+                                tmpSongList.add(
+                                  currentSongListNotifier.value[i],
+                                );
                               }
                             }
                             playlist!.remove(tmpSongList);
+                            updateSongList();
                             if (context.mounted) {
                               showCenterMessage(
                                 context,
@@ -416,9 +433,6 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                                 duration: 1000,
                               );
                             }
-                            setState(() {
-                              selectedNumNotifier.value = 0;
-                            });
                           }
                         }
                       },
