@@ -5,21 +5,21 @@ import 'dart:io';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/desktop/panels/panel_manager.dart';
+import 'package:particle_music/common_widgets/my_sheet.dart';
 import 'package:particle_music/desktop/panels/song_list_panel.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
+import 'package:particle_music/utils.dart';
 import 'package:smooth_corner/smooth_corner.dart';
-import 'cover_art_widget.dart';
-
-late PlaylistsManager playlistsManager;
+import 'common_widgets/cover_art_widget.dart';
 
 class PlaylistsManager {
-  final File file;
+  late File file;
   List<Playlist> playlists = [];
   Map<String, Playlist> playlistsMap = {};
   ValueNotifier<int> changeNotifier = ValueNotifier(0);
 
-  PlaylistsManager(this.file) {
+  PlaylistsManager() {
+    file = File("${appSupportDir.path}/playlists.txt");
     if (!(file.existsSync())) {
       file.writeAsStringSync(jsonEncode(['Favorite']));
     }
@@ -195,8 +195,6 @@ class Playlist {
   }
 }
 
-Map<AudioMetadata, ValueNotifier<bool>> songIsFavorite = {};
-
 void toggleFavoriteState(AudioMetadata song) {
   final favorite = playlistsManager.getPlaylistByName('Favorite')!;
   final isFavorite = songIsFavorite[song]!;
@@ -296,7 +294,7 @@ Future<bool> showCreatePlaylistSheet(BuildContext context) async {
     isScrollControlled: true,
     useRootNavigator: true,
     builder: (context) {
-      return mySheet(
+      return MySheet(
         SizedBox(
           height: 250, // fixed height
           child: Column(
@@ -412,7 +410,7 @@ void showAddPlaylistSheet(BuildContext context, List<AudioMetadata> songList) {
     context: context,
     isScrollControlled: true,
     builder: (_) {
-      return mySheet(Add2PlaylistPanel(songList: songList));
+      return MySheet(Add2PlaylistPanel(songList: songList));
     },
   );
 }

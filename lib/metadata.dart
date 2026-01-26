@@ -4,13 +4,11 @@ import 'dart:typed_data';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
-import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/cover_art_widget.dart';
+import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
+import 'package:particle_music/utils.dart';
 import 'package:smooth_corner/smooth_corner.dart';
-
-Map<AudioMetadata, ValueNotifier<int>> songIsUpdated = {};
 
 void showSongMetadataDialog(BuildContext context, AudioMetadata song) async {
   final originalTitle = song.title ?? '';

@@ -1,15 +1,11 @@
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/cover_art_widget.dart';
-import 'package:particle_music/desktop/keyboard.dart';
-import 'package:particle_music/desktop/pages/lyrics_page.dart';
+import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/playlists.dart';
+import 'package:particle_music/utils.dart';
 import 'package:super_context_menu/super_context_menu.dart';
-import '../../audio_handler.dart';
-
-final ValueNotifier<bool> displayPlayQueuePageNotifier = ValueNotifier(false);
 
 class PlayQueuePage extends StatefulWidget {
   const PlayQueuePage({super.key});

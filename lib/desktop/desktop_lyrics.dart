@@ -2,22 +2,11 @@ import 'dart:io';
 
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
-import 'package:particle_music/audio_handler.dart';
+import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/extensions/window_controller_extension.dart';
 import 'package:particle_music/lyrics.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 import 'package:window_manager/window_manager.dart';
-
-final ValueNotifier<bool> lyricsIsTransparentNotifier = ValueNotifier(false);
-
-WindowController? lyricsWindowController;
-bool lyricsWindowVisible = false;
-
-LyricLine? desktopLyricLine;
-Duration desktopLyrcisCurrentPosition = Duration.zero;
-bool desktopLyricsIsKaraoke = false;
-
-final updateDesktopLyricsNotifier = ValueNotifier(0);
 
 Future<void> initDesktopLyrics() async {
   lyricsWindowController = await WindowController.create(

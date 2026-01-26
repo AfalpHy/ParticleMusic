@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_switch/flutter_switch.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/setting.dart';
 
 class MySwitch extends StatelessWidget {
   final bool value;

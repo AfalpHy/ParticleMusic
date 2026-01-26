@@ -1,19 +1,16 @@
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
-import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/desktop/pages/main_page.dart';
 import 'package:particle_music/desktop/panels/artist_album_panel.dart';
 import 'package:particle_music/desktop/panels/folders_panel.dart';
 import 'package:particle_music/desktop/panels/ranking_panel.dart';
 import 'package:particle_music/desktop/panels/playlists_panel.dart';
 import 'package:particle_music/desktop/panels/recently_panel.dart';
 import 'package:particle_music/desktop/panels/setting_panel.dart';
-import 'package:particle_music/desktop/sidebar.dart';
 import 'package:particle_music/desktop/panels/song_list_panel.dart';
-import 'package:particle_music/history.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:particle_music/playlists.dart';
+import 'package:particle_music/utils.dart';
 
 class PanelManager {
   final List<Widget> panelStack = [];
@@ -130,5 +127,3 @@ class PanelManager {
     updateBackgroundNotifier.value++;
   }
 }
-
-PanelManager panelManager = PanelManager();

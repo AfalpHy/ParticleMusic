@@ -1,10 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/desktop/my_window_listener.dart';
-import 'package:particle_music/desktop/pages/lyrics_page.dart';
-import 'package:particle_music/desktop/pages/main_page.dart';
-import 'package:particle_music/desktop/panels/panel_manager.dart';
-import 'package:particle_music/setting.dart';
+import 'package:particle_music/utils.dart';
 import 'package:searchfield/searchfield.dart';
 import 'package:window_manager/window_manager.dart';
 

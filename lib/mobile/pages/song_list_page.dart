@@ -4,13 +4,15 @@ import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
-import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/common_widgets/my_auto_size_text.dart';
+import 'package:particle_music/common_widgets/my_sheet.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
-import 'package:particle_music/my_location.dart';
+import 'package:particle_music/common_widgets/my_location.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/mobile/song_list_tile.dart';
 import 'package:particle_music/base_song_list.dart';
+import 'package:particle_music/utils.dart';
 import 'package:searchfield/searchfield.dart';
 
 class SongListPage extends BaseSongListWidget {
@@ -127,7 +129,7 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
   Widget moreSheet(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    return mySheet(
+    return MySheet(
       Column(
         children: [
           ListTile(
@@ -232,7 +234,7 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
                         ),
                       );
                     }
-                    return mySheet(
+                    return MySheet(
                       Column(
                         children: [
                           ListTile(title: Text(l10n.selectSortingType)),
@@ -480,7 +482,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
   Widget moreSheet(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    return mySheet(
+    return MySheet(
       Column(
         children: [
           ListTile(
@@ -554,7 +556,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                         ),
                       );
                     }
-                    return mySheet(
+                    return MySheet(
                       Column(
                         children: [
                           ListTile(title: Text(l10n.selectSortingType)),

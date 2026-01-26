@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/history.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/mobile/pages/albums_page.dart';
 import 'package:particle_music/mobile/pages/artists_page.dart';
@@ -11,9 +10,10 @@ import 'package:particle_music/mobile/pages/recently_page.dart';
 import 'package:particle_music/mobile/player_bar.dart';
 import 'package:particle_music/setting.dart';
 import 'package:particle_music/mobile/pages/songs_page.dart';
+import 'package:particle_music/utils.dart';
 
-final ValueNotifier<double> swipeProgressNotifier = ValueNotifier<double>(0.0);
-final ValueNotifier<int> homeBody = ValueNotifier<int>(1);
+final ValueNotifier<double> _swipeProgressNotifier = ValueNotifier<double>(0.0);
+final ValueNotifier<int> _homeBody = ValueNotifier<int>(1);
 
 class SwipeObserver extends NavigatorObserver {
   int deep = 0;
@@ -22,7 +22,7 @@ class SwipeObserver extends NavigatorObserver {
   void didPush(Route route, Route? previousRoute) {
     if (route is PageRoute && deep == 1) {
       route.animation?.addListener(() {
-        swipeProgressNotifier.value = route.animation!.value;
+        _swipeProgressNotifier.value = route.animation!.value;
       });
     }
     deep++;
@@ -39,8 +39,6 @@ class SwipeObserver extends NavigatorObserver {
     deep = 0;
   }
 }
-
-final swipeObserver = SwipeObserver();
 
 class MobileMainPage extends StatefulWidget {
   const MobileMainPage({super.key});
@@ -79,7 +77,7 @@ class MobileMainPageState extends State<MobileMainPage> {
           ),
         ),
         ValueListenableBuilder<double>(
-          valueListenable: swipeProgressNotifier,
+          valueListenable: _swipeProgressNotifier,
           builder: (context, progress, _) {
             final double bottom = 80 - (40 * progress);
             return AnimatedPositioned(
@@ -94,7 +92,7 @@ class MobileMainPageState extends State<MobileMainPage> {
         ),
 
         ValueListenableBuilder<double>(
-          valueListenable: swipeProgressNotifier,
+          valueListenable: _swipeProgressNotifier,
           builder: (context, progress, _) {
             final double bottom = -80 * progress;
 
@@ -114,7 +112,7 @@ class MobileMainPageState extends State<MobileMainPage> {
 
   Widget bottomNavigator() {
     return ValueListenableBuilder<int>(
-      valueListenable: homeBody,
+      valueListenable: _homeBody,
       builder: (context, which, _) {
         final l10n = AppLocalizations.of(context);
         final color = iconColor;
@@ -132,7 +130,7 @@ class MobileMainPageState extends State<MobileMainPage> {
                     highlightColor: Colors.transparent,
                     onTap: () {
                       tryVibrate();
-                      homeBody.value = 1;
+                      _homeBody.value = 1;
                     },
 
                     child: Column(
@@ -162,7 +160,7 @@ class MobileMainPageState extends State<MobileMainPage> {
                     highlightColor: Colors.transparent,
                     onTap: () {
                       tryVibrate();
-                      homeBody.value = 3;
+                      _homeBody.value = 3;
                     },
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -217,7 +215,7 @@ class HomePageState extends State<HomePage> {
         valueListenable: colorChangeNotifier,
         builder: (context, value, child) {
           return ValueListenableBuilder(
-            valueListenable: homeBody,
+            valueListenable: _homeBody,
             builder: (context, value, child) {
               return value == 1 ? buildLibrary(context) : SettingsList();
             },

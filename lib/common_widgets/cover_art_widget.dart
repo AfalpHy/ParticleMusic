@@ -5,6 +5,7 @@ import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/load_library.dart';
+import 'package:particle_music/utils.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
 class CoverArtWidget extends StatefulWidget {

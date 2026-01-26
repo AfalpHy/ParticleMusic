@@ -2,13 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
-import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/desktop/panels/panel_manager.dart';
 import 'package:particle_music/load_library.dart';
-
-final rankingChangeNotifier = ValueNotifier(0);
-final recentlyChangeNotifier = ValueNotifier(0);
+import 'package:particle_music/utils.dart';
 
 class RankingItem {
   int times;
@@ -144,5 +140,3 @@ class HistoryManager {
     recentlyChangeNotifier.value++;
   }
 }
-
-HistoryManager historyManager = HistoryManager();

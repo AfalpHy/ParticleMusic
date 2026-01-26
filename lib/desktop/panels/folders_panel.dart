@@ -1,11 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/desktop/pages/main_page.dart';
-import 'package:particle_music/desktop/panels/panel_manager.dart';
 import 'package:particle_music/desktop/panels/song_list_panel.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/load_library.dart';
-import 'package:particle_music/setting.dart';
+import 'package:particle_music/utils.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
 class FoldersPanel extends StatelessWidget {

@@ -1,6 +1,5 @@
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
-import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 
 class MyLocation extends StatelessWidget {

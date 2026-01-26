@@ -4,15 +4,10 @@ import 'dart:isolate';
 
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
-import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/desktop/panels/panel_manager.dart';
-import 'package:particle_music/history.dart';
-import 'package:particle_music/logger.dart';
-import 'package:particle_music/metadata.dart';
-import 'package:particle_music/mobile/pages/main_page.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/setting.dart';
+import 'package:particle_music/utils.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 List<AudioMetadata> librarySongList = [];
@@ -58,13 +53,8 @@ class LibraryLoader {
       "${appSupportDir.path}/song_filepath_list.txt",
     );
 
-    playlistsManager = PlaylistsManager(
-      File("${appSupportDir.path}/playlists.txt"),
-    );
-
-    await playlistsManager.initAllPlaylists();
-
     _folderPathListFile = File("${appSupportDir.path}/folder_paths.txt");
+
     if (!_folderPathListFile.existsSync()) {
       _folderPathListFile.createSync();
     }
@@ -74,10 +64,13 @@ class LibraryLoader {
       folderPathList = result.cast<String>();
     }
 
+    playlistsManager = PlaylistsManager();
+    await playlistsManager.initAllPlaylists();
+
     setting = Setting(File("${appSupportDir.path}/setting.txt"));
     await setting.loadSetting();
 
-    audioHandler.initStateFiles(appSupportDir.path);
+    audioHandler.initStateFiles();
   }
 
   Future<void> load() async {

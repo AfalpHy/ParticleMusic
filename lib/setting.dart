@@ -6,38 +6,13 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/desktop/bottom_control.dart';
-import 'package:particle_music/desktop/pages/main_page.dart';
-import 'package:particle_music/desktop/panels/panel_manager.dart';
-import 'package:particle_music/desktop/sidebar.dart';
+import 'package:particle_music/common_widgets/my_sheet.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/load_library.dart';
-import 'package:particle_music/my_switch.dart';
+import 'package:particle_music/common_widgets/my_switch.dart';
+import 'package:particle_music/utils.dart';
 import 'package:smooth_corner/smooth_corner.dart';
-
-ValueNotifier<bool> vibrationOnNoitifier = ValueNotifier(true);
-
-ValueNotifier<bool> timedPause = ValueNotifier(false);
-ValueNotifier<int> remainTimes = ValueNotifier(0);
-ValueNotifier<bool> pauseAfterCompleted = ValueNotifier(false);
-bool needPause = false;
-Timer? pauseTimer;
-
-final artistsIsListViewNotifier = ValueNotifier(true);
-final artistsIsAscendingNotifier = ValueNotifier(true);
-final artistsUseLargePictureNotifier = ValueNotifier(false);
-
-final albumsIsAscendingNotifier = ValueNotifier(true);
-final albumsUseLargePictureNotifier = ValueNotifier(false);
-
-final playlistsUseLargePictureNotifier = ValueNotifier(true);
-
-final enableCustomColorNotifier = ValueNotifier(false);
-final colorChangeNotifier = ValueNotifier(0);
-
-late Setting setting;
 
 class Setting {
   final File file;
@@ -218,7 +193,7 @@ void displayTimedPauseSetting(BuildContext context) {
       Duration currentDuration = Duration();
       final l10n = AppLocalizations.of(context);
 
-      return mySheet(
+      return MySheet(
         height: 350,
         Center(
           child: Column(

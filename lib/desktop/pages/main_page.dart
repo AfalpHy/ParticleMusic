@@ -2,20 +2,14 @@ import 'dart:async';
 import 'dart:math';
 import 'dart:ui';
 
-import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/cover_art_widget.dart';
+import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/desktop/bottom_control.dart';
-import 'package:particle_music/desktop/panels/panel_manager.dart';
 import 'package:particle_music/desktop/pages/play_queue_page.dart';
 import 'package:particle_music/desktop/sidebar.dart';
 import 'package:particle_music/desktop/pages/lyrics_page.dart';
 import 'package:smooth_corner/smooth_corner.dart';
-
-ValueNotifier<int> updateBackgroundNotifier = ValueNotifier(0);
-AudioMetadata? backgroundSong;
-Color backgroundColor = Colors.grey;
 
 class DesktopMainPage extends StatelessWidget {
   const DesktopMainPage({super.key});

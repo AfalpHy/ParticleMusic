@@ -1,7 +1,5 @@
 import 'package:flutter/services.dart';
-
-bool shiftIsPressed = false;
-bool ctrlIsPressed = false;
+import 'package:particle_music/common.dart';
 
 void keyboardInit() {
   HardwareKeyboard.instance.addHandler((event) {

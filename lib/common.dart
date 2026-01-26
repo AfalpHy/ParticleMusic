@@ -1,22 +1,73 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
-import 'package:auto_size_text/auto_size_text.dart';
+import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:image/image.dart' as image;
-import 'package:lpinyin/lpinyin.dart';
-import 'package:marquee/marquee.dart';
-import 'package:particle_music/l10n/generated/app_localizations.dart';
+import 'package:particle_music/audio_handler.dart';
+import 'package:particle_music/desktop/panels/panel_manager.dart';
+import 'package:particle_music/history.dart';
+import 'package:particle_music/logger.dart';
+import 'package:particle_music/lyrics.dart';
+import 'package:particle_music/mobile/pages/main_page.dart';
+import 'package:particle_music/playlists.dart';
 import 'package:particle_music/setting.dart';
-import 'package:path/path.dart';
-import 'package:smooth_corner/smooth_corner.dart';
+
+// ===================================== App =====================================
 
 late Directory appDocs;
 late Directory appSupportDir;
+late double appWidth;
 
 final isMobile = Platform.isAndroid || Platform.isIOS;
+
+// ===================================== DesktopMainPage =====================================
+
+ValueNotifier<int> updateBackgroundNotifier = ValueNotifier(0);
+AudioMetadata? backgroundSong;
+
+// ===================================== Sidebar =====================================
+
+final ValueNotifier<String> sidebarHighlighLabel = ValueNotifier('');
+
+// ===================================== Settings =====================================
+
+ValueNotifier<bool> vibrationOnNoitifier = ValueNotifier(true);
+
+ValueNotifier<bool> timedPause = ValueNotifier(false);
+ValueNotifier<int> remainTimes = ValueNotifier(0);
+ValueNotifier<bool> pauseAfterCompleted = ValueNotifier(false);
+bool needPause = false;
+Timer? pauseTimer;
+
+final artistsIsListViewNotifier = ValueNotifier(true);
+final artistsIsAscendingNotifier = ValueNotifier(true);
+final artistsUseLargePictureNotifier = ValueNotifier(false);
+
+final albumsIsAscendingNotifier = ValueNotifier(true);
+final albumsUseLargePictureNotifier = ValueNotifier(false);
+
+final playlistsUseLargePictureNotifier = ValueNotifier(true);
+
+final enableCustomColorNotifier = ValueNotifier(false);
+final colorChangeNotifier = ValueNotifier(0);
+
 final ValueNotifier<Locale?> localeNotifier = ValueNotifier(null);
+
+late Setting setting;
+
+// ===================================== Colors =====================================
+
+Color currentCoverArtColor = Colors.grey;
+Color backgroundColor = Colors.grey;
+
+Color sidebarColor = Colors.grey.shade200;
+Color customSidebarColor = Colors.grey.shade200;
+Color vividSidebarColor = sidebarColor.withAlpha(100);
+
+Color bottomColor = Colors.grey.shade50;
+Color customBottomColor = Colors.grey.shade50;
+Color vividBottomColor = bottomColor.withAlpha(100);
 
 Color commonColor = Colors.grey.shade100;
 
@@ -39,7 +90,7 @@ Color vividTextColor = Colors.black;
 Color vividSwitchColor = Colors.black87;
 Color vividPanelColor = panelColor.withAlpha(100);
 
-late double appWidth;
+// ===================================== Images =====================================
 
 const AssetImage addImage = AssetImage('assets/images/add.png');
 const AssetImage albumImage = AssetImage('assets/images/album.png');
@@ -100,341 +151,76 @@ const AssetImage timerImage = AssetImage('assets/images/timer.png');
 const AssetImage unmaximizeImage = AssetImage('assets/images/unmaximize.png');
 const AssetImage vibrationImage = AssetImage('assets/images/vibration.png');
 
-class MyAutoSizeText extends AutoSizeText {
-  final String content;
+// ===================================== AudioHandler =====================================
 
-  final TextStyle textStyle;
-  MyAutoSizeText(
-    this.content, {
-    super.key,
-    super.maxLines,
-    required this.textStyle,
-  }) : super(
-         content,
-         style: textStyle,
-         minFontSize: textStyle.fontSize ?? 12,
-         maxFontSize: textStyle.fontSize ?? double.infinity,
-         overflowReplacement: Marquee(
-           text: content,
-           style: textStyle,
-           scrollAxis: Axis.horizontal,
-           blankSpace: 20,
-           velocity: 30,
-           pauseAfterRound: const Duration(seconds: 1),
-           accelerationDuration: const Duration(milliseconds: 500),
-           accelerationCurve: Curves.linear,
-           decelerationDuration: const Duration(milliseconds: 500),
-           decelerationCurve: Curves.linear,
-         ),
-       );
-}
+late MyAudioHandler audioHandler;
 
-Widget mySheet(Widget child, {double height = 500}) {
-  return SmoothClipRRect(
-    smoothness: 1,
-    borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
-    child: Container(height: height, color: Colors.grey.shade100, child: child),
-  );
-}
+List<AudioMetadata> playQueue = [];
 
-void showCenterMessage(
-  BuildContext context,
-  String message, {
-  int duration = 500,
-}) {
-  final overlay = Overlay.of(context);
-  final overlayEntry = OverlayEntry(
-    builder: (context) => Center(
-      child: Material(
-        color: Colors.black,
-        shape: SmoothRectangleBorder(
-          smoothness: 1,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(16),
-          child: Text(
-            message,
-            style: TextStyle(color: Colors.white, fontSize: 16),
-          ),
-        ),
-      ),
-    ),
-  );
+final ValueNotifier<AudioMetadata?> currentSongNotifier = ValueNotifier(null);
+final ValueNotifier<bool> isPlayingNotifier = ValueNotifier(false);
+final ValueNotifier<int> playModeNotifier = ValueNotifier(0);
+final ValueNotifier<double> volumeNotifier = ValueNotifier(0.3);
 
-  overlay.insert(overlayEntry);
+// ===================================== Playlist =====================================
 
-  Future.delayed(Duration(milliseconds: duration), () {
-    overlayEntry.remove();
-  });
-}
+late PlaylistsManager playlistsManager;
 
-Future<bool> showConfirmDialog(BuildContext context, String action) async {
-  final l10n = AppLocalizations.of(context);
+// ===================================== SongState =====================================
 
-  final result = await showDialog<bool>(
-    context: context,
-    barrierDismissible: false,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        shape: SmoothRectangleBorder(
-          smoothness: 1,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        backgroundColor: commonColor,
-        title: Text(action),
-        content: Text(l10n.continueMsg, style: TextStyle(fontSize: 14)),
-        actions: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context, false),
-                style: ElevatedButton.styleFrom(
-                  elevation: 2,
-                  backgroundColor: buttonColor,
-                  shadowColor: Colors.black54,
-                  foregroundColor: Colors.black,
-                  shape: SmoothRectangleBorder(
-                    smoothness: 1,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: Text(l10n.cancel),
-              ),
-              const SizedBox(width: 20),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context, true),
-                style: ElevatedButton.styleFrom(
-                  elevation: 2,
-                  backgroundColor: buttonColor,
-                  shadowColor: Colors.black54,
-                  foregroundColor: Colors.red,
-                  shape: SmoothRectangleBorder(
-                    smoothness: 1,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: Text(l10n.confirm),
-              ),
-            ],
-          ),
-        ],
-      );
-    },
-  );
-  return result!;
-}
+Map<AudioMetadata, ValueNotifier<bool>> songIsFavorite = {};
+Map<AudioMetadata, ValueNotifier<int>> songIsUpdated = {};
 
-String getTitle(AudioMetadata? song) {
-  if (song == null) {
-    return '';
-  }
-  if (song.title == null || song.title == '') {
-    return basename(song.file.path);
-  }
-  return song.title!;
-}
+// ===================================== PlayQueuePage =====================================
 
-String getArtist(AudioMetadata? song) {
-  if (song == null) {
-    return '';
-  }
-  if (song.artist == null || song.artist == '') {
-    return 'Unknown Artist';
-  }
-  return song.artist!;
-}
+final ValueNotifier<bool> displayPlayQueuePageNotifier = ValueNotifier(false);
 
-String getAlbum(AudioMetadata? song) {
-  if (song == null) {
-    return '';
-  }
-  if (song.album == null || song.album == '') {
-    return 'Unknown Album';
-  }
-  return song.album!;
-}
+// ===================================== LyricsPage =====================================
 
-Duration getDuration(AudioMetadata? song) {
-  if (song == null) {
-    return Duration.zero;
-  }
-  return song.duration ?? Duration.zero;
-}
+final updateLyricsNotifier = ValueNotifier(0);
 
-Picture? getCoverArt(AudioMetadata? song) {
-  if (song == null) {
-    return null;
-  }
-  return song.pictures.isNotEmpty ? song.pictures.first : null;
-}
+final ValueNotifier<bool> displayLyricsPageNotifier = ValueNotifier(false);
+final ValueNotifier<bool> immersiveModeNotifier = ValueNotifier(false);
+Timer? immersiveModeTimer;
 
-List<AudioMetadata> filterSongList(List<AudioMetadata> songList, String value) {
-  return songList.where((song) {
-    final songTitle = getTitle(song);
-    final songArtist = getArtist(song);
-    final songAlbum = getAlbum(song);
+// ===================================== DesktopLyrics =====================================
 
-    return value.isEmpty ||
-        songTitle.toLowerCase().contains(value.toLowerCase()) ||
-        songArtist.toLowerCase().contains(value.toLowerCase()) ||
-        songAlbum.toLowerCase().contains(value.toLowerCase());
-  }).toList();
-}
+final ValueNotifier<bool> lyricsIsTransparentNotifier = ValueNotifier(false);
 
-void sortSongList(int sortType, List<AudioMetadata> songList) {
-  switch (sortType) {
-    case 1: // Title Ascending
-      songList.sort((a, b) {
-        return compareMixed(getTitle(a), getTitle(b));
-      });
-      break;
-    case 2: // Title Descending
-      songList.sort((a, b) {
-        return compareMixed(getTitle(b), getTitle(a));
-      });
-      break;
-    case 3: // Artist Ascending
-      songList.sort((a, b) {
-        return compareMixed(getArtist(a), getArtist(b));
-      });
-      break;
-    case 4: // Artist Descending
-      songList.sort((a, b) {
-        return compareMixed(getArtist(b), getArtist(a));
-      });
-      break;
-    case 5: // Album Ascending
-      songList.sort((a, b) {
-        return compareMixed(getAlbum(a), getAlbum(b));
-      });
-      break;
-    case 6: // Album Descending
-      songList.sort((a, b) {
-        return compareMixed(getAlbum(b), getAlbum(a));
-      });
-      break;
-    case 7: // Duration Ascending
-      songList.sort((a, b) {
-        return a.duration!.compareTo(b.duration!);
-      });
-      break;
-    case 8: // Duration Descending
-      songList.sort((a, b) {
-        return b.duration!.compareTo(a.duration!);
-      });
-      break;
-    default:
-      break;
-  }
-}
+WindowController? lyricsWindowController;
+bool lyricsWindowVisible = false;
 
-String formatDuration(Duration duration) {
-  String twoDigits(int n) => n.toString().padLeft(2, "0");
-  final minutes = twoDigits(duration.inMinutes.remainder(60));
-  final seconds = twoDigits(duration.inSeconds.remainder(60));
-  return "$minutes:$seconds";
-}
+LyricLine? desktopLyricLine;
+Duration desktopLyrcisCurrentPosition = Duration.zero;
+bool desktopLyricsIsKaraoke = false;
 
-bool isEnglish(String s) {
-  final c = s[0];
-  return RegExp(r'^[A-Za-z]').hasMatch(c);
-}
+final updateDesktopLyricsNotifier = ValueNotifier(0);
 
-int compareMixed(String a, String b) {
-  final aIsEng = isEnglish(a);
-  final bIsEng = isEnglish(b);
+// ===================================== Keyboard =====================================
 
-  if (aIsEng && !bIsEng) return -1;
-  if (!aIsEng && bIsEng) return 1;
+bool shiftIsPressed = false;
+bool ctrlIsPressed = false;
 
-  if (aIsEng && bIsEng) {
-    return a.toLowerCase().compareTo(b.toLowerCase());
-  }
+// ===================================== Windows =====================================
 
-  final pa = PinyinHelper.getPinyinE(a);
-  final pb = PinyinHelper.getPinyinE(b);
-  return pa.compareTo(pb);
-}
+ValueNotifier<bool> isMaximizedNotifier = ValueNotifier(false);
+ValueNotifier<bool> isFullScreenNotifier = ValueNotifier(false);
 
-void tryVibrate() {
-  if (vibrationOnNoitifier.value) {
-    HapticFeedback.heavyImpact();
-  }
-}
+// ===================================== Desktop =====================================
 
-Color computeCoverArtColor(AudioMetadata? song) {
-  if (song == null) {
-    return Colors.grey;
-  }
-  if (song.pictures.isEmpty) return Colors.grey;
+final PanelManager panelManager = PanelManager();
 
-  final bytes = song.pictures.first.bytes;
+// ===================================== Mobile =====================================
 
-  final decoded = image.decodeImage(bytes);
-  if (decoded == null) return Colors.grey;
+final SwipeObserver swipeObserver = SwipeObserver();
 
-  // simple average of top pixels
-  double r = 0, g = 0, b = 0, count = 0;
-  for (int y = 0; y < decoded.height; y += 5) {
-    for (int x = 0; x < decoded.width; x += 5) {
-      final pixel = decoded.getPixel(x, y);
+// ===================================== History =====================================
 
-      r += pixel.r.toDouble();
-      g += pixel.g.toDouble();
-      b += pixel.b.toDouble();
-      count++;
-    }
-  }
-  r /= count;
-  g /= count;
-  b /= count;
-  int luminance = image.getLuminanceRgb(r, g, b).toInt();
-  int maxLuminace = 200;
-  if (luminance > maxLuminace) {
-    r -= luminance - maxLuminace;
-    g -= luminance - maxLuminace;
-    b -= luminance - maxLuminace;
-  }
-  return Color.fromARGB(255, r.toInt(), g.toInt(), b.toInt());
-}
+final HistoryManager historyManager = HistoryManager();
 
-AudioMetadata? getFirstSong(List<AudioMetadata> songList) {
-  if (songList.isEmpty) {
-    return null;
-  }
-  return songList.first;
-}
+final rankingChangeNotifier = ValueNotifier(0);
+final recentlyChangeNotifier = ValueNotifier(0);
 
-// every installation on iOS may result in a different app documents path
-// due to app container isolation, therefore, keep only relative paths
-String clipFilePathIfNeed(String path) {
-  if (Platform.isIOS) {
-    int prefixLength = appDocs.path.length;
-    return path.substring(prefixLength);
-  }
-  return path;
-}
+// ===================================== Logger =====================================
 
-String revertFilePathIfNeed(String path) {
-  if (Platform.isIOS) {
-    return appDocs.path + path;
-  }
-  return path;
-}
-
-String convertDirectoryPathIfNeed(String path) {
-  if (Platform.isIOS) {
-    int prefixLength = appDocs.path.length;
-    return path.substring(prefixLength);
-  }
-  return path;
-}
-
-String revertDirectoryPathIfNeed(String path) {
-  if (Platform.isIOS) {
-    return "${appDocs.parent.path}/${path.replaceFirst('Particle Music', 'Documents')}";
-  }
-  return path;
-}
+final logger = Logger();

@@ -1,7 +1,6 @@
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/services.dart';
-import 'package:particle_music/audio_handler.dart';
-import 'package:particle_music/desktop/desktop_lyrics.dart';
+import 'package:particle_music/common.dart';
 import 'package:particle_music/lyrics.dart';
 import 'package:window_manager/window_manager.dart';
 

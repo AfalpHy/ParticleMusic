@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/full_width_track_shape.dart';
+import 'package:particle_music/utils.dart';
 
 class SeekBar extends StatefulWidget {
   final bool light;

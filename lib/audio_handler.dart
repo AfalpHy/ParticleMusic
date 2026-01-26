@@ -1,32 +1,17 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:flutter/material.dart';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/desktop_lyrics.dart';
 import 'package:particle_music/desktop/extensions/window_controller_extension.dart';
-import 'package:particle_music/desktop/panels/panel_manager.dart';
-import 'package:particle_music/history.dart';
 import 'package:particle_music/load_library.dart';
-import 'package:particle_music/logger.dart';
 import 'package:particle_music/lyrics.dart';
-import 'package:particle_music/setting.dart';
+import 'package:particle_music/utils.dart';
 import 'package:path_provider/path_provider.dart';
 import 'dart:async';
 import 'package:flutter/services.dart';
-
-late MyAudioHandler audioHandler;
-
-List<AudioMetadata> playQueue = [];
-
-Color currentCoverArtColor = Colors.grey;
-
-final ValueNotifier<AudioMetadata?> currentSongNotifier = ValueNotifier(null);
-final ValueNotifier<bool> isPlayingNotifier = ValueNotifier(false);
-final ValueNotifier<int> playModeNotifier = ValueNotifier(0);
-final ValueNotifier<double> volumeNotifier = ValueNotifier(0.3);
 
 class MyAudioHandler extends BaseAudioHandler {
   final _player = AudioPlayer();
@@ -114,12 +99,12 @@ class MyAudioHandler extends BaseAudioHandler {
     );
   }
 
-  void initStateFiles(String supportPath) {
-    _playQueueState = File("$supportPath/playQueueState.txt");
+  void initStateFiles() {
+    _playQueueState = File("${appSupportDir.path}/playQueueState.txt");
     if (!(_playQueueState.existsSync())) {
       savePlayQueueState();
     }
-    _playState = File("$supportPath/playState.txt");
+    _playState = File("${appSupportDir.path}/playState.txt");
     if (!(_playState.existsSync())) {
       savePlayState();
     }

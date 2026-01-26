@@ -1,8 +1,6 @@
 import 'dart:io';
 import 'package:particle_music/common.dart';
 
-final logger = Logger();
-
 String formatForFileName(DateTime t) {
   String two(int n) => n.toString().padLeft(2, '0');
 
