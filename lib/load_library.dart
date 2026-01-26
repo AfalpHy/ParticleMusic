@@ -63,6 +63,7 @@ class LibraryLoader {
     List<AudioMetadata> libraryAdditionalSongList = [];
     for (int i = 0; i < folderPathList.length; i++) {
       final folderPath = folderPathList[i];
+      folder2ChangeNotifier[folderPath] = ValueNotifier(0);
       Directory folder = Directory(revertDirectoryPathIfNeed(folderPath));
       if (!folder.existsSync()) {
         folder2SongList[folderPath] = [];

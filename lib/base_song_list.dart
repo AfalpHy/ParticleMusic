@@ -81,11 +81,8 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
       songList = album2SongList[album]!;
       title = album!;
     } else if (folder != null) {
-      songList = folder2SongList[folder] ?? [];
+      songList = folder2SongList[folder]!;
       title = folder!;
-      if (folder2ChangeNotifier[folder!] == null) {
-        folder2ChangeNotifier[folder!] = ValueNotifier(0);
-      }
       folder2ChangeNotifier[folder]!.addListener(updateSongList);
     } else if (ranking != null) {
       songList = historyManager.rankingSongList;

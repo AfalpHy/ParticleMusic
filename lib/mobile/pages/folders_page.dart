@@ -28,10 +28,15 @@ class FoldersPage extends StatelessWidget {
           final folder = folderPathList[index];
           final songList = folder2SongList[folder]!;
           return ListTile(
-            leading: CoverArtWidget(
-              size: 40,
-              borderRadius: 4,
-              song: getFirstSong(songList),
+            leading: ValueListenableBuilder(
+              valueListenable: folder2ChangeNotifier[folder]!,
+              builder: (context, value, child) {
+                return CoverArtWidget(
+                  size: 40,
+                  borderRadius: 4,
+                  song: getFirstSong(songList),
+                );
+              },
             ),
             title: Text(folder),
             onTap: () {
