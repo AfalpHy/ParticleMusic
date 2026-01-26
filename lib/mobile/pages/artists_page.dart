@@ -2,12 +2,12 @@ import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/mobile/widgets/my_search_field.dart';
 import 'package:particle_music/mobile/widgets/my_sheet.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/mobile/pages/song_list_page.dart';
 import 'package:particle_music/common_widgets/my_switch.dart';
 import 'package:particle_music/utils.dart';
-import 'package:searchfield/searchfield.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
 class ArtistsPage extends StatelessWidget {
@@ -57,59 +57,9 @@ class ArtistsPage extends StatelessWidget {
   }
 
   Widget searchField() {
-    final ValueNotifier<bool> isSearchingNotifier = ValueNotifier(false);
-    return ValueListenableBuilder(
-      valueListenable: isSearchingNotifier,
-      builder: (context, isSearching, child) {
-        if (!isSearching) {
-          return IconButton(
-            onPressed: () {
-              isSearchingNotifier.value = true;
-            },
-            icon: Icon(Icons.search),
-          );
-        }
-        return Expanded(
-          child: SizedBox(
-            height: 30,
-            child: Padding(
-              padding: const EdgeInsets.fromLTRB(50, 0, 0, 0),
-              child: SearchField(
-                autofocus: true,
-                controller: textController,
-                suggestions: [],
-                searchInputDecoration: SearchInputDecoration(
-                  hintText: AppLocalizations.of(context).searchArtists,
-                  prefixIcon: Icon(Icons.search),
-                  suffixIcon: IconButton(
-                    onPressed: () {
-                      isSearchingNotifier.value = false;
-                      textController.clear();
-                      updateCurrentMapEntryList();
-                      FocusScope.of(context).unfocus();
-                    },
-                    icon: Icon(Icons.clear),
-                    padding: EdgeInsets.zero,
-                  ),
-                  filled: true,
-                  fillColor: searchFieldColor,
-                  contentPadding: EdgeInsets.zero,
-                  isDense: true,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(15),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-                onSearchTextChanged: (_) {
-                  updateCurrentMapEntryList();
-
-                  return null;
-                },
-              ),
-            ),
-          ),
-        );
-      },
+    return MySearchField(
+      textController: textController,
+      onSearchTextChanged: updateCurrentMapEntryList,
     );
   }
 
