@@ -6,7 +6,6 @@ import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/my_sheet.dart';
-import 'package:particle_music/desktop/panels/song_list_panel.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/utils.dart';
 import 'package:smooth_corner/smooth_corner.dart';
@@ -114,7 +113,7 @@ class Playlist {
   File file;
   File settingFile;
   ValueNotifier<int> changeNotifier = ValueNotifier(0);
-  ValueNotifier<int> sortTypeNotifire = ValueNotifier(0);
+  ValueNotifier<int> sortTypeNotifier = ValueNotifier(0);
 
   Playlist({
     required this.name,
@@ -158,19 +157,10 @@ class Playlist {
     file.writeAsStringSync(
       jsonEncode(songList.map((e) => clipFilePathIfNeed(e.file.path)).toList()),
     );
-    changeNotifier.value++;
     if (!isMobile) {
-      final panelStack = panelManager.panelStack;
-      final bgSong = songList.isNotEmpty ? songList.first : null;
-      for (int i = panelStack.length - 1; i > 0; i--) {
-        Widget tmp = panelStack[i];
-        if (tmp is SongListPanel && tmp.playlist == this) {
-          panelManager.backgroundSongStack[i] = bgSong;
-        }
-      }
-
       panelManager.updateBackground();
     }
+    changeNotifier.value++;
   }
 
   void loadSetting() {
@@ -178,12 +168,12 @@ class Playlist {
     final Map<String, dynamic> json =
         jsonDecode(content) as Map<String, dynamic>;
 
-    sortTypeNotifire.value = json['sortType'] as int? ?? 0;
+    sortTypeNotifier.value = json['sortType'] as int? ?? 0;
   }
 
   void saveSetting() {
     settingFile.writeAsStringSync(
-      jsonEncode({'sortType': sortTypeNotifire.value}),
+      jsonEncode({'sortType': sortTypeNotifier.value}),
     );
   }
 

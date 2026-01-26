@@ -4,7 +4,6 @@ import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
-import 'package:particle_music/load_library.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/utils.dart';
 import 'package:smooth_corner/smooth_corner.dart';
@@ -73,7 +72,7 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
     if (playlist != null) {
       songList = playlist!.songList;
       title = playlist!.name;
-      sortTypeNotifier = playlist!.sortTypeNotifire;
+      sortTypeNotifier = playlist!.sortTypeNotifier;
       playlist!.changeNotifier.addListener(updateSongList);
     } else if (artist != null) {
       songList = artist2SongList[artist]!;
@@ -84,6 +83,10 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
     } else if (folder != null) {
       songList = folder2SongList[folder] ?? [];
       title = folder!;
+      if (folder2ChangeNotifier[folder!] == null) {
+        folder2ChangeNotifier[folder!] = ValueNotifier(0);
+      }
+      folder2ChangeNotifier[folder]!.addListener(updateSongList);
     } else if (ranking != null) {
       songList = historyManager.rankingSongList;
       title = ranking!;
@@ -92,6 +95,7 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
       title = recently!;
     } else {
       songList = librarySongList;
+      libraryChangeNotifier.addListener(updateSongList);
       isLibrary = true;
     }
     updateSongList();
@@ -102,6 +106,10 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
   void dispose() {
     if (playlist != null) {
       playlist!.changeNotifier.removeListener(updateSongList);
+    } else if (folder != null) {
+      folder2ChangeNotifier[folder]!.removeListener(updateSongList);
+    } else if (isLibrary) {
+      libraryChangeNotifier.removeListener(updateSongList);
     }
     sortTypeNotifier.removeListener(updateSongList);
     scrollController.dispose();

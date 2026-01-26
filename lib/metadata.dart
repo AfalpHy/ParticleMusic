@@ -114,6 +114,9 @@ void showSongMetadataDialog(BuildContext context, AudioMetadata song) async {
                             }
 
                             songIsUpdated[song]!.value++;
+                            if (!isMobile) {
+                              panelManager.updateBackground();
+                            }
                           } else {
                             if (context.mounted) {
                               showCenterMessage(
@@ -185,6 +188,7 @@ void showSongMetadataDialog(BuildContext context, AudioMetadata song) async {
                                 },
                                 child: CoverArtWidget(
                                   song: song,
+                                  picture: coverArt,
                                   size: 180,
                                   borderRadius: 10,
                                 ),

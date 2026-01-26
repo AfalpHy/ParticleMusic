@@ -10,23 +10,6 @@ import 'package:particle_music/setting.dart';
 import 'package:particle_music/utils.dart';
 import 'package:permission_handler/permission_handler.dart';
 
-List<AudioMetadata> librarySongList = [];
-Map<String, AudioMetadata> filePath2LibrarySong = {};
-Map<String, String?> filePath2PicturePath = {};
-
-List<String> folderPathList = [];
-Map<String, List<AudioMetadata>> folder2SongList = {};
-final ValueNotifier<int> foldersChangeNotifier = ValueNotifier(0);
-final ValueNotifier<int> loadedCountNotifier = ValueNotifier(0);
-final ValueNotifier<String> currentLoadingFolderNotifier = ValueNotifier('');
-
-Map<String, List<AudioMetadata>> artist2SongList = {};
-Map<String, List<AudioMetadata>> album2SongList = {};
-List<MapEntry<String, List<AudioMetadata>>> artistMapEntryList = [];
-List<MapEntry<String, List<AudioMetadata>>> albumMapEntryList = [];
-
-final ValueNotifier<bool> loadingLibraryNotifier = ValueNotifier(true);
-
 class LibraryLoader {
   Map<String, DateTime> _filePath2Modified = {};
   Set<String> _filePathValidSet = {};
@@ -255,7 +238,7 @@ class LibraryLoader {
   void addFolder(String path) {
     folderPathList.add(path);
     _folderPathListFile.writeAsStringSync(jsonEncode(folderPathList));
-    foldersChangeNotifier.value++;
+    folderChangeNotifier.value++;
   }
 
   Future<void> removeFolder(String path) async {
@@ -272,7 +255,7 @@ class LibraryLoader {
     }
     folderPathList.removeAt(index);
     _folderPathListFile.writeAsStringSync(jsonEncode(folderPathList));
-    foldersChangeNotifier.value++;
+    folderChangeNotifier.value++;
   }
 
   Future<List<AudioMetadata>> _getSongList(
@@ -320,6 +303,15 @@ class LibraryLoader {
 
   Future<void> saveLibrarySongFilePathList() async {
     await _saveSongFilePathList(_librarySongFilePathListFile, librarySongList);
+  }
+
+  Future<void> saveFolderSongFilePathList(String folder) async {
+    final index = folderPathList.indexOf(folder);
+
+    await _saveSongFilePathList(
+      File(_getFolderSongFilePathListPath(index)),
+      folder2SongList[folder]!,
+    );
   }
 
   Future<void> saveLibrarySongMetadataList() async {
@@ -380,6 +372,22 @@ class LibraryLoader {
       logger.output(e.toString());
       return null;
     }
+  }
+
+  void updataLibrarySongList() {
+    saveLibrarySongFilePathList();
+    if (!isMobile) {
+      panelManager.updateBackground();
+    }
+    libraryChangeNotifier.value++;
+  }
+
+  void updateFoloderSongList(String folder) {
+    saveFolderSongFilePathList(folder);
+    if (!isMobile) {
+      panelManager.updateBackground();
+    }
+    folder2ChangeNotifier[folder]!.value++;
   }
 }
 

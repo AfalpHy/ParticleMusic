@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/load_library.dart';
 import 'package:particle_music/utils.dart';
 
 class RankingItem {
@@ -96,11 +95,6 @@ class HistoryManager {
 
     rankingSongList = rankingItemList.map((e) => e.song).toList();
     if (!isMobile) {
-      for (int i = 0; i < panelManager.panelStack.length; i++) {
-        if (panelManager.sidebarHighlighLabelStack[i] == 'ranking') {
-          panelManager.backgroundSongStack[i] = rankingSongList.first;
-        }
-      }
       panelManager.updateBackground();
     }
     rankingChangeNotifier.value++;
@@ -118,11 +112,6 @@ class HistoryManager {
       recentlySongList.removeLast();
     }
     if (!isMobile) {
-      for (int i = 0; i < panelManager.panelStack.length; i++) {
-        if (panelManager.sidebarHighlighLabelStack[i] == 'recently') {
-          panelManager.backgroundSongStack[i] = song;
-        }
-      }
       panelManager.updateBackground();
     }
 

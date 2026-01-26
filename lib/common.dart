@@ -21,14 +21,47 @@ late double appWidth;
 
 final isMobile = Platform.isAndroid || Platform.isIOS;
 
+// ===================================== library =====================================
+
+List<AudioMetadata> librarySongList = [];
+ValueNotifier<int> libraryChangeNotifier = ValueNotifier(0);
+Map<String, AudioMetadata> filePath2LibrarySong = {};
+Map<String, String?> filePath2PicturePath = {};
+
+List<String> folderPathList = [];
+Map<String, List<AudioMetadata>> folder2SongList = {};
+Map<String, ValueNotifier<int>> folder2ChangeNotifier = {};
+final ValueNotifier<int> folderChangeNotifier = ValueNotifier(0);
+final ValueNotifier<int> loadedCountNotifier = ValueNotifier(0);
+final ValueNotifier<String> currentLoadingFolderNotifier = ValueNotifier('');
+
+Map<String, List<AudioMetadata>> artist2SongList = {};
+Map<String, List<AudioMetadata>> album2SongList = {};
+List<MapEntry<String, List<AudioMetadata>>> artistMapEntryList = [];
+List<MapEntry<String, List<AudioMetadata>>> albumMapEntryList = [];
+
+final ValueNotifier<bool> loadingLibraryNotifier = ValueNotifier(true);
+
+// ===================================== Sidebar =====================================
+
+final ValueNotifier<String> sidebarHighlighLabel = ValueNotifier('');
+
 // ===================================== DesktopMainPage =====================================
 
 ValueNotifier<int> updateBackgroundNotifier = ValueNotifier(0);
 AudioMetadata? backgroundSong;
 
-// ===================================== Sidebar =====================================
+// ===================================== PlayQueuePage =====================================
 
-final ValueNotifier<String> sidebarHighlighLabel = ValueNotifier('');
+final ValueNotifier<bool> displayPlayQueuePageNotifier = ValueNotifier(false);
+
+// ===================================== LyricsPage =====================================
+
+final updateLyricsNotifier = ValueNotifier(0);
+
+final ValueNotifier<bool> displayLyricsPageNotifier = ValueNotifier(false);
+final ValueNotifier<bool> immersiveModeNotifier = ValueNotifier(false);
+Timer? immersiveModeTimer;
 
 // ===================================== Settings =====================================
 
@@ -170,18 +203,6 @@ late PlaylistsManager playlistsManager;
 
 Map<AudioMetadata, ValueNotifier<bool>> songIsFavorite = {};
 Map<AudioMetadata, ValueNotifier<int>> songIsUpdated = {};
-
-// ===================================== PlayQueuePage =====================================
-
-final ValueNotifier<bool> displayPlayQueuePageNotifier = ValueNotifier(false);
-
-// ===================================== LyricsPage =====================================
-
-final updateLyricsNotifier = ValueNotifier(0);
-
-final ValueNotifier<bool> displayLyricsPageNotifier = ValueNotifier(false);
-final ValueNotifier<bool> immersiveModeNotifier = ValueNotifier(false);
-Timer? immersiveModeTimer;
 
 // ===================================== DesktopLyrics =====================================
 

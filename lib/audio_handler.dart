@@ -6,7 +6,6 @@ import 'package:just_audio/just_audio.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/desktop_lyrics.dart';
 import 'package:particle_music/desktop/extensions/window_controller_extension.dart';
-import 'package:particle_music/load_library.dart';
 import 'package:particle_music/lyrics.dart';
 import 'package:particle_music/utils.dart';
 import 'package:path_provider/path_provider.dart';
@@ -64,14 +63,7 @@ class MyAudioHandler extends BaseAudioHandler {
     currentSongNotifier.addListener(() {
       needPause = false;
       if (!isMobile) {
-        for (int i = 0; i < panelManager.backgroundSongStack.length; i++) {
-          if (panelManager.bgColorUseCurrentSongStack[i]) {
-            panelManager.backgroundSongStack[i] = currentSongNotifier.value;
-          }
-        }
-        if (!panelManager.isEmpty) {
-          panelManager.updateBackground();
-        }
+        panelManager.updateBackground();
       }
     });
   }
@@ -339,7 +331,7 @@ class MyAudioHandler extends BaseAudioHandler {
 
     await parseLyricsFile(currentSong);
 
-    currentCoverArtColor = computeCoverArtColor(currentSong);
+    currentCoverArtColor = await computeCoverArtColor(currentSong);
 
     currentSongNotifier.value = currentSong;
     if (isPlayingNotifier.value) {

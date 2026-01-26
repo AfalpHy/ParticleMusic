@@ -1,4 +1,3 @@
-import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/panels/artist_album_panel.dart';
@@ -8,15 +7,14 @@ import 'package:particle_music/desktop/panels/playlists_panel.dart';
 import 'package:particle_music/desktop/panels/recently_panel.dart';
 import 'package:particle_music/desktop/panels/setting_panel.dart';
 import 'package:particle_music/desktop/panels/song_list_panel.dart';
-import 'package:particle_music/load_library.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/utils.dart';
 
 class PanelManager {
   final List<Widget> panelStack = [];
   final List<String> sidebarHighlighLabelStack = [];
-  final List<AudioMetadata?> backgroundSongStack = [];
-  final List<bool> bgColorUseCurrentSongStack = [];
+
+  final List<ValueNotifier<String>> currentFolderNotifierStack = [];
 
   final ValueNotifier<int> updatePanel = ValueNotifier(0);
 
@@ -24,11 +22,10 @@ class PanelManager {
     return panelStack.isEmpty;
   }
 
-  void pushPanel(String label, {String? content}) {
+  void pushPanel(String label, {String? content}) async {
     sidebarHighlighLabel.value = label;
     sidebarHighlighLabelStack.add(label);
 
-    bool bgColorUseCurrentSong = false;
     if (label == 'artists' && content != null) {
       backgroundSong = artist2SongList[content]!.first;
       panelStack.add(SongListPanel(key: UniqueKey(), artist: content));
@@ -36,12 +33,20 @@ class PanelManager {
       backgroundSong = album2SongList[content]!.first;
       panelStack.add(SongListPanel(key: UniqueKey(), album: content));
     } else if (label == 'folders') {
+      ValueNotifier<String> currentFolderNotifier = ValueNotifier('');
+      currentFolderNotifierStack.add(currentFolderNotifier);
       if (folderPathList.isNotEmpty) {
         backgroundSong = getFirstSong(folder2SongList[folderPathList.first]!);
+        currentFolderNotifier.value = folderPathList.first;
       } else {
         backgroundSong = null;
       }
-      panelStack.add(FoldersPanel(key: UniqueKey()));
+      panelStack.add(
+        FoldersPanel(
+          key: UniqueKey(),
+          currentFolderNotifier: currentFolderNotifier,
+        ),
+      );
     } else if (label == 'songs') {
       backgroundSong = getFirstSong(librarySongList);
       panelStack.add(SongListPanel(key: UniqueKey()));
@@ -57,13 +62,9 @@ class PanelManager {
       panelStack.add(SongListPanel(key: UniqueKey(), playlist: playlist));
     } else {
       backgroundSong = currentSongNotifier.value;
-      bgColorUseCurrentSong = true;
     }
 
-    backgroundColor = computeCoverArtColor(backgroundSong);
-
-    backgroundSongStack.add(backgroundSong);
-    bgColorUseCurrentSongStack.add(bgColorUseCurrentSong);
+    backgroundColor = await computeCoverArtColor(backgroundSong);
 
     if (label == 'artists' && content == null) {
       panelStack.add(ArtistAlbumPanel(key: UniqueKey(), isArtist: true));
@@ -85,16 +86,18 @@ class PanelManager {
     if (panelStack.length == 1) {
       return;
     }
+
     panelStack.removeLast();
+    if (sidebarHighlighLabelStack.last == 'folders') {
+      currentFolderNotifierStack.removeLast();
+    }
     sidebarHighlighLabelStack.removeLast();
-    backgroundSongStack.removeLast();
-    bgColorUseCurrentSongStack.removeLast();
 
     sidebarHighlighLabel.value = sidebarHighlighLabelStack.last;
 
-    updatePanel.value++;
-
     updateBackground();
+
+    updatePanel.value++;
   }
 
   void removePlaylistPanel(Playlist playlist) {
@@ -103,27 +106,51 @@ class PanelManager {
       if (tmp is SongListPanel && tmp.playlist == playlist) {
         panelStack.removeAt(i);
         sidebarHighlighLabelStack.removeAt(i);
-        backgroundSongStack.removeAt(i);
-        bgColorUseCurrentSongStack.removeAt(i);
       }
     }
 
     sidebarHighlighLabel.value = sidebarHighlighLabelStack.last;
 
-    updatePanel.value++;
-
     updateBackground();
+
+    updatePanel.value++;
   }
 
   void reload() {
     panelStack.clear();
     sidebarHighlighLabelStack.clear();
-    backgroundSongStack.clear();
   }
 
-  void updateBackground() {
-    backgroundSong = backgroundSongStack.last;
-    backgroundColor = computeCoverArtColor(backgroundSong);
+  void updateBackground() async {
+    if (isEmpty) {
+      return;
+    }
+    final label = sidebarHighlighLabelStack.last;
+
+    Widget panel = panelStack.last;
+
+    if (label == 'artists' && panel is SongListPanel) {
+      backgroundSong = artist2SongList[panel.artist]!.first;
+    } else if (label == 'albums' && panel is SongListPanel) {
+      backgroundSong = album2SongList[panel.album]!.first;
+    } else if (label == 'folders') {
+      backgroundSong = getFirstSong(
+        folder2SongList[currentFolderNotifierStack.last.value]!,
+      );
+    } else if (label == 'songs') {
+      backgroundSong = getFirstSong(librarySongList);
+    } else if (label == 'ranking') {
+      backgroundSong = getFirstSong(historyManager.rankingSongList);
+    } else if (label == 'recently') {
+      backgroundSong = getFirstSong(historyManager.recentlySongList);
+    } else if (label[0] == '_') {
+      final playlist = playlistsManager.getPlaylistByName(label.substring(1));
+      backgroundSong = getFirstSong(playlist!.songList);
+    } else {
+      backgroundSong = currentSongNotifier.value;
+    }
+
+    backgroundColor = await computeCoverArtColor(backgroundSong);
     updateBackgroundNotifier.value++;
   }
 }

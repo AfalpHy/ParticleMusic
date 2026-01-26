@@ -9,6 +9,7 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/desktop/title_bar.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
+import 'package:particle_music/load_library.dart';
 import 'package:particle_music/metadata.dart';
 import 'package:particle_music/common_widgets/my_location.dart';
 import 'package:particle_music/playlists.dart';
@@ -66,7 +67,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
         Expanded(
           child: Row(
             children: [
-              Expanded(child: contentWidget(context)),
+              Expanded(child: contentWithStack(context)),
 
               if (widget.foldersWidget != null) ...[
                 SizedBox(width: 5),
@@ -101,7 +102,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
     );
   }
 
-  Widget contentWidget(BuildContext context) {
+  Widget contentWithStack(BuildContext context) {
     return Stack(
       children: [
         NotificationListener<UserScrollNotification>(
@@ -122,74 +123,8 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
             }
             return false;
           },
-          child: CustomScrollView(
-            controller: scrollController,
-            slivers: [
-              SliverToBoxAdapter(
-                child: Padding(padding: padding, child: header()),
-              ),
-
-              SliverToBoxAdapter(
-                child: Padding(padding: padding, child: label()),
-              ),
-
-              SliverPadding(
-                padding: padding,
-                sliver: ValueListenableBuilder(
-                  valueListenable: currentSongListNotifier,
-                  builder: (context, currentSongList, child) {
-                    final List<ValueNotifier<bool>> isSelectedList =
-                        List.generate(
-                          currentSongList.length,
-                          (_) => ValueNotifier(false),
-                        );
-
-                    continuousSelectBeginIndex = 0;
-
-                    return SliverReorderableList(
-                      itemExtent: 60,
-                      itemBuilder: (context, index) {
-                        return playlist != null &&
-                                textController.text == '' &&
-                                sortTypeNotifier.value == 0
-                            ? ReorderableDragStartListener(
-                                // reusing the same widget to avoid unnecessary rebuild
-                                key: ValueKey(currentSongList[index]),
-                                index: index,
-                                child: listItem(
-                                  context,
-                                  currentSongList,
-                                  index,
-                                  isSelectedList,
-                                ),
-                              )
-                            : SizedBox(
-                                key: ValueKey(index),
-                                child: listItem(
-                                  context,
-                                  currentSongList,
-                                  index,
-                                  isSelectedList,
-                                ),
-                              );
-                      },
-                      itemCount: currentSongList.length,
-                      onReorder: (oldIndex, newIndex) {
-                        if (newIndex > oldIndex) newIndex -= 1;
-
-                        final item = playlist!.songList.removeAt(oldIndex);
-                        playlist!.songList.insert(newIndex, item);
-
-                        playlist!.update();
-                      },
-                    );
-                  },
-                ),
-              ),
-            ],
-          ),
+          child: content(context),
         ),
-
         Positioned(
           right: folder != null || recently != null
               ? 100
@@ -202,6 +137,86 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
             listIsScrollingNotifier: listIsScrollingNotifier,
             currentSongListNotifier: currentSongListNotifier,
             offset: 200 - (MediaQuery.heightOf(context) - 280) / 2,
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget content(BuildContext context) {
+    return CustomScrollView(
+      controller: scrollController,
+      slivers: [
+        SliverToBoxAdapter(
+          child: Padding(padding: padding, child: header()),
+        ),
+
+        SliverToBoxAdapter(
+          child: Padding(padding: padding, child: label()),
+        ),
+
+        SliverPadding(
+          padding: padding,
+          sliver: ValueListenableBuilder(
+            valueListenable: currentSongListNotifier,
+            builder: (context, currentSongList, child) {
+              final isSelectedList = List.generate(
+                currentSongList.length,
+                (_) => ValueNotifier(false),
+              );
+
+              continuousSelectBeginIndex = 0;
+
+              return SliverReorderableList(
+                itemExtent: 60,
+                itemBuilder: (context, index) {
+                  final isFixed =
+                      artist != null ||
+                      album != null ||
+                      ranking != null ||
+                      recently != null ||
+                      textController.text.isNotEmpty ||
+                      sortTypeNotifier.value > 0;
+                  if (isFixed) {
+                    return SizedBox(
+                      key: ValueKey(index),
+                      child: songListItemWithContextMenu(
+                        context,
+                        index,
+                        currentSongList,
+                        isSelectedList,
+                      ),
+                    );
+                  }
+                  return ReorderableDragStartListener(
+                    // reusing the same widget to avoid unnecessary rebuild
+                    key: ValueKey(currentSongList[index]),
+                    index: index,
+                    child: songListItemWithContextMenu(
+                      context,
+                      index,
+                      currentSongList,
+                      isSelectedList,
+                    ),
+                  );
+                },
+                itemCount: currentSongList.length,
+                onReorder: (oldIndex, newIndex) {
+                  if (newIndex > oldIndex) newIndex -= 1;
+
+                  final item = songList.removeAt(oldIndex);
+                  songList.insert(newIndex, item);
+
+                  if (isLibrary) {
+                    libraryLoader.updataLibrarySongList();
+                  } else if (folder != null) {
+                    libraryLoader.updateFoloderSongList(folder!);
+                  } else {
+                    playlist!.update();
+                  }
+                },
+              );
+            },
           ),
         ),
       ],
@@ -474,10 +489,10 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
     );
   }
 
-  Widget listItem(
+  Widget songListItemWithContextMenu(
     BuildContext context,
-    List<AudioMetadata> currentSongList,
     int index,
+    List<AudioMetadata> currentSongList,
     List<ValueNotifier<bool>> isSelectedList,
   ) {
     final isSelected = isSelectedList[index];
@@ -654,6 +669,7 @@ class ListItemChildState extends State<ListItemChild> {
       builder: (context, value, child) {
         return value
             ? IconButton(
+                color: Colors.black,
                 onPressed: () async {
                   audioHandler.currentIndex = widget.index;
                   await audioHandler.setPlayQueue(widget.currentSongList);

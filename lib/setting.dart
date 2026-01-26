@@ -450,7 +450,7 @@ class SettingsList extends StatelessWidget {
                     ),
                     Expanded(
                       child: ValueListenableBuilder(
-                        valueListenable: foldersChangeNotifier,
+                        valueListenable: folderChangeNotifier,
                         builder: (_, _, _) {
                           return ListView.builder(
                             itemCount: folderPathList.length,

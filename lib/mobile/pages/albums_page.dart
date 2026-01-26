@@ -4,7 +4,6 @@ import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/my_sheet.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
-import 'package:particle_music/load_library.dart';
 import 'package:particle_music/mobile/pages/song_list_page.dart';
 import 'package:particle_music/common_widgets/my_switch.dart';
 import 'package:particle_music/utils.dart';

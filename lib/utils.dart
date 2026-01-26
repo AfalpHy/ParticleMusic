@@ -237,13 +237,30 @@ void tryVibrate() {
   }
 }
 
-Color computeCoverArtColor(AudioMetadata? song) {
+Future<Uint8List?> getPictureBytes(AudioMetadata? song) async {
   if (song == null) {
+    return null;
+  }
+
+  if (song.pictures.isNotEmpty) {
+    return song.pictures.first.bytes;
+  }
+  final path = clipFilePathIfNeed(song.file.path);
+  final pictureFile = File(filePath2PicturePath[path]!);
+  if (await pictureFile.exists()) {
+    final result = await pictureFile.readAsBytes();
+    song.pictures.add(Picture(result, '', PictureType.coverFront));
+    return result;
+  } else {
+    return null;
+  }
+}
+
+Future<Color> computeCoverArtColor(AudioMetadata? song) async {
+  final bytes = await getPictureBytes(song);
+  if (bytes == null) {
     return Colors.grey;
   }
-  if (song.pictures.isEmpty) return Colors.grey;
-
-  final bytes = song.pictures.first.bytes;
 
   final decoded = image.decodeImage(bytes);
   if (decoded == null) return Colors.grey;

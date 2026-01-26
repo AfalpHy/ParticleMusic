@@ -2,21 +2,21 @@ import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/panels/song_list_panel.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
-import 'package:particle_music/load_library.dart';
-import 'package:particle_music/utils.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
 class FoldersPanel extends StatelessWidget {
-  const FoldersPanel({super.key});
+  final ValueNotifier<String> currentFolderNotifier;
+  const FoldersPanel({super.key, required this.currentFolderNotifier});
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-
+    if (currentFolderNotifier.value == '') {
+      currentFolderNotifier.value = l10n.folder;
+    }
     return ValueListenableBuilder(
-      valueListenable: foldersChangeNotifier,
+      valueListenable: folderChangeNotifier,
       builder: (_, _, _) {
-        final currentFolderNotifier = ValueNotifier(l10n.folder);
         if (folderPathList.isNotEmpty) {
           currentFolderNotifier.value = folderPathList.first;
         }
@@ -61,22 +61,9 @@ class FoldersPanel extends StatelessWidget {
                         },
                         child: ListTile(
                           title: Text(folder, style: TextStyle(fontSize: 12)),
-                          onTap: () {
+                          onTap: () async {
                             currentFolderNotifier.value = folder;
-                            if (folder2SongList[folder] != null) {
-                              backgroundSong = getFirstSong(
-                                folder2SongList[folder]!,
-                              );
-                            } else {
-                              backgroundSong = null;
-                            }
-                            panelManager.backgroundSongStack.last =
-                                backgroundSong;
-
-                            backgroundColor = computeCoverArtColor(
-                              backgroundSong,
-                            );
-                            updateBackgroundNotifier.value++;
+                            panelManager.updateBackground();
                           },
                         ),
                       ),
