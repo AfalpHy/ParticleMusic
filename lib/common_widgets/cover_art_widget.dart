@@ -29,7 +29,7 @@ class CoverArtWidget extends StatelessWidget {
         future: _loadPictureBytes(song),
         builder: (context, asyncSnapshot) {
           if (asyncSnapshot.connectionState == ConnectionState.waiting) {
-            return SizedBox();
+            return SizedBox(width: size, height: size);
           }
 
           if (asyncSnapshot.hasError || asyncSnapshot.data == null) {
