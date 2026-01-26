@@ -41,103 +41,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
     return Column(
       children: [
         SizedBox(height: 10),
-        Row(
-          children: [
-            SizedBox(width: 15),
-            Text(
-              l10n.playQueue,
-              style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-            ),
-            Spacer(),
-
-            ValueListenableBuilder(
-              valueListenable: playModeNotifier,
-              builder: (_, playMode, _) {
-                return IconButton(
-                  color: Colors.black,
-                  icon: ImageIcon(
-                    playMode == 0
-                        ? loopImage
-                        : playMode == 1
-                        ? shuffleImage
-                        : repeatImage,
-                    size: 22,
-                  ),
-                  onPressed: () {
-                    if (playModeNotifier.value != 2) {
-                      audioHandler.switchPlayMode();
-                      switch (playModeNotifier.value) {
-                        case 0:
-                          showCenterMessage(context, l10n.loop);
-                          break;
-                        default:
-                          showCenterMessage(context, l10n.shuffle);
-                          break;
-                      }
-                    }
-                    setState(() {
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        // using animateTo to avoid overscroll
-                        scrollController.animateTo(
-                          64.0 * audioHandler.currentIndex,
-                          duration: Duration(milliseconds: 300),
-                          curve: Curves.linear,
-                        );
-                      });
-                    });
-                  },
-                  onLongPress: () {
-                    audioHandler.toggleRepeat();
-                    switch (playModeNotifier.value) {
-                      case 0:
-                        showCenterMessage(context, l10n.loop);
-                        break;
-                      case 1:
-                        showCenterMessage(context, l10n.shuffle);
-                        break;
-                      default:
-                        showCenterMessage(context, l10n.repeat);
-                        break;
-                    }
-                    setState(() {
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        // using animateTo to avoid overscroll
-                        scrollController.animateTo(
-                          64.0 * audioHandler.currentIndex,
-                          duration: Duration(milliseconds: 300),
-                          curve: Curves.linear,
-                        );
-                      });
-                    });
-                  },
-                );
-              },
-            ),
-
-            IconButton(
-              color: Colors.black,
-              onPressed: () {
-                scrollController.animateTo(
-                  64.0 * audioHandler.currentIndex,
-                  duration: Duration(milliseconds: 300),
-                  curve: Curves.linear,
-                );
-              },
-              icon: Icon(Icons.my_location_rounded, size: 20),
-            ),
-            IconButton(
-              onPressed: () async {
-                if (await showConfirmDialog(context, l10n.clear)) {
-                  await audioHandler.clear();
-
-                  displayPlayQueuePageNotifier.value = false;
-                  displayLyricsPageNotifier.value = false;
-                }
-              },
-              icon: const ImageIcon(deleteImage, color: Colors.black),
-            ),
-          ],
-        ),
+        topBar(l10n),
         SizedBox(height: 10),
 
         Expanded(
@@ -176,7 +80,11 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                 },
             itemCount: playQueue.length,
             itemBuilder: (context, index) {
-              return playQueueItem(context, index, isSelectedList);
+              return playQueueItemWithContextMenu(
+                context,
+                index,
+                isSelectedList,
+              );
             },
           ),
         ),
@@ -184,7 +92,107 @@ class PlayQueuePageState extends State<PlayQueuePage> {
     );
   }
 
-  Widget playQueueItem(
+  Widget topBar(AppLocalizations l10n) {
+    return Row(
+      children: [
+        SizedBox(width: 15),
+        Text(
+          l10n.playQueue,
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        ),
+        Spacer(),
+
+        ValueListenableBuilder(
+          valueListenable: playModeNotifier,
+          builder: (_, playMode, _) {
+            return IconButton(
+              color: Colors.black,
+              icon: ImageIcon(
+                playMode == 0
+                    ? loopImage
+                    : playMode == 1
+                    ? shuffleImage
+                    : repeatImage,
+                size: 22,
+              ),
+              onPressed: () {
+                if (playModeNotifier.value != 2) {
+                  audioHandler.switchPlayMode();
+                  switch (playModeNotifier.value) {
+                    case 0:
+                      showCenterMessage(context, l10n.loop);
+                      break;
+                    default:
+                      showCenterMessage(context, l10n.shuffle);
+                      break;
+                  }
+                }
+                setState(() {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    // using animateTo to avoid overscroll
+                    scrollController.animateTo(
+                      64.0 * audioHandler.currentIndex,
+                      duration: Duration(milliseconds: 300),
+                      curve: Curves.linear,
+                    );
+                  });
+                });
+              },
+              onLongPress: () {
+                audioHandler.toggleRepeat();
+                switch (playModeNotifier.value) {
+                  case 0:
+                    showCenterMessage(context, l10n.loop);
+                    break;
+                  case 1:
+                    showCenterMessage(context, l10n.shuffle);
+                    break;
+                  default:
+                    showCenterMessage(context, l10n.repeat);
+                    break;
+                }
+                setState(() {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    // using animateTo to avoid overscroll
+                    scrollController.animateTo(
+                      64.0 * audioHandler.currentIndex,
+                      duration: Duration(milliseconds: 300),
+                      curve: Curves.linear,
+                    );
+                  });
+                });
+              },
+            );
+          },
+        ),
+
+        IconButton(
+          color: Colors.black,
+          onPressed: () {
+            scrollController.animateTo(
+              64.0 * audioHandler.currentIndex,
+              duration: Duration(milliseconds: 300),
+              curve: Curves.linear,
+            );
+          },
+          icon: Icon(Icons.my_location_rounded, size: 20),
+        ),
+        IconButton(
+          onPressed: () async {
+            if (await showConfirmDialog(context, l10n.clear)) {
+              await audioHandler.clear();
+
+              displayPlayQueuePageNotifier.value = false;
+              displayLyricsPageNotifier.value = false;
+            }
+          },
+          icon: const ImageIcon(deleteImage, color: Colors.black),
+        ),
+      ],
+    );
+  }
+
+  Widget playQueueItemWithContextMenu(
     BuildContext context,
     int index,
     List<ValueNotifier<bool>> isSelectedList,
@@ -195,7 +203,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
 
     return ContextMenuWidget(
       key: ValueKey(song),
-      child: PlayQueueItemChild(
+      child: PlayQueueItem(
         index: index,
         isSelected: isSelected,
         onTap: () async {
@@ -287,12 +295,12 @@ class PlayQueuePageState extends State<PlayQueuePage> {
   }
 }
 
-class PlayQueueItemChild extends StatefulWidget {
+class PlayQueueItem extends StatefulWidget {
   final int index;
   final ValueNotifier<bool> isSelected;
   final void Function()? onTap;
 
-  const PlayQueueItemChild({
+  const PlayQueueItem({
     super.key,
     required this.index,
     required this.isSelected,
@@ -303,7 +311,7 @@ class PlayQueueItemChild extends StatefulWidget {
   State<StatefulWidget> createState() => PlayQueueItemChildState();
 }
 
-class PlayQueueItemChildState extends State<PlayQueueItemChild> {
+class PlayQueueItemChildState extends State<PlayQueueItem> {
   final showPlayButtonNotifier = ValueNotifier(false);
 
   Widget songListTile() {

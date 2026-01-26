@@ -1,387 +1,15 @@
-import 'dart:async';
-import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/common_widgets/my_sheet.dart';
+import 'package:particle_music/mobile/sleep_timer.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/load_library.dart';
 import 'package:particle_music/common_widgets/my_switch.dart';
 import 'package:particle_music/utils.dart';
 import 'package:smooth_corner/smooth_corner.dart';
-
-class Setting {
-  final File file;
-  Setting(this.file) {
-    if (!(file.existsSync())) {
-      saveSetting();
-    }
-  }
-
-  void setColor() {
-    // mobile hasn't vivid color mode
-    if (isMobile || enableCustomColorNotifier.value) {
-      iconColor = customIconColor;
-      textColor = customTextColor;
-      switchColor = customSwitchColor;
-      panelColor = customPanelColor;
-      sidebarColor = customSidebarColor;
-      bottomColor = customBottomColor;
-    } else {
-      iconColor = vividIconColor;
-      textColor = vividTextColor;
-      switchColor = vividSwitchColor;
-      panelColor = vividPanelColor;
-      sidebarColor = vividSidebarColor;
-      bottomColor = vividBottomColor;
-    }
-  }
-
-  Future<void> loadSetting() async {
-    final content = await file.readAsString();
-
-    final Map<String, dynamic> json =
-        jsonDecode(content) as Map<String, dynamic>;
-
-    artistsIsListViewNotifier.value =
-        json['artistsIsList'] as bool? ?? artistsIsListViewNotifier.value;
-
-    artistsIsAscendingNotifier.value =
-        json['artistsIsAscend'] as bool? ?? artistsIsAscendingNotifier.value;
-
-    artistsUseLargePictureNotifier.value =
-        json['artistsUseLargePicture'] as bool? ??
-        artistsUseLargePictureNotifier.value;
-
-    albumsIsAscendingNotifier.value =
-        json['albumsIsAscend'] as bool? ?? albumsIsAscendingNotifier.value;
-
-    albumsUseLargePictureNotifier.value =
-        json['albumsUseLargePicture'] as bool? ??
-        albumsUseLargePictureNotifier.value;
-
-    playlistsUseLargePictureNotifier.value =
-        json['playlistsUseLargePicture'] as bool? ??
-        playlistsUseLargePictureNotifier.value;
-
-    vibrationOnNoitifier.value =
-        json['vibrationOn'] as bool? ?? vibrationOnNoitifier.value;
-
-    final languageCode = json['language'] as String? ?? '';
-
-    if (languageCode.isNotEmpty) {
-      localeNotifier.value = Locale(languageCode);
-    }
-
-    enableCustomColorNotifier.value =
-        json['enableCustomColor'] as bool? ?? enableCustomColorNotifier.value;
-
-    final iconValue = json['customIconColor'];
-    if (iconValue is int) {
-      customIconColor = Color(iconValue);
-    }
-
-    final textValue = json['customTextColor'];
-    if (textValue is int) {
-      customTextColor = Color(textValue);
-    }
-
-    final switchValue = json['customSwitchColor'];
-    if (switchValue is int) {
-      customSwitchColor = Color(switchValue);
-    }
-
-    final panelValue = json['customPanelColor'];
-    if (panelValue is int) {
-      customPanelColor = Color(panelValue);
-    }
-
-    final sidebarValue = json['customSidebarColor'];
-    if (sidebarValue is int) {
-      customSidebarColor = Color(sidebarValue);
-    }
-
-    final bottomValue = json['customBottomColor'];
-    if (bottomValue is int) {
-      customBottomColor = Color(bottomValue);
-    }
-
-    final searchFieldValue = json['searchFieldColor'];
-    if (searchFieldValue is int) {
-      searchFieldColor = Color(searchFieldValue);
-    }
-
-    final buttonValue = json['buttonColor'];
-    if (buttonValue is int) {
-      buttonColor = Color(buttonValue);
-    }
-
-    final dividerValue = json['dividerColor'];
-    if (dividerValue is int) {
-      dividerColor = Color(dividerValue);
-    }
-
-    final selectedItemValue = json['selectedItemColor'];
-    if (selectedItemValue is int) {
-      selectedItemColor = Color(selectedItemValue);
-    }
-    setColor();
-  }
-
-  void saveSetting() {
-    file.writeAsStringSync(
-      jsonEncode({
-        'artistsIsList': artistsIsListViewNotifier.value,
-        'artistsIsAscend': artistsIsAscendingNotifier.value,
-        'artistsUseLargePicture': artistsUseLargePictureNotifier.value,
-
-        'albumsIsAscend': albumsIsAscendingNotifier.value,
-        'albumsUseLargePicture': albumsUseLargePictureNotifier.value,
-
-        'playlistsUseLargePicture': playlistsUseLargePictureNotifier.value,
-
-        'vibrationOn': vibrationOnNoitifier.value,
-        'language': localeNotifier.value == null
-            ? ''
-            : localeNotifier.value!.languageCode,
-        'enableCustomColor': enableCustomColorNotifier.value,
-        'customIconColor': customIconColor.toARGB32(),
-        'customTextColor': customTextColor.toARGB32(),
-        'customSwitchColor': customSwitchColor.toARGB32(),
-        'customPanelColor': customPanelColor.toARGB32(),
-        'customSidebarColor': customSidebarColor.toARGB32(),
-        'customBottomColor': customBottomColor.toARGB32(),
-        'searchFieldColor': searchFieldColor.toARGB32(),
-        'buttonColor': buttonColor.toARGB32(),
-        'dividerColor': dividerColor.toARGB32(),
-        'selectedItemColor': selectedItemColor.toARGB32(),
-      }),
-    );
-  }
-
-  void sortArtists() {
-    artistMapEntryList.sort((a, b) {
-      if (artistsIsAscendingNotifier.value) {
-        return compareMixed(a.key, b.key);
-      } else {
-        return compareMixed(b.key, a.key);
-      }
-    });
-  }
-
-  void sortAlbums() {
-    albumMapEntryList.sort((a, b) {
-      if (albumsIsAscendingNotifier.value) {
-        return compareMixed(a.key, b.key);
-      } else {
-        return compareMixed(b.key, a.key);
-      }
-    });
-  }
-}
-
-void displayTimedPauseSetting(BuildContext context) {
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    useRootNavigator: true,
-    builder: (context) {
-      Duration currentDuration = Duration();
-      final l10n = AppLocalizations.of(context);
-
-      return MySheet(
-        height: 350,
-        Center(
-          child: Column(
-            children: [
-              Spacer(),
-              CupertinoTimerPicker(
-                mode: CupertinoTimerPickerMode.hms, // hours, minutes, seconds
-                onTimerDurationChanged: (Duration newDuration) {
-                  currentDuration = newDuration;
-                },
-              ),
-              SizedBox(height: 10),
-              Row(
-                children: [
-                  Spacer(),
-                  ElevatedButton(
-                    onPressed: () {
-                      timedPause.value = false;
-                      Navigator.pop(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      elevation: 1,
-                      backgroundColor: buttonColor,
-                      shadowColor: Colors.black54,
-                      foregroundColor: Colors.black,
-                      shape: SmoothRectangleBorder(
-                        smoothness: 1,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: Text(l10n.cancel),
-                  ),
-                  SizedBox(width: 30),
-                  ElevatedButton(
-                    onPressed: () {
-                      int time = 0;
-                      time += currentDuration.inHours * 3600;
-                      time += currentDuration.inMinutes % 60 * 60;
-                      time += currentDuration.inSeconds % 60;
-                      remainTimes.value = time;
-
-                      pauseTimer ??= Timer.periodic(
-                        const Duration(seconds: 1),
-                        (_) {
-                          if (remainTimes.value > 0) {
-                            remainTimes.value--;
-                          }
-                          if (remainTimes.value == 0) {
-                            pauseTimer!.cancel();
-                            pauseTimer = null;
-                            timedPause.value = false;
-
-                            if (pauseAfterCompleted.value) {
-                              needPause = true;
-                            } else {
-                              audioHandler.pause();
-                            }
-                          }
-                        },
-                      );
-
-                      Navigator.pop(context);
-                    },
-                    style: ElevatedButton.styleFrom(
-                      elevation: 1,
-                      backgroundColor: buttonColor,
-                      shadowColor: Colors.black54,
-                      foregroundColor: Colors.black,
-                      shape: SmoothRectangleBorder(
-                        smoothness: 1,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
-                    child: Text(l10n.confirm),
-                  ),
-
-                  Spacer(),
-                ],
-              ),
-              Spacer(),
-            ],
-          ),
-        ),
-      );
-    },
-  ).then((_) {
-    if (remainTimes.value == 0) {
-      timedPause.value = false;
-    }
-  });
-}
-
-Widget sleepTimerListTile(
-  BuildContext context,
-  AppLocalizations l10n,
-  bool inSetting,
-) {
-  return ListTile(
-    leading: ImageIcon(
-      timerImage,
-      color: inSetting ? iconColor : Colors.black,
-      size: inSetting ? 30 : null,
-    ),
-
-    title: Text(
-      l10n.sleepTimer,
-      style: TextStyle(fontWeight: inSetting ? null : FontWeight.bold),
-    ),
-    trailing: SizedBox(
-      width: 150,
-      child: Row(
-        children: [
-          Spacer(),
-          ValueListenableBuilder(
-            valueListenable: remainTimes,
-            builder: (context, value, child) {
-              final hours = (value ~/ 3600).toString().padLeft(2, '0');
-              final minutes = ((value % 3600) ~/ 60).toString().padLeft(2, '0');
-              final secs = (value % 60).toString().padLeft(2, '0');
-              return ValueListenableBuilder(
-                valueListenable: timedPause,
-                builder: (context, on, child) {
-                  return value > 0 || on
-                      ? Text('$hours:$minutes:$secs')
-                      : SizedBox();
-                },
-              );
-            },
-          ),
-          SizedBox(width: 10),
-          ValueListenableBuilder(
-            valueListenable: timedPause,
-            builder: (context, value, child) {
-              return MySwitch(
-                value: value,
-                onToggle: (value) async {
-                  tryVibrate();
-                  timedPause.value = value;
-                  if (value) {
-                    displayTimedPauseSetting(context);
-                  } else {
-                    pauseTimer?.cancel();
-                    pauseTimer = null;
-                    remainTimes.value = 0;
-                  }
-                },
-              );
-            },
-          ),
-        ],
-      ),
-    ),
-  );
-}
-
-Widget pauseAfterCTListTile(BuildContext context, AppLocalizations l10n) {
-  return ValueListenableBuilder(
-    valueListenable: timedPause,
-    builder: (_, value, _) {
-      return value
-          ? ListTile(
-              trailing: SizedBox(
-                width: 200,
-                child: Row(
-                  children: [
-                    Spacer(),
-                    Text(l10n.pauseAfterCurrentTrack),
-                    SizedBox(width: 10),
-                    ValueListenableBuilder(
-                      valueListenable: pauseAfterCompleted,
-                      builder: (_, value, _) {
-                        return MySwitch(
-                          value: value,
-                          onToggle: (value) {
-                            tryVibrate();
-                            pauseAfterCompleted.value = value;
-                          },
-                        );
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            )
-          : SizedBox();
-    },
-  );
-}
 
 class SettingsList extends StatelessWidget {
   const SettingsList({super.key});
@@ -591,7 +219,7 @@ class SettingsList extends StatelessWidget {
                             title: Text(l10n.followSystem),
                             onTap: () {
                               localeNotifier.value = null;
-                              setting.saveSetting();
+                              settingManager.saveSetting();
                             },
                             trailing: value == null ? Icon(Icons.check) : null,
                           ),
@@ -599,7 +227,7 @@ class SettingsList extends StatelessWidget {
                             title: Text('English'),
                             onTap: () {
                               localeNotifier.value = Locale('en');
-                              setting.saveSetting();
+                              settingManager.saveSetting();
                             },
                             trailing: value == Locale('en')
                                 ? Icon(Icons.check)
@@ -609,7 +237,7 @@ class SettingsList extends StatelessWidget {
                             title: Text('中文'),
                             onTap: () {
                               localeNotifier.value = Locale('zh');
-                              setting.saveSetting();
+                              settingManager.saveSetting();
                             },
                             trailing: value == Locale('zh')
                                 ? Icon(Icons.check)
@@ -748,7 +376,7 @@ class SettingsList extends StatelessWidget {
                               default:
                                 selectedItemColor = color;
                             }
-                            setting.setColor();
+                            settingManager.setColor();
                             colorChangeNotifier.value++;
                           },
                         ),
@@ -756,7 +384,7 @@ class SettingsList extends StatelessWidget {
                       actions: [
                         TextButton(
                           onPressed: () {
-                            setting.saveSetting();
+                            settingManager.saveSetting();
                             Navigator.pop(context);
                           },
                           child: Text(
@@ -825,9 +453,9 @@ class SettingsList extends StatelessWidget {
                                           onToggle: (value) {
                                             enableCustomColorNotifier.value =
                                                 value;
-                                            setting.setColor();
+                                            settingManager.setColor();
                                             colorChangeNotifier.value++;
-                                            setting.saveSetting();
+                                            settingManager.saveSetting();
                                           },
                                         );
                                       },
@@ -864,9 +492,9 @@ class SettingsList extends StatelessWidget {
                             dividerColor = Colors.grey;
                             selectedItemColor = Colors.white;
 
-                            setting.setColor();
+                            settingManager.setColor();
                             colorChangeNotifier.value++;
-                            setting.saveSetting();
+                            settingManager.saveSetting();
                           },
                         ),
                       ],
@@ -1004,7 +632,7 @@ class SettingsList extends StatelessWidget {
                     onToggle: (value) {
                       tryVibrate();
                       vibrationOnNoitifier.value = value;
-                      setting.saveSetting();
+                      settingManager.saveSetting();
                     },
                   ),
                 );

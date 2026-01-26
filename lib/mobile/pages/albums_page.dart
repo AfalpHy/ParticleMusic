@@ -2,7 +2,7 @@ import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/common_widgets/my_sheet.dart';
+import 'package:particle_music/mobile/widgets/my_sheet.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/mobile/pages/song_list_page.dart';
 import 'package:particle_music/common_widgets/my_switch.dart';
@@ -155,7 +155,7 @@ class AlbumsPage extends StatelessWidget {
                         onToggle: (value) async {
                           tryVibrate();
                           albumsUseLargePictureNotifier.value = value;
-                          setting.saveSetting();
+                          settingManager.saveSetting();
                         },
                       ),
                     ],
@@ -188,8 +188,8 @@ class AlbumsPage extends StatelessWidget {
                         onToggle: (value) async {
                           tryVibrate();
                           albumsIsAscendingNotifier.value = value;
-                          setting.saveSetting();
-                          setting.sortAlbums();
+                          settingManager.saveSetting();
+                          sortAlbums();
                           updateCurrentMapEntryList();
                         },
                       ),

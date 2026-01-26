@@ -499,7 +499,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
     final l10n = AppLocalizations.of(context);
 
     return ContextMenuWidget(
-      child: ListItemChild(
+      child: SongListItem(
         index: index,
         isSelected: isSelected,
         currentSongList: currentSongList,
@@ -638,7 +638,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
   }
 }
 
-class ListItemChild extends StatefulWidget {
+class SongListItem extends StatefulWidget {
   final int index;
   final ValueNotifier<bool> isSelected;
   final List<AudioMetadata> currentSongList;
@@ -646,7 +646,7 @@ class ListItemChild extends StatefulWidget {
   final bool isRecently;
   final void Function() onTap;
 
-  const ListItemChild({
+  const SongListItem({
     super.key,
     required this.index,
     required this.isSelected,
@@ -657,10 +657,10 @@ class ListItemChild extends StatefulWidget {
   });
 
   @override
-  State<StatefulWidget> createState() => ListItemChildState();
+  State<StatefulWidget> createState() => SongListItemState();
 }
 
-class ListItemChildState extends State<ListItemChild> {
+class SongListItemState extends State<SongListItem> {
   final showPlayButtonNotifier = ValueNotifier(false);
 
   Widget indexOrPlayButton() {

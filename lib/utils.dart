@@ -237,6 +237,26 @@ void tryVibrate() {
   }
 }
 
+void sortArtists() {
+  artistMapEntryList.sort((a, b) {
+    if (artistsIsAscendingNotifier.value) {
+      return compareMixed(a.key, b.key);
+    } else {
+      return compareMixed(b.key, a.key);
+    }
+  });
+}
+
+void sortAlbums() {
+  albumMapEntryList.sort((a, b) {
+    if (albumsIsAscendingNotifier.value) {
+      return compareMixed(a.key, b.key);
+    } else {
+      return compareMixed(b.key, a.key);
+    }
+  });
+}
+
 Future<Uint8List?> getPictureBytes(AudioMetadata? song) async {
   if (song == null) {
     return null;

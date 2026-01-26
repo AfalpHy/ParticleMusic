@@ -6,7 +6,7 @@ import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/playlists.dart';
-import 'package:particle_music/setting.dart';
+import 'package:particle_music/setting_manager.dart';
 import 'package:particle_music/utils.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -50,8 +50,8 @@ class LibraryLoader {
     playlistsManager = PlaylistsManager();
     await playlistsManager.initAllPlaylists();
 
-    setting = Setting(File("${appSupportDir.path}/setting.txt"));
-    await setting.loadSetting();
+    settingManager = SettingManager(File("${appSupportDir.path}/setting.txt"));
+    await settingManager.loadSetting();
 
     audioHandler.initStateFiles();
   }
@@ -146,10 +146,10 @@ class LibraryLoader {
     await saveLibrarySongMetadataList();
 
     artistMapEntryList = artist2SongList.entries.toList();
-    setting.sortArtists();
+    sortArtists();
 
     albumMapEntryList = album2SongList.entries.toList();
-    setting.sortAlbums();
+    sortAlbums();
 
     await _loadPlaylists();
 
