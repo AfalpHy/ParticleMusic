@@ -106,8 +106,8 @@ class LibraryLoader {
             if (song.pictures.isNotEmpty) {
               await picture.create(recursive: true);
               await picture.writeAsBytes(song.pictures.first.bytes);
+              filePath2PicturePath[path] = picture.path;
             }
-            filePath2PicturePath[path] = picture.path;
             if (isAdditional) {
               folderAdditionalSongList.add(song);
               libraryAdditionalSongList.add(song);

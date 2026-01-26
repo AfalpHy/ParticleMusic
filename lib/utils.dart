@@ -265,11 +265,22 @@ Future<Uint8List?> getPictureBytes(AudioMetadata? song) async {
   if (song.pictures.isNotEmpty) {
     return song.pictures.first.bytes;
   }
+  final result = await loadPicture(song);
+  if (result != null) {
+    song.pictures.add(Picture(result, '', PictureType.coverFront));
+  }
+  return result;
+}
+
+Future<Uint8List?> loadPicture(AudioMetadata song) async {
   final path = clipFilePathIfNeed(song.file.path);
-  final pictureFile = File(filePath2PicturePath[path]!);
+  final picturePath = filePath2PicturePath[path];
+  if (picturePath == null) {
+    return null;
+  }
+  final pictureFile = File(picturePath);
   if (await pictureFile.exists()) {
     final result = await pictureFile.readAsBytes();
-    song.pictures.add(Picture(result, '', PictureType.coverFront));
     return result;
   } else {
     return null;

@@ -19,8 +19,17 @@ class CoverArtWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (song == null ||
+        filePath2PicturePath[clipFilePathIfNeed(song!.file.path)] == null) {
+      return SmoothClipRRect(
+        smoothness: 1,
+        borderRadius: BorderRadius.circular(borderRadius),
+        child: musicNote(),
+      );
+    }
     Picture? tmpPicture = picture;
     tmpPicture ??= getCoverArt(song);
+
     return SmoothClipRRect(
       smoothness: 1,
       borderRadius: BorderRadius.circular(borderRadius),
