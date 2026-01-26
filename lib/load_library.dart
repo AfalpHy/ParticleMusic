@@ -89,8 +89,9 @@ class LibraryLoader {
         if (song == null || modified != _filePath2Modified[path]) {
           song = await _tryReadMetadata(File(file.path));
 
-          final picturePath = filePath2PicturePath[path];
+          String? picturePath = filePath2PicturePath[path];
           if (picturePath != null) {
+            picturePath = revertFilePathIfNeed(picturePath, appSupport: true);
             final pictureFile = File(picturePath);
             if (await pictureFile.exists()) {
               await pictureFile.delete();
@@ -106,7 +107,10 @@ class LibraryLoader {
             if (song.pictures.isNotEmpty) {
               await picture.create(recursive: true);
               await picture.writeAsBytes(song.pictures.first.bytes);
-              filePath2PicturePath[path] = picture.path;
+              filePath2PicturePath[path] = clipFilePathIfNeed(
+                picture.path,
+                appSupport: true,
+              );
             }
             if (isAdditional) {
               folderAdditionalSongList.add(song);
@@ -277,8 +281,9 @@ class LibraryLoader {
         final song = filePath2LibrarySong[path]!;
         result.add(song);
       } else {
-        final picturePath = filePath2PicturePath[path];
+        String? picturePath = filePath2PicturePath[path];
         if (picturePath != null) {
+          picturePath = revertFilePathIfNeed(picturePath, appSupport: true);
           final pictureFile = File(picturePath);
           if (await pictureFile.exists()) {
             await pictureFile.delete();

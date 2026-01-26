@@ -274,11 +274,13 @@ Future<Uint8List?> getPictureBytes(AudioMetadata? song) async {
 
 Future<Uint8List?> loadPicture(AudioMetadata song) async {
   final path = clipFilePathIfNeed(song.file.path);
-  final picturePath = filePath2PicturePath[path];
+  String? picturePath = filePath2PicturePath[path];
   if (picturePath == null) {
     return null;
   }
+  picturePath = revertFilePathIfNeed(picturePath, appSupport: true);
   final pictureFile = File(picturePath);
+
   if (await pictureFile.exists()) {
     final result = await pictureFile.readAsBytes();
     return result;
@@ -330,17 +332,19 @@ AudioMetadata? getFirstSong(List<AudioMetadata> songList) {
 
 // every installation on iOS may result in a different app documents path
 // due to app container isolation, therefore, keep only relative paths
-String clipFilePathIfNeed(String path) {
+String clipFilePathIfNeed(String path, {bool appSupport = false}) {
   if (Platform.isIOS) {
-    int prefixLength = appDocs.path.length;
+    int prefixLength = appSupport
+        ? appSupportDir.path.length
+        : appDocs.path.length;
     return path.substring(prefixLength);
   }
   return path;
 }
 
-String revertFilePathIfNeed(String path) {
+String revertFilePathIfNeed(String path, {bool appSupport = false}) {
   if (Platform.isIOS) {
-    return appDocs.path + path;
+    return (appSupport ? appSupportDir.path : appDocs.path) + path;
   }
   return path;
 }
