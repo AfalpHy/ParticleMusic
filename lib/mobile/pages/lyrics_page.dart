@@ -24,15 +24,34 @@ class LyricsPage extends StatelessWidget {
       valueListenable: currentSongNotifier,
       builder: (context, currentSong, child) {
         return Material(
+          color: Colors.white,
           child: Stack(
             fit: StackFit.expand,
             children: [
-              CoverArtWidget(song: currentSong),
-              ClipRect(
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-                  child: Container(color: currentCoverArtColor.withAlpha(180)),
-                ),
+              ValueListenableBuilder(
+                valueListenable: enableCustomLyricsPageNotifier,
+                builder: (context, enableCustomLyricsPage, child) {
+                  if (enableCustomLyricsPage) {
+                    return SizedBox.shrink();
+                  }
+                  return CoverArtWidget(song: currentSong);
+                },
+              ),
+              ValueListenableBuilder(
+                valueListenable: enableCustomLyricsPageNotifier,
+                builder: (context, enableCustomLyricsPage, child) {
+                  if (enableCustomLyricsPage) {
+                    return Container(color: lyricsBackgroundColor);
+                  }
+                  return ClipRect(
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                      child: Container(
+                        color: currentCoverArtColor.withAlpha(180),
+                      ),
+                    ),
+                  );
+                },
               ),
               Column(
                 children: [
@@ -148,9 +167,31 @@ class LyricsPage extends StatelessWidget {
 
         Row(
           children: [
-            Spacer(),
-
+            SizedBox(width: 25),
             FavoriteButton(),
+            Spacer(),
+            IconButton(
+              color: Colors.white,
+              onPressed: () {
+                lyricsFontSizeOffset += 2;
+                lyricsFontSizeOffsetChangeNotifier.value++;
+                settingManager.saveSetting();
+              },
+              icon: Icon(Icons.text_increase_rounded),
+            ),
+            IconButton(
+              color: Colors.white,
+              onPressed: () {
+                if (lyricsFontSizeOffset < -2) {
+                  return;
+                }
+                lyricsFontSizeOffset -= 2;
+                lyricsFontSizeOffsetChangeNotifier.value++;
+                settingManager.saveSetting();
+              },
+              icon: Icon(Icons.text_decrease_rounded),
+            ),
+
             IconButton(
               onPressed: () {
                 tryVibrate();

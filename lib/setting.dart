@@ -299,9 +299,13 @@ class SettingsList extends StatelessWidget {
             title = l10n.dividerColor;
             pikerColor = dividerColor;
             break;
-          default:
+          case 9:
             title = l10n.selectedItemColor;
             pikerColor = selectedItemColor;
+            break;
+          default:
+            title = l10n.lyricsBackgroundColor;
+            pikerColor = lyricsBackgroundColor;
             break;
         }
         return ListTile(
@@ -373,8 +377,12 @@ class SettingsList extends StatelessWidget {
                               case 8:
                                 dividerColor = color;
                                 break;
-                              default:
+                              case 9:
                                 selectedItemColor = color;
+                                break;
+                              default:
+                                lyricsBackgroundColor = color;
+                                break;
                             }
                             settingManager.setColor();
                             colorChangeNotifier.value++;
@@ -428,8 +436,8 @@ class SettingsList extends StatelessWidget {
                   borderRadius: BorderRadius.circular(10),
                 ),
                 child: SizedBox(
-                  height: isMobile ? 250 : 400,
-                  width: 300,
+                  height: isMobile ? 350 : 400,
+                  width: isMobile ? 240 : 350,
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
                     child: ListView(
@@ -478,6 +486,41 @@ class SettingsList extends StatelessWidget {
                         if (!isMobile) colorListTile(context, l10n, 9),
 
                         ListTile(
+                          title: Text(l10n.lyricsCustomMode),
+                          trailing: SizedBox(
+                            width: 45,
+                            child: ValueListenableBuilder(
+                              valueListenable: enableCustomLyricsPageNotifier,
+                              builder:
+                                  (context, enableCustomLyricsPage, child) {
+                                    return MouseRegion(
+                                      cursor: SystemMouseCursors.click,
+
+                                      child: ValueListenableBuilder(
+                                        valueListenable: colorChangeNotifier,
+                                        builder: (context, value, child) {
+                                          return MySwitch(
+                                            value: enableCustomLyricsPage,
+                                            onToggle: (value) {
+                                              enableCustomLyricsPageNotifier
+                                                      .value =
+                                                  value;
+                                              settingManager.setColor();
+                                              colorChangeNotifier.value++;
+                                              settingManager.saveSetting();
+                                            },
+                                          );
+                                        },
+                                      ),
+                                    );
+                                  },
+                            ),
+                          ),
+                        ),
+
+                        colorListTile(context, l10n, 10),
+
+                        ListTile(
                           title: Text(l10n.reset),
                           onTap: () {
                             customIconColor = Colors.black;
@@ -491,6 +534,8 @@ class SettingsList extends StatelessWidget {
                             buttonColor = Colors.white70;
                             dividerColor = Colors.grey;
                             selectedItemColor = Colors.white;
+
+                            lyricsBackgroundColor = Colors.black;
 
                             settingManager.setColor();
                             colorChangeNotifier.value++;

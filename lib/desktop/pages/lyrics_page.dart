@@ -44,20 +44,37 @@ class LyricsPageState extends State<LyricsPage> {
               final coverArtSize = min(pageWidth * 0.3, pageHight * 0.6);
 
               return Material(
+                color: Colors.white,
                 child: Stack(
                   fit: StackFit.expand,
                   children: [
-                    CoverArtWidget(song: currentSong),
-                    ClipRect(
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(
-                          sigmaX: pageWidth * 0.03,
-                          sigmaY: pageHight * 0.03,
-                        ),
-                        child: Container(
-                          color: currentCoverArtColor.withAlpha(180),
-                        ),
-                      ),
+                    ValueListenableBuilder(
+                      valueListenable: enableCustomLyricsPageNotifier,
+                      builder: (context, enableCustomLyricsPage, child) {
+                        if (enableCustomLyricsPage) {
+                          return SizedBox.shrink();
+                        }
+                        return CoverArtWidget(song: currentSong);
+                      },
+                    ),
+                    ValueListenableBuilder(
+                      valueListenable: enableCustomLyricsPageNotifier,
+                      builder: (context, enableCustomLyricsPage, child) {
+                        if (enableCustomLyricsPage) {
+                          return Container(color: lyricsBackgroundColor);
+                        }
+                        return ClipRect(
+                          child: BackdropFilter(
+                            filter: ImageFilter.blur(
+                              sigmaX: pageWidth * 0.03,
+                              sigmaY: pageHight * 0.03,
+                            ),
+                            child: Container(
+                              color: currentCoverArtColor.withAlpha(180),
+                            ),
+                          ),
+                        );
+                      },
                     ),
                     Row(
                       children: [
@@ -127,6 +144,43 @@ class LyricsPageState extends State<LyricsPage> {
                         SizedBox(width: pageWidth * 0.05),
                       ],
                     ),
+
+                    Positioned(
+                      right: 75,
+                      bottom: 80,
+                      child: ValueListenableBuilder(
+                        valueListenable: immersiveModeNotifier,
+                        builder: (context, value, child) {
+                          return Offstage(offstage: value, child: child);
+                        },
+                        child: Row(
+                          children: [
+                            IconButton(
+                              color: Colors.white,
+                              onPressed: () {
+                                lyricsFontSizeOffset += 2;
+                                lyricsFontSizeOffsetChangeNotifier.value++;
+                                settingManager.saveSetting();
+                              },
+                              icon: Icon(Icons.text_increase_rounded, size: 20),
+                            ),
+                            IconButton(
+                              color: Colors.white,
+                              onPressed: () {
+                                if (lyricsFontSizeOffset < -2) {
+                                  return;
+                                }
+                                lyricsFontSizeOffset -= 2;
+                                lyricsFontSizeOffsetChangeNotifier.value++;
+                                settingManager.saveSetting();
+                              },
+                              icon: Icon(Icons.text_decrease_rounded, size: 18),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+
                     Positioned(
                       left: 0,
                       right: 0,

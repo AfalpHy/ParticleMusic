@@ -611,7 +611,7 @@ abstract class AppLocalizations {
   /// No description provided for @customMode.
   ///
   /// In en, this message translates to:
-  /// **'Custom Mode'**
+  /// **'Main Page Custom Mode'**
   String get customMode;
 
   /// No description provided for @iconColor.
@@ -673,6 +673,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Selected Item Color'**
   String get selectedItemColor;
+
+  /// No description provided for @lyricsCustomMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics Page Custom Mode'**
+  String get lyricsCustomMode;
+
+  /// No description provided for @lyricsBackgroundColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics Background Color'**
+  String get lyricsBackgroundColor;
 
   /// No description provided for @reset.
   ///

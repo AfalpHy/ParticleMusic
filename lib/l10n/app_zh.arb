@@ -84,7 +84,7 @@
   "nothingNeedToUpdate": "没有需要更新的内容",
   "clear": "清空",
   "palette": "调色板",
-  "customMode": "自定义模式",
+  "customMode": "主页面自定义模式",
   "iconColor": "图标颜色",
   "textColor": "重点文本颜色",
   "switchColor": "开关颜色",
@@ -95,5 +95,7 @@
   "buttonColor": "按钮颜色",
   "dividerColor": "分割线颜色",
   "selectedItemColor": "被选中项颜色",
+  "lyricsCustomMode": "歌词页面自定义模式",
+  "lyricsBackgroundColor": "歌词背景颜色",
   "reset": "重置"
 }

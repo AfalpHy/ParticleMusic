@@ -272,7 +272,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get palette => '调色板';
 
   @override
-  String get customMode => '自定义模式';
+  String get customMode => '主页面自定义模式';
 
   @override
   String get iconColor => '图标颜色';
@@ -303,6 +303,12 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get selectedItemColor => '被选中项颜色';
+
+  @override
+  String get lyricsCustomMode => '歌词页面自定义模式';
+
+  @override
+  String get lyricsBackgroundColor => '歌词背景颜色';
 
   @override
   String get reset => '重置';

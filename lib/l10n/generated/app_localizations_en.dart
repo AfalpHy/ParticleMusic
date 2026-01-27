@@ -272,7 +272,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get palette => 'Palette';
 
   @override
-  String get customMode => 'Custom Mode';
+  String get customMode => 'Main Page Custom Mode';
 
   @override
   String get iconColor => 'Icon Color';
@@ -303,6 +303,12 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get selectedItemColor => 'Selected Item Color';
+
+  @override
+  String get lyricsCustomMode => 'Lyrics Page Custom Mode';
+
+  @override
+  String get lyricsBackgroundColor => 'Lyrics Background Color';
 
   @override
   String get reset => 'Reset';

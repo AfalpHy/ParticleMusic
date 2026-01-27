@@ -16,7 +16,7 @@ class PanelManager {
 
   final List<ValueNotifier<String>> currentFolderNotifierStack = [];
 
-  final ValueNotifier<int> updatePanel = ValueNotifier(0);
+  final ValueNotifier<int> updatePanelNotifier = ValueNotifier(0);
 
   bool get isEmpty {
     return panelStack.isEmpty;
@@ -78,7 +78,7 @@ class PanelManager {
       panelStack.add(LicensePagePanel(key: UniqueKey()));
     }
 
-    updatePanel.value++;
+    updatePanelNotifier.value++;
     updateBackgroundNotifier.value++;
   }
 
@@ -97,7 +97,7 @@ class PanelManager {
 
     updateBackground();
 
-    updatePanel.value++;
+    updatePanelNotifier.value++;
   }
 
   void removePlaylistPanel(Playlist playlist) {
@@ -113,7 +113,7 @@ class PanelManager {
 
     updateBackground();
 
-    updatePanel.value++;
+    updatePanelNotifier.value++;
   }
 
   void reload() {

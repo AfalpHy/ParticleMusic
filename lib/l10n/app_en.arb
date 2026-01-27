@@ -112,7 +112,7 @@
   "nothingNeedToUpdate": "Nothing need to update",
   "clear": "Clear",
   "palette": "Palette",
-  "customMode": "Custom Mode",
+  "customMode": "Main Page Custom Mode",
   "iconColor": "Icon Color",
   "textColor": "Highlight Text Color",
   "switchColor": "Switch Color",
@@ -123,5 +123,7 @@
   "buttonColor": "Button Color",
   "dividerColor": "Divider Color",
   "selectedItemColor": "Selected Item Color",
+  "lyricsCustomMode": "Lyrics Page Custom Mode",
+  "lyricsBackgroundColor": "Lyrics Background Color",
   "reset": "Reset"
 }

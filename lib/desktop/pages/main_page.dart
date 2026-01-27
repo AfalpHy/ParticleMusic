@@ -21,25 +21,41 @@ class DesktopMainPage extends StatelessWidget {
 
       children: [
         ValueListenableBuilder(
-          valueListenable: updateBackgroundNotifier,
+          valueListenable: enableCustomColorNotifier,
           builder: (context, value, child) {
-            return CoverArtWidget(song: backgroundSong);
+            if (value) {
+              return SizedBox.shrink();
+            }
+            return ValueListenableBuilder(
+              valueListenable: updateBackgroundNotifier,
+              builder: (context, value, child) {
+                return CoverArtWidget(song: backgroundSong);
+              },
+            );
           },
         ),
         ValueListenableBuilder(
-          valueListenable: updateBackgroundNotifier,
+          valueListenable: enableCustomColorNotifier,
           builder: (context, value, child) {
-            final pageWidth = MediaQuery.widthOf(context);
-            final pageHight = MediaQuery.heightOf(context);
+            if (value) {
+              return Container(color: Colors.white);
+            }
+            return ValueListenableBuilder(
+              valueListenable: updateBackgroundNotifier,
+              builder: (context, value, child) {
+                final pageWidth = MediaQuery.widthOf(context);
+                final pageHight = MediaQuery.heightOf(context);
 
-            return ClipRect(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(
-                  sigmaX: pageWidth * 0.03,
-                  sigmaY: pageHight * 0.03,
-                ),
-                child: Container(color: backgroundColor.withAlpha(180)),
-              ),
+                return ClipRect(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(
+                      sigmaX: pageWidth * 0.03,
+                      sigmaY: pageHight * 0.03,
+                    ),
+                    child: Container(color: backgroundColor.withAlpha(180)),
+                  ),
+                );
+              },
             );
           },
         ),
@@ -52,7 +68,7 @@ class DesktopMainPage extends StatelessWidget {
 
                   Expanded(
                     child: ValueListenableBuilder(
-                      valueListenable: panelManager.updatePanel,
+                      valueListenable: panelManager.updatePanelNotifier,
                       builder: (_, _, _) {
                         return Material(
                           color: panelColor,

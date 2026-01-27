@@ -70,6 +70,10 @@ class SettingManager {
     enableCustomColorNotifier.value =
         json['enableCustomColor'] as bool? ?? enableCustomColorNotifier.value;
 
+    enableCustomLyricsPageNotifier.value =
+        json['enableCustomLyricsPage'] as bool? ??
+        enableCustomLyricsPageNotifier.value;
+
     final iconValue = json['customIconColor'];
     if (iconValue is int) {
       customIconColor = Color(iconValue);
@@ -119,6 +123,15 @@ class SettingManager {
     if (selectedItemValue is int) {
       selectedItemColor = Color(selectedItemValue);
     }
+
+    final lyricsBackgroundValue = json['lyricsBackgroundColor'];
+    if (lyricsBackgroundValue is int) {
+      lyricsBackgroundColor = Color(lyricsBackgroundValue);
+    }
+
+    lyricsFontSizeOffset =
+        json['lyricsFontSizeOffset'] as double? ?? lyricsFontSizeOffset;
+
     setColor();
   }
 
@@ -139,6 +152,7 @@ class SettingManager {
             ? ''
             : localeNotifier.value!.languageCode,
         'enableCustomColor': enableCustomColorNotifier.value,
+        'enableCustomLyricsPage': enableCustomLyricsPageNotifier.value,
         'customIconColor': customIconColor.toARGB32(),
         'customTextColor': customTextColor.toARGB32(),
         'customSwitchColor': customSwitchColor.toARGB32(),
@@ -149,6 +163,9 @@ class SettingManager {
         'buttonColor': buttonColor.toARGB32(),
         'dividerColor': dividerColor.toARGB32(),
         'selectedItemColor': selectedItemColor.toARGB32(),
+        'lyricsBackgroundColor': lyricsBackgroundColor.toARGB32(),
+
+        'lyricsFontSizeOffset': lyricsFontSizeOffset,
       }),
     );
   }

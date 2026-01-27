@@ -57,6 +57,8 @@ final ValueNotifier<bool> displayPlayQueuePageNotifier = ValueNotifier(false);
 
 // ===================================== LyricsPage =====================================
 
+double lyricsFontSizeOffset = 0;
+final lyricsFontSizeOffsetChangeNotifier = ValueNotifier(0);
 final updateLyricsNotifier = ValueNotifier(0);
 
 final ValueNotifier<bool> displayLyricsPageNotifier = ValueNotifier(false);
@@ -83,6 +85,8 @@ final albumsUseLargePictureNotifier = ValueNotifier(false);
 final playlistsUseLargePictureNotifier = ValueNotifier(true);
 
 final enableCustomColorNotifier = ValueNotifier(false);
+final enableCustomLyricsPageNotifier = ValueNotifier(false);
+
 final colorChangeNotifier = ValueNotifier(0);
 
 final ValueNotifier<Locale?> localeNotifier = ValueNotifier(null);
@@ -91,8 +95,9 @@ late SettingManager settingManager;
 
 // ===================================== Colors =====================================
 
-Color currentCoverArtColor = Colors.grey;
 Color backgroundColor = Colors.grey;
+Color currentCoverArtColor = Colors.grey;
+Color lyricsBackgroundColor = Colors.black;
 
 Color sidebarColor = Colors.grey.shade200;
 Color customSidebarColor = Colors.grey.shade200;
@@ -121,7 +126,7 @@ Color customPanelColor = Colors.grey.shade100;
 Color vividIconColor = Colors.black;
 Color vividTextColor = Colors.black;
 Color vividSwitchColor = Colors.black87;
-Color vividPanelColor = panelColor.withAlpha(100);
+Color vividPanelColor = Colors.grey.shade100.withAlpha(100);
 
 // ===================================== Images =====================================
 

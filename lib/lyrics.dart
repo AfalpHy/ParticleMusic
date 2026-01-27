@@ -364,43 +364,53 @@ class LyricLineWidget extends StatelessWidget {
                 )
               : const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
           child: ValueListenableBuilder(
-            valueListenable: currentIndexNotifier,
-            builder: (context, currentIndex, child) {
-              final isCurrent = currentIndex == index;
+            valueListenable: lyricsFontSizeOffsetChangeNotifier,
+            builder: (_, _, _) {
+              return ValueListenableBuilder(
+                valueListenable: currentIndexNotifier,
+                builder: (context, currentIndex, child) {
+                  final isCurrent = currentIndex == index;
 
-              double fontSize = 14;
-              if (isCurrent) {
-                fontSize += 4;
-              }
-              if (expanded) {
-                fontSize += 4;
-              }
+                  double fontSize = 14 + lyricsFontSizeOffset;
+                  if (isCurrent) {
+                    fontSize += 4;
+                  }
+                  if (expanded) {
+                    fontSize += 4;
+                  }
 
-              fontSize += isMobile
-                  ? 0
-                  : min((pageHeight - 700) * 0.05, (pageWidth - 1050) * 0.025);
+                  fontSize += isMobile
+                      ? 0
+                      : min(
+                          (pageHeight - 700) * 0.05,
+                          (pageWidth - 1050) * 0.025,
+                        );
 
-              if (isCurrent && isKaraoke) {
-                return ValueListenableBuilder(
-                  valueListenable: updateLyricsNotifier,
-                  builder: (context, value, child) {
-                    return KaraokeText(
-                      key: UniqueKey(),
-                      line: line,
-                      position: audioHandler.getPosition(),
-                      fontSize: fontSize,
-                      expanded: expanded,
+                  if (isCurrent && isKaraoke) {
+                    return ValueListenableBuilder(
+                      valueListenable: updateLyricsNotifier,
+                      builder: (context, value, child) {
+                        return KaraokeText(
+                          key: UniqueKey(),
+                          line: line,
+                          position: audioHandler.getPosition(),
+                          fontSize: fontSize,
+                          expanded: expanded,
+                        );
+                      },
                     );
-                  },
-                );
-              }
-              return Text(
-                line.text,
-                textAlign: expanded ? TextAlign.left : TextAlign.center,
-                style: TextStyle(
-                  fontSize: fontSize,
-                  color: isCurrent ? Colors.white : Colors.white.withAlpha(96),
-                ),
+                  }
+                  return Text(
+                    line.text,
+                    textAlign: expanded ? TextAlign.left : TextAlign.center,
+                    style: TextStyle(
+                      fontSize: fontSize,
+                      color: isCurrent
+                          ? Colors.white
+                          : Colors.white.withAlpha(96),
+                    ),
+                  );
+                },
               );
             },
           ),
