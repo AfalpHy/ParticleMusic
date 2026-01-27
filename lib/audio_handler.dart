@@ -8,9 +8,7 @@ import 'package:particle_music/desktop/desktop_lyrics.dart';
 import 'package:particle_music/desktop/extensions/window_controller_extension.dart';
 import 'package:particle_music/lyrics.dart';
 import 'package:particle_music/utils.dart';
-import 'package:path_provider/path_provider.dart';
 import 'dart:async';
-import 'package:flutter/services.dart';
 
 class MyAudioHandler extends BaseAudioHandler {
   final _player = AudioPlayer();
@@ -289,19 +287,6 @@ class MyAudioHandler extends BaseAudioHandler {
     currentSongNotifier.value = null;
   }
 
-  Future<Uri> saveAlbumCover(Uint8List bytes) async {
-    final dir = await getTemporaryDirectory();
-    String filePath = '${dir.path}/particle_music_cover';
-    // must use different file path to update cover, it's weird on linux
-    if (Platform.isLinux) {
-      filePath += '${bytes.length}';
-    }
-    final file = File(filePath);
-
-    await file.writeAsBytes(bytes);
-    return file.uri;
-  }
-
   Future<void> load() async {
     if (currentSongNotifier.value != null) {
       if (_playLastSyncTime != null) {
@@ -339,8 +324,10 @@ class MyAudioHandler extends BaseAudioHandler {
     }
 
     Uri? artUri;
-    if (currentSong.pictures.isNotEmpty) {
-      artUri = await saveAlbumCover(currentSong.pictures.first.bytes);
+    final picturePath =
+        filePath2PicturePath[clipFilePathIfNeed(currentSong.file.path)];
+    if (picturePath != null) {
+      artUri = Uri.file(picturePath);
     }
 
     mediaItem.add(
