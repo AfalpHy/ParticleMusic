@@ -327,7 +327,7 @@ class MyAudioHandler extends BaseAudioHandler {
     final picturePath =
         filePath2PicturePath[clipFilePathIfNeed(currentSong.file.path)];
     if (picturePath != null) {
-      artUri = Uri.file(picturePath);
+      artUri = Uri.file(revertFilePathIfNeed(picturePath, appSupport: true));
     }
 
     mediaItem.add(
