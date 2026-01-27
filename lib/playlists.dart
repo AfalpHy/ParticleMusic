@@ -62,13 +62,11 @@ class PlaylistsManager {
       }
     }
 
-    File playlistFile = File("${file.parent.path}/$name.json");
-    File playlistSettingFile = File("${file.parent.path}/${name}_setting.txt");
     addPlaylist(
       Playlist(
         name: name,
-        file: playlistFile,
-        settingFile: playlistSettingFile,
+        file: File("${appSupportDir.path}/$name.json"),
+        settingFile: File("${appSupportDir.path}/${name}_setting.json"),
       ),
     );
 
