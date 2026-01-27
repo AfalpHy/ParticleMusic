@@ -101,11 +101,11 @@ Color lyricsBackgroundColor = Colors.black;
 
 Color sidebarColor = Colors.grey.shade200;
 Color customSidebarColor = Colors.grey.shade200;
-Color vividSidebarColor = sidebarColor.withAlpha(100);
+Color vividSidebarColor = Colors.grey.shade200.withAlpha(100);
 
 Color bottomColor = Colors.grey.shade50;
 Color customBottomColor = Colors.grey.shade50;
-Color vividBottomColor = bottomColor.withAlpha(100);
+Color vividBottomColor = Colors.grey.shade50.withAlpha(100);
 
 Color commonColor = Colors.grey.shade100;
 
