@@ -54,7 +54,7 @@ class FoldersPanel extends StatelessWidget {
                       title: Text(folder.path, style: TextStyle(fontSize: 12)),
                       onTap: () async {
                         currentFolderNotifier.value = folder;
-                        panelManager.updateBackground();
+                        await panelManager.updateBackground();
                       },
                     ),
                   ),

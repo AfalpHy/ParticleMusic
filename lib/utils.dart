@@ -292,6 +292,9 @@ Future<Uint8List?> loadPicture(MyAudioMetadata song) async {
 }
 
 Future<Color> computeCoverArtColor(MyAudioMetadata? song) async {
+  if (song?.coverArtColor != null) {
+    return song!.coverArtColor!;
+  }
   final bytes = await getPictureBytes(song);
   if (bytes == null) {
     return Colors.grey;
@@ -322,7 +325,9 @@ Future<Color> computeCoverArtColor(MyAudioMetadata? song) async {
     g -= luminance - maxLuminace;
     b -= luminance - maxLuminace;
   }
-  return Color.fromARGB(255, r.toInt(), g.toInt(), b.toInt());
+  final color = Color.fromARGB(255, r.toInt(), g.toInt(), b.toInt());
+  song!.coverArtColor = color;
+  return color;
 }
 
 MyAudioMetadata? getFirstSong(List<MyAudioMetadata> songList) {
@@ -353,8 +358,8 @@ String revertFilePathIfNeed(String path, {bool appSupport = false}) {
 
 String convertDirectoryPathIfNeed(String path) {
   if (Platform.isIOS) {
-    int prefixLength = appDocs.path.length;
-    return path.substring(prefixLength);
+    path = path.substring(path.indexOf('Documents'));
+    path = path.replaceFirst('Documents', 'Particle Music');
   }
   return path;
 }

@@ -62,6 +62,14 @@ class SettingsList extends StatelessWidget {
                 .map((e) => e.path)
                 .toList();
             final updateNotifier = ValueNotifier(0);
+            final buttonStyle = ElevatedButton.styleFrom(
+              backgroundColor: buttonColor,
+              foregroundColor: Colors.black,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(5),
+              ),
+              padding: EdgeInsets.all(10),
+            );
             return Dialog(
               backgroundColor: commonColor,
               shape: SmoothRectangleBorder(
@@ -113,79 +121,133 @@ class SettingsList extends StatelessWidget {
                     ),
                     Row(
                       children: [
-                        Spacer(),
-                        ElevatedButton(
-                          onPressed: () async {
-                            String? result = await FilePicker.platform
-                                .getDirectoryPath();
-                            if (result == null) {
-                              return;
-                            }
+                        SizedBox(width: 20),
+                        Column(
+                          crossAxisAlignment: .start,
+                          children: [
+                            ElevatedButton(
+                              onPressed: () async {
+                                String? result = await FilePicker.platform
+                                    .getDirectoryPath();
+                                if (result == null) {
+                                  return;
+                                }
 
-                            if (Platform.isIOS) {
-                              if (result.contains(appDocs.path)) {
-                                result = result.substring(
-                                  result.indexOf('Documents'),
-                                );
-                                result = result.replaceFirst(
-                                  'Documents',
-                                  'Particle Music',
-                                );
-                              } else if (context.mounted) {
-                                showCenterMessage(
-                                  context,
-                                  'No access permission',
-                                  duration: 2000,
-                                );
-                                return;
-                              }
-                            }
-                            if (currentFolderList.contains(result) &&
-                                context.mounted) {
-                              showCenterMessage(
-                                context,
-                                'The folder already exists',
-                                duration: 2000,
-                              );
-                              return;
-                            }
-                            currentFolderList.add(result);
-                            updateNotifier.value++;
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: buttonColor,
-                            foregroundColor: Colors.black,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(5),
+                                if (Platform.isIOS) {
+                                  if (result.contains(appDocs.path)) {
+                                    result = result.substring(
+                                      result.indexOf('Documents'),
+                                    );
+                                    result = result.replaceFirst(
+                                      'Documents',
+                                      'Particle Music',
+                                    );
+                                  } else if (context.mounted) {
+                                    showCenterMessage(
+                                      context,
+                                      'No access permission',
+                                      duration: 2000,
+                                    );
+                                    return;
+                                  }
+                                }
+                                if (currentFolderList.contains(result) &&
+                                    context.mounted) {
+                                  showCenterMessage(
+                                    context,
+                                    'The folder already exists',
+                                    duration: 2000,
+                                  );
+                                  return;
+                                }
+                                currentFolderList.add(result);
+                                updateNotifier.value++;
+                              },
+                              style: buttonStyle,
+                              child: Text(l10n.addFolder),
                             ),
-                            padding: EdgeInsets.all(10),
-                          ),
-                          child: Text(l10n.addFolder),
+
+                            if (!isMobile) SizedBox(height: 5),
+
+                            ElevatedButton(
+                              onPressed: () async {
+                                String? result = await FilePicker.platform
+                                    .getDirectoryPath();
+                                if (result == null) {
+                                  return;
+                                }
+
+                                if (Platform.isIOS &&
+                                    !result.contains(appDocs.path)) {
+                                  if (context.mounted) {
+                                    showCenterMessage(
+                                      context,
+                                      'No access permission',
+                                      duration: 2000,
+                                    );
+                                    return;
+                                  }
+                                }
+                                if (!currentFolderList.contains(result)) {
+                                  currentFolderList.add(
+                                    convertDirectoryPathIfNeed(result),
+                                  );
+                                }
+                                Directory root = Directory(result);
+
+                                final subFolders = root
+                                    .listSync(recursive: true)
+                                    .whereType<Directory>()
+                                    .map((d) => d.path)
+                                    .toList();
+                                for (final folder in subFolders) {
+                                  if (!currentFolderList.contains(folder)) {
+                                    currentFolderList.add(
+                                      convertDirectoryPathIfNeed(folder),
+                                    );
+                                  }
+                                }
+
+                                updateNotifier.value++;
+                              },
+                              style: buttonStyle,
+                              child: Text(l10n.addRecusiveFolder),
+                            ),
+                          ],
+                        ),
+                        Spacer(),
+                        Column(
+                          crossAxisAlignment: .end,
+                          children: [
+                            ElevatedButton(
+                              onPressed: () async {
+                                Navigator.of(context).pop();
+                              },
+                              style: buttonStyle,
+                              child: Text(l10n.cancel),
+                            ),
+
+                            if (!isMobile) SizedBox(height: 5),
+
+                            ElevatedButton(
+                              onPressed: () async {
+                                Navigator.of(context).pop();
+                                if (await folderManager.updateFolders(
+                                  currentFolderList,
+                                )) {
+                                  libraryManager.reload();
+                                }
+                              },
+                              style: buttonStyle,
+                              child: Text(l10n.confirm),
+                            ),
+                          ],
                         ),
                         SizedBox(width: 20),
-                        ElevatedButton(
-                          onPressed: () async {
-                            Navigator.of(context).pop();
-                            if (await folderManager.updateFolders(
-                              currentFolderList,
-                            )) {
-                              libraryManager.reload();
-                            }
-                          },
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: buttonColor,
-                            foregroundColor: Colors.black,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(5),
-                            ),
-                            padding: EdgeInsets.all(10),
-                          ),
-                          child: Text(l10n.complete),
-                        ),
-                        Spacer(),
                       ],
                     ),
-                    SizedBox(height: 10),
+
+                    SizedBox(height: 15),
                   ],
                 ),
               ),

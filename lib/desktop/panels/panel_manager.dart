@@ -119,7 +119,7 @@ class PanelManager {
     currentFolderNotifierStack.clear();
   }
 
-  void updateBackground() async {
+  Future<void> updateBackground() async {
     if (isEmpty) {
       return;
     }

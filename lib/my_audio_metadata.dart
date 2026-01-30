@@ -7,6 +7,7 @@ class MyAudioMetadata {
   final AudioMetadata _audioMetadata;
   final DateTime modified;
   String? picturePath;
+  Color? coverArtColor;
 
   final isFavoriteNotifier = ValueNotifier(false);
   final updateNotifier = ValueNotifier(0);
