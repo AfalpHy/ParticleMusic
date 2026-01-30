@@ -188,19 +188,18 @@ class SettingsList extends StatelessWidget {
                                     return;
                                   }
                                 }
-                                if (!currentFolderList.contains(result)) {
-                                  currentFolderList.add(
-                                    convertDirectoryPathIfNeed(result),
-                                  );
-                                }
+
                                 Directory root = Directory(result);
 
-                                final subFolders = root
+                                List<String> folderList = root
                                     .listSync(recursive: true)
                                     .whereType<Directory>()
                                     .map((d) => d.path)
                                     .toList();
-                                for (final folder in subFolders) {
+
+                                folderList.insert(0, result);
+
+                                for (final folder in folderList) {
                                   if (!currentFolderList.contains(folder)) {
                                     currentFolderList.add(
                                       convertDirectoryPathIfNeed(folder),
