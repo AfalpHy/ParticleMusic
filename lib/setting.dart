@@ -199,11 +199,10 @@ class SettingsList extends StatelessWidget {
 
                                 folderList.insert(0, result);
 
-                                for (final folder in folderList) {
+                                for (String folder in folderList) {
+                                  folder = convertDirectoryPathIfNeed(folder);
                                   if (!currentFolderList.contains(folder)) {
-                                    currentFolderList.add(
-                                      convertDirectoryPathIfNeed(folder),
-                                    );
+                                    currentFolderList.add(folder);
                                   }
                                 }
 
