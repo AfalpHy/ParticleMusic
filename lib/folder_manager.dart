@@ -140,13 +140,9 @@ class Folder {
         deletePicture(song);
 
         final tmp = await _tryReadMetadata(File(file.path));
+
         if (tmp != null) {
           song = MyAudioMetadata(tmp, modified);
-        } else {
-          song = null;
-        }
-
-        if (song != null) {
           File picture = File(
             "${appSupportDir.path}/picture/picture_${DateTime.now().microsecondsSinceEpoch}",
           );
@@ -161,6 +157,8 @@ class Folder {
           }
 
           filePath2LibrarySong[path] = song;
+        } else {
+          song = null;
         }
       }
 

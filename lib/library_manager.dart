@@ -58,17 +58,9 @@ class LibraryManager {
     );
 
     await update();
-    await saveLibrarySongMetadataList();
+    await _saveLibrarySongMetadataList();
 
-    for (final song in librarySongList) {
-      _add2ArtistAndAlbum(song);
-    }
-
-    artistMapEntryList = artist2SongList.entries.toList();
-    sortArtists();
-
-    albumMapEntryList = album2SongList.entries.toList();
-    sortAlbums();
+    _processArtistAndAlbum();
 
     await playlistsManager.load();
 
@@ -87,19 +79,27 @@ class LibraryManager {
     loadingLibraryNotifier.value = false;
   }
 
-  void _add2ArtistAndAlbum(MyAudioMetadata song) {
-    for (String artist in getArtist(song).split(RegExp(r'[/&,]'))) {
-      if (artist2SongList[artist] == null) {
-        artist2SongList[artist] = [];
+  void _processArtistAndAlbum() {
+    for (final song in librarySongList) {
+      for (String artist in getArtist(song).split(RegExp(r'[/&,]'))) {
+        if (artist2SongList[artist] == null) {
+          artist2SongList[artist] = [];
+        }
+        artist2SongList[artist]!.add(song);
       }
-      artist2SongList[artist]!.add(song);
+
+      final songAlbum = getAlbum(song);
+      if (album2SongList[songAlbum] == null) {
+        album2SongList[songAlbum] = [];
+      }
+      album2SongList[songAlbum]!.add(song);
     }
 
-    final songAlbum = getAlbum(song);
-    if (album2SongList[songAlbum] == null) {
-      album2SongList[songAlbum] = [];
-    }
-    album2SongList[songAlbum]!.add(song);
+    artistMapEntryList = artist2SongList.entries.toList();
+    sortArtists();
+
+    albumMapEntryList = album2SongList.entries.toList();
+    sortAlbums();
   }
 
   Future<void> reload() async {
@@ -127,7 +127,7 @@ class LibraryManager {
     await load();
   }
 
-  Future<void> saveLibrarySongMetadataList() async {
+  Future<void> _saveLibrarySongMetadataList() async {
     await _librarySongMetadataListFile.writeAsString(
       jsonEncode(librarySongList.map((e) => _myAudioMetadataToMap(e)).toList()),
     );
