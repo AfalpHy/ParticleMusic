@@ -209,7 +209,7 @@ class SettingsList extends StatelessWidget {
                                 updateNotifier.value++;
                               },
                               style: buttonStyle,
-                              child: Text(l10n.addRecusiveFolder),
+                              child: Text(l10n.addRecursiveFolder),
                             ),
                           ],
                         ),

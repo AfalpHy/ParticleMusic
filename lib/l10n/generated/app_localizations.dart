@@ -482,11 +482,11 @@ abstract class AppLocalizations {
   /// **'Add Folder'**
   String get addFolder;
 
-  /// No description provided for @addRecusiveFolder.
+  /// No description provided for @addRecursiveFolder.
   ///
   /// In en, this message translates to:
   /// **'Add Folder(Recursive)'**
-  String get addRecusiveFolder;
+  String get addRecursiveFolder;
 
   /// No description provided for @replacePicture.
   ///

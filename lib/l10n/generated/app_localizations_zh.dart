@@ -209,7 +209,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get addFolder => '添加文件夹';
 
   @override
-  String get addRecusiveFolder => '添加文件夹(包含子目录)';
+  String get addRecursiveFolder => '添加文件夹(包含子目录)';
 
   @override
   String get replacePicture => '替换图片';

@@ -63,7 +63,7 @@
   "cancel": "取消",
   "confirm": "确认",
   "addFolder": "添加文件夹",
-  "addRecusiveFolder": "添加文件夹(包含子目录)",
+  "addRecursiveFolder": "添加文件夹(包含子目录)",
   "replacePicture": "替换图片",
   "unknown": "未知",
   "updateMedata": "更新元素据",
