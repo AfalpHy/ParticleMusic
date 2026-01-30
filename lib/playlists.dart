@@ -180,8 +180,8 @@ class Playlist {
     update();
   }
 
-  void update() {
-    file.writeAsStringSync(
+  Future<void> update() async {
+    await file.writeAsString(
       jsonEncode(songList.map((e) => clipFilePathIfNeed(e.filePath)).toList()),
     );
     if (!isMobile) {

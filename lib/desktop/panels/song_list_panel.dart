@@ -190,12 +190,12 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                   }
                   return ReorderableDragStartListener(
                     // reusing the same widget to avoid unnecessary rebuild
-                    key: ValueKey(currentSongList[index]),
+                    key: ValueKey(songList[index]),
                     index: index,
                     child: songListItemWithContextMenu(
                       context,
                       index,
-                      currentSongList,
+                      songList,
                       isSelectedList,
                     ),
                   );
