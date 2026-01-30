@@ -178,10 +178,6 @@ class LyricsListViewState extends State<LyricsListView>
   Timer? timer;
 
   void scroll2CurrentIndex(Duration position) async {
-    // return when loading song and rebuilding this widget
-    if (audioHandler.isloading) {
-      return;
-    }
     int tmp = currentIndexNotifier.value;
     int current = -1;
 
