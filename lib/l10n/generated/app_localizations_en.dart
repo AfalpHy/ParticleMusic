@@ -209,7 +209,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addFolder => 'Add Folder';
 
   @override
-  String get addRecusiveFolder => 'Add Folder(Include Subfolders)';
+  String get addRecusiveFolder => 'Add Folder(Recursive)';
 
   @override
   String get replacePicture => 'Replace Picture';

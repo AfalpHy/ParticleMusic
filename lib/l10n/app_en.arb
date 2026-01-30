@@ -91,7 +91,7 @@
   "cancel": "Cancel",
   "confirm": "Confirm",
   "addFolder": "Add Folder",
-  "addRecusiveFolder": "Add Folder(Include Subfolders)",
+  "addRecusiveFolder": "Add Folder(Recursive)",
   "replacePicture": "Replace Picture",
   "unknown": "Unknown",
   "updateMedata": "Update Metadata",
