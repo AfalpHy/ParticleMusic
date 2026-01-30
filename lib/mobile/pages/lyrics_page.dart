@@ -156,11 +156,31 @@ class LyricsPage extends StatelessWidget {
               },
               blendMode: BlendMode.dstIn,
               // use key to force update
-              child: LyricsListView(
-                key: ValueKey(currentSong),
-                expanded: false,
-                lyrics: List.from(lyrics),
-              ),
+              child: currentSong == null
+                  ? SizedBox()
+                  : currentSong.parsedLyrics != null
+                  ? LyricsListView(
+                      expanded: true,
+                      lyrics: currentSong.parsedLyrics!.lyrics,
+                      isKaraoke: currentSong.parsedLyrics!.isKaraoke,
+                    )
+                  : FutureBuilder(
+                      future: parseLyricsFile(currentSong),
+                      builder: (context, asyncSnapshot) {
+                        if (asyncSnapshot.connectionState ==
+                                ConnectionState.waiting ||
+                            asyncSnapshot.hasError ||
+                            asyncSnapshot.data == null) {
+                          return SizedBox();
+                        }
+
+                        return LyricsListView(
+                          expanded: true,
+                          lyrics: asyncSnapshot.data!.lyrics,
+                          isKaraoke: asyncSnapshot.data!.isKaraoke,
+                        );
+                      },
+                    ),
             ),
           ),
         ),
@@ -403,11 +423,31 @@ class LyricsPage extends StatelessWidget {
                     ).createShader(rect);
                   },
                   blendMode: BlendMode.dstIn,
-                  child: LyricsListView(
-                    key: ValueKey(currentSong),
-                    expanded: true,
-                    lyrics: List.from(lyrics),
-                  ),
+                  child: currentSong == null
+                      ? SizedBox()
+                      : currentSong.parsedLyrics != null
+                      ? LyricsListView(
+                          expanded: true,
+                          lyrics: currentSong.parsedLyrics!.lyrics,
+                          isKaraoke: currentSong.parsedLyrics!.isKaraoke,
+                        )
+                      : FutureBuilder(
+                          future: parseLyricsFile(currentSong),
+                          builder: (context, asyncSnapshot) {
+                            if (asyncSnapshot.connectionState ==
+                                    ConnectionState.waiting ||
+                                asyncSnapshot.hasError ||
+                                asyncSnapshot.data == null) {
+                              return SizedBox();
+                            }
+
+                            return LyricsListView(
+                              expanded: true,
+                              lyrics: asyncSnapshot.data!.lyrics,
+                              isKaraoke: asyncSnapshot.data!.isKaraoke,
+                            );
+                          },
+                        ),
                 ),
               ),
               SizedBox(height: 50),

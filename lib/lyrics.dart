@@ -63,9 +63,10 @@ class LyricLine {
   }
 }
 
-List<LyricLine> lyrics = [];
-LyricLine? currentLyricLine;
-bool isKaraoke = false;
+class ParsedLyrics {
+  bool isKaraoke = false;
+  List<LyricLine> lyrics = [];
+}
 
 Duration parseTime(RegExpMatch m) {
   final min = int.parse(m.group(1)!);
@@ -74,17 +75,23 @@ Duration parseTime(RegExpMatch m) {
   return Duration(minutes: min, seconds: sec, milliseconds: ms);
 }
 
-Future<void> parseLyricsFile(MyAudioMetadata song) async {
-  lyrics = [];
-  isKaraoke = false;
+Future<ParsedLyrics> parseLyricsFile(MyAudioMetadata song) async {
+  if (song.parsedLyrics != null) {
+    return song.parsedLyrics!;
+  }
+  ParsedLyrics result = ParsedLyrics();
+  song.parsedLyrics = result;
+
   List<String> lines = [];
   if (song.lyrics == null) {
     String path = song.filePath;
     path = "${path.substring(0, path.lastIndexOf('.'))}.lrc";
     final file = File(path);
     if (!file.existsSync()) {
-      lyrics.add(LyricLine(Duration.zero, 'lyrics file does not exist', []));
-      return;
+      result.lyrics.add(
+        LyricLine(Duration.zero, 'lyrics file does not exist', []),
+      );
+      return result;
     }
     lines = await file.readAsLines(); // read file line by line
   } else {
@@ -100,8 +107,9 @@ Future<void> parseLyricsFile(MyAudioMetadata song) async {
 
     final lineStart = parseTime(lineMatch);
 
-    if (lyrics.isNotEmpty && lyrics.last.tokens.last.end == null) {
-      lyrics.last.tokens.last.end = lineStart;
+    if (result.lyrics.isNotEmpty &&
+        result.lyrics.last.tokens.last.end == null) {
+      result.lyrics.last.tokens.last.end = lineStart;
     }
 
     final tokenMatches = wordRegex.allMatches(line);
@@ -127,27 +135,30 @@ Future<void> parseLyricsFile(MyAudioMetadata song) async {
         continue;
       }
       if (tokens.length > 1) {
-        isKaraoke = true;
+        result.isKaraoke = true;
       }
-      lyrics.add(LyricLine(lineStart, textBuffer.toString(), tokens));
+      result.lyrics.add(LyricLine(lineStart, textBuffer.toString(), tokens));
     }
   }
-  if (lyrics.isEmpty) {
-    lyrics.add(LyricLine(Duration.zero, 'lyrics parsing failed', []));
+  if (result.lyrics.isEmpty) {
+    result.lyrics.add(LyricLine(Duration.zero, 'lyrics parsing failed', []));
   } else {
-    if (lyrics.last.tokens.last.end == null) {
-      lyrics.last.tokens.last.end = song.duration;
+    if (result.lyrics.last.tokens.last.end == null) {
+      result.lyrics.last.tokens.last.end = song.duration;
     }
   }
+  return result;
 }
 
 class LyricsListView extends StatefulWidget {
   final bool expanded;
   final List<LyricLine> lyrics;
+  final bool isKaraoke;
   const LyricsListView({
     super.key,
     required this.expanded,
     required this.lyrics,
+    required this.isKaraoke,
   });
 
   @override
@@ -190,6 +201,7 @@ class LyricsListViewState extends State<LyricsListView>
     currentIndexNotifier.value = current;
     final tmpLyricLine = currentLyricLine;
     currentLyricLine = lyrics[current];
+    currentLyricLineIsKaraoke = widget.isKaraoke;
 
     if (!isMobile && lyricsWindowVisible && currentLyricLine != tmpLyricLine) {
       await updateDesktopLyrics();
@@ -315,6 +327,7 @@ class LyricsListViewState extends State<LyricsListView>
                 line: lyrics[index - 1],
                 currentIndexNotifier: currentIndexNotifier,
                 expanded: widget.expanded,
+                isKaraoke: widget.isKaraoke,
               );
             },
           ),
@@ -330,6 +343,7 @@ class LyricLineWidget extends StatelessWidget {
   final LyricLine line;
   final ValueNotifier<int> currentIndexNotifier;
   final bool expanded;
+  final bool isKaraoke;
 
   const LyricLineWidget({
     super.key,
@@ -337,6 +351,7 @@ class LyricLineWidget extends StatelessWidget {
     required this.index,
     required this.currentIndexNotifier,
     required this.expanded,
+    required this.isKaraoke,
   });
 
   @override

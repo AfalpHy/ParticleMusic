@@ -2,12 +2,14 @@ import 'dart:io';
 
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
+import 'package:particle_music/lyrics.dart';
 
 class MyAudioMetadata {
   final AudioMetadata _audioMetadata;
   final DateTime modified;
   String? picturePath;
   Color? coverArtColor;
+  ParsedLyrics? parsedLyrics;
 
   final isFavoriteNotifier = ValueNotifier(false);
   final updateNotifier = ValueNotifier(0);

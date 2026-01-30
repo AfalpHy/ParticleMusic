@@ -55,6 +55,9 @@ final ValueNotifier<bool> displayPlayQueuePageNotifier = ValueNotifier(false);
 
 // ===================================== LyricsPage =====================================
 
+LyricLine? currentLyricLine;
+bool currentLyricLineIsKaraoke = false;
+
 double lyricsFontSizeOffset = 0;
 final lyricsFontSizeOffsetChangeNotifier = ValueNotifier(0);
 final updateLyricsNotifier = ValueNotifier(0);

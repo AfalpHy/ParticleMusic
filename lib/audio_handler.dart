@@ -5,7 +5,6 @@ import 'package:just_audio/just_audio.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/desktop_lyrics.dart';
 import 'package:particle_music/desktop/extensions/window_controller_extension.dart';
-import 'package:particle_music/lyrics.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/utils.dart';
 import 'dart:async';
@@ -265,7 +264,6 @@ class MyAudioHandler extends BaseAudioHandler {
     stop();
     playQueue = [];
     _playQueueTmp = [];
-    lyrics = [];
     currentLyricLine = null;
     if (!isMobile) {
       await updateDesktopLyrics();
@@ -313,8 +311,6 @@ class MyAudioHandler extends BaseAudioHandler {
     savePlayState();
 
     final currentSong = playQueue[currentIndex];
-
-    await parseLyricsFile(currentSong);
 
     currentCoverArtColor = await computeCoverArtColor(currentSong);
 

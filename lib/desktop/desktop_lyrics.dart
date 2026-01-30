@@ -16,7 +16,7 @@ Future<void> initDesktopLyrics() async {
 
 Future<void> updateDesktopLyrics() async {
   await lyricsWindowController?.sendLyricLine(currentLyricLine);
-  await lyricsWindowController?.sendIsKaraoke(isKaraoke);
+  await lyricsWindowController?.sendIsKaraoke(currentLyricLineIsKaraoke);
   await lyricsWindowController?.sendPosition(audioHandler.getPosition());
 }
 

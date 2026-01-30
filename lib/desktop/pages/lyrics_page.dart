@@ -130,11 +130,41 @@ class LyricsPageState extends State<LyricsPage> {
                                     behavior: ScrollConfiguration.of(
                                       context,
                                     ).copyWith(scrollbars: false),
-                                    child: LyricsListView(
-                                      key: ValueKey(currentSong),
-                                      expanded: true,
-                                      lyrics: List.from(lyrics),
-                                    ),
+                                    child: currentSong == null
+                                        ? SizedBox()
+                                        : currentSong.parsedLyrics != null
+                                        ? LyricsListView(
+                                            expanded: true,
+                                            lyrics: currentSong
+                                                .parsedLyrics!
+                                                .lyrics,
+                                            isKaraoke: currentSong
+                                                .parsedLyrics!
+                                                .isKaraoke,
+                                          )
+                                        : FutureBuilder(
+                                            future: parseLyricsFile(
+                                              currentSong,
+                                            ),
+                                            builder: (context, asyncSnapshot) {
+                                              if (asyncSnapshot
+                                                          .connectionState ==
+                                                      ConnectionState.waiting ||
+                                                  asyncSnapshot.hasError ||
+                                                  asyncSnapshot.data == null) {
+                                                return SizedBox();
+                                              }
+
+                                              return LyricsListView(
+                                                expanded: true,
+                                                lyrics:
+                                                    asyncSnapshot.data!.lyrics,
+                                                isKaraoke: asyncSnapshot
+                                                    .data!
+                                                    .isKaraoke,
+                                              );
+                                            },
+                                          ),
                                   ),
                                 ),
                               ),
@@ -245,7 +275,7 @@ class LyricsPageState extends State<LyricsPage> {
             ),
           ),
         ),
-        SizedBox(height: pageHight * 0.02),
+        SizedBox(height: pageHight * 0.01),
 
         SizedBox(width: width - 15, height: 20, child: SeekBar(light: true)),
 
@@ -355,6 +385,7 @@ class LyricsPageState extends State<LyricsPage> {
                 ),
               ),
               SizedBox(
+                height: 10,
                 width: width * 0.5,
                 child: ValueListenableBuilder(
                   valueListenable: volumeNotifier,
@@ -407,6 +438,7 @@ class LyricsPageState extends State<LyricsPage> {
             ],
           ),
         ),
+        SizedBox(height: pageHight * 0.02),
       ],
     );
   }
