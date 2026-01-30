@@ -1,8 +1,8 @@
-import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
+import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/utils.dart';
 import 'package:super_context_menu/super_context_menu.dart';
@@ -250,7 +250,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
               title: l10n.add2Playlists,
               image: MenuImage.icon(Icons.playlist_add_rounded),
               callback: () {
-                final List<AudioMetadata> tmpSongList = [];
+                final List<MyAudioMetadata> tmpSongList = [];
                 for (int i = isSelectedList.length - 1; i >= 0; i--) {
                   if (isSelectedList[i].value) {
                     tmpSongList.add(playQueue[i]);

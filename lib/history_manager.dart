@@ -1,22 +1,22 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/utils.dart';
 
 class RankingItem {
   int times;
   String path;
-  AudioMetadata song;
+  MyAudioMetadata song;
   RankingItem(this.times, this.path, this.song);
 
   Map<String, dynamic> toMap() {
     return {'times': times, 'path': path};
   }
 
-  factory RankingItem.fromSong(AudioMetadata song, int times) {
-    return RankingItem(times, clipFilePathIfNeed(song.file.path), song);
+  factory RankingItem.fromSong(MyAudioMetadata song, int times) {
+    return RankingItem(times, clipFilePathIfNeed(song.filePath), song);
   }
 }
 
@@ -25,10 +25,10 @@ class HistoryManager {
   late File recentlyFile;
 
   List<RankingItem> rankingItemList = [];
-  List<AudioMetadata> rankingSongList = [];
+  List<MyAudioMetadata> rankingSongList = [];
 
   List<String> recentlyPathList = [];
-  List<AudioMetadata> recentlySongList = [];
+  List<MyAudioMetadata> recentlySongList = [];
 
   Future<void> load() async {
     rankingFile = File("${appSupportDir.path}/ranking.txt");
@@ -52,7 +52,7 @@ class HistoryManager {
       List<dynamic> jsonList = jsonDecode(content);
 
       for (String filePath in jsonList) {
-        AudioMetadata? song = filePath2LibrarySong[filePath];
+        MyAudioMetadata? song = filePath2LibrarySong[filePath];
         if (song != null) {
           recentlyPathList.add(filePath);
           recentlySongList.add(song);
@@ -66,14 +66,14 @@ class HistoryManager {
   RankingItem? createRankingItem(Map raw) {
     final map = Map<String, dynamic>.from(raw);
     String path = map['path'] as String;
-    AudioMetadata? song = filePath2LibrarySong[path];
+    MyAudioMetadata? song = filePath2LibrarySong[path];
     if (song != null) {
       return RankingItem(map['times'] as int, path, song);
     }
     return null;
   }
 
-  void addSongTimes(AudioMetadata song, int times) {
+  void addSongTimes(MyAudioMetadata song, int times) {
     bool exist = false;
     for (int i = 0; i < rankingItemList.length; i++) {
       if (song == rankingItemList[i].song) {
@@ -100,8 +100,8 @@ class HistoryManager {
     rankingChangeNotifier.value++;
   }
 
-  void add2Recently(AudioMetadata song) {
-    String filePath = clipFilePathIfNeed(song.file.path);
+  void add2Recently(MyAudioMetadata song) {
+    String filePath = clipFilePathIfNeed(song.filePath);
 
     recentlyPathList.remove(filePath);
     recentlyPathList.insert(0, filePath);

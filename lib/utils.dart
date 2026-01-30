@@ -1,3 +1,4 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
@@ -7,6 +8,7 @@ import 'package:image/image.dart' as image;
 import 'package:lpinyin/lpinyin.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
+import 'package:particle_music/my_audio_metadata.dart';
 import 'package:path/path.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
@@ -99,17 +101,17 @@ Future<bool> showConfirmDialog(BuildContext context, String action) async {
   return result!;
 }
 
-String getTitle(AudioMetadata? song) {
+String getTitle(MyAudioMetadata? song) {
   if (song == null) {
     return '';
   }
   if (song.title == null || song.title == '') {
-    return basename(song.file.path);
+    return basename(song.filePath);
   }
   return song.title!;
 }
 
-String getArtist(AudioMetadata? song) {
+String getArtist(MyAudioMetadata? song) {
   if (song == null) {
     return '';
   }
@@ -119,7 +121,7 @@ String getArtist(AudioMetadata? song) {
   return song.artist!;
 }
 
-String getAlbum(AudioMetadata? song) {
+String getAlbum(MyAudioMetadata? song) {
   if (song == null) {
     return '';
   }
@@ -129,21 +131,24 @@ String getAlbum(AudioMetadata? song) {
   return song.album!;
 }
 
-Duration getDuration(AudioMetadata? song) {
+Duration getDuration(MyAudioMetadata? song) {
   if (song == null) {
     return Duration.zero;
   }
   return song.duration ?? Duration.zero;
 }
 
-Picture? getCoverArt(AudioMetadata? song) {
+Picture? getCoverArt(MyAudioMetadata? song) {
   if (song == null) {
     return null;
   }
   return song.pictures.isNotEmpty ? song.pictures.first : null;
 }
 
-List<AudioMetadata> filterSongList(List<AudioMetadata> songList, String value) {
+List<MyAudioMetadata> filterSongList(
+  List<MyAudioMetadata> songList,
+  String value,
+) {
   return songList.where((song) {
     final songTitle = getTitle(song);
     final songArtist = getArtist(song);
@@ -156,7 +161,7 @@ List<AudioMetadata> filterSongList(List<AudioMetadata> songList, String value) {
   }).toList();
 }
 
-void sortSongList(int sortType, List<AudioMetadata> songList) {
+void sortSongList(int sortType, List<MyAudioMetadata> songList) {
   switch (sortType) {
     case 1: // Title Ascending
       songList.sort((a, b) {
@@ -257,7 +262,7 @@ void sortAlbums() {
   });
 }
 
-Future<Uint8List?> getPictureBytes(AudioMetadata? song) async {
+Future<Uint8List?> getPictureBytes(MyAudioMetadata? song) async {
   if (song == null) {
     return null;
   }
@@ -272,15 +277,12 @@ Future<Uint8List?> getPictureBytes(AudioMetadata? song) async {
   return result;
 }
 
-Future<Uint8List?> loadPicture(AudioMetadata song) async {
-  final path = clipFilePathIfNeed(song.file.path);
-  String? picturePath = filePath2PicturePath[path];
+Future<Uint8List?> loadPicture(MyAudioMetadata song) async {
+  String? picturePath = song.picturePath;
   if (picturePath == null) {
     return null;
   }
-  picturePath = revertFilePathIfNeed(picturePath, appSupport: true);
   final pictureFile = File(picturePath);
-
   if (await pictureFile.exists()) {
     final result = await pictureFile.readAsBytes();
     return result;
@@ -289,7 +291,7 @@ Future<Uint8List?> loadPicture(AudioMetadata song) async {
   }
 }
 
-Future<Color> computeCoverArtColor(AudioMetadata? song) async {
+Future<Color> computeCoverArtColor(MyAudioMetadata? song) async {
   final bytes = await getPictureBytes(song);
   if (bytes == null) {
     return Colors.grey;
@@ -323,7 +325,7 @@ Future<Color> computeCoverArtColor(AudioMetadata? song) async {
   return Color.fromARGB(255, r.toInt(), g.toInt(), b.toInt());
 }
 
-AudioMetadata? getFirstSong(List<AudioMetadata> songList) {
+MyAudioMetadata? getFirstSong(List<MyAudioMetadata> songList) {
   if (songList.isEmpty) {
     return null;
   }
@@ -362,4 +364,41 @@ String revertDirectoryPathIfNeed(String path) {
     return "${appDocs.parent.path}/${path.replaceFirst('Particle Music', 'Documents')}";
   }
   return path;
+}
+
+Future<void> setSongList(
+  File songFilePathListFile,
+  List<MyAudioMetadata> additionalSongList,
+  List<MyAudioMetadata> destList,
+) async {
+  if (!await songFilePathListFile.exists()) {
+    await songFilePathListFile.create();
+  }
+
+  final jsonString = await songFilePathListFile.readAsString();
+
+  if (jsonString.isNotEmpty) {
+    final List<dynamic> songFilePathList = jsonDecode(jsonString);
+    for (final path in songFilePathList) {
+      if (filePathValidSet.contains(path)) {
+        final song = filePath2LibrarySong[path]!;
+        destList.add(song);
+      } else {
+        // delete outdated picture if it exists
+        deletePicture(filePath2LibrarySong[path]);
+        filePath2LibrarySong.remove(path);
+      }
+    }
+  }
+  destList.addAll(additionalSongList);
+}
+
+Future<void> deletePicture(MyAudioMetadata? song) async {
+  String? picturePath = song?.picturePath;
+  if (picturePath != null) {
+    final pictureFile = File(picturePath);
+    if (await pictureFile.exists()) {
+      await pictureFile.delete();
+    }
+  }
 }

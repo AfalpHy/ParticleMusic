@@ -1,12 +1,12 @@
 import 'dart:convert';
 import 'dart:io';
-import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:audio_service/audio_service.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/desktop_lyrics.dart';
 import 'package:particle_music/desktop/extensions/window_controller_extension.dart';
 import 'package:particle_music/lyrics.dart';
+import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/utils.dart';
 import 'dart:async';
 
@@ -14,7 +14,7 @@ class MyAudioHandler extends BaseAudioHandler {
   final _player = AudioPlayer();
 
   int currentIndex = -1;
-  List<AudioMetadata> _playQueueTmp = [];
+  List<MyAudioMetadata> _playQueueTmp = [];
   int _tmpPlayMode = 0;
   bool isloading = false;
   DateTime? _playLastSyncTime;
@@ -109,7 +109,7 @@ class MyAudioHandler extends BaseAudioHandler {
     List<String> tmp =
         (json['playQueueTmp'] as List<dynamic>?)?.cast<String>() ?? [];
     for (final path in tmp) {
-      AudioMetadata? song;
+      MyAudioMetadata? song;
       song = filePath2LibrarySong[path];
       if (song != null) {
         _playQueueTmp.add(song);
@@ -118,7 +118,7 @@ class MyAudioHandler extends BaseAudioHandler {
 
     tmp = (json['playQueue'] as List<dynamic>?)?.cast<String>() ?? [];
     for (final path in tmp) {
-      AudioMetadata? song;
+      MyAudioMetadata? song;
       song = filePath2LibrarySong[path];
       if (song != null) {
         playQueue.add(song);
@@ -130,10 +130,10 @@ class MyAudioHandler extends BaseAudioHandler {
     _playQueueState.writeAsStringSync(
       jsonEncode({
         'playQueueTmp': _playQueueTmp
-            .map((e) => clipFilePathIfNeed(e.file.path))
+            .map((e) => clipFilePathIfNeed(e.filePath))
             .toList(),
         'playQueue': playQueue
-            .map((e) => clipFilePathIfNeed(e.file.path))
+            .map((e) => clipFilePathIfNeed(e.filePath))
             .toList(),
       }),
     );
@@ -173,7 +173,7 @@ class MyAudioHandler extends BaseAudioHandler {
     );
   }
 
-  bool insert2Next(int index, List<AudioMetadata> source) {
+  bool insert2Next(int index, List<MyAudioMetadata> source) {
     final tmp = source[index];
     int tmpIndex = playQueue.indexOf(tmp);
     if (tmpIndex != -1) {
@@ -198,14 +198,14 @@ class MyAudioHandler extends BaseAudioHandler {
     return true;
   }
 
-  void singlePlay(int index, List<AudioMetadata> source) async {
+  void singlePlay(int index, List<MyAudioMetadata> source) async {
     if (insert2Next(index, source)) {
       await skipToNext();
       play();
     }
   }
 
-  Future<void> setPlayQueue(List<AudioMetadata> source) async {
+  Future<void> setPlayQueue(List<MyAudioMetadata> source) async {
     playQueue = List.from(source);
     if (playModeNotifier.value == 1 ||
         (playModeNotifier.value == 2 && audioHandler._tmpPlayMode == 1)) {
@@ -253,7 +253,7 @@ class MyAudioHandler extends BaseAudioHandler {
   }
 
   void delete(int index) {
-    AudioMetadata tmp = playQueue[index];
+    MyAudioMetadata tmp = playQueue[index];
     if (_playQueueTmp.isNotEmpty) {
       _playQueueTmp.remove(tmp);
     }
@@ -324,15 +324,15 @@ class MyAudioHandler extends BaseAudioHandler {
     }
 
     Uri? artUri;
-    final picturePath =
-        filePath2PicturePath[clipFilePathIfNeed(currentSong.file.path)];
-    if (picturePath != null) {
-      artUri = Uri.file(revertFilePathIfNeed(picturePath, appSupport: true));
+    if (currentSong.picturePath != null) {
+      artUri = Uri.file(
+        revertFilePathIfNeed(currentSong.picturePath!, appSupport: true),
+      );
     }
 
     mediaItem.add(
       MediaItem(
-        id: currentSong.file.path,
+        id: currentSong.filePath,
         title: getTitle(currentSong),
         artist: getArtist(currentSong),
         album: getAlbum(currentSong),
@@ -342,7 +342,7 @@ class MyAudioHandler extends BaseAudioHandler {
     );
 
     final audioSource = ProgressiveAudioSource(
-      Uri.file(currentSong.file.path),
+      Uri.file(currentSong.filePath),
       options: ProgressiveAudioSourceOptions(
         darwinAssetOptions: DarwinAssetOptions(
           preferPreciseDurationAndTiming: true,
@@ -353,7 +353,7 @@ class MyAudioHandler extends BaseAudioHandler {
     try {
       await _player.setAudioSource(audioSource);
     } catch (error) {
-      logger.output("[${currentSong.file.path}] $error");
+      logger.output("[${currentSong.filePath}] $error");
     }
     if (isPlayingNotifier.value) {
       _playLastSyncTime = DateTime.now();

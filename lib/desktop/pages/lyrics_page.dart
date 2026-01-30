@@ -1,7 +1,6 @@
 import 'dart:math';
 import 'dart:ui';
 
-import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
@@ -12,6 +11,7 @@ import 'package:particle_music/full_width_track_shape.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/lyrics.dart';
 import 'package:particle_music/common_widgets/seekbar.dart';
+import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/utils.dart';
 
 class LyricsPage extends StatefulWidget {
@@ -206,7 +206,7 @@ class LyricsPageState extends State<LyricsPage> {
   Widget playControls(
     double width,
     double pageHight,
-    AudioMetadata? currentSong,
+    MyAudioMetadata? currentSong,
     BuildContext context,
   ) {
     final l10n = AppLocalizations.of(context);

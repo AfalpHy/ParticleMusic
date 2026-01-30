@@ -1,12 +1,12 @@
-import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
+import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/utils.dart';
 
 class SelectableSongListTile extends StatelessWidget {
   final int index;
-  final List<AudioMetadata> source;
+  final List<MyAudioMetadata> source;
   final ValueNotifier<bool> isSelected;
   final ValueNotifier<int> selectedNumNotifier;
   final bool reorderable;
@@ -25,7 +25,7 @@ class SelectableSongListTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final song = source[index];
-    final isFavorite = songIsFavorite[song]!;
+
     return Row(
       children: [
         ValueListenableBuilder(
@@ -65,7 +65,7 @@ class SelectableSongListTile extends StatelessWidget {
               subtitle: Row(
                 children: [
                   ValueListenableBuilder(
-                    valueListenable: isFavorite,
+                    valueListenable: song.isFavoriteNotifier,
                     builder: (_, value, _) {
                       return value
                           ? SizedBox(

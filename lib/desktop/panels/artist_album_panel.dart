@@ -1,10 +1,10 @@
-import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/title_bar.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/common_widgets/my_switch.dart';
+import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/utils.dart';
 
 class ArtistAlbumPanel extends StatefulWidget {
@@ -19,7 +19,7 @@ class ArtistAlbumPanel extends StatefulWidget {
 class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
   late bool isArtist;
 
-  late final ValueNotifier<List<MapEntry<String, List<AudioMetadata>>>>
+  late final ValueNotifier<List<MapEntry<String, List<MyAudioMetadata>>>>
   currentMapEntryListNotifier;
 
   final textController = TextEditingController();
@@ -230,7 +230,7 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
                                   child: GestureDetector(
                                     child: ValueListenableBuilder(
                                       valueListenable:
-                                          songIsUpdated[songList.first]!,
+                                          songList.first.updateNotifier,
                                       builder: (_, _, _) {
                                         return CoverArtWidget(
                                           size: coverArtWidth,

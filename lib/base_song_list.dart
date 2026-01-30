@@ -1,9 +1,10 @@
 import 'dart:async';
 
-import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
+import 'package:particle_music/folder_manager.dart';
+import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/utils.dart';
 import 'package:smooth_corner/smooth_corner.dart';
@@ -12,7 +13,7 @@ abstract class BaseSongListWidget extends StatefulWidget {
   final Playlist? playlist;
   final String? artist;
   final String? album;
-  final String? folder;
+  final Folder? folder;
   final String? ranking;
   final String? recently;
 
@@ -30,11 +31,11 @@ abstract class BaseSongListWidget extends StatefulWidget {
 abstract class BaseSongListState<T extends BaseSongListWidget>
     extends State<T> {
   late String title;
-  late List<AudioMetadata> songList;
+  late List<MyAudioMetadata> songList;
   Playlist? playlist;
   String? artist;
   String? album;
-  String? folder;
+  Folder? folder;
   String? ranking;
   String? recently;
 
@@ -42,7 +43,7 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
 
   Timer? timer;
 
-  final ValueNotifier<List<AudioMetadata>> currentSongListNotifier =
+  final ValueNotifier<List<MyAudioMetadata>> currentSongListNotifier =
       ValueNotifier([]);
 
   final listIsScrollingNotifier = ValueNotifier(false);
@@ -73,7 +74,7 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
       songList = playlist!.songList;
       title = playlist!.name;
       sortTypeNotifier = playlist!.sortTypeNotifier;
-      playlist!.changeNotifier.addListener(updateSongList);
+      playlist!.updateNotifier.addListener(updateSongList);
     } else if (artist != null) {
       songList = artist2SongList[artist]!;
       title = artist!;
@@ -81,9 +82,9 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
       songList = album2SongList[album]!;
       title = album!;
     } else if (folder != null) {
-      songList = folder2SongList[folder]!;
-      title = folder!;
-      folder2ChangeNotifier[folder]!.addListener(updateSongList);
+      songList = folder!.songList;
+      title = folder!.path;
+      folder!.updateNotifier.addListener(updateSongList);
     } else if (ranking != null) {
       songList = historyManager.rankingSongList;
       title = ranking!;
@@ -92,7 +93,7 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
       title = recently!;
     } else {
       songList = librarySongList;
-      libraryChangeNotifier.addListener(updateSongList);
+      librarySongListUpdateNotifier.addListener(updateSongList);
       isLibrary = true;
     }
     updateSongList();
@@ -102,11 +103,11 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
   @override
   void dispose() {
     if (playlist != null) {
-      playlist!.changeNotifier.removeListener(updateSongList);
+      playlist!.updateNotifier.removeListener(updateSongList);
     } else if (folder != null) {
-      folder2ChangeNotifier[folder]!.removeListener(updateSongList);
+      folder!.updateNotifier.removeListener(updateSongList);
     } else if (isLibrary) {
-      libraryChangeNotifier.removeListener(updateSongList);
+      librarySongListUpdateNotifier.removeListener(updateSongList);
     }
     sortTypeNotifier.removeListener(updateSongList);
     scrollController.dispose();
@@ -129,7 +130,7 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
             return CoverArtWidget(size: size, borderRadius: 10, song: null);
           }
           return ValueListenableBuilder(
-            valueListenable: songIsUpdated[songList.first]!,
+            valueListenable: songList.first.updateNotifier,
             builder: (_, _, _) {
               return CoverArtWidget(
                 size: size,

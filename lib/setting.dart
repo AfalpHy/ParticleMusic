@@ -4,9 +4,10 @@ import 'package:file_picker/file_picker.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/folder_manager.dart';
 import 'package:particle_music/mobile/sleep_timer.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
-import 'package:particle_music/load_library.dart';
+import 'package:particle_music/library_manager.dart';
 import 'package:particle_music/common_widgets/my_switch.dart';
 import 'package:particle_music/utils.dart';
 import 'package:smooth_corner/smooth_corner.dart';
@@ -35,7 +36,7 @@ class SettingsList extends StatelessWidget {
       title: Text(l10n.reload),
       onTap: () async {
         if (await showConfirmDialog(context, l10n.reload)) {
-          await libraryLoader.reload();
+          await libraryManager.reload();
         }
       },
     );
@@ -55,7 +56,12 @@ class SettingsList extends StatelessWidget {
       onTap: () {
         showDialog(
           context: context,
+          barrierDismissible: false,
           builder: (context) {
+            final currentFolderList = folderManager.folderList
+                .map((e) => e.path)
+                .toList();
+            final updateNotifier = ValueNotifier(0);
             return Dialog(
               backgroundColor: commonColor,
               shape: SmoothRectangleBorder(
@@ -78,13 +84,13 @@ class SettingsList extends StatelessWidget {
                     ),
                     Expanded(
                       child: ValueListenableBuilder(
-                        valueListenable: folderChangeNotifier,
+                        valueListenable: updateNotifier,
                         builder: (_, _, _) {
                           return ListView.builder(
-                            itemCount: folderPathList.length,
+                            itemCount: currentFolderList.length,
                             itemBuilder: (_, index) {
                               return ListTile(
-                                title: Text(folderPathList[index]),
+                                title: Text(currentFolderList[index]),
                                 contentPadding: EdgeInsets.fromLTRB(
                                   20,
                                   0,
@@ -94,9 +100,8 @@ class SettingsList extends StatelessWidget {
 
                                 trailing: IconButton(
                                   onPressed: () {
-                                    libraryLoader.removeFolder(
-                                      folderPathList[index],
-                                    );
+                                    currentFolderList.removeAt(index);
+                                    updateNotifier.value++;
                                   },
                                   icon: Icon(Icons.clear_rounded),
                                 ),
@@ -135,7 +140,7 @@ class SettingsList extends StatelessWidget {
                                 return;
                               }
                             }
-                            if (folderPathList.contains(result) &&
+                            if (currentFolderList.contains(result) &&
                                 context.mounted) {
                               showCenterMessage(
                                 context,
@@ -144,7 +149,8 @@ class SettingsList extends StatelessWidget {
                               );
                               return;
                             }
-                            libraryLoader.addFolder(result);
+                            currentFolderList.add(result);
+                            updateNotifier.value++;
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: buttonColor,
@@ -158,8 +164,13 @@ class SettingsList extends StatelessWidget {
                         ),
                         SizedBox(width: 20),
                         ElevatedButton(
-                          onPressed: () {
+                          onPressed: () async {
                             Navigator.of(context).pop();
+                            if (await folderManager.updateFolders(
+                              currentFolderList,
+                            )) {
+                              libraryManager.reload();
+                            }
                           },
                           style: ElevatedButton.styleFrom(
                             backgroundColor: buttonColor,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
+import 'package:particle_music/folder_manager.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/mobile/pages/song_list_page.dart';
 import 'package:particle_music/utils.dart';
@@ -23,22 +24,21 @@ class FoldersPage extends StatelessWidget {
         centerTitle: true,
       ),
       body: ListView.builder(
-        itemCount: folderPathList.length,
+        itemCount: folderManager.folderList.length,
         itemBuilder: (_, index) {
-          final folder = folderPathList[index];
-          final songList = folder2SongList[folder]!;
+          final folder = folderManager.folderList[index];
           return ListTile(
             leading: ValueListenableBuilder(
-              valueListenable: folder2ChangeNotifier[folder]!,
+              valueListenable: folder.updateNotifier,
               builder: (context, value, child) {
                 return CoverArtWidget(
                   size: 40,
                   borderRadius: 4,
-                  song: getFirstSong(songList),
+                  song: getFirstSong(folder.songList),
                 );
               },
             ),
-            title: Text(folder),
+            title: Text(folder.path),
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => SongListPage(folder: folder)),

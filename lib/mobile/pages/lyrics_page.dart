@@ -1,6 +1,5 @@
 import 'dart:ui';
 
-import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
@@ -10,6 +9,7 @@ import 'package:particle_music/mobile/widgets/my_sheet.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/lyrics.dart';
 import 'package:particle_music/mobile/play_queue_sheet.dart';
+import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/common_widgets/seekbar.dart';
 import 'package:particle_music/utils.dart';
@@ -117,7 +117,7 @@ class LyricsPage extends StatelessWidget {
     );
   }
 
-  Widget artPage(BuildContext context, AudioMetadata? currentSong) {
+  Widget artPage(BuildContext context, MyAudioMetadata? currentSong) {
     final l10n = AppLocalizations.of(context);
 
     return Column(
@@ -378,7 +378,10 @@ class LyricsPage extends StatelessWidget {
     );
   }
 
-  Widget expandedLyricsPage(BuildContext context, AudioMetadata? currentSong) {
+  Widget expandedLyricsPage(
+    BuildContext context,
+    MyAudioMetadata? currentSong,
+  ) {
     return Row(
       children: [
         Expanded(
@@ -448,9 +451,8 @@ class FavoriteButton extends StatelessWidget {
       valueListenable: currentSongNotifier,
       builder: (_, currentSong, _) {
         if (currentSong == null) return SizedBox();
-        final isFavorite = songIsFavorite[currentSong]!;
         return ValueListenableBuilder(
-          valueListenable: isFavorite,
+          valueListenable: currentSong.isFavoriteNotifier,
           builder: (_, value, _) {
             return IconButton(
               onPressed: () {
@@ -458,8 +460,8 @@ class FavoriteButton extends StatelessWidget {
                 toggleFavoriteState(currentSong);
               },
               icon: Icon(
-                isFavorite.value ? Icons.favorite : Icons.favorite_outline,
-                color: isFavorite.value ? Colors.red : Colors.grey.shade50,
+                value ? Icons.favorite : Icons.favorite_outline,
+                color: value ? Colors.red : Colors.grey.shade50,
                 size: size,
               ),
             );

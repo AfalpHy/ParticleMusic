@@ -43,12 +43,12 @@ class PlaylistsPage extends StatelessWidget {
         ],
       ),
       body: ValueListenableBuilder(
-        valueListenable: playlistsManager.changeNotifier,
+        valueListenable: playlistsManager.updateNotifier,
         builder: (context, _, _) {
           return ListView.builder(
-            itemCount: playlistsManager.length() + 1,
+            itemCount: playlistsManager.playlists.length + 1,
             itemBuilder: (_, index) {
-              if (index < playlistsManager.length()) {
+              if (index < playlistsManager.playlists.length) {
                 final playlist = playlistsManager.getPlaylistByIndex(index);
                 return ListTile(
                   contentPadding: EdgeInsets.fromLTRB(20, 0, 20, 0),
@@ -58,7 +58,7 @@ class PlaylistsPage extends StatelessWidget {
                   ),
 
                   leading: ValueListenableBuilder(
-                    valueListenable: playlist.changeNotifier,
+                    valueListenable: playlist.updateNotifier,
                     builder: (_, _, _) {
                       return CoverArtWidget(
                         size: 50,
@@ -75,7 +75,7 @@ class PlaylistsPage extends StatelessWidget {
                     maxFontSize: 15,
                   ),
                   subtitle: ValueListenableBuilder(
-                    valueListenable: playlist.changeNotifier,
+                    valueListenable: playlist.updateNotifier,
                     builder: (_, _, _) {
                       return Text(l10n.songsCount(playlist.songList.length));
                     },
@@ -185,7 +185,7 @@ class PlaylistsPage extends StatelessWidget {
             child: child,
           );
         },
-        itemCount: playlistsManager.length() - 1,
+        itemCount: playlistsManager.playlists.length - 1,
         itemBuilder: (_, index) {
           final playlist = playlistsManager.getPlaylistByIndex(index + 1);
           return Row(
@@ -212,7 +212,7 @@ class PlaylistsPage extends StatelessWidget {
                     maxFontSize: 15,
                   ),
                   subtitle: ValueListenableBuilder(
-                    valueListenable: playlist.changeNotifier,
+                    valueListenable: playlist.updateNotifier,
                     builder: (_, _, _) {
                       return Text(
                         AppLocalizations.of(

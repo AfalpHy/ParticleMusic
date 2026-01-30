@@ -2,12 +2,12 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
-import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/desktop_lyrics.dart';
+import 'package:particle_music/my_audio_metadata.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
@@ -74,12 +74,12 @@ Duration parseTime(RegExpMatch m) {
   return Duration(minutes: min, seconds: sec, milliseconds: ms);
 }
 
-Future<void> parseLyricsFile(AudioMetadata song) async {
+Future<void> parseLyricsFile(MyAudioMetadata song) async {
   lyrics = [];
   isKaraoke = false;
   List<String> lines = [];
   if (song.lyrics == null) {
-    String path = song.file.path;
+    String path = song.filePath;
     path = "${path.substring(0, path.lastIndexOf('.'))}.lrc";
     final file = File(path);
     if (!file.existsSync()) {

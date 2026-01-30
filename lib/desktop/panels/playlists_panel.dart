@@ -28,12 +28,12 @@ class PlaylistsPanelState extends State<PlaylistsPanel> {
   @override
   void initState() {
     super.initState();
-    playlistsManager.changeNotifier.addListener(filterPlaylists);
+    playlistsManager.updateNotifier.addListener(filterPlaylists);
   }
 
   @override
   void dispose() {
-    playlistsManager.changeNotifier.removeListener(filterPlaylists);
+    playlistsManager.updateNotifier.removeListener(filterPlaylists);
     super.dispose();
   }
 
@@ -171,7 +171,7 @@ class PlaylistsPanelState extends State<PlaylistsPanel> {
                           itemBuilder: (context, index) {
                             final playlist = playlists[index];
                             return ValueListenableBuilder(
-                              valueListenable: playlist.changeNotifier,
+                              valueListenable: playlist.updateNotifier,
                               builder: (context, value, child) {
                                 return Column(
                                   children: [
@@ -186,10 +186,10 @@ class PlaylistsPanelState extends State<PlaylistsPanel> {
                                         highlightColor: Colors.transparent,
                                         child: playlist.songList.isNotEmpty
                                             ? ValueListenableBuilder(
-                                                valueListenable:
-                                                    songIsUpdated[playlist
-                                                        .songList
-                                                        .first]!,
+                                                valueListenable: playlist
+                                                    .songList
+                                                    .first
+                                                    .updateNotifier,
                                                 builder: (_, _, _) {
                                                   return CoverArtWidget(
                                                     size: coverArtWidth,

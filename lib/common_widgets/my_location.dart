@@ -1,11 +1,11 @@
-import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/my_audio_metadata.dart';
 
 class MyLocation extends StatelessWidget {
   final ScrollController scrollController;
   final ValueNotifier<bool> listIsScrollingNotifier;
-  final ValueNotifier<List<AudioMetadata>> currentSongListNotifier;
+  final ValueNotifier<List<MyAudioMetadata>> currentSongListNotifier;
   final double offset;
   const MyLocation({
     super.key,

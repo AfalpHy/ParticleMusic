@@ -1,22 +1,23 @@
-import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/my_auto_size_text.dart';
+import 'package:particle_music/folder_manager.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
-import 'package:particle_music/load_library.dart';
+import 'package:particle_music/library_manager.dart';
 import 'package:particle_music/mobile/selectable_song_list_tile.dart';
 import 'package:particle_music/mobile/widgets/my_search_field.dart';
 import 'package:particle_music/mobile/widgets/my_sheet.dart';
+import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/utils.dart';
 
 class SelectableSongListPage extends StatefulWidget {
-  final List<AudioMetadata> songList;
+  final List<MyAudioMetadata> songList;
 
   final Playlist? playlist;
   final String? artist;
   final String? album;
-  final String? folder;
+  final Folder? folder;
   final String? ranking;
   final String? recently;
 
@@ -39,11 +40,11 @@ class SelectableSongListPage extends StatefulWidget {
 }
 
 class SelectableSongListPageState extends State<SelectableSongListPage> {
-  late List<AudioMetadata> songList;
+  late List<MyAudioMetadata> songList;
   Playlist? playlist;
   String? artist;
   String? album;
-  String? folder;
+  Folder? folder;
   String? ranking;
   String? recently;
 
@@ -57,7 +58,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
 
   List<ValueNotifier<bool>> isSelectedList = [];
 
-  final ValueNotifier<List<AudioMetadata>> currentSongListNotifier =
+  final ValueNotifier<List<MyAudioMetadata>> currentSongListNotifier =
       ValueNotifier([]);
 
   void updateSongList() {
@@ -288,9 +289,9 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                     currentSongListNotifier.value = songList;
 
                     if (isLibrary) {
-                      libraryLoader.updataLibrarySongList();
+                      libraryManager.update();
                     } else if (folder != null) {
-                      libraryLoader.updateFoloderSongList(folder!);
+                      folder!.update();
                     } else {
                       playlist!.update();
                     }
@@ -383,7 +384,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                     onTap: () {
                       if (valid) {
                         tryVibrate();
-                        List<AudioMetadata> tmpSongList = [];
+                        List<MyAudioMetadata> tmpSongList = [];
                         for (int i = isSelectedList.length - 1; i >= 0; i--) {
                           if (isSelectedList[i].value) {
                             tmpSongList.add(currentSongListNotifier.value[i]);
@@ -412,7 +413,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                         if (valid) {
                           tryVibrate();
                           if (await showConfirmDialog(context, l10n.delete)) {
-                            List<AudioMetadata> tmpSongList = [];
+                            List<MyAudioMetadata> tmpSongList = [];
                             for (
                               int i = isSelectedList.length - 1;
                               i >= 0;

@@ -7,6 +7,7 @@ import 'package:particle_music/desktop/panels/playlists_panel.dart';
 import 'package:particle_music/desktop/panels/recently_panel.dart';
 import 'package:particle_music/desktop/panels/setting_panel.dart';
 import 'package:particle_music/desktop/panels/song_list_panel.dart';
+import 'package:particle_music/folder_manager.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/utils.dart';
 
@@ -14,13 +15,11 @@ class PanelManager {
   final List<Widget> panelStack = [];
   final List<String> sidebarHighlighLabelStack = [];
 
-  final List<ValueNotifier<String>> currentFolderNotifierStack = [];
+  final List<ValueNotifier<Folder>> currentFolderNotifierStack = [];
 
   final ValueNotifier<int> updatePanelNotifier = ValueNotifier(0);
 
-  bool get isEmpty {
-    return panelStack.isEmpty;
-  }
+  bool get isEmpty => panelStack.isEmpty;
 
   void pushPanel(String label, {String? content}) async {
     sidebarHighlighLabel.value = label;
@@ -33,14 +32,12 @@ class PanelManager {
       backgroundSong = album2SongList[content]!.first;
       panelStack.add(SongListPanel(key: UniqueKey(), album: content));
     } else if (label == 'folders') {
-      ValueNotifier<String> currentFolderNotifier = ValueNotifier('');
+      final currentFolderNotifier = ValueNotifier(
+        folderManager.folderList.first,
+      );
       currentFolderNotifierStack.add(currentFolderNotifier);
-      if (folderPathList.isNotEmpty) {
-        backgroundSong = getFirstSong(folder2SongList[folderPathList.first]!);
-        currentFolderNotifier.value = folderPathList.first;
-      } else {
-        backgroundSong = null;
-      }
+      backgroundSong = folderManager.folderList.first.songList.first;
+
       panelStack.add(
         FoldersPanel(
           key: UniqueKey(),
@@ -116,9 +113,10 @@ class PanelManager {
     updatePanelNotifier.value++;
   }
 
-  void reload() {
+  void clear() {
     panelStack.clear();
     sidebarHighlighLabelStack.clear();
+    currentFolderNotifierStack.clear();
   }
 
   void updateBackground() async {
@@ -134,9 +132,8 @@ class PanelManager {
     } else if (label == 'albums' && panel is SongListPanel) {
       backgroundSong = album2SongList[panel.album]!.first;
     } else if (label == 'folders') {
-      backgroundSong = getFirstSong(
-        folder2SongList[currentFolderNotifierStack.last.value]!,
-      );
+      final songList = currentFolderNotifierStack.last.value.songList;
+      backgroundSong = getFirstSong(songList);
     } else if (label == 'songs') {
       backgroundSong = getFirstSong(librarySongList);
     } else if (label == 'ranking') {

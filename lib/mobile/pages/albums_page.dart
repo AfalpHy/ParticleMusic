@@ -1,4 +1,3 @@
-import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
@@ -7,11 +6,12 @@ import 'package:particle_music/mobile/widgets/my_sheet.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/mobile/pages/song_list_page.dart';
 import 'package:particle_music/common_widgets/my_switch.dart';
+import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/utils.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
 class AlbumsPage extends StatelessWidget {
-  final ValueNotifier<List<MapEntry<String, List<AudioMetadata>>>>
+  final ValueNotifier<List<MapEntry<String, List<MyAudioMetadata>>>>
   currentMapEntryListNotifier = ValueNotifier(albumMapEntryList);
 
   final textController = TextEditingController();
@@ -154,7 +154,7 @@ class AlbumsPage extends StatelessWidget {
     );
   }
 
-  Widget gridView(List<MapEntry<String, List<AudioMetadata>>> mapEntryList) {
+  Widget gridView(List<MapEntry<String, List<MyAudioMetadata>>> mapEntryList) {
     return ValueListenableBuilder(
       valueListenable: albumsUseLargePictureNotifier,
       builder: (context, useLargePicture, child) {

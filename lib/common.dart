@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/audio_handler.dart';
@@ -10,6 +9,7 @@ import 'package:particle_music/history_manager.dart';
 import 'package:particle_music/logger.dart';
 import 'package:particle_music/lyrics.dart';
 import 'package:particle_music/mobile/pages/main_page.dart';
+import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/setting_manager.dart';
 
@@ -23,22 +23,20 @@ final isMobile = Platform.isAndroid || Platform.isIOS;
 
 // ===================================== library =====================================
 
-List<AudioMetadata> librarySongList = [];
-ValueNotifier<int> libraryChangeNotifier = ValueNotifier(0);
-Map<String, AudioMetadata> filePath2LibrarySong = {};
-Map<String, String?> filePath2PicturePath = {};
+Set<String> filePathValidSet = {};
 
-List<String> folderPathList = [];
-Map<String, List<AudioMetadata>> folder2SongList = {};
-Map<String, ValueNotifier<int>> folder2ChangeNotifier = {};
-final ValueNotifier<int> folderChangeNotifier = ValueNotifier(0);
+List<MyAudioMetadata> librarySongList = [];
+List<MyAudioMetadata> libraryAdditionalSongList = [];
+ValueNotifier<int> librarySongListUpdateNotifier = ValueNotifier(0);
+Map<String, MyAudioMetadata> filePath2LibrarySong = {};
+
 final ValueNotifier<int> loadedCountNotifier = ValueNotifier(0);
 final ValueNotifier<String> currentLoadingFolderNotifier = ValueNotifier('');
 
-Map<String, List<AudioMetadata>> artist2SongList = {};
-Map<String, List<AudioMetadata>> album2SongList = {};
-List<MapEntry<String, List<AudioMetadata>>> artistMapEntryList = [];
-List<MapEntry<String, List<AudioMetadata>>> albumMapEntryList = [];
+Map<String, List<MyAudioMetadata>> artist2SongList = {};
+Map<String, List<MyAudioMetadata>> album2SongList = {};
+List<MapEntry<String, List<MyAudioMetadata>>> artistMapEntryList = [];
+List<MapEntry<String, List<MyAudioMetadata>>> albumMapEntryList = [];
 
 final ValueNotifier<bool> loadingLibraryNotifier = ValueNotifier(true);
 
@@ -49,7 +47,7 @@ final ValueNotifier<String> sidebarHighlighLabel = ValueNotifier('');
 // ===================================== DesktopMainPage =====================================
 
 ValueNotifier<int> updateBackgroundNotifier = ValueNotifier(0);
-AudioMetadata? backgroundSong;
+MyAudioMetadata? backgroundSong;
 
 // ===================================== PlayQueuePage =====================================
 
@@ -193,9 +191,9 @@ const AssetImage vibrationImage = AssetImage('assets/images/vibration.png');
 
 late MyAudioHandler audioHandler;
 
-List<AudioMetadata> playQueue = [];
+List<MyAudioMetadata> playQueue = [];
 
-final ValueNotifier<AudioMetadata?> currentSongNotifier = ValueNotifier(null);
+final ValueNotifier<MyAudioMetadata?> currentSongNotifier = ValueNotifier(null);
 final ValueNotifier<bool> isPlayingNotifier = ValueNotifier(false);
 final ValueNotifier<int> playModeNotifier = ValueNotifier(0);
 final ValueNotifier<double> volumeNotifier = ValueNotifier(0.3);
@@ -203,11 +201,6 @@ final ValueNotifier<double> volumeNotifier = ValueNotifier(0.3);
 // ===================================== Playlist =====================================
 
 late PlaylistsManager playlistsManager;
-
-// ===================================== SongState =====================================
-
-Map<AudioMetadata, ValueNotifier<bool>> songIsFavorite = {};
-Map<AudioMetadata, ValueNotifier<int>> songIsUpdated = {};
 
 // ===================================== DesktopLyrics =====================================
 

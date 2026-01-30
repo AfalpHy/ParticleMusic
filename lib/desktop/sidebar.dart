@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
+import 'package:particle_music/folder_manager.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/utils.dart';
@@ -146,7 +147,15 @@ class Sidebar extends StatelessWidget {
                         content: l10n.folders,
 
                         onTap: () {
-                          panelManager.pushPanel('folders');
+                          if (folderManager.isEmpty) {
+                            showCenterMessage(
+                              context,
+                              'There are no folders',
+                              duration: 2000,
+                            );
+                          } else {
+                            panelManager.pushPanel('folders');
+                          }
                         },
                       ),
                     ),
@@ -272,7 +281,7 @@ class Sidebar extends StatelessWidget {
                     SliverToBoxAdapter(child: playlistItem(context, 0)),
 
                     ValueListenableBuilder(
-                      valueListenable: playlistsManager.changeNotifier,
+                      valueListenable: playlistsManager.updateNotifier,
                       builder: (context, _, _) {
                         return SliverReorderableList(
                           onReorder: (oldIndex, newIndex) {
@@ -286,7 +295,7 @@ class Sidebar extends StatelessWidget {
                             );
                             playlistsManager.update();
                           },
-                          itemCount: playlistsManager.length() - 1,
+                          itemCount: playlistsManager.playlists.length - 1,
                           itemBuilder: (_, index) {
                             return ReorderableDragStartListener(
                               index: index,
@@ -310,28 +319,28 @@ class Sidebar extends StatelessWidget {
   Widget playlistItem(BuildContext context, int index) {
     final l10n = AppLocalizations.of(context);
     return ValueListenableBuilder(
-      valueListenable: playlistsManager.changeNotifier,
+      valueListenable: playlistsManager.updateNotifier,
       builder: (context, value, child) {
         final playlist = playlistsManager.getPlaylistByIndex(index);
         return ContextMenuWidget(
           child: sidebarItem(
             label: '_${playlist.name}',
             leading: ValueListenableBuilder(
-              valueListenable: playlist.changeNotifier,
+              valueListenable: playlist.updateNotifier,
               builder: (_, _, _) {
-                return playlist.songList.isNotEmpty
-                    ? ValueListenableBuilder(
-                        valueListenable:
-                            songIsUpdated[playlist.songList.first]!,
-                        builder: (_, _, _) {
-                          return CoverArtWidget(
-                            size: 30,
-                            borderRadius: 3,
-                            song: playlist.songList.first,
-                          );
-                        },
-                      )
-                    : CoverArtWidget(size: 30, borderRadius: 3, song: null);
+                if (playlist.songList.isEmpty) {
+                  return CoverArtWidget(size: 30, borderRadius: 3, song: null);
+                }
+                return ValueListenableBuilder(
+                  valueListenable: playlist.songList.first.updateNotifier,
+                  builder: (_, _, _) {
+                    return CoverArtWidget(
+                      size: 30,
+                      borderRadius: 3,
+                      song: playlist.songList.first,
+                    );
+                  },
+                );
               },
             ),
             content: index == 0 ? l10n.favorite : playlist.name,

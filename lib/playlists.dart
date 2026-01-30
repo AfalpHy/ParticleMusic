@@ -2,11 +2,11 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/mobile/widgets/my_sheet.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
+import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/utils.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 import 'common_widgets/cover_art_widget.dart';
@@ -15,7 +15,7 @@ class PlaylistsManager {
   late File file;
   List<Playlist> playlists = [];
   Map<String, Playlist> playlistsMap = {};
-  ValueNotifier<int> changeNotifier = ValueNotifier(0);
+  ValueNotifier<int> updateNotifier = ValueNotifier(0);
 
   PlaylistsManager() {
     file = File("${appSupportDir.path}/playlists.txt");
@@ -36,8 +36,10 @@ class PlaylistsManager {
     }
   }
 
-  int length() {
-    return playlists.length;
+  Future<void> load() async {
+    for (final playlist in playlists) {
+      await playlist.load();
+    }
   }
 
   Playlist getPlaylistByIndex(int index) {
@@ -101,17 +103,25 @@ class PlaylistsManager {
 
   void update() {
     file.writeAsString(jsonEncode(playlists.map((pl) => pl.name).toList()));
-    changeNotifier.value++;
+    updateNotifier.value++;
+  }
+
+  void clear() {
+    for (final playlist in playlists) {
+      playlist.clear();
+    }
   }
 }
 
 class Playlist {
   String name;
-  List<AudioMetadata> songList = [];
+  List<MyAudioMetadata> songList = [];
   File file;
   File settingFile;
-  ValueNotifier<int> changeNotifier = ValueNotifier(0);
+  ValueNotifier<int> updateNotifier = ValueNotifier(0);
   ValueNotifier<int> sortTypeNotifier = ValueNotifier(0);
+
+  bool isFavorite = false;
 
   Playlist({
     required this.name,
@@ -126,26 +136,45 @@ class Playlist {
     } else {
       loadSetting();
     }
+
+    isFavorite = name == 'Favorite';
   }
 
-  void add(List<AudioMetadata> songList) {
-    for (AudioMetadata song in songList) {
+  Future<void> load() async {
+    final contents = await file.readAsString();
+    if (contents != "") {
+      List<dynamic> decoded = jsonDecode(contents);
+      for (String filePath in decoded) {
+        MyAudioMetadata? song = filePath2LibrarySong[filePath];
+        if (song == null) {
+          continue;
+        }
+        songList.add(song);
+        if (isFavorite) {
+          song.isFavoriteNotifier.value = true;
+        }
+      }
+    }
+  }
+
+  void add(List<MyAudioMetadata> songList) {
+    for (MyAudioMetadata song in songList) {
       if (this.songList.contains(song)) {
         continue;
       }
       this.songList.insert(0, song);
-      if (name == 'Favorite') {
-        songIsFavorite[song]!.value = true;
+      if (isFavorite) {
+        song.isFavoriteNotifier.value = true;
       }
     }
     update();
   }
 
-  void remove(List<AudioMetadata> songList) {
-    for (AudioMetadata song in songList) {
+  void remove(List<MyAudioMetadata> songList) {
+    for (MyAudioMetadata song in songList) {
       this.songList.remove(song);
-      if (name == 'Favorite') {
-        songIsFavorite[song]!.value = false;
+      if (isFavorite) {
+        song.isFavoriteNotifier.value = false;
       }
     }
     update();
@@ -153,12 +182,12 @@ class Playlist {
 
   void update() {
     file.writeAsStringSync(
-      jsonEncode(songList.map((e) => clipFilePathIfNeed(e.file.path)).toList()),
+      jsonEncode(songList.map((e) => clipFilePathIfNeed(e.filePath)).toList()),
     );
     if (!isMobile) {
       panelManager.updateBackground();
     }
-    changeNotifier.value++;
+    updateNotifier.value++;
   }
 
   void loadSetting() {
@@ -175,17 +204,21 @@ class Playlist {
     );
   }
 
-  AudioMetadata? getFirstSong() {
+  MyAudioMetadata? getFirstSong() {
     if (songList.isEmpty) {
       return null;
     }
     return songList.first;
   }
+
+  void clear() {
+    songList = [];
+  }
 }
 
-void toggleFavoriteState(AudioMetadata song) {
-  final favorite = playlistsManager.getPlaylistByName('Favorite')!;
-  final isFavorite = songIsFavorite[song]!;
+void toggleFavoriteState(MyAudioMetadata song) {
+  final favorite = playlistsManager.playlists.first;
+  final isFavorite = song.isFavoriteNotifier;
   if (isFavorite.value) {
     favorite.remove([song]);
   } else {
@@ -194,7 +227,7 @@ void toggleFavoriteState(AudioMetadata song) {
 }
 
 class Add2PlaylistPanel extends StatefulWidget {
-  final List<AudioMetadata> songList;
+  final List<MyAudioMetadata> songList;
   const Add2PlaylistPanel({super.key, required this.songList});
 
   @override
@@ -240,7 +273,7 @@ class _Add2PlaylistPanelState extends State<Add2PlaylistPanel> {
         SizedBox(height: 5),
         Expanded(
           child: ListView.builder(
-            itemCount: playlistsManager.length(),
+            itemCount: playlistsManager.playlists.length,
             itemExtent: 54,
             itemBuilder: (_, index) {
               final playlist = playlistsManager.getPlaylistByIndex(index);
@@ -393,7 +426,10 @@ Future<bool> showCreatePlaylistDialog(BuildContext context) async {
   return false;
 }
 
-void showAddPlaylistSheet(BuildContext context, List<AudioMetadata> songList) {
+void showAddPlaylistSheet(
+  BuildContext context,
+  List<MyAudioMetadata> songList,
+) {
   showModalBottomSheet(
     context: context,
     isScrollControlled: true,
@@ -405,7 +441,7 @@ void showAddPlaylistSheet(BuildContext context, List<AudioMetadata> songList) {
 
 void showAddPlaylistDialog(
   BuildContext context,
-  List<AudioMetadata> songList,
+  List<MyAudioMetadata> songList,
 ) async {
   await showDialog(
     context: context,

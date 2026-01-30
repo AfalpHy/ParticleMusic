@@ -7,10 +7,11 @@ import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
+import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/utils.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
-void showSongMetadataDialog(BuildContext context, AudioMetadata song) async {
+void showSongMetadataDialog(BuildContext context, MyAudioMetadata song) async {
   final originalTitle = song.title ?? '';
   final originalArtist = song.artist ?? '';
   final originalAlbum = song.album ?? '';
@@ -113,7 +114,7 @@ void showSongMetadataDialog(BuildContext context, AudioMetadata song) async {
                               }
                             }
 
-                            songIsUpdated[song]!.value++;
+                            song.updateNotifier.value++;
                             if (!isMobile) {
                               panelManager.updateBackground();
                             }

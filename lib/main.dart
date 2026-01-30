@@ -13,7 +13,7 @@ import 'package:particle_music/desktop/my_window_listener.dart';
 import 'package:particle_music/desktop/pages/main_page.dart';
 import 'package:particle_music/desktop/single_instance.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
-import 'package:particle_music/load_library.dart';
+import 'package:particle_music/library_manager.dart';
 import 'package:particle_music/mobile/pages/main_page.dart';
 import 'package:audio_service/audio_service.dart';
 import 'dart:async';
@@ -120,7 +120,7 @@ Future<void> main() async {
     ),
   );
 
-  await libraryLoader.init();
+  await libraryManager.init();
 
   runApp(
     ValueListenableBuilder(
@@ -189,7 +189,7 @@ Future<void> main() async {
     ),
   );
   logger.output('App start');
-  await libraryLoader.load();
+  await libraryManager.load();
   if (!isMobile) {
     await initDesktopLyrics();
   }

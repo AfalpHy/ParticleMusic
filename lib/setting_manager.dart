@@ -5,8 +5,9 @@ import 'dart:ui';
 import 'package:particle_music/common.dart';
 
 class SettingManager {
-  final File file;
-  SettingManager(this.file) {
+  late final File file;
+  SettingManager() {
+    file = File("${appSupportDir.path}/setting.txt");
     if (!(file.existsSync())) {
       saveSetting();
     }
