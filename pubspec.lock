@@ -963,7 +963,7 @@ packages:
     description:
       path: "packages/window_manager"
       ref: main
-      resolved-ref: "0647f066d21846c521b4187bba8fff910c8bd52d"
+      resolved-ref: d18a15c8e92b2c21ff04580c7990bce32941db64
       url: "https://github.com/AfalpHy/window_manager.git"
     source: git
     version: "0.5.1"
