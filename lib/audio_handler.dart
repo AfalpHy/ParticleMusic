@@ -318,9 +318,7 @@ class MyAudioHandler extends BaseAudioHandler {
 
     Uri? artUri;
     if (currentSong.picturePath != null) {
-      artUri = Uri.file(
-        revertFilePathIfNeed(currentSong.picturePath!, appSupport: true),
-      );
+      artUri = Uri.file(currentSong.picturePath!);
     }
 
     mediaItem.add(
