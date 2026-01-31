@@ -207,8 +207,6 @@ late PlaylistsManager playlistsManager;
 
 // ===================================== DesktopLyrics =====================================
 
-final ValueNotifier<bool> lyricsIsTransparentNotifier = ValueNotifier(false);
-
 WindowController? lyricsWindowController;
 bool lyricsWindowVisible = false;
 

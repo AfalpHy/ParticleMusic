@@ -41,7 +41,7 @@ Future<void> main() async {
     if (windowController.arguments == 'desktop_lyrics') {
       await windowController.desktopLyricsCustomInitialize();
       WindowOptions windowOptions = WindowOptions(
-        size: Platform.isLinux ? Size(850, 175) : Size(800, 120),
+        size: Platform.isLinux ? Size(850, 200) : Size(800, 150),
         center: true,
         backgroundColor: Colors.transparent,
         titleBarStyle: TitleBarStyle.hidden,

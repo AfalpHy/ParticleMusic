@@ -44,6 +44,15 @@ extension WindowControllerExtension on WindowController {
         case 'hide_desktop_lyrics':
           lyricsWindowVisible = false;
           break;
+        case 'skip_to_previous':
+          audioHandler.skipToPrevious();
+          break;
+        case 'toggle_play':
+          audioHandler.togglePlay();
+          break;
+        case 'skip_to_next':
+          audioHandler.skipToNext();
+          break;
         default:
           throw MissingPluginException('Not implemented: ${call.method}');
       }
@@ -76,5 +85,17 @@ extension WindowControllerExtension on WindowController {
 
   Future<void> hideDesktopLyrics() {
     return invokeMethod('hide_desktop_lyrics');
+  }
+
+  Future<void> skipToPrevious() {
+    return invokeMethod('skip_to_previous');
+  }
+
+  Future<void> togglePlay() {
+    return invokeMethod('toggle_play');
+  }
+
+  Future<void> skipToNext() {
+    return invokeMethod('skip_to_next');
   }
 }
