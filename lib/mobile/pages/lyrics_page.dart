@@ -176,7 +176,7 @@ class LyricsPage extends StatelessWidget {
                         }
 
                         return LyricsListView(
-                          expanded: true,
+                          expanded: false,
                           lyrics: asyncSnapshot.data!.lyrics,
                           isKaraoke: asyncSnapshot.data!.isKaraoke,
                         );
