@@ -161,7 +161,7 @@ class LyricsPage extends StatelessWidget {
                   : currentSong.parsedLyrics != null
                   ? LyricsListView(
                       key: ValueKey(currentSong),
-                      expanded: true,
+                      expanded: false,
                       lyrics: currentSong.parsedLyrics!.lyrics,
                       isKaraoke: currentSong.parsedLyrics!.isKaraoke,
                     )
