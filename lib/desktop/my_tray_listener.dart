@@ -41,6 +41,8 @@ class MyTrayListener extends TrayListener {
       await audioHandler.togglePlay();
     } else if (menuItem.key == 'skipToNext') {
       await audioHandler.skipToNext();
+    } else if (menuItem.key == 'unlock') {
+      await lyricsWindowController?.unlock();
     }
   }
 }

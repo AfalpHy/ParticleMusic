@@ -21,7 +21,6 @@ Future<void> updateDesktopLyrics() async {
 }
 
 class DesktopLyrics extends StatelessWidget {
-  final _lockedNotifier = ValueNotifier(false);
   final ValueNotifier<bool> _isTransparentNotifier = ValueNotifier(false);
 
   DesktopLyrics({super.key});
@@ -34,73 +33,58 @@ class DesktopLyrics extends StatelessWidget {
           : null,
 
       home: ValueListenableBuilder(
-        valueListenable: _lockedNotifier,
-        builder: (context, locked, child) {
-          return ValueListenableBuilder(
-            valueListenable: _isTransparentNotifier,
-            builder: (context, isTransparent, child) {
-              bool isDragging = false;
-              return GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onPanStart: (details) async {
-                  if (locked) {
-                    return;
-                  }
-                  isDragging = true;
-                  await windowManager.startDragging();
-                  isDragging = false;
-                },
-                child: MouseRegion(
-                  onEnter: (_) {
-                    _isTransparentNotifier.value = false;
-                  },
-                  onExit: (_) {
-                    if (isDragging) {
-                      return;
-                    }
-                    _isTransparentNotifier.value = true;
-                  },
-                  child: Material(
-                    color: isTransparent || locked
-                        ? Colors.transparent
-                        : Colors.black45,
-                    shape: SmoothRectangleBorder(
-                      smoothness: 1,
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                    child: Column(
-                      children: [
-                        SizedBox(
-                          height: 50,
-                          child: isTransparent
-                              ? null
-                              : locked
-                              ? lockedRow()
-                              : unlockedRow(),
-                        ),
-
-                        lyricsWidget(),
-                      ],
-                    ),
-                  ),
-                ),
-              );
+        valueListenable: _isTransparentNotifier,
+        builder: (context, isTransparent, child) {
+          bool isDragging = false;
+          return GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onPanStart: (details) async {
+              isDragging = true;
+              await windowManager.startDragging();
+              isDragging = false;
             },
+            child: MouseRegion(
+              onEnter: (_) {
+                _isTransparentNotifier.value = false;
+              },
+              onExit: (_) {
+                if (isDragging) {
+                  return;
+                }
+                _isTransparentNotifier.value = true;
+              },
+              child: Material(
+                color: isTransparent ? Colors.transparent : Colors.black45,
+                shape: SmoothRectangleBorder(
+                  smoothness: 1,
+                  borderRadius: BorderRadius.circular(5),
+                ),
+                child: Column(
+                  children: [
+                    SizedBox(
+                      height: 50,
+                      child: isTransparent ? null : controlsRow(),
+                    ),
+                    lyricsWidget(),
+                  ],
+                ),
+              ),
+            ),
           );
         },
       ),
     );
   }
 
-  Widget unlockedRow() {
+  Widget controlsRow() {
     return Row(
       children: [
         Spacer(),
         IconButton(
           color: Colors.grey.shade50,
 
-          onPressed: () {
-            _lockedNotifier.value = true;
+          onPressed: () async {
+            await windowManager.setIgnoreMouseEvents(true);
           },
           icon: Icon(Icons.lock_rounded, size: 20),
         ),
@@ -161,33 +145,6 @@ class DesktopLyrics extends StatelessWidget {
             windowManager.hide();
           },
           icon: Icon(Icons.close),
-        ),
-        Spacer(),
-      ],
-    );
-  }
-
-  Widget lockedRow() {
-    return Row(
-      children: [
-        Spacer(),
-        IconButton(
-          color: Colors.grey.shade50,
-
-          onPressed: () {
-            _lockedNotifier.value = false;
-          },
-          icon: Icon(
-            Icons.lock_open_rounded,
-            size: 25,
-            shadows: [
-              Shadow(
-                blurRadius: 0.1,
-                color: Colors.black,
-                offset: const Offset(0, 0.1),
-              ),
-            ],
-          ),
         ),
         Spacer(),
       ],

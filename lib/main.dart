@@ -96,9 +96,14 @@ Future<void> main() async {
       Menu(
         items: [
           MenuItem(key: 'show', label: 'Show App'),
+          MenuItem.separator(),
+
           MenuItem(key: 'skipToPrevious', label: 'Skip to Previous'),
           MenuItem(key: 'togglePlay', label: 'Play/Pause'),
           MenuItem(key: 'skipToNext', label: 'Skip to Next'),
+          MenuItem.separator(),
+
+          MenuItem(key: 'unlock', label: 'Unlock Desktop Lyrics'),
 
           MenuItem.separator(),
           MenuItem(key: 'exit', label: 'Exit'),
