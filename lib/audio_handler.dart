@@ -15,7 +15,6 @@ class MyAudioHandler extends BaseAudioHandler {
   int currentIndex = -1;
   List<MyAudioMetadata> _playQueueTmp = [];
   int _tmpPlayMode = 0;
-  bool isloading = false;
   DateTime? _playLastSyncTime;
   Duration _playedDuration = Duration.zero;
 
@@ -305,8 +304,6 @@ class MyAudioHandler extends BaseAudioHandler {
       _playLastSyncTime = null;
     }
 
-    isloading = true;
-
     // save currentIndex
     savePlayState();
 
@@ -355,7 +352,6 @@ class MyAudioHandler extends BaseAudioHandler {
       _playLastSyncTime = DateTime.now();
     }
     _playedDuration = Duration.zero;
-    isloading = false;
   }
 
   @override
@@ -380,7 +376,6 @@ class MyAudioHandler extends BaseAudioHandler {
   @override
   Future<void> skipToNext() async {
     if (playQueue.isEmpty) return;
-    if (isloading) return;
 
     currentIndex = (currentIndex + 1) % playQueue.length;
     await load();
@@ -389,7 +384,6 @@ class MyAudioHandler extends BaseAudioHandler {
   @override
   Future<void> skipToPrevious() async {
     if (playQueue.isEmpty) return;
-    if (isloading) return;
 
     currentIndex = (currentIndex + playQueue.length - 1) % playQueue.length;
     await load();

@@ -134,6 +134,7 @@ class LyricsPageState extends State<LyricsPage> {
                                         ? SizedBox()
                                         : currentSong.parsedLyrics != null
                                         ? LyricsListView(
+                                            key: ValueKey(currentSong),
                                             expanded: true,
                                             lyrics: currentSong
                                                 .parsedLyrics!

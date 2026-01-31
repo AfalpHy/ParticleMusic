@@ -160,6 +160,7 @@ class LyricsPage extends StatelessWidget {
                   ? SizedBox()
                   : currentSong.parsedLyrics != null
                   ? LyricsListView(
+                      key: ValueKey(currentSong),
                       expanded: true,
                       lyrics: currentSong.parsedLyrics!.lyrics,
                       isKaraoke: currentSong.parsedLyrics!.isKaraoke,
@@ -427,6 +428,7 @@ class LyricsPage extends StatelessWidget {
                       ? SizedBox()
                       : currentSong.parsedLyrics != null
                       ? LyricsListView(
+                          key: ValueKey(currentSong),
                           expanded: true,
                           lyrics: currentSong.parsedLyrics!.lyrics,
                           isKaraoke: currentSong.parsedLyrics!.isKaraoke,
