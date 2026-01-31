@@ -40,6 +40,10 @@ List<MapEntry<String, List<MyAudioMetadata>>> albumMapEntryList = [];
 
 final ValueNotifier<bool> loadingLibraryNotifier = ValueNotifier(true);
 
+// ===================================== MiniMode =====================================
+
+final miniModeNotifier = ValueNotifier(false);
+
 // ===================================== Sidebar =====================================
 
 final ValueNotifier<String> sidebarHighlighLabel = ValueNotifier('');
@@ -154,6 +158,7 @@ const AssetImage longArrowUpImage = AssetImage(
 );
 const AssetImage loopImage = AssetImage('assets/images/loop.png');
 const AssetImage maximizeImage = AssetImage('assets/images/maximize.png');
+const AssetImage miniModeImage = AssetImage('assets/images/mini_mode.png');
 const AssetImage minimizeImage = AssetImage('assets/images/minimize.png');
 const AssetImage musicNoteImage = AssetImage('assets/images/music_note.png');
 const AssetImage nextButtonImage = AssetImage('assets/images/next_button.png');

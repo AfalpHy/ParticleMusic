@@ -187,11 +187,10 @@ class BottomControl extends StatelessWidget {
               Spacer(),
               SizedBox(
                 width: 400,
-                height: 20,
                 child: ValueListenableBuilder(
                   valueListenable: currentSongNotifier,
                   builder: (_, _, _) {
-                    return SeekBar();
+                    return SeekBar(widgetHeight: 20, seekBarHeight: 10);
                   },
                 ),
               ),

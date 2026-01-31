@@ -278,7 +278,10 @@ class LyricsPageState extends State<LyricsPage> {
         ),
         SizedBox(height: pageHight * 0.01),
 
-        SizedBox(width: width - 15, height: 20, child: SeekBar(light: true)),
+        SizedBox(
+          width: width - 15,
+          child: SeekBar(light: true, widgetHeight: 20, seekBarHeight: 10),
+        ),
 
         SizedBox(
           width: width,

@@ -21,8 +21,8 @@ Widget titleSearchField(
   }
   return Center(
     child: SizedBox(
-      width: 350,
-      height: 35,
+      width: 260,
+      height: 40,
       child: ValueListenableBuilder(
         valueListenable: colorChangeNotifier,
         builder: (_, _, _) {
@@ -99,8 +99,6 @@ class TitleBar extends StatelessWidget {
             child: Container(),
           ),
 
-          if (isMainPage) Center(child: searchField),
-
           Center(
             child: Row(
               children: [
@@ -131,6 +129,8 @@ class TitleBar extends StatelessWidget {
                             );
                     },
                   ),
+                if (isMainPage) SizedBox(width: 10),
+                if (isMainPage) SizedBox(child: searchField),
 
                 if (!isMainPage)
                   IconButton(
@@ -183,6 +183,24 @@ class TitleBar extends StatelessWidget {
                     },
                     icon: Icon(Icons.settings_outlined, size: 20),
                   ),
+
+                IconButton(
+                  onPressed: () async {
+                    await windowManager.hide();
+                    miniModeNotifier.value = true;
+
+                    await Future.delayed(Duration(milliseconds: 200));
+
+                    await windowManager.setMinimumSize(Size(325, 150));
+                    await windowManager.setMaximumSize(Size(600, 600));
+                    await windowManager.setSize(Size(325, 325));
+                    await windowManager.show();
+                  },
+                  icon: ImageIcon(
+                    miniModeImage,
+                    color: isMainPage ? Colors.black54 : Colors.grey.shade50,
+                  ),
+                ),
 
                 ValueListenableBuilder(
                   valueListenable: isFullScreenNotifier,

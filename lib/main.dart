@@ -11,6 +11,7 @@ import 'package:particle_music/desktop/keyboard.dart';
 import 'package:particle_music/desktop/my_tray_listener.dart';
 import 'package:particle_music/desktop/my_window_listener.dart';
 import 'package:particle_music/desktop/pages/main_page.dart';
+import 'package:particle_music/desktop/pages/mini_mode_page.dart';
 import 'package:particle_music/desktop/single_instance.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/library_manager.dart';
@@ -151,7 +152,17 @@ Future<void> main() async {
                 return ValueListenableBuilder(
                   valueListenable: colorChangeNotifier,
                   builder: (_, _, _) {
-                    return isMobile ? MobileMainPage() : DesktopMainPage();
+                    return isMobile
+                        ? MobileMainPage()
+                        : ValueListenableBuilder(
+                            valueListenable: miniModeNotifier,
+                            builder: (context, miniMode, child) {
+                              if (miniMode) {
+                                return MiniModePage();
+                              }
+                              return DesktopMainPage();
+                            },
+                          );
                   },
                 );
               }

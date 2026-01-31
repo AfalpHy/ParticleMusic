@@ -961,10 +961,11 @@ packages:
   window_manager:
     dependency: "direct main"
     description:
-      name: window_manager
-      sha256: "7eb6d6c4164ec08e1bf978d6e733f3cebe792e2a23fb07cbca25c2872bfdbdcd"
-      url: "https://pub.dev"
-    source: hosted
+      path: "packages/window_manager"
+      ref: main
+      resolved-ref: "0647f066d21846c521b4187bba8fff910c8bd52d"
+      url: "https://github.com/AfalpHy/window_manager.git"
+    source: git
     version: "0.5.1"
   xdg_directories:
     dependency: transitive

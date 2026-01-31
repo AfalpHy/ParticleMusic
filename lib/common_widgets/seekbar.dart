@@ -5,7 +5,16 @@ import 'package:particle_music/utils.dart';
 
 class SeekBar extends StatefulWidget {
   final bool light;
-  const SeekBar({super.key, this.light = false});
+  final bool isMiniMode;
+  final double widgetHeight;
+  final double seekBarHeight;
+  const SeekBar({
+    super.key,
+    this.light = false,
+    this.isMiniMode = false,
+    required this.widgetHeight,
+    required this.seekBarHeight,
+  });
   @override
   State<SeekBar> createState() => SeekBarState();
 }
@@ -13,7 +22,13 @@ class SeekBar extends StatefulWidget {
 class SeekBarState extends State<SeekBar> {
   double? dragValue;
   bool isDragging = false; // track if user is touching the thumb
-  final double horizontalPadding = isMobile ? 30 : 45;
+  late final double horizontalPadding;
+  @override
+  void initState() {
+    super.initState();
+    assert(widget.widgetHeight > widget.seekBarHeight);
+    horizontalPadding = !isMobile && !widget.isMiniMode ? 45 : 0;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -29,14 +44,14 @@ class SeekBarState extends State<SeekBar> {
           sliderValue = 0;
         }
         return SizedBox(
-          height: isMobile ? 60 : 10, // expand gesture area for easier touch
+          height: widget.widgetHeight,
           child: Stack(
             alignment: Alignment.centerLeft,
             children: [
               // Duration labels
               Positioned(
-                left: isMobile ? horizontalPadding : 0,
-                right: isMobile ? horizontalPadding : 0,
+                left: 0,
+                right: 0,
                 bottom: isMobile ? 0 : 2,
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -47,14 +62,22 @@ class SeekBarState extends State<SeekBar> {
                       ),
                       style: TextStyle(
                         color: widget.light ? Colors.grey.shade50 : null,
-                        fontSize: isMobile ? null : 12.5,
+                        fontSize: isMobile
+                            ? null
+                            : widget.isMiniMode
+                            ? 10.5
+                            : 12.5,
                       ),
                     ),
                     Text(
                       formatDuration(duration),
                       style: TextStyle(
                         color: widget.light ? Colors.grey.shade50 : null,
-                        fontSize: isMobile ? null : 12.5,
+                        fontSize: isMobile
+                            ? null
+                            : widget.isMiniMode
+                            ? 10.5
+                            : 12.5,
                       ),
                     ),
                   ],
@@ -62,31 +85,40 @@ class SeekBarState extends State<SeekBar> {
               ),
 
               // Slider visuals
-              SliderTheme(
-                data: SliderTheme.of(context).copyWith(
-                  thumbColor: widget.light ? Colors.grey.shade50 : Colors.black,
-                  trackHeight: isDragging ? 4 : 2,
-                  trackShape: const FullWidthTrackShape(),
-                  thumbShape: RoundSliderThumbShape(enabledThumbRadius: 0),
-                  overlayShape: SliderComponentShape.noOverlay,
-                  activeTrackColor: widget.light
-                      ? Colors.grey.shade50
-                      : Colors.black,
-                  inactiveTrackColor: Colors.black12,
-                ),
-                child: Padding(
-                  padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
-                  child: Slider(
-                    min: 0.0,
-                    max: durationMs,
-                    value: sliderValue.clamp(0.0, durationMs),
-                    onChanged: (value) {},
+              SizedBox(
+                height: widget.seekBarHeight,
+                child: SliderTheme(
+                  data: SliderTheme.of(context).copyWith(
+                    thumbColor: widget.light
+                        ? Colors.grey.shade50
+                        : Colors.black,
+                    trackHeight: isDragging ? 4 : 2,
+                    trackShape: const FullWidthTrackShape(),
+                    thumbShape: RoundSliderThumbShape(enabledThumbRadius: 0),
+                    overlayShape: SliderComponentShape.noOverlay,
+                    activeTrackColor: widget.light
+                        ? Colors.grey.shade50
+                        : Colors.black,
+                    inactiveTrackColor: Colors.black12,
+                  ),
+                  child: Padding(
+                    padding: EdgeInsets.symmetric(
+                      horizontal: horizontalPadding,
+                    ),
+                    child: Slider(
+                      min: 0.0,
+                      max: durationMs,
+                      value: sliderValue.clamp(0.0, durationMs),
+                      onChanged: (value) {},
+                    ),
                   ),
                 ),
               ),
 
               // Full-track GestureDetector to capture touches anywhere on the track
               Positioned.fill(
+                top: (widget.widgetHeight - widget.seekBarHeight) / 2,
+                bottom: (widget.widgetHeight - widget.seekBarHeight) / 2,
                 child: GestureDetector(
                   behavior: HitTestBehavior.translucent,
                   onVerticalDragStart: (_) {

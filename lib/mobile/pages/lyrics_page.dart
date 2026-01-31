@@ -288,7 +288,10 @@ class LyricsPage extends StatelessWidget {
             SizedBox(width: 25),
           ],
         ),
-        SeekBar(light: true),
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 30),
+          child: SeekBar(light: true, widgetHeight: 60, seekBarHeight: 40),
+        ),
 
         // -------- Play Controls --------
         Padding(

@@ -123,7 +123,7 @@ class DesktopLyrics extends StatelessWidget {
             builder: (_, isPlaying, _) {
               return Icon(
                 isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                size: 35,
+                size: 30,
               );
             },
           ),
@@ -220,7 +220,7 @@ class DesktopLyrics extends StatelessWidget {
             key: ValueKey(desktopLyricLine),
             line: desktopLyricLine!,
             position: desktopLyrcisCurrentPosition,
-            fontSize: 40,
+            fontSize: 30,
             expanded: false,
             isDesktopLyrics: true,
           );
@@ -228,7 +228,7 @@ class DesktopLyrics extends StatelessWidget {
           return Text(
             desktopLyricLine!.text,
             style: TextStyle(
-              fontSize: 40,
+              fontSize: 30,
               color: Colors.white,
               shadows: [
                 Shadow(
