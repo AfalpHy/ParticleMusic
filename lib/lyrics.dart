@@ -179,7 +179,7 @@ class LyricsListViewState extends State<LyricsListView>
 
   void scroll2CurrentIndex(Duration position) async {
     int tmp = currentIndexNotifier.value;
-    int current = -1;
+    int current = 0;
 
     for (int i = 0; i < lyrics.length; i++) {
       final line = lyrics[i];
@@ -191,9 +191,6 @@ class LyricsListViewState extends State<LyricsListView>
       }
     }
 
-    if (current == -1) {
-      return;
-    }
     currentIndexNotifier.value = current;
     final tmpLyricLine = currentLyricLine;
     currentLyricLine = lyrics[current];
@@ -230,10 +227,6 @@ class LyricsListViewState extends State<LyricsListView>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     lyrics = widget.lyrics;
-    currentLyricLine = null;
-    if (!isMobile && lyricsWindowVisible) {
-      updateDesktopLyrics();
-    }
     positionSub = audioHandler.getPositionStream().listen(
       (position) => scroll2CurrentIndex(position),
     );

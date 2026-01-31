@@ -7,14 +7,71 @@ import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common_widgets/seekbar.dart';
 import 'package:particle_music/desktop/desktop_lyrics.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
+import 'package:particle_music/lyrics.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/utils.dart';
 import 'package:window_manager/window_manager.dart';
 
-class MiniModePage extends StatelessWidget {
-  final displayCoverNotifier = ValueNotifier(true);
+class MiniModePage extends StatefulWidget {
+  final MyAudioMetadata? currentSong;
+  const MiniModePage({super.key, this.currentSong});
 
-  MiniModePage({super.key});
+  @override
+  State<StatefulWidget> createState() => _MiniModePageState();
+}
+
+class _MiniModePageState extends State<MiniModePage> {
+  final displayCoverNotifier = ValueNotifier(true);
+  MyAudioMetadata? currentSong;
+
+  StreamSubscription<Duration>? positionSub;
+
+  void setCurrentLyricLine(Duration position) async {
+    if (currentSong == null) {
+      return;
+    }
+    if (currentSong!.parsedLyrics == null) {
+      await parseLyricsFile(currentSong!);
+    }
+    List<LyricLine> lyrics = currentSong!.parsedLyrics!.lyrics;
+
+    int current = 0;
+
+    for (int i = 0; i < lyrics.length; i++) {
+      final line = lyrics[i];
+      if (position < line.start) {
+        break;
+      }
+      if (line.start > lyrics[current].start) {
+        current = i;
+      }
+    }
+
+    final tmpLyricLine = currentLyricLine;
+    currentLyricLine = lyrics[current];
+    currentLyricLineIsKaraoke = currentSong!.parsedLyrics!.isKaraoke;
+
+    if (lyricsWindowVisible && currentLyricLine != tmpLyricLine) {
+      await updateDesktopLyrics();
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    currentSong = widget.currentSong;
+    positionSub = audioHandler.getPositionStream().listen(
+      (position) => setCurrentLyricLine(position),
+    );
+  }
+
+  @override
+  void dispose() {
+    positionSub?.cancel();
+    positionSub = null;
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     final height = MediaQuery.heightOf(context);
@@ -64,75 +121,70 @@ class MiniModePage extends StatelessWidget {
           });
         },
         child: ValueListenableBuilder(
-          valueListenable: currentSongNotifier,
-          builder: (context, currentSong, child) {
-            return ValueListenableBuilder(
-              valueListenable: displayOthersNotifier,
-              builder: (context, displayOthers, child) {
-                if (!displayOthers) {
-                  return CoverArtWidget(song: currentSong);
-                }
-                return Stack(
-                  fit: StackFit.expand,
+          valueListenable: displayOthersNotifier,
+          builder: (context, displayOthers, child) {
+            if (!displayOthers) {
+              return CoverArtWidget(song: currentSong);
+            }
+            return Stack(
+              fit: StackFit.expand,
 
-                  children: [
-                    CoverArtWidget(song: currentSong),
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      top: 0,
-                      height: 50,
-                      child: ClipRect(
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.bottomCenter,
-                                end: Alignment.topCenter,
-                                colors: [
-                                  currentCoverArtColor.withAlpha(0),
+              children: [
+                CoverArtWidget(song: currentSong),
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  height: 50,
+                  child: ClipRect(
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.bottomCenter,
+                            end: Alignment.topCenter,
+                            colors: [
+                              currentCoverArtColor.withAlpha(0),
 
-                                  currentCoverArtColor.withAlpha(180),
-                                ],
-                              ),
-                            ),
+                              currentCoverArtColor.withAlpha(180),
+                            ],
                           ),
                         ),
                       ),
                     ),
+                  ),
+                ),
 
-                    Positioned(
-                      left: 0,
-                      right: 0,
-                      bottom: 0,
-                      height: 100,
-                      child: ClipRect(
-                        child: BackdropFilter(
-                          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                          child: Container(
-                            decoration: BoxDecoration(
-                              gradient: LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  currentCoverArtColor.withAlpha(0),
-                                  currentCoverArtColor.withAlpha(180),
-                                ],
-                              ),
-                            ),
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  bottom: 0,
+                  height: 100,
+                  child: ClipRect(
+                    child: BackdropFilter(
+                      filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                      child: Container(
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topCenter,
+                            end: Alignment.bottomCenter,
+                            colors: [
+                              currentCoverArtColor.withAlpha(0),
+                              currentCoverArtColor.withAlpha(180),
+                            ],
                           ),
                         ),
                       ),
                     ),
+                  ),
+                ),
 
-                    topControls(),
-                    centerListTile(currentSong),
-                    seekBar(),
-                    bottomControls(context),
-                  ],
-                );
-              },
+                topControls(),
+                centerListTile(currentSong),
+                seekBar(),
+                bottomControls(context),
+              ],
             );
           },
         ),
@@ -147,14 +199,9 @@ class MiniModePage extends StatelessWidget {
           behavior: HitTestBehavior.translucent,
           onPanStart: (_) => windowManager.startDragging(),
 
-          child: ValueListenableBuilder(
-            valueListenable: currentSongNotifier,
-            builder: (context, currentSong, _) {
-              return Material(
-                color: currentCoverArtColor,
-                child: Column(children: [topListTile(currentSong)]),
-              );
-            },
+          child: Material(
+            color: currentCoverArtColor,
+            child: Column(children: [topListTile(currentSong)]),
           ),
         ),
 
@@ -299,6 +346,9 @@ class MiniModePage extends StatelessWidget {
                     size: 25,
                   ),
                   onPressed: () {
+                    if (playQueue.isEmpty) {
+                      return;
+                    }
                     if (playModeNotifier.value != 2) {
                       audioHandler.switchPlayMode();
                       switch (playModeNotifier.value) {
