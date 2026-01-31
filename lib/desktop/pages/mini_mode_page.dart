@@ -6,6 +6,7 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common_widgets/seekbar.dart';
 import 'package:particle_music/desktop/desktop_lyrics.dart';
+import 'package:particle_music/full_width_track_shape.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/lyrics.dart';
 import 'package:particle_music/my_audio_metadata.dart';
@@ -30,10 +31,9 @@ class _MiniModePageState extends State<MiniModePage> {
     if (currentSong == null) {
       return;
     }
-    if (currentSong!.parsedLyrics == null) {
-      await parseLyricsFile(currentSong!);
-    }
-    List<LyricLine> lyrics = currentSong!.parsedLyrics!.lyrics;
+    ParsedLyrics parsedLyrics = await parseLyricsFile(currentSong!);
+
+    List<LyricLine> lyrics = parsedLyrics.lyrics;
 
     int current = 0;
 
@@ -49,7 +49,7 @@ class _MiniModePageState extends State<MiniModePage> {
 
     final tmpLyricLine = currentLyricLine;
     currentLyricLine = lyrics[current];
-    currentLyricLineIsKaraoke = currentSong!.parsedLyrics!.isKaraoke;
+    currentLyricLineIsKaraoke = parsedLyrics.isKaraoke;
 
     if (lyricsWindowVisible && currentLyricLine != tmpLyricLine) {
       await updateDesktopLyrics();
@@ -160,7 +160,7 @@ class _MiniModePageState extends State<MiniModePage> {
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  height: 100,
+                  height: 150,
                   child: ClipRect(
                     child: BackdropFilter(
                       filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
@@ -193,33 +193,118 @@ class _MiniModePageState extends State<MiniModePage> {
   }
 
   Widget listTileView(BuildContext context) {
-    return Stack(
-      children: [
-        GestureDetector(
-          behavior: HitTestBehavior.translucent,
-          onPanStart: (_) => windowManager.startDragging(),
+    bool isDragging = false;
+    final displayTopControlsNotifier = ValueNotifier(true);
+    Timer? timer = Timer(const Duration(milliseconds: 1000), () {
+      displayTopControlsNotifier.value = false;
+    });
 
-          child: Material(
-            color: currentCoverArtColor,
-            child: Column(children: [topListTile(currentSong)]),
+    return GestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onPanStart: (_) async {
+        isDragging = true;
+        await windowManager.startDragging();
+        isDragging = false;
+      },
+
+      child: MouseRegion(
+        onEnter: (event) {
+          displayTopControlsNotifier.value = true;
+          timer?.cancel();
+          timer = null;
+        },
+        onExit: (event) async {
+          if (isDragging) {
+            return;
+          }
+          timer ??= Timer(const Duration(milliseconds: 1000), () {
+            displayTopControlsNotifier.value = false;
+          });
+        },
+        child: Material(
+          color: currentCoverArtColor,
+          child: Stack(
+            children: [
+              GestureDetector(
+                behavior: HitTestBehavior.translucent,
+                onPanStart: (_) => windowManager.startDragging(),
+
+                child: ValueListenableBuilder(
+                  valueListenable: displayTopControlsNotifier,
+                  builder: (context, value, child) {
+                    if (!value) {
+                      return topListTile(currentSong);
+                    }
+                    return SizedBox();
+                  },
+                ),
+              ),
+
+              ValueListenableBuilder(
+                valueListenable: displayTopControlsNotifier,
+                builder: (context, value, child) {
+                  if (value) {
+                    return topControls();
+                  }
+                  return SizedBox();
+                },
+              ),
+
+              seekBar(),
+              bottomControls(context),
+            ],
           ),
         ),
-
-        topControls(),
-
-        seekBar(),
-        bottomControls(context),
-      ],
+      ),
     );
   }
 
   Widget topControls() {
     return Positioned(
-      top: 0,
-      left: 0,
-      right: 0,
+      top: 5,
+      left: 10,
+      right: 10,
       child: Row(
         children: [
+          IconButton(
+            onPressed: () {},
+            icon: Icon(Icons.volume_down, color: Colors.grey.shade50),
+          ),
+          Material(
+            color: Colors.transparent,
+            child: SizedBox(
+              height: 20,
+              width: 120,
+              child: ValueListenableBuilder(
+                valueListenable: volumeNotifier,
+                builder: (context, value, child) {
+                  return SliderTheme(
+                    data: SliderTheme.of(context).copyWith(
+                      trackHeight: 2,
+                      trackShape: const FullWidthTrackShape(),
+                      thumbShape: RoundSliderThumbShape(enabledThumbRadius: 0),
+                      overlayColor: Colors.transparent,
+                      activeTrackColor: Colors.grey.shade50,
+                      inactiveTrackColor: Colors.black12,
+                      thumbColor: Colors.grey.shade50,
+                    ),
+                    child: Slider(
+                      value: value,
+                      min: 0,
+                      max: 1,
+                      onChanged: (value) {
+                        volumeNotifier.value = value;
+                        audioHandler.setVolume(value);
+                      },
+                      onChangeEnd: (value) {
+                        audioHandler.savePlayState();
+                      },
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
           Spacer(),
           IconButton(
             onPressed: () async {
@@ -279,7 +364,7 @@ class _MiniModePageState extends State<MiniModePage> {
     return Positioned(
       left: 0,
       right: 0,
-      bottom: 80,
+      bottom: 70,
       child: Material(
         color: Colors.transparent,
         child: ListTile(
