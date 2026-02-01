@@ -438,6 +438,8 @@ class KaraokeTextState extends State<KaraokeText>
   Duration displayPosition = Duration.zero;
   DateTime lastSyncTime = DateTime.now();
 
+  late final VoidCallback _playStateListener;
+
   @override
   void initState() {
     super.initState();
@@ -445,17 +447,37 @@ class KaraokeTextState extends State<KaraokeText>
     displayPosition = widget.position;
 
     ticker = createTicker((_) {
-      final elapsed = DateTime.now().difference(lastSyncTime);
-      lastSyncTime = DateTime.now();
+      final now = DateTime.now();
+      final elapsed = now.difference(lastSyncTime);
+      lastSyncTime = now;
+
+      displayPosition += elapsed;
+      setState(() {});
+    });
+
+    _playStateListener = () {
       if (isPlayingNotifier.value) {
-        displayPosition += elapsed;
-        setState(() {});
+        lastSyncTime = DateTime.now();
+        if (!ticker.isActive) {
+          ticker.start();
+        }
+      } else {
+        if (ticker.isActive) {
+          ticker.stop();
+        }
       }
-    })..start();
+    };
+
+    isPlayingNotifier.addListener(_playStateListener);
+
+    if (isPlayingNotifier.value) {
+      ticker.start();
+    }
   }
 
   @override
   void dispose() {
+    isPlayingNotifier.removeListener(_playStateListener);
     ticker.dispose();
     super.dispose();
   }
