@@ -59,14 +59,18 @@ class DesktopLyrics extends StatelessWidget {
                   smoothness: 1,
                   borderRadius: BorderRadius.circular(5),
                 ),
-                child: Column(
-                  children: [
-                    SizedBox(
-                      height: 50,
-                      child: isTransparent ? null : controlsRow(),
-                    ),
-                    lyricsWidget(),
-                  ],
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    children: [
+                      SizedBox(
+                        height: 50,
+                        child: isTransparent ? null : controlsRow(),
+                      ),
+                      lyricsWidget(),
+                      Spacer(),
+                    ],
+                  ),
                 ),
               ),
             ),
@@ -159,7 +163,7 @@ class DesktopLyrics extends StatelessWidget {
           return Text(
             'Particle Music',
             style: TextStyle(
-              fontSize: 40,
+              fontSize: 30,
               color: Colors.white,
               shadows: [
                 Shadow(
