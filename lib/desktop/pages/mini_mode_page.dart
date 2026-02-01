@@ -17,24 +17,10 @@ import 'package:window_manager/window_manager.dart';
 
 final _lyricsOrPlayQueueNotifier = ValueNotifier(true);
 
-class MiniModePage extends StatefulWidget {
-  final MyAudioMetadata? currentSong;
-  const MiniModePage({super.key, this.currentSong});
-
-  @override
-  State<StatefulWidget> createState() => _MiniModePageState();
-}
-
-class _MiniModePageState extends State<MiniModePage> {
+class MiniModePage extends StatelessWidget {
   final displayCoverNotifier = ValueNotifier(true);
 
-  MyAudioMetadata? currentSong;
-
-  @override
-  void initState() {
-    super.initState();
-    currentSong = widget.currentSong;
-  }
+  MiniModePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -48,17 +34,22 @@ class _MiniModePageState extends State<MiniModePage> {
     return Column(
       children: [
         Expanded(
-          child: Material(
-            color: currentCoverArtColor,
-            child: ValueListenableBuilder(
-              valueListenable: displayCoverNotifier,
-              builder: (context, value, child) {
-                if (value) {
-                  return coverView();
-                }
-                return listTileView(context);
-              },
-            ),
+          child: ValueListenableBuilder(
+            valueListenable: currentSongNotifier,
+            builder: (context, value, child) {
+              return Material(
+                color: currentCoverArtColor,
+                child: ValueListenableBuilder(
+                  valueListenable: displayCoverNotifier,
+                  builder: (context, displayCover, child) {
+                    if (displayCover) {
+                      return coverView();
+                    }
+                    return listTileView(context);
+                  },
+                ),
+              );
+            },
           ),
         ),
         if (height > width)
@@ -69,24 +60,37 @@ class _MiniModePageState extends State<MiniModePage> {
               height: height - width,
               child: Stack(
                 children: [
-                  Container(color: currentCoverArtColor.withAlpha(180)),
+                  ValueListenableBuilder(
+                    valueListenable: currentSongNotifier,
+                    builder: (context, value, child) {
+                      return Container(
+                        color: currentCoverArtColor.withAlpha(180),
+                      );
+                    },
+                  ),
 
                   ValueListenableBuilder(
                     valueListenable: _lyricsOrPlayQueueNotifier,
                     builder: (context, value, child) {
                       if (value) {
-                        return ScrollConfiguration(
-                          behavior: ScrollConfiguration.of(
-                            context,
-                          ).copyWith(scrollbars: false),
-                          child: currentSong == null
-                              ? SizedBox()
-                              : LyricsListView(
-                                  expanded: false,
-                                  lyrics: currentSong!.parsedLyrics!.lyrics,
-                                  isKaraoke:
-                                      currentSong!.parsedLyrics!.isKaraoke,
-                                ),
+                        return ValueListenableBuilder(
+                          valueListenable: currentSongNotifier,
+                          builder: (context, currentSong, child) {
+                            return ScrollConfiguration(
+                              behavior: ScrollConfiguration.of(
+                                context,
+                              ).copyWith(scrollbars: false),
+                              child: currentSong == null
+                                  ? SizedBox()
+                                  : LyricsListView(
+                                      key: ValueKey(currentSong),
+                                      expanded: false,
+                                      lyrics: currentSong.parsedLyrics!.lyrics,
+                                      isKaraoke:
+                                          currentSong.parsedLyrics!.isKaraoke,
+                                    ),
+                            );
+                          },
                         );
                       }
                       return height - width > 60 ? PlayQueuePage() : SizedBox();
@@ -129,73 +133,78 @@ class _MiniModePageState extends State<MiniModePage> {
           });
         },
         child: ValueListenableBuilder(
-          valueListenable: displayOthersNotifier,
-          builder: (context, displayOthers, child) {
-            if (!displayOthers) {
-              return Stack(
-                fit: StackFit.expand,
-                children: [CoverArtWidget(song: currentSong)],
-              );
-            }
-            return Stack(
-              fit: StackFit.expand,
+          valueListenable: currentSongNotifier,
+          builder: (context, currentSong, child) {
+            return ValueListenableBuilder(
+              valueListenable: displayOthersNotifier,
+              builder: (context, displayOthers, child) {
+                if (!displayOthers) {
+                  return Stack(
+                    fit: StackFit.expand,
+                    children: [CoverArtWidget(song: currentSong)],
+                  );
+                }
+                return Stack(
+                  fit: StackFit.expand,
 
-              children: [
-                CoverArtWidget(song: currentSong),
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  top: 0,
-                  height: 50,
-                  child: ClipRect(
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.bottomCenter,
-                            end: Alignment.topCenter,
-                            colors: [
-                              currentCoverArtColor.withAlpha(0),
+                  children: [
+                    CoverArtWidget(song: currentSong),
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      top: 0,
+                      height: 50,
+                      child: ClipRect(
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.bottomCenter,
+                                end: Alignment.topCenter,
+                                colors: [
+                                  currentCoverArtColor.withAlpha(0),
 
-                              currentCoverArtColor.withAlpha(180),
-                            ],
+                                  currentCoverArtColor.withAlpha(180),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ),
 
-                Positioned(
-                  left: 0,
-                  right: 0,
-                  bottom: 0,
-                  height: 135,
-                  child: ClipRect(
-                    child: BackdropFilter(
-                      filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
-                      child: Container(
-                        decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                            colors: [
-                              currentCoverArtColor.withAlpha(0),
-                              currentCoverArtColor.withAlpha(180),
-                            ],
+                    Positioned(
+                      left: 0,
+                      right: 0,
+                      bottom: 0,
+                      height: 135,
+                      child: ClipRect(
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
+                          child: Container(
+                            decoration: BoxDecoration(
+                              gradient: LinearGradient(
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                                colors: [
+                                  currentCoverArtColor.withAlpha(0),
+                                  currentCoverArtColor.withAlpha(180),
+                                ],
+                              ),
+                            ),
                           ),
                         ),
                       ),
                     ),
-                  ),
-                ),
 
-                topControls(),
-                centerListTile(currentSong),
-                seekBar(),
-                bottomControls(context),
-              ],
+                    topControls(),
+                    centerListTile(currentSong),
+                    seekBar(),
+                    bottomControls(context),
+                  ],
+                );
+              },
             );
           },
         ),
@@ -237,7 +246,12 @@ class _MiniModePageState extends State<MiniModePage> {
                 if (value) {
                   return topControls();
                 }
-                return topListTile(currentSong);
+                return ValueListenableBuilder(
+                  valueListenable: currentSongNotifier,
+                  builder: (context, currentSong, child) {
+                    return topListTile(currentSong);
+                  },
+                );
               },
             ),
 
@@ -510,7 +524,13 @@ class _MiniModePageState extends State<MiniModePage> {
               WidgetsBinding.instance.addPostFrameCallback((_) async {
                 final size = await windowManager.getSize();
                 if (size.height <= size.width) {
-                  windowManager.setSize(Size(size.width, size.width + 300));
+                  if (Platform.isWindows) {
+                    windowManager.setSize(
+                      Size(size.width, size.width + 316 - 7),
+                    );
+                  } else {
+                    windowManager.setSize(Size(size.width, size.width + 316));
+                  }
                 }
               });
             },

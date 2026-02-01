@@ -21,12 +21,11 @@ class PlayQueuePageState extends State<PlayQueuePage> {
   int continuousSelectBeginIndex = 0;
 
   late bool isMiniMode;
-  late double itemExtend;
+  double itemExtend = 64;
   @override
   void initState() {
     super.initState();
     isMiniMode = miniModeNotifier.value;
-    itemExtend = isMiniMode ? 56 : 64;
   }
 
   @override
@@ -49,48 +48,41 @@ class PlayQueuePageState extends State<PlayQueuePage> {
         SizedBox(height: 10),
 
         Expanded(
-          child: ReorderableListView.builder(
-            itemExtent: itemExtend,
-            scrollController: scrollController,
-            buildDefaultDragHandles: false,
-            onReorder: (oldIndex, newIndex) {
-              if (newIndex > oldIndex) newIndex -= 1;
-              if (oldIndex == audioHandler.currentIndex) {
-                audioHandler.currentIndex = newIndex;
-              } else if (oldIndex < audioHandler.currentIndex &&
-                  newIndex >= audioHandler.currentIndex) {
-                audioHandler.currentIndex -= 1;
-              } else if (oldIndex > audioHandler.currentIndex &&
-                  newIndex <= audioHandler.currentIndex) {
-                audioHandler.currentIndex += 1;
-              }
-              final item = playQueue.removeAt(oldIndex);
-              playQueue.insert(newIndex, item);
-              // clearing selected after reordering
-              for (var tmp in isSelectedList) {
-                tmp.value = false;
-              }
-              continuousSelectBeginIndex = 0;
-            },
+          child: CustomScrollView(
+            controller: scrollController,
+            slivers: [
+              SliverReorderableList(
+                itemExtent: itemExtend,
+                onReorder: (oldIndex, newIndex) {
+                  if (newIndex > oldIndex) newIndex -= 1;
+                  if (oldIndex == audioHandler.currentIndex) {
+                    audioHandler.currentIndex = newIndex;
+                  } else if (oldIndex < audioHandler.currentIndex &&
+                      newIndex >= audioHandler.currentIndex) {
+                    audioHandler.currentIndex -= 1;
+                  } else if (oldIndex > audioHandler.currentIndex &&
+                      newIndex <= audioHandler.currentIndex) {
+                    audioHandler.currentIndex += 1;
+                  }
+                  final item = playQueue.removeAt(oldIndex);
+                  playQueue.insert(newIndex, item);
+                  // clearing selected after reordering
+                  for (var tmp in isSelectedList) {
+                    tmp.value = false;
+                  }
+                  continuousSelectBeginIndex = 0;
+                },
 
-            proxyDecorator:
-                (Widget child, int index, Animation<double> animation) {
-                  return Material(
-                    elevation: 0.1,
-                    color: isMiniMode
-                        ? Colors.grey.shade300
-                        : Colors.grey.shade100, // background color while moving
-                    child: child,
+                itemCount: playQueue.length,
+                itemBuilder: (context, index) {
+                  return playQueueItemWithContextMenu(
+                    context,
+                    index,
+                    isSelectedList,
                   );
                 },
-            itemCount: playQueue.length,
-            itemBuilder: (context, index) {
-              return playQueueItemWithContextMenu(
-                context,
-                index,
-                isSelectedList,
-              );
-            },
+              ),
+            ],
           ),
         ),
       ],
@@ -199,12 +191,11 @@ class PlayQueuePageState extends State<PlayQueuePage> {
     int index,
     List<ValueNotifier<bool>> isSelectedList,
   ) {
-    final song = playQueue[index];
     final isSelected = isSelectedList[index];
     final l10n = AppLocalizations.of(context);
 
     return ContextMenuWidget(
-      key: ValueKey(song),
+      key: ValueKey(playQueue[index]),
       child: PlayQueueItem(
         index: index,
         isSelected: isSelected,

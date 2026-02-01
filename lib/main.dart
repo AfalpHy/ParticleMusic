@@ -168,15 +168,7 @@ Future<void> main() async {
                             valueListenable: miniModeNotifier,
                             builder: (context, miniMode, child) {
                               if (miniMode) {
-                                return ValueListenableBuilder(
-                                  valueListenable: currentSongNotifier,
-                                  builder: (context, currentSong, child) {
-                                    return MiniModePage(
-                                      key: ValueKey(currentSong),
-                                      currentSong: currentSong,
-                                    );
-                                  },
-                                );
+                                return MiniModePage();
                               }
                               return DesktopMainPage();
                             },

@@ -26,7 +26,7 @@ class MyWindowListener extends WindowListener {
     if (miniModeNotifier.value) {
       final size = await windowManager.getSize();
       final gap = size.height - size.width;
-      if (gap > 0 && gap < 100) {
+      if (gap > 0 && gap < 120) {
         await Future.delayed(Duration(milliseconds: 100));
         if (Platform.isWindows) {
           await windowManager.setSize(Size(size.width, size.width - 7));
