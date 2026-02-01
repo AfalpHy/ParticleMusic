@@ -64,6 +64,10 @@ class MyAudioHandler extends BaseAudioHandler {
       }
     });
 
+    if (isMobile) {
+      return;
+    }
+
     _player.positionStream.listen((position) {
       final currentSong = currentSongNotifier.value;
       if (currentSong == null) {
