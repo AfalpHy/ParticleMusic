@@ -191,9 +191,9 @@ class TitleBar extends StatelessWidget {
 
                     await Future.delayed(Duration(milliseconds: 200));
 
-                    await windowManager.setMinimumSize(Size(325, 150));
-                    await windowManager.setMaximumSize(Size(600, 600));
-                    await windowManager.setSize(Size(325, 325));
+                    await windowManager.setMinimumSize(Size(325 + 16, 150 + 9));
+                    await windowManager.setMaximumSize(Size(600 + 16, 950 + 9));
+                    await windowManager.setSize(Size(325 + 16, 325 + 9));
                     await windowManager.show();
                   },
                   icon: ImageIcon(

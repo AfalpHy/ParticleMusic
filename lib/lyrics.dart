@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/desktop/desktop_lyrics.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:smooth_corner/smooth_corner.dart';
@@ -75,10 +74,7 @@ Duration parseTime(RegExpMatch m) {
   return Duration(minutes: min, seconds: sec, milliseconds: ms);
 }
 
-Future<ParsedLyrics> parseLyricsFile(MyAudioMetadata song) async {
-  if (song.parsedLyrics != null) {
-    return song.parsedLyrics!;
-  }
+Future<void> setParsedLyrics(MyAudioMetadata song) async {
   ParsedLyrics result = ParsedLyrics();
   song.parsedLyrics = result;
 
@@ -91,7 +87,7 @@ Future<ParsedLyrics> parseLyricsFile(MyAudioMetadata song) async {
       result.lyrics.add(
         LyricLine(Duration.zero, 'lyrics file does not exist', []),
       );
-      return result;
+      return;
     }
     lines = await file.readAsLines(); // read file line by line
   } else {
@@ -147,7 +143,6 @@ Future<ParsedLyrics> parseLyricsFile(MyAudioMetadata song) async {
       result.lyrics.last.tokens.last.end = song.duration;
     }
   }
-  return result;
 }
 
 class LyricsListView extends StatefulWidget {
@@ -190,15 +185,7 @@ class LyricsListViewState extends State<LyricsListView>
         current = i;
       }
     }
-
     currentIndexNotifier.value = current;
-    final tmpLyricLine = currentLyricLine;
-    currentLyricLine = lyrics[current];
-    currentLyricLineIsKaraoke = widget.isKaraoke;
-
-    if (!isMobile && lyricsWindowVisible && currentLyricLine != tmpLyricLine) {
-      await updateDesktopLyrics();
-    }
 
     if (!userDragging && (tmp != current || userDragged)) {
       userDragged = false;
@@ -388,7 +375,7 @@ class LyricLineWidget extends StatelessWidget {
                       : min(
                           (pageHeight - 700) * 0.05,
                           (pageWidth - 1050) * 0.025,
-                        );
+                        ).clamp(0, double.maxFinite);
 
                   if (isCurrent && isKaraoke) {
                     return ValueListenableBuilder(

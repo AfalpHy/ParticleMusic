@@ -59,6 +59,7 @@ final ValueNotifier<bool> displayPlayQueuePageNotifier = ValueNotifier(false);
 
 // ===================================== LyricsPage =====================================
 
+final ValueNotifier<int> currentIndexNotifier = ValueNotifier<int>(0);
 LyricLine? currentLyricLine;
 bool currentLyricLineIsKaraoke = false;
 
@@ -157,6 +158,7 @@ const AssetImage longArrowUpImage = AssetImage(
   'assets/images/long_arrow_up.png',
 );
 const AssetImage loopImage = AssetImage('assets/images/loop.png');
+const AssetImage lyricsImage = AssetImage('assets/images/lyrics.png');
 const AssetImage maximizeImage = AssetImage('assets/images/maximize.png');
 const AssetImage miniModeImage = AssetImage('assets/images/mini_mode.png');
 const AssetImage minimizeImage = AssetImage('assets/images/minimize.png');

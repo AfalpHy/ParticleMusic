@@ -132,8 +132,7 @@ class LyricsPageState extends State<LyricsPage> {
                                     ).copyWith(scrollbars: false),
                                     child: currentSong == null
                                         ? SizedBox()
-                                        : currentSong.parsedLyrics != null
-                                        ? LyricsListView(
+                                        : LyricsListView(
                                             key: ValueKey(currentSong),
                                             expanded: true,
                                             lyrics: currentSong
@@ -142,29 +141,6 @@ class LyricsPageState extends State<LyricsPage> {
                                             isKaraoke: currentSong
                                                 .parsedLyrics!
                                                 .isKaraoke,
-                                          )
-                                        : FutureBuilder(
-                                            future: parseLyricsFile(
-                                              currentSong,
-                                            ),
-                                            builder: (context, asyncSnapshot) {
-                                              if (asyncSnapshot
-                                                          .connectionState ==
-                                                      ConnectionState.waiting ||
-                                                  asyncSnapshot.hasError ||
-                                                  asyncSnapshot.data == null) {
-                                                return SizedBox();
-                                              }
-
-                                              return LyricsListView(
-                                                expanded: true,
-                                                lyrics:
-                                                    asyncSnapshot.data!.lyrics,
-                                                isKaraoke: asyncSnapshot
-                                                    .data!
-                                                    .isKaraoke,
-                                              );
-                                            },
                                           ),
                                   ),
                                 ),

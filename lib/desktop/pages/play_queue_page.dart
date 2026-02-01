@@ -20,9 +20,13 @@ class PlayQueuePageState extends State<PlayQueuePage> {
   List<ValueNotifier<bool>> isSelectedList = [];
   int continuousSelectBeginIndex = 0;
 
+  late bool isMiniMode;
+  late double itemExtend;
   @override
   void initState() {
     super.initState();
+    isMiniMode = miniModeNotifier.value;
+    itemExtend = isMiniMode ? 56 : 64;
   }
 
   @override
@@ -46,7 +50,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
 
         Expanded(
           child: ReorderableListView.builder(
-            itemExtent: 64,
+            itemExtent: itemExtend,
             scrollController: scrollController,
             buildDefaultDragHandles: false,
             onReorder: (oldIndex, newIndex) {
@@ -73,8 +77,9 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                 (Widget child, int index, Animation<double> animation) {
                   return Material(
                     elevation: 0.1,
-                    color:
-                        Colors.grey.shade100, // background color while moving
+                    color: isMiniMode
+                        ? Colors.grey.shade300
+                        : Colors.grey.shade100, // background color while moving
                     child: child,
                   );
                 },
@@ -98,7 +103,11 @@ class PlayQueuePageState extends State<PlayQueuePage> {
         SizedBox(width: 15),
         Text(
           l10n.playQueue,
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: isMiniMode ? Colors.grey.shade100 : null,
+          ),
         ),
         Spacer(),
 
@@ -106,7 +115,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
           valueListenable: playModeNotifier,
           builder: (_, playMode, _) {
             return IconButton(
-              color: Colors.black,
+              color: isMiniMode ? Colors.grey.shade100 : Colors.black,
               icon: ImageIcon(
                 playMode == 0
                     ? loopImage
@@ -131,7 +140,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                   WidgetsBinding.instance.addPostFrameCallback((_) {
                     // using animateTo to avoid overscroll
                     scrollController.animateTo(
-                      64.0 * audioHandler.currentIndex,
+                      itemExtend * audioHandler.currentIndex,
                       duration: Duration(milliseconds: 300),
                       curve: Curves.linear,
                     );
@@ -151,26 +160,16 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                     showCenterMessage(context, l10n.repeat);
                     break;
                 }
-                setState(() {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    // using animateTo to avoid overscroll
-                    scrollController.animateTo(
-                      64.0 * audioHandler.currentIndex,
-                      duration: Duration(milliseconds: 300),
-                      curve: Curves.linear,
-                    );
-                  });
-                });
               },
             );
           },
         ),
 
         IconButton(
-          color: Colors.black,
+          color: isMiniMode ? Colors.grey.shade100 : Colors.black,
           onPressed: () {
             scrollController.animateTo(
-              64.0 * audioHandler.currentIndex,
+              itemExtend * audioHandler.currentIndex,
               duration: Duration(milliseconds: 300),
               curve: Curves.linear,
             );
@@ -186,7 +185,10 @@ class PlayQueuePageState extends State<PlayQueuePage> {
               displayLyricsPageNotifier.value = false;
             }
           },
-          icon: const ImageIcon(deleteImage, color: Colors.black),
+          icon: ImageIcon(
+            deleteImage,
+            color: isMiniMode ? Colors.grey.shade100 : Colors.black,
+          ),
         ),
       ],
     );
@@ -319,7 +321,9 @@ class PlayQueueItemChildState extends State<PlayQueueItem> {
     return ListTile(
       leading: Stack(
         children: [
-          CoverArtWidget(size: 50, borderRadius: 5, song: song),
+          miniModeNotifier.value
+              ? CoverArtWidget(size: 40, borderRadius: 4, song: song)
+              : CoverArtWidget(size: 50, borderRadius: 5, song: song),
           ValueListenableBuilder(
             valueListenable: showPlayButtonNotifier,
             builder: (context, value, child) {
@@ -333,7 +337,7 @@ class PlayQueueItemChildState extends State<PlayQueueItem> {
                       icon: Icon(
                         Icons.play_arrow_rounded,
                         color: Colors.white,
-                        size: 30,
+                        size: miniModeNotifier.value ? 20 : 30,
                       ),
                     )
                   : SizedBox.shrink();
@@ -348,8 +352,15 @@ class PlayQueueItemChildState extends State<PlayQueueItem> {
             getTitle(song),
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: song == currentSong ? textColor : null,
-              fontWeight: song == currentSong ? FontWeight.bold : null,
+              color: song == currentSong
+                  ? miniModeNotifier.value
+                        ? Colors.white
+                        : textColor
+                  : miniModeNotifier.value
+                  ? Colors.grey.shade100
+                  : null,
+
+              fontWeight: song == currentSong ? FontWeight.w900 : null,
               fontSize: 15,
             ),
           );
@@ -358,12 +369,18 @@ class PlayQueueItemChildState extends State<PlayQueueItem> {
       subtitle: Text(
         "${getArtist(song)} - ${getAlbum(song)}",
         overflow: TextOverflow.ellipsis,
-        style: TextStyle(fontSize: 12),
+        style: TextStyle(
+          fontSize: 12,
+          color: miniModeNotifier.value ? Colors.grey.shade100 : null,
+        ),
       ),
       trailing: Text(
         formatDuration(getDuration(song)),
         overflow: TextOverflow.ellipsis,
-        style: TextStyle(fontSize: 12),
+        style: TextStyle(
+          fontSize: 12,
+          color: miniModeNotifier.value ? Colors.grey.shade100 : null,
+        ),
       ),
     );
   }
@@ -376,7 +393,11 @@ class PlayQueueItemChildState extends State<PlayQueueItem> {
         valueListenable: widget.isSelected,
         builder: (context, value, child) {
           return Material(
-            color: value ? Colors.grey.shade300 : Colors.transparent,
+            color: value
+                ? miniModeNotifier.value
+                      ? currentCoverArtColor
+                      : Colors.grey.shade300
+                : Colors.transparent,
             child: child,
           );
         },

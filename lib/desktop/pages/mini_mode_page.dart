@@ -6,12 +6,15 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common_widgets/seekbar.dart';
 import 'package:particle_music/desktop/desktop_lyrics.dart';
+import 'package:particle_music/desktop/pages/play_queue_page.dart';
 import 'package:particle_music/full_width_track_shape.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/lyrics.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/utils.dart';
 import 'package:window_manager/window_manager.dart';
+
+final _lyricsOrPlayQueueNotifier = ValueNotifier(true);
 
 class MiniModePage extends StatefulWidget {
   final MyAudioMetadata? currentSong;
@@ -23,72 +26,76 @@ class MiniModePage extends StatefulWidget {
 
 class _MiniModePageState extends State<MiniModePage> {
   final displayCoverNotifier = ValueNotifier(true);
+
   MyAudioMetadata? currentSong;
-
-  StreamSubscription<Duration>? positionSub;
-
-  void setCurrentLyricLine(Duration position) async {
-    if (currentSong == null) {
-      return;
-    }
-    ParsedLyrics parsedLyrics = await parseLyricsFile(currentSong!);
-
-    List<LyricLine> lyrics = parsedLyrics.lyrics;
-
-    int current = 0;
-
-    for (int i = 0; i < lyrics.length; i++) {
-      final line = lyrics[i];
-      if (position < line.start) {
-        break;
-      }
-      if (line.start > lyrics[current].start) {
-        current = i;
-      }
-    }
-
-    final tmpLyricLine = currentLyricLine;
-    currentLyricLine = lyrics[current];
-    currentLyricLineIsKaraoke = parsedLyrics.isKaraoke;
-
-    if (lyricsWindowVisible && currentLyricLine != tmpLyricLine) {
-      await updateDesktopLyrics();
-    }
-  }
 
   @override
   void initState() {
     super.initState();
     currentSong = widget.currentSong;
-    positionSub = audioHandler.getPositionStream().listen(
-      (position) => setCurrentLyricLine(position),
-    );
-  }
-
-  @override
-  void dispose() {
-    positionSub?.cancel();
-    positionSub = null;
-    super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    final width = MediaQuery.widthOf(context);
     final height = MediaQuery.heightOf(context);
-
     if (height > 150) {
       displayCoverNotifier.value = true;
     } else {
       displayCoverNotifier.value = false;
     }
-    return ValueListenableBuilder(
-      valueListenable: displayCoverNotifier,
-      builder: (context, value, child) {
-        if (value) {
-          return coverView();
-        }
-        return listTileView(context);
-      },
+    return Column(
+      children: [
+        Expanded(
+          child: Material(
+            color: currentCoverArtColor,
+            child: ValueListenableBuilder(
+              valueListenable: displayCoverNotifier,
+              builder: (context, value, child) {
+                if (value) {
+                  return coverView();
+                }
+                return listTileView(context);
+              },
+            ),
+          ),
+        ),
+        if (height > width)
+          Material(
+            color: Colors.grey,
+            child: SizedBox(
+              width: width,
+              height: height - width,
+              child: Stack(
+                children: [
+                  Container(color: currentCoverArtColor.withAlpha(180)),
+
+                  ValueListenableBuilder(
+                    valueListenable: _lyricsOrPlayQueueNotifier,
+                    builder: (context, value, child) {
+                      if (value) {
+                        return ScrollConfiguration(
+                          behavior: ScrollConfiguration.of(
+                            context,
+                          ).copyWith(scrollbars: false),
+                          child: currentSong == null
+                              ? SizedBox()
+                              : LyricsListView(
+                                  expanded: false,
+                                  lyrics: currentSong!.parsedLyrics!.lyrics,
+                                  isKaraoke:
+                                      currentSong!.parsedLyrics!.isKaraoke,
+                                ),
+                        );
+                      }
+                      return height - width > 60 ? PlayQueuePage() : SizedBox();
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+      ],
     );
   }
 
@@ -124,7 +131,10 @@ class _MiniModePageState extends State<MiniModePage> {
           valueListenable: displayOthersNotifier,
           builder: (context, displayOthers, child) {
             if (!displayOthers) {
-              return CoverArtWidget(song: currentSong);
+              return Stack(
+                fit: StackFit.expand,
+                children: [CoverArtWidget(song: currentSong)],
+              );
             }
             return Stack(
               fit: StackFit.expand,
@@ -160,7 +170,7 @@ class _MiniModePageState extends State<MiniModePage> {
                   left: 0,
                   right: 0,
                   bottom: 0,
-                  height: 150,
+                  height: 135,
                   child: ClipRect(
                     child: BackdropFilter(
                       filter: ImageFilter.blur(sigmaX: 5, sigmaY: 5),
@@ -195,10 +205,7 @@ class _MiniModePageState extends State<MiniModePage> {
   Widget listTileView(BuildContext context) {
     bool isDragging = false;
     final displayTopControlsNotifier = ValueNotifier(true);
-    Timer? timer = Timer(const Duration(milliseconds: 1000), () {
-      displayTopControlsNotifier.value = false;
-    });
-
+    Timer? timer;
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onPanStart: (_) async {
@@ -221,39 +228,21 @@ class _MiniModePageState extends State<MiniModePage> {
             displayTopControlsNotifier.value = false;
           });
         },
-        child: Material(
-          color: currentCoverArtColor,
-          child: Stack(
-            children: [
-              GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onPanStart: (_) => windowManager.startDragging(),
+        child: Stack(
+          children: [
+            ValueListenableBuilder(
+              valueListenable: displayTopControlsNotifier,
+              builder: (context, value, child) {
+                if (value) {
+                  return topControls();
+                }
+                return topListTile(currentSong);
+              },
+            ),
 
-                child: ValueListenableBuilder(
-                  valueListenable: displayTopControlsNotifier,
-                  builder: (context, value, child) {
-                    if (!value) {
-                      return topListTile(currentSong);
-                    }
-                    return SizedBox();
-                  },
-                ),
-              ),
-
-              ValueListenableBuilder(
-                valueListenable: displayTopControlsNotifier,
-                builder: (context, value, child) {
-                  if (value) {
-                    return topControls();
-                  }
-                  return SizedBox();
-                },
-              ),
-
-              seekBar(),
-              bottomControls(context),
-            ],
-          ),
+            seekBar(),
+            bottomControls(context),
+          ],
         ),
       ),
     );
@@ -270,39 +259,36 @@ class _MiniModePageState extends State<MiniModePage> {
             onPressed: () {},
             icon: Icon(Icons.volume_down, color: Colors.grey.shade50),
           ),
-          Material(
-            color: Colors.transparent,
-            child: SizedBox(
-              height: 20,
-              width: 120,
-              child: ValueListenableBuilder(
-                valueListenable: volumeNotifier,
-                builder: (context, value, child) {
-                  return SliderTheme(
-                    data: SliderTheme.of(context).copyWith(
-                      trackHeight: 2,
-                      trackShape: const FullWidthTrackShape(),
-                      thumbShape: RoundSliderThumbShape(enabledThumbRadius: 0),
-                      overlayColor: Colors.transparent,
-                      activeTrackColor: Colors.grey.shade50,
-                      inactiveTrackColor: Colors.black12,
-                      thumbColor: Colors.grey.shade50,
-                    ),
-                    child: Slider(
-                      value: value,
-                      min: 0,
-                      max: 1,
-                      onChanged: (value) {
-                        volumeNotifier.value = value;
-                        audioHandler.setVolume(value);
-                      },
-                      onChangeEnd: (value) {
-                        audioHandler.savePlayState();
-                      },
-                    ),
-                  );
-                },
-              ),
+          SizedBox(
+            height: 20,
+            width: 120,
+            child: ValueListenableBuilder(
+              valueListenable: volumeNotifier,
+              builder: (context, value, child) {
+                return SliderTheme(
+                  data: SliderTheme.of(context).copyWith(
+                    trackHeight: 2,
+                    trackShape: const FullWidthTrackShape(),
+                    thumbShape: RoundSliderThumbShape(enabledThumbRadius: 0),
+                    overlayColor: Colors.transparent,
+                    activeTrackColor: Colors.grey.shade50,
+                    inactiveTrackColor: Colors.black12,
+                    thumbColor: Colors.grey.shade50,
+                  ),
+                  child: Slider(
+                    value: value,
+                    min: 0,
+                    max: 1,
+                    onChanged: (value) {
+                      volumeNotifier.value = value;
+                      audioHandler.setVolume(value);
+                    },
+                    onChangeEnd: (value) {
+                      audioHandler.savePlayState();
+                    },
+                  ),
+                );
+              },
             ),
           ),
           Spacer(),
@@ -339,22 +325,27 @@ class _MiniModePageState extends State<MiniModePage> {
   }
 
   Widget topListTile(MyAudioMetadata? currentSong) {
-    return ListTile(
-      leading: CoverArtWidget(song: currentSong, size: 40, borderRadius: 4),
-      title: Text(
-        getTitle(currentSong),
-        style: TextStyle(
-          fontWeight: FontWeight.bold,
-          overflow: .ellipsis,
-          color: Colors.grey.shade50,
+    return Positioned(
+      top: 5,
+      left: 0,
+      right: 0,
+      child: ListTile(
+        leading: CoverArtWidget(song: currentSong, size: 40, borderRadius: 4),
+        title: Text(
+          getTitle(currentSong),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            overflow: .ellipsis,
+            color: Colors.grey.shade50,
+          ),
         ),
-      ),
-      subtitle: Text(
-        "${getArtist(currentSong)} - ${getAlbum(currentSong)}",
-        style: TextStyle(
-          fontSize: 12,
-          overflow: .ellipsis,
-          color: Colors.grey.shade50,
+        subtitle: Text(
+          "${getArtist(currentSong)} - ${getAlbum(currentSong)}",
+          style: TextStyle(
+            fontSize: 12,
+            overflow: .ellipsis,
+            color: Colors.grey.shade50,
+          ),
         ),
       ),
     );
@@ -365,24 +356,21 @@ class _MiniModePageState extends State<MiniModePage> {
       left: 0,
       right: 0,
       bottom: 70,
-      child: Material(
-        color: Colors.transparent,
-        child: ListTile(
-          title: Text(
-            getTitle(currentSong),
-            style: TextStyle(
-              fontWeight: FontWeight.bold,
-              overflow: .ellipsis,
-              color: Colors.grey.shade50,
-            ),
+      child: ListTile(
+        title: Text(
+          getTitle(currentSong),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            overflow: .ellipsis,
+            color: Colors.grey.shade50,
           ),
-          subtitle: Text(
-            "${getArtist(currentSong)} - ${getAlbum(currentSong)}",
-            style: TextStyle(
-              fontSize: 12,
-              overflow: .ellipsis,
-              color: Colors.grey.shade50,
-            ),
+        ),
+        subtitle: Text(
+          "${getArtist(currentSong)} - ${getAlbum(currentSong)}",
+          style: TextStyle(
+            fontSize: 12,
+            overflow: .ellipsis,
+            color: Colors.grey.shade50,
           ),
         ),
       ),
@@ -394,14 +382,11 @@ class _MiniModePageState extends State<MiniModePage> {
       bottom: 45,
       left: 15,
       right: 15,
-      child: Material(
-        color: Colors.transparent,
-        child: SeekBar(
-          light: true,
-          isMiniMode: true,
-          widgetHeight: 50,
-          seekBarHeight: 10,
-        ),
+      child: SeekBar(
+        light: true,
+        isMiniMode: true,
+        widgetHeight: 50,
+        seekBarHeight: 10,
       ),
     );
   }
@@ -411,105 +396,139 @@ class _MiniModePageState extends State<MiniModePage> {
 
     return Positioned(
       bottom: 0,
-      left: 15,
-      right: 15,
-      child: Material(
-        color: Colors.transparent,
-        child: Row(
-          children: [
-            ValueListenableBuilder(
-              valueListenable: playModeNotifier,
-              builder: (_, playMode, _) {
-                return IconButton(
-                  color: Colors.grey.shade50,
-                  icon: ImageIcon(
-                    playMode == 0
-                        ? loopImage
-                        : playMode == 1
-                        ? shuffleImage
-                        : repeatImage,
-                    size: 25,
-                  ),
-                  onPressed: () {
-                    if (playQueue.isEmpty) {
-                      return;
-                    }
-                    if (playModeNotifier.value != 2) {
-                      audioHandler.switchPlayMode();
-                      switch (playModeNotifier.value) {
-                        case 0:
-                          showCenterMessage(context, l10n.loop);
-                          break;
-                        default:
-                          showCenterMessage(context, l10n.shuffle);
-                          break;
-                      }
-                    }
-                  },
-                  onLongPress: () {
-                    audioHandler.toggleRepeat();
+      left: 10,
+      right: 10,
+      child: Row(
+        children: [
+          Spacer(),
+          ValueListenableBuilder(
+            valueListenable: playModeNotifier,
+            builder: (_, playMode, _) {
+              return IconButton(
+                color: Colors.grey.shade50,
+                icon: ImageIcon(
+                  playMode == 0
+                      ? loopImage
+                      : playMode == 1
+                      ? shuffleImage
+                      : repeatImage,
+                  size: 25,
+                ),
+                onPressed: () {
+                  if (playQueue.isEmpty) {
+                    return;
+                  }
+                  if (playModeNotifier.value != 2) {
+                    audioHandler.switchPlayMode();
                     switch (playModeNotifier.value) {
                       case 0:
                         showCenterMessage(context, l10n.loop);
                         break;
-                      case 1:
+                      default:
                         showCenterMessage(context, l10n.shuffle);
                         break;
-                      default:
-                        showCenterMessage(context, l10n.repeat);
-                        break;
                     }
-                  },
+                  }
+                },
+                onLongPress: () {
+                  audioHandler.toggleRepeat();
+                  switch (playModeNotifier.value) {
+                    case 0:
+                      showCenterMessage(context, l10n.loop);
+                      break;
+                    case 1:
+                      showCenterMessage(context, l10n.shuffle);
+                      break;
+                    default:
+                      showCenterMessage(context, l10n.repeat);
+                      break;
+                  }
+                },
+              );
+            },
+          ),
+          Spacer(),
+
+          IconButton(
+            onPressed: () async {
+              _lyricsOrPlayQueueNotifier.value = true;
+              WidgetsBinding.instance.addPostFrameCallback((_) async {
+                final size = await windowManager.getSize();
+                if (size.height <= size.width) {
+                  windowManager.setSize(Size(size.width, size.width + 300));
+                }
+              });
+            },
+            icon: ImageIcon(lyricsImage),
+            color: Colors.grey.shade50,
+          ),
+          Spacer(),
+
+          IconButton(
+            color: Colors.grey.shade50,
+            icon: const ImageIcon(previousButtonImage, size: 25),
+            onPressed: () {
+              audioHandler.skipToPrevious();
+            },
+          ),
+          Spacer(),
+
+          IconButton(
+            color: Colors.grey.shade50,
+            icon: ValueListenableBuilder(
+              valueListenable: isPlayingNotifier,
+              builder: (_, isPlaying, _) {
+                return Icon(
+                  isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                  size: 35,
                 );
               },
             ),
-            Spacer(),
-            IconButton(
-              color: Colors.grey.shade50,
-              icon: const ImageIcon(previousButtonImage, size: 25),
-              onPressed: () {
-                audioHandler.skipToPrevious();
-              },
-            ),
+            onPressed: () {
+              audioHandler.togglePlay();
+            },
+          ),
+          Spacer(),
 
-            IconButton(
-              color: Colors.grey.shade50,
-              icon: ValueListenableBuilder(
-                valueListenable: isPlayingNotifier,
-                builder: (_, isPlaying, _) {
-                  return Icon(
-                    isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                    size: 35,
-                  );
-                },
-              ),
-              onPressed: () {
-                audioHandler.togglePlay();
-              },
-            ),
-            IconButton(
-              color: Colors.grey.shade50,
-              icon: const ImageIcon(nextButtonImage, size: 25),
-              onPressed: () {
-                audioHandler.skipToNext();
-              },
-            ),
-            Spacer(),
-            IconButton(
-              onPressed: () async {
-                if (lyricsWindowVisible) {
-                  await lyricsWindowController!.hide();
-                } else {
-                  await updateDesktopLyrics();
-                  await lyricsWindowController!.show();
+          IconButton(
+            color: Colors.grey.shade50,
+            icon: const ImageIcon(nextButtonImage, size: 25),
+            onPressed: () {
+              audioHandler.skipToNext();
+            },
+          ),
+          Spacer(),
+
+          IconButton(
+            onPressed: () async {
+              _lyricsOrPlayQueueNotifier.value = false;
+              WidgetsBinding.instance.addPostFrameCallback((_) async {
+                final size = await windowManager.getSize();
+                if (size.height <= size.width) {
+                  windowManager.setSize(Size(size.width, size.width + 300));
                 }
-                lyricsWindowVisible = !lyricsWindowVisible;
-              },
-              icon: Icon(Icons.lyrics_rounded, size: 20),
-              color: Colors.grey.shade50,
-            ),
-          ],
-        ),
+              });
+            },
+            icon: Icon(Icons.playlist_play_rounded, size: 25),
+            color: Colors.grey.shade50,
+          ),
+          Spacer(),
+
+          IconButton(
+            onPressed: () async {
+              if (lyricsWindowVisible) {
+                await lyricsWindowController!.hide();
+              } else {
+                await updateDesktopLyrics();
+                await lyricsWindowController!.show();
+              }
+              lyricsWindowVisible = !lyricsWindowVisible;
+            },
+            icon: Icon(Icons.lyrics_rounded, size: 20),
+            color: Colors.grey.shade50,
+          ),
+          Spacer(),
+        ],
       ),
     );
   }

@@ -5,6 +5,7 @@ import 'package:just_audio/just_audio.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/desktop_lyrics.dart';
 import 'package:particle_music/desktop/extensions/window_controller_extension.dart';
+import 'package:particle_music/lyrics.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/utils.dart';
 import 'dart:async';
@@ -60,6 +61,37 @@ class MyAudioHandler extends BaseAudioHandler {
       needPause = false;
       if (!isMobile) {
         panelManager.updateBackground();
+      }
+    });
+
+    _player.positionStream.listen((position) {
+      final currentSong = currentSongNotifier.value;
+      if (currentSong == null) {
+        return;
+      }
+      ParsedLyrics parsedLyrics = currentSong.parsedLyrics!;
+
+      List<LyricLine> lyrics = parsedLyrics.lyrics;
+
+      int current = 0;
+
+      for (int i = 0; i < lyrics.length; i++) {
+        final line = lyrics[i];
+        if (position < line.start) {
+          break;
+        }
+        if (line.start > lyrics[current].start) {
+          current = i;
+        }
+      }
+
+      final tmpLyricLine = currentLyricLine;
+
+      currentLyricLine = lyrics[current];
+      currentLyricLineIsKaraoke = parsedLyrics.isKaraoke;
+
+      if (lyricsWindowVisible && currentLyricLine != tmpLyricLine) {
+        updateDesktopLyrics();
       }
     });
   }
@@ -309,6 +341,7 @@ class MyAudioHandler extends BaseAudioHandler {
 
     final currentSong = playQueue[currentIndex];
 
+    await setParsedLyrics(currentSong);
     currentCoverArtColor = await computeCoverArtColor(currentSong);
 
     currentSongNotifier.value = currentSong;
