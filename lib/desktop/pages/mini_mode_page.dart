@@ -16,11 +16,18 @@ import 'package:particle_music/utils.dart';
 import 'package:window_manager/window_manager.dart';
 
 final _lyricsOrPlayQueueNotifier = ValueNotifier(true);
+final miniModeDisplayOthersNotifier = ValueNotifier(true);
+Timer? miniModeHideOthersTimer;
 
-class MiniModePage extends StatelessWidget {
+class MiniModePage extends StatefulWidget {
+  const MiniModePage({super.key});
+
+  @override
+  State<StatefulWidget> createState() => _MiniModePageState();
+}
+
+class _MiniModePageState extends State<MiniModePage> {
   final displayCoverNotifier = ValueNotifier(true);
-
-  MiniModePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -31,51 +38,43 @@ class MiniModePage extends StatelessWidget {
     } else {
       displayCoverNotifier.value = false;
     }
+    miniModeDisplayOthersNotifier.value = true;
     return Column(
       children: [
         Expanded(
           child: ValueListenableBuilder(
             valueListenable: currentSongNotifier,
             builder: (context, value, child) {
-              return Material(
-                color: currentCoverArtColor,
-                child: ValueListenableBuilder(
-                  valueListenable: displayCoverNotifier,
-                  builder: (context, displayCover, child) {
-                    if (displayCover) {
-                      return coverView();
-                    }
-                    return listTileView(context);
-                  },
-                ),
-              );
+              return Material(color: currentCoverArtColor, child: child);
             },
+            child: ValueListenableBuilder(
+              valueListenable: displayCoverNotifier,
+              builder: (context, displayCover, child) {
+                if (displayCover) {
+                  return coverView();
+                }
+                return listTileView(context);
+              },
+            ),
           ),
         ),
         if (height > width)
-          Material(
-            color: Colors.grey,
-            child: SizedBox(
-              width: width,
-              height: height - width,
-              child: Stack(
-                children: [
-                  ValueListenableBuilder(
-                    valueListenable: currentSongNotifier,
-                    builder: (context, value, child) {
-                      return Container(
-                        color: currentCoverArtColor.withAlpha(180),
-                      );
-                    },
-                  ),
+          ValueListenableBuilder(
+            valueListenable: currentSongNotifier,
+            builder: (context, currentSong, child) {
+              return Material(
+                color: currentCoverArtColor,
+                child: SizedBox(
+                  width: width,
+                  height: height - width,
+                  child: Stack(
+                    children: [
+                      Container(color: vividPanelColor),
 
-                  ValueListenableBuilder(
-                    valueListenable: _lyricsOrPlayQueueNotifier,
-                    builder: (context, value, child) {
-                      if (value) {
-                        return ValueListenableBuilder(
-                          valueListenable: currentSongNotifier,
-                          builder: (context, currentSong, child) {
+                      ValueListenableBuilder(
+                        valueListenable: _lyricsOrPlayQueueNotifier,
+                        builder: (context, value, child) {
+                          if (value) {
                             return ScrollConfiguration(
                               behavior: ScrollConfiguration.of(
                                 context,
@@ -90,15 +89,17 @@ class MiniModePage extends StatelessWidget {
                                           currentSong.parsedLyrics!.isKaraoke,
                                     ),
                             );
-                          },
-                        );
-                      }
-                      return height - width > 60 ? PlayQueuePage() : SizedBox();
-                    },
+                          }
+                          return height - width > 60
+                              ? PlayQueuePage()
+                              : SizedBox();
+                        },
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
+                ),
+              );
+            },
           ),
       ],
     );
@@ -106,10 +107,6 @@ class MiniModePage extends StatelessWidget {
 
   Widget coverView() {
     bool isDragging = false;
-    final displayOthersNotifier = ValueNotifier(true);
-    Timer? timer = Timer(const Duration(milliseconds: 1000), () {
-      displayOthersNotifier.value = false;
-    });
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onPanStart: (_) async {
@@ -120,23 +117,26 @@ class MiniModePage extends StatelessWidget {
 
       child: MouseRegion(
         onEnter: (event) {
-          displayOthersNotifier.value = true;
-          timer?.cancel();
-          timer = null;
+          miniModeDisplayOthersNotifier.value = true;
+          miniModeHideOthersTimer?.cancel();
+          miniModeHideOthersTimer = null;
         },
         onExit: (event) async {
           if (isDragging) {
             return;
           }
-          timer ??= Timer(const Duration(milliseconds: 1000), () {
-            displayOthersNotifier.value = false;
-          });
+          miniModeHideOthersTimer ??= Timer(
+            const Duration(milliseconds: 1000),
+            () {
+              miniModeDisplayOthersNotifier.value = false;
+            },
+          );
         },
         child: ValueListenableBuilder(
           valueListenable: currentSongNotifier,
           builder: (context, currentSong, child) {
             return ValueListenableBuilder(
-              valueListenable: displayOthersNotifier,
+              valueListenable: miniModeDisplayOthersNotifier,
               builder: (context, displayOthers, child) {
                 if (!displayOthers) {
                   return Stack(
@@ -214,8 +214,6 @@ class MiniModePage extends StatelessWidget {
 
   Widget listTileView(BuildContext context) {
     bool isDragging = false;
-    final displayTopControlsNotifier = ValueNotifier(true);
-    Timer? timer;
     return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onPanStart: (_) async {
@@ -226,22 +224,25 @@ class MiniModePage extends StatelessWidget {
 
       child: MouseRegion(
         onEnter: (event) {
-          displayTopControlsNotifier.value = true;
-          timer?.cancel();
-          timer = null;
+          miniModeDisplayOthersNotifier.value = true;
+          miniModeHideOthersTimer?.cancel();
+          miniModeHideOthersTimer = null;
         },
         onExit: (event) async {
           if (isDragging) {
             return;
           }
-          timer ??= Timer(const Duration(milliseconds: 1000), () {
-            displayTopControlsNotifier.value = false;
-          });
+          miniModeHideOthersTimer ??= Timer(
+            const Duration(milliseconds: 1000),
+            () {
+              miniModeDisplayOthersNotifier.value = false;
+            },
+          );
         },
         child: Stack(
           children: [
             ValueListenableBuilder(
-              valueListenable: displayTopControlsNotifier,
+              valueListenable: miniModeDisplayOthersNotifier,
               builder: (context, value, child) {
                 if (value) {
                   return topControls();
@@ -351,7 +352,7 @@ class MiniModePage extends StatelessWidget {
       left: 0,
       right: 0,
       child: ListTile(
-        leading: CoverArtWidget(song: currentSong, size: 40, borderRadius: 4),
+        leading: CoverArtWidget(song: currentSong, size: 50, borderRadius: 5),
         title: Text(
           getTitle(currentSong),
           style: TextStyle(

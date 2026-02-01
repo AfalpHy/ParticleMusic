@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:particle_music/common.dart';
+import 'package:particle_music/desktop/pages/mini_mode_page.dart';
 import 'package:window_manager/window_manager.dart';
 
 class MyWindowListener extends WindowListener {
@@ -34,6 +35,9 @@ class MyWindowListener extends WindowListener {
           await windowManager.setSize(Size(size.width, size.width));
         }
       }
+      miniModeHideOthersTimer = Timer(const Duration(milliseconds: 1000), () {
+        miniModeDisplayOthersNotifier.value = false;
+      });
     }
   }
 }

@@ -382,14 +382,19 @@ class PlayQueueItemChildState extends State<PlayQueueItem> {
       index: widget.index,
       child: ValueListenableBuilder(
         valueListenable: widget.isSelected,
-        builder: (context, value, child) {
-          return Material(
-            color: value
-                ? miniModeNotifier.value
-                      ? currentCoverArtColor
-                      : Colors.grey.shade300
-                : Colors.transparent,
-            child: child,
+        builder: (context, isSelected, child) {
+          return ValueListenableBuilder(
+            valueListenable: currentSongNotifier,
+            builder: (_, _, _) {
+              return Material(
+                color: isSelected
+                    ? miniModeNotifier.value
+                          ? currentCoverArtColor
+                          : Colors.grey.shade300
+                    : Colors.transparent,
+                child: child,
+              );
+            },
           );
         },
         child: MouseRegion(

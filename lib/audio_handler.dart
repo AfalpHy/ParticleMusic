@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:audio_service/audio_service.dart';
+import 'package:flutter/material.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/desktop_lyrics.dart';
@@ -305,6 +306,7 @@ class MyAudioHandler extends BaseAudioHandler {
     }
     currentIndex = -1;
     currentSongNotifier.value = null;
+    currentCoverArtColor = Colors.grey;
     savePlayQueueState();
     savePlayState();
   }
@@ -318,6 +320,7 @@ class MyAudioHandler extends BaseAudioHandler {
       await updateDesktopLyrics();
     }
     currentSongNotifier.value = null;
+    currentCoverArtColor = Colors.grey;
   }
 
   Future<void> load() async {
