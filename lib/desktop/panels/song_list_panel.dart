@@ -227,10 +227,10 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
     final l10n = AppLocalizations.of(context);
 
     return SizedBox(
-      height: 185,
+      height: 200,
       child: Row(
         children: [
-          mainCover(160),
+          mainCover(165),
           SizedBox(width: 10),
           Expanded(
             child: Column(

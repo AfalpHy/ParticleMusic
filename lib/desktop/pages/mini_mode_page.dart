@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -296,10 +297,14 @@ class _MiniModePageState extends State<MiniModePage> {
             onPressed: () async {
               await windowManager.hide();
 
-              await windowManager.setMinimumSize(Size(1050, 700));
               await windowManager.resetMaximumSize();
-              await windowManager.setResizable(true);
-              await windowManager.setSize(Size(1050, 700));
+              if (Platform.isWindows) {
+                await windowManager.setMinimumSize(Size(1050 + 16, 700 + 9));
+                await windowManager.setSize(Size(1050 + 16, 700 + 9));
+              } else {
+                await windowManager.setMinimumSize(Size(1050, 700));
+                await windowManager.setSize(Size(1050, 700));
+              }
               miniModeNotifier.value = false;
               await Future.delayed(Duration(milliseconds: 200));
               await windowManager.show();

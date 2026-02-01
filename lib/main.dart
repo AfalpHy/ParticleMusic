@@ -68,7 +68,7 @@ Future<void> main() async {
     }
 
     WindowOptions windowOptions = WindowOptions(
-      size: Size(1050, 700),
+      size: Platform.isWindows ? Size(1050 + 16, 700 + 9) : Size(1050, 700),
       center: true,
       backgroundColor: Colors.transparent,
       titleBarStyle: TitleBarStyle.hidden,
@@ -79,8 +79,13 @@ Future<void> main() async {
       await windowManager.show();
       await windowManager.focus();
       // it's weird on linux: it needs 52 extra pixels, and setMinimumSize should be invoked at last
+      // windows need 16:9 extra pixels
       await windowManager.setMinimumSize(
-        Platform.isLinux ? Size(1102, 752) : Size(1050, 700),
+        Platform.isLinux
+            ? Size(1102, 752)
+            : Platform.isWindows
+            ? Size(1050 + 16, 700 + 9)
+            : Size(1050, 700),
       );
     });
 

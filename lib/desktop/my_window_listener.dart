@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:particle_music/common.dart';
@@ -27,7 +28,11 @@ class MyWindowListener extends WindowListener {
       final gap = size.height - size.width;
       if (gap > 0 && gap < 100) {
         await Future.delayed(Duration(milliseconds: 100));
-        await windowManager.setSize(Size(size.width, size.width - 7));
+        if (Platform.isWindows) {
+          await windowManager.setSize(Size(size.width, size.width - 7));
+        } else {
+          await windowManager.setSize(Size(size.width, size.width));
+        }
       }
     }
   }

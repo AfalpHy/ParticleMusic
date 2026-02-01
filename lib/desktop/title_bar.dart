@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/utils.dart';
@@ -191,9 +193,19 @@ class TitleBar extends StatelessWidget {
 
                     await Future.delayed(Duration(milliseconds: 200));
 
-                    await windowManager.setMinimumSize(Size(325 + 16, 150 + 9));
-                    await windowManager.setMaximumSize(Size(600 + 16, 950 + 9));
-                    await windowManager.setSize(Size(325 + 16, 325 + 9));
+                    if (Platform.isWindows) {
+                      await windowManager.setMinimumSize(
+                        Size(325 + 16, 150 + 9),
+                      );
+                      await windowManager.setMaximumSize(
+                        Size(600 + 16, 950 + 9),
+                      );
+                      await windowManager.setSize(Size(325 + 16, 325 + 9));
+                    } else {
+                      await windowManager.setMinimumSize(Size(325, 150));
+                      await windowManager.setMaximumSize(Size(600, 950));
+                      await windowManager.setSize(Size(325, 325));
+                    }
                     await windowManager.show();
                   },
                   icon: ImageIcon(
