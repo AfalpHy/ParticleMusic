@@ -311,7 +311,9 @@ class MiniModePage extends StatelessWidget {
             onPressed: () async {
               await windowManager.hide();
 
-              await windowManager.resetMaximumSize();
+              if (!Platform.isLinux) {
+                await windowManager.resetMaximumSize();
+              }
               if (Platform.isWindows) {
                 await windowManager.setMinimumSize(Size(1050 + 16, 700 + 9));
                 await windowManager.setSize(Size(1050 + 16, 700 + 9));
