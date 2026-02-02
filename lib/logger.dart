@@ -19,6 +19,7 @@ class Logger {
     final time = formatForFileName(DateTime.now());
     _file = File('${appSupportDir.path}/logs/$time.log');
     _file.createSync(recursive: true);
+    output('App init');
   }
 
   void output(String msg) {

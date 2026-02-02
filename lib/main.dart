@@ -16,7 +16,6 @@ import 'package:particle_music/desktop/single_instance.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/library_manager.dart';
 import 'package:particle_music/mobile/pages/main_page.dart';
-import 'package:audio_service/audio_service.dart';
 import 'dart:async';
 import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
@@ -40,97 +39,24 @@ Future<void> main() async {
     final windowController = await WindowController.fromCurrentEngine();
 
     if (windowController.arguments == 'desktop_lyrics') {
-      await windowController.desktopLyricsCustomInitialize();
-      WindowOptions windowOptions = WindowOptions(
-        title: "Desktop Lyrics",
-        size: Platform.isLinux ? Size(850, 200) : Size(800, 150),
-        center: true,
-        backgroundColor: Colors.transparent,
-        titleBarStyle: TitleBarStyle.hidden,
-        // prevent hiding the Dock on macOS
-        skipTaskbar: Platform.isMacOS ? false : true,
-        alwaysOnTop: true,
-      );
-      await windowManager.waitUntilReadyToShow(windowOptions, () async {
-        await windowManager.setAsFrameless();
-      });
+      _setupDesktopLyricsWindow(windowController);
       runApp(DesktopLyrics());
       return;
     }
 
-    await windowController.mainCustomInitialize();
     await logger.init();
-
-    logger.output('App init');
 
     if (kReleaseMode) {
       await SingleInstance.start();
     }
 
-    WindowOptions windowOptions = WindowOptions(
-      size: Platform.isWindows ? Size(1050 + 16, 700 + 9) : Size(1050, 700),
-      center: true,
-      backgroundColor: Colors.transparent,
-      titleBarStyle: TitleBarStyle.hidden,
-      windowButtonVisibility: false,
-    );
-    await windowManager.waitUntilReadyToShow(windowOptions, () async {
-      await windowManager.setPreventClose(true);
-      await windowManager.show();
-      await windowManager.focus();
-      // it's weird on linux: it needs 52 extra pixels, and setMinimumSize should be invoked at last
-      // windows need 16:9 extra pixels
-      await windowManager.setMinimumSize(
-        Platform.isLinux
-            ? Size(1102, 752)
-            : Platform.isWindows
-            ? Size(1050 + 16, 700 + 9)
-            : Size(1050, 700),
-      );
-    });
-
-    await trayManager.setIcon(
-      Platform.isWindows ? 'assets/app_icon.ico' : 'assets/app_icon.png',
-    );
-
-    if (!Platform.isLinux) {
-      await trayManager.setToolTip('Particle Music');
-    }
-
-    await trayManager.setContextMenu(
-      Menu(
-        items: [
-          MenuItem(key: 'show', label: 'Show App'),
-          MenuItem.separator(),
-
-          MenuItem(key: 'skipToPrevious', label: 'Skip to Previous'),
-          MenuItem(key: 'togglePlay', label: 'Play/Pause'),
-          MenuItem(key: 'skipToNext', label: 'Skip to Next'),
-          MenuItem.separator(),
-
-          MenuItem(key: 'unlock', label: 'Unlock Desktop Lyrics'),
-
-          MenuItem.separator(),
-          MenuItem(key: 'exit', label: 'Exit'),
-        ],
-      ),
-    );
-
     keyboardInit();
 
-    windowManager.addListener(MyWindowListener());
-    trayManager.addListener(MyTrayListener());
+    await _setupMainWindow(windowController);
+    await _setupTray();
   }
 
-  audioHandler = await AudioService.init(
-    builder: () => MyAudioHandler(),
-
-    config: const AudioServiceConfig(
-      androidNotificationChannelId: 'com.afalphy.particle_music',
-      androidNotificationChannelName: 'Particle Music',
-      androidNotificationOngoing: true,
-    ),
-  );
+  await initAudioService();
 
   await libraryManager.init();
 
@@ -158,51 +84,25 @@ Future<void> main() async {
           home: ValueListenableBuilder(
             valueListenable: loadingLibraryNotifier,
             builder: (context, value, child) {
-              if (!value) {
-                return ValueListenableBuilder(
-                  valueListenable: colorChangeNotifier,
-                  builder: (_, _, _) {
-                    return isMobile
-                        ? MobileMainPage()
-                        : ValueListenableBuilder(
-                            valueListenable: miniModeNotifier,
-                            builder: (context, miniMode, child) {
-                              if (miniMode) {
-                                return MiniModePage();
-                              }
-                              return DesktopMainPage();
-                            },
-                          );
-                  },
-                );
+              if (value) {
+                return _loadingPage(context);
               }
-              final l10n = AppLocalizations.of(context);
 
-              return Scaffold(
-                backgroundColor: commonColor,
-                body: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CircularProgressIndicator(color: iconColor),
-                      SizedBox(height: 15),
-                      ValueListenableBuilder(
-                        valueListenable: currentLoadingFolderNotifier,
-                        builder: (context, value, child) {
-                          return Text('${l10n.loadingFolder}: $value');
-                        },
-                      ),
-                      SizedBox(height: 5),
-
-                      ValueListenableBuilder(
-                        valueListenable: loadedCountNotifier,
-                        builder: (context, value, child) {
-                          return Text('${l10n.loadedSongs}: $value');
-                        },
-                      ),
-                    ],
-                  ),
-                ),
+              return ValueListenableBuilder(
+                valueListenable: colorChangeNotifier,
+                builder: (_, _, _) {
+                  return isMobile
+                      ? MobileMainPage()
+                      : ValueListenableBuilder(
+                          valueListenable: miniModeNotifier,
+                          builder: (context, miniMode, child) {
+                            if (miniMode) {
+                              return MiniModePage();
+                            }
+                            return DesktopMainPage();
+                          },
+                        );
+                },
               );
             },
           ),
@@ -215,4 +115,111 @@ Future<void> main() async {
   if (!isMobile) {
     await initDesktopLyrics();
   }
+}
+
+Future<void> _setupMainWindow(WindowController windowController) async {
+  await windowController.mainCustomInitialize();
+  WindowOptions windowOptions = WindowOptions(
+    size: Platform.isWindows ? Size(1050 + 16, 700 + 9) : Size(1050, 700),
+    center: true,
+    backgroundColor: Colors.transparent,
+    titleBarStyle: TitleBarStyle.hidden,
+    windowButtonVisibility: false,
+  );
+  await windowManager.waitUntilReadyToShow(windowOptions, () async {
+    await windowManager.setPreventClose(true);
+    await windowManager.show();
+    await windowManager.focus();
+    // it's weird on linux: it needs 52 extra pixels, and setMinimumSize should be invoked at last
+    // windows need 16:9 extra pixels
+    await windowManager.setMinimumSize(
+      Platform.isLinux
+          ? Size(1102, 752)
+          : Platform.isWindows
+          ? Size(1050 + 16, 700 + 9)
+          : Size(1050, 700),
+    );
+  });
+  windowManager.addListener(MyWindowListener());
+}
+
+Future<void> _setupDesktopLyricsWindow(
+  WindowController windowController,
+) async {
+  await windowController.desktopLyricsCustomInitialize();
+  WindowOptions windowOptions = WindowOptions(
+    title: "Desktop Lyrics",
+    size: Platform.isLinux ? Size(850, 200) : Size(800, 150),
+    center: true,
+    backgroundColor: Colors.transparent,
+    titleBarStyle: TitleBarStyle.hidden,
+    // prevent hiding the Dock on macOS
+    skipTaskbar: Platform.isMacOS ? false : true,
+    alwaysOnTop: true,
+  );
+  await windowManager.waitUntilReadyToShow(windowOptions, () async {
+    await windowManager.setAsFrameless();
+  });
+}
+
+Future<void> _setupTray() async {
+  await trayManager.setIcon(
+    Platform.isWindows ? 'assets/app_icon.ico' : 'assets/app_icon.png',
+  );
+
+  if (!Platform.isLinux) {
+    await trayManager.setToolTip('Particle Music');
+  }
+
+  await trayManager.setContextMenu(
+    Menu(
+      items: [
+        MenuItem(key: 'show', label: 'Show App'),
+        MenuItem.separator(),
+
+        MenuItem(key: 'skipToPrevious', label: 'Skip to Previous'),
+        MenuItem(key: 'togglePlay', label: 'Play/Pause'),
+        MenuItem(key: 'skipToNext', label: 'Skip to Next'),
+        MenuItem.separator(),
+
+        MenuItem(key: 'unlock', label: 'Unlock Desktop Lyrics'),
+
+        MenuItem.separator(),
+        MenuItem(key: 'exit', label: 'Exit'),
+      ],
+    ),
+  );
+
+  trayManager.addListener(MyTrayListener());
+}
+
+Widget _loadingPage(BuildContext context) {
+  final l10n = AppLocalizations.of(context);
+
+  return Scaffold(
+    backgroundColor: commonColor,
+    body: Center(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          CircularProgressIndicator(color: iconColor),
+          SizedBox(height: 15),
+          ValueListenableBuilder(
+            valueListenable: currentLoadingFolderNotifier,
+            builder: (context, value, child) {
+              return Text('${l10n.loadingFolder}: $value');
+            },
+          ),
+          SizedBox(height: 5),
+
+          ValueListenableBuilder(
+            valueListenable: loadedCountNotifier,
+            builder: (context, value, child) {
+              return Text('${l10n.loadedSongs}: $value');
+            },
+          ),
+        ],
+      ),
+    ),
+  );
 }

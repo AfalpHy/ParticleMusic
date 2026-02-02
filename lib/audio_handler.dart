@@ -11,6 +11,18 @@ import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/utils.dart';
 import 'dart:async';
 
+Future<void> initAudioService() async {
+  audioHandler = await AudioService.init(
+    builder: () => MyAudioHandler(),
+
+    config: const AudioServiceConfig(
+      androidNotificationChannelId: 'com.afalphy.particle_music',
+      androidNotificationChannelName: 'Particle Music',
+      androidNotificationOngoing: true,
+    ),
+  );
+}
+
 class MyAudioHandler extends BaseAudioHandler {
   final _player = AudioPlayer();
 
