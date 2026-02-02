@@ -97,9 +97,9 @@ class LyricsPageState extends State<LyricsPage> {
                             Spacer(),
                           ],
                         ),
-                        SizedBox(width: pageWidth * 0.07),
+                        SizedBox(width: pageWidth * 0.05),
                         SizedBox(
-                          width: pageWidth * 0.44,
+                          width: pageWidth * 0.45,
                           child: Column(
                             children: [
                               SizedBox(height: 75),
