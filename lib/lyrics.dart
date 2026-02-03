@@ -75,6 +75,9 @@ Duration parseTime(RegExpMatch m) {
 }
 
 Future<void> setParsedLyrics(MyAudioMetadata song) async {
+  if (song.parsedLyrics != null) {
+    return;
+  }
   ParsedLyrics result = ParsedLyrics();
   song.parsedLyrics = result;
 
