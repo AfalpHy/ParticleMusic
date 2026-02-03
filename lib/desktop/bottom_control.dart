@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
-import 'package:particle_music/desktop/desktop_lyrics.dart';
 import 'package:particle_music/full_width_track_shape.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/common_widgets/seekbar.dart';
@@ -165,7 +164,7 @@ class BottomControl extends StatelessWidget {
               ),
               IconButton(
                 color: Colors.black,
-                icon: Icon(Icons.playlist_play_rounded, size: 25),
+                icon: const ImageIcon(playQueueImage, size: 25),
                 onPressed: () {
                   if (playQueue.isEmpty) {
                     return;
@@ -217,11 +216,15 @@ class BottomControl extends StatelessWidget {
             }
             lyricsWindowVisible = !lyricsWindowVisible;
           },
-          icon: Icon(Icons.lyrics_rounded, size: 20, color: Colors.black),
+          icon: const ImageIcon(
+            desktopLyricsImage,
+            size: 25,
+            color: Colors.black,
+          ),
         ),
         IconButton(
           onPressed: () {},
-          icon: Icon(Icons.volume_down, color: Colors.black),
+          icon: const ImageIcon(speakerImage, size: 25, color: Colors.black),
         ),
         Center(
           child: SizedBox(

@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common_widgets/seekbar.dart';
-import 'package:particle_music/desktop/desktop_lyrics.dart';
 import 'package:particle_music/desktop/pages/play_queue_page.dart';
 import 'package:particle_music/full_width_track_shape.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
@@ -537,7 +536,7 @@ class _MiniModePageState extends State<MiniModePage> {
                 }
               });
             },
-            icon: Icon(Icons.playlist_play_rounded, size: 25),
+            icon: const ImageIcon(playQueueImage, size: 25),
             color: Colors.grey.shade50,
           ),
           Spacer(),
@@ -552,7 +551,8 @@ class _MiniModePageState extends State<MiniModePage> {
               }
               lyricsWindowVisible = !lyricsWindowVisible;
             },
-            icon: Icon(Icons.lyrics_rounded, size: 20),
+            icon: const ImageIcon(desktopLyricsImage, size: 25),
+
             color: Colors.grey.shade50,
           ),
           Spacer(),

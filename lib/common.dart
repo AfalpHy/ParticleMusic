@@ -57,7 +57,7 @@ MyAudioMetadata? backgroundSong;
 
 final ValueNotifier<bool> displayPlayQueuePageNotifier = ValueNotifier(false);
 
-// ===================================== LyricsPage =====================================
+// ===================================== Lyrics =====================================
 
 final ValueNotifier<int> currentIndexNotifier = ValueNotifier<int>(0);
 LyricLine? currentLyricLine;
@@ -142,6 +142,9 @@ const AssetImage arrowDownImage = AssetImage('assets/images/arrow_down.png');
 const AssetImage artistImage = AssetImage('assets/images/artist.png');
 const AssetImage closeImage = AssetImage('assets/images/close.png');
 const AssetImage deleteImage = AssetImage('assets/images/delete.png');
+const AssetImage desktopLyricsImage = AssetImage(
+  'assets/images/desktop_lyrics.png',
+);
 const AssetImage folderImage = AssetImage('assets/images/folder.png');
 const AssetImage fullscreenExitImage = AssetImage(
   'assets/images/fullscreen_exit.png',
@@ -174,6 +177,7 @@ const AssetImage playCircleFillImage = AssetImage(
   'assets/images/play_circle_fill.png',
 );
 const AssetImage playCircleImage = AssetImage('assets/images/play_circle.png');
+const AssetImage playQueueImage = AssetImage('assets/images/play_queue.png');
 const AssetImage playlistAddImage = AssetImage(
   'assets/images/playlist_add.png',
 );
@@ -193,6 +197,7 @@ const AssetImage selectImage = AssetImage('assets/images/select.png');
 const AssetImage sequenceImage = AssetImage('assets/images/sequence.png');
 const AssetImage shuffleImage = AssetImage('assets/images/shuffle.png');
 const AssetImage songsImage = AssetImage('assets/images/songs.png');
+const AssetImage speakerImage = AssetImage('assets/images/speaker.png');
 const AssetImage timerImage = AssetImage('assets/images/timer.png');
 const AssetImage unmaximizeImage = AssetImage('assets/images/unmaximize.png');
 const AssetImage vibrationImage = AssetImage('assets/images/vibration.png');
@@ -218,10 +223,13 @@ WindowController? lyricsWindowController;
 bool lyricsWindowVisible = false;
 
 LyricLine? desktopLyricLine;
-Duration desktopLyrcisCurrentPosition = Duration.zero;
+Duration desktopLyricsCurrentPosition = Duration.zero;
 bool desktopLyricsIsKaraoke = false;
 
 final updateDesktopLyricsNotifier = ValueNotifier(0);
+
+final showDesktopLrcOnAndroidNotifier = ValueNotifier(false);
+final lockDesktopLrcOnAndroidNotifier = ValueNotifier(false);
 
 // ===================================== Keyboard =====================================
 

@@ -126,5 +126,8 @@
   "selectedItemColor": "Selected Item Color",
   "lyricsCustomMode": "Lyrics Page Custom Mode",
   "lyricsBackgroundColor": "Lyrics Background Color",
-  "reset": "Reset"
+  "reset": "Reset",
+  "desktopLyrics": "Desktop Lyrics",
+  "lock": "Lock",
+  "unlock": "Unlock"
 }

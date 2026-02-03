@@ -2,9 +2,10 @@ import 'dart:io';
 
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
+
 import 'package:particle_music/common.dart';
+import 'package:particle_music/common_widgets/desktop_lyrics_widget.dart';
 import 'package:particle_music/desktop/extensions/window_controller_extension.dart';
-import 'package:particle_music/lyrics.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -12,12 +13,6 @@ Future<void> initDesktopLyrics() async {
   lyricsWindowController = await WindowController.create(
     WindowConfiguration(hiddenAtLaunch: true, arguments: 'desktop_lyrics'),
   );
-}
-
-Future<void> updateDesktopLyrics() async {
-  await lyricsWindowController?.sendLyricLine(currentLyricLine);
-  await lyricsWindowController?.sendIsKaraoke(currentLyricLineIsKaraoke);
-  await lyricsWindowController?.sendPosition(audioHandler.getPosition());
 }
 
 class DesktopLyrics extends StatelessWidget {
@@ -67,7 +62,7 @@ class DesktopLyrics extends StatelessWidget {
                         height: 50,
                         child: isTransparent ? null : controlsRow(),
                       ),
-                      lyricsWidget(),
+                      DesktopLyricsWidget(),
                       Spacer(),
                     ],
                   ),
@@ -152,56 +147,6 @@ class DesktopLyrics extends StatelessWidget {
         ),
         Spacer(),
       ],
-    );
-  }
-
-  Widget lyricsWidget() {
-    return ValueListenableBuilder(
-      valueListenable: updateDesktopLyricsNotifier,
-      builder: (context, value, child) {
-        if (desktopLyricLine == null) {
-          return Text(
-            'Particle Music',
-            style: TextStyle(
-              fontSize: 30,
-              color: Colors.white,
-              shadows: [
-                Shadow(
-                  offset: Offset(0, 1),
-                  blurRadius: 1,
-                  color: Colors.black87,
-                ),
-              ],
-            ),
-          );
-        }
-
-        if (desktopLyricsIsKaraoke) {
-          return KaraokeText(
-            key: ValueKey(desktopLyricLine),
-            line: desktopLyricLine!,
-            position: desktopLyrcisCurrentPosition,
-            fontSize: 30,
-            expanded: false,
-            isDesktopLyrics: true,
-          );
-        } else {
-          return Text(
-            desktopLyricLine!.text,
-            style: TextStyle(
-              fontSize: 30,
-              color: Colors.white,
-              shadows: [
-                Shadow(
-                  offset: Offset(0, 1),
-                  blurRadius: 1,
-                  color: Colors.black87,
-                ),
-              ],
-            ),
-          );
-        }
-      },
     );
   }
 }

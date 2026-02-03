@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/desktop/desktop_lyrics.dart';
 import 'package:particle_music/desktop/extensions/window_controller_extension.dart';
 import 'package:particle_music/lyrics.dart';
 import 'package:particle_music/my_audio_metadata.dart';
@@ -68,6 +68,9 @@ class MyAudioHandler extends BaseAudioHandler {
       needPause = false;
       isPlayingNotifier.value = isPlaying;
       lyricsWindowController?.sendPlaying(isPlaying);
+      if (showDesktopLrcOnAndroidNotifier.value) {
+        FlutterOverlayWindow.shareData(isPlaying);
+      }
     });
 
     currentSongNotifier.addListener(() {
@@ -76,10 +79,6 @@ class MyAudioHandler extends BaseAudioHandler {
         panelManager.updateBackground();
       }
     });
-
-    if (isMobile) {
-      return;
-    }
 
     _player.positionStream.listen((position) {
       final currentSong = currentSongNotifier.value;
@@ -107,7 +106,8 @@ class MyAudioHandler extends BaseAudioHandler {
       currentLyricLine = lyrics[current];
       currentLyricLineIsKaraoke = parsedLyrics.isKaraoke;
 
-      if (lyricsWindowVisible && currentLyricLine != tmpLyricLine) {
+      if ((showDesktopLrcOnAndroidNotifier.value || lyricsWindowVisible) &&
+          currentLyricLine != tmpLyricLine) {
         updateDesktopLyrics();
       }
     });
@@ -420,7 +420,6 @@ class MyAudioHandler extends BaseAudioHandler {
   Future<void> seek(Duration position) async {
     await _player.seek(position);
     updateLyricsNotifier.value++;
-    updateDesktopLyrics();
   }
 
   @override

@@ -4,10 +4,13 @@ import 'dart:io';
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 import 'package:image/image.dart' as image;
 import 'package:lpinyin/lpinyin.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/desktop/extensions/window_controller_extension.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
+import 'package:particle_music/lyrics.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:path/path.dart';
 import 'package:smooth_corner/smooth_corner.dart';
@@ -406,4 +409,35 @@ Future<void> deletePicture(MyAudioMetadata? song) async {
       await pictureFile.delete();
     }
   }
+}
+
+Future<void> updateDesktopLyrics() async {
+  if (isMobile) {
+    FlutterOverlayWindow.shareData({
+      'position': audioHandler.getPosition().inMicroseconds,
+      'lyric_line': currentLyricLine?.toMap(),
+      'isKaraoke': currentLyricLineIsKaraoke,
+    });
+    return;
+  }
+
+  await lyricsWindowController?.updateLyric(
+    audioHandler.getPosition(),
+    currentLyricLine,
+    currentLyricLineIsKaraoke,
+  );
+}
+
+void getLyricFromMap(dynamic data) {
+  final raw = data as Map;
+  final map = Map<String, dynamic>.from(raw);
+
+  desktopLyricsCurrentPosition = Duration(microseconds: map['position'] as int);
+  final lyricLineMap = map['lyric_line'] as Map?;
+  desktopLyricLine = lyricLineMap != null
+      ? LyricLine.fromMap(lyricLineMap)
+      : null;
+
+  desktopLyricsIsKaraoke = map['isKaraoke'] as bool;
+  updateDesktopLyricsNotifier.value++;
 }

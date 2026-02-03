@@ -98,5 +98,8 @@
   "selectedItemColor": "被选中项颜色",
   "lyricsCustomMode": "歌词页面自定义模式",
   "lyricsBackgroundColor": "歌词背景颜色",
-  "reset": "重置"
+  "reset": "重置",
+  "desktopLyrics": "桌面歌词",
+  "lock": "锁定",
+  "unlock": "解锁"
 }

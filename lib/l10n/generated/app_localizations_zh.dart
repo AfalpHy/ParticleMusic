@@ -315,4 +315,13 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get reset => '重置';
+
+  @override
+  String get desktopLyrics => '桌面歌词';
+
+  @override
+  String get lock => '锁定';
+
+  @override
+  String get unlock => '解锁';
 }

@@ -132,7 +132,6 @@ class MobileMainPageState extends State<MobileMainPage> {
                       tryVibrate();
                       _homeBody.value = 1;
                     },
-
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [

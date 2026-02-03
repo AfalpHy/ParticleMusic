@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:file_picker/file_picker.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/folder_manager.dart';
 import 'package:particle_music/mobile/sleep_timer.dart';
@@ -763,6 +764,97 @@ class SettingsList extends StatelessWidget {
         isMobile
             ? paletteListTile(context, l10n)
             : paddingForDesktop(paletteListTile(context, l10n)),
+
+        if (Platform.isAndroid)
+          ListTile(
+            leading: ImageIcon(desktopLyricsImage, color: iconColor, size: 30),
+            title: Text(l10n.desktopLyrics),
+            trailing: ValueListenableBuilder(
+              valueListenable: showDesktopLrcOnAndroidNotifier,
+              builder: (context, value, child) {
+                return SizedBox(
+                  width: 50,
+                  child: MySwitch(
+                    value: value,
+                    onToggle: (value) async {
+                      tryVibrate();
+                      showDesktopLrcOnAndroidNotifier.value = value;
+                      if (!value) {
+                        await FlutterOverlayWindow.closeOverlay();
+                        return;
+                      }
+                      if (!await FlutterOverlayWindow.isPermissionGranted()) {
+                        await FlutterOverlayWindow.requestPermission();
+                      }
+                      await FlutterOverlayWindow.showOverlay(
+                        enableDrag: true,
+
+                        flag: OverlayFlag.defaultFlag,
+                        visibility: NotificationVisibility.visibilityPublic,
+                        positionGravity: PositionGravity.auto,
+                        height: 200,
+                      );
+                      await updateDesktopLyrics();
+                      await FlutterOverlayWindow.shareData(
+                        isPlayingNotifier.value,
+                      );
+                    },
+                  ),
+                );
+              },
+            ),
+          ),
+
+        if (Platform.isAndroid)
+          ValueListenableBuilder(
+            valueListenable: showDesktopLrcOnAndroidNotifier,
+            builder: (context, value, child) {
+              if (!value) {
+                return SizedBox.shrink();
+              }
+              return ListTile(
+                trailing: SizedBox(
+                  width: 150,
+                  child: ValueListenableBuilder(
+                    valueListenable: lockDesktopLrcOnAndroidNotifier,
+                    builder: (context, value, child) {
+                      return Row(
+                        children: [
+                          Spacer(),
+                          Text(value ? l10n.unlock : l10n.lock),
+                          SizedBox(width: 10),
+                          MySwitch(
+                            value: value,
+                            onToggle: (value) async {
+                              tryVibrate();
+                              lockDesktopLrcOnAndroidNotifier.value = value;
+                              final position =
+                                  await FlutterOverlayWindow.getOverlayPosition();
+                              await FlutterOverlayWindow.closeOverlay();
+                              await FlutterOverlayWindow.showOverlay(
+                                enableDrag: true,
+
+                                flag: value ? .clickThrough : .defaultFlag,
+                                visibility:
+                                    NotificationVisibility.visibilityPublic,
+                                positionGravity: PositionGravity.auto,
+                                height: 200,
+                                startPosition: position,
+                              );
+                              await updateDesktopLyrics();
+                              await FlutterOverlayWindow.shareData(
+                                isPlayingNotifier.value,
+                              );
+                            },
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+                ),
+              );
+            },
+          ),
       ],
     );
   }

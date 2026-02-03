@@ -276,110 +276,104 @@ class LyricsPage extends StatelessWidget {
         ),
 
         // -------- Play Controls --------
-        Padding(
-          padding: const EdgeInsets.fromLTRB(12, 0, 10, 40),
+        Row(
+          children: [
+            SizedBox(width: 25),
 
-          child: Row(
-            children: [
-              Expanded(
-                child: ValueListenableBuilder(
-                  valueListenable: playModeNotifier,
-                  builder: (_, playMode, _) {
-                    return IconButton(
-                      color: Colors.grey.shade50,
-                      icon: ImageIcon(
-                        playMode == 0
-                            ? loopImage
-                            : playMode == 1
-                            ? shuffleImage
-                            : repeatImage,
-                        size: 32,
-                      ),
-                      onPressed: () {
-                        if (playModeNotifier.value != 2) {
-                          audioHandler.switchPlayMode();
-                          switch (playModeNotifier.value) {
-                            case 0:
-                              showCenterMessage(context, l10n.loop);
-                              break;
-                            default:
-                              showCenterMessage(context, l10n.shuffle);
-                              break;
-                          }
-                        }
-                      },
-                      onLongPress: () {
-                        audioHandler.toggleRepeat();
-                        switch (playModeNotifier.value) {
-                          case 0:
-                            showCenterMessage(context, l10n.loop);
-                            break;
-                          case 1:
-                            showCenterMessage(context, l10n.shuffle);
-                            break;
-                          default:
-                            showCenterMessage(context, l10n.repeat);
-                            break;
-                        }
-                      },
-                    );
-                  },
-                ),
-              ),
-
-              Expanded(
-                child: IconButton(
+            ValueListenableBuilder(
+              valueListenable: playModeNotifier,
+              builder: (_, playMode, _) {
+                return IconButton(
                   color: Colors.grey.shade50,
-                  icon: const ImageIcon(previousButtonImage, size: 32),
-                  onPressed: audioHandler.skipToPrevious,
-                ),
-              ),
-              Expanded(
-                child: IconButton(
-                  color: Colors.grey.shade50,
-                  icon: ValueListenableBuilder(
-                    valueListenable: isPlayingNotifier,
-                    builder: (_, isPlaying, _) {
-                      return Icon(
-                        isPlaying
-                            ? Icons.pause_rounded
-                            : Icons.play_arrow_rounded,
-                        size: 50,
-                      );
-                    },
-                  ),
-                  onPressed: () => audioHandler.togglePlay(),
-                ),
-              ),
-              Expanded(
-                child: IconButton(
-                  color: Colors.grey.shade50,
-                  icon: const ImageIcon(nextButtonImage, size: 32),
-                  onPressed: audioHandler.skipToNext,
-                ),
-              ),
-              Expanded(
-                child: IconButton(
-                  icon: Icon(
-                    Icons.playlist_play_rounded,
+                  icon: ImageIcon(
+                    playMode == 0
+                        ? loopImage
+                        : playMode == 1
+                        ? shuffleImage
+                        : repeatImage,
                     size: 32,
-                    color: Colors.grey.shade50,
                   ),
                   onPressed: () {
-                    tryVibrate();
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      builder: (context) {
-                        return PlayQueueSheet();
-                      },
-                    );
+                    if (playModeNotifier.value != 2) {
+                      audioHandler.switchPlayMode();
+                      switch (playModeNotifier.value) {
+                        case 0:
+                          showCenterMessage(context, l10n.loop);
+                          break;
+                        default:
+                          showCenterMessage(context, l10n.shuffle);
+                          break;
+                      }
+                    }
                   },
-                ),
+                  onLongPress: () {
+                    audioHandler.toggleRepeat();
+                    switch (playModeNotifier.value) {
+                      case 0:
+                        showCenterMessage(context, l10n.loop);
+                        break;
+                      case 1:
+                        showCenterMessage(context, l10n.shuffle);
+                        break;
+                      default:
+                        showCenterMessage(context, l10n.repeat);
+                        break;
+                    }
+                  },
+                );
+              },
+            ),
+            Spacer(),
+            IconButton(
+              color: Colors.grey.shade50,
+              icon: const ImageIcon(previousButtonImage, size: 32),
+              onPressed: audioHandler.skipToPrevious,
+            ),
+            Spacer(),
+
+            IconButton(
+              color: Colors.grey.shade50,
+              icon: ValueListenableBuilder(
+                valueListenable: isPlayingNotifier,
+                builder: (_, isPlaying, _) {
+                  return Icon(
+                    isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
+                    size: 50,
+                  );
+                },
               ),
-            ],
-          ),
+              onPressed: () => audioHandler.togglePlay(),
+            ),
+            Spacer(),
+
+            IconButton(
+              color: Colors.grey.shade50,
+              icon: const ImageIcon(nextButtonImage, size: 32),
+              onPressed: audioHandler.skipToNext,
+            ),
+            Spacer(),
+
+            IconButton(
+              color: Colors.grey.shade50,
+
+              icon: const ImageIcon(playQueueImage, size: 32),
+
+              onPressed: () {
+                tryVibrate();
+                showModalBottomSheet(
+                  context: context,
+                  isScrollControlled: true,
+                  builder: (context) {
+                    return PlayQueueSheet();
+                  },
+                );
+              },
+            ),
+            SizedBox(width: 25),
+          ],
         ),
+
+        SizedBox(height: 40),
       ],
     );
   }

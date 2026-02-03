@@ -76,6 +76,7 @@ dependencies:
   flex_color_picker: ^3.8.0
   google_fonts: ^7.0.2
   msix: ^3.16.12
+  flutter_overlay_window: ^0.5.0
 
 dev_dependencies:
   flutter_test:
