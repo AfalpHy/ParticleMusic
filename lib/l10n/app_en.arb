@@ -128,6 +128,8 @@
   "lyricsBackgroundColor": "Lyrics Background Color",
   "reset": "Reset",
   "desktopLyrics": "Desktop Lyrics",
+  "horizontal": "Horizontal",
+  "vertical": "Vertical",
   "lock": "Lock",
   "unlock": "Unlock"
 }

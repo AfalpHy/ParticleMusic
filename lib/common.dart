@@ -230,6 +230,8 @@ final updateDesktopLyricsNotifier = ValueNotifier(0);
 final showDesktopLrcOnAndroidNotifier = ValueNotifier(false);
 final lockDesktopLrcOnAndroidNotifier = ValueNotifier(false);
 
+final verticalDesktopLrcNotifier = ValueNotifier(false);
+
 // ===================================== Keyboard =====================================
 
 bool shiftIsPressed = false;

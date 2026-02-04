@@ -320,6 +320,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get desktopLyrics => 'Desktop Lyrics';
 
   @override
+  String get horizontal => 'Horizontal';
+
+  @override
+  String get vertical => 'Vertical';
+
+  @override
   String get lock => 'Lock';
 
   @override

@@ -320,6 +320,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get desktopLyrics => '桌面歌词';
 
   @override
+  String get horizontal => '水平';
+
+  @override
+  String get vertical => '竖直';
+
+  @override
   String get lock => '锁定';
 
   @override

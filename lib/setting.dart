@@ -614,6 +614,157 @@ class SettingsList extends StatelessWidget {
     );
   }
 
+  Widget desktopLyricsOnAndroid(AppLocalizations l10n) {
+    return ListTile(
+      leading: ImageIcon(desktopLyricsImage, color: iconColor, size: 30),
+      title: Text(l10n.desktopLyrics),
+      trailing: ValueListenableBuilder(
+        valueListenable: showDesktopLrcOnAndroidNotifier,
+        builder: (context, value, child) {
+          return SizedBox(
+            width: 50,
+            child: MySwitch(
+              value: value,
+              onToggle: (value) async {
+                tryVibrate();
+                lockDesktopLrcOnAndroidNotifier.value = false;
+                if (!value) {
+                  await FlutterOverlayWindow.closeOverlay();
+                  return;
+                }
+                if (!await FlutterOverlayWindow.isPermissionGranted()) {
+                  final res = await FlutterOverlayWindow.requestPermission();
+                  if (res == false) {
+                    return;
+                  }
+                }
+                showDesktopLrcOnAndroidNotifier.value = value;
+                final vertical = verticalDesktopLrcNotifier.value;
+                await FlutterOverlayWindow.showOverlay(
+                  enableDrag: true,
+
+                  flag: OverlayFlag.defaultFlag,
+                  visibility: NotificationVisibility.visibilityPublic,
+                  positionGravity: PositionGravity.none,
+                  height: vertical ? WindowSize.fullCover : 200,
+                  width: vertical ? 200 : WindowSize.matchParent,
+                );
+
+                await updateDesktopLyrics();
+                await FlutterOverlayWindow.shareData(isPlayingNotifier.value);
+              },
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget orientation(AppLocalizations l10n) {
+    return ValueListenableBuilder(
+      valueListenable: showDesktopLrcOnAndroidNotifier,
+      builder: (context, value, child) {
+        if (!value) {
+          return SizedBox.shrink();
+        }
+        return ListTile(
+          trailing: SizedBox(
+            width: 150,
+            child: ValueListenableBuilder(
+              valueListenable: verticalDesktopLrcNotifier,
+              builder: (context, value, child) {
+                return Row(
+                  children: [
+                    Spacer(),
+                    Text(value ? l10n.vertical : l10n.horizontal),
+                    SizedBox(width: 10),
+                    MySwitch(
+                      value: value,
+                      onToggle: (value) async {
+                        tryVibrate();
+                        verticalDesktopLrcNotifier.value = value;
+                        await FlutterOverlayWindow.closeOverlay();
+
+                        final vertical = verticalDesktopLrcNotifier.value;
+
+                        await FlutterOverlayWindow.showOverlay(
+                          enableDrag: true,
+
+                          flag: lockDesktopLrcOnAndroidNotifier.value
+                              ? .clickThrough
+                              : .defaultFlag,
+                          visibility: NotificationVisibility.visibilityPublic,
+                          positionGravity: PositionGravity.none,
+
+                          height: vertical ? WindowSize.fullCover : 200,
+                          width: vertical ? 200 : WindowSize.matchParent,
+                        );
+
+                        await FlutterOverlayWindow.shareData(value ? 1 : 0);
+                      },
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget lockAndUnlock(AppLocalizations l10n) {
+    return ValueListenableBuilder(
+      valueListenable: showDesktopLrcOnAndroidNotifier,
+      builder: (context, value, child) {
+        if (!value) {
+          return SizedBox.shrink();
+        }
+        return ListTile(
+          trailing: SizedBox(
+            width: 150,
+            child: ValueListenableBuilder(
+              valueListenable: lockDesktopLrcOnAndroidNotifier,
+              builder: (context, value, child) {
+                return Row(
+                  children: [
+                    Spacer(),
+                    Text(value ? l10n.unlock : l10n.lock),
+                    SizedBox(width: 10),
+                    MySwitch(
+                      value: value,
+                      onToggle: (value) async {
+                        tryVibrate();
+                        lockDesktopLrcOnAndroidNotifier.value = value;
+                        final position =
+                            await FlutterOverlayWindow.getOverlayPosition();
+
+                        await FlutterOverlayWindow.closeOverlay();
+                        final vertical = verticalDesktopLrcNotifier.value;
+
+                        await FlutterOverlayWindow.showOverlay(
+                          enableDrag: true,
+
+                          flag: value ? .clickThrough : .defaultFlag,
+                          visibility: NotificationVisibility.visibilityPublic,
+                          positionGravity: PositionGravity.none,
+
+                          startPosition: position,
+                          height: vertical ? WindowSize.fullCover : 200,
+                          width: vertical ? 200 : WindowSize.matchParent,
+                        );
+                      },
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -743,96 +894,13 @@ class SettingsList extends StatelessWidget {
             ? paletteListTile(context, l10n)
             : paddingForDesktop(paletteListTile(context, l10n)),
 
-        if (Platform.isAndroid)
-          ListTile(
-            leading: ImageIcon(desktopLyricsImage, color: iconColor, size: 30),
-            title: Text(l10n.desktopLyrics),
-            trailing: ValueListenableBuilder(
-              valueListenable: showDesktopLrcOnAndroidNotifier,
-              builder: (context, value, child) {
-                return SizedBox(
-                  width: 50,
-                  child: MySwitch(
-                    value: value,
-                    onToggle: (value) async {
-                      tryVibrate();
-                      showDesktopLrcOnAndroidNotifier.value = value;
-                      if (!value) {
-                        await FlutterOverlayWindow.closeOverlay();
-                        return;
-                      }
-                      if (!await FlutterOverlayWindow.isPermissionGranted()) {
-                        await FlutterOverlayWindow.requestPermission();
-                      }
-                      await FlutterOverlayWindow.showOverlay(
-                        enableDrag: true,
+        if (Platform.isAndroid) desktopLyricsOnAndroid(l10n),
 
-                        flag: OverlayFlag.defaultFlag,
-                        visibility: NotificationVisibility.visibilityPublic,
-                        positionGravity: PositionGravity.auto,
-                        height: 200,
-                      );
-                      await updateDesktopLyrics();
-                      await FlutterOverlayWindow.shareData(
-                        isPlayingNotifier.value,
-                      );
-                    },
-                  ),
-                );
-              },
-            ),
-          ),
+        if (Platform.isAndroid) orientation(l10n),
 
-        if (Platform.isAndroid)
-          ValueListenableBuilder(
-            valueListenable: showDesktopLrcOnAndroidNotifier,
-            builder: (context, value, child) {
-              if (!value) {
-                return SizedBox.shrink();
-              }
-              return ListTile(
-                trailing: SizedBox(
-                  width: 150,
-                  child: ValueListenableBuilder(
-                    valueListenable: lockDesktopLrcOnAndroidNotifier,
-                    builder: (context, value, child) {
-                      return Row(
-                        children: [
-                          Spacer(),
-                          Text(value ? l10n.unlock : l10n.lock),
-                          SizedBox(width: 10),
-                          MySwitch(
-                            value: value,
-                            onToggle: (value) async {
-                              tryVibrate();
-                              lockDesktopLrcOnAndroidNotifier.value = value;
-                              final position =
-                                  await FlutterOverlayWindow.getOverlayPosition();
-                              await FlutterOverlayWindow.closeOverlay();
-                              await FlutterOverlayWindow.showOverlay(
-                                enableDrag: true,
+        if (Platform.isAndroid) lockAndUnlock(l10n),
 
-                                flag: value ? .clickThrough : .defaultFlag,
-                                visibility:
-                                    NotificationVisibility.visibilityPublic,
-                                positionGravity: PositionGravity.auto,
-                                height: 200,
-                                startPosition: position,
-                              );
-                              await updateDesktopLyrics();
-                              await FlutterOverlayWindow.shareData(
-                                isPlayingNotifier.value,
-                              );
-                            },
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ),
-              );
-            },
-          ),
+        if (isMobile) SizedBox(height: 100),
       ],
     );
   }

@@ -704,6 +704,18 @@ abstract class AppLocalizations {
   /// **'Desktop Lyrics'**
   String get desktopLyrics;
 
+  /// No description provided for @horizontal.
+  ///
+  /// In en, this message translates to:
+  /// **'Horizontal'**
+  String get horizontal;
+
+  /// No description provided for @vertical.
+  ///
+  /// In en, this message translates to:
+  /// **'Vertical'**
+  String get vertical;
+
   /// No description provided for @lock.
   ///
   /// In en, this message translates to:

@@ -16,6 +16,10 @@ class _OverlayLyricsState extends State<OverlayLyrics> {
   void initState() {
     super.initState();
     FlutterOverlayWindow.overlayListener.listen((data) {
+      if (data is int) {
+        verticalDesktopLrcNotifier.value = data == 1;
+        return;
+      }
       if (data is bool) {
         isPlayingNotifier.value = data;
         return;
@@ -31,9 +35,17 @@ class _OverlayLyricsState extends State<OverlayLyrics> {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: Colors.transparent,
-      child: Center(child: DesktopLyricsWidget()),
+    return ValueListenableBuilder(
+      valueListenable: verticalDesktopLrcNotifier,
+      builder: (context, value, child) {
+        return Material(
+          color: Colors.transparent,
+          child: RotatedBox(
+            quarterTurns: value ? 1 : 0,
+            child: Center(child: DesktopLyricsWidget()),
+          ),
+        );
+      },
     );
   }
 }

@@ -100,6 +100,8 @@
   "lyricsBackgroundColor": "歌词背景颜色",
   "reset": "重置",
   "desktopLyrics": "桌面歌词",
+  "horizontal": "水平",
+  "vertical": "竖直",
   "lock": "锁定",
   "unlock": "解锁"
 }
