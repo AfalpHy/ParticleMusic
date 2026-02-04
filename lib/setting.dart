@@ -629,6 +629,7 @@ class SettingsList extends StatelessWidget {
                 tryVibrate();
                 lockDesktopLrcOnAndroidNotifier.value = false;
                 if (!value) {
+                  showDesktopLrcOnAndroidNotifier.value = value;
                   await FlutterOverlayWindow.closeOverlay();
                   return;
                 }
