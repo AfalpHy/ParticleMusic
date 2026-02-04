@@ -510,7 +510,8 @@ class KaraokeTextState extends State<KaraokeText>
 
     final style = TextStyle(
       fontSize: widget.fontSize,
-      fontWeight: FontWeight.bold,
+      fontWeight: isMobile ? FontWeight.bold : null,
+      color: Colors.white,
     );
 
     return WidgetSpan(
@@ -524,11 +525,11 @@ class KaraokeTextState extends State<KaraokeText>
               fontSize: widget.fontSize,
               color: Colors.transparent,
               shadows: widget.isDesktopLyrics
-                  ? const [
+                  ? [
                       Shadow(
                         offset: Offset(2, 2),
-                        blurRadius: 5,
-                        color: Colors.black87,
+                        blurRadius: isMobile ? 5 : 1,
+                        color: isMobile ? Colors.black87 : Colors.black54,
                       ),
                     ]
                   : null,
