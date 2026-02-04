@@ -647,8 +647,8 @@ class SettingsList extends StatelessWidget {
                   flag: OverlayFlag.defaultFlag,
                   visibility: NotificationVisibility.visibilityPublic,
                   positionGravity: PositionGravity.none,
-                  height: vertical ? WindowSize.fullCover : 200,
-                  width: vertical ? 200 : WindowSize.matchParent,
+                  height: vertical ? 2000 : 200,
+                  width: vertical ? 200 : 1200,
                 );
 
                 await updateDesktopLyrics();
@@ -697,8 +697,8 @@ class SettingsList extends StatelessWidget {
                           visibility: NotificationVisibility.visibilityPublic,
                           positionGravity: PositionGravity.none,
 
-                          height: vertical ? WindowSize.fullCover : 200,
-                          width: vertical ? 200 : WindowSize.matchParent,
+                          height: vertical ? 2000 : 200,
+                          width: vertical ? 200 : 1200,
                         );
 
                         await FlutterOverlayWindow.shareData(value ? 1 : 0);
@@ -751,8 +751,8 @@ class SettingsList extends StatelessWidget {
                           positionGravity: PositionGravity.none,
 
                           startPosition: position,
-                          height: vertical ? WindowSize.fullCover : 200,
-                          width: vertical ? 200 : WindowSize.matchParent,
+                          height: vertical ? 2000 : 200,
+                          width: vertical ? 200 : 1200,
                         );
                       },
                     ),

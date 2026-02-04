@@ -401,7 +401,7 @@ class LyricLineWidget extends StatelessWidget {
                       fontSize: fontSize,
                       color: isCurrent
                           ? Colors.white
-                          : Colors.white.withAlpha(96),
+                          : Colors.white.withAlpha(128),
                     ),
                   );
                 },
@@ -508,7 +508,10 @@ class KaraokeTextState extends State<KaraokeText>
           (end - start).inMilliseconds;
     }
 
-    final style = TextStyle(fontSize: widget.fontSize, color: Colors.white);
+    final style = TextStyle(
+      fontSize: widget.fontSize,
+      fontWeight: FontWeight.bold,
+    );
 
     return WidgetSpan(
       alignment: PlaceholderAlignment.baseline,
@@ -523,9 +526,9 @@ class KaraokeTextState extends State<KaraokeText>
               shadows: widget.isDesktopLyrics
                   ? const [
                       Shadow(
-                        offset: Offset(0, 1),
-                        blurRadius: 1,
-                        color: Colors.black54,
+                        offset: Offset(2, 2),
+                        blurRadius: 5,
+                        color: Colors.black87,
                       ),
                     ]
                   : null,
@@ -539,7 +542,7 @@ class KaraokeTextState extends State<KaraokeText>
                 colors: [
                   Colors.white,
                   Colors.white,
-                  Colors.white.withAlpha(96),
+                  Colors.white.withAlpha(128),
                 ],
                 stops: [0, p, p],
               ).createShader(Rect.fromLTWH(0, 0, bounds.width, bounds.height));
