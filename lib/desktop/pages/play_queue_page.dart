@@ -344,14 +344,12 @@ class PlayQueueItemChildState extends State<PlayQueueItem> {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               color: song == currentSong
-                  ? miniModeNotifier.value
-                        ? Colors.white
-                        : textColor
+                  ? textColor
                   : miniModeNotifier.value
                   ? Colors.grey.shade100
                   : null,
 
-              fontWeight: song == currentSong ? FontWeight.w900 : null,
+              fontWeight: song == currentSong ? FontWeight.bold : null,
               fontSize: 15,
             ),
           );
