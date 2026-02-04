@@ -26,46 +26,41 @@ Widget titleSearchField(
       width: 260,
       height: 40,
       child: ValueListenableBuilder(
-        valueListenable: colorChangeNotifier,
+        valueListenable: updateColorNotifier,
         builder: (_, _, _) {
-          return ValueListenableBuilder(
-            valueListenable: updateBackgroundNotifier,
-            builder: (_, _, _) {
-              final fillColor = enableCustomColorNotifier.value
-                  ? searchFieldColor
-                  : backgroundColor.withAlpha(75);
-              return TextField(
-                controller: textController,
-                style: TextStyle(fontSize: 14),
-                decoration: SearchInputDecoration(
-                  hint: Text(hintText, style: TextStyle(fontSize: 14)),
-                  contentPadding: EdgeInsets.all(0),
-                  prefixIcon: const Icon(Icons.search),
-                  suffixIcon: ValueListenableBuilder(
-                    valueListenable: displayCancelNotifier,
-                    builder: (context, value, child) {
-                      return value
-                          ? IconButton(
-                              onPressed: () {
-                                textController!.clear();
-                                onChanged!('');
-                              },
-                              icon: const Icon(Icons.close, size: 20),
-                            )
-                          : SizedBox.shrink();
-                    },
-                  ),
-                  filled: true,
-                  fillColor: fillColor,
-                  hoverColor: Colors.transparent,
-                  border: OutlineInputBorder(
-                    borderRadius: BorderRadius.circular(10),
-                    borderSide: BorderSide.none,
-                  ),
-                ),
-                onChanged: onChanged,
-              );
-            },
+          final fillColor = enableCustomColorNotifier.value
+              ? searchFieldColor
+              : backgroundColor.withAlpha(75);
+          return TextField(
+            controller: textController,
+            style: TextStyle(fontSize: 14),
+            decoration: SearchInputDecoration(
+              hint: Text(hintText, style: TextStyle(fontSize: 14)),
+              contentPadding: EdgeInsets.all(0),
+              prefixIcon: const Icon(Icons.search),
+              suffixIcon: ValueListenableBuilder(
+                valueListenable: displayCancelNotifier,
+                builder: (context, value, child) {
+                  return value
+                      ? IconButton(
+                          onPressed: () {
+                            textController!.clear();
+                            onChanged!('');
+                          },
+                          icon: const Icon(Icons.close, size: 20),
+                        )
+                      : SizedBox.shrink();
+                },
+              ),
+              filled: true,
+              fillColor: fillColor,
+              hoverColor: Colors.transparent,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide.none,
+              ),
+            ),
+            onChanged: onChanged,
           );
         },
       ),

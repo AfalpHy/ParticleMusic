@@ -73,19 +73,14 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                 SizedBox(width: 5),
 
                 ValueListenableBuilder(
-                  valueListenable: colorChangeNotifier,
+                  valueListenable: updateColorNotifier,
                   builder: (context, value, child) {
-                    return ValueListenableBuilder(
-                      valueListenable: updateBackgroundNotifier,
-                      builder: (context, value, child) {
-                        return VerticalDivider(
-                          thickness: 0.5,
-                          width: 1,
-                          color: enableCustomColorNotifier.value
-                              ? dividerColor
-                              : backgroundColor,
-                        );
-                      },
+                    return VerticalDivider(
+                      thickness: 0.5,
+                      width: 1,
+                      color: enableCustomColorNotifier.value
+                          ? dividerColor
+                          : backgroundColor,
                     );
                   },
                 ),
@@ -259,65 +254,60 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                 Spacer(),
 
                 ValueListenableBuilder(
-                  valueListenable: colorChangeNotifier,
+                  valueListenable: updateColorNotifier,
                   builder: (_, _, _) {
-                    return ValueListenableBuilder(
-                      valueListenable: updateBackgroundNotifier,
-                      builder: (_, _, _) {
-                        final buttonStyle = ElevatedButton.styleFrom(
-                          backgroundColor: enableCustomColorNotifier.value
-                              ? buttonColor
-                              : backgroundColor.withAlpha(75),
-                          foregroundColor: Colors.black,
-                          shadowColor: Colors.black12,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(5),
-                          ),
-                          padding: EdgeInsets.all(10),
-                        );
-                        return Row(
-                          children: [
-                            SizedBox(width: 10),
-                            ElevatedButton(
-                              onPressed: () async {
-                                if (currentSongListNotifier.value.isEmpty) {
-                                  return;
-                                }
-                                audioHandler.currentIndex = 0;
-                                playModeNotifier.value = 0;
-                                await audioHandler.setPlayQueue(
-                                  currentSongListNotifier.value,
-                                );
-                                await audioHandler.load();
-                                audioHandler.play();
-                              },
-                              style: buttonStyle,
-                              child: Text(l10n.playAll),
-                            ),
-                            SizedBox(width: 15),
+                    final buttonStyle = ElevatedButton.styleFrom(
+                      backgroundColor: enableCustomColorNotifier.value
+                          ? buttonColor
+                          : backgroundColor.withAlpha(75),
+                      foregroundColor: Colors.black,
+                      shadowColor: Colors.black12,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(5),
+                      ),
+                      padding: EdgeInsets.all(10),
+                    );
+                    return Row(
+                      children: [
+                        SizedBox(width: 10),
+                        ElevatedButton(
+                          onPressed: () async {
+                            if (currentSongListNotifier.value.isEmpty) {
+                              return;
+                            }
+                            audioHandler.currentIndex = 0;
+                            playModeNotifier.value = 0;
+                            await audioHandler.setPlayQueue(
+                              currentSongListNotifier.value,
+                            );
+                            await audioHandler.load();
+                            audioHandler.play();
+                          },
+                          style: buttonStyle,
+                          child: Text(l10n.playAll),
+                        ),
+                        SizedBox(width: 15),
 
-                            ElevatedButton(
-                              onPressed: () async {
-                                if (currentSongListNotifier.value.isEmpty) {
-                                  return;
-                                }
-                                audioHandler.currentIndex = Random().nextInt(
-                                  currentSongListNotifier.value.length,
-                                );
-                                playModeNotifier.value = 1;
-                                await audioHandler.setPlayQueue(
-                                  currentSongListNotifier.value,
-                                );
-                                await audioHandler.load();
-                                audioHandler.play();
-                              },
-                              style: buttonStyle,
-                              child: Text(l10n.shuffle),
-                            ),
-                            SizedBox(width: 10),
-                          ],
-                        );
-                      },
+                        ElevatedButton(
+                          onPressed: () async {
+                            if (currentSongListNotifier.value.isEmpty) {
+                              return;
+                            }
+                            audioHandler.currentIndex = Random().nextInt(
+                              currentSongListNotifier.value.length,
+                            );
+                            playModeNotifier.value = 1;
+                            await audioHandler.setPlayQueue(
+                              currentSongListNotifier.value,
+                            );
+                            await audioHandler.load();
+                            audioHandler.play();
+                          },
+                          style: buttonStyle,
+                          child: Text(l10n.shuffle),
+                        ),
+                        SizedBox(width: 10),
+                      ],
                     );
                   },
                 ),
@@ -688,7 +678,7 @@ class SongListItemState extends State<SongListItem> {
 
   Widget songListTile(MyAudioMetadata song) {
     return ValueListenableBuilder(
-      valueListenable: colorChangeNotifier,
+      valueListenable: updateColorNotifier,
       builder: (_, _, _) {
         return ValueListenableBuilder(
           valueListenable: currentSongNotifier,
@@ -735,22 +725,17 @@ class SongListItemState extends State<SongListItem> {
       smoothness: 1,
       borderRadius: BorderRadius.circular(10),
       child: ValueListenableBuilder(
-        valueListenable: colorChangeNotifier,
+        valueListenable: updateColorNotifier,
         builder: (_, _, _) {
+          final highlightColor = enableCustomColorNotifier.value
+              ? selectedItemColor
+              : backgroundColor.withAlpha(75);
           return ValueListenableBuilder(
             valueListenable: widget.isSelected,
             builder: (context, value, child) {
-              return ValueListenableBuilder(
-                valueListenable: updateBackgroundNotifier,
-                builder: (_, _, _) {
-                  final highlightColor = enableCustomColorNotifier.value
-                      ? selectedItemColor
-                      : backgroundColor.withAlpha(75);
-                  return Material(
-                    color: value ? highlightColor : Colors.transparent,
-                    child: child,
-                  );
-                },
+              return Material(
+                color: value ? highlightColor : Colors.transparent,
+                child: child,
               );
             },
             child: MouseRegion(

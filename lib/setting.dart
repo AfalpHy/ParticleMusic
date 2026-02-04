@@ -330,7 +330,7 @@ class SettingsList extends StatelessWidget {
 
   Widget colorListTile(BuildContext context, AppLocalizations l10n, int type) {
     return ValueListenableBuilder(
-      valueListenable: colorChangeNotifier,
+      valueListenable: updateColorNotifier,
       builder: (context, value, child) {
         String title;
         Color pikerColor;
@@ -457,7 +457,7 @@ class SettingsList extends StatelessWidget {
                                 break;
                             }
                             settingManager.setColor();
-                            colorChangeNotifier.value++;
+                            updateColorNotifier.value++;
                           },
                         ),
                       ),
@@ -525,19 +525,13 @@ class SettingsList extends StatelessWidget {
                                   return MouseRegion(
                                     cursor: SystemMouseCursors.click,
 
-                                    child: ValueListenableBuilder(
-                                      valueListenable: colorChangeNotifier,
-                                      builder: (context, value, child) {
-                                        return MySwitch(
-                                          value: enableCustomColor,
-                                          onToggle: (value) {
-                                            enableCustomColorNotifier.value =
-                                                value;
-                                            settingManager.setColor();
-                                            colorChangeNotifier.value++;
-                                            settingManager.saveSetting();
-                                          },
-                                        );
+                                    child: MySwitch(
+                                      value: enableCustomColor,
+                                      onToggle: (value) {
+                                        enableCustomColorNotifier.value = value;
+                                        settingManager.setColor();
+                                        updateColorNotifier.value++;
+                                        settingManager.saveSetting();
                                       },
                                     ),
                                   );
@@ -568,20 +562,14 @@ class SettingsList extends StatelessWidget {
                                     return MouseRegion(
                                       cursor: SystemMouseCursors.click,
 
-                                      child: ValueListenableBuilder(
-                                        valueListenable: colorChangeNotifier,
-                                        builder: (context, value, child) {
-                                          return MySwitch(
-                                            value: enableCustomLyricsPage,
-                                            onToggle: (value) {
-                                              enableCustomLyricsPageNotifier
-                                                      .value =
-                                                  value;
-                                              settingManager.setColor();
-                                              colorChangeNotifier.value++;
-                                              settingManager.saveSetting();
-                                            },
-                                          );
+                                      child: MySwitch(
+                                        value: enableCustomLyricsPage,
+                                        onToggle: (value) {
+                                          enableCustomLyricsPageNotifier.value =
+                                              value;
+                                          settingManager.setColor();
+                                          updateColorNotifier.value++;
+                                          settingManager.saveSetting();
                                         },
                                       ),
                                     );
@@ -610,7 +598,7 @@ class SettingsList extends StatelessWidget {
                             lyricsBackgroundColor = Colors.black;
 
                             settingManager.setColor();
-                            colorChangeNotifier.value++;
+                            updateColorNotifier.value++;
                             settingManager.saveSetting();
                           },
                         ),
@@ -657,22 +645,12 @@ class SettingsList extends StatelessWidget {
         if (!isMobile)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: ValueListenableBuilder(
-              valueListenable: colorChangeNotifier,
-              builder: (_, _, _) {
-                return ValueListenableBuilder(
-                  valueListenable: updateBackgroundNotifier,
-                  builder: (_, _, _) {
-                    return Divider(
-                      thickness: 0.5,
-                      height: 1,
-                      color: enableCustomColorNotifier.value
-                          ? dividerColor
-                          : backgroundColor,
-                    );
-                  },
-                );
-              },
+            child: Divider(
+              thickness: 0.5,
+              height: 1,
+              color: enableCustomColorNotifier.value
+                  ? dividerColor
+                  : backgroundColor,
             ),
           ),
 

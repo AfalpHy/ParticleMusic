@@ -83,10 +83,15 @@ class PlaylistsPanelState extends State<PlaylistsPanel> {
                     child: Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 30),
                       child: ListTile(
-                        leading: ImageIcon(
-                          playlistsImage,
-                          size: 50,
-                          color: iconColor,
+                        leading: ValueListenableBuilder(
+                          valueListenable: updateColorNotifier,
+                          builder: (_, _, _) {
+                            return ImageIcon(
+                              playlistsImage,
+                              size: 50,
+                              color: iconColor,
+                            );
+                          },
                         ),
                         title: Text(
                           l10n.playlists,
@@ -135,19 +140,14 @@ class PlaylistsPanelState extends State<PlaylistsPanel> {
                       padding: const EdgeInsets.symmetric(horizontal: 30),
 
                       child: ValueListenableBuilder(
-                        valueListenable: colorChangeNotifier,
+                        valueListenable: updateColorNotifier,
                         builder: (context, value, child) {
-                          return ValueListenableBuilder(
-                            valueListenable: updateBackgroundNotifier,
-                            builder: (context, value, child) {
-                              return Divider(
-                                thickness: 1,
-                                height: 1,
-                                color: enableCustomColorNotifier.value
-                                    ? dividerColor
-                                    : backgroundColor,
-                              );
-                            },
+                          return Divider(
+                            thickness: 1,
+                            height: 1,
+                            color: enableCustomColorNotifier.value
+                                ? dividerColor
+                                : backgroundColor,
                           );
                         },
                       ),

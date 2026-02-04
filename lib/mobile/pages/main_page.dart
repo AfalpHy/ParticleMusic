@@ -211,7 +211,7 @@ class HomePageState extends State<HomePage> {
         ),
       ),
       body: ValueListenableBuilder(
-        valueListenable: colorChangeNotifier,
+        valueListenable: updateColorNotifier,
         builder: (context, value, child) {
           return ValueListenableBuilder(
             valueListenable: _homeBody,

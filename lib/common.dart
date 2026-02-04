@@ -50,7 +50,6 @@ final ValueNotifier<String> sidebarHighlighLabel = ValueNotifier('');
 
 // ===================================== DesktopMainPage =====================================
 
-ValueNotifier<int> updateBackgroundNotifier = ValueNotifier(0);
 MyAudioMetadata? backgroundSong;
 
 // ===================================== PlayQueuePage =====================================
@@ -93,7 +92,7 @@ final playlistsUseLargePictureNotifier = ValueNotifier(true);
 final enableCustomColorNotifier = ValueNotifier(false);
 final enableCustomLyricsPageNotifier = ValueNotifier(false);
 
-final colorChangeNotifier = ValueNotifier(0);
+final updateColorNotifier = ValueNotifier(0);
 
 final ValueNotifier<Locale?> localeNotifier = ValueNotifier(null);
 

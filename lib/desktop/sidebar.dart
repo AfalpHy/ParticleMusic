@@ -29,19 +29,14 @@ class Sidebar extends StatelessWidget {
         child: ValueListenableBuilder(
           valueListenable: sidebarHighlighLabel,
           builder: (context, highlightLabel, child) {
-            return ValueListenableBuilder(
-              valueListenable: updateBackgroundNotifier,
-              builder: (_, _, _) {
-                final highlightColor = enableCustomColorNotifier.value
-                    ? selectedItemColor
-                    : backgroundColor.withAlpha(75);
-                return Material(
-                  color: highlightLabel == label
-                      ? highlightColor
-                      : Colors.transparent,
-                  child: child,
-                );
-              },
+            final highlightColor = enableCustomColorNotifier.value
+                ? selectedItemColor
+                : backgroundColor.withAlpha(75);
+            return Material(
+              color: highlightLabel == label
+                  ? highlightColor
+                  : Colors.transparent,
+              child: child,
             );
           },
           child: InkWell(
@@ -184,17 +179,12 @@ class Sidebar extends StatelessWidget {
                     SliverToBoxAdapter(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: ValueListenableBuilder(
-                          valueListenable: updateBackgroundNotifier,
-                          builder: (_, _, _) {
-                            return Divider(
-                              thickness: 0.5,
-                              height: 1,
-                              color: enableCustomColorNotifier.value
-                                  ? dividerColor
-                                  : backgroundColor,
-                            );
-                          },
+                        child: Divider(
+                          thickness: 0.5,
+                          height: 1,
+                          color: enableCustomColorNotifier.value
+                              ? dividerColor
+                              : backgroundColor,
                         ),
                       ),
                     ),
@@ -237,17 +227,12 @@ class Sidebar extends StatelessWidget {
                     SliverToBoxAdapter(
                       child: Padding(
                         padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: ValueListenableBuilder(
-                          valueListenable: updateBackgroundNotifier,
-                          builder: (_, _, _) {
-                            return Divider(
-                              thickness: 0.5,
-                              height: 1,
-                              color: enableCustomColorNotifier.value
-                                  ? dividerColor
-                                  : backgroundColor,
-                            );
-                          },
+                        child: Divider(
+                          thickness: 0.5,
+                          height: 1,
+                          color: enableCustomColorNotifier.value
+                              ? dividerColor
+                              : backgroundColor,
                         ),
                       ),
                     ),

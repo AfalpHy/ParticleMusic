@@ -27,25 +27,19 @@ class FoldersPanel extends StatelessWidget {
                 return SmoothClipRRect(
                   borderRadius: BorderRadius.circular(10),
                   child: ValueListenableBuilder(
-                    valueListenable: colorChangeNotifier,
+                    valueListenable: updateColorNotifier,
                     builder: (_, value, child) {
+                      final highLightColor = enableCustomColorNotifier.value
+                          ? selectedItemColor
+                          : backgroundColor.withAlpha(75);
                       return ValueListenableBuilder(
                         valueListenable: currentFolderNotifier,
                         builder: (_, currentFolder, _) {
-                          return ValueListenableBuilder(
-                            valueListenable: updateBackgroundNotifier,
-                            builder: (_, _, _) {
-                              final highLightColor =
-                                  enableCustomColorNotifier.value
-                                  ? selectedItemColor
-                                  : backgroundColor.withAlpha(75);
-                              return Material(
-                                color: currentFolder == folder
-                                    ? highLightColor
-                                    : Colors.transparent,
-                                child: child,
-                              );
-                            },
+                          return Material(
+                            color: currentFolder == folder
+                                ? highLightColor
+                                : Colors.transparent,
+                            child: child,
                           );
                         },
                       );

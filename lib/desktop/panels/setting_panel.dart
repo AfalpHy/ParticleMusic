@@ -23,7 +23,7 @@ class SettingPanelState extends State<SettingPanel> {
 
   Widget contentWidget(BuildContext context) {
     return ValueListenableBuilder(
-      valueListenable: colorChangeNotifier,
+      valueListenable: updateColorNotifier,
       builder: (context, value, child) {
         return SettingsList();
       },

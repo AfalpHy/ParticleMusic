@@ -27,7 +27,7 @@ class DesktopMainPage extends StatelessWidget {
               return SizedBox.shrink();
             }
             return ValueListenableBuilder(
-              valueListenable: updateBackgroundNotifier,
+              valueListenable: updateColorNotifier,
               builder: (context, value, child) {
                 return CoverArtWidget(song: backgroundSong);
               },
@@ -41,7 +41,7 @@ class DesktopMainPage extends StatelessWidget {
               return Container(color: Colors.white);
             }
             return ValueListenableBuilder(
-              valueListenable: updateBackgroundNotifier,
+              valueListenable: updateColorNotifier,
               builder: (context, value, child) {
                 final pageWidth = MediaQuery.widthOf(context);
                 final pageHight = MediaQuery.heightOf(context);
@@ -59,32 +59,32 @@ class DesktopMainPage extends StatelessWidget {
             );
           },
         ),
-        Column(
-          children: [
-            Expanded(
-              child: Row(
-                children: [
-                  Sidebar(),
+        ValueListenableBuilder(
+          valueListenable: updateColorNotifier,
+          builder: (context, value, child) {
+            return Column(
+              children: [
+                Expanded(
+                  child: Row(
+                    children: [
+                      Sidebar(),
 
-                  Expanded(
-                    child: ValueListenableBuilder(
-                      valueListenable: panelManager.updatePanelNotifier,
-                      builder: (_, _, _) {
-                        return Material(
+                      Expanded(
+                        child: Material(
                           color: panelColor,
                           child: IndexedStack(
                             index: panelManager.panelStack.length - 1,
                             children: panelManager.panelStack,
                           ),
-                        );
-                      },
-                    ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            ),
-            BottomControl(),
-          ],
+                ),
+                BottomControl(),
+              ],
+            );
+          },
         ),
 
         ValueListenableBuilder(

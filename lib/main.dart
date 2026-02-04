@@ -89,22 +89,17 @@ Future<void> main() async {
                 return _loadingPage(context);
               }
 
-              return ValueListenableBuilder(
-                valueListenable: colorChangeNotifier,
-                builder: (_, _, _) {
-                  return isMobile
-                      ? MobileMainPage()
-                      : ValueListenableBuilder(
-                          valueListenable: miniModeNotifier,
-                          builder: (context, miniMode, child) {
-                            if (miniMode) {
-                              return MiniModePage();
-                            }
-                            return DesktopMainPage();
-                          },
-                        );
-                },
-              );
+              return isMobile
+                  ? MobileMainPage()
+                  : ValueListenableBuilder(
+                      valueListenable: miniModeNotifier,
+                      builder: (context, miniMode, child) {
+                        if (miniMode) {
+                          return MiniModePage();
+                        }
+                        return DesktopMainPage();
+                      },
+                    );
             },
           ),
         );

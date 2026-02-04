@@ -10,16 +10,21 @@ class MySwitch extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FlutterSwitch(
-      width: 45,
-      height: 20,
-      toggleSize: 15,
-      activeColor: enableCustomColorNotifier.value || isMobile
-          ? switchColor
-          : vividSwitchColor,
-      inactiveColor: Colors.grey.shade300,
-      value: value,
-      onToggle: onToggle,
+    return ValueListenableBuilder(
+      valueListenable: updateColorNotifier,
+      builder: (_, _, _) {
+        return FlutterSwitch(
+          width: 45,
+          height: 20,
+          toggleSize: 15,
+          activeColor: enableCustomColorNotifier.value || isMobile
+              ? switchColor
+              : vividSwitchColor,
+          inactiveColor: Colors.grey.shade300,
+          value: value,
+          onToggle: onToggle,
+        );
+      },
     );
   }
 }
