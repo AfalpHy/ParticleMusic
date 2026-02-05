@@ -57,15 +57,10 @@ class MobileMainPageState extends State<MobileMainPage> {
     return Stack(
       children: [
         // Navigator for normal pages (PlayerBar stays above)
-        PopScope(
-          canPop: false, // we control when popping is allowed
-          onPopInvokedWithResult: (didPop, result) {
-            if (didPop) return; // already handled by system / parent
-
+        NavigatorPopHandler(
+          onPopWithResult: (_) {
             if (homeNavigatorKey.currentState!.canPop()) {
               homeNavigatorKey.currentState!.pop();
-            } else {
-              Navigator.of(context).maybePop(); // fallback to root
             }
           },
           child: Navigator(
