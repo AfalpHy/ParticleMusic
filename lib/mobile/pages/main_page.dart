@@ -97,7 +97,12 @@ class MobileMainPageState extends State<MobileMainPage> {
               left: 0,
               right: 0,
               bottom: bottom,
-              child: bottomNavigator(),
+              child: ValueListenableBuilder(
+                valueListenable: updateColorNotifier,
+                builder: (context, value, child) {
+                  return bottomNavigator();
+                },
+              ),
             );
           },
         ),
