@@ -148,9 +148,17 @@ msix_config:
 icons_launcher:
   image_path: "app_icons/icon.png"
   platforms:
+    android:
+      enable: true
     ios:
       image_path: "app_icons/ios_light.png"
       dark_path: "app_icons/ios_dark.png"
       enable: true
     macos:
+      enable: true
+    linux:
+      image_path: "app_icons/bigger_icon.png"
+      enable: true
+    windows:
+      image_path: "app_icons/bigger_icon.png"
       enable: true
