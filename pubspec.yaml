@@ -88,6 +88,7 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
+  icons_launcher: ^3.0.3
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec
@@ -143,3 +144,13 @@ msix_config:
   # This PFX is private. Replace it with your own PFX to generate an MSIX package.
   certificate_path: ParticleMusicCert.pfx
   certificate_password: ParticleMusic
+
+icons_launcher:
+  image_path: "app_icons/icon.png"
+  platforms:
+    ios:
+      image_path: "app_icons/ios_light.png"
+      dark_path: "app_icons/ios_dark.png"
+      enable: true
+    macos:
+      enable: true
