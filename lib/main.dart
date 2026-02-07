@@ -160,7 +160,12 @@ Future<void> _setupDesktopLyricsWindow(
 
 Future<void> _setupTray() async {
   await trayManager.setIcon(
-    Platform.isWindows ? 'assets/app_icon.ico' : 'assets/app_icon.png',
+    Platform.isWindows
+        ? 'assets/app_icon.ico'
+        : Platform.isMacOS
+        ? 'assets/mac_tray.png'
+        : 'assets/app_icon.png',
+    isTemplate: true,
   );
 
   if (!Platform.isLinux) {
