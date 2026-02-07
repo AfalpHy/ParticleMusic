@@ -164,7 +164,7 @@ Future<void> _setupTray() async {
         ? 'assets/app_icon.ico'
         : Platform.isMacOS
         ? 'assets/mac_tray.png'
-        : 'assets/app_icon.png',
+        : 'assets/linux_tray.png',
     isTemplate: true,
   );
 
