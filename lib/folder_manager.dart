@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:isolate';
 
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
@@ -139,12 +138,12 @@ class Folder {
         // delete outdated picture if it exists
         deletePicture(song);
 
-        final tmp = await _tryReadMetadata(File(file.path));
+        final tmp = _tryReadMetadata(File(file.path));
 
         if (tmp != null) {
           song = MyAudioMetadata(tmp, modified);
           File picture = File(
-            "${appSupportDir.path}/picture/picture_${DateTime.now().microsecondsSinceEpoch}",
+            "${appSupportDir.path}/picture/${song.hashCode}_${DateTime.now().microsecondsSinceEpoch}",
           );
           if (song.pictures.isNotEmpty) {
             await picture.create(recursive: true);
@@ -173,11 +172,9 @@ class Folder {
     await update();
   }
 
-  Future<AudioMetadata?> _tryReadMetadata(File file) async {
+  AudioMetadata? _tryReadMetadata(File file) {
     try {
-      return await Isolate.run(
-        () => readMetadata(File(file.path), getImage: true),
-      );
+      return readMetadata(File(file.path), getImage: true);
     } catch (e) {
       logger.output(e.toString());
       return null;
