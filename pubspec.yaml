@@ -47,6 +47,7 @@ dependencies:
     git:
       url: https://github.com/AfalpHy/audio_service_win.git
       ref: main
+  audio_session: ^0.2.2
   media_kit: ^1.2.6
   media_kit_libs_audio: ^1.0.7
   path_provider: ^2.1.5

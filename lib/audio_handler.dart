@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:audio_service/audio_service.dart';
+import 'package:audio_session/audio_session.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 import 'package:media_kit/media_kit.dart';
@@ -10,6 +11,8 @@ import 'package:particle_music/common_widgets/lyrics.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/utils.dart';
 import 'dart:async';
+
+late AudioSession _session;
 
 Future<void> initAudioService() async {
   MediaKit.ensureInitialized();
@@ -22,11 +25,22 @@ Future<void> initAudioService() async {
       androidNotificationOngoing: true,
     ),
   );
+  _session = await AudioSession.instance;
+  await _session.configure(AudioSessionConfiguration.music());
+
+  _session.becomingNoisyEventStream.listen((_) {
+    audioHandler.pause();
+  });
+
+  _session.interruptionEventStream.listen((event) {
+    if (event.begin) {
+      audioHandler.pause();
+    }
+  });
 }
 
 class MyAudioHandler extends BaseAudioHandler {
   final _player = Player();
-
   int currentIndex = -1;
   List<MyAudioMetadata> _playQueueTmp = [];
   int _tmpPlayMode = 0;
@@ -126,7 +140,7 @@ class MyAudioHandler extends BaseAudioHandler {
         ],
         systemActions: {MediaAction.seek},
         playing: isPlayingNotifier.value,
-        processingState: .ready,
+        processingState: _player.state.completed ? .completed : .ready,
         speed: _player.state.rate,
         updatePosition: postion ?? _player.state.position,
       ),
