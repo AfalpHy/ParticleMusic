@@ -25,7 +25,7 @@ cp "$LIB" -r "$PACKAGE_DIR/usr/local/bin/"
 
 # Auto-detect dependencies
 echo "Detecting dependencies..."
-DEPENDS="libc6 (>= 2.31), libstdc++6, libgtk-3-0, libayatana-appindicator3-1, libdbusmenu-gtk3-4, libx11-6, libxext6, libxrender1, libwayland-client0, libwayland-cursor0, libwayland-egl1-mesa, libxkbcommon0, libopusfile0"
+DEPENDS="libc6 (>= 2.31), libstdc++6, libgtk-3-0, libayatana-appindicator3-1, libdbusmenu-gtk3-4, libx11-6, libxext6, libxrender1, libwayland-client0, libwayland-cursor0, libwayland-egl1-mesa, libxkbcommon0"
 echo "Detected dependencies: $DEPENDS"
 
 # Create control file
