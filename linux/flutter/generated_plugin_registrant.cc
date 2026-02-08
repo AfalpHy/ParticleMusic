@@ -8,7 +8,7 @@
 
 #include <desktop_multi_window/desktop_multi_window_plugin.h>
 #include <irondash_engine_context/irondash_engine_context_plugin.h>
-#include <just_audio_windows_linux/just_audio_windows_linux_plugin.h>
+#include <media_kit_libs_linux/media_kit_libs_linux_plugin.h>
 #include <screen_retriever_linux/screen_retriever_linux_plugin.h>
 #include <super_native_extensions/super_native_extensions_plugin.h>
 #include <tray_manager/tray_manager_plugin.h>
@@ -21,9 +21,9 @@ void fl_register_plugins(FlPluginRegistry* registry) {
   g_autoptr(FlPluginRegistrar) irondash_engine_context_registrar =
       fl_plugin_registry_get_registrar_for_plugin(registry, "IrondashEngineContextPlugin");
   irondash_engine_context_plugin_register_with_registrar(irondash_engine_context_registrar);
-  g_autoptr(FlPluginRegistrar) just_audio_windows_linux_registrar =
-      fl_plugin_registry_get_registrar_for_plugin(registry, "JustAudioWindowsLinuxPlugin");
-  just_audio_windows_linux_plugin_register_with_registrar(just_audio_windows_linux_registrar);
+  g_autoptr(FlPluginRegistrar) media_kit_libs_linux_registrar =
+      fl_plugin_registry_get_registrar_for_plugin(registry, "MediaKitLibsLinuxPlugin");
+  media_kit_libs_linux_plugin_register_with_registrar(media_kit_libs_linux_registrar);
   g_autoptr(FlPluginRegistrar) screen_retriever_linux_registrar =
       fl_plugin_registry_get_registrar_for_plugin(registry, "ScreenRetrieverLinuxPlugin");
   screen_retriever_linux_plugin_register_with_registrar(screen_retriever_linux_registrar);

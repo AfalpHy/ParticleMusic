@@ -6,7 +6,7 @@ import 'package:window_manager/window_manager.dart';
 
 class MyTrayListener extends TrayListener {
   @override
-  void onTrayIconMouseDown() async {
+  void onTrayIconMouseDown() {
     windowManager.show();
   }
 
@@ -17,19 +17,19 @@ class MyTrayListener extends TrayListener {
   }
 
   @override
-  void onTrayMenuItemClick(MenuItem menuItem) async {
+  void onTrayMenuItemClick(MenuItem menuItem) {
     if (menuItem.key == 'show') {
-      await windowManager.show();
+      windowManager.show();
     } else if (menuItem.key == 'exit') {
       exitApp();
     } else if (menuItem.key == 'skipToPrevious') {
-      await audioHandler.skipToPrevious();
+      audioHandler.skipToPrevious();
     } else if (menuItem.key == 'togglePlay') {
-      await audioHandler.togglePlay();
+      audioHandler.togglePlay();
     } else if (menuItem.key == 'skipToNext') {
-      await audioHandler.skipToNext();
+      audioHandler.skipToNext();
     } else if (menuItem.key == 'unlock') {
-      await lyricsWindowController?.unlock();
+      lyricsWindowController?.unlock();
     }
   }
 }

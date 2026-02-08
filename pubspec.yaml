@@ -47,11 +47,8 @@ dependencies:
     git:
       url: https://github.com/AfalpHy/audio_service_win.git
       ref: main
-  just_audio: ^0.10.5
-  just_audio_windows_linux:
-    git:
-        url: https://github.com/AfalpHy/just_audio_windows_linux.git
-        ref: master
+  media_kit: ^1.2.6
+  media_kit_libs_audio: ^1.0.7
   path_provider: ^2.1.5
   image: ^4.5.4
   auto_size_text: ^3.0.0

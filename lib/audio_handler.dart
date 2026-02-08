@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:audio_service/audio_service.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
-import 'package:just_audio/just_audio.dart';
+import 'package:media_kit/media_kit.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/extensions/window_controller_extension.dart';
 import 'package:particle_music/common_widgets/lyrics.dart';
@@ -12,6 +12,7 @@ import 'package:particle_music/utils.dart';
 import 'dart:async';
 
 Future<void> initAudioService() async {
+  MediaKit.ensureInitialized();
   audioHandler = await AudioService.init(
     builder: () => MyAudioHandler(),
 
@@ -24,7 +25,7 @@ Future<void> initAudioService() async {
 }
 
 class MyAudioHandler extends BaseAudioHandler {
-  final _player = AudioPlayer();
+  final _player = Player();
 
   int currentIndex = -1;
   List<MyAudioMetadata> _playQueueTmp = [];
@@ -36,10 +37,8 @@ class MyAudioHandler extends BaseAudioHandler {
   late final File _playState;
 
   MyAudioHandler() {
-    _player.playbackEventStream.map(transformEvent).pipe(playbackState);
-
-    _player.processingStateStream.listen((state) async {
-      if (state == ProcessingState.completed) {
+    _player.stream.completed.listen((completed) async {
+      if (completed) {
         bool needPauseTmp = needPause;
 
         if (playModeNotifier.value == 2) {
@@ -52,24 +51,7 @@ class MyAudioHandler extends BaseAudioHandler {
         if (needPauseTmp) {
           await pause();
         }
-      }
-    });
-
-    _player.playingStream.listen((isPlaying) {
-      if (isPlaying) {
-        if (_playedDuration == Duration.zero) {
-          historyManager.add2Recently(currentSongNotifier.value!);
-        }
-        _playLastSyncTime = DateTime.now();
-      } else if (_playLastSyncTime != null) {
-        _playedDuration += DateTime.now().difference(_playLastSyncTime!);
-        _playLastSyncTime = null;
-      }
-      needPause = false;
-      isPlayingNotifier.value = isPlaying;
-      lyricsWindowController?.sendPlaying(isPlaying);
-      if (showDesktopLrcOnAndroidNotifier.value) {
-        FlutterOverlayWindow.shareData(isPlaying);
+        updatePlaybackState();
       }
     });
 
@@ -80,7 +62,7 @@ class MyAudioHandler extends BaseAudioHandler {
       }
     });
 
-    _player.positionStream.listen((position) {
+    _player.stream.position.listen((position) {
       final currentSong = currentSongNotifier.value;
       if (currentSong == null) {
         return;
@@ -113,26 +95,41 @@ class MyAudioHandler extends BaseAudioHandler {
     });
   }
 
-  PlaybackState transformEvent(PlaybackEvent event) {
-    return PlaybackState(
-      controls: [
-        MediaControl.skipToPrevious,
-        _player.playing ? MediaControl.pause : MediaControl.play,
-        MediaControl.skipToNext,
-        MediaControl.stop,
-      ],
-      systemActions: {MediaAction.seek},
-      playing: _player.playing,
-      processingState: {
-        ProcessingState.idle: AudioProcessingState.idle,
-        ProcessingState.loading: AudioProcessingState.loading,
-        ProcessingState.buffering: AudioProcessingState.buffering,
-        ProcessingState.ready: AudioProcessingState.ready,
-        ProcessingState.completed: AudioProcessingState.completed,
-      }[event.processingState]!,
-      speed: _player.playing ? 1 : 0,
-      updatePosition: event.updatePosition,
-      bufferedPosition: event.bufferedPosition,
+  void updateIsPlaying(bool isPlaying) {
+    if (isPlaying) {
+      if (_playedDuration == Duration.zero) {
+        historyManager.add2Recently(currentSongNotifier.value!);
+      }
+      _playLastSyncTime = DateTime.now();
+    } else if (_playLastSyncTime != null) {
+      _playedDuration += DateTime.now().difference(_playLastSyncTime!);
+      _playLastSyncTime = null;
+    }
+    needPause = false;
+    isPlayingNotifier.value = isPlaying;
+    updatePlaybackState();
+
+    lyricsWindowController?.sendPlaying(isPlaying);
+    if (showDesktopLrcOnAndroidNotifier.value) {
+      FlutterOverlayWindow.shareData(isPlaying);
+    }
+  }
+
+  void updatePlaybackState({Duration? postion}) {
+    playbackState.add(
+      PlaybackState(
+        controls: [
+          MediaControl.skipToPrevious,
+          isPlayingNotifier.value ? MediaControl.pause : MediaControl.play,
+          MediaControl.skipToNext,
+          MediaControl.stop,
+        ],
+        systemActions: {MediaAction.seek},
+        playing: isPlayingNotifier.value,
+        processingState: .ready,
+        speed: _player.state.rate,
+        updatePosition: postion ?? _player.state.position,
+      ),
     );
   }
 
@@ -383,18 +380,11 @@ class MyAudioHandler extends BaseAudioHandler {
         duration: currentSong.duration,
       ),
     );
-
-    final audioSource = ProgressiveAudioSource(
-      Uri.file(currentSong.filePath),
-      options: ProgressiveAudioSourceOptions(
-        darwinAssetOptions: DarwinAssetOptions(
-          preferPreciseDurationAndTiming: true,
-        ),
-      ),
-    );
-
     try {
-      await _player.setAudioSource(audioSource);
+      await _player.open(
+        Media(currentSong.filePath),
+        play: isPlayingNotifier.value,
+      );
     } catch (error) {
       logger.output("[${currentSong.filePath}] $error");
     }
@@ -407,18 +397,27 @@ class MyAudioHandler extends BaseAudioHandler {
   @override
   Future<void> play() async {
     if (playQueue.isEmpty) return;
-    await _player.play();
+    _player.play();
+
+    updateIsPlaying(true);
   }
 
   @override
-  Future<void> pause() async => await _player.pause();
+  Future<void> pause() async {
+    _player.pause();
+    updateIsPlaying(false);
+  }
 
   @override
-  Future<void> stop() async => await _player.stop();
+  Future<void> stop() async {
+    _player.stop();
+    updateIsPlaying(false);
+  }
 
   @override
   Future<void> seek(Duration position) async {
     await _player.seek(position);
+    updatePlaybackState(postion: position);
     updateLyricsNotifier.value++;
   }
 
@@ -438,23 +437,23 @@ class MyAudioHandler extends BaseAudioHandler {
     await load();
   }
 
-  Future<void> togglePlay() async {
-    if (_player.playing) {
-      await pause();
+  void togglePlay() {
+    if (isPlayingNotifier.value) {
+      pause();
     } else {
-      await play();
+      play();
     }
   }
 
   Stream<Duration> getPositionStream() {
-    return _player.positionStream;
+    return _player.stream.position;
   }
 
   Duration getPosition() {
-    return _player.position;
+    return _player.state.position;
   }
 
   void setVolume(double volume) {
-    _player.setVolume(volume);
+    _player.setVolume(volume * 100);
   }
 }
