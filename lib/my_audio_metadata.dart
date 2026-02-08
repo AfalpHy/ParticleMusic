@@ -2,7 +2,7 @@ import 'dart:io';
 
 import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:flutter/material.dart';
-import 'package:particle_music/lyrics.dart';
+import 'package:particle_music/common_widgets/lyrics.dart';
 
 class MyAudioMetadata {
   final AudioMetadata _audioMetadata;

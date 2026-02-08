@@ -8,7 +8,7 @@ import 'package:particle_music/mobile/pages/ranking_page.dart';
 import 'package:particle_music/mobile/pages/playlists_page.dart';
 import 'package:particle_music/mobile/pages/recently_page.dart';
 import 'package:particle_music/mobile/player_bar.dart';
-import 'package:particle_music/setting.dart';
+import 'package:particle_music/common_widgets/settings_list.dart';
 import 'package:particle_music/mobile/pages/songs_page.dart';
 import 'package:particle_music/utils.dart';
 

@@ -103,5 +103,8 @@
   "horizontal": "水平",
   "vertical": "竖直",
   "lock": "锁定",
-  "unlock": "解锁"
+  "unlock": "解锁",
+  "closeAction": "关闭动作",
+  "exit": "退出",
+  "hide": "隐藏"
 }

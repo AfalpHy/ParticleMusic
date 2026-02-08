@@ -13,7 +13,7 @@ import 'package:particle_music/metadata.dart';
 import 'package:particle_music/common_widgets/my_location.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/playlists.dart';
-import 'package:particle_music/base_song_list.dart';
+import 'package:particle_music/common_widgets/base_song_list.dart';
 import 'package:particle_music/utils.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 import 'package:super_context_menu/super_context_menu.dart';

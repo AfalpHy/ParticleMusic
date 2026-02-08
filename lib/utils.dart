@@ -9,11 +9,13 @@ import 'package:image/image.dart' as image;
 import 'package:lpinyin/lpinyin.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/extensions/window_controller_extension.dart';
+import 'package:particle_music/desktop/single_instance.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
-import 'package:particle_music/lyrics.dart';
+import 'package:particle_music/common_widgets/lyrics.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:path/path.dart';
 import 'package:smooth_corner/smooth_corner.dart';
+import 'package:window_manager/window_manager.dart';
 
 void showCenterMessage(
   BuildContext context,
@@ -440,4 +442,19 @@ void getLyricFromMap(dynamic data) {
 
   desktopLyricsIsKaraoke = map['isKaraoke'] as bool;
   updateDesktopLyricsNotifier.value++;
+}
+
+void exitApp() async {
+  // make sure the music stops after exiting
+  await audioHandler.stop();
+
+  lyricsWindowController!.close();
+  await windowManager.setPreventClose(false);
+  await SingleInstance.end();
+  windowManager.close();
+
+  // only exit can quit on macos
+  if (Platform.isMacOS) {
+    exit(0);
+  }
 }

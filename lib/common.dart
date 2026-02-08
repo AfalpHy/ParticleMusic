@@ -7,7 +7,7 @@ import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/desktop/panels/panel_manager.dart';
 import 'package:particle_music/history_manager.dart';
 import 'package:particle_music/logger.dart';
-import 'package:particle_music/lyrics.dart';
+import 'package:particle_music/common_widgets/lyrics.dart';
 import 'package:particle_music/mobile/pages/main_page.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/playlists.dart';
@@ -95,6 +95,8 @@ final enableCustomLyricsPageNotifier = ValueNotifier(false);
 final updateColorNotifier = ValueNotifier(0);
 
 final ValueNotifier<Locale?> localeNotifier = ValueNotifier(null);
+
+final exitOnCloseNotifier = ValueNotifier(false);
 
 late SettingManager settingManager;
 
@@ -184,6 +186,7 @@ const AssetImage playlistsImage = AssetImage('assets/images/playlists.png');
 const AssetImage playnextCircleImage = AssetImage(
   'assets/images/playnext_circle.png',
 );
+const AssetImage powerOffImage = AssetImage('assets/images/power_off.png');
 const AssetImage previousButtonImage = AssetImage(
   'assets/images/previous_button.png',
 );

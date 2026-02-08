@@ -766,6 +766,36 @@ class SettingsList extends StatelessWidget {
     );
   }
 
+  Widget exitOnClose(AppLocalizations l10n) {
+    return ListTile(
+      leading: ImageIcon(powerOffImage, color: iconColor),
+
+      title: Text(l10n.closeAction),
+      trailing: SizedBox(
+        width: 150,
+        child: ValueListenableBuilder(
+          valueListenable: exitOnCloseNotifier,
+          builder: (context, value, child) {
+            return Row(
+              children: [
+                Spacer(),
+                Text(value ? l10n.exit : l10n.hide),
+                SizedBox(width: 10),
+                MySwitch(
+                  value: value,
+                  onToggle: (value) async {
+                    exitOnCloseNotifier.value = value;
+                    settingManager.saveSetting();
+                  },
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
@@ -894,6 +924,8 @@ class SettingsList extends StatelessWidget {
         isMobile
             ? paletteListTile(context, l10n)
             : paddingForDesktop(paletteListTile(context, l10n)),
+
+        if (!isMobile) paddingForDesktop(exitOnClose(l10n)),
 
         if (Platform.isAndroid) desktopLyricsOnAndroid(l10n),
 

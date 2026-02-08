@@ -7,7 +7,7 @@ import 'package:particle_music/common_widgets/my_auto_size_text.dart';
 import 'package:particle_music/mobile/sleep_timer.dart';
 import 'package:particle_music/mobile/widgets/my_sheet.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
-import 'package:particle_music/lyrics.dart';
+import 'package:particle_music/common_widgets/lyrics.dart';
 import 'package:particle_music/mobile/play_queue_sheet.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/playlists.dart';

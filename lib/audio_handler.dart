@@ -6,7 +6,7 @@ import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 import 'package:just_audio/just_audio.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/extensions/window_controller_extension.dart';
-import 'package:particle_music/lyrics.dart';
+import 'package:particle_music/common_widgets/lyrics.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/utils.dart';
 import 'dart:async';

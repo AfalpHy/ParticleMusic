@@ -130,10 +130,13 @@ class SettingManager {
       lyricsBackgroundColor = Color(lyricsBackgroundValue);
     }
 
+    setColor();
+
     lyricsFontSizeOffset =
         json['lyricsFontSizeOffset'] as double? ?? lyricsFontSizeOffset;
 
-    setColor();
+    exitOnCloseNotifier.value =
+        json['exitOnClose'] as bool? ?? exitOnCloseNotifier.value;
   }
 
   void saveSetting() {
@@ -167,6 +170,7 @@ class SettingManager {
         'lyricsBackgroundColor': lyricsBackgroundColor.toARGB32(),
 
         'lyricsFontSizeOffset': lyricsFontSizeOffset,
+        'exitOnClose': exitOnCloseNotifier.value,
       }),
     );
   }

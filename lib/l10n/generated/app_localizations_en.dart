@@ -330,4 +330,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get unlock => 'Unlock';
+
+  @override
+  String get closeAction => 'Close Action';
+
+  @override
+  String get exit => 'Exit';
+
+  @override
+  String get hide => 'Hide';
 }

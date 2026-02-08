@@ -11,7 +11,7 @@ import 'package:particle_music/mobile/widgets/my_sheet.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/common_widgets/my_location.dart';
 import 'package:particle_music/mobile/song_list_tile.dart';
-import 'package:particle_music/base_song_list.dart';
+import 'package:particle_music/common_widgets/base_song_list.dart';
 import 'package:particle_music/utils.dart';
 
 class SongListPage extends BaseSongListWidget {
