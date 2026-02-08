@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common_widgets/my_auto_size_text.dart';
+import 'package:particle_music/desktop/speaker.dart';
 import 'package:particle_music/desktop/title_bar.dart';
 import 'package:particle_music/common_widgets/full_width_track_shape.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
@@ -355,15 +356,7 @@ class LyricsPageState extends State<LyricsPage> {
             children: [
               Spacer(),
 
-              SizedBox(
-                width: 40,
-                child: IconButton(
-                  icon: const ImageIcon(speakerImage, size: 25),
-
-                  color: Colors.grey.shade50,
-                  onPressed: () {},
-                ),
-              ),
+              SizedBox(width: 40, child: Speaker(color: Colors.grey.shade50)),
               SizedBox(
                 height: 10,
                 width: width * 0.5,

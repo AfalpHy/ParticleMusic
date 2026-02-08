@@ -263,11 +263,7 @@ class TitleBar extends StatelessWidget {
                   ),
                   IconButton(
                     onPressed: () {
-                      if (exitOnCloseNotifier.value) {
-                        exitApp();
-                      } else {
-                        windowManager.close();
-                      }
+                      windowManager.close();
                     },
                     icon: ImageIcon(
                       closeImage,

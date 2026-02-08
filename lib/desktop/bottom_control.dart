@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common_widgets/full_width_track_shape.dart';
+import 'package:particle_music/desktop/speaker.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/common_widgets/seekbar.dart';
 import 'package:particle_music/utils.dart';
@@ -222,10 +223,7 @@ class BottomControl extends StatelessWidget {
             color: Colors.black,
           ),
         ),
-        IconButton(
-          onPressed: () {},
-          icon: const ImageIcon(speakerImage, size: 25, color: Colors.black),
-        ),
+        Speaker(color: Colors.black),
         Center(
           child: SizedBox(
             height: 20,

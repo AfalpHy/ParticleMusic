@@ -199,6 +199,7 @@ const AssetImage selectImage = AssetImage('assets/images/select.png');
 const AssetImage sequenceImage = AssetImage('assets/images/sequence.png');
 const AssetImage shuffleImage = AssetImage('assets/images/shuffle.png');
 const AssetImage songsImage = AssetImage('assets/images/songs.png');
+const AssetImage speakerOffImage = AssetImage('assets/images/speaker_off.png');
 const AssetImage speakerImage = AssetImage('assets/images/speaker.png');
 const AssetImage timerImage = AssetImage('assets/images/timer.png');
 const AssetImage unmaximizeImage = AssetImage('assets/images/unmaximize.png');
