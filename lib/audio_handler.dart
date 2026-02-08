@@ -134,7 +134,6 @@ class MyAudioHandler extends BaseAudioHandler {
           MediaControl.skipToPrevious,
           isPlayingNotifier.value ? MediaControl.pause : MediaControl.play,
           MediaControl.skipToNext,
-          MediaControl.stop,
         ],
         systemActions: {MediaAction.seek},
         playing: isPlayingNotifier.value,
