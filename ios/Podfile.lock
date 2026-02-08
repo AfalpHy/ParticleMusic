@@ -43,9 +43,8 @@ PODS:
   - Flutter (1.0.0)
   - irondash_engine_context (0.0.1):
     - Flutter
-  - just_audio (0.0.1):
+  - media_kit_libs_ios_audio (1.0.4):
     - Flutter
-    - FlutterMacOS
   - path_provider_foundation (0.0.1):
     - Flutter
     - FlutterMacOS
@@ -68,7 +67,7 @@ DEPENDENCIES:
   - file_picker (from `.symlinks/plugins/file_picker/ios`)
   - Flutter (from `Flutter`)
   - irondash_engine_context (from `.symlinks/plugins/irondash_engine_context/ios`)
-  - just_audio (from `.symlinks/plugins/just_audio/darwin`)
+  - media_kit_libs_ios_audio (from `.symlinks/plugins/media_kit_libs_ios_audio/ios`)
   - path_provider_foundation (from `.symlinks/plugins/path_provider_foundation/darwin`)
   - permission_handler_apple (from `.symlinks/plugins/permission_handler_apple/ios`)
   - sqflite_darwin (from `.symlinks/plugins/sqflite_darwin/darwin`)
@@ -94,8 +93,8 @@ EXTERNAL SOURCES:
     :path: Flutter
   irondash_engine_context:
     :path: ".symlinks/plugins/irondash_engine_context/ios"
-  just_audio:
-    :path: ".symlinks/plugins/just_audio/darwin"
+  media_kit_libs_ios_audio:
+    :path: ".symlinks/plugins/media_kit_libs_ios_audio/ios"
   path_provider_foundation:
     :path: ".symlinks/plugins/path_provider_foundation/darwin"
   permission_handler_apple:
@@ -114,7 +113,7 @@ SPEC CHECKSUMS:
   file_picker: a0560bc09d61de87f12d246fc47d2119e6ef37be
   Flutter: cabc95a1d2626b1b06e7179b784ebcf0c0cde467
   irondash_engine_context: 8e58ca8e0212ee9d1c7dc6a42121849986c88486
-  just_audio: 4e391f57b79cad2b0674030a00453ca5ce817eed
+  media_kit_libs_ios_audio: 905e6323b72e65c63ab9262b2e473f52c024a3a8
   path_provider_foundation: bb55f6dbba17d0dccd6737fe6f7f34fbd0376880
   permission_handler_apple: 4ed2196e43d0651e8ff7ca3483a069d469701f2d
   SDWebImage: 9f177d83116802728e122410fb25ad88f5c7608a

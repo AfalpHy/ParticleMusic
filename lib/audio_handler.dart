@@ -65,7 +65,6 @@ class MyAudioHandler extends BaseAudioHandler {
         if (needPauseTmp) {
           await pause();
         }
-        updatePlaybackState();
       }
     });
 
@@ -121,7 +120,6 @@ class MyAudioHandler extends BaseAudioHandler {
     }
     needPause = false;
     isPlayingNotifier.value = isPlaying;
-    updatePlaybackState();
 
     lyricsWindowController?.sendPlaying(isPlaying);
     if (showDesktopLrcOnAndroidNotifier.value) {
@@ -129,7 +127,7 @@ class MyAudioHandler extends BaseAudioHandler {
     }
   }
 
-  void updatePlaybackState({Duration? postion}) {
+  void updatePlaybackState({Duration? postion, bool stop = false}) {
     playbackState.add(
       PlaybackState(
         controls: [
@@ -140,7 +138,7 @@ class MyAudioHandler extends BaseAudioHandler {
         ],
         systemActions: {MediaAction.seek},
         playing: isPlayingNotifier.value,
-        processingState: _player.state.completed ? .completed : .ready,
+        processingState: stop ? .idle : .ready,
         speed: _player.state.rate,
         updatePosition: postion ?? _player.state.position,
       ),
@@ -384,6 +382,20 @@ class MyAudioHandler extends BaseAudioHandler {
       artUri = Uri.file(currentSong.picturePath!);
     }
 
+    try {
+      await _player.open(
+        Media(currentSong.filePath),
+        play: isPlayingNotifier.value,
+      );
+    } catch (error) {
+      logger.output("[${currentSong.filePath}] $error");
+    }
+
+    if (isPlayingNotifier.value) {
+      _playLastSyncTime = DateTime.now();
+    }
+    _playedDuration = Duration.zero;
+
     mediaItem.add(
       MediaItem(
         id: currentSong.filePath,
@@ -394,18 +406,7 @@ class MyAudioHandler extends BaseAudioHandler {
         duration: currentSong.duration,
       ),
     );
-    try {
-      await _player.open(
-        Media(currentSong.filePath),
-        play: isPlayingNotifier.value,
-      );
-    } catch (error) {
-      logger.output("[${currentSong.filePath}] $error");
-    }
-    if (isPlayingNotifier.value) {
-      _playLastSyncTime = DateTime.now();
-    }
-    _playedDuration = Duration.zero;
+    updatePlaybackState();
   }
 
   @override
@@ -414,18 +415,21 @@ class MyAudioHandler extends BaseAudioHandler {
     _player.play();
 
     updateIsPlaying(true);
+    updatePlaybackState();
   }
 
   @override
   Future<void> pause() async {
     _player.pause();
     updateIsPlaying(false);
+    updatePlaybackState();
   }
 
   @override
   Future<void> stop() async {
     _player.stop();
     updateIsPlaying(false);
+    updatePlaybackState(stop: true);
   }
 
   @override
