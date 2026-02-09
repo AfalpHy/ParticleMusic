@@ -430,7 +430,7 @@ Future<void> updateDesktopLyrics() async {
   );
 }
 
-void getLyricFromMap(dynamic data) {
+void getDesktopLyricFromMap(dynamic data) {
   final raw = data as Map;
   final map = Map<String, dynamic>.from(raw);
 

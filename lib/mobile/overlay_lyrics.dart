@@ -24,7 +24,7 @@ class _OverlayLyricsState extends State<OverlayLyrics> {
         isPlayingNotifier.value = data;
         return;
       }
-      getLyricFromMap(data);
+      getDesktopLyricFromMap(data);
     });
   }
 

@@ -14,7 +14,7 @@ extension WindowControllerExtension on WindowController {
         case 'window_close':
           return await windowManager.close();
         case 'update_lyric':
-          getLyricFromMap(call.arguments);
+          getDesktopLyricFromMap(call.arguments);
           break;
         case 'set_playing':
           isPlayingNotifier.value = call.arguments as bool;
