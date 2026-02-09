@@ -444,7 +444,12 @@ void getDesktopLyricFromMap(dynamic data) {
   updateDesktopLyricsNotifier.value++;
 }
 
+bool _exited = false;
+
 void exitApp() async {
+  if (_exited) {
+    return;
+  }
   // make sure the music stops after exiting
   await audioHandler.stop();
 
@@ -453,7 +458,9 @@ void exitApp() async {
   // only this allows quick exit on Windows
   if (Platform.isWindows) {
     await windowManager.setPreventClose(false);
+    _exited = true;
     windowManager.close();
+    return;
   }
 
   exit(0);
