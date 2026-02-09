@@ -449,12 +449,12 @@ void exitApp() async {
   await audioHandler.stop();
 
   lyricsWindowController!.close();
-  await windowManager.setPreventClose(false);
   await SingleInstance.end();
-  windowManager.close();
-
-  // only exit can quit on macos
-  if (Platform.isMacOS) {
-    exit(0);
+  // only this allows quick exit on Windows
+  if (Platform.isWindows) {
+    await windowManager.setPreventClose(false);
+    windowManager.close();
   }
+
+  exit(0);
 }
