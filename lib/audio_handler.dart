@@ -249,7 +249,8 @@ class MyAudioHandler extends BaseAudioHandler {
       }
     } else {
       playQueue.insert(currentIndex + 1, song);
-      if (_playQueueTmp.isNotEmpty) {
+      if (playModeNotifier.value == 1 ||
+          (playModeNotifier.value == 2 && audioHandler._tmpPlayMode == 1)) {
         _playQueueTmp.add(song);
       }
     }
