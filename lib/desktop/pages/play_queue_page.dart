@@ -96,7 +96,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
         Text(
           l10n.playQueue,
           style: TextStyle(
-            fontSize: 20,
+            fontSize: isMiniMode ? 18 : 20,
             fontWeight: FontWeight.bold,
             color: isMiniMode ? Colors.grey.shade100 : null,
           ),
