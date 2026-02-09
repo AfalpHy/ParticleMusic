@@ -147,7 +147,7 @@ class MyAudioHandler extends BaseAudioHandler {
   void initStateFiles() {
     _playQueueState = File("${appSupportDir.path}/play_queue_state.txt");
     if (!(_playQueueState.existsSync())) {
-      savePlayQueueState();
+      _savePlayQueueState();
     }
     _playState = File("${appSupportDir.path}/play_state.txt");
     if (!(_playState.existsSync())) {
@@ -181,7 +181,7 @@ class MyAudioHandler extends BaseAudioHandler {
     }
   }
 
-  void savePlayQueueState() {
+  void _savePlayQueueState() {
     _playQueueState.writeAsStringSync(
       jsonEncode({
         'playQueueTmp': _playQueueTmp
@@ -228,33 +228,36 @@ class MyAudioHandler extends BaseAudioHandler {
     );
   }
 
-  bool insert2Next(int index, List<MyAudioMetadata> source) {
-    final tmp = source[index];
-    int tmpIndex = playQueue.indexOf(tmp);
-    if (tmpIndex != -1) {
-      if (tmpIndex == currentIndex) {
+  void saveAllStates() {
+    audioHandler.savePlayState();
+    audioHandler._savePlayQueueState();
+  }
+
+  bool insert2Next(MyAudioMetadata song) {
+    int songIndex = playQueue.indexOf(song);
+    if (songIndex != -1) {
+      if (songIndex == currentIndex) {
         return false;
       }
-      if (tmpIndex < currentIndex) {
-        playQueue.removeAt(tmpIndex);
-        playQueue.insert(currentIndex, tmp);
+      if (songIndex < currentIndex) {
+        playQueue.removeAt(songIndex);
+        playQueue.insert(currentIndex, song);
         currentIndex -= 1;
       } else {
-        playQueue.removeAt(tmpIndex);
-        playQueue.insert(currentIndex + 1, tmp);
+        playQueue.removeAt(songIndex);
+        playQueue.insert(currentIndex + 1, song);
       }
     } else {
-      playQueue.insert(currentIndex + 1, tmp);
+      playQueue.insert(currentIndex + 1, song);
       if (_playQueueTmp.isNotEmpty) {
-        _playQueueTmp.add(tmp);
+        _playQueueTmp.add(song);
       }
     }
-    savePlayQueueState();
     return true;
   }
 
-  void singlePlay(int index, List<MyAudioMetadata> source) async {
-    if (insert2Next(index, source)) {
+  void singlePlay(MyAudioMetadata song) async {
+    if (insert2Next(song)) {
       await skipToNext();
       play();
     }
@@ -266,7 +269,7 @@ class MyAudioHandler extends BaseAudioHandler {
         (playModeNotifier.value == 2 && audioHandler._tmpPlayMode == 1)) {
       shuffle();
     }
-    savePlayQueueState();
+    _savePlayQueueState();
   }
 
   void shuffle() {
@@ -289,10 +292,10 @@ class MyAudioHandler extends BaseAudioHandler {
       playQueue = List.from(_playQueueTmp);
       _playQueueTmp = [];
       currentIndex = playQueue.indexOf(currentSongNotifier.value!);
-      savePlayQueueState();
+      _savePlayQueueState();
     } else if (playMode == 1) {
       shuffle();
-      savePlayQueueState();
+      _savePlayQueueState();
     }
     savePlayState();
   }
@@ -313,7 +316,6 @@ class MyAudioHandler extends BaseAudioHandler {
       _playQueueTmp.remove(tmp);
     }
     playQueue.removeAt(index);
-    savePlayQueueState();
   }
 
   Future<void> clear() async {
@@ -327,7 +329,7 @@ class MyAudioHandler extends BaseAudioHandler {
     currentIndex = -1;
     currentSongNotifier.value = null;
     currentCoverArtColor = Colors.grey;
-    savePlayQueueState();
+    _savePlayQueueState();
     savePlayState();
   }
 

@@ -148,6 +148,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                 }
                 final item = playQueue.removeAt(oldIndex);
                 playQueue.insert(newIndex, item);
+                audioHandler.saveAllStates();
               },
               onReorderStart: (_) {
                 tryVibrate();
@@ -221,6 +222,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                           await audioHandler.load();
                         }
                       }
+                      audioHandler.saveAllStates();
                     },
                     icon: Icon(
                       Icons.clear_rounded,

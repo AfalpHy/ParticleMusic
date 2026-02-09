@@ -552,13 +552,15 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                 for (int i = isSelectedList.length - 1; i >= 0; i--) {
                   if (isSelectedList[i].value) {
                     tmp = currentSongList[i];
-                    audioHandler.insert2Next(i, currentSongList);
+                    audioHandler.insert2Next(tmp);
                   }
                 }
+
                 if (tmp != currentSongNotifier.value) {
                   await audioHandler.skipToNext();
                 }
-                await audioHandler.play();
+                audioHandler.play();
+                audioHandler.saveAllStates();
               },
             ),
             MenuAction(
@@ -571,13 +573,15 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                 }
                 for (int i = isSelectedList.length - 1; i >= 0; i--) {
                   if (isSelectedList[i].value) {
-                    audioHandler.insert2Next(i, currentSongList);
+                    audioHandler.insert2Next(currentSongList[i]);
                   }
                 }
+
                 if (needPlay) {
                   await audioHandler.skipToNext();
-                  await audioHandler.play();
+                  audioHandler.play();
                 }
+                audioHandler.saveAllStates();
               },
             ),
 

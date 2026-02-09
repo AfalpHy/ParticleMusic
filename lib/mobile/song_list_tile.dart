@@ -161,8 +161,9 @@ class SongListTile extends StatelessWidget {
                             vertical: -4,
                           ),
                           onTap: () {
-                            audioHandler.singlePlay(index, source);
+                            audioHandler.singlePlay(source[index]);
                             Navigator.pop(context);
+                            audioHandler.saveAllStates();
                           },
                         ),
                         ListTile(
@@ -180,11 +181,12 @@ class SongListTile extends StatelessWidget {
                           ),
                           onTap: () {
                             if (playQueue.isEmpty) {
-                              audioHandler.singlePlay(index, source);
+                              audioHandler.singlePlay(source[index]);
                             } else {
-                              audioHandler.insert2Next(index, source);
+                              audioHandler.insert2Next(source[index]);
                             }
                             Navigator.pop(context);
+                            audioHandler.saveAllStates();
                           },
                         ),
                         playlist != null

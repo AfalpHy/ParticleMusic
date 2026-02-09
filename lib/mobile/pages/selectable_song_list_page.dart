@@ -353,8 +353,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                         for (int i = isSelectedList.length - 1; i >= 0; i--) {
                           if (isSelectedList[i].value) {
                             audioHandler.insert2Next(
-                              i,
-                              currentSongListNotifier.value,
+                              currentSongListNotifier.value[i],
                             );
                           }
                         }
@@ -367,6 +366,8 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                           await audioHandler.skipToNext();
                           audioHandler.play();
                         }
+
+                        audioHandler.saveAllStates();
                       }
                     },
                     child: Column(

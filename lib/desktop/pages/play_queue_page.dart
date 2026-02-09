@@ -66,6 +66,9 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                   }
                   final item = playQueue.removeAt(oldIndex);
                   playQueue.insert(newIndex, item);
+
+                  audioHandler.saveAllStates();
+
                   // clearing selected after reordering
                   for (var tmp in isSelectedList) {
                     tmp.value = false;
@@ -278,6 +281,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                 } else if (removeCurrent) {
                   await audioHandler.load();
                 }
+                audioHandler.saveAllStates();
               },
             ),
           ],
