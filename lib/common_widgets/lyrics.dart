@@ -176,7 +176,8 @@ class LyricsListViewState extends State<LyricsListView>
   Timer? timer;
 
   void scroll2CurrentIndex(Duration position) async {
-    if (audioHandler.isLoading) {
+    // it's weird that the position is sometimes negative
+    if (audioHandler.isLoading || position < Duration.zero) {
       return;
     }
     int tmp = currentIndexNotifier.value;
