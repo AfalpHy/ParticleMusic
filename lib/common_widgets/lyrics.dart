@@ -176,8 +176,11 @@ class LyricsListViewState extends State<LyricsListView>
   Timer? timer;
 
   void scroll2CurrentIndex(Duration position) async {
+    if (audioHandler.isLoading) {
+      return;
+    }
     int tmp = currentIndexNotifier.value;
-    int current = 0;
+    int current = -1;
 
     for (int i = 0; i < lyrics.length; i++) {
       final line = lyrics[i];

@@ -50,6 +50,8 @@ class MyAudioHandler extends BaseAudioHandler {
   late final File _playQueueState;
   late final File _playState;
 
+  bool isLoading = false;
+
   MyAudioHandler() {
     _player.stream.completed.listen((completed) async {
       if (completed) {
@@ -76,6 +78,9 @@ class MyAudioHandler extends BaseAudioHandler {
     });
 
     _player.stream.position.listen((position) {
+      if (isLoading) {
+        return;
+      }
       final currentSong = currentSongNotifier.value;
       if (currentSong == null) {
         return;
@@ -84,21 +89,21 @@ class MyAudioHandler extends BaseAudioHandler {
 
       List<LyricLine> lyrics = parsedLyrics.lyrics;
 
-      int current = 0;
+      int current = -1;
 
       for (int i = 0; i < lyrics.length; i++) {
         final line = lyrics[i];
         if (position < line.start) {
           break;
         }
-        if (line.start > lyrics[current].start) {
+        if (current == -1 || line.start > lyrics[current].start) {
           current = i;
         }
       }
 
       final tmpLyricLine = currentLyricLine;
 
-      currentLyricLine = lyrics[current];
+      currentLyricLine = current >= 0 ? lyrics[current] : null;
       currentLyricLineIsKaraoke = parsedLyrics.isKaraoke;
 
       if ((showDesktopLrcOnAndroidNotifier.value || lyricsWindowVisible) &&
@@ -384,6 +389,7 @@ class MyAudioHandler extends BaseAudioHandler {
       artUri = Uri.file(currentSong.picturePath!);
     }
 
+    isLoading = true;
     try {
       await _player.open(
         Media(currentSong.filePath),
@@ -392,6 +398,7 @@ class MyAudioHandler extends BaseAudioHandler {
     } catch (error) {
       logger.output("[${currentSong.filePath}] $error");
     }
+    isLoading = false;
 
     if (isPlayingNotifier.value) {
       _playLastSyncTime = DateTime.now();
@@ -436,8 +443,8 @@ class MyAudioHandler extends BaseAudioHandler {
 
   @override
   Future<void> seek(Duration position) async {
-    await _player.seek(position);
     updatePlaybackState(postion: position);
+    await _player.seek(position);
     updateLyricsNotifier.value++;
   }
 
