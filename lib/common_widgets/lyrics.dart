@@ -220,6 +220,7 @@ class LyricsListViewState extends State<LyricsListView>
     super.initState();
     WidgetsBinding.instance.addObserver(this);
     lyrics = widget.lyrics;
+    scroll2CurrentIndex(audioHandler.getPosition());
     positionSub = audioHandler.getPositionStream().listen(
       (position) => scroll2CurrentIndex(position),
     );
@@ -243,6 +244,7 @@ class LyricsListViewState extends State<LyricsListView>
       case AppLifecycleState.resumed:
         if (positionSub == null) {
           jump = true;
+          scroll2CurrentIndex(audioHandler.getPosition());
           positionSub = audioHandler.getPositionStream().listen(
             (position) => scroll2CurrentIndex(position),
           );

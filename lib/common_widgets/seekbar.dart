@@ -38,7 +38,7 @@ class SeekBarState extends State<SeekBar> {
     return StreamBuilder<Duration>(
       stream: audioHandler.getPositionStream(),
       builder: (context, snapshot) {
-        final position = snapshot.data ?? Duration.zero;
+        final position = snapshot.data ?? audioHandler.getPosition();
         double sliderValue = dragValue ?? position.inMilliseconds.toDouble();
         if (playQueue.isEmpty) {
           sliderValue = 0;
