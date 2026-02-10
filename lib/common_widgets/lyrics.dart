@@ -263,6 +263,9 @@ class LyricsListViewState extends State<LyricsListView>
   Widget build(BuildContext context) {
     // scrolling to current index while resizing
     WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (currentIndexNotifier.value == -1) {
+        return;
+      }
       if (itemScrollController.isAttached) {
         itemScrollController.jumpTo(
           index: currentIndexNotifier.value + 1,

@@ -81,36 +81,40 @@ class MyAudioHandler extends BaseAudioHandler {
       if (isLoading) {
         return;
       }
-      final currentSong = currentSongNotifier.value;
-      if (currentSong == null) {
-        return;
-      }
-      ParsedLyrics parsedLyrics = currentSong.parsedLyrics!;
-
-      List<LyricLine> lyrics = parsedLyrics.lyrics;
-
-      int current = -1;
-
-      for (int i = 0; i < lyrics.length; i++) {
-        final line = lyrics[i];
-        if (position < line.start) {
-          break;
-        }
-        if (current == -1 || line.start > lyrics[current].start) {
-          current = i;
-        }
-      }
-
-      final tmpLyricLine = currentLyricLine;
-
-      currentLyricLine = current >= 0 ? lyrics[current] : null;
-      currentLyricLineIsKaraoke = parsedLyrics.isKaraoke;
-
-      if ((showDesktopLrcOnAndroidNotifier.value || lyricsWindowVisible) &&
-          currentLyricLine != tmpLyricLine) {
-        updateDesktopLyrics();
-      }
+      _tryUpdateDesktopLyrics(position);
     });
+  }
+
+  void _tryUpdateDesktopLyrics(Duration position) {
+    final currentSong = currentSongNotifier.value;
+    if (currentSong == null) {
+      return;
+    }
+    ParsedLyrics parsedLyrics = currentSong.parsedLyrics!;
+
+    List<LyricLine> lyrics = parsedLyrics.lyrics;
+
+    int current = 0;
+
+    for (int i = 0; i < lyrics.length; i++) {
+      final line = lyrics[i];
+      if (position < line.start) {
+        break;
+      }
+      if (line.start > lyrics[current].start) {
+        current = i;
+      }
+    }
+
+    final tmpLyricLine = currentLyricLine;
+
+    currentLyricLine = lyrics[current];
+    currentLyricLineIsKaraoke = parsedLyrics.isKaraoke;
+
+    if ((showDesktopLrcOnAndroidNotifier.value || lyricsWindowVisible) &&
+        currentLyricLine != tmpLyricLine) {
+      updateDesktopLyrics();
+    }
   }
 
   void updateIsPlaying(bool isPlaying) {
@@ -416,6 +420,7 @@ class MyAudioHandler extends BaseAudioHandler {
       ),
     );
     updatePlaybackState();
+    _tryUpdateDesktopLyrics(Duration.zero);
   }
 
   @override
