@@ -353,7 +353,7 @@ class Sidebar extends StatelessWidget {
                     callback: () async {
                       if (await showConfirmDialog(context, l10n.delete)) {
                         panelManager.removePlaylistPanel(playlist);
-                        playlistsManager.deletePlaylistByIndex(index);
+                        playlistsManager.deletePlaylist(playlist);
                       }
                     },
                   ),

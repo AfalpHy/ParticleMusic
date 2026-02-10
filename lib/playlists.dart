@@ -75,26 +75,9 @@ class PlaylistsManager {
     update();
   }
 
-  void deletePlaylistByIndex(int index) {
-    final playlist = playlists[index];
-    playlist.file.deleteSync();
-    playlistsMap.remove(playlist.name);
-    playlists.removeAt(index);
-
-    update();
-  }
-
-  void deletePlaylistByName(String name) {
-    final playlist = playlistsMap[name];
-    playlist?.file.deleteSync();
-    playlists.remove(playlist);
-    playlistsMap.remove(playlist?.name);
-
-    update();
-  }
-
   void deletePlaylist(Playlist playlist) {
     playlist.file.deleteSync();
+    playlist.settingFile.deleteSync();
     playlists.remove(playlist);
     playlistsMap.remove(playlist.name);
 
