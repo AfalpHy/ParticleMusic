@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:audio_metadata_reader/audio_metadata_reader.dart';
+import 'package:audio_tags_lofty/audio_tags.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
@@ -143,11 +143,8 @@ Duration getDuration(MyAudioMetadata? song) {
   return song.duration ?? Duration.zero;
 }
 
-Picture? getCoverArt(MyAudioMetadata? song) {
-  if (song == null) {
-    return null;
-  }
-  return song.pictures.isNotEmpty ? song.pictures.first : null;
+Uint8List? getPictureBytes(MyAudioMetadata? song) {
+  return song?.pictureBytes;
 }
 
 List<MyAudioMetadata> filterSongList(
@@ -267,40 +264,25 @@ void sortAlbums() {
   });
 }
 
-Future<Uint8List?> getPictureBytes(MyAudioMetadata? song) async {
+Future<Uint8List?> loadPictureBytes(MyAudioMetadata? song) async {
   if (song == null) {
     return null;
   }
 
-  if (song.pictures.isNotEmpty) {
-    return song.pictures.first.bytes;
+  if (song.pictureLoaded) {
+    return song.pictureBytes;
   }
-  final result = await loadPicture(song);
-  if (result != null) {
-    song.pictures.add(Picture(result, '', PictureType.coverFront));
-  }
+  final result = readPicture(song.filePath);
+  song.pictureBytes = result;
+  song.pictureLoaded = true;
   return result;
-}
-
-Future<Uint8List?> loadPicture(MyAudioMetadata song) async {
-  String? picturePath = song.picturePath;
-  if (picturePath == null) {
-    return null;
-  }
-  final pictureFile = File(picturePath);
-  if (await pictureFile.exists()) {
-    final result = await pictureFile.readAsBytes();
-    return result;
-  } else {
-    return null;
-  }
 }
 
 Future<Color> computeCoverArtColor(MyAudioMetadata? song) async {
   if (song?.coverArtColor != null) {
     return song!.coverArtColor!;
   }
-  final bytes = await getPictureBytes(song);
+  final bytes = await loadPictureBytes(song);
   if (bytes == null) {
     return Colors.grey;
   }
@@ -394,23 +376,11 @@ Future<void> setSongList(
         final song = filePath2LibrarySong[path]!;
         destList.add(song);
       } else {
-        // delete outdated picture if it exists
-        deletePicture(filePath2LibrarySong[path]);
         filePath2LibrarySong.remove(path);
       }
     }
   }
   destList.addAll(additionalSongList);
-}
-
-Future<void> deletePicture(MyAudioMetadata? song) async {
-  String? picturePath = song?.picturePath;
-  if (picturePath != null) {
-    final pictureFile = File(picturePath);
-    if (await pictureFile.exists()) {
-      await pictureFile.delete();
-    }
-  }
 }
 
 Future<void> updateDesktopLyrics() async {

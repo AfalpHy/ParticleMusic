@@ -388,11 +388,6 @@ class MyAudioHandler extends BaseAudioHandler {
       historyManager.add2Recently(currentSong);
     }
 
-    Uri? artUri;
-    if (currentSong.picturePath != null) {
-      artUri = Uri.file(currentSong.picturePath!);
-    }
-
     isLoading = true;
     try {
       await _player.open(
@@ -408,6 +403,19 @@ class MyAudioHandler extends BaseAudioHandler {
       _playLastSyncTime = DateTime.now();
     }
     _playedDuration = Duration.zero;
+
+    Uri? artUri;
+
+    if (currentSong.pictureBytes != null) {
+      String tmpPath = "${tmpDir.path}/particle_music_cover";
+      // only doing this can update the picture
+      if (Platform.isLinux) {
+        tmpPath += currentSong.hashCode.toString();
+      }
+      final tmpFile = File(tmpPath);
+      await tmpFile.writeAsBytes(currentSong.pictureBytes!);
+      artUri = tmpFile.uri;
+    }
 
     mediaItem.add(
       MediaItem(

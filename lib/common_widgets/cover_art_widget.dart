@@ -1,4 +1,5 @@
-import 'package:audio_metadata_reader/audio_metadata_reader.dart';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/my_audio_metadata.dart';
@@ -9,61 +10,58 @@ class CoverArtWidget extends StatelessWidget {
   final double? size;
   final double borderRadius;
   final MyAudioMetadata? song;
-  final Picture? picture;
+  final Uint8List? pictureBytes;
   const CoverArtWidget({
     super.key,
     this.size,
     this.borderRadius = 0,
     this.song,
-    this.picture,
+    this.pictureBytes,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (song?.picturePath == null) {
-      return SmoothClipRRect(
-        smoothness: 1,
-        borderRadius: BorderRadius.circular(borderRadius),
-        child: musicNote(),
+    Uint8List? tmpPictureBytes = pictureBytes;
+    tmpPictureBytes ??= getPictureBytes(song);
+    if (tmpPictureBytes == null) {
+      if (song == null || song!.noPicture) {
+        return musicNote();
+      }
+      return FutureBuilder(
+        future: loadPictureBytes(song),
+        builder: (context, asyncSnapshot) {
+          if (asyncSnapshot.connectionState == ConnectionState.waiting) {
+            return SizedBox(width: size, height: size);
+          }
+
+          if (asyncSnapshot.hasError || asyncSnapshot.data == null) {
+            return musicNote();
+          }
+          return Image.memory(
+            asyncSnapshot.data!,
+            width: size,
+            height: size,
+            fit: BoxFit.cover,
+            errorBuilder: (context, error, stackTrace) {
+              return musicNote();
+            },
+          );
+        },
       );
     }
-    Picture? tmpPicture = picture;
-    tmpPicture ??= getCoverArt(song);
 
     return SmoothClipRRect(
       smoothness: 1,
       borderRadius: BorderRadius.circular(borderRadius),
-      child: tmpPicture != null
-          ? Image.memory(
-              tmpPicture.bytes,
-              width: size,
-              height: size,
-              fit: BoxFit.cover,
-              errorBuilder: (context, error, stackTrace) {
-                return musicNote();
-              },
-            )
-          : FutureBuilder(
-              future: getPictureBytes(song),
-              builder: (context, asyncSnapshot) {
-                if (asyncSnapshot.connectionState == ConnectionState.waiting) {
-                  return SizedBox(width: size, height: size);
-                }
-
-                if (asyncSnapshot.hasError || asyncSnapshot.data == null) {
-                  return musicNote();
-                }
-                return Image.memory(
-                  asyncSnapshot.data!,
-                  width: size,
-                  height: size,
-                  fit: BoxFit.cover,
-                  errorBuilder: (context, error, stackTrace) {
-                    return musicNote();
-                  },
-                );
-              },
-            ),
+      child: Image.memory(
+        tmpPictureBytes,
+        width: size,
+        height: size,
+        fit: BoxFit.cover,
+        errorBuilder: (context, error, stackTrace) {
+          return musicNote();
+        },
+      ),
     );
   }
 

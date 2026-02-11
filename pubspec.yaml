@@ -36,9 +36,9 @@ dependencies:
   provider: ^6.1.5+1
   file_picker: ^10.3.3
   permission_handler: ^12.0.1
-  audio_metadata_reader:
+  audio_tags_lofty:
    git:
-      url: https://github.com/AfalpHy/audio_metadata_reader.git
+      url: https://github.com/AfalpHy/audio_tags_lofty.git
       ref: main
   marquee: ^2.3.0
   audio_service: ^0.18.18
@@ -75,6 +75,7 @@ dependencies:
   google_fonts: ^7.0.2
   msix: ^3.16.12
   flutter_overlay_window: ^0.5.0
+  ffi: ^2.1.5
 
 dev_dependencies:
   flutter_test:

@@ -1,37 +1,38 @@
-import 'dart:io';
+import 'dart:typed_data';
 
-import 'package:audio_metadata_reader/audio_metadata_reader.dart';
+import 'package:audio_tags_lofty/audio_tags.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common_widgets/lyrics.dart';
 
 class MyAudioMetadata {
-  final AudioMetadata _audioMetadata;
+  final String filePath;
   final DateTime modified;
-  String? picturePath;
+  final AudioMetadata _audioMetadata;
+
+  bool pictureLoaded = false;
   Color? coverArtColor;
   ParsedLyrics? parsedLyrics;
 
   final isFavoriteNotifier = ValueNotifier(false);
   final updateNotifier = ValueNotifier(0);
 
-  MyAudioMetadata(this._audioMetadata, this.modified, {this.picturePath});
+  MyAudioMetadata(this.filePath, this.modified, this._audioMetadata);
 
   String? get title => _audioMetadata.title;
   String? get artist => _audioMetadata.artist;
   String? get album => _audioMetadata.album;
-  String? get lyrics => _audioMetadata.lyrics;
-
   Duration? get duration => _audioMetadata.duration;
 
-  List<Picture> get pictures => _audioMetadata.pictures;
+  String? get lyrics => _audioMetadata.lyrics;
 
-  File get file => _audioMetadata.file;
-  String get filePath => _audioMetadata.file.path;
+  Uint8List? get pictureBytes => _audioMetadata.pictureBytes;
+
+  bool get noPicture => pictureLoaded && pictureBytes == null;
 
   set title(String? value) => _audioMetadata.title = value;
   set artist(String? value) => _audioMetadata.artist = value;
   set album(String? value) => _audioMetadata.album = value;
   set lyrics(String? value) => _audioMetadata.lyrics = value;
   set duration(Duration? value) => _audioMetadata.duration = value;
-  set pictures(List<Picture> value) => _audioMetadata.pictures = value;
+  set pictureBytes(Uint8List? value) => _audioMetadata.pictureBytes = value;
 }

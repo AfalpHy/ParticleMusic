@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:audio_metadata_reader/audio_metadata_reader.dart';
+import 'package:audio_tags_lofty/audio_tags.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/folder_manager.dart';
 import 'package:particle_music/my_audio_metadata.dart';
@@ -147,20 +147,16 @@ class LibraryManager {
 
     for (final map in list) {
       final path = map['path'] as String;
-      String? picturePath = map['picturePath'] as String?;
       filePath2LibrarySong[path] = MyAudioMetadata(
+        revertFilePathIfNeed(path),
+        DateTime.fromMillisecondsSinceEpoch(map['modified'] as int),
         AudioMetadata(
           title: map['title'] as String?,
           artist: map['artist'] as String?,
           album: map['album'] as String?,
           duration: Duration(milliseconds: map['duration'] as int),
           lyrics: map['lyrics'] as String?,
-          file: File(revertFilePathIfNeed(path)),
         ),
-        DateTime.fromMillisecondsSinceEpoch(map['modified'] as int),
-        picturePath: picturePath != null
-            ? revertFilePathIfNeed(picturePath, appSupport: true)
-            : null,
       );
     }
   }
@@ -174,9 +170,6 @@ class LibraryManager {
       'album': song.album,
       'duration': song.duration?.inMilliseconds,
       'lyrics': song.lyrics,
-      'picturePath': song.picturePath != null
-          ? clipFilePathIfNeed(song.picturePath!, appSupport: true)
-          : null,
     };
   }
 

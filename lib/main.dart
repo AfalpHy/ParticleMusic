@@ -29,6 +29,7 @@ Future<void> main() async {
 
   appDocs = await getApplicationDocumentsDirectory();
   appSupportDir = await getApplicationSupportDirectory();
+  tmpDir = await getTemporaryDirectory();
 
   if (isMobile) {
     await logger.init();

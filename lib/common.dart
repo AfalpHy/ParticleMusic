@@ -17,6 +17,8 @@ import 'package:particle_music/setting_manager.dart';
 
 late Directory appDocs;
 late Directory appSupportDir;
+late Directory tmpDir;
+
 late double appWidth;
 
 final isMobile = Platform.isAndroid || Platform.isIOS;

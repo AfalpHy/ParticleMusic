@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:audio_metadata_reader/audio_metadata_reader.dart';
+import 'package:audio_tags_lofty/audio_tags.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/my_audio_metadata.dart';
@@ -135,21 +135,11 @@ class Folder {
       final modified = (await file.stat()).modified;
 
       if (song?.modified != modified) {
-        // delete outdated picture if it exists
-        deletePicture(song);
-
         final tmp = _tryReadMetadata(File(file.path));
 
         if (tmp != null) {
-          song = MyAudioMetadata(tmp, modified);
-          File picture = File(
-            "${appSupportDir.path}/picture/${song.hashCode}_${DateTime.now().microsecondsSinceEpoch}",
-          );
-          if (song.pictures.isNotEmpty) {
-            await picture.create(recursive: true);
-            await picture.writeAsBytes(song.pictures.first.bytes);
-            song.picturePath = picture.path;
-          }
+          song = MyAudioMetadata(file.path, modified, tmp);
+
           if (isAdditional) {
             additionalSongList.add(song);
             libraryAdditionalSongList.add(song);
@@ -174,7 +164,7 @@ class Folder {
 
   AudioMetadata? _tryReadMetadata(File file) {
     try {
-      return readMetadata(File(file.path), getImage: true);
+      return readMetadata(file.path, false);
     } catch (e) {
       logger.output(e.toString());
       return null;

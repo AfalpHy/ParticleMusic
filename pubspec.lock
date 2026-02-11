@@ -25,15 +25,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.13.0"
-  audio_metadata_reader:
-    dependency: "direct main"
-    description:
-      path: "."
-      ref: main
-      resolved-ref: a4dbc1ee493106f836b8dc030d672456473dec2e
-      url: "https://github.com/AfalpHy/audio_metadata_reader.git"
-    source: git
-    version: "1.4.2"
   audio_service:
     dependency: "direct main"
     description:
@@ -83,6 +74,15 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.2.2"
+  audio_tags_lofty:
+    dependency: "direct main"
+    description:
+      path: "."
+      ref: main
+      resolved-ref: "413058fd87aaa5c732271dfcc165975675a40c16"
+      url: "https://github.com/AfalpHy/audio_tags_lofty.git"
+    source: git
+    version: "0.0.1"
   auto_size_text:
     dependency: "direct main"
     description:
@@ -107,14 +107,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.0"
-  charset:
-    dependency: transitive
-    description:
-      name: charset
-      sha256: "27802032a581e01ac565904ece8c8962564b1070690794f0072f6865958ce8b9"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.1"
   cli_util:
     dependency: transitive
     description:
@@ -212,7 +204,7 @@ packages:
     source: hosted
     version: "1.3.3"
   ffi:
-    dependency: transitive
+    dependency: "direct main"
     description:
       name: ffi
       sha256: d07d37192dbf97461359c1518788f203b0c9102cfd2c35a716b823741219542c
@@ -543,14 +535,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.17.0"
-  mime:
-    dependency: transitive
-    description:
-      name: mime
-      sha256: "41a20518f0cb1256669420fdba0cd90d21561e560ac240f26ef8322e45bb7ed6"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.0.0"
   msix:
     dependency: "direct main"
     description:
@@ -1063,5 +1047,5 @@ packages:
     source: hosted
     version: "3.1.3"
 sdks:
-  dart: ">=3.10.0 <4.0.0"
+  dart: ">=3.10.7 <4.0.0"
   flutter: ">=3.38.0"

@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:audio_metadata_reader/audio_metadata_reader.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
@@ -23,8 +22,8 @@ void showSongMetadataDialog(BuildContext context, MyAudioMetadata song) async {
   final albumTextController = TextEditingController();
   albumTextController.text = originalAlbum;
 
-  final ValueNotifier<Picture?> coverArtNotifier = ValueNotifier(
-    getCoverArt(song),
+  final ValueNotifier<Uint8List?> coverArtNotifier = ValueNotifier(
+    getPictureBytes(song),
   );
   final l10n = AppLocalizations.of(context);
 
@@ -75,7 +74,7 @@ void showSongMetadataDialog(BuildContext context, MyAudioMetadata song) async {
                           if (titleTextController.text != originalTitle ||
                               artistTextController.text != originalArtist ||
                               albumTextController.text != originalAlbum ||
-                              coverArtNotifier.value != getCoverArt(song)) {
+                              coverArtNotifier.value != getPictureBytes(song)) {
                             song.title = titleTextController.text == ''
                                 ? null
                                 : titleTextController.text;
@@ -86,17 +85,9 @@ void showSongMetadataDialog(BuildContext context, MyAudioMetadata song) async {
                                 ? null
                                 : albumTextController.text;
 
-                            song.pictures = coverArtNotifier.value == null
-                                ? []
-                                : [coverArtNotifier.value!];
+                            song.pictureBytes = coverArtNotifier.value;
 
                             try {
-                              updateMetadata(song.file, (metadata) {
-                                metadata.setTitle(song.title);
-                                metadata.setArtist(song.artist);
-                                metadata.setAlbum(song.album);
-                                metadata.setPictures(song.pictures);
-                              });
                               if (context.mounted) {
                                 showCenterMessage(
                                   context,
@@ -166,30 +157,11 @@ void showSongMetadataDialog(BuildContext context, MyAudioMetadata song) async {
                                       file.bytes ??
                                       await File(file.path!).readAsBytes();
 
-                                  // mimeType is not that important, use image/jpeg as default
-                                  String mimeType = 'image/jpeg';
-                                  if (file.extension != null) {
-                                    final ext = file.extension!.toLowerCase();
-                                    if (ext == 'png') {
-                                      mimeType = 'image/png';
-                                    } else if (ext == 'gif') {
-                                      mimeType = 'image/gif';
-                                    } else if (ext == 'bmp') {
-                                      mimeType = 'image/bmp';
-                                    } else if (ext == 'webp') {
-                                      mimeType = 'image/webp';
-                                    }
-                                  }
-
-                                  coverArtNotifier.value = Picture(
-                                    bytes,
-                                    mimeType,
-                                    PictureType.coverFront,
-                                  );
+                                  coverArtNotifier.value = bytes;
                                 },
                                 child: CoverArtWidget(
                                   song: song,
-                                  picture: coverArt,
+                                  pictureBytes: coverArt,
                                   size: 180,
                                   borderRadius: 10,
                                 ),
