@@ -1,6 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
+import 'package:audio_tags_lofty/audio_tags.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
@@ -22,7 +23,7 @@ void showSongMetadataDialog(BuildContext context, MyAudioMetadata song) async {
   final albumTextController = TextEditingController();
   albumTextController.text = originalAlbum;
 
-  final ValueNotifier<Uint8List?> coverArtNotifier = ValueNotifier(
+  final ValueNotifier<Uint8List?> pictureBytesNotifier = ValueNotifier(
     getPictureBytes(song),
   );
   final l10n = AppLocalizations.of(context);
@@ -74,7 +75,8 @@ void showSongMetadataDialog(BuildContext context, MyAudioMetadata song) async {
                           if (titleTextController.text != originalTitle ||
                               artistTextController.text != originalArtist ||
                               albumTextController.text != originalAlbum ||
-                              coverArtNotifier.value != getPictureBytes(song)) {
+                              pictureBytesNotifier.value !=
+                                  getPictureBytes(song)) {
                             song.title = titleTextController.text == ''
                                 ? null
                                 : titleTextController.text;
@@ -85,9 +87,17 @@ void showSongMetadataDialog(BuildContext context, MyAudioMetadata song) async {
                                 ? null
                                 : albumTextController.text;
 
-                            song.pictureBytes = coverArtNotifier.value;
+                            song.pictureBytes = pictureBytesNotifier.value;
 
                             try {
+                              writeMetadata(
+                                path: song.filePath,
+                                title: song.title,
+                                artist: song.artist,
+                                album: song.album,
+                                lyrics: null,
+                                pictureBytes: song.pictureBytes,
+                              );
                               if (context.mounted) {
                                 showCenterMessage(
                                   context,
@@ -134,8 +144,8 @@ void showSongMetadataDialog(BuildContext context, MyAudioMetadata song) async {
                   child: Row(
                     children: [
                       ValueListenableBuilder(
-                        valueListenable: coverArtNotifier,
-                        builder: (context, coverArt, child) {
+                        valueListenable: pictureBytesNotifier,
+                        builder: (context, pictureBytes, child) {
                           return Tooltip(
                             message: l10n.replacePicture,
                             child: MouseRegion(
@@ -157,11 +167,11 @@ void showSongMetadataDialog(BuildContext context, MyAudioMetadata song) async {
                                       file.bytes ??
                                       await File(file.path!).readAsBytes();
 
-                                  coverArtNotifier.value = bytes;
+                                  pictureBytesNotifier.value = bytes;
                                 },
                                 child: CoverArtWidget(
                                   song: song,
-                                  pictureBytes: coverArt,
+                                  pictureBytes: pictureBytes,
                                   size: 180,
                                   borderRadius: 10,
                                 ),
