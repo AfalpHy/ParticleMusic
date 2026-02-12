@@ -25,28 +25,36 @@ class CoverArtWidget extends StatelessWidget {
     tmpPictureBytes ??= getPictureBytes(song);
     if (tmpPictureBytes == null) {
       if (song == null || song!.noPicture) {
-        return musicNote();
+        return SmoothClipRRect(
+          smoothness: 1,
+          borderRadius: BorderRadius.circular(borderRadius),
+          child: musicNote(),
+        );
       }
-      return FutureBuilder(
-        future: loadPictureBytes(song),
-        builder: (context, asyncSnapshot) {
-          if (asyncSnapshot.connectionState == ConnectionState.waiting) {
-            return SizedBox(width: size, height: size);
-          }
+      return SmoothClipRRect(
+        smoothness: 1,
+        borderRadius: BorderRadius.circular(borderRadius),
+        child: FutureBuilder(
+          future: loadPictureBytes(song),
+          builder: (context, asyncSnapshot) {
+            if (asyncSnapshot.connectionState == ConnectionState.waiting) {
+              return SizedBox(width: size, height: size);
+            }
 
-          if (asyncSnapshot.hasError || asyncSnapshot.data == null) {
-            return musicNote();
-          }
-          return Image.memory(
-            asyncSnapshot.data!,
-            width: size,
-            height: size,
-            fit: BoxFit.cover,
-            errorBuilder: (context, error, stackTrace) {
+            if (asyncSnapshot.hasError || asyncSnapshot.data == null) {
               return musicNote();
-            },
-          );
-        },
+            }
+            return Image.memory(
+              asyncSnapshot.data!,
+              width: size,
+              height: size,
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return musicNote();
+              },
+            );
+          },
+        ),
       );
     }
 

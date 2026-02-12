@@ -121,21 +121,13 @@ class Folder {
     List<MyAudioMetadata> additionalSongList = [];
 
     await for (final file in _dir.list()) {
-      if (!(file.path.endsWith('.mp3') ||
-          file.path.endsWith('.flac') ||
-          file.path.endsWith('.ogg') ||
-          file.path.endsWith('.wav') ||
-          file.path.endsWith('.opus'))) {
-        continue;
-      }
-
       String path = clipFilePathIfNeed(file.path);
       MyAudioMetadata? song = filePath2LibrarySong[path];
       bool isAdditional = song == null;
       final modified = (await file.stat()).modified;
 
       if (song?.modified != modified) {
-        final tmp = _tryReadMetadata(File(file.path));
+        final tmp = readMetadata(file.path, false);
 
         if (tmp != null) {
           song = MyAudioMetadata(file.path, modified, tmp);
@@ -160,15 +152,6 @@ class Folder {
     await setSongList(_songFilePathListFile, additionalSongList, songList);
 
     await update();
-  }
-
-  AudioMetadata? _tryReadMetadata(File file) {
-    try {
-      return readMetadata(file.path, false);
-    } catch (e) {
-      logger.output(e.toString());
-      return null;
-    }
   }
 
   Future<void> update() async {
