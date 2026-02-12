@@ -420,8 +420,6 @@ void exitApp() async {
   if (_exited) {
     return;
   }
-  // make sure the music stops after exiting
-  await audioHandler.stop();
 
   lyricsWindowController!.close();
   await SingleInstance.end();
