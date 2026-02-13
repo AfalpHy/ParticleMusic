@@ -88,9 +88,11 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
     } else if (ranking != null) {
       songList = historyManager.rankingSongList;
       title = ranking!;
+      rankingChangeNotifier.addListener(updateSongList);
     } else if (recently != null) {
       songList = historyManager.recentlySongList;
       title = recently!;
+      recentlyChangeNotifier.addListener(updateSongList);
     } else {
       songList = librarySongList;
       librarySongListUpdateNotifier.addListener(updateSongList);
@@ -106,6 +108,10 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
       playlist!.updateNotifier.removeListener(updateSongList);
     } else if (folder != null) {
       folder!.updateNotifier.removeListener(updateSongList);
+    } else if (ranking != null) {
+      rankingChangeNotifier.removeListener(updateSongList);
+    } else if (recently != null) {
+      recentlyChangeNotifier.removeListener(updateSongList);
     } else if (isLibrary) {
       librarySongListUpdateNotifier.removeListener(updateSongList);
     }

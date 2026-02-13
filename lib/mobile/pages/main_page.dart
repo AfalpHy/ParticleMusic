@@ -282,16 +282,9 @@ class HomePageState extends State<HomePage> {
           leading: ImageIcon(rankingImage, size: 35, color: iconColor),
           title: Text(l10n.ranking),
           onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => ValueListenableBuilder(
-                  valueListenable: rankingChangeNotifier,
-                  builder: (context, value, child) {
-                    return RankingPage();
-                  },
-                ),
-              ),
-            );
+            Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => RankingPage()));
           },
         ),
 
@@ -299,16 +292,9 @@ class HomePageState extends State<HomePage> {
           leading: ImageIcon(recentlyImage, size: 35, color: iconColor),
           title: Text(l10n.recently),
           onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => ValueListenableBuilder(
-                  valueListenable: recentlyChangeNotifier,
-                  builder: (context, value, child) {
-                    return RecentlyPage();
-                  },
-                ),
-              ),
-            );
+            Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => RecentlyPage()));
           },
         ),
       ],

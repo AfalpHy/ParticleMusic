@@ -93,7 +93,10 @@ class HistoryManager {
       jsonEncode(rankingItemList.map((e) => e.toMap()).toList()),
     );
 
-    rankingSongList = rankingItemList.map((e) => e.song).toList();
+    rankingSongList
+      ..clear()
+      ..addAll(rankingItemList.map((e) => e.song));
+
     if (!isMobile) {
       panelManager.updateBackground();
     }

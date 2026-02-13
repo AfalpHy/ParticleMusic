@@ -174,7 +174,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                       sortTypeNotifier.value > 0;
                   if (isFixed) {
                     return SizedBox(
-                      key: ValueKey(index),
+                      key: ValueKey(songList[index]),
                       child: songListItemWithContextMenu(
                         context,
                         index,
