@@ -71,26 +71,16 @@ void showSongMetadataDialog(BuildContext context, MyAudioMetadata song) async {
 
                           if (titleTextController.text != originalTitle) {
                             writeTitle = titleTextController.text;
-                            song.title = titleTextController.text.isNotEmpty
-                                ? titleTextController.text
-                                : null;
                           }
                           if (artistTextController.text != originalArtist) {
                             writeArtist = artistTextController.text;
-                            song.artist = artistTextController.text.isNotEmpty
-                                ? artistTextController.text
-                                : null;
                           }
                           if (albumTextController.text != originalArtist) {
                             writeAlbum = albumTextController.text;
-                            song.album = albumTextController.text.isNotEmpty
-                                ? albumTextController.text
-                                : null;
                           }
                           if (pictureBytesNotifier.value !=
                               getPictureBytes(song)) {
                             writePictureBytes = pictureBytesNotifier.value;
-                            song.pictureBytes = pictureBytesNotifier.value;
                           }
 
                           bool success = writeMetadata(
@@ -101,26 +91,33 @@ void showSongMetadataDialog(BuildContext context, MyAudioMetadata song) async {
                             lyrics: null,
                             pictureBytes: writePictureBytes,
                           );
-                          if (success && context.mounted) {
-                            showCenterMessage(
-                              context,
-                              l10n.updateSuccessfully,
-                              duration: 2000,
-                            );
-                          } else if (context.mounted) {
-                            showCenterMessage(
-                              context,
-                              l10n.updateFailed,
-                              duration: 2000,
-                            );
-                          }
+                          if (success) {
+                            song.title = titleTextController.text.isNotEmpty
+                                ? titleTextController.text
+                                : null;
+                            song.artist = artistTextController.text.isNotEmpty
+                                ? artistTextController.text
+                                : null;
 
-                          song.updateNotifier.value++;
-                          if (!isMobile) {
-                            panelManager.updateBackground();
-                          }
+                            song.album = albumTextController.text.isNotEmpty
+                                ? albumTextController.text
+                                : null;
+                            song.pictureBytes = pictureBytesNotifier.value;
+                            song.coverArtColor = null;
 
+                            song.updateNotifier.value++;
+                            if (!isMobile) {
+                              panelManager.updateBackground();
+                            }
+                          }
                           if (context.mounted) {
+                            showCenterMessage(
+                              context,
+                              success
+                                  ? l10n.updateSuccessfully
+                                  : l10n.updateFailed,
+                              duration: 2000,
+                            );
                             Navigator.pop(context);
                           }
                         }
