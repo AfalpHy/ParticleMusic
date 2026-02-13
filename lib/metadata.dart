@@ -60,73 +60,64 @@ void showSongMetadataDialog(BuildContext context, MyAudioMetadata song) async {
                       icon: Icon(Icons.check_rounded),
 
                       onPressed: () async {
-                        if (song == currentSongNotifier.value) {
-                          showCenterMessage(
-                            context,
-                            l10n.canNotUpdate,
-                            duration: 2000,
-                          );
-                          return;
-                        }
                         if (await showConfirmDialog(
                           context,
                           l10n.updateMedata,
                         )) {
-                          if (titleTextController.text != originalTitle ||
-                              artistTextController.text != originalArtist ||
-                              albumTextController.text != originalAlbum ||
-                              pictureBytesNotifier.value !=
-                                  getPictureBytes(song)) {
-                            song.title = titleTextController.text == ''
-                                ? null
-                                : titleTextController.text;
-                            song.artist = artistTextController.text == ''
-                                ? null
-                                : artistTextController.text;
-                            song.album = albumTextController.text == ''
-                                ? null
-                                : albumTextController.text;
+                          String? writeTitle;
+                          String? writeArtist;
+                          String? writeAlbum;
+                          Uint8List? writePictureBytes;
 
+                          if (titleTextController.text != originalTitle) {
+                            writeTitle = titleTextController.text;
+                            song.title = titleTextController.text.isNotEmpty
+                                ? titleTextController.text
+                                : null;
+                          }
+                          if (artistTextController.text != originalArtist) {
+                            writeArtist = artistTextController.text;
+                            song.artist = artistTextController.text.isNotEmpty
+                                ? artistTextController.text
+                                : null;
+                          }
+                          if (albumTextController.text != originalArtist) {
+                            writeAlbum = albumTextController.text;
+                            song.album = albumTextController.text.isNotEmpty
+                                ? albumTextController.text
+                                : null;
+                          }
+                          if (pictureBytesNotifier.value !=
+                              getPictureBytes(song)) {
+                            writePictureBytes = pictureBytesNotifier.value;
                             song.pictureBytes = pictureBytesNotifier.value;
+                          }
 
-                            try {
-                              writeMetadata(
-                                path: song.filePath,
-                                title: song.title,
-                                artist: song.artist,
-                                album: song.album,
-                                lyrics: null,
-                                pictureBytes: song.pictureBytes,
-                              );
-                              if (context.mounted) {
-                                showCenterMessage(
-                                  context,
-                                  l10n.updateSuccessfully,
-                                  duration: 2000,
-                                );
-                              }
-                            } catch (_) {
-                              if (context.mounted) {
-                                showCenterMessage(
-                                  context,
-                                  l10n.updateFailed,
-                                  duration: 2000,
-                                );
-                              }
-                            }
+                          bool success = writeMetadata(
+                            path: song.filePath,
+                            title: writeTitle,
+                            artist: writeArtist,
+                            album: writeAlbum,
+                            lyrics: null,
+                            pictureBytes: writePictureBytes,
+                          );
+                          if (success && context.mounted) {
+                            showCenterMessage(
+                              context,
+                              l10n.updateSuccessfully,
+                              duration: 2000,
+                            );
+                          } else if (context.mounted) {
+                            showCenterMessage(
+                              context,
+                              l10n.updateFailed,
+                              duration: 2000,
+                            );
+                          }
 
-                            song.updateNotifier.value++;
-                            if (!isMobile) {
-                              panelManager.updateBackground();
-                            }
-                          } else {
-                            if (context.mounted) {
-                              showCenterMessage(
-                                context,
-                                l10n.nothingNeedToUpdate,
-                                duration: 2000,
-                              );
-                            }
+                          song.updateNotifier.value++;
+                          if (!isMobile) {
+                            panelManager.updateBackground();
                           }
 
                           if (context.mounted) {
