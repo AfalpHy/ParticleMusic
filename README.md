@@ -6,9 +6,34 @@
 
 A cross-platform local music player supporting Android, iOS, Windows, Linux and macOS. This project is built for learning Flutter and having some fun.
 
+## Supported Formats
+
+| File Format | Metadata Format(s)           |
+|-------------|------------------------------|
+| AAC (ADTS)  | `ID3v2`, `ID3v1`             |
+| Ape         | `APE`, `ID3v2`\*, `ID3v1`    |
+| AIFF        | `ID3v2`, `Text Chunks`       |
+| FLAC        | `Vorbis Comments`, `ID3v2`\* |
+| MP3         | `ID3v2`, `ID3v1`, `APE`      |
+| MP4         | `iTunes-style ilst`          |
+| MPC         | `APE`, `ID3v2`\*, `ID3v1`\*  |
+| Opus        | `Vorbis Comments`            |
+| Ogg Vorbis  | `Vorbis Comments`            |
+| Speex       | `Vorbis Comments`            |
+| WAV         | `ID3v2`, `RIFF INFO`         |
+| WavPack     | `APE`, `ID3v1`               |
+
+\* The tag will be **read only**, due to lack of official support
+
+## Audio Processing
+
+- [audio_tags_lofty](https://github.com/AfalpHy/audio_tags_lofty.git) — for reading and writing audio tags (based on lofty)
+- [media_kit](https://github.com/media-kit/media-kit.git) — for audio playback (based on mpv/FFmpeg)
+
+
 ## Run & Build
 Install Flutter by following the [official Flutter installation guide](https://docs.flutter.dev/install/manual).
-### Debian
+### Ubuntu/Debian
 ``` shell
 # Flutter dependencies:
 sudo apt install clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev

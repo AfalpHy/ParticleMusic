@@ -2,7 +2,7 @@
 
 # ---------- CONFIG ----------
 APP_NAME="ParticleMusic"           # Executable name
-APP_VERSION="1.0.11"               # Debian version
+APP_VERSION="1.0.12"               # Debian version
 MAINTAINER="AfalpHy"
 EXECUTABLE="build/linux/x64/release/bundle/$APP_NAME"
 DATA="build/linux/x64/release/bundle/data"

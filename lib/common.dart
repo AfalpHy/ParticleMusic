@@ -13,6 +13,8 @@ import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/setting_manager.dart';
 
+const String versionNumber = '1.0.12';
+
 // ===================================== App =====================================
 
 late Directory appDocs;

@@ -862,7 +862,7 @@ class SettingsList extends StatelessWidget {
                         ),
                         child: const LicensePage(
                           applicationName: 'Particle Music',
-                          applicationVersion: '1.0.11',
+                          applicationVersion: versionNumber,
                           applicationLegalese: '© 2025-2026 AfalpHy',
                         ),
                       ),
