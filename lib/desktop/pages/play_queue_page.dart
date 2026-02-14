@@ -28,6 +28,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
       playQueue.length,
       (_) => ValueNotifier(false),
     );
+    continuousSelectBeginIndex = 0;
   }
 
   void jumpToCurrentSong() {
