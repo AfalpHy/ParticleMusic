@@ -15,13 +15,23 @@ class PlayQueueSheet extends StatefulWidget {
 class PlayQueueSheetState extends State<PlayQueueSheet> {
   final scrollController = ScrollController();
 
+  void jumpToCurrentSong() {
+    final position = scrollController.position;
+    final maxScrollExtent = position.maxScrollExtent;
+    final minScrollExtent = position.minScrollExtent;
+    scrollController.jumpTo(
+      (54.0 * audioHandler.currentIndex).clamp(
+        minScrollExtent,
+        maxScrollExtent,
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      if (audioHandler.currentIndex > 3) {
-        scrollController.jumpTo(54.0 * audioHandler.currentIndex - 162);
-      }
+      jumpToCurrentSong();
     });
   }
 
@@ -54,13 +64,22 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
 
                 IconButton(
                   color: Colors.black,
+                  onPressed: () {
+                    audioHandler.reversePlayQueue();
+                    jumpToCurrentSong();
+                    setState(() {});
+                  },
+                  icon: ImageIcon(reverseImage),
+                ),
+
+                IconButton(
+                  color: Colors.black,
                   icon: ImageIcon(
                     playModeNotifier.value == 0
                         ? loopImage
                         : playModeNotifier.value == 1
                         ? shuffleImage
                         : repeatImage,
-                    size: 25,
                   ),
                   onPressed: () {
                     if (playModeNotifier.value != 2) {
@@ -73,17 +92,8 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                           showCenterMessage(context, l10n.shuffle);
                           break;
                       }
-                      setState(() {
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          scrollController.animateTo(
-                            54.0 * audioHandler.currentIndex - 162,
-                            duration: Duration(
-                              milliseconds: 300,
-                            ), // smooth animation
-                            curve: Curves.linear,
-                          );
-                        });
-                      });
+                      jumpToCurrentSong();
+                      setState(() {});
                     }
                   },
                   onLongPress: () {
@@ -99,14 +109,19 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                         showCenterMessage(context, l10n.repeat);
                         break;
                     }
-                    setState(() {});
                   },
                 ),
                 IconButton(
                   color: Colors.black,
                   onPressed: () {
+                    final position = scrollController.position;
+                    final maxScrollExtent = position.maxScrollExtent;
+                    final minScrollExtent = position.minScrollExtent;
                     scrollController.animateTo(
-                      54.0 * audioHandler.currentIndex - 162,
+                      (54.0 * audioHandler.currentIndex).clamp(
+                        minScrollExtent,
+                        maxScrollExtent,
+                      ),
                       duration: Duration(milliseconds: 300),
                       curve: Curves.linear,
                     );

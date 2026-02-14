@@ -30,6 +30,18 @@ class PlayQueuePageState extends State<PlayQueuePage> {
     );
   }
 
+  void jumpToCurrentSong() {
+    final position = scrollController.position;
+    final maxScrollExtent = position.maxScrollExtent;
+    final minScrollExtent = position.minScrollExtent;
+    scrollController.jumpTo(
+      (itemExtend * audioHandler.currentIndex).clamp(
+        minScrollExtent,
+        maxScrollExtent,
+      ),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -110,6 +122,8 @@ class PlayQueuePageState extends State<PlayQueuePage> {
           color: isMiniMode ? Colors.grey.shade100 : Colors.black,
           onPressed: () {
             audioHandler.reversePlayQueue();
+            jumpToCurrentSong();
+
             setState(() {
               updateIsSelectedList();
             });
@@ -139,17 +153,10 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                       showCenterMessage(context, l10n.shuffle);
                       break;
                   }
+                  jumpToCurrentSong();
+
+                  setState(() {});
                 }
-                setState(() {
-                  WidgetsBinding.instance.addPostFrameCallback((_) {
-                    // using animateTo to avoid overscroll
-                    scrollController.animateTo(
-                      itemExtend * audioHandler.currentIndex,
-                      duration: Duration(milliseconds: 300),
-                      curve: Curves.linear,
-                    );
-                  });
-                });
               },
               onLongPress: () {
                 audioHandler.toggleRepeat();
@@ -172,8 +179,14 @@ class PlayQueuePageState extends State<PlayQueuePage> {
         IconButton(
           color: isMiniMode ? Colors.grey.shade100 : Colors.black,
           onPressed: () {
+            final position = scrollController.position;
+            final maxScrollExtent = position.maxScrollExtent;
+            final minScrollExtent = position.minScrollExtent;
             scrollController.animateTo(
-              itemExtend * audioHandler.currentIndex,
+              (itemExtend * audioHandler.currentIndex).clamp(
+                minScrollExtent,
+                maxScrollExtent,
+              ),
               duration: Duration(milliseconds: 300),
               curve: Curves.linear,
             );
