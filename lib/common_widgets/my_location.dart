@@ -34,11 +34,15 @@ class MyLocation extends StatelessWidget {
                     ? IconButton(
                         color: iconColor,
                         onPressed: () {
+                          final position = scrollController.position;
+                          final maxScrollExtent = position.maxScrollExtent;
+                          final minScrollExtent = position.minScrollExtent;
                           scrollController.animateTo(
-                            60 * index.toDouble() + offset,
-                            duration: Duration(
-                              milliseconds: 300,
-                            ), // smooth animation
+                            (60 * index + offset).clamp(
+                              minScrollExtent,
+                              maxScrollExtent,
+                            ),
+                            duration: Duration(milliseconds: 300),
                             curve: Curves.linear,
                           );
                         },
