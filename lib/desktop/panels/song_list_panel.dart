@@ -548,7 +548,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                 textController.text.isEmpty &&
                 sortTypeNotifier.value == 0)
               MenuAction(
-                title: l10n.moveToTop,
+                title: l10n.move2Top,
                 image: MenuImage.icon(Icons.vertical_align_top_rounded),
                 callback: () async {
                   final item = songList.removeAt(index);

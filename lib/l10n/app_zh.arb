@@ -52,7 +52,7 @@
   "shuffle": "随机播放",
   "repeat": "单曲循环",
   "playAll": "播放全部",
-  "moveToTop": "移至顶部",
+  "move2Top": "移至顶部",
   "playNow": "现在播放",
   "playNext": "下一首播放",
   "editMetadata": "编辑元数据",

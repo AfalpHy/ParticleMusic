@@ -176,7 +176,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playAll => 'Play All';
 
   @override
-  String get moveToTop => 'Move To Top';
+  String get move2Top => 'Move to Top';
 
   @override
   String get playNow => 'Play Now';

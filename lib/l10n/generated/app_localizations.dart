@@ -416,11 +416,11 @@ abstract class AppLocalizations {
   /// **'Play All'**
   String get playAll;
 
-  /// No description provided for @moveToTop.
+  /// No description provided for @move2Top.
   ///
   /// In en, this message translates to:
-  /// **'Move To Top'**
-  String get moveToTop;
+  /// **'Move to Top'**
+  String get move2Top;
 
   /// No description provided for @playNow.
   ///
