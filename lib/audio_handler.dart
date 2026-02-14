@@ -282,6 +282,15 @@ class MyAudioHandler extends BaseAudioHandler {
     _savePlayQueueState();
   }
 
+  void reversePlayQueue() {
+    if (playQueue.isEmpty) {
+      return;
+    }
+    playQueue = playQueue.reversed.toList();
+    currentIndex = playQueue.indexOf(currentSongNotifier.value!);
+    saveAllStates();
+  }
+
   void shuffle() {
     if (playQueue.isEmpty) {
       return;

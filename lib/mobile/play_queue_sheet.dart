@@ -111,7 +111,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                       curve: Curves.linear,
                     );
                   },
-                  icon: Icon(Icons.my_location_rounded, size: 20),
+                  icon: ImageIcon(location),
                 ),
                 IconButton(
                   onPressed: () async {

@@ -22,24 +22,24 @@ class PlayQueuePageState extends State<PlayQueuePage> {
 
   late bool isMiniMode;
   double itemExtend = 64;
+
+  void updateIsSelectedList() {
+    isSelectedList = List.generate(
+      playQueue.length,
+      (_) => ValueNotifier(false),
+    );
+  }
+
   @override
   void initState() {
     super.initState();
     isMiniMode = miniModeNotifier.value;
+    updateIsSelectedList();
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-
-    if (playQueue.length != isSelectedList.length) {
-      isSelectedList = List.generate(
-        playQueue.length,
-        (_) => ValueNotifier(false),
-      );
-
-      continuousSelectBeginIndex = 0;
-    }
 
     return Column(
       children: [
@@ -106,6 +106,16 @@ class PlayQueuePageState extends State<PlayQueuePage> {
         ),
         Spacer(),
 
+        IconButton(
+          color: isMiniMode ? Colors.grey.shade100 : Colors.black,
+          onPressed: () {
+            audioHandler.reversePlayQueue();
+            setState(() {
+              updateIsSelectedList();
+            });
+          },
+          icon: ImageIcon(reverseImage),
+        ),
         ValueListenableBuilder(
           valueListenable: playModeNotifier,
           builder: (_, playMode, _) {
@@ -168,7 +178,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
               curve: Curves.linear,
             );
           },
-          icon: Icon(Icons.my_location_rounded, size: 20),
+          icon: ImageIcon(location),
         ),
         IconButton(
           onPressed: () async {
@@ -273,7 +283,9 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                   }
                 }
 
-                setState(() {});
+                setState(() {
+                  updateIsSelectedList();
+                });
                 if (playQueue.isEmpty) {
                   await audioHandler.clear();
                   displayPlayQueuePageNotifier.value = false;

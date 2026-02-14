@@ -166,6 +166,7 @@ const AssetImage gridImage = AssetImage('assets/images/grid.png');
 const AssetImage infoImage = AssetImage('assets/images/info.png');
 const AssetImage languageImage = AssetImage('assets/images/language.png');
 const AssetImage listImage = AssetImage('assets/images/list.png');
+const AssetImage location = AssetImage('assets/images/location.png');
 const AssetImage longArrowDownImage = AssetImage(
   'assets/images/long_arrow_down.png',
 );
@@ -206,6 +207,7 @@ const AssetImage recentlyImage = AssetImage('assets/images/recently.png');
 const AssetImage reloadImage = AssetImage('assets/images/reload.png');
 const AssetImage reorderImage = AssetImage('assets/images/reorder.png');
 const AssetImage repeatImage = AssetImage('assets/images/repeat.png');
+const AssetImage reverseImage = AssetImage('assets/images/reverse.png');
 const AssetImage selectImage = AssetImage('assets/images/select.png');
 const AssetImage sequenceImage = AssetImage('assets/images/sequence.png');
 const AssetImage shuffleImage = AssetImage('assets/images/shuffle.png');

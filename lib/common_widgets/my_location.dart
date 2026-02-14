@@ -42,7 +42,7 @@ class MyLocation extends StatelessWidget {
                             curve: Curves.linear,
                           );
                         },
-                        icon: Icon(Icons.my_location_outlined, size: 20),
+                        icon: ImageIcon(location),
                       )
                     : SizedBox.shrink();
               },
