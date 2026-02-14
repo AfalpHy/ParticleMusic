@@ -176,6 +176,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playAll => 'Play All';
 
   @override
+  String get moveToTop => 'Move To Top';
+
+  @override
   String get playNow => 'Play Now';
 
   @override
@@ -264,9 +267,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get updateFailed => 'Update failed';
-
-  @override
-  String get nothingNeedToUpdate => 'Nothing need to update';
 
   @override
   String get clear => 'Clear';

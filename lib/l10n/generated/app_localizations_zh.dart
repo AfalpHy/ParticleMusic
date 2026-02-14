@@ -176,6 +176,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get playAll => '播放全部';
 
   @override
+  String get moveToTop => '移至顶部';
+
+  @override
   String get playNow => '现在播放';
 
   @override
@@ -264,9 +267,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get updateFailed => '更新失败';
-
-  @override
-  String get nothingNeedToUpdate => '没有需要更新的内容';
 
   @override
   String get clear => '清空';

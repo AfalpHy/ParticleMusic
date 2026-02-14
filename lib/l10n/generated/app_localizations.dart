@@ -416,6 +416,12 @@ abstract class AppLocalizations {
   /// **'Play All'**
   String get playAll;
 
+  /// No description provided for @moveToTop.
+  ///
+  /// In en, this message translates to:
+  /// **'Move To Top'**
+  String get moveToTop;
+
   /// No description provided for @playNow.
   ///
   /// In en, this message translates to:
@@ -595,12 +601,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Update failed'**
   String get updateFailed;
-
-  /// No description provided for @nothingNeedToUpdate.
-  ///
-  /// In en, this message translates to:
-  /// **'Nothing need to update'**
-  String get nothingNeedToUpdate;
 
   /// No description provided for @clear.
   ///

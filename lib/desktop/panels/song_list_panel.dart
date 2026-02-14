@@ -543,6 +543,26 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
 
         return Menu(
           children: [
+            if (selectedCnt == 1 &&
+                (isLibrary || folder != null || playlist != null) &&
+                textController.text.isEmpty &&
+                sortTypeNotifier.value == 0)
+              MenuAction(
+                title: l10n.moveToTop,
+                image: MenuImage.icon(Icons.vertical_align_top_rounded),
+                callback: () async {
+                  final item = songList.removeAt(index);
+                  songList.insert(0, item);
+
+                  if (isLibrary) {
+                    libraryManager.update();
+                  } else if (folder != null) {
+                    folder!.update();
+                  } else {
+                    playlist!.update();
+                  }
+                },
+              ),
             MenuAction(
               title: l10n.playNow,
               image: MenuImage.icon(Icons.play_arrow_rounded),
