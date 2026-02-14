@@ -281,10 +281,14 @@ class PlayQueuePageState extends State<PlayQueuePage> {
               title: l10n.playNext,
               image: MenuImage.icon(Icons.navigate_next_rounded),
               callback: () async {
+                final List<MyAudioMetadata> tmpSongList = [];
                 for (int i = isSelectedList.length - 1; i >= 0; i--) {
                   if (isSelectedList[i].value) {
-                    audioHandler.insert2Next(playQueue[i]);
+                    tmpSongList.add(playQueue[i]);
                   }
+                }
+                for (int i = 0; i < tmpSongList.length; i++) {
+                  audioHandler.insert2Next(tmpSongList[i]);
                 }
                 audioHandler.saveAllStates();
                 setState(() {
