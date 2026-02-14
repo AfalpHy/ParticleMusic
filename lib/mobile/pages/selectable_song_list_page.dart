@@ -3,7 +3,6 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/my_auto_size_text.dart';
 import 'package:particle_music/folder_manager.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
-import 'package:particle_music/library_manager.dart';
 import 'package:particle_music/mobile/selectable_song_list_tile.dart';
 import 'package:particle_music/mobile/widgets/my_search_field.dart';
 import 'package:particle_music/mobile/widgets/my_sheet.dart';

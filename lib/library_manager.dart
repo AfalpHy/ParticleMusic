@@ -185,5 +185,3 @@ class LibraryManager {
     librarySongListUpdateNotifier.value++;
   }
 }
-
-LibraryManager libraryManager = LibraryManager();

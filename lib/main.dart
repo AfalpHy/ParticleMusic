@@ -14,7 +14,6 @@ import 'package:particle_music/desktop/pages/main_page.dart';
 import 'package:particle_music/desktop/pages/mini_mode_page.dart';
 import 'package:particle_music/desktop/single_instance.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
-import 'package:particle_music/library_manager.dart';
 import 'package:particle_music/mobile/overlay_lyrics.dart';
 import 'package:particle_music/mobile/pages/main_page.dart';
 import 'dart:async';

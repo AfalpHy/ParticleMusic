@@ -6,8 +6,26 @@ import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/utils.dart';
+import 'package:path/path.dart';
 
-late FolderManager folderManager;
+final Set<String> _loftySupportedExts = {
+  '.mp2',
+  '.mp3',
+  '.flac',
+  '.m4a',
+  '.m4r',
+  '.mp4',
+  '.aac',
+  '.wav',
+  '.aiff',
+  '.aif',
+  '.ogg',
+  '.opus',
+  '.ape',
+  '.mpc',
+  '.wv',
+  '.spx',
+};
 
 class FolderManager {
   late final File _folderPathListFile;
@@ -121,6 +139,13 @@ class Folder {
     List<MyAudioMetadata> additionalSongList = [];
 
     await for (final file in _dir.list()) {
+      if (file is! File) continue;
+
+      final ext = extension(file.path).toLowerCase();
+      if (!_loftySupportedExts.contains(ext)) {
+        continue;
+      }
+
       String path = clipFilePathIfNeed(file.path);
       MyAudioMetadata? song = filePath2LibrarySong[path];
       bool isAdditional = song == null;

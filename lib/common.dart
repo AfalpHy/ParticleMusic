@@ -5,7 +5,9 @@ import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/desktop/panels/panel_manager.dart';
+import 'package:particle_music/folder_manager.dart';
 import 'package:particle_music/history_manager.dart';
+import 'package:particle_music/library_manager.dart';
 import 'package:particle_music/logger.dart';
 import 'package:particle_music/common_widgets/lyrics.dart';
 import 'package:particle_music/mobile/pages/main_page.dart';
@@ -25,7 +27,9 @@ late double appWidth;
 
 final isMobile = Platform.isAndroid || Platform.isIOS;
 
-// ===================================== library =====================================
+// ===================================== Library =====================================
+
+LibraryManager libraryManager = LibraryManager();
 
 Set<String> filePathValidSet = {};
 
@@ -43,6 +47,10 @@ List<MapEntry<String, List<MyAudioMetadata>>> artistMapEntryList = [];
 List<MapEntry<String, List<MyAudioMetadata>>> albumMapEntryList = [];
 
 final ValueNotifier<bool> loadingLibraryNotifier = ValueNotifier(true);
+
+// ===================================== Folder =====================================
+
+late FolderManager folderManager;
 
 // ===================================== MiniMode =====================================
 
@@ -62,7 +70,6 @@ final ValueNotifier<bool> displayPlayQueuePageNotifier = ValueNotifier(false);
 
 // ===================================== Lyrics =====================================
 
-final ValueNotifier<int> currentIndexNotifier = ValueNotifier<int>(0);
 LyricLine? currentLyricLine;
 bool currentLyricLineIsKaraoke = false;
 
