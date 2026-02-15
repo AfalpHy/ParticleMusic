@@ -152,6 +152,9 @@ const AssetImage addImage = AssetImage('assets/images/add.png');
 const AssetImage albumImage = AssetImage('assets/images/album.png');
 const AssetImage arrowDownImage = AssetImage('assets/images/arrow_down.png');
 const AssetImage artistImage = AssetImage('assets/images/artist.png');
+const AssetImage checkUpdateImage = AssetImage(
+  'assets/images/check_update.png',
+);
 const AssetImage closeImage = AssetImage('assets/images/close.png');
 const AssetImage deleteImage = AssetImage('assets/images/delete.png');
 const AssetImage desktopLyricsImage = AssetImage(

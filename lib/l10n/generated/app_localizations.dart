@@ -745,6 +745,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Hide'**
   String get hide;
+
+  /// No description provided for @checkUpdate.
+  ///
+  /// In en, this message translates to:
+  /// **'Check Update'**
+  String get checkUpdate;
+
+  /// No description provided for @go2Download.
+  ///
+  /// In en, this message translates to:
+  /// **'Go to Download'**
+  String get go2Download;
+
+  /// No description provided for @alreadyLatest.
+  ///
+  /// In en, this message translates to:
+  /// **'Already on the latest version'**
+  String get alreadyLatest;
 }
 
 class _AppLocalizationsDelegate

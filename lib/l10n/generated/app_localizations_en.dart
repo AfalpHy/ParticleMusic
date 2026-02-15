@@ -339,4 +339,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get hide => 'Hide';
+
+  @override
+  String get checkUpdate => 'Check Update';
+
+  @override
+  String get go2Download => 'Go to Download';
+
+  @override
+  String get alreadyLatest => 'Already on the latest version';
 }

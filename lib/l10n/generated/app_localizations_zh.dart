@@ -339,4 +339,13 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get hide => '隐藏';
+
+  @override
+  String get checkUpdate => '检查更新';
+
+  @override
+  String get go2Download => '前往下载';
+
+  @override
+  String get alreadyLatest => '已经是最新版本';
 }

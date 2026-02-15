@@ -73,9 +73,10 @@ dependencies:
   lpinyin: ^2.0.3
   flex_color_picker: ^3.8.0
   google_fonts: ^7.0.2
-  msix: ^3.16.12
   flutter_overlay_window: ^0.5.0
   ffi: ^2.1.5
+  http: ^1.6.0
+  url_launcher: ^6.3.2
 
 dev_dependencies:
   flutter_test:
@@ -88,6 +89,8 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
   icons_launcher: ^3.0.3
+  msix: ^3.16.12
+
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

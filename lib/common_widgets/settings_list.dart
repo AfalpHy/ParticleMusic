@@ -1,18 +1,167 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
+import 'package:http/http.dart' as http;
 import 'package:particle_music/common.dart';
 import 'package:particle_music/mobile/sleep_timer.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/common_widgets/my_switch.dart';
 import 'package:particle_music/utils.dart';
 import 'package:smooth_corner/smooth_corner.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 class SettingsList extends StatelessWidget {
   const SettingsList({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    return ListView(
+      physics: ClampingScrollPhysics(),
+      children: [
+        if (!isMobile)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: SizedBox(
+              height: 64,
+              child: Center(
+                child: ListTile(
+                  leading: Icon(
+                    Icons.settings_outlined,
+                    size: 35,
+                    color: iconColor,
+                  ),
+                  title: Text(
+                    l10n.settings,
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  ),
+                ),
+              ),
+            ),
+          ),
+
+        if (!isMobile)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 20),
+            child: Divider(
+              thickness: 0.5,
+              height: 1,
+              color: enableCustomColorNotifier.value
+                  ? dividerColor
+                  : backgroundColor,
+            ),
+          ),
+
+        if (!isMobile) SizedBox(height: 10),
+
+        isMobile
+            ? ListTile(
+                leading: ImageIcon(infoImage, color: iconColor, size: 30),
+                title: Text(
+                  l10n.openSourceLicense,
+                  style: TextStyle(fontSize: 15),
+                ),
+                onTap: () {
+                  Navigator.of(context, rootNavigator: true).push(
+                    MaterialPageRoute(
+                      builder: (_) => Theme(
+                        data: ThemeData(
+                          colorScheme: ColorScheme.light(
+                            surface: Colors
+                                .grey
+                                .shade50, // <- this is what LicensePage uses
+                          ),
+                          appBarTheme: const AppBarTheme(
+                            scrolledUnderElevation: 0,
+                            centerTitle: true,
+                          ),
+                        ),
+                        child: const LicensePage(
+                          applicationName: 'Particle Music',
+                          applicationVersion: versionNumber,
+                          applicationLegalese: '© 2025-2026 AfalpHy',
+                        ),
+                      ),
+                    ),
+                  );
+                },
+              )
+            : paddingForDesktop(
+                ListTile(
+                  leading: ImageIcon(infoImage, color: iconColor),
+                  title: Text(
+                    l10n.openSourceLicense,
+                    style: TextStyle(fontSize: 15),
+                  ),
+                  onTap: () {
+                    panelManager.pushPanel('licenses');
+                  },
+                ),
+              ),
+
+        isMobile
+            ? selectMusicFoldersListTile(context, l10n)
+            : paddingForDesktop(selectMusicFoldersListTile(context, l10n)),
+
+        isMobile
+            ? reloadListTile(context, l10n)
+            : paddingForDesktop(reloadListTile(context, l10n)),
+
+        isMobile
+            ? languageListTile(context, l10n)
+            : paddingForDesktop(languageListTile(context, l10n)),
+
+        if (isMobile)
+          ListTile(
+            leading: ImageIcon(vibrationImage, color: iconColor, size: 30),
+            title: Text(l10n.vibration),
+            trailing: ValueListenableBuilder(
+              valueListenable: vibrationOnNoitifier,
+              builder: (context, value, child) {
+                return SizedBox(
+                  width: 50,
+                  child: MySwitch(
+                    value: value,
+                    onToggle: (value) {
+                      tryVibrate();
+                      vibrationOnNoitifier.value = value;
+                      settingManager.saveSetting();
+                    },
+                  ),
+                );
+              },
+            ),
+          ),
+
+        if (isMobile) sleepTimerListTile(context, l10n, true),
+
+        if (isMobile) pauseAfterCTListTile(context, l10n),
+
+        isMobile
+            ? paletteListTile(context, l10n)
+            : paddingForDesktop(paletteListTile(context, l10n)),
+
+        if (!isMobile) paddingForDesktop(exitOnClose(l10n)),
+
+        if (Platform.isAndroid) desktopLyricsOnAndroid(l10n),
+
+        if (Platform.isAndroid) orientation(l10n),
+
+        if (Platform.isAndroid) lockAndUnlock(l10n),
+
+        isMobile
+            ? checkUpdate(context, l10n)
+            : paddingForDesktop(checkUpdate(context, l10n)),
+
+        if (isMobile) SizedBox(height: 100),
+      ],
+    );
+  }
 
   Widget paddingForDesktop(Widget child) {
     return Padding(
@@ -794,145 +943,126 @@ class SettingsList extends StatelessWidget {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+  int _compareVersion(String a, String b) {
+    final aParts = a.split('.').map(int.parse).toList();
+    final bParts = b.split('.').map(int.parse).toList();
 
-    return ListView(
-      physics: ClampingScrollPhysics(),
-      children: [
-        if (!isMobile)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: SizedBox(
-              height: 64,
-              child: Center(
-                child: ListTile(
-                  leading: Icon(
-                    Icons.settings_outlined,
-                    size: 35,
-                    color: iconColor,
+    final length = aParts.length > bParts.length
+        ? aParts.length
+        : bParts.length;
+
+    for (int i = 0; i < length; i++) {
+      final aVal = i < aParts.length ? aParts[i] : 0;
+      final bVal = i < bParts.length ? bParts[i] : 0;
+
+      if (aVal != bVal) {
+        return aVal.compareTo(bVal);
+      }
+    }
+    return 0;
+  }
+
+  Widget checkUpdate(BuildContext context, AppLocalizations l10n) {
+    return ListTile(
+      leading: ImageIcon(
+        checkUpdateImage,
+        color: iconColor,
+        size: isMobile ? 30 : null,
+      ),
+      title: Text(l10n.checkUpdate),
+      onTap: () async {
+        final url = Uri.parse(
+          'https://api.github.com/repos/AfalpHy/ParticleMusic/releases/latest',
+        );
+
+        final response = await http.get(url);
+
+        if (response.statusCode != 200) {
+          if (context.mounted) {
+            showCenterMessage(context, 'Failed to fetch GitHub release');
+          }
+        }
+
+        final data = jsonDecode(response.body);
+        String latestVersion = (data['tag_name'] as String).replaceFirst(
+          'v',
+          '',
+        );
+        if (_compareVersion(latestVersion, versionNumber) > 0) {
+          if (context.mounted) {
+            showDialog(
+              context: context,
+              builder: (BuildContext context) {
+                return AlertDialog(
+                  shape: SmoothRectangleBorder(
+                    smoothness: 1,
+                    borderRadius: BorderRadius.circular(10),
                   ),
-                  title: Text(
-                    l10n.settings,
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
-                ),
-              ),
-            ),
-          ),
-
-        if (!isMobile)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Divider(
-              thickness: 0.5,
-              height: 1,
-              color: enableCustomColorNotifier.value
-                  ? dividerColor
-                  : backgroundColor,
-            ),
-          ),
-
-        if (!isMobile) SizedBox(height: 10),
-
-        isMobile
-            ? ListTile(
-                leading: ImageIcon(infoImage, color: iconColor, size: 30),
-                title: Text(
-                  l10n.openSourceLicense,
-                  style: TextStyle(fontSize: 15),
-                ),
-                onTap: () {
-                  Navigator.of(context, rootNavigator: true).push(
-                    MaterialPageRoute(
-                      builder: (_) => Theme(
-                        data: ThemeData(
-                          colorScheme: ColorScheme.light(
-                            surface: Colors
-                                .grey
-                                .shade50, // <- this is what LicensePage uses
+                  backgroundColor: commonColor,
+                  content: SizedBox(
+                    height: 300,
+                    width: 400,
+                    child: Padding(
+                      padding: const EdgeInsets.all(8.0),
+                      child: ListView(
+                        children: [
+                          Center(
+                            child: Text(
+                              data['tag_name'] as String,
+                              style: TextStyle(fontSize: 20, fontWeight: .bold),
+                            ),
                           ),
-                          appBarTheme: const AppBarTheme(
-                            scrolledUnderElevation: 0,
-                            centerTitle: true,
-                          ),
-                        ),
-                        child: const LicensePage(
-                          applicationName: 'Particle Music',
-                          applicationVersion: versionNumber,
-                          applicationLegalese: '© 2025-2026 AfalpHy',
-                        ),
+                          SizedBox(height: 10),
+
+                          Text(data['body'] as String),
+                        ],
                       ),
                     ),
-                  );
-                },
-              )
-            : paddingForDesktop(
-                ListTile(
-                  leading: ImageIcon(infoImage, color: iconColor),
-                  title: Text(
-                    l10n.openSourceLicense,
-                    style: TextStyle(fontSize: 15),
                   ),
-                  onTap: () {
-                    panelManager.pushPanel('licenses');
-                  },
-                ),
-              ),
-
-        isMobile
-            ? selectMusicFoldersListTile(context, l10n)
-            : paddingForDesktop(selectMusicFoldersListTile(context, l10n)),
-
-        isMobile
-            ? reloadListTile(context, l10n)
-            : paddingForDesktop(reloadListTile(context, l10n)),
-
-        isMobile
-            ? languageListTile(context, l10n)
-            : paddingForDesktop(languageListTile(context, l10n)),
-
-        if (isMobile)
-          ListTile(
-            leading: ImageIcon(vibrationImage, color: iconColor, size: 30),
-            title: Text(l10n.vibration),
-            trailing: ValueListenableBuilder(
-              valueListenable: vibrationOnNoitifier,
-              builder: (context, value, child) {
-                return SizedBox(
-                  width: 50,
-                  child: MySwitch(
-                    value: value,
-                    onToggle: (value) {
-                      tryVibrate();
-                      vibrationOnNoitifier.value = value;
-                      settingManager.saveSetting();
-                    },
-                  ),
+                  actions: [
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        elevation: 2,
+                        backgroundColor: buttonColor,
+                        shadowColor: Colors.black54,
+                        foregroundColor: Colors.black,
+                        shape: SmoothRectangleBorder(
+                          smoothness: 1,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: Text(l10n.cancel),
+                    ),
+                    ElevatedButton(
+                      onPressed: () => launchUrl(
+                        Uri.parse(
+                          "https://github.com/AfalpHy/ParticleMusic/releases/latest",
+                        ),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        elevation: 2,
+                        backgroundColor: buttonColor,
+                        shadowColor: Colors.black54,
+                        foregroundColor: Colors.black,
+                        shape: SmoothRectangleBorder(
+                          smoothness: 1,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                      ),
+                      child: Text(l10n.go2Download),
+                    ),
+                  ],
                 );
               },
-            ),
-          ),
-
-        if (isMobile) sleepTimerListTile(context, l10n, true),
-
-        if (isMobile) pauseAfterCTListTile(context, l10n),
-
-        isMobile
-            ? paletteListTile(context, l10n)
-            : paddingForDesktop(paletteListTile(context, l10n)),
-
-        if (!isMobile) paddingForDesktop(exitOnClose(l10n)),
-
-        if (Platform.isAndroid) desktopLyricsOnAndroid(l10n),
-
-        if (Platform.isAndroid) orientation(l10n),
-
-        if (Platform.isAndroid) lockAndUnlock(l10n),
-
-        if (isMobile) SizedBox(height: 100),
-      ],
+            );
+          }
+        } else {
+          if (context.mounted) {
+            showCenterMessage(context, l10n.alreadyLatest, duration: 2000);
+          }
+        }
+      },
     );
   }
 }

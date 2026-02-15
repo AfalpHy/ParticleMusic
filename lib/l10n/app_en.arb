@@ -134,5 +134,8 @@
   "unlock": "Unlock",
   "closeAction": "Close Action",
   "exit": "Exit",
-  "hide": "Hide"
+  "hide": "Hide",
+  "checkUpdate": "Check Update",
+  "go2Download": "Go to Download",
+  "alreadyLatest": "Already on the latest version"
 }
