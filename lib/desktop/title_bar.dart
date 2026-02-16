@@ -116,13 +116,11 @@ class TitleBar extends StatelessWidget {
                       return isFullScreen
                           ? SizedBox.shrink()
                           : IconButton(
+                              color: Colors.grey.shade50,
                               onPressed: () {
                                 displayLyricsPageNotifier.value = false;
                               },
-                              icon: ImageIcon(
-                                arrowDownImage,
-                                color: Colors.grey.shade50,
-                              ),
+                              icon: ImageIcon(arrowDownImage),
                             );
                     },
                   ),
@@ -131,6 +129,7 @@ class TitleBar extends StatelessWidget {
 
                 if (!isMainPage)
                   IconButton(
+                    color: Colors.grey.shade50,
                     onPressed: () async {
                       if (isFullScreenNotifier.value) {
                         await windowManager.setFullScreen(false);
@@ -153,19 +152,9 @@ class TitleBar extends StatelessWidget {
                     icon: ValueListenableBuilder(
                       valueListenable: isFullScreenNotifier,
                       builder: (context, isFullScreen, child) {
-                        return isFullScreen
-                            ? ImageIcon(
-                                fullscreenExitImage,
-                                color: isMainPage
-                                    ? Colors.black54
-                                    : Colors.grey.shade50,
-                              )
-                            : ImageIcon(
-                                fullscreenImage,
-                                color: isMainPage
-                                    ? Colors.black54
-                                    : Colors.grey.shade50,
-                              );
+                        return ImageIcon(
+                          isFullScreen ? fullscreenExitImage : fullscreenImage,
+                        );
                       },
                     ),
                   ),
@@ -201,6 +190,7 @@ class TitleBar extends StatelessWidget {
             : Row(
                 children: [
                   IconButton(
+                    color: isMainPage ? Colors.black54 : Colors.grey.shade50,
                     onPressed: () async {
                       await windowManager.hide();
                       miniModeNotifier.value = true;
@@ -222,53 +212,39 @@ class TitleBar extends StatelessWidget {
                       }
                       await windowManager.show();
                     },
-                    icon: ImageIcon(
-                      miniModeImage,
-                      color: isMainPage ? Colors.black54 : Colors.grey.shade50,
-                    ),
+                    icon: ImageIcon(miniModeImage),
                   ),
                   IconButton(
+                    color: isMainPage ? Colors.black54 : Colors.grey.shade50,
                     onPressed: () {
                       windowManager.minimize();
                     },
-                    icon: ImageIcon(
-                      minimizeImage,
-                      color: isMainPage ? Colors.black54 : Colors.grey.shade50,
-                    ),
+                    icon: ImageIcon(minimizeImage),
                   ),
                   ValueListenableBuilder(
                     valueListenable: isMaximizedNotifier,
                     builder: (context, value, child) {
                       return IconButton(
+                        color: isMainPage
+                            ? Colors.black54
+                            : Colors.grey.shade50,
                         onPressed: () async {
                           isMaximizedNotifier.value
                               ? windowManager.unmaximize()
                               : windowManager.maximize();
                         },
-                        icon: value
-                            ? ImageIcon(
-                                unmaximizeImage,
-                                color: isMainPage
-                                    ? Colors.black54
-                                    : Colors.grey.shade50,
-                              )
-                            : ImageIcon(
-                                maximizeImage,
-                                color: isMainPage
-                                    ? Colors.black54
-                                    : Colors.grey.shade50,
-                              ),
+                        icon: ImageIcon(
+                          value ? unmaximizeImage : maximizeImage,
+                        ),
                       );
                     },
                   ),
                   IconButton(
+                    color: isMainPage ? Colors.black54 : Colors.grey.shade50,
                     onPressed: () {
                       windowManager.close();
                     },
-                    icon: ImageIcon(
-                      closeImage,
-                      color: isMainPage ? Colors.black54 : Colors.grey.shade50,
-                    ),
+                    icon: ImageIcon(closeImage),
                   ),
                 ],
               );

@@ -306,6 +306,7 @@ class _MiniModePageState extends State<MiniModePage> {
           ),
           Spacer(),
           IconButton(
+            color: Colors.grey.shade50,
             onPressed: () async {
               await windowManager.hide();
 
@@ -323,20 +324,24 @@ class _MiniModePageState extends State<MiniModePage> {
               await Future.delayed(Duration(milliseconds: 200));
               await windowManager.show();
             },
-            icon: ImageIcon(miniModeImage, color: Colors.grey.shade50),
+            icon: ImageIcon(miniModeImage),
           ),
           IconButton(
+            color: Colors.grey.shade50,
+
             onPressed: () {
               windowManager.minimize();
             },
-            icon: ImageIcon(minimizeImage, color: Colors.grey.shade50),
+            icon: ImageIcon(minimizeImage),
           ),
 
           IconButton(
+            color: Colors.grey.shade50,
+
             onPressed: () {
               windowManager.close();
             },
-            icon: ImageIcon(closeImage, color: Colors.grey.shade50),
+            icon: ImageIcon(closeImage),
           ),
         ],
       ),
