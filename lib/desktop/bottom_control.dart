@@ -208,6 +208,8 @@ class BottomControl extends StatelessWidget {
       children: [
         Spacer(),
         IconButton(
+          color: Colors.black,
+
           onPressed: () async {
             if (lyricsWindowVisible) {
               await lyricsWindowController!.hide();
@@ -217,11 +219,7 @@ class BottomControl extends StatelessWidget {
             }
             lyricsWindowVisible = !lyricsWindowVisible;
           },
-          icon: const ImageIcon(
-            desktopLyricsImage,
-            size: 25,
-            color: Colors.black,
-          ),
+          icon: const ImageIcon(desktopLyricsImage, size: 25),
         ),
         Speaker(color: Colors.black),
         Center(
