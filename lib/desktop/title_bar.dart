@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/utils.dart';
-import 'package:searchfield/searchfield.dart';
 import 'package:window_manager/window_manager.dart';
 
 Widget titleSearchField(
@@ -37,7 +36,7 @@ Widget titleSearchField(
               controller: textController,
               style: TextStyle(fontSize: 14, color: textColor),
 
-              decoration: SearchInputDecoration(
+              decoration: InputDecoration(
                 hint: Text(
                   hintText,
                   style: TextStyle(fontSize: 14, color: textColor),

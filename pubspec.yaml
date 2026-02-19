@@ -56,7 +56,6 @@ dependencies:
   auto_size_text: ^3.0.0
   scrollable_positioned_list: ^0.3.8
   path: ^1.9.1
-  searchfield: ^2.0.0
   flutter_switch: ^0.3.2
   smooth_corner: ^1.1.1
   window_manager:

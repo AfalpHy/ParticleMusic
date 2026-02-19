@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
-import 'package:searchfield/searchfield.dart';
 
 class MySearchField extends StatelessWidget {
   final ValueNotifier<bool> isSearch = ValueNotifier(false);
@@ -37,7 +36,7 @@ class MySearchField extends StatelessWidget {
                         autofocus: true,
                         controller: textController,
                         style: TextStyle(color: textColor),
-                        decoration: SearchInputDecoration(
+                        decoration: InputDecoration(
                           hint: Text(
                             AppLocalizations.of(context).searchSongs,
                             style: TextStyle(color: textColor),
