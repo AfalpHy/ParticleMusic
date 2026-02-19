@@ -83,9 +83,8 @@ class PlaylistsPage extends StatelessWidget {
                   ),
                   onTap: () {
                     Navigator.of(context).push(
-                      PageRouteBuilder(
-                        pageBuilder: (_, _, _) =>
-                            SongListPage(playlist: playlist),
+                      MaterialPageRoute(
+                        builder: (_) => SongListPage(playlist: playlist),
                       ),
                     );
                   },
@@ -152,11 +151,10 @@ class PlaylistsPage extends StatelessWidget {
             visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
             onTap: () {
               Navigator.pop(context);
-              Navigator.of(context, rootNavigator: true).push(
-                PageRouteBuilder(
-                  pageBuilder: (_, _, _) => reorderPlaylistsPage(),
-                ),
-              );
+              Navigator.of(
+                context,
+                rootNavigator: true,
+              ).push(MaterialPageRoute(builder: (_) => reorderPlaylistsPage()));
             },
           ),
         ],

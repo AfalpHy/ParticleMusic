@@ -62,8 +62,8 @@ class SettingsList extends StatelessWidget {
                 ),
                 onTap: () {
                   Navigator.of(context, rootNavigator: true).push(
-                    PageRouteBuilder(
-                      pageBuilder: (_, _, _) => Theme(
+                    MaterialPageRoute(
+                      builder: (_) => Theme(
                         data: ThemeData(
                           colorScheme: ColorScheme.light(
                             surface: Colors

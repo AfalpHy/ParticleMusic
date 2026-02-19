@@ -235,9 +235,7 @@ class ArtistsPage extends StatelessWidget {
             ),
             onTap: () {
               Navigator.of(context).push(
-                PageRouteBuilder(
-                  pageBuilder: (_, _, _) => SongListPage(artist: artist),
-                ),
+                MaterialPageRoute(builder: (_) => SongListPage(artist: artist)),
               );
             },
           ),
@@ -281,9 +279,8 @@ class ArtistsPage extends StatelessWidget {
                     ),
                     onTap: () {
                       Navigator.of(context).push(
-                        PageRouteBuilder(
-                          pageBuilder: (_, _, _) =>
-                              SongListPage(artist: artist),
+                        MaterialPageRoute(
+                          builder: (_) => SongListPage(artist: artist),
                         ),
                       );
                     },

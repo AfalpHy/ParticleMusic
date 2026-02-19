@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:particle_music/common.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
 class MySheet extends StatelessWidget {
@@ -12,7 +13,11 @@ class MySheet extends StatelessWidget {
     return SmoothClipRRect(
       smoothness: 1,
       borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
-      child: SizedBox(height: height, child: child),
+      child: Container(
+        color: pageBackgroundColor,
+        height: height,
+        child: child,
+      ),
     );
   }
 }

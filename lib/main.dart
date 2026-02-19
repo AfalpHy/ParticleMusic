@@ -98,9 +98,6 @@ Future<void> main() async {
                       ? pageBackgroundColor
                       : panelColor.withAlpha(255),
                 ),
-                bottomSheetTheme: BottomSheetThemeData(
-                  backgroundColor: pageBackgroundColor,
-                ),
               ),
               title: 'Particle Music',
               home: child,

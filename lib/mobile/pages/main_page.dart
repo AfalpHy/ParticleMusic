@@ -67,8 +67,8 @@ class MobileMainPageState extends State<MobileMainPage> {
             key: homeNavigatorKey,
             observers: [swipeObserver],
             onGenerateRoute: (settings) {
-              return PageRouteBuilder(
-                pageBuilder: (_, _, _) => ValueListenableBuilder(
+              return MaterialPageRoute(
+                builder: (_) => ValueListenableBuilder(
                   valueListenable: updateColorNotifier,
                   builder: (context, value, child) {
                     return HomePage();
@@ -251,7 +251,7 @@ class HomePageState extends State<HomePage> {
           onTap: () {
             Navigator.of(
               context,
-            ).push(PageRouteBuilder(pageBuilder: (_, _, _) => PlaylistsPage()));
+            ).push(MaterialPageRoute(builder: (_) => PlaylistsPage()));
           },
         ),
         ListTile(
@@ -260,7 +260,7 @@ class HomePageState extends State<HomePage> {
           onTap: () {
             Navigator.of(
               context,
-            ).push(PageRouteBuilder(pageBuilder: (_, _, _) => ArtistsPage()));
+            ).push(MaterialPageRoute(builder: (_) => ArtistsPage()));
           },
         ),
         ListTile(
@@ -269,7 +269,7 @@ class HomePageState extends State<HomePage> {
           onTap: () {
             Navigator.of(
               context,
-            ).push(PageRouteBuilder(pageBuilder: (_, _, _) => AlbumsPage()));
+            ).push(MaterialPageRoute(builder: (_) => AlbumsPage()));
           },
         ),
 
@@ -279,7 +279,7 @@ class HomePageState extends State<HomePage> {
           onTap: () {
             Navigator.of(
               context,
-            ).push(PageRouteBuilder(pageBuilder: (_, _, _) => FoldersPage()));
+            ).push(MaterialPageRoute(builder: (_) => FoldersPage()));
           },
         ),
 
@@ -289,7 +289,7 @@ class HomePageState extends State<HomePage> {
           onTap: () {
             Navigator.of(
               context,
-            ).push(PageRouteBuilder(pageBuilder: (_, _, _) => SongsPage()));
+            ).push(MaterialPageRoute(builder: (_) => SongsPage()));
           },
         ),
 
@@ -299,7 +299,7 @@ class HomePageState extends State<HomePage> {
           onTap: () {
             Navigator.of(
               context,
-            ).push(PageRouteBuilder(pageBuilder: (_, _, _) => RankingPage()));
+            ).push(MaterialPageRoute(builder: (_) => RankingPage()));
           },
         ),
 
@@ -309,7 +309,7 @@ class HomePageState extends State<HomePage> {
           onTap: () {
             Navigator.of(
               context,
-            ).push(PageRouteBuilder(pageBuilder: (_, _, _) => RecentlyPage()));
+            ).push(MaterialPageRoute(builder: (_) => RecentlyPage()));
           },
         ),
       ],

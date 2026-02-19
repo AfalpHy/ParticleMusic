@@ -123,8 +123,8 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
             onTap: () {
               Navigator.pop(context);
               Navigator.of(context).push(
-                PageRouteBuilder(
-                  pageBuilder: (_, _, _) => SelectableSongListPage(
+                MaterialPageRoute(
+                  builder: (_) => SelectableSongListPage(
                     songList: songList,
                     playlist: playlist,
                     artist: artist,

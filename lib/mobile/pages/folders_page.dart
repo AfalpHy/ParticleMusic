@@ -41,9 +41,7 @@ class FoldersPage extends StatelessWidget {
             title: Text(folder.path),
             onTap: () {
               Navigator.of(context).push(
-                PageRouteBuilder(
-                  pageBuilder: (_, _, _) => SongListPage(folder: folder),
-                ),
+                MaterialPageRoute(builder: (_) => SongListPage(folder: folder)),
               );
             },
           );

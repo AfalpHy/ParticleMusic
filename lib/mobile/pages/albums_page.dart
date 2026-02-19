@@ -191,8 +191,8 @@ class AlbumsPage extends StatelessWidget {
                     ),
                     onTap: () {
                       Navigator.of(context).push(
-                        PageRouteBuilder(
-                          pageBuilder: (_, _, _) => SongListPage(album: album),
+                        MaterialPageRoute(
+                          builder: (_) => SongListPage(album: album),
                         ),
                       );
                     },
