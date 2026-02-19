@@ -359,12 +359,17 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                       children: [
                         Text(text, overflow: TextOverflow.ellipsis),
                         if (value > 0 && value <= 4)
-                          ImageIcon(
-                            (value == 1 || value == 3)
-                                ? longArrowUpImage
-                                : longArrowDownImage,
-                            size: 20,
-                            color: Colors.black54,
+                          ValueListenableBuilder(
+                            valueListenable: updateColorNotifier,
+                            builder: (context, _, _) {
+                              return ImageIcon(
+                                (value == 1 || value == 3)
+                                    ? longArrowUpImage
+                                    : longArrowDownImage,
+                                size: 20,
+                                color: iconColor,
+                              );
+                            },
                           ),
                       ],
                     );
@@ -400,10 +405,17 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                       valueListenable: sortTypeNotifier,
                       builder: (context, value, child) {
                         if (value == 5 || value == 6) {
-                          return ImageIcon(
-                            value == 5 ? longArrowUpImage : longArrowDownImage,
-                            size: 20,
-                            color: Colors.black54,
+                          return ValueListenableBuilder(
+                            valueListenable: updateColorNotifier,
+                            builder: (context, _, _) {
+                              return ImageIcon(
+                                value == 5
+                                    ? longArrowUpImage
+                                    : longArrowDownImage,
+                                size: 20,
+                                color: iconColor,
+                              );
+                            },
                           );
                         }
                         return SizedBox.shrink();
@@ -447,10 +459,17 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                       valueListenable: sortTypeNotifier,
                       builder: (context, value, child) {
                         if (value == 7 || value == 8) {
-                          return ImageIcon(
-                            value == 7 ? longArrowUpImage : longArrowDownImage,
-                            size: 20,
-                            color: Colors.black54,
+                          return ValueListenableBuilder(
+                            valueListenable: updateColorNotifier,
+                            builder: (context, _, _) {
+                              return ImageIcon(
+                                value == 7
+                                    ? longArrowUpImage
+                                    : longArrowDownImage,
+                                size: 20,
+                                color: iconColor,
+                              );
+                            },
                           );
                         }
                         return SizedBox.shrink();
