@@ -98,6 +98,12 @@ Future<void> main() async {
                       ? pageBackgroundColor
                       : panelColor.withAlpha(255),
                 ),
+
+                pageTransitionsTheme: const PageTransitionsTheme(
+                  builders: {
+                    TargetPlatform.android: CupertinoPageTransitionsBuilder(),
+                  },
+                ),
               ),
               title: 'Particle Music',
               home: child,
