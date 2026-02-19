@@ -129,9 +129,9 @@ Future<void> main() async {
   );
   logger.output('App start');
   await libraryManager.load();
-  // if (!isMobile) {
-  //   await initDesktopLyrics();
-  // }
+  if (!isMobile) {
+    await initDesktopLyrics();
+  }
 }
 
 Future<void> _setupMainWindow(WindowController windowController) async {
