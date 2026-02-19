@@ -48,6 +48,17 @@ class PlayQueuePageState extends State<PlayQueuePage> {
     super.initState();
     isMiniMode = miniModeNotifier.value;
     updateIsSelectedList();
+    if (!isMiniMode) {
+      displayPlayQueuePageNotifier.addListener(updateIsSelectedList);
+    }
+  }
+
+  @override
+  void dispose() {
+    if (!isMiniMode) {
+      displayPlayQueuePageNotifier.removeListener(updateIsSelectedList);
+    }
+    super.dispose();
   }
 
   @override
@@ -156,7 +167,9 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                   }
                   jumpToCurrentSong();
 
-                  setState(() {});
+                  setState(() {
+                    updateIsSelectedList();
+                  });
                 }
               },
               onLongPress: () {
