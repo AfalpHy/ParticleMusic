@@ -263,15 +263,6 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                     },
                   ),
                   Text(l10n.selectAll, style: TextStyle(fontSize: 16)),
-                  Spacer(),
-
-                  GestureDetector(
-                    onTap: () {
-                      Navigator.of(context).pop();
-                    },
-                    child: Text(l10n.complete, style: TextStyle(fontSize: 16)),
-                  ),
-                  SizedBox(width: 10),
                 ],
               ),
               Expanded(
