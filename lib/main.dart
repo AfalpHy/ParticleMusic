@@ -219,7 +219,7 @@ Widget _loadingPage(BuildContext context) {
   final l10n = AppLocalizations.of(context);
 
   return Scaffold(
-    backgroundColor: isMobile ? pageBackgroundColor : panelColor,
+    backgroundColor: isMobile ? pageBackgroundColor : panelColor.withAlpha(255),
     body: Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,
