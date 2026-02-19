@@ -34,7 +34,7 @@ class SongListTile extends StatelessWidget {
             getTitle(song),
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: song == currentSong ? textColor : null,
+              color: song == currentSong ? highlightTextColor : null,
               fontWeight: song == currentSong ? FontWeight.bold : null,
             ),
           );
@@ -76,7 +76,7 @@ class SongListTile extends StatelessWidget {
               child: Row(
                 children: [
                   Spacer(),
-                  Icon(Icons.play_arrow_outlined, size: 15),
+                  Icon(Icons.play_arrow_outlined, size: 15, color: iconColor),
                   Text(historyManager.rankingItemList[index].times.toString()),
                   moreButton(context),
                 ],
@@ -91,7 +91,7 @@ class SongListTile extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return IconButton(
-      icon: Icon(Icons.more_vert, size: 15),
+      icon: Icon(Icons.more_vert, size: 15, color: iconColor),
       onPressed: () {
         tryVibrate();
         showModalBottomSheet(
@@ -118,20 +118,16 @@ class SongListTile extends StatelessWidget {
                     ),
                   ),
 
-                  Divider(
-                    color: Colors.grey.shade300,
-                    thickness: 0.5,
-                    height: 1,
-                  ),
+                  Divider(color: dividerColor, thickness: 0.5, height: 1),
 
                   Expanded(
                     child: ListView(
                       physics: const ClampingScrollPhysics(),
                       children: [
                         ListTile(
-                          leading: const ImageIcon(
+                          leading: ImageIcon(
                             playlistAddImage,
-                            color: Colors.black,
+                            color: iconColor,
                           ),
                           title: Text(
                             l10n.add2Playlists,
@@ -148,10 +144,7 @@ class SongListTile extends StatelessWidget {
                           },
                         ),
                         ListTile(
-                          leading: const ImageIcon(
-                            playCircleImage,
-                            color: Colors.black,
-                          ),
+                          leading: ImageIcon(playCircleImage, color: iconColor),
                           title: Text(
                             l10n.playNow,
                             style: TextStyle(fontWeight: FontWeight.bold),
@@ -167,9 +160,9 @@ class SongListTile extends StatelessWidget {
                           },
                         ),
                         ListTile(
-                          leading: const ImageIcon(
+                          leading: ImageIcon(
                             playnextCircleImage,
-                            color: Colors.black,
+                            color: iconColor,
                           ),
                           title: Text(
                             l10n.playNext,
@@ -191,9 +184,9 @@ class SongListTile extends StatelessWidget {
                         ),
                         playlist != null
                             ? ListTile(
-                                leading: const ImageIcon(
+                                leading: ImageIcon(
                                   deleteImage,
-                                  color: Colors.black,
+                                  color: iconColor,
                                 ),
                                 title: Text(
                                   l10n.delete,

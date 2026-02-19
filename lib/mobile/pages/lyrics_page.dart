@@ -232,9 +232,9 @@ class LyricsPage extends StatelessWidget {
                               physics: const ClampingScrollPhysics(),
                               children: [
                                 ListTile(
-                                  leading: const ImageIcon(
+                                  leading: ImageIcon(
                                     playlistAddImage,
-                                    color: Colors.black,
+                                    color: iconColor,
                                   ),
                                   title: Text(
                                     l10n.add2Playlists,

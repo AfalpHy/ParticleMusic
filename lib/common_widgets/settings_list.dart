@@ -48,13 +48,7 @@ class SettingsList extends StatelessWidget {
         if (!isMobile)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Divider(
-              thickness: 0.5,
-              height: 1,
-              color: enableCustomColorNotifier.value
-                  ? dividerColor
-                  : backgroundColor,
-            ),
+            child: Divider(thickness: 0.5, height: 1, color: dividerColor),
           ),
 
         if (!isMobile) SizedBox(height: 10),
@@ -68,8 +62,8 @@ class SettingsList extends StatelessWidget {
                 ),
                 onTap: () {
                   Navigator.of(context, rootNavigator: true).push(
-                    MaterialPageRoute(
-                      builder: (_) => Theme(
+                    PageRouteBuilder(
+                      pageBuilder: (_, _, _) => Theme(
                         data: ThemeData(
                           colorScheme: ColorScheme.light(
                             surface: Colors
@@ -142,6 +136,8 @@ class SettingsList extends StatelessWidget {
 
         if (isMobile) pauseAfterCTListTile(context, l10n),
 
+        isMobile ? themeListTile(l10n) : paddingForDesktop(themeListTile(l10n)),
+
         isMobile
             ? paletteListTile(context, l10n)
             : paddingForDesktop(paletteListTile(context, l10n)),
@@ -204,14 +200,13 @@ class SettingsList extends StatelessWidget {
       onTap: () {
         showDialog(
           context: context,
-          barrierDismissible: false,
           builder: (context) {
             final currentFolderList = folderManager.folderList
                 .map((e) => e.path)
                 .toList();
             final updateNotifier = ValueNotifier(0);
             final buttonStyle = ElevatedButton.styleFrom(
-              backgroundColor: buttonColor,
+              backgroundColor: Colors.white70,
               foregroundColor: Colors.black,
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(5),
@@ -219,7 +214,6 @@ class SettingsList extends StatelessWidget {
               padding: EdgeInsets.all(10),
             );
             return Dialog(
-              backgroundColor: commonColor,
               shape: SmoothRectangleBorder(
                 smoothness: 1,
                 borderRadius: BorderRadius.circular(10),
@@ -259,7 +253,10 @@ class SettingsList extends StatelessWidget {
                                     currentFolderList.removeAt(index);
                                     updateNotifier.value++;
                                   },
-                                  icon: Icon(Icons.clear_rounded),
+                                  icon: Icon(
+                                    Icons.clear_rounded,
+                                    color: iconColor,
+                                  ),
                                 ),
                               );
                             },
@@ -417,7 +414,6 @@ class SettingsList extends StatelessWidget {
           context: context,
           builder: (context) {
             return Dialog(
-              backgroundColor: commonColor,
               shape: SmoothRectangleBorder(
                 smoothness: 1,
                 borderRadius: BorderRadius.circular(10),
@@ -475,6 +471,42 @@ class SettingsList extends StatelessWidget {
     );
   }
 
+  Widget themeListTile(AppLocalizations l10n) {
+    return ListTile(
+      leading: ImageIcon(
+        themeImage,
+        color: iconColor,
+        size: isMobile ? 30 : null,
+      ),
+
+      title: Text(l10n.theme),
+      trailing: SizedBox(
+        width: 150,
+        child: ValueListenableBuilder(
+          valueListenable: darkModeNotifier,
+          builder: (context, value, child) {
+            return Row(
+              children: [
+                Spacer(),
+                Text(value ? l10n.darkMode : l10n.lightMode),
+                SizedBox(width: 10),
+                MySwitch(
+                  value: value,
+                  onToggle: (value) async {
+                    darkModeNotifier.value = value;
+                    settingManager.saveSetting();
+                    settingManager.setColor();
+                    updateColorNotifier.value++;
+                  },
+                ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
   Widget colorListTile(BuildContext context, AppLocalizations l10n, int type) {
     return ValueListenableBuilder(
       valueListenable: updateColorNotifier,
@@ -483,44 +515,64 @@ class SettingsList extends StatelessWidget {
         Color pikerColor;
         switch (type) {
           case 0:
+            title = l10n.backgroundColor;
+            pikerColor = customPageBackgroundColor;
+            break;
+          case 1:
             title = l10n.iconColor;
             pikerColor = customIconColor;
             break;
-          case 1:
+          case 2:
             title = l10n.textColor;
             pikerColor = customTextColor;
             break;
-          case 2:
+          case 3:
+            title = l10n.highlightTextColor;
+            pikerColor = customHighlightTextColor;
+            break;
+          case 4:
             title = l10n.switchColor;
             pikerColor = customSwitchColor;
             break;
-          case 3:
+          case 44:
+            title = l10n.playBarColor;
+            pikerColor = customPlayBarColor;
+            break;
+          case 5:
             title = l10n.panelColor;
             pikerColor = customPanelColor;
             break;
-          case 4:
+          case 6:
             title = l10n.sidebarColor;
             pikerColor = customSidebarColor;
             break;
-          case 5:
+          case 7:
             title = l10n.bottomColor;
             pikerColor = customBottomColor;
             break;
-          case 6:
-            title = l10n.searchFieldColor;
-            pikerColor = searchFieldColor;
-            break;
-          case 7:
-            title = l10n.buttonColor;
-            pikerColor = buttonColor;
-            break;
           case 8:
-            title = l10n.dividerColor;
-            pikerColor = dividerColor;
+            title = l10n.searchFieldColor;
+            pikerColor = customSearchFieldColor;
             break;
           case 9:
+            title = l10n.buttonColor;
+            pikerColor = customButtonColor;
+            break;
+          case 10:
+            title = l10n.dividerColor;
+            pikerColor = customDividerColor;
+            break;
+          case 11:
             title = l10n.selectedItemColor;
-            pikerColor = selectedItemColor;
+            pikerColor = customSelectedItemColor;
+            break;
+          case 12:
+            title = l10n.seekBarColor;
+            pikerColor = customSeekBarColor;
+            break;
+          case 13:
+            title = l10n.volumeBarColor;
+            pikerColor = customVolumeBarColor;
             break;
           default:
             title = l10n.lyricsBackgroundColor;
@@ -532,6 +584,7 @@ class SettingsList extends StatelessWidget {
           trailing: Padding(
             padding: const EdgeInsets.fromLTRB(0, 0, 5, 0),
             child: Material(
+              color: Colors.transparent,
               elevation: 3,
               shape: SmoothRectangleBorder(
                 smoothness: 1,
@@ -545,11 +598,10 @@ class SettingsList extends StatelessWidget {
                   child: Container(height: 35, width: 35, color: pikerColor),
                 ),
                 onTap: () {
+                  Color tmpColor = pikerColor;
                   showDialog(
                     context: context,
-                    barrierDismissible: false,
                     builder: (_) => AlertDialog(
-                      backgroundColor: commonColor,
                       title: Text(title),
                       shape: SmoothRectangleBorder(
                         smoothness: 1,
@@ -559,7 +611,7 @@ class SettingsList extends StatelessWidget {
                         child: ColorPicker(
                           color: pikerColor,
                           pickersEnabled: const {
-                            ColorPickerType.wheel: true, // 色轮
+                            ColorPickerType.wheel: true,
                             ColorPickerType.accent: false,
                             ColorPickerType.primary: false,
                           },
@@ -568,55 +620,80 @@ class SettingsList extends StatelessWidget {
                           enableOpacity: true,
                           opacityTrackHeight: 15,
                           onColorChanged: (color) {
-                            switch (type) {
-                              case 0:
-                                customIconColor = color;
-                                break;
-                              case 1:
-                                customTextColor = color;
-                                break;
-                              case 2:
-                                customSwitchColor = color;
-                                break;
-                              case 3:
-                                customPanelColor = color;
-                                break;
-                              case 4:
-                                customSidebarColor = color;
-                                break;
-                              case 5:
-                                customBottomColor = color;
-                                break;
-                              case 6:
-                                searchFieldColor = color;
-                                break;
-                              case 7:
-                                buttonColor = color;
-                                break;
-                              case 8:
-                                dividerColor = color;
-                                break;
-                              case 9:
-                                selectedItemColor = color;
-                                break;
-                              default:
-                                lyricsBackgroundColor = color;
-                                break;
-                            }
-                            settingManager.setColor();
-                            updateColorNotifier.value++;
+                            tmpColor = color;
                           },
                         ),
                       ),
                       actions: [
                         TextButton(
                           onPressed: () {
+                            Navigator.pop(context);
+                          },
+                          child: Text(
+                            l10n.cancel,
+                            style: TextStyle(color: textColor),
+                          ),
+                        ),
+                        TextButton(
+                          onPressed: () {
+                            switch (type) {
+                              case 0:
+                                customPageBackgroundColor = tmpColor;
+                                break;
+                              case 1:
+                                customIconColor = tmpColor;
+                                break;
+                              case 2:
+                                customTextColor = tmpColor;
+                                break;
+                              case 3:
+                                customHighlightTextColor = tmpColor;
+                                break;
+                              case 4:
+                                customSwitchColor = tmpColor;
+                                break;
+                              case 44:
+                                customPlayBarColor = tmpColor;
+                                break;
+                              case 5:
+                                customPanelColor = tmpColor;
+                                break;
+                              case 6:
+                                customSidebarColor = tmpColor;
+                                break;
+                              case 7:
+                                customBottomColor = tmpColor;
+                                break;
+                              case 8:
+                                customSearchFieldColor = tmpColor;
+                                break;
+                              case 9:
+                                customButtonColor = tmpColor;
+                                break;
+                              case 10:
+                                customDividerColor = tmpColor;
+                                break;
+                              case 11:
+                                customSelectedItemColor = tmpColor;
+                                break;
+                              case 12:
+                                customSeekBarColor = tmpColor;
+                                break;
+                              case 13:
+                                customVolumeBarColor = tmpColor;
+                                break;
+                              default:
+                                lyricsBackgroundColor = tmpColor;
+                                break;
+                            }
+                            settingManager.setColor();
+                            updateColorNotifier.value++;
                             settingManager.saveSetting();
                             Navigator.pop(context);
                           },
                           child: Text(
                             l10n.confirm,
-                            style: TextStyle(color: Colors.black),
+                            style: TextStyle(color: textColor),
                           ),
                         ),
                       ],
@@ -632,132 +709,138 @@ class SettingsList extends StatelessWidget {
   }
 
   Widget paletteListTile(BuildContext context, AppLocalizations l10n) {
-    return Theme(
-      data: Theme.of(context).copyWith(
-        highlightColor: Colors.transparent,
-        splashColor: Colors.transparent,
+    return ListTile(
+      leading: ImageIcon(
+        paletteImage,
+        color: iconColor,
+        size: isMobile ? 30 : null,
       ),
-      child: ListTile(
-        leading: ImageIcon(
-          paletteImage,
-          color: iconColor,
-          size: isMobile ? 30 : null,
-        ),
-        title: Text(l10n.palette),
-        onTap: () async {
-          showDialog(
-            context: context,
-            builder: (context) {
-              return Dialog(
-                backgroundColor: commonColor,
-                shape: SmoothRectangleBorder(
-                  smoothness: 1,
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: SizedBox(
-                  height: isMobile ? 350 : 400,
-                  width: isMobile ? 240 : 350,
-                  child: Padding(
-                    padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
-                    child: ListView(
-                      children: [
-                        if (!isMobile)
-                          ListTile(
-                            title: Text(l10n.customMode),
-                            trailing: SizedBox(
-                              width: 45,
-                              child: ValueListenableBuilder(
-                                valueListenable: enableCustomColorNotifier,
-                                builder: (context, enableCustomColor, child) {
-                                  return MouseRegion(
-                                    cursor: SystemMouseCursors.click,
+      title: Text(l10n.palette),
+      onTap: () async {
+        showDialog(
+          context: context,
+          builder: (context) {
+            return Dialog(
+              shape: SmoothRectangleBorder(
+                smoothness: 1,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              child: SizedBox(
+                height: isMobile ? 350 : 400,
+                width: isMobile ? 240 : 350,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+                  child: ListView(
+                    children: [
+                      ListTile(
+                        title: Text(l10n.customMode),
+                        trailing: SizedBox(
+                          width: 45,
+                          child: ValueListenableBuilder(
+                            valueListenable: enableCustomColorNotifier,
+                            builder: (context, enableCustomColor, child) {
+                              return MouseRegion(
+                                cursor: SystemMouseCursors.click,
 
-                                    child: MySwitch(
-                                      value: enableCustomColor,
-                                      onToggle: (value) {
-                                        enableCustomColorNotifier.value = value;
-                                        settingManager.setColor();
-                                        updateColorNotifier.value++;
-                                        settingManager.saveSetting();
-                                      },
-                                    ),
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-
-                        colorListTile(context, l10n, 0),
-                        colorListTile(context, l10n, 1),
-                        colorListTile(context, l10n, 2),
-                        if (!isMobile) colorListTile(context, l10n, 3),
-                        if (!isMobile) colorListTile(context, l10n, 4),
-                        if (!isMobile) colorListTile(context, l10n, 5),
-                        if (!isMobile) colorListTile(context, l10n, 6),
-                        if (!isMobile) colorListTile(context, l10n, 7),
-                        if (!isMobile) colorListTile(context, l10n, 8),
-                        if (!isMobile) colorListTile(context, l10n, 9),
-
-                        ListTile(
-                          title: Text(l10n.lyricsCustomMode),
-                          trailing: SizedBox(
-                            width: 45,
-                            child: ValueListenableBuilder(
-                              valueListenable: enableCustomLyricsPageNotifier,
-                              builder:
-                                  (context, enableCustomLyricsPage, child) {
-                                    return MouseRegion(
-                                      cursor: SystemMouseCursors.click,
-
-                                      child: MySwitch(
-                                        value: enableCustomLyricsPage,
-                                        onToggle: (value) {
-                                          enableCustomLyricsPageNotifier.value =
-                                              value;
-                                          settingManager.setColor();
-                                          updateColorNotifier.value++;
-                                          settingManager.saveSetting();
-                                        },
-                                      ),
-                                    );
+                                child: MySwitch(
+                                  value: enableCustomColor,
+                                  onToggle: (value) {
+                                    enableCustomColorNotifier.value = value;
+                                    settingManager.setColor();
+                                    updateColorNotifier.value++;
+                                    settingManager.saveSetting();
                                   },
-                            ),
+                                ),
+                              );
+                            },
                           ),
                         ),
+                      ),
 
-                        colorListTile(context, l10n, 10),
+                      if (isMobile) colorListTile(context, l10n, 0),
+                      colorListTile(context, l10n, 1),
+                      colorListTile(context, l10n, 2),
+                      colorListTile(context, l10n, 3),
+                      colorListTile(context, l10n, 4),
+                      if (isMobile) colorListTile(context, l10n, 44),
 
-                        ListTile(
-                          title: Text(l10n.reset),
-                          onTap: () {
-                            customIconColor = Colors.black;
-                            customTextColor = Colors.black;
-                            customSwitchColor = Colors.black87;
-                            customPanelColor = Colors.grey.shade100;
-                            customSidebarColor = Colors.grey.shade200;
-                            customBottomColor = Colors.grey.shade50;
+                      if (!isMobile) colorListTile(context, l10n, 5),
+                      if (!isMobile) colorListTile(context, l10n, 6),
+                      if (!isMobile) colorListTile(context, l10n, 7),
+                      if (!isMobile) colorListTile(context, l10n, 8),
+                      if (!isMobile) colorListTile(context, l10n, 9),
+                      if (!isMobile) colorListTile(context, l10n, 10),
+                      if (!isMobile) colorListTile(context, l10n, 11),
+                      if (!isMobile) colorListTile(context, l10n, 12),
+                      if (!isMobile) colorListTile(context, l10n, 13),
 
-                            searchFieldColor = Colors.white;
-                            buttonColor = Colors.white70;
-                            dividerColor = Colors.grey;
-                            selectedItemColor = Colors.white;
+                      ListTile(
+                        title: Text(l10n.lyricsCustomMode),
+                        trailing: SizedBox(
+                          width: 45,
+                          child: ValueListenableBuilder(
+                            valueListenable: enableCustomLyricsPageNotifier,
+                            builder: (context, enableCustomLyricsPage, child) {
+                              return MouseRegion(
+                                cursor: SystemMouseCursors.click,
 
-                            lyricsBackgroundColor = Colors.black;
-
-                            settingManager.setColor();
-                            updateColorNotifier.value++;
-                            settingManager.saveSetting();
-                          },
+                                child: MySwitch(
+                                  value: enableCustomLyricsPage,
+                                  onToggle: (value) {
+                                    enableCustomLyricsPageNotifier.value =
+                                        value;
+                                    settingManager.setColor();
+                                    updateColorNotifier.value++;
+                                    settingManager.saveSetting();
+                                  },
+                                ),
+                              );
+                            },
+                          ),
                         ),
-                      ],
-                    ),
+                      ),
+
+                      colorListTile(context, l10n, 14),
+
+                      ListTile(
+                        title: Text(l10n.reset),
+                        onTap: () {
+                          customPageBackgroundColor = Color.fromARGB(
+                            255,
+                            245,
+                            245,
+                            245,
+                          );
+                          customIconColor = Colors.black;
+                          customTextColor = Color.fromARGB(255, 30, 30, 30);
+                          customHighlightTextColor = Colors.black;
+                          customSwitchColor = Colors.black87;
+                          customPlayBarColor = Colors.white70;
+                          customPanelColor = Colors.grey.shade100;
+                          customSidebarColor = Colors.grey.shade200;
+                          customBottomColor = Colors.grey.shade50;
+                          customSearchFieldColor = Colors.white;
+                          customButtonColor = Colors.white70;
+                          customDividerColor = Colors.grey;
+                          customSelectedItemColor = Colors.white;
+                          customSeekBarColor = Colors.black;
+                          customVolumeBarColor = Colors.black;
+
+                          lyricsBackgroundColor = Colors.black;
+
+                          settingManager.setColor();
+                          updateColorNotifier.value++;
+                          settingManager.saveSetting();
+                        },
+                      ),
+                    ],
                   ),
                 ),
-              );
-            },
-          );
-        },
-      ),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 
@@ -998,7 +1081,6 @@ class SettingsList extends StatelessWidget {
                     smoothness: 1,
                     borderRadius: BorderRadius.circular(10),
                   ),
-                  backgroundColor: commonColor,
                   content: SizedBox(
                     height: 300,
                     width: 400,

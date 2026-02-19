@@ -64,53 +64,77 @@ Future<void> main() async {
   runApp(
     ValueListenableBuilder(
       valueListenable: localeNotifier,
-      builder: (context, locale, _) {
-        return MaterialApp(
-          locale: locale,
-          supportedLocales: AppLocalizations.supportedLocales,
-          localizationsDelegates: const [
-            AppLocalizations.delegate,
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
-          theme: Platform.isWindows
-              ? ThemeData(
-                  textTheme: GoogleFonts.notoSansTextTheme().apply(
-                    fontFamilyFallback: ['Microsoft YaHei'],
-                  ),
-                )
-              : null,
-          title: 'Particle Music',
-          home: ValueListenableBuilder(
-            valueListenable: loadingLibraryNotifier,
-            builder: (context, value, child) {
-              if (value) {
-                return _loadingPage(context);
-              }
-
-              return isMobile
-                  ? MobileMainPage()
-                  : ValueListenableBuilder(
-                      valueListenable: miniModeNotifier,
-                      builder: (context, miniMode, child) {
-                        if (miniMode) {
-                          return MiniModePage();
-                        }
-                        return DesktopMainPage();
-                      },
-                    );
-            },
-          ),
+      builder: (context, locale, child) {
+        return ValueListenableBuilder(
+          valueListenable: updateColorNotifier,
+          builder: (context, _, _) {
+            return MaterialApp(
+              locale: locale,
+              supportedLocales: AppLocalizations.supportedLocales,
+              localizationsDelegates: const [
+                AppLocalizations.delegate,
+                GlobalMaterialLocalizations.delegate,
+                GlobalWidgetsLocalizations.delegate,
+                GlobalCupertinoLocalizations.delegate,
+              ],
+              theme: ThemeData(
+                textTheme: Platform.isWindows
+                    ? GoogleFonts.notoSansTextTheme().apply(
+                        fontFamilyFallback: ['Microsoft YaHei'],
+                        bodyColor: textColor,
+                        displayColor: textColor,
+                      )
+                    : TextTheme(
+                        bodyLarge: TextStyle(color: textColor),
+                        bodyMedium: TextStyle(color: textColor),
+                        displayLarge: TextStyle(
+                          color: textColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                colorScheme: ColorScheme.light(onSurface: textColor),
+                dialogTheme: DialogThemeData(
+                  backgroundColor: isMobile
+                      ? pageBackgroundColor
+                      : panelColor.withAlpha(255),
+                ),
+                bottomSheetTheme: BottomSheetThemeData(
+                  backgroundColor: pageBackgroundColor,
+                ),
+              ),
+              title: 'Particle Music',
+              home: child,
+            );
+          },
         );
       },
+      child: ValueListenableBuilder(
+        valueListenable: loadingLibraryNotifier,
+        builder: (context, value, child) {
+          if (value) {
+            return _loadingPage(context);
+          }
+
+          return isMobile
+              ? MobileMainPage()
+              : ValueListenableBuilder(
+                  valueListenable: miniModeNotifier,
+                  builder: (context, miniMode, child) {
+                    if (miniMode) {
+                      return MiniModePage();
+                    }
+                    return DesktopMainPage();
+                  },
+                );
+        },
+      ),
     ),
   );
   logger.output('App start');
   await libraryManager.load();
-  if (!isMobile) {
-    await initDesktopLyrics();
-  }
+  // if (!isMobile) {
+  //   await initDesktopLyrics();
+  // }
 }
 
 Future<void> _setupMainWindow(WindowController windowController) async {
@@ -198,7 +222,7 @@ Widget _loadingPage(BuildContext context) {
   final l10n = AppLocalizations.of(context);
 
   return Scaffold(
-    backgroundColor: commonColor,
+    backgroundColor: isMobile ? pageBackgroundColor : panelColor,
     body: Center(
       child: Column(
         mainAxisSize: MainAxisSize.min,

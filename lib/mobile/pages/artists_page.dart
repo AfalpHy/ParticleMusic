@@ -30,10 +30,11 @@ class ArtistsPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      backgroundColor: commonColor,
+      backgroundColor: pageBackgroundColor,
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        backgroundColor: commonColor,
+        iconTheme: IconThemeData(color: iconColor),
+        backgroundColor: pageBackgroundColor,
         elevation: 0,
         scrolledUnderElevation: 0,
         title: Text(l10n.artists),
@@ -93,9 +94,10 @@ class ArtistsPage extends StatelessWidget {
             leading: ValueListenableBuilder(
               valueListenable: artistsIsListViewNotifier,
               builder: (context, value, child) {
-                return value
-                    ? const ImageIcon(listImage, color: Colors.black)
-                    : const ImageIcon(gridImage, color: Colors.black);
+                return ImageIcon(
+                  value ? listImage : gridImage,
+                  color: iconColor,
+                );
               },
             ),
             title: Text(
@@ -138,7 +140,7 @@ class ArtistsPage extends StatelessWidget {
                 return SizedBox.shrink();
               }
               return ListTile(
-                leading: const ImageIcon(pictureImage, color: Colors.black),
+                leading: ImageIcon(pictureImage, color: iconColor),
                 title: Text(
                   l10n.pictureSize,
                   style: TextStyle(fontWeight: FontWeight.bold),
@@ -172,7 +174,7 @@ class ArtistsPage extends StatelessWidget {
           ),
 
           ListTile(
-            leading: const ImageIcon(sequenceImage, color: Colors.black),
+            leading: ImageIcon(sequenceImage, color: iconColor),
             title: Text(
               l10n.order,
               style: TextStyle(fontWeight: FontWeight.bold),
@@ -233,7 +235,9 @@ class ArtistsPage extends StatelessWidget {
             ),
             onTap: () {
               Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => SongListPage(artist: artist)),
+                PageRouteBuilder(
+                  pageBuilder: (_, _, _) => SongListPage(artist: artist),
+                ),
               );
             },
           ),
@@ -277,8 +281,9 @@ class ArtistsPage extends StatelessWidget {
                     ),
                     onTap: () {
                       Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => SongListPage(artist: artist),
+                        PageRouteBuilder(
+                          pageBuilder: (_, _, _) =>
+                              SongListPage(artist: artist),
                         ),
                       );
                     },

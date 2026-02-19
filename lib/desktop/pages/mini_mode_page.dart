@@ -69,7 +69,7 @@ class _MiniModePageState extends State<MiniModePage> {
                   height: height - width,
                   child: Stack(
                     children: [
-                      Container(color: vividPanelColor),
+                      Container(color: lightModePanelColor),
 
                       ValueListenableBuilder(
                         valueListenable: _lyricsOrPlayQueueNotifier,

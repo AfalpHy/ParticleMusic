@@ -120,7 +120,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
         Spacer(),
 
         IconButton(
-          color: isMiniMode ? Colors.grey.shade100 : Colors.black,
+          color: isMiniMode ? Colors.grey.shade100 : iconColor,
           onPressed: () {
             audioHandler.reversePlayQueue();
             jumpToCurrentSong();
@@ -135,7 +135,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
           valueListenable: playModeNotifier,
           builder: (_, playMode, _) {
             return IconButton(
-              color: isMiniMode ? Colors.grey.shade100 : Colors.black,
+              color: isMiniMode ? Colors.grey.shade100 : iconColor,
               icon: ImageIcon(
                 playMode == 0
                     ? loopImage
@@ -178,7 +178,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
         ),
 
         IconButton(
-          color: isMiniMode ? Colors.grey.shade100 : Colors.black,
+          color: isMiniMode ? Colors.grey.shade100 : iconColor,
           onPressed: () {
             final position = scrollController.position;
             final maxScrollExtent = position.maxScrollExtent;
@@ -205,7 +205,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
           },
           icon: ImageIcon(
             deleteImage,
-            color: isMiniMode ? Colors.grey.shade100 : Colors.black,
+            color: isMiniMode ? Colors.grey.shade100 : iconColor,
           ),
         ),
       ],
@@ -394,7 +394,7 @@ class PlayQueueItemChildState extends State<PlayQueueItem> {
               color: song == currentSong
                   ? miniModeNotifier.value
                         ? Colors.white
-                        : textColor
+                        : highlightTextColor
                   : miniModeNotifier.value
                   ? Colors.grey.shade100
                   : null,
@@ -438,7 +438,7 @@ class PlayQueueItemChildState extends State<PlayQueueItem> {
                 color: isSelected
                     ? miniModeNotifier.value
                           ? currentCoverArtColor
-                          : Colors.grey.shade300
+                          : selectedItemColor
                     : Colors.transparent,
                 child: child,
               );

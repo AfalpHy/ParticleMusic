@@ -7,8 +7,8 @@ import 'package:particle_music/mobile/play_queue_sheet.dart';
 import 'package:particle_music/utils.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
-class PlayerBar extends StatelessWidget {
-  const PlayerBar({super.key});
+class PlayBar extends StatelessWidget {
+  const PlayBar({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +24,7 @@ class PlayerBar extends StatelessWidget {
             borderRadius: BorderRadius.circular(25), // rounded half-circle ends
 
             child: Material(
-              color: Colors.white70,
+              color: playBarColor,
               child: InkWell(
                 onTap: () {
                   showModalBottomSheet(
@@ -54,7 +54,7 @@ class PlayerBar extends StatelessWidget {
                         "${getTitle(currentSong)} - ${getArtist(currentSong)}",
                         key: ValueKey(currentSong),
                         maxLines: 1,
-                        textStyle: TextStyle(fontSize: 16),
+                        textStyle: TextStyle(fontSize: 16, color: textColor),
                       ),
                     ),
 
@@ -65,17 +65,13 @@ class PlayerBar extends StatelessWidget {
                         icon: ValueListenableBuilder(
                           valueListenable: isPlayingNotifier,
                           builder: (_, isPlaying, _) {
-                            return isPlaying
-                                ? const ImageIcon(
-                                    pauseCircleImage,
-                                    color: Colors.black,
-                                    size: 25,
-                                  )
-                                : const ImageIcon(
-                                    playCircleFillImage,
-                                    color: Colors.black,
-                                    size: 25,
-                                  );
+                            return ImageIcon(
+                              isPlaying
+                                  ? pauseCircleImage
+                                  : playCircleFillImage,
+                              color: iconColor,
+                              size: 25,
+                            );
                           },
                         ),
 
@@ -90,7 +86,7 @@ class PlayerBar extends StatelessWidget {
                       child: IconButton(
                         icon: Icon(
                           Icons.playlist_play_rounded,
-                          color: Colors.black,
+                          color: iconColor,
                           size: 30,
                         ),
                         onPressed: () {

@@ -223,9 +223,10 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      backgroundColor: commonColor,
+      backgroundColor: pageBackgroundColor,
       appBar: AppBar(
-        backgroundColor: commonColor,
+        iconTheme: IconThemeData(color: iconColor),
+        backgroundColor: pageBackgroundColor,
         scrolledUnderElevation: 0,
         actions: [
           MySearchField(
@@ -305,9 +306,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                       (Widget child, int index, Animation<double> animation) {
                         return Material(
                           elevation: 0.1,
-                          color: Colors
-                              .grey
-                              .shade100, // background color while moving
+                          color: Colors.transparent,
                           child: child,
                         );
                       },
@@ -339,7 +338,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
         valueListenable: selectedNumNotifier,
         builder: (context, value, child) {
           final valid = value > 0;
-          final color = valid ? iconColor : Colors.black54;
+          final color = valid ? iconColor : iconColor.withAlpha(128);
           return SizedBox(
             height: 80,
             child: Row(

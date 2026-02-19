@@ -30,10 +30,11 @@ class AlbumsPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      backgroundColor: commonColor,
+      backgroundColor: pageBackgroundColor,
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        backgroundColor: commonColor,
+        iconTheme: IconThemeData(color: iconColor),
+        backgroundColor: pageBackgroundColor,
         elevation: 0,
         scrolledUnderElevation: 0,
         title: Text(l10n.albums),
@@ -84,7 +85,7 @@ class AlbumsPage extends StatelessWidget {
           Divider(thickness: 0.5, height: 1, color: dividerColor),
 
           ListTile(
-            leading: const ImageIcon(pictureImage, color: Colors.black),
+            leading: ImageIcon(pictureImage, color: iconColor),
             title: Text(
               l10n.pictureSize,
               style: TextStyle(fontWeight: FontWeight.bold),
@@ -116,7 +117,7 @@ class AlbumsPage extends StatelessWidget {
           ),
 
           ListTile(
-            leading: const ImageIcon(sequenceImage, color: Colors.black),
+            leading: ImageIcon(sequenceImage, color: iconColor),
             title: Text(
               l10n.order,
               style: TextStyle(fontWeight: FontWeight.bold),
@@ -190,8 +191,8 @@ class AlbumsPage extends StatelessWidget {
                     ),
                     onTap: () {
                       Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => SongListPage(album: album),
+                        PageRouteBuilder(
+                          pageBuilder: (_, _, _) => SongListPage(album: album),
                         ),
                       );
                     },

@@ -278,13 +278,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get customMode => 'Main Page Custom Mode';
 
   @override
+  String get backgroundColor => 'Background Color';
+
+  @override
   String get iconColor => 'Icon Color';
 
   @override
-  String get textColor => 'Highlight Text Color';
+  String get textColor => 'Text Color';
+
+  @override
+  String get highlightTextColor => 'Highlight Text Color';
 
   @override
   String get switchColor => 'Switch Color';
+
+  @override
+  String get playBarColor => 'Play Bar Color';
 
   @override
   String get panelColor => 'Panel Color';
@@ -306,6 +315,15 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get selectedItemColor => 'Selected Item Color';
+
+  @override
+  String get scrollbarColor => 'Scrollbar Color';
+
+  @override
+  String get seekBarColor => 'Seek Bar Color';
+
+  @override
+  String get volumeBarColor => 'Volume Bar Color';
 
   @override
   String get lyricsCustomMode => 'Lyrics Page Custom Mode';
@@ -348,4 +366,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get alreadyLatest => 'Already on the latest version';
+
+  @override
+  String get theme => 'Theme';
+
+  @override
+  String get lightMode => 'Light Mode';
+
+  @override
+  String get darkMode => 'Dark Mode';
 }

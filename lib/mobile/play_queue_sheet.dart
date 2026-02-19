@@ -63,7 +63,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                 Spacer(),
 
                 IconButton(
-                  color: Colors.black,
+                  color: iconColor,
                   onPressed: () {
                     audioHandler.reversePlayQueue();
                     jumpToCurrentSong();
@@ -73,7 +73,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                 ),
 
                 IconButton(
-                  color: Colors.black,
+                  color: iconColor,
                   icon: ImageIcon(
                     playModeNotifier.value == 0
                         ? loopImage
@@ -112,7 +112,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                   },
                 ),
                 IconButton(
-                  color: Colors.black,
+                  color: iconColor,
                   onPressed: () {
                     final position = scrollController.position;
                     final maxScrollExtent = position.maxScrollExtent;
@@ -129,6 +129,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                   icon: ImageIcon(location),
                 ),
                 IconButton(
+                  color: iconColor,
                   onPressed: () async {
                     if (await showConfirmDialog(context, l10n.clear)) {
                       await audioHandler.clear();
@@ -140,7 +141,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                       }
                     }
                   },
-                  icon: const ImageIcon(deleteImage, color: Colors.black),
+                  icon: const ImageIcon(deleteImage),
                 ),
               ],
             ),
@@ -175,8 +176,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                   (Widget child, int index, Animation<double> animation) {
                     return Material(
                       elevation: 0.1,
-                      color:
-                          Colors.grey.shade100, // background color while moving
+                      color: Colors.transparent,
                       child: child,
                     );
                   },
@@ -198,7 +198,6 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                         getTitle(song),
                         overflow: TextOverflow.ellipsis,
                         style: TextStyle(
-                          color: song == currentSong ? textColor : null,
                           fontWeight: song == currentSong
                               ? FontWeight.bold
                               : null,
@@ -219,6 +218,8 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                   },
 
                   trailing: IconButton(
+                    color: iconColor,
+
                     onPressed: () async {
                       audioHandler.delete(index);
                       setState(() {});
@@ -239,11 +240,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                       }
                       audioHandler.saveAllStates();
                     },
-                    icon: Icon(
-                      Icons.clear_rounded,
-                      color: Colors.black,
-                      size: 20,
-                    ),
+                    icon: Icon(Icons.clear_rounded, size: 20),
                   ),
                 );
               },

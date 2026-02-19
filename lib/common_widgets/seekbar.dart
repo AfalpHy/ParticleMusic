@@ -8,6 +8,7 @@ class SeekBar extends StatefulWidget {
   final bool isMiniMode;
   final double widgetHeight;
   final double seekBarHeight;
+
   const SeekBar({
     super.key,
     this.light = false,
@@ -91,14 +92,14 @@ class SeekBarState extends State<SeekBar> {
                   data: SliderTheme.of(context).copyWith(
                     thumbColor: widget.light
                         ? Colors.grey.shade50
-                        : Colors.black,
+                        : seekBarColor,
                     trackHeight: isDragging ? 4 : 2,
                     trackShape: const FullWidthTrackShape(),
                     thumbShape: RoundSliderThumbShape(enabledThumbRadius: 0),
                     overlayShape: SliderComponentShape.noOverlay,
                     activeTrackColor: widget.light
                         ? Colors.grey.shade50
-                        : Colors.black,
+                        : seekBarColor,
                     inactiveTrackColor: Colors.black12,
                   ),
                   child: Padding(

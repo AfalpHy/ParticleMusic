@@ -33,7 +33,7 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: commonColor,
+      backgroundColor: pageBackgroundColor,
       resizeToAvoidBottomInset: false,
       appBar: searchAndMore(context),
       body: contentWithStack(),
@@ -42,7 +42,8 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
 
   PreferredSizeWidget searchAndMore(BuildContext context) {
     return AppBar(
-      backgroundColor: commonColor,
+      iconTheme: IconThemeData(color: iconColor),
+      backgroundColor: pageBackgroundColor,
       scrolledUnderElevation: 0,
       actions: [
         MySearchField(
@@ -113,7 +114,7 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
           ),
           Divider(thickness: 0.5, height: 1, color: dividerColor),
           ListTile(
-            leading: const ImageIcon(selectImage, color: Colors.black),
+            leading: ImageIcon(selectImage, color: iconColor),
             title: Text(
               l10n.select,
               style: TextStyle(fontWeight: FontWeight.bold),
@@ -122,8 +123,8 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
             onTap: () {
               Navigator.pop(context);
               Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => SelectableSongListPage(
+                PageRouteBuilder(
+                  pageBuilder: (_, _, _) => SelectableSongListPage(
                     songList: songList,
                     playlist: playlist,
                     artist: artist,
@@ -139,7 +140,7 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
           ),
           if (ranking == null && recently == null)
             ListTile(
-              leading: const ImageIcon(sequenceImage, color: Colors.black),
+              leading: ImageIcon(sequenceImage, color: iconColor),
               title: Text(
                 l10n.sortSongs,
                 style: TextStyle(fontWeight: FontWeight.bold),
@@ -208,7 +209,7 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
             ),
           if (playlist != null && playlist!.name != 'Favorite')
             ListTile(
-              leading: const ImageIcon(deleteImage, color: Colors.black),
+              leading: ImageIcon(deleteImage, color: iconColor),
               title: Text(
                 l10n.delete,
                 style: TextStyle(fontWeight: FontWeight.bold),

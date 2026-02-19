@@ -32,7 +32,6 @@ void showSongMetadataDialog(BuildContext context, MyAudioMetadata song) async {
     context: context,
     builder: (context) {
       return Dialog(
-        backgroundColor: commonColor,
         shape: SmoothRectangleBorder(
           smoothness: 1,
           borderRadius: BorderRadius.circular(10),

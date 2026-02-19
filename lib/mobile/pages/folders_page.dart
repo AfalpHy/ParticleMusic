@@ -13,10 +13,11 @@ class FoldersPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      backgroundColor: commonColor,
+      backgroundColor: pageBackgroundColor,
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        backgroundColor: commonColor,
+        iconTheme: IconThemeData(color: iconColor),
+        backgroundColor: pageBackgroundColor,
         elevation: 0,
         scrolledUnderElevation: 0,
         title: Text(l10n.folders),
@@ -40,7 +41,9 @@ class FoldersPage extends StatelessWidget {
             title: Text(folder.path),
             onTap: () {
               Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => SongListPage(folder: folder)),
+                PageRouteBuilder(
+                  pageBuilder: (_, _, _) => SongListPage(folder: folder),
+                ),
               );
             },
           );

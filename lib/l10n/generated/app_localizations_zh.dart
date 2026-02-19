@@ -278,13 +278,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String get customMode => '主页面自定义模式';
 
   @override
+  String get backgroundColor => '背景颜色';
+
+  @override
   String get iconColor => '图标颜色';
 
   @override
-  String get textColor => '重点文本颜色';
+  String get textColor => '文本颜色';
+
+  @override
+  String get highlightTextColor => '重点文本颜色';
 
   @override
   String get switchColor => '开关颜色';
+
+  @override
+  String get playBarColor => '播放条颜色';
 
   @override
   String get panelColor => '面板颜色';
@@ -306,6 +315,15 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get selectedItemColor => '被选中项颜色';
+
+  @override
+  String get scrollbarColor => '滚动条颜色';
+
+  @override
+  String get seekBarColor => '进度条颜色';
+
+  @override
+  String get volumeBarColor => '音量条颜色';
 
   @override
   String get lyricsCustomMode => '歌词页面自定义模式';
@@ -348,4 +366,13 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get alreadyLatest => '已经是最新版本';
+
+  @override
+  String get theme => '主题';
+
+  @override
+  String get lightMode => '浅色模式';
+
+  @override
+  String get darkMode => '深色模式';
 }

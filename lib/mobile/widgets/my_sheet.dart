@@ -12,11 +12,7 @@ class MySheet extends StatelessWidget {
     return SmoothClipRRect(
       smoothness: 1,
       borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
-      child: Container(
-        height: height,
-        color: Colors.grey.shade100,
-        child: child,
-      ),
+      child: SizedBox(height: height, child: child),
     );
   }
 }

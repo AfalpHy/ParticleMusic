@@ -52,7 +52,9 @@ class DesktopMainPage extends StatelessWidget {
                       sigmaX: pageWidth * 0.03,
                       sigmaY: pageHight * 0.03,
                     ),
-                    child: Container(color: backgroundColor.withAlpha(180)),
+                    child: Container(
+                      color: backgroundFilterColor.withAlpha(180),
+                    ),
                   ),
                 );
               },
@@ -158,7 +160,7 @@ class DesktopMainPage extends StatelessWidget {
                 curve: Curves.linear,
                 child: Material(
                   elevation: 1,
-                  color: Colors.grey.shade50,
+                  color: sidebarColor.withAlpha(255),
                   shape: SmoothRectangleBorder(
                     smoothness: 1,
                     borderRadius: BorderRadius.horizontal(

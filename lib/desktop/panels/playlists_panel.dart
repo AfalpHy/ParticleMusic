@@ -145,9 +145,7 @@ class PlaylistsPanelState extends State<PlaylistsPanel> {
                           return Divider(
                             thickness: 1,
                             height: 1,
-                            color: enableCustomColorNotifier.value
-                                ? dividerColor
-                                : backgroundColor,
+                            color: dividerColor,
                           );
                         },
                       ),

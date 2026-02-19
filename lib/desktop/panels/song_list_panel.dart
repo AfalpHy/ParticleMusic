@@ -77,9 +77,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                     return VerticalDivider(
                       thickness: 0.5,
                       width: 1,
-                      color: enableCustomColorNotifier.value
-                          ? dividerColor
-                          : backgroundColor,
+                      color: dividerColor,
                     );
                   },
                 ),
@@ -256,10 +254,8 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                   valueListenable: updateColorNotifier,
                   builder: (_, _, _) {
                     final buttonStyle = ElevatedButton.styleFrom(
-                      backgroundColor: enableCustomColorNotifier.value
-                          ? buttonColor
-                          : backgroundColor.withAlpha(75),
-                      foregroundColor: Colors.black,
+                      backgroundColor: buttonColor,
+                      foregroundColor: textColor,
                       shadowColor: Colors.black12,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(5),
@@ -682,7 +678,7 @@ class SongListItemState extends State<SongListItem> {
       builder: (context, value, child) {
         return value
             ? IconButton(
-                color: Colors.black,
+                color: iconColor,
                 onPressed: () async {
                   audioHandler.currentIndex = widget.index;
                   await audioHandler.setPlayQueue(widget.currentSongList);
@@ -715,7 +711,7 @@ class SongListItemState extends State<SongListItem> {
                 overflow: TextOverflow.ellipsis,
                 style: song == currentSong
                     ? TextStyle(
-                        color: textColor,
+                        color: highlightTextColor,
                         fontWeight: FontWeight.bold,
                         fontSize: 15,
                       )
@@ -726,7 +722,7 @@ class SongListItemState extends State<SongListItem> {
                 overflow: TextOverflow.ellipsis,
                 style: song == currentSong
                     ? TextStyle(
-                        color: textColor,
+                        color: highlightTextColor,
                         fontWeight: FontWeight.bold,
                         fontSize: 12,
                       )
@@ -750,14 +746,11 @@ class SongListItemState extends State<SongListItem> {
       child: ValueListenableBuilder(
         valueListenable: updateColorNotifier,
         builder: (_, _, _) {
-          final highlightColor = enableCustomColorNotifier.value
-              ? selectedItemColor
-              : backgroundColor.withAlpha(75);
           return ValueListenableBuilder(
             valueListenable: widget.isSelected,
             builder: (context, value, child) {
               return Material(
-                color: value ? highlightColor : Colors.transparent,
+                color: value ? selectedItemColor : Colors.transparent,
                 child: child,
               );
             },
@@ -811,7 +804,11 @@ class SongListItemState extends State<SongListItem> {
                                           color: Colors.red,
                                           size: 20,
                                         )
-                                      : Icon(Icons.favorite_outline, size: 20);
+                                      : Icon(
+                                          Icons.favorite_outline,
+                                          size: 20,
+                                          color: iconColor,
+                                        );
                                 },
                               ),
                             ),

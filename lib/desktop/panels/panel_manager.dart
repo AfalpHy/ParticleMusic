@@ -127,7 +127,13 @@ class PanelManager {
       backgroundSong = currentSongNotifier.value;
     }
 
-    backgroundColor = await computeCoverArtColor(backgroundSong);
+    backgroundFilterColor = await computeCoverArtColor(backgroundSong);
+    if (!enableCustomColorNotifier.value && !darkModeNotifier.value) {
+      searchFieldColor = backgroundFilterColor.withAlpha(75);
+      buttonColor = backgroundFilterColor.withAlpha(75);
+      dividerColor = backgroundFilterColor;
+      selectedItemColor = backgroundFilterColor.withAlpha(75);
+    }
     updateColorNotifier.value++;
   }
 }

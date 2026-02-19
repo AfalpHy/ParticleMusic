@@ -17,9 +17,10 @@ class PlaylistsPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      backgroundColor: commonColor,
+      backgroundColor: pageBackgroundColor,
       appBar: AppBar(
-        backgroundColor: commonColor,
+        iconTheme: IconThemeData(color: iconColor),
+        backgroundColor: pageBackgroundColor,
         elevation: 0,
         scrolledUnderElevation: 0,
         title: Text(l10n.playlists),
@@ -82,8 +83,9 @@ class PlaylistsPage extends StatelessWidget {
                   ),
                   onTap: () {
                     Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => SongListPage(playlist: playlist),
+                      PageRouteBuilder(
+                        pageBuilder: (_, _, _) =>
+                            SongListPage(playlist: playlist),
                       ),
                     );
                   },
@@ -97,9 +99,10 @@ class PlaylistsPage extends StatelessWidget {
                     leading: SmoothClipRRect(
                       smoothness: 1,
                       borderRadius: BorderRadius.circular(5),
-                      child: Container(
-                        color: Colors.grey.shade200,
-                        child: ImageIcon(addImage, size: 50),
+                      child: Material(
+                        elevation: 1,
+                        color: Colors.grey,
+                        child: ImageIcon(addImage, size: 50, color: iconColor),
                       ),
                     ),
                     title: Text(l10n.createPlaylist),
@@ -127,9 +130,10 @@ class PlaylistsPage extends StatelessWidget {
             leading: SmoothClipRRect(
               smoothness: 1,
               borderRadius: BorderRadius.circular(5),
-              child: Container(
-                color: Colors.grey.shade200,
-                child: ImageIcon(addImage, size: 50),
+              child: Material(
+                elevation: 1,
+                color: Colors.grey,
+                child: ImageIcon(addImage, size: 50, color: iconColor),
               ),
             ),
             title: Text(l10n.createPlaylist),
@@ -140,7 +144,7 @@ class PlaylistsPage extends StatelessWidget {
           ),
           Divider(thickness: 0.5, height: 1, color: dividerColor),
           ListTile(
-            leading: const ImageIcon(reorderImage, color: Colors.black),
+            leading: ImageIcon(reorderImage, color: iconColor),
             title: Text(
               l10n.reorder,
               style: TextStyle(fontWeight: FontWeight.bold),
@@ -149,8 +153,8 @@ class PlaylistsPage extends StatelessWidget {
             onTap: () {
               Navigator.pop(context);
               Navigator.of(context, rootNavigator: true).push(
-                MaterialPageRoute(
-                  builder: (context) => reorderPlaylistsPage(context),
+                PageRouteBuilder(
+                  pageBuilder: (_, _, _) => reorderPlaylistsPage(),
                 ),
               );
             },
@@ -160,10 +164,13 @@ class PlaylistsPage extends StatelessWidget {
     );
   }
 
-  Widget reorderPlaylistsPage(BuildContext context) {
+  Widget reorderPlaylistsPage() {
     return Scaffold(
-      backgroundColor: commonColor,
-      appBar: AppBar(backgroundColor: commonColor, scrolledUnderElevation: 0),
+      backgroundColor: pageBackgroundColor,
+      appBar: AppBar(
+        backgroundColor: pageBackgroundColor,
+        scrolledUnderElevation: 0,
+      ),
       body: ReorderableListView.builder(
         buildDefaultDragHandles: false,
         onReorder: (oldIndex, newIndex) {
@@ -213,7 +220,7 @@ class PlaylistsPage extends StatelessWidget {
                   ),
                   subtitle: ValueListenableBuilder(
                     valueListenable: playlist.updateNotifier,
-                    builder: (_, _, _) {
+                    builder: (context, _, _) {
                       return Text(
                         AppLocalizations.of(
                           context,

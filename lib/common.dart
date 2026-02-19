@@ -113,38 +113,75 @@ late SettingManager settingManager;
 
 // ===================================== Colors =====================================
 
-Color backgroundColor = Colors.grey;
+final darkModeNotifier = ValueNotifier(false);
+
+// for desktop
+Color backgroundFilterColor = Colors.grey;
+// for mobile
+late Color pageBackgroundColor;
+
 Color currentCoverArtColor = Colors.grey;
 Color lyricsBackgroundColor = Colors.black;
 
-Color sidebarColor = Colors.grey.shade200;
-Color customSidebarColor = Colors.grey.shade200;
-Color vividSidebarColor = Colors.grey.shade200.withAlpha(100);
+late Color iconColor;
+late Color textColor;
+late Color highlightTextColor;
+late Color switchColor;
+late Color playBarColor;
+late Color panelColor;
+late Color sidebarColor;
+late Color bottomColor;
+late Color searchFieldColor;
+late Color buttonColor;
+late Color dividerColor;
+late Color selectedItemColor;
+late Color seekBarColor;
+late Color volumeBarColor;
 
-Color bottomColor = Colors.grey.shade50;
-Color customBottomColor = Colors.grey.shade50;
-Color vividBottomColor = Colors.grey.shade50.withAlpha(100);
-
-Color commonColor = Colors.grey.shade100;
-
-Color iconColor = Colors.black;
-Color textColor = Colors.black;
-Color switchColor = Colors.black87;
-Color panelColor = Colors.grey.shade100;
-Color searchFieldColor = Colors.white;
-Color buttonColor = Colors.white70;
-Color dividerColor = Colors.grey;
-Color selectedItemColor = Colors.white;
-
+Color customPageBackgroundColor = Color.fromARGB(255, 245, 245, 245);
 Color customIconColor = Colors.black;
-Color customTextColor = Colors.black;
+Color customTextColor = Color.fromARGB(255, 30, 30, 30);
+Color customHighlightTextColor = Colors.black;
 Color customSwitchColor = Colors.black87;
+Color customPlayBarColor = Colors.white70;
 Color customPanelColor = Colors.grey.shade100;
+Color customSidebarColor = Colors.grey.shade200;
+Color customBottomColor = Colors.grey.shade50;
+Color customSearchFieldColor = Colors.white;
+Color customButtonColor = Colors.white70;
+Color customDividerColor = Colors.grey;
+Color customSelectedItemColor = Colors.white;
+Color customSeekBarColor = Colors.black;
+Color customVolumeBarColor = Colors.black;
 
-Color vividIconColor = Colors.black;
-Color vividTextColor = Colors.black;
-Color vividSwitchColor = Colors.black87;
-Color vividPanelColor = Colors.grey.shade100.withAlpha(100);
+const Color lightModePageBackgroundColor = Color.fromARGB(255, 245, 245, 245);
+const Color lightModeIconColor = Colors.black;
+const Color lightModeTextColor = Color.fromARGB(255, 30, 30, 30);
+const Color lightModeHighlightTextColor = Colors.black;
+const Color lightModeSwitchColor = Colors.black87;
+const Color lightModePlayBarColor = Colors.white70;
+const Color lightModePanelColor = Color.fromARGB(100, 245, 245, 245);
+const Color lightModeSidebarColor = Color.fromARGB(100, 238, 238, 238);
+const Color lightModeBottomColor = Color.fromARGB(100, 250, 250, 250);
+const Color lightModeSeekBarColor = Colors.black;
+const Color lightModeVolumeBarColor = Colors.black;
+
+const Color darkModePageBackgroundColor = Color.fromARGB(255, 50, 50, 50);
+const Color darkModeCommonColor = Color.fromARGB(255, 97, 97, 97);
+const Color darkModeIconColor = Color.fromARGB(255, 195, 195, 195);
+const Color darkModeTextColor = Color.fromARGB(255, 195, 195, 195);
+const Color darkModeHighlightTextColor = Color.fromARGB(255, 230, 230, 230);
+const Color darkModeSwitchColor = Color.fromARGB(221, 0, 0, 0);
+const Color darkModePlayerColor = Colors.black54;
+const Color darkModePanelColor = Color.fromARGB(255, 50, 50, 50);
+const Color darkModeSidebarColor = Color.fromARGB(255, 55, 55, 55);
+const Color darkModeBottomColor = Color.fromARGB(255, 60, 60, 60);
+const Color darkModeSearchFieldColor = darkModeCommonColor;
+const Color darkModeButtonColor = darkModeCommonColor;
+const Color darkModeDividerColor = darkModeCommonColor;
+const Color darkModeSelectedItemColor = darkModeCommonColor;
+const Color darkModeSeekBarColor = Color.fromARGB(255, 195, 195, 195);
+const Color darkModeVolumeBarColor = Color.fromARGB(255, 195, 195, 195);
 
 // ===================================== Images =====================================
 
@@ -217,6 +254,7 @@ const AssetImage shuffleImage = AssetImage('assets/images/shuffle.png');
 const AssetImage songsImage = AssetImage('assets/images/songs.png');
 const AssetImage speakerOffImage = AssetImage('assets/images/speaker_off.png');
 const AssetImage speakerImage = AssetImage('assets/images/speaker.png');
+const AssetImage themeImage = AssetImage('assets/images/theme.png');
 const AssetImage timerImage = AssetImage('assets/images/timer.png');
 const AssetImage unmaximizeImage = AssetImage('assets/images/unmaximize.png');
 const AssetImage vibrationImage = AssetImage('assets/images/vibration.png');

@@ -28,12 +28,9 @@ class Sidebar extends StatelessWidget {
         child: ValueListenableBuilder(
           valueListenable: sidebarHighlighLabel,
           builder: (context, highlightLabel, child) {
-            final highlightColor = enableCustomColorNotifier.value
-                ? selectedItemColor
-                : backgroundColor.withAlpha(75);
             return Material(
               color: highlightLabel == label
-                  ? highlightColor
+                  ? selectedItemColor
                   : Colors.transparent,
               child: child,
             );
@@ -82,7 +79,11 @@ class Sidebar extends StatelessWidget {
                 child: Center(
                   child: Text(
                     'Particle Music',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 20,
+                      color: highlightTextColor,
+                    ),
                   ),
                 ),
               ),
@@ -181,9 +182,7 @@ class Sidebar extends StatelessWidget {
                         child: Divider(
                           thickness: 0.5,
                           height: 1,
-                          color: enableCustomColorNotifier.value
-                              ? dividerColor
-                              : backgroundColor,
+                          color: dividerColor,
                         ),
                       ),
                     ),
@@ -229,9 +228,7 @@ class Sidebar extends StatelessWidget {
                         child: Divider(
                           thickness: 0.5,
                           height: 1,
-                          color: enableCustomColorNotifier.value
-                              ? dividerColor
-                              : backgroundColor,
+                          color: dividerColor,
                         ),
                       ),
                     ),
@@ -252,7 +249,7 @@ class Sidebar extends StatelessWidget {
                           onPressed: () {
                             showCreatePlaylistDialog(context);
                           },
-                          icon: ImageIcon(addImage, size: 20),
+                          icon: ImageIcon(addImage, size: 20, color: iconColor),
                           hoverColor: Colors.transparent,
                           highlightColor: Colors.transparent,
                         ),

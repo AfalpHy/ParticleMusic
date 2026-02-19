@@ -233,9 +233,10 @@ class _Add2PlaylistPanelState extends State<Add2PlaylistPanel> {
           leading: SmoothClipRRect(
             smoothness: 1,
             borderRadius: BorderRadius.circular(4),
-            child: Container(
-              color: Colors.grey.shade200,
-              child: ImageIcon(addImage, size: 40),
+            child: Material(
+              elevation: 1,
+              color: Colors.grey,
+              child: ImageIcon(addImage, size: 40, color: iconColor),
             ),
           ),
           title: Text(l10n.createPlaylist, style: TextStyle(fontSize: 14)),
@@ -252,7 +253,7 @@ class _Add2PlaylistPanelState extends State<Add2PlaylistPanel> {
           },
         ),
         SizedBox(height: 5),
-        Divider(height: 1, color: Colors.grey.shade300),
+        Divider(height: 1, thickness: 0.5, color: dividerColor),
         SizedBox(height: 5),
         Expanded(
           child: ListView.builder(
@@ -306,15 +307,22 @@ Future<bool> showCreatePlaylistSheet(BuildContext context) async {
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(30, 30, 30, 0),
-                child: TextField(
-                  controller: controller,
-                  autofocus: true,
-                  decoration: const InputDecoration(
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.black),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: Colors.black, width: 1.5),
+                child: TextSelectionTheme(
+                  data: TextSelectionThemeData(
+                    selectionColor: textColor.withAlpha(50),
+                    cursorColor: textColor,
+                    selectionHandleColor: textColor,
+                  ),
+                  child: TextField(
+                    controller: controller,
+                    autofocus: true,
+                    decoration: const InputDecoration(
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.black),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: Colors.black, width: 1.5),
+                      ),
                     ),
                   ),
                 ),
@@ -326,7 +334,7 @@ Future<bool> showCreatePlaylistSheet(BuildContext context) async {
                 },
                 style: ElevatedButton.styleFrom(
                   elevation: 2,
-                  backgroundColor: buttonColor,
+                  backgroundColor: Colors.white70,
                   shadowColor: Colors.black54,
                   foregroundColor: Colors.black,
 
@@ -359,24 +367,29 @@ Future<bool> showCreatePlaylistDialog(BuildContext context) async {
     context: context,
     builder: (context) {
       return AlertDialog(
-        backgroundColor: commonColor,
         title: Center(child: Text(l10n.createPlaylist)),
         shape: SmoothRectangleBorder(
           smoothness: 1,
           borderRadius: BorderRadius.circular(10),
         ),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          style: TextStyle(fontSize: 12),
-          decoration: const InputDecoration(
-            enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.black),
+        content: TextSelectionTheme(
+          data: TextSelectionThemeData(
+            selectionColor: textColor.withAlpha(50),
+            cursorColor: textColor,
+          ),
+          child: TextField(
+            controller: controller,
+            autofocus: true,
+            style: TextStyle(fontSize: 12),
+            decoration: const InputDecoration(
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.black),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: Colors.black, width: 1.5),
+              ),
+              isDense: true,
             ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: Colors.black, width: 1.5),
-            ),
-            isDense: true,
           ),
         ),
         actions: [
@@ -385,7 +398,7 @@ Future<bool> showCreatePlaylistDialog(BuildContext context) async {
               onPressed: () => Navigator.pop(context, controller.text),
               style: ElevatedButton.styleFrom(
                 elevation: 2,
-                backgroundColor: buttonColor,
+                backgroundColor: Colors.white70,
                 shadowColor: Colors.black54,
                 foregroundColor: Colors.black,
 
@@ -430,7 +443,6 @@ void showAddPlaylistDialog(
     context: context,
     builder: (context) {
       return Dialog(
-        backgroundColor: commonColor,
         shape: SmoothRectangleBorder(
           smoothness: 1,
           borderRadius: BorderRadius.circular(10),

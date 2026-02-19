@@ -55,7 +55,9 @@ class SelectableSongListTile extends StatelessWidget {
                     getTitle(song),
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: song == currentSong ? textColor : null,
+                      color: song == currentSong
+                          ? highlightTextColor
+                          : textColor,
                       fontWeight: song == currentSong ? FontWeight.bold : null,
                     ),
                   );
@@ -83,7 +85,7 @@ class SelectableSongListTile extends StatelessWidget {
                     child: Text(
                       "${getArtist(song)} - ${getAlbum(song)}",
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 12),
+                      style: TextStyle(fontSize: 12, color: textColor),
                     ),
                   ),
                 ],
@@ -121,7 +123,7 @@ class SelectableSongListTile extends StatelessWidget {
                     child: Row(
                       children: [
                         SizedBox(width: 10),
-                        const ImageIcon(reorderImage),
+                        ImageIcon(reorderImage, color: iconColor),
                       ],
                     ),
                   ),

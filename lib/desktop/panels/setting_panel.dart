@@ -57,8 +57,8 @@ class LicensePagePanelState extends State<LicensePagePanel> {
         Expanded(
           child: Theme(
             data: ThemeData(
-              colorScheme: ColorScheme.light(surface: commonColor),
-              listTileTheme: ListTileThemeData(selectedColor: textColor),
+              colorScheme: ColorScheme.light(),
+              listTileTheme: ListTileThemeData(selectedColor: Colors.black),
               appBarTheme: const AppBarTheme(
                 scrolledUnderElevation: 0,
                 centerTitle: true,

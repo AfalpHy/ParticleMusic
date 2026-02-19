@@ -620,6 +620,12 @@ abstract class AppLocalizations {
   /// **'Main Page Custom Mode'**
   String get customMode;
 
+  /// No description provided for @backgroundColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Background Color'**
+  String get backgroundColor;
+
   /// No description provided for @iconColor.
   ///
   /// In en, this message translates to:
@@ -629,14 +635,26 @@ abstract class AppLocalizations {
   /// No description provided for @textColor.
   ///
   /// In en, this message translates to:
-  /// **'Highlight Text Color'**
+  /// **'Text Color'**
   String get textColor;
+
+  /// No description provided for @highlightTextColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Highlight Text Color'**
+  String get highlightTextColor;
 
   /// No description provided for @switchColor.
   ///
   /// In en, this message translates to:
   /// **'Switch Color'**
   String get switchColor;
+
+  /// No description provided for @playBarColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Play Bar Color'**
+  String get playBarColor;
 
   /// No description provided for @panelColor.
   ///
@@ -679,6 +697,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Selected Item Color'**
   String get selectedItemColor;
+
+  /// No description provided for @scrollbarColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Scrollbar Color'**
+  String get scrollbarColor;
+
+  /// No description provided for @seekBarColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Seek Bar Color'**
+  String get seekBarColor;
+
+  /// No description provided for @volumeBarColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Volume Bar Color'**
+  String get volumeBarColor;
 
   /// No description provided for @lyricsCustomMode.
   ///
@@ -763,6 +799,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Already on the latest version'**
   String get alreadyLatest;
+
+  /// No description provided for @theme.
+  ///
+  /// In en, this message translates to:
+  /// **'Theme'**
+  String get theme;
+
+  /// No description provided for @lightMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Light Mode'**
+  String get lightMode;
+
+  /// No description provided for @darkMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Dark Mode'**
+  String get darkMode;
 }
 
 class _AppLocalizationsDelegate

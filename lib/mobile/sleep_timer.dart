@@ -119,7 +119,7 @@ Widget sleepTimerListTile(
   return ListTile(
     leading: ImageIcon(
       timerImage,
-      color: inSetting ? iconColor : Colors.black,
+      color: iconColor,
       size: inSetting ? 30 : null,
     ),
 

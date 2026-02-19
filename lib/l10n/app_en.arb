@@ -114,9 +114,12 @@
   "clear": "Clear",
   "palette": "Palette",
   "customMode": "Main Page Custom Mode",
+  "backgroundColor": "Background Color",
   "iconColor": "Icon Color",
-  "textColor": "Highlight Text Color",
+  "textColor": "Text Color",
+  "highlightTextColor": "Highlight Text Color",
   "switchColor": "Switch Color",
+  "playBarColor": "Play Bar Color",
   "panelColor": "Panel Color",
   "sidebarColor": "Sidebar Color",
   "bottomColor": "Bottom Color",
@@ -124,6 +127,9 @@
   "buttonColor": "Button Color",
   "dividerColor": "Divider Color",
   "selectedItemColor": "Selected Item Color",
+  "scrollbarColor": "Scrollbar Color",
+  "seekBarColor": "Seek Bar Color",
+  "volumeBarColor": "Volume Bar Color",
   "lyricsCustomMode": "Lyrics Page Custom Mode",
   "lyricsBackgroundColor": "Lyrics Background Color",
   "reset": "Reset",
@@ -137,5 +143,8 @@
   "hide": "Hide",
   "checkUpdate": "Check Update",
   "go2Download": "Go to Download",
-  "alreadyLatest": "Already on the latest version"
+  "alreadyLatest": "Already on the latest version",
+  "theme": "Theme",
+  "lightMode": "Light Mode",
+  "darkMode": "Dark Mode"
 }

@@ -7,7 +7,7 @@ import 'package:particle_music/mobile/pages/folders_page.dart';
 import 'package:particle_music/mobile/pages/ranking_page.dart';
 import 'package:particle_music/mobile/pages/playlists_page.dart';
 import 'package:particle_music/mobile/pages/recently_page.dart';
-import 'package:particle_music/mobile/player_bar.dart';
+import 'package:particle_music/mobile/play_bar.dart';
 import 'package:particle_music/common_widgets/settings_list.dart';
 import 'package:particle_music/mobile/pages/songs_page.dart';
 import 'package:particle_music/utils.dart';
@@ -56,7 +56,7 @@ class MobileMainPageState extends State<MobileMainPage> {
     appWidth = MediaQuery.widthOf(context);
     return Stack(
       children: [
-        // Navigator for normal pages (PlayerBar stays above)
+        // Navigator for normal pages (PlayBar stays above)
         NavigatorPopHandler(
           onPopWithResult: (_) {
             if (homeNavigatorKey.currentState!.canPop()) {
@@ -67,7 +67,14 @@ class MobileMainPageState extends State<MobileMainPage> {
             key: homeNavigatorKey,
             observers: [swipeObserver],
             onGenerateRoute: (settings) {
-              return MaterialPageRoute(builder: (_) => const HomePage());
+              return PageRouteBuilder(
+                pageBuilder: (_, _, _) => ValueListenableBuilder(
+                  valueListenable: updateColorNotifier,
+                  builder: (context, value, child) {
+                    return HomePage();
+                  },
+                ),
+              );
             },
           ),
         ),
@@ -81,7 +88,12 @@ class MobileMainPageState extends State<MobileMainPage> {
               left: 20,
               right: 20,
               bottom: bottom,
-              child: const PlayerBar(),
+              child: ValueListenableBuilder(
+                valueListenable: updateColorNotifier,
+                builder: (context, value, child) {
+                  return PlayBar();
+                },
+              ),
             );
           },
         ),
@@ -118,7 +130,7 @@ class MobileMainPageState extends State<MobileMainPage> {
         final color = iconColor;
         // must use Material to avoid layout problem
         return Material(
-          color: commonColor,
+          color: pageBackgroundColor,
 
           child: Row(
             children: [
@@ -137,13 +149,13 @@ class MobileMainPageState extends State<MobileMainPage> {
                       children: [
                         Icon(
                           Icons.library_music_outlined,
-                          color: which == 1 ? color : Colors.black54,
+                          color: which == 1 ? color : color.withAlpha(128),
                         ),
 
                         Text(
                           l10n.library,
                           style: TextStyle(
-                            color: which == 1 ? color : Colors.black54,
+                            color: which == 1 ? color : color.withAlpha(128),
                           ),
                         ),
                       ],
@@ -167,13 +179,13 @@ class MobileMainPageState extends State<MobileMainPage> {
                       children: [
                         Icon(
                           Icons.settings_outlined,
-                          color: which == 3 ? color : Colors.black54,
+                          color: which == 3 ? color : color.withAlpha(128),
                         ),
 
                         Text(
                           l10n.settings,
                           style: TextStyle(
-                            color: which == 3 ? color : Colors.black54,
+                            color: which == 3 ? color : color.withAlpha(128),
                           ),
                         ),
                       ],
@@ -200,14 +212,17 @@ class HomePageState extends State<HomePage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: commonColor,
+      backgroundColor: pageBackgroundColor,
       appBar: AppBar(
-        backgroundColor: commonColor,
+        backgroundColor: pageBackgroundColor,
         elevation: 0,
         scrolledUnderElevation: 0,
-        title: const Text(
+        title: Text(
           "Particle Music",
-          style: TextStyle(fontWeight: FontWeight.bold),
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            color: highlightTextColor,
+          ),
         ),
       ),
       body: ValueListenableBuilder(
@@ -236,7 +251,7 @@ class HomePageState extends State<HomePage> {
           onTap: () {
             Navigator.of(
               context,
-            ).push(MaterialPageRoute(builder: (_) => PlaylistsPage()));
+            ).push(PageRouteBuilder(pageBuilder: (_, _, _) => PlaylistsPage()));
           },
         ),
         ListTile(
@@ -245,7 +260,7 @@ class HomePageState extends State<HomePage> {
           onTap: () {
             Navigator.of(
               context,
-            ).push(MaterialPageRoute(builder: (_) => ArtistsPage()));
+            ).push(PageRouteBuilder(pageBuilder: (_, _, _) => ArtistsPage()));
           },
         ),
         ListTile(
@@ -254,7 +269,7 @@ class HomePageState extends State<HomePage> {
           onTap: () {
             Navigator.of(
               context,
-            ).push(MaterialPageRoute(builder: (_) => AlbumsPage()));
+            ).push(PageRouteBuilder(pageBuilder: (_, _, _) => AlbumsPage()));
           },
         ),
 
@@ -264,7 +279,7 @@ class HomePageState extends State<HomePage> {
           onTap: () {
             Navigator.of(
               context,
-            ).push(MaterialPageRoute(builder: (_) => FoldersPage()));
+            ).push(PageRouteBuilder(pageBuilder: (_, _, _) => FoldersPage()));
           },
         ),
 
@@ -274,7 +289,7 @@ class HomePageState extends State<HomePage> {
           onTap: () {
             Navigator.of(
               context,
-            ).push(MaterialPageRoute(builder: (_) => SongsPage()));
+            ).push(PageRouteBuilder(pageBuilder: (_, _, _) => SongsPage()));
           },
         ),
 
@@ -284,7 +299,7 @@ class HomePageState extends State<HomePage> {
           onTap: () {
             Navigator.of(
               context,
-            ).push(MaterialPageRoute(builder: (_) => RankingPage()));
+            ).push(PageRouteBuilder(pageBuilder: (_, _, _) => RankingPage()));
           },
         ),
 
@@ -294,7 +309,7 @@ class HomePageState extends State<HomePage> {
           onTap: () {
             Navigator.of(
               context,
-            ).push(MaterialPageRoute(builder: (_) => RecentlyPage()));
+            ).push(PageRouteBuilder(pageBuilder: (_, _, _) => RecentlyPage()));
           },
         ),
       ],

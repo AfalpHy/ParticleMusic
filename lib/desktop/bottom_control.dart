@@ -83,7 +83,7 @@ class BottomControl extends StatelessWidget {
                 valueListenable: playModeNotifier,
                 builder: (_, playMode, _) {
                   return IconButton(
-                    color: Colors.black,
+                    color: iconColor,
                     icon: ImageIcon(
                       playMode == 0
                           ? loopImage
@@ -130,14 +130,14 @@ class BottomControl extends StatelessWidget {
               ),
 
               IconButton(
-                color: Colors.black,
+                color: iconColor,
                 icon: const ImageIcon(previousButtonImage, size: 25),
                 onPressed: () {
                   audioHandler.skipToPrevious();
                 },
               ),
               IconButton(
-                color: Colors.black,
+                color: iconColor,
                 icon: ValueListenableBuilder(
                   valueListenable: isPlayingNotifier,
                   builder: (_, isPlaying, _) {
@@ -157,14 +157,14 @@ class BottomControl extends StatelessWidget {
                 },
               ),
               IconButton(
-                color: Colors.black,
+                color: iconColor,
                 icon: const ImageIcon(nextButtonImage, size: 25),
                 onPressed: () {
                   audioHandler.skipToNext();
                 },
               ),
               IconButton(
-                color: Colors.black,
+                color: iconColor,
                 icon: const ImageIcon(playQueueImage, size: 25),
                 onPressed: () {
                   if (playQueue.isEmpty) {
@@ -208,7 +208,7 @@ class BottomControl extends StatelessWidget {
       children: [
         Spacer(),
         IconButton(
-          color: Colors.black,
+          color: iconColor,
 
           onPressed: () async {
             if (lyricsWindowVisible) {
@@ -221,7 +221,7 @@ class BottomControl extends StatelessWidget {
           },
           icon: const ImageIcon(desktopLyricsImage, size: 25),
         ),
-        Speaker(color: Colors.black),
+        Speaker(color: iconColor),
         Center(
           child: SizedBox(
             height: 20,
@@ -235,7 +235,7 @@ class BottomControl extends StatelessWidget {
                     trackShape: const FullWidthTrackShape(),
                     thumbShape: RoundSliderThumbShape(enabledThumbRadius: 0),
                     overlayColor: Colors.transparent,
-                    activeTrackColor: Colors.black,
+                    activeTrackColor: volumeBarColor,
                     inactiveTrackColor: Colors.black12,
                     thumbColor: Colors.black,
                   ),
