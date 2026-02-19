@@ -144,7 +144,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
 
           if (ranking == null && recently == null)
             ListTile(
-              leading: const ImageIcon(sequenceImage, color: Colors.black),
+              leading: ImageIcon(sequenceImage, color: iconColor),
               title: Text(
                 l10n.sortSongs,
                 style: TextStyle(fontWeight: FontWeight.bold),
