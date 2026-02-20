@@ -374,11 +374,11 @@ abstract class AppLocalizations {
   /// **'Favorited'**
   String get favorited;
 
-  /// No description provided for @favorite.
+  /// No description provided for @favorites.
   ///
   /// In en, this message translates to:
-  /// **'Favorite'**
-  String get favorite;
+  /// **'Favorites'**
+  String get favorites;
 
   /// No description provided for @duration.
   ///

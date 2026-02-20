@@ -104,7 +104,8 @@ class Playlist {
   ValueNotifier<int> updateNotifier = ValueNotifier(0);
   ValueNotifier<int> sortTypeNotifier = ValueNotifier(0);
 
-  bool isFavorite = false;
+  late bool isFavorite;
+  late bool isNotFavorite;
 
   Playlist({
     required this.name,
@@ -121,6 +122,7 @@ class Playlist {
     }
 
     isFavorite = name == 'Favorite';
+    isNotFavorite = !isFavorite;
   }
 
   Future<void> load() async {
@@ -268,7 +270,7 @@ class _Add2PlaylistPanelState extends State<Add2PlaylistPanel> {
                   song: getFirstSong(playlist.songList),
                 ),
                 title: Text(
-                  index == 0 ? l10n.favorite : playlist.name,
+                  index == 0 ? l10n.favorites : playlist.name,
                   style: TextStyle(fontSize: 14),
                 ),
 

@@ -155,7 +155,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get favorited => '喜欢';
 
   @override
-  String get favorite => '最喜欢的音乐';
+  String get favorites => '我喜欢的';
 
   @override
   String get duration => '时长';

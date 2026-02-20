@@ -215,7 +215,7 @@ class PlaylistsPanelState extends State<PlaylistsPanel> {
                                         child: Text(
                                           playlist ==
                                                   playlistsManager.playlists[0]
-                                              ? l10n.favorite
+                                              ? l10n.favorites
                                               : playlist.name,
                                           style: TextStyle(
                                             overflow: TextOverflow.ellipsis,

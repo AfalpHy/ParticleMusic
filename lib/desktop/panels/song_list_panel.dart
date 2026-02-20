@@ -233,7 +233,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                     isLibrary
                         ? l10n.songs
                         : playlist == playlistsManager.playlists[0]
-                        ? l10n.favorite
+                        ? l10n.favorites
                         : title,
                     maxLines: 1,
                     minFontSize: 20,

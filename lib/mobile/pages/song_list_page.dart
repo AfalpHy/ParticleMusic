@@ -101,8 +101,8 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
                     child: MyAutoSizeText(
                       isLibrary
                           ? AppLocalizations.of(context).songs
-                          : playlist?.name == 'Favorite'
-                          ? l10n.favorite
+                          : playlist?.isFavorite == true
+                          ? l10n.favorites
                           : title,
                       maxLines: 1,
                       textStyle: TextStyle(fontSize: 15),
@@ -207,7 +207,7 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
                 );
               },
             ),
-          if (playlist != null && playlist!.name != 'Favorite')
+          if (playlist != null && playlist!.isNotFavorite)
             ListTile(
               leading: ImageIcon(deleteImage, color: iconColor),
               title: Text(
@@ -282,7 +282,7 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
                   isLibrary
                       ? l10n.songs
                       : playlist == playlistsManager.playlists[0]
-                      ? l10n.favorite
+                      ? l10n.favorites
                       : title,
                   maxLines: 1,
                   minFontSize: 20,

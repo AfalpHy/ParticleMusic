@@ -327,7 +327,7 @@ class Sidebar extends StatelessWidget {
                 );
               },
             ),
-            content: index == 0 ? l10n.favorite : playlist.name,
+            content: index == 0 ? l10n.favorites : playlist.name,
 
             onTap: () {
               panelManager.pushPanel('_${playlist.name}');
@@ -337,12 +337,12 @@ class Sidebar extends StatelessWidget {
             return Menu(
               children: [
                 MenuAction(
-                  title: index == 0 ? l10n.favorite : playlist.name,
+                  title: index == 0 ? l10n.favorites : playlist.name,
                   callback: () {},
                 ),
 
-                if (playlist.name != 'Favorite') MenuSeparator(),
-                if (playlist.name != 'Favorite')
+                if (playlist.isNotFavorite) MenuSeparator(),
+                if (playlist.isNotFavorite)
                   MenuAction(
                     title: l10n.delete,
                     image: MenuImage.icon(Icons.delete),
