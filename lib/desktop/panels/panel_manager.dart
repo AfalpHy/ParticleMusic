@@ -129,10 +129,10 @@ class PanelManager {
 
     backgroundFilterColor = await computeCoverArtColor(backgroundSong);
     if (!enableCustomColorNotifier.value && !darkModeNotifier.value) {
-      searchFieldColor = backgroundFilterColor.withAlpha(128);
-      buttonColor = backgroundFilterColor.withAlpha(128);
+      searchFieldColor = backgroundFilterColor.withAlpha(75);
+      buttonColor = backgroundFilterColor.withAlpha(75);
       dividerColor = backgroundFilterColor;
-      selectedItemColor = backgroundFilterColor.withAlpha(128);
+      selectedItemColor = backgroundFilterColor.withAlpha(75);
     }
     updateColorNotifier.value++;
   }
