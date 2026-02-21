@@ -465,12 +465,7 @@ class PlayQueueItemChildState extends State<PlayQueueItem> {
           onExit: (_) {
             showPlayButtonNotifier.value = false;
           },
-          child: InkWell(
-            highlightColor: Colors.transparent,
-            splashColor: Colors.transparent,
-            onTap: widget.onTap,
-            child: songListTile(),
-          ),
+          child: InkWell(onTap: widget.onTap, child: songListTile()),
         ),
       ),
     );

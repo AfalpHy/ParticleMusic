@@ -269,9 +269,7 @@ class ArtistsPage extends StatelessWidget {
                     smoothness: 1,
                     borderRadius: BorderRadius.circular(radius),
                   ),
-                  child: InkWell(
-                    splashColor: Colors.transparent,
-                    highlightColor: Colors.transparent,
+                  child: GestureDetector(
                     child: CoverArtWidget(
                       size: size,
                       borderRadius: radius,

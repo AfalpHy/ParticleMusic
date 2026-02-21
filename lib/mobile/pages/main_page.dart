@@ -137,9 +137,7 @@ class MobileMainPageState extends State<MobileMainPage> {
               Expanded(
                 child: SizedBox(
                   height: 80,
-                  child: InkWell(
-                    splashColor: Colors.transparent,
-                    highlightColor: Colors.transparent,
+                  child: GestureDetector(
                     onTap: () {
                       tryVibrate();
                       _homeBody.value = 1;
@@ -166,9 +164,7 @@ class MobileMainPageState extends State<MobileMainPage> {
               Expanded(
                 child: SizedBox(
                   height: 80,
-                  child: InkWell(
-                    splashColor: Colors.transparent,
-                    highlightColor: Colors.transparent,
+                  child: GestureDetector(
                     onTap: () {
                       tryVibrate();
                       _homeBody.value = 3;

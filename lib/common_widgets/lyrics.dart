@@ -350,6 +350,7 @@ class LyricLineWidget extends StatelessWidget {
     return Material(
       color: Colors.transparent,
       child: InkWell(
+        mouseCursor: SystemMouseCursors.click,
         onTap: () {
           audioHandler.seek(line.start);
         },

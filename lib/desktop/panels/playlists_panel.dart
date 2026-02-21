@@ -4,7 +4,6 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/title_bar.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/common_widgets/my_switch.dart';
-import 'package:smooth_corner/smooth_corner.dart';
 
 class PlaylistsPanel extends StatefulWidget {
   const PlaylistsPanel({super.key});
@@ -173,41 +172,32 @@ class PlaylistsPanelState extends State<PlaylistsPanel> {
                               builder: (context, value, child) {
                                 return Column(
                                   children: [
-                                    Material(
-                                      elevation: 1,
-                                      shape: SmoothRectangleBorder(
-                                        smoothness: 1,
-                                        borderRadius: BorderRadius.circular(10),
-                                      ),
-                                      child: InkWell(
-                                        splashColor: Colors.transparent,
-                                        highlightColor: Colors.transparent,
-                                        child: playlist.songList.isNotEmpty
-                                            ? ValueListenableBuilder(
-                                                valueListenable: playlist
-                                                    .songList
-                                                    .first
-                                                    .updateNotifier,
-                                                builder: (_, _, _) {
-                                                  return CoverArtWidget(
-                                                    size: coverArtWidth,
-                                                    borderRadius: 10,
-                                                    song:
-                                                        playlist.songList.first,
-                                                  );
-                                                },
-                                              )
-                                            : CoverArtWidget(
-                                                size: coverArtWidth,
-                                                borderRadius: 10,
-                                                song: null,
-                                              ),
-                                        onTap: () {
-                                          panelManager.pushPanel(
-                                            '_${playlist.name}',
-                                          );
-                                        },
-                                      ),
+                                    InkWell(
+                                      mouseCursor: SystemMouseCursors.click,
+                                      child: playlist.songList.isNotEmpty
+                                          ? ValueListenableBuilder(
+                                              valueListenable: playlist
+                                                  .songList
+                                                  .first
+                                                  .updateNotifier,
+                                              builder: (_, _, _) {
+                                                return CoverArtWidget(
+                                                  size: coverArtWidth,
+                                                  borderRadius: 10,
+                                                  song: playlist.songList.first,
+                                                );
+                                              },
+                                            )
+                                          : CoverArtWidget(
+                                              size: coverArtWidth,
+                                              borderRadius: 10,
+                                              song: null,
+                                            ),
+                                      onTap: () {
+                                        panelManager.pushPanel(
+                                          '_${playlist.name}',
+                                        );
+                                      },
                                     ),
                                     SizedBox(
                                       width: coverArtWidth - 20,

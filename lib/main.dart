@@ -104,6 +104,27 @@ Future<void> main() async {
                     TargetPlatform.android: CupertinoPageTransitionsBuilder(),
                   },
                 ),
+                splashFactory: NoSplash.splashFactory,
+                splashColor: Colors.transparent,
+                highlightColor: Colors.transparent,
+
+                iconButtonTheme: IconButtonThemeData(
+                  style: IconButton.styleFrom(
+                    enabledMouseCursor: SystemMouseCursors.click,
+                  ),
+                ),
+
+                textButtonTheme: TextButtonThemeData(
+                  style: TextButton.styleFrom(
+                    enabledMouseCursor: SystemMouseCursors.click,
+                  ),
+                ),
+
+                elevatedButtonTheme: ElevatedButtonThemeData(
+                  style: ElevatedButton.styleFrom(
+                    enabledMouseCursor: SystemMouseCursors.click,
+                  ),
+                ),
               ),
               title: 'Particle Music',
               home: child,

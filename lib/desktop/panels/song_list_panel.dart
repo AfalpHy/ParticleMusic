@@ -317,7 +317,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
 
   Widget label() {
     final l10n = AppLocalizations.of(context);
-
+    bool canSort = ranking == null && recently == null;
     return SizedBox(
       height: 50,
       child: Row(
@@ -326,8 +326,11 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
 
           Expanded(
             child: InkWell(
+              mouseCursor: canSort
+                  ? SystemMouseCursors.click
+                  : SystemMouseCursors.basic,
               borderRadius: BorderRadius.circular(5),
-              onTap: ranking == null && recently == null
+              onTap: canSort
                   ? () {
                       if (sortTypeNotifier.value > 4) {
                         sortTypeNotifier.value = 1;
@@ -383,8 +386,11 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
 
           Expanded(
             child: InkWell(
+              mouseCursor: canSort
+                  ? SystemMouseCursors.click
+                  : SystemMouseCursors.basic,
               borderRadius: BorderRadius.circular(5),
-              onTap: ranking == null && recently == null
+              onTap: canSort
                   ? () {
                       if (sortTypeNotifier.value == 5) {
                         sortTypeNotifier.value = 6;
@@ -437,8 +443,11 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
           SizedBox(
             width: ranking == null && recently == null ? 90 : 75,
             child: InkWell(
+              mouseCursor: canSort
+                  ? SystemMouseCursors.click
+                  : SystemMouseCursors.basic,
               borderRadius: BorderRadius.circular(5),
-              onTap: ranking == null && recently == null
+              onTap: canSort
                   ? () {
                       if (sortTypeNotifier.value == 7) {
                         sortTypeNotifier.value = 8;
@@ -781,8 +790,6 @@ class SongListItemState extends State<SongListItem> {
                 showPlayButtonNotifier.value = false;
               },
               child: InkWell(
-                highlightColor: Colors.transparent,
-                splashColor: Colors.transparent,
                 mouseCursor: SystemMouseCursors.basic,
 
                 onTap: widget.onTap,

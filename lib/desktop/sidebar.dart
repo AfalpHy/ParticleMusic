@@ -35,23 +35,16 @@ class Sidebar extends StatelessWidget {
               child: child,
             );
           },
-          child: InkWell(
-            onTap: onTap,
-            splashColor: Colors.transparent,
-            highlightColor: Colors.transparent,
-            child: ListTile(
-              leading: leading,
-              title: Text(
-                content,
-                style: TextStyle(fontSize: 15, overflow: TextOverflow.ellipsis),
-              ),
-              contentPadding: contentPadding,
-              visualDensity: const VisualDensity(
-                horizontal: 0,
-                vertical: -3.65,
-              ),
-              trailing: trailing,
+          child: ListTile(
+            leading: leading,
+            title: Text(
+              content,
+              style: TextStyle(fontSize: 15, overflow: TextOverflow.ellipsis),
             ),
+            contentPadding: contentPadding,
+            visualDensity: const VisualDensity(horizontal: 0, vertical: -3.65),
+            trailing: trailing,
+            onTap: onTap,
           ),
         ),
       ),
@@ -246,12 +239,11 @@ class Sidebar extends StatelessWidget {
                         contentPadding: EdgeInsets.fromLTRB(16, 0, 8, 0),
 
                         trailing: IconButton(
+                          color: iconColor,
                           onPressed: () {
                             showCreatePlaylistDialog(context);
                           },
-                          icon: ImageIcon(addImage, size: 20, color: iconColor),
-                          hoverColor: Colors.transparent,
-                          highlightColor: Colors.transparent,
+                          icon: ImageIcon(addImage, size: 20),
                         ),
 
                         onTap: () {

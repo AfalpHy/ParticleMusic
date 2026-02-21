@@ -591,8 +591,7 @@ class SettingsList extends StatelessWidget {
                 borderRadius: BorderRadius.circular(3),
               ),
               child: InkWell(
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
+                mouseCursor: SystemMouseCursors.click,
                 child: SmoothClipRRect(
                   borderRadius: BorderRadius.circular(3),
                   child: Container(height: 35, width: 35, color: pikerColor),
@@ -625,16 +624,37 @@ class SettingsList extends StatelessWidget {
                         ),
                       ),
                       actions: [
-                        TextButton(
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            elevation: 2,
+                            backgroundColor: Colors.white70,
+                            shadowColor: Colors.black54,
+                            foregroundColor: Colors.black,
+                            shape: SmoothRectangleBorder(
+                              smoothness: 1,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
                           onPressed: () {
                             Navigator.pop(context);
                           },
+
                           child: Text(
                             l10n.cancel,
-                            style: TextStyle(color: textColor),
+                            style: TextStyle(color: Colors.black),
                           ),
                         ),
-                        TextButton(
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            elevation: 2,
+                            backgroundColor: Colors.white70,
+                            shadowColor: Colors.black54,
+                            foregroundColor: Colors.black,
+                            shape: SmoothRectangleBorder(
+                              smoothness: 1,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                          ),
                           onPressed: () {
                             switch (type) {
                               case 0:
@@ -693,7 +713,7 @@ class SettingsList extends StatelessWidget {
                           },
                           child: Text(
                             l10n.confirm,
-                            style: TextStyle(color: textColor),
+                            style: TextStyle(color: Colors.black),
                           ),
                         ),
                       ],
@@ -739,18 +759,14 @@ class SettingsList extends StatelessWidget {
                           child: ValueListenableBuilder(
                             valueListenable: enableCustomColorNotifier,
                             builder: (context, enableCustomColor, child) {
-                              return MouseRegion(
-                                cursor: SystemMouseCursors.click,
-
-                                child: MySwitch(
-                                  value: enableCustomColor,
-                                  onToggle: (value) {
-                                    enableCustomColorNotifier.value = value;
-                                    settingManager.setColor();
-                                    updateColorNotifier.value++;
-                                    settingManager.saveSetting();
-                                  },
-                                ),
+                              return MySwitch(
+                                value: enableCustomColor,
+                                onToggle: (value) {
+                                  enableCustomColorNotifier.value = value;
+                                  settingManager.setColor();
+                                  updateColorNotifier.value++;
+                                  settingManager.saveSetting();
+                                },
                               );
                             },
                           ),
