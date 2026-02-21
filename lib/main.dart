@@ -104,9 +104,9 @@ Future<void> main() async {
                     TargetPlatform.android: CupertinoPageTransitionsBuilder(),
                   },
                 ),
-                splashFactory: NoSplash.splashFactory,
-                splashColor: Colors.transparent,
-                highlightColor: Colors.transparent,
+
+                splashColor: isMobile ? null : Colors.transparent,
+                highlightColor: isMobile ? null : Colors.transparent,
 
                 iconButtonTheme: IconButtonThemeData(
                   style: IconButton.styleFrom(
