@@ -230,6 +230,9 @@ const AssetImage playCircleFillImage = AssetImage(
   'assets/images/play_circle_fill.png',
 );
 const AssetImage playCircleImage = AssetImage('assets/images/play_circle.png');
+const AssetImage playOutlinedImage = AssetImage(
+  'assets/images/play_outlined.png',
+);
 const AssetImage playQueueImage = AssetImage('assets/images/play_queue.png');
 const AssetImage playlistAddImage = AssetImage(
   'assets/images/playlist_add.png',

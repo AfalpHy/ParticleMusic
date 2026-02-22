@@ -105,7 +105,7 @@ class SelectableSongListTile extends StatelessWidget {
             child: Row(
               children: [
                 Spacer(),
-                Icon(Icons.play_arrow_outlined, size: 15, color: iconColor),
+                ImageIcon(playOutlinedImage, size: 15, color: iconColor),
                 Text(historyManager.rankingItemList[index].times.toString()),
               ],
             ),
