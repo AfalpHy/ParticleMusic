@@ -207,7 +207,7 @@ class LyricsListViewState extends State<LyricsListView>
           itemScrollController.scrollTo(
             index: current + 1,
             duration: Duration(milliseconds: 300), // smooth animation
-            curve: Curves.bounceInOut,
+            curve: Curves.fastOutSlowIn,
             alignment: widget.expanded ? 0.35 : 0.4,
           );
         }
