@@ -74,12 +74,17 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
 
                 IconButton(
                   color: iconColor,
-                  icon: ImageIcon(
-                    playModeNotifier.value == 0
-                        ? loopImage
-                        : playModeNotifier.value == 1
-                        ? shuffleImage
-                        : repeatImage,
+                  icon: ValueListenableBuilder(
+                    valueListenable: playModeNotifier,
+                    builder: (context, value, child) {
+                      return ImageIcon(
+                        value == 0
+                            ? loopImage
+                            : value == 1
+                            ? shuffleImage
+                            : repeatImage,
+                      );
+                    },
                   ),
                   onPressed: () {
                     if (playModeNotifier.value != 2) {
