@@ -206,7 +206,7 @@ class LyricsListViewState extends State<LyricsListView>
         } else {
           itemScrollController.scrollTo(
             index: current + 1,
-            duration: Duration(milliseconds: 300), // smooth animation
+            duration: Duration(milliseconds: 600), // smooth animation
             curve: Curves.fastOutSlowIn,
             alignment: widget.expanded ? 0.35 : 0.4,
           );
@@ -344,15 +344,24 @@ class LyricLineWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final pageHeight = MediaQuery.heightOf(context);
-    final pageWidth = MediaQuery.widthOf(context);
-
+    double paddingHeight = 10;
+    double fontSizeOffset = 0;
+    if (!isMobile) {
+      final pageHeight = MediaQuery.heightOf(context);
+      final pageWidth = MediaQuery.widthOf(context);
+      paddingHeight += (pageHeight - 700) * 0.025;
+      fontSizeOffset = min(
+        (pageHeight - 700) * 0.05,
+        (pageWidth - 1050) * 0.025,
+      ).clamp(0, double.maxFinite);
+    }
     return Material(
       color: Colors.transparent,
       child: InkWell(
         mouseCursor: SystemMouseCursors.click,
         onTap: () {
-          audioHandler.seek(line.start);
+          // add 1ms offset to avoid seeking to last lyric
+          audioHandler.seek(line.start + Duration(milliseconds: 1));
         },
         customBorder: SmoothRectangleBorder(
           smoothness: 1,
@@ -360,12 +369,7 @@ class LyricLineWidget extends StatelessWidget {
         ),
         child: Padding(
           padding: expanded
-              ? EdgeInsets.fromLTRB(
-                  25,
-                  10 + (isMobile ? 0 : (pageHeight - 700) * 0.025),
-                  0,
-                  10 + (isMobile ? 0 : (pageHeight - 700) * 0.025),
-                )
+              ? EdgeInsets.fromLTRB(25, paddingHeight, 0, paddingHeight)
               : const EdgeInsets.symmetric(vertical: 5, horizontal: 5),
           child: ValueListenableBuilder(
             valueListenable: lyricsFontSizeOffsetChangeNotifier,
@@ -383,12 +387,7 @@ class LyricLineWidget extends StatelessWidget {
                     fontSize += 4;
                   }
 
-                  fontSize += isMobile
-                      ? 0
-                      : min(
-                          (pageHeight - 700) * 0.05,
-                          (pageWidth - 1050) * 0.025,
-                        ).clamp(0, double.maxFinite);
+                  fontSize += fontSizeOffset;
 
                   if (isCurrent && isKaraoke) {
                     return ValueListenableBuilder(

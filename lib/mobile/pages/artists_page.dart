@@ -248,8 +248,10 @@ class ArtistsPage extends StatelessWidget {
     return ValueListenableBuilder(
       valueListenable: artistsUseLargePictureNotifier,
       builder: (context, useLargePicture, child) {
-        double size = useLargePicture ? appWidth * 0.40 : appWidth * 0.25;
-        double radius = useLargePicture ? appWidth * 0.025 : appWidth * 0.015;
+        double size = useLargePicture ? mobileWidth * 0.40 : mobileWidth * 0.25;
+        double radius = useLargePicture
+            ? mobileWidth * 0.025
+            : mobileWidth * 0.015;
         double childAspectRatio = useLargePicture ? 0.85 : 0.8;
         return GridView.builder(
           padding: EdgeInsets.symmetric(horizontal: 16),

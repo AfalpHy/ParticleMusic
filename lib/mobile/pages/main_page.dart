@@ -53,7 +53,7 @@ class MobileMainPageState extends State<MobileMainPage> {
 
   @override
   Widget build(BuildContext context) {
-    appWidth = MediaQuery.widthOf(context);
+    mobileWidth = MediaQuery.widthOf(context);
     return Stack(
       children: [
         // Navigator for normal pages (PlayBar stays above)

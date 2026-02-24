@@ -126,7 +126,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
           ListTile(
             title: SizedBox(
               height: 40,
-              width: appWidth * 0.9,
+              width: mobileWidth * 0.9,
               child: Row(
                 children: [
                   Expanded(

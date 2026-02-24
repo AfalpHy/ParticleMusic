@@ -126,11 +126,11 @@ class LyricsPage extends StatelessWidget {
           elevation: 15,
           shape: SmoothRectangleBorder(
             smoothness: 1,
-            borderRadius: BorderRadius.circular(appWidth * 0.04),
+            borderRadius: BorderRadius.circular(mobileWidth * 0.04),
           ),
           child: CoverArtWidget(
-            size: appWidth * 0.84,
-            borderRadius: appWidth * 0.04,
+            size: mobileWidth * 0.84,
+            borderRadius: mobileWidth * 0.04,
             song: currentSong,
           ),
         ),

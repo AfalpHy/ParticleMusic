@@ -23,7 +23,7 @@ late Directory appDocs;
 late Directory appSupportDir;
 late Directory tmpDir;
 
-late double appWidth;
+late double mobileWidth;
 
 final isMobile = Platform.isAndroid || Platform.isIOS;
 
