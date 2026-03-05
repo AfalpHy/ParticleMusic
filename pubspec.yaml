@@ -89,7 +89,6 @@ dev_dependencies:
   # rules and activating additional ones.
   flutter_lints: ^6.0.0
   icons_launcher: ^3.0.3
-  msix: ^3.16.12
 
 
 # For information on the generic Dart part of this file, see the
@@ -137,15 +136,6 @@ flutter:
   #
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package
-msix_config:
-  display_name: Particle Music
-  publisher_display_name: AfalpHy
-  identity_name: com.afalphy.particle-music
-  msix_version: 1.0.14.0
-  logo_path: windows\runner\resources\app_icon.ico
-  # This PFX is private. Replace it with your own PFX to generate an MSIX package.
-  certificate_path: ParticleMusicCert.pfx
-  certificate_password: ParticleMusic
 
 icons_launcher:
   image_path: "app_icons/icon.png"

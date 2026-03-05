@@ -107,14 +107,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.4.1"
-  cli_util:
-    dependency: transitive
-    description:
-      name: cli_util
-      sha256: ff6785f7e9e3c38ac98b2fb035701789de90154024a75b6cb926445e83197d1c
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.4.2"
   clock:
     dependency: transitive
     description:
@@ -139,14 +131,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.19.1"
-  console:
-    dependency: transitive
-    description:
-      name: console
-      sha256: e04e7824384c5b39389acdd6dc7d33f3efe6b232f6f16d7626f194f6a01ad69a
-      url: "https://pub.dev"
-    source: hosted
-    version: "4.1.0"
   cross_file:
     dependency: transitive
     description:
@@ -319,14 +303,6 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
-  get_it:
-    dependency: transitive
-    description:
-      name: get_it
-      sha256: "1d648d2dd2047d7f7450d5727ca24ee435f240385753d90b49650e3cdff32e56"
-      url: "https://pub.dev"
-    source: hosted
-    version: "9.2.0"
   glob:
     dependency: transitive
     description:
@@ -567,14 +543,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.17.0"
-  msix:
-    dependency: "direct dev"
-    description:
-      name: msix
-      sha256: b6b08e7a7b5d1845f2b1d31216d5b1fb558e98251efefe54eb79ed00d27bc2ac
-      url: "https://pub.dev"
-    source: hosted
-    version: "3.16.13"
   native_toolchain_c:
     dependency: transitive
     description:
@@ -599,14 +567,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "9.3.0"
-  package_config:
-    dependency: transitive
-    description:
-      name: package_config
-      sha256: f096c55ebb7deb7e384101542bfba8c52696c1b56fca2eb62827989ef2353bbc
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.2.0"
   path:
     dependency: "direct main"
     description:
