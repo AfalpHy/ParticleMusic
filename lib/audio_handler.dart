@@ -53,6 +53,14 @@ class MyAudioHandler extends BaseAudioHandler {
   bool isLoading = false;
 
   MyAudioHandler() {
+    // clear invalid cache
+    if (Platform.isLinux || Platform.isAndroid) {
+      for (final f in tmpDir.listSync()) {
+        if (f.path.contains('particle_music_cover')) {
+          f.deleteSync();
+        }
+      }
+    }
     _player.stream.completed.listen((completed) async {
       if (completed) {
         bool needPauseTmp = needPause;
@@ -418,7 +426,7 @@ class MyAudioHandler extends BaseAudioHandler {
     if (currentSong.pictureBytes != null) {
       String tmpPath = "${tmpDir.path}/particle_music_cover";
       // only doing this can update the picture
-      if (Platform.isLinux) {
+      if (Platform.isLinux || Platform.isAndroid) {
         tmpPath += currentSong.hashCode.toString();
       }
       final tmpFile = File(tmpPath);
