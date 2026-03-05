@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:isolate';
 
 import 'package:audio_tags_lofty/audio_tags.dart';
 import 'package:flutter/material.dart';
@@ -263,6 +264,10 @@ void sortAlbums() {
   });
 }
 
+Future<Uint8List?> _readPictureAsync(String path) async {
+  return Isolate.run(() => readPicture(path));
+}
+
 Future<Uint8List?> loadPictureBytes(MyAudioMetadata? song) async {
   if (song == null) {
     return null;
@@ -271,7 +276,7 @@ Future<Uint8List?> loadPictureBytes(MyAudioMetadata? song) async {
   if (song.pictureLoaded) {
     return song.pictureBytes;
   }
-  final result = readPicture(song.filePath);
+  final result = await _readPictureAsync(song.filePath);
   song.pictureBytes = result;
   song.pictureLoaded = true;
   return result;
