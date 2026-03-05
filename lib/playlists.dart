@@ -309,22 +309,15 @@ Future<bool> showCreatePlaylistSheet(BuildContext context) async {
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(30, 30, 30, 0),
-                child: TextSelectionTheme(
-                  data: TextSelectionThemeData(
-                    selectionColor: textColor.withAlpha(50),
-                    cursorColor: textColor,
-                    selectionHandleColor: textColor,
-                  ),
-                  child: TextField(
-                    controller: controller,
-                    autofocus: true,
-                    decoration: const InputDecoration(
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.black),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: Colors.black, width: 1.5),
-                      ),
+                child: TextField(
+                  controller: controller,
+                  autofocus: true,
+                  decoration: InputDecoration(
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: textColor),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: textColor, width: 1.5),
                     ),
                   ),
                 ),
@@ -374,24 +367,18 @@ Future<bool> showCreatePlaylistDialog(BuildContext context) async {
           smoothness: 1,
           borderRadius: BorderRadius.circular(10),
         ),
-        content: TextSelectionTheme(
-          data: TextSelectionThemeData(
-            selectionColor: textColor.withAlpha(50),
-            cursorColor: textColor,
-          ),
-          child: TextField(
-            controller: controller,
-            autofocus: true,
-            style: TextStyle(fontSize: 12),
-            decoration: const InputDecoration(
-              enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.black),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: Colors.black, width: 1.5),
-              ),
-              isDense: true,
+        content: TextField(
+          controller: controller,
+          autofocus: true,
+          style: TextStyle(fontSize: 12),
+          decoration: InputDecoration(
+            enabledBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: textColor),
             ),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: textColor, width: 1.5),
+            ),
+            isDense: true,
           ),
         ),
         actions: [

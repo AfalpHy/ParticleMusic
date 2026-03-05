@@ -125,6 +125,12 @@ Future<void> main() async {
                     enabledMouseCursor: SystemMouseCursors.click,
                   ),
                 ),
+
+                textSelectionTheme: TextSelectionThemeData(
+                  selectionColor: textColor.withAlpha(50),
+                  cursorColor: textColor,
+                  selectionHandleColor: textColor,
+                ),
               ),
               title: 'Particle Music',
               home: child,

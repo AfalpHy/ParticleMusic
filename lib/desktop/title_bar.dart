@@ -27,47 +27,41 @@ Widget titleSearchField(
       child: ValueListenableBuilder(
         valueListenable: updateColorNotifier,
         builder: (_, _, _) {
-          return TextSelectionTheme(
-            data: TextSelectionThemeData(
-              selectionColor: textColor.withAlpha(50),
-              cursorColor: textColor,
-            ),
-            child: TextField(
-              controller: textController,
-              style: TextStyle(fontSize: 14, color: textColor),
+          return TextField(
+            controller: textController,
+            style: TextStyle(fontSize: 14, color: textColor),
 
-              decoration: InputDecoration(
-                hint: Text(
-                  hintText,
-                  style: TextStyle(fontSize: 14, color: textColor),
-                ),
-
-                contentPadding: EdgeInsets.all(0),
-                prefixIcon: Icon(Icons.search, color: iconColor),
-                suffixIcon: ValueListenableBuilder(
-                  valueListenable: displayCancelNotifier,
-                  builder: (context, value, child) {
-                    return value
-                        ? IconButton(
-                            onPressed: () {
-                              textController!.clear();
-                              onChanged!('');
-                            },
-                            icon: Icon(Icons.close, size: 20, color: iconColor),
-                          )
-                        : SizedBox.shrink();
-                  },
-                ),
-                filled: true,
-                fillColor: searchFieldColor,
-                hoverColor: Colors.transparent,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
-                  borderSide: BorderSide.none,
-                ),
+            decoration: InputDecoration(
+              hint: Text(
+                hintText,
+                style: TextStyle(fontSize: 14, color: textColor),
               ),
-              onChanged: onChanged,
+
+              contentPadding: EdgeInsets.all(0),
+              prefixIcon: Icon(Icons.search, color: iconColor),
+              suffixIcon: ValueListenableBuilder(
+                valueListenable: displayCancelNotifier,
+                builder: (context, value, child) {
+                  return value
+                      ? IconButton(
+                          onPressed: () {
+                            textController!.clear();
+                            onChanged!('');
+                          },
+                          icon: Icon(Icons.close, size: 20, color: iconColor),
+                        )
+                      : SizedBox.shrink();
+                },
+              ),
+              filled: true,
+              fillColor: searchFieldColor,
+              hoverColor: Colors.transparent,
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(10),
+                borderSide: BorderSide.none,
+              ),
             ),
+            onChanged: onChanged,
           );
         },
       ),

@@ -125,7 +125,7 @@ void showSongMetadataDialog(BuildContext context, MyAudioMetadata song) async {
                   ],
                 ),
 
-                Divider(thickness: 0.3, height: 1, color: Colors.black),
+                Divider(thickness: 0.5, height: 1, color: dividerColor),
                 SizedBox(height: 5),
                 Expanded(
                   child: Row(
@@ -184,7 +184,15 @@ void showSongMetadataDialog(BuildContext context, MyAudioMetadata song) async {
                               style: TextStyle(fontSize: 12),
                               controller: titleTextController,
                               decoration: InputDecoration(
-                                border: OutlineInputBorder(),
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: textColor),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: textColor,
+                                    width: 1.5,
+                                  ),
+                                ),
                                 isDense: true,
                               ),
                               onChanged: (value) {},
@@ -202,8 +210,16 @@ void showSongMetadataDialog(BuildContext context, MyAudioMetadata song) async {
                             TextField(
                               style: TextStyle(fontSize: 12),
                               controller: artistTextController,
-                              decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
+                              decoration: InputDecoration(
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: textColor),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: textColor,
+                                    width: 1.5,
+                                  ),
+                                ),
                                 isDense: true,
                               ),
                             ),
@@ -220,8 +236,16 @@ void showSongMetadataDialog(BuildContext context, MyAudioMetadata song) async {
                             TextField(
                               style: TextStyle(fontSize: 12),
                               controller: albumTextController,
-                              decoration: const InputDecoration(
-                                border: OutlineInputBorder(),
+                              decoration: InputDecoration(
+                                enabledBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(color: textColor),
+                                ),
+                                focusedBorder: OutlineInputBorder(
+                                  borderSide: BorderSide(
+                                    color: textColor,
+                                    width: 1.5,
+                                  ),
+                                ),
                                 isDense: true,
                               ),
                             ),
