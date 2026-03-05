@@ -170,13 +170,12 @@ class Sidebar extends StatelessWidget {
 
                     SliverToBoxAdapter(child: SizedBox(height: 10)),
                     SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Divider(
-                          thickness: 0.5,
-                          height: 1,
-                          color: dividerColor,
-                        ),
+                      child: Divider(
+                        thickness: 0.5,
+                        height: 1,
+                        indent: 20,
+                        endIndent: 20,
+                        color: dividerColor,
                       ),
                     ),
                     SliverToBoxAdapter(child: SizedBox(height: 10)),
@@ -216,13 +215,12 @@ class Sidebar extends StatelessWidget {
                     ),
                     SliverToBoxAdapter(child: SizedBox(height: 10)),
                     SliverToBoxAdapter(
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 20),
-                        child: Divider(
-                          thickness: 0.5,
-                          height: 1,
-                          color: dividerColor,
-                        ),
+                      child: Divider(
+                        thickness: 0.5,
+                        height: 1,
+                        indent: 20,
+                        endIndent: 20,
+                        color: dividerColor,
                       ),
                     ),
                     SliverToBoxAdapter(child: SizedBox(height: 10)),

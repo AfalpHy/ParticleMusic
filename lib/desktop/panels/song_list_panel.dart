@@ -76,7 +76,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                   builder: (context, value, child) {
                     return VerticalDivider(
                       thickness: 0.5,
-                      width: 1,
+                      width: 0.5,
                       color: dividerColor,
                     );
                   },

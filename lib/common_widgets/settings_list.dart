@@ -46,9 +46,12 @@ class SettingsList extends StatelessWidget {
           ),
 
         if (!isMobile)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: Divider(thickness: 0.5, height: 1, color: dividerColor),
+          Divider(
+            thickness: 0.5,
+            height: 0.5,
+            indent: 20,
+            endIndent: 20,
+            color: dividerColor,
           ),
 
         if (!isMobile) SizedBox(height: 10),

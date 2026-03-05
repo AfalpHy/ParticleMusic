@@ -135,19 +135,17 @@ class PlaylistsPanelState extends State<PlaylistsPanel> {
                     ),
                   ),
                   SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 30),
-
-                      child: ValueListenableBuilder(
-                        valueListenable: updateColorNotifier,
-                        builder: (context, value, child) {
-                          return Divider(
-                            thickness: 1,
-                            height: 1,
-                            color: dividerColor,
-                          );
-                        },
-                      ),
+                    child: ValueListenableBuilder(
+                      valueListenable: updateColorNotifier,
+                      builder: (context, value, child) {
+                        return Divider(
+                          thickness: 0.5,
+                          height: 0.5,
+                          indent: 30,
+                          endIndent: 30,
+                          color: dividerColor,
+                        );
+                      },
                     ),
                   ),
                   SliverToBoxAdapter(child: SizedBox(height: 15)),
