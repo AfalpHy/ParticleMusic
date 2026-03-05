@@ -74,20 +74,30 @@ class HistoryManager {
   }
 
   void addSongTimes(MyAudioMetadata song, int times) {
-    bool exist = false;
+    int index = -1;
     for (int i = 0; i < rankingItemList.length; i++) {
       if (song == rankingItemList[i].song) {
         rankingItemList[i].times += times;
-        exist = true;
+        index = i;
         break;
       }
     }
 
-    if (!exist) {
+    if (index == -1) {
       rankingItemList.add(RankingItem.fromSong(song, times));
+      index = rankingItemList.length - 1;
     }
 
-    rankingItemList.sort((a, b) => b.times.compareTo(a.times));
+    final tmp = rankingItemList[index];
+    for (int i = index - 1; i >= 0; i--) {
+      if (rankingItemList[i].times < tmp.times) {
+        rankingItemList[i + 1] = rankingItemList[i];
+        index = i;
+      } else {
+        break;
+      }
+    }
+    rankingItemList[index] = tmp;
 
     rankingFile.writeAsStringSync(
       jsonEncode(rankingItemList.map((e) => e.toMap()).toList()),
