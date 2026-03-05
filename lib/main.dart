@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
@@ -98,7 +99,10 @@ Future<void> main() async {
                       ? pageBackgroundColor
                       : panelColor.withAlpha(255),
                 ),
-
+                // adjust magnifier color
+                cupertinoOverrideTheme: Platform.isIOS
+                    ? CupertinoThemeData(primaryColor: textColor)
+                    : null,
                 pageTransitionsTheme: const PageTransitionsTheme(
                   builders: {
                     TargetPlatform.android: CupertinoPageTransitionsBuilder(),
