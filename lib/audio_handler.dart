@@ -444,7 +444,7 @@ class MyAudioHandler extends BaseAudioHandler {
         duration: currentSong.duration,
       ),
     );
-    updatePlaybackState();
+    updatePlaybackState(postion: Duration.zero);
     _tryUpdateDesktopLyrics(Duration.zero);
   }
 
