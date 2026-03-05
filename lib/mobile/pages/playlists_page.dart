@@ -186,7 +186,7 @@ class PlaylistsPage extends StatelessWidget {
         proxyDecorator: (Widget child, int index, Animation<double> animation) {
           return Material(
             elevation: 0.1,
-            color: Colors.grey.shade100, // background color while moving
+            color: Colors.transparent,
             child: child,
           );
         },
@@ -239,7 +239,7 @@ class PlaylistsPage extends StatelessWidget {
                     child: Row(
                       children: [
                         SizedBox(width: 10),
-                        const ImageIcon(reorderImage),
+                        ImageIcon(reorderImage, color: iconColor),
                       ],
                     ),
                   ),
