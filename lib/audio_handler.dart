@@ -53,6 +53,8 @@ class MyAudioHandler extends BaseAudioHandler {
   bool isLoading = false;
 
   MyAudioHandler() {
+    // avoid reading .lrc files
+    (_player.platform as NativePlayer).setProperty('sub-auto', 'no');
     // clear invalid cache
     if (Platform.isLinux || Platform.isAndroid) {
       for (final f in tmpDir.listSync()) {
