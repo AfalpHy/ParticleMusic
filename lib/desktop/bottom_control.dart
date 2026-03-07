@@ -51,6 +51,7 @@ class BottomControl extends StatelessWidget {
                     ? Text(
                         "${getArtist(currentSong)} - ${getAlbum(currentSong)}",
                         overflow: TextOverflow.ellipsis,
+                        style: TextStyle(fontSize: 13),
                       )
                     : null,
                 onTap: () {
