@@ -80,8 +80,7 @@ Future<void> main() async {
               ],
               theme: ThemeData(
                 textTheme: Platform.isWindows
-                    ? GoogleFonts.notoSansTextTheme().apply(
-                        fontFamilyFallback: ['Microsoft YaHei'],
+                    ? GoogleFonts.notoSerifScTextTheme().apply(
                         bodyColor: textColor,
                         displayColor: textColor,
                       )
