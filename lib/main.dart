@@ -80,10 +80,16 @@ Future<void> main() async {
               ],
               theme: ThemeData(
                 textTheme: Platform.isWindows
-                    ? GoogleFonts.notoSerifScTextTheme().apply(
-                        bodyColor: textColor,
-                        displayColor: textColor,
-                      )
+                    ? GoogleFonts.notoSerifScTextTheme()
+                          .apply(bodyColor: textColor, displayColor: textColor)
+                          .copyWith(
+                            bodyLarge: GoogleFonts.notoSerifSc(
+                              fontWeight: .w500,
+                            ),
+                            bodyMedium: GoogleFonts.notoSerifSc(
+                              fontWeight: .w500,
+                            ),
+                          )
                     : TextTheme(
                         bodyLarge: TextStyle(color: textColor),
                         bodyMedium: TextStyle(color: textColor),
