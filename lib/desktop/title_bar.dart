@@ -5,68 +5,114 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/utils.dart';
 import 'package:window_manager/window_manager.dart';
 
-Widget titleSearchField(
-  String hintText, {
-  TextEditingController? textController,
-  Function(String)? onChanged,
-}) {
+bool isTyping = false;
+
+class TitleSearchField extends StatefulWidget {
+  final String hintText;
+  final TextEditingController textController;
+  final Function(String) onChanged;
+
+  const TitleSearchField({
+    super.key,
+    required this.hintText,
+    required this.textController,
+    required this.onChanged,
+  });
+
+  @override
+  State<StatefulWidget> createState() => _TitleSearchFieldState();
+}
+
+class _TitleSearchFieldState extends State<TitleSearchField> {
+  late String hintText;
+  late TextEditingController textController;
+  late Function(String) onChanged;
   final displayCancelNotifier = ValueNotifier(false);
-  if (textController != null) {
-    textController.addListener(() {
-      if (textController.text != '') {
-        displayCancelNotifier.value = true;
+  final FocusNode focusNode = FocusNode();
+
+  void displayCancelOrNot() {
+    if (textController.text != '') {
+      displayCancelNotifier.value = true;
+    } else {
+      displayCancelNotifier.value = false;
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    hintText = widget.hintText;
+    textController = widget.textController;
+    onChanged = widget.onChanged;
+
+    textController.addListener(displayCancelOrNot);
+    focusNode.addListener(() {
+      if (focusNode.hasFocus) {
+        isTyping = true;
       } else {
-        displayCancelNotifier.value = false;
+        isTyping = false;
       }
     });
   }
-  return Center(
-    child: SizedBox(
-      width: 260,
-      height: 40,
-      child: ValueListenableBuilder(
-        valueListenable: updateColorNotifier,
-        builder: (_, _, _) {
-          return TextField(
-            controller: textController,
-            style: TextStyle(fontSize: 14, color: textColor),
 
-            decoration: InputDecoration(
-              hint: Text(
-                hintText,
-                style: TextStyle(fontSize: 14, color: textColor),
-              ),
+  @override
+  void dispose() {
+    textController.removeListener(displayCancelOrNot);
+    focusNode.dispose();
+    super.dispose();
+  }
 
-              contentPadding: EdgeInsets.all(0),
-              prefixIcon: Icon(Icons.search, color: iconColor),
-              suffixIcon: ValueListenableBuilder(
-                valueListenable: displayCancelNotifier,
-                builder: (context, value, child) {
-                  return value
-                      ? IconButton(
-                          onPressed: () {
-                            textController!.clear();
-                            onChanged!('');
-                          },
-                          icon: Icon(Icons.close, size: 20, color: iconColor),
-                        )
-                      : SizedBox.shrink();
-                },
+  @override
+  Widget build(BuildContext context) {
+    return Center(
+      child: SizedBox(
+        width: 260,
+        height: 40,
+        child: ValueListenableBuilder(
+          valueListenable: updateColorNotifier,
+          builder: (_, _, _) {
+            return TextField(
+              controller: textController,
+              focusNode: focusNode,
+              style: TextStyle(fontSize: 14, color: textColor),
+
+              decoration: InputDecoration(
+                hint: Text(
+                  hintText,
+                  style: TextStyle(fontSize: 14, color: textColor),
+                ),
+
+                contentPadding: EdgeInsets.all(0),
+                prefixIcon: Icon(Icons.search, color: iconColor),
+                suffixIcon: ValueListenableBuilder(
+                  valueListenable: displayCancelNotifier,
+                  builder: (context, value, child) {
+                    return value
+                        ? IconButton(
+                            onPressed: () {
+                              textController.clear();
+                              onChanged('');
+                            },
+                            icon: Icon(Icons.close, size: 20, color: iconColor),
+                          )
+                        : SizedBox.shrink();
+                  },
+                ),
+                filled: true,
+                fillColor: searchFieldColor,
+                hoverColor: Colors.transparent,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(10),
+                  borderSide: BorderSide.none,
+                ),
               ),
-              filled: true,
-              fillColor: searchFieldColor,
-              hoverColor: Colors.transparent,
-              border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(10),
-                borderSide: BorderSide.none,
-              ),
-            ),
-            onChanged: onChanged,
-          );
-        },
+              onChanged: onChanged,
+            );
+          },
+        ),
       ),
-    ),
-  );
+    );
+  }
 }
 
 class TitleBar extends StatelessWidget {
@@ -143,7 +189,7 @@ class TitleBar extends StatelessWidget {
                               if (context.mounted) {
                                 showCenterMessage(
                                   context,
-                                  'Enter fullscreen with maximized window will cause bug',
+                                  'Entering fullscreen from a maximized window will cause a bug',
                                   duration: 3000,
                                 );
                               }

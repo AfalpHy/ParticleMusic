@@ -58,8 +58,8 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
     return Column(
       children: [
         TitleBar(
-          searchField: titleSearchField(
-            isArtist ? l10n.searchArtists : l10n.searchAlbums,
+          searchField: TitleSearchField(
+            hintText: isArtist ? l10n.searchArtists : l10n.searchAlbums,
             textController: textController,
             onChanged: (value) {
               updateCurrentMapEntryList();

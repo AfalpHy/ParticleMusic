@@ -43,8 +43,8 @@ class PlaylistsPanelState extends State<PlaylistsPanel> {
     return Column(
       children: [
         TitleBar(
-          searchField: titleSearchField(
-            l10n.searchPlaylists,
+          searchField: TitleSearchField(
+            hintText: l10n.searchPlaylists,
             textController: textController,
             onChanged: (_) {
               filterPlaylists();

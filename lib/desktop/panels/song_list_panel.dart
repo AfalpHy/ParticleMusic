@@ -55,8 +55,8 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
     return Column(
       children: [
         TitleBar(
-          searchField: titleSearchField(
-            l10n.searchSongs,
+          searchField: TitleSearchField(
+            hintText: l10n.searchSongs,
             textController: textController,
             onChanged: (_) {
               updateSongList();
