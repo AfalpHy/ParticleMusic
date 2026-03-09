@@ -109,6 +109,16 @@ class FolderManager {
     return true;
   }
 
+  Folder getFolderByPath(String path) {
+    late Folder result;
+    for (final folder in folderList) {
+      if (folder.path == path) {
+        result = folder;
+      }
+    }
+    return result;
+  }
+
   void clear() {
     for (final folder in folderList) {
       folder.clear();

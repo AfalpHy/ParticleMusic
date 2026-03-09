@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/panels/artist_album_panel.dart';
-import 'package:particle_music/desktop/panels/folders_panel.dart';
+import 'package:particle_music/desktop/panels/folder_panel.dart';
 import 'package:particle_music/desktop/panels/ranking_panel.dart';
 import 'package:particle_music/desktop/panels/playlists_panel.dart';
 import 'package:particle_music/desktop/panels/recently_panel.dart';
 import 'package:particle_music/desktop/panels/setting_panel.dart';
+import 'package:particle_music/desktop/panels/single_album_panel.dart';
+import 'package:particle_music/desktop/panels/single_artist_panel.dart';
+import 'package:particle_music/desktop/panels/single_playlist_panel.dart';
 import 'package:particle_music/desktop/panels/song_list_panel.dart';
-import 'package:particle_music/folder_manager.dart';
+import 'package:particle_music/desktop/panels/songs_panel.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/utils.dart';
 
 class PanelManager {
   final List<Widget> panelStack = [];
   final List<String> sidebarHighlighLabelStack = [];
-
-  final List<ValueNotifier<Folder>> currentFolderNotifierStack = [];
 
   bool get isEmpty => panelStack.isEmpty;
 
@@ -28,23 +29,20 @@ class PanelManager {
     } else if (label == 'albums' && content == null) {
       panelStack.add(ArtistAlbumPanel(key: UniqueKey(), isArtist: false));
     } else if (label == 'artists' && content != null) {
-      panelStack.add(SongListPanel(key: UniqueKey(), artist: content));
+      panelStack.add(SingleArtistPanel(key: UniqueKey(), artist: content));
     } else if (label == 'albums' && content != null) {
-      panelStack.add(SongListPanel(key: UniqueKey(), album: content));
-    } else if (label == 'folders') {
-      final currentFolderNotifier = ValueNotifier(
-        folderManager.folderList.first,
-      );
-      currentFolderNotifierStack.add(currentFolderNotifier);
-
+      panelStack.add(SingleAlbumPanel(key: UniqueKey(), album: content));
+    } else if (label == 'folder') {
       panelStack.add(
-        FoldersPanel(
+        FolderPanel(
           key: UniqueKey(),
-          currentFolderNotifier: currentFolderNotifier,
+          folder: content == null
+              ? folderManager.folderList.first
+              : folderManager.getFolderByPath(content),
         ),
       );
     } else if (label == 'songs') {
-      panelStack.add(SongListPanel(key: UniqueKey()));
+      panelStack.add(SongsPanel(key: UniqueKey()));
     } else if (label == 'ranking') {
       panelStack.add(RankingRanel(key: UniqueKey()));
     } else if (label == 'recently') {
@@ -52,8 +50,9 @@ class PanelManager {
     } else if (label == 'playlists') {
       panelStack.add(PlaylistsPanel(key: UniqueKey()));
     } else if (label[0] == '_') {
-      final playlist = playlistsManager.getPlaylistByName(label.substring(1));
-      panelStack.add(SongListPanel(key: UniqueKey(), playlist: playlist));
+      panelStack.add(
+        SinglePlaylistPanel(key: UniqueKey(), playlist: label.substring(1)),
+      );
     } else if (label == 'settings') {
       panelStack.add(SettingPanel(key: UniqueKey()));
     } else if (label == 'licenses') {
@@ -69,9 +68,7 @@ class PanelManager {
     }
 
     panelStack.removeLast();
-    if (sidebarHighlighLabelStack.last == 'folders') {
-      currentFolderNotifierStack.removeLast();
-    }
+
     sidebarHighlighLabelStack.removeLast();
 
     sidebarHighlighLabel.value = sidebarHighlighLabelStack.last;
@@ -96,7 +93,6 @@ class PanelManager {
   void clear() {
     panelStack.clear();
     sidebarHighlighLabelStack.clear();
-    currentFolderNotifierStack.clear();
   }
 
   Future<void> updateBackground() async {
@@ -107,12 +103,12 @@ class PanelManager {
 
     Widget panel = panelStack.last;
 
-    if (label == 'artists' && panel is SongListPanel) {
+    if (label == 'artists' && panel is SingleArtistPanel) {
       backgroundSong = artist2SongList[panel.artist]!.first;
-    } else if (label == 'albums' && panel is SongListPanel) {
+    } else if (label == 'albums' && panel is SingleAlbumPanel) {
       backgroundSong = album2SongList[panel.album]!.first;
-    } else if (label == 'folders') {
-      final songList = currentFolderNotifierStack.last.value.songList;
+    } else if (label == 'folder') {
+      final songList = (panel as FolderPanel).folder.songList;
       backgroundSong = getFirstSong(songList);
     } else if (label == 'songs') {
       backgroundSong = getFirstSong(librarySongList);

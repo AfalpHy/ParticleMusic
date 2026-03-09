@@ -7,12 +7,12 @@ class MySearchField extends StatelessWidget {
 
   final TextEditingController textController;
 
-  final void Function() onSearchTextChanged;
+  final void Function()? onSearchTextChanged;
 
   MySearchField({
     super.key,
     required this.textController,
-    required this.onSearchTextChanged,
+    this.onSearchTextChanged,
   });
 
   @override
@@ -46,7 +46,7 @@ class MySearchField extends StatelessWidget {
                               isSearch.value = false;
                               textController.clear();
                               FocusScope.of(context).unfocus();
-                              onSearchTextChanged();
+                              onSearchTextChanged?.call();
                             },
                             icon: const Icon(Icons.clear),
                             padding: EdgeInsets.zero,
@@ -61,7 +61,7 @@ class MySearchField extends StatelessWidget {
                           ),
                         ),
                         onChanged: (value) {
-                          onSearchTextChanged();
+                          onSearchTextChanged?.call();
                         },
                       ),
                     ),

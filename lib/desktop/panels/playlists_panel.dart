@@ -28,11 +28,13 @@ class PlaylistsPanelState extends State<PlaylistsPanel> {
   void initState() {
     super.initState();
     playlistsManager.updateNotifier.addListener(filterPlaylists);
+    textController.addListener(filterPlaylists);
   }
 
   @override
   void dispose() {
     playlistsManager.updateNotifier.removeListener(filterPlaylists);
+    textController.removeListener(filterPlaylists);
     super.dispose();
   }
 
@@ -44,11 +46,9 @@ class PlaylistsPanelState extends State<PlaylistsPanel> {
       children: [
         TitleBar(
           searchField: TitleSearchField(
+            key: ValueKey(l10n.searchPlaylists),
             hintText: l10n.searchPlaylists,
             textController: textController,
-            onChanged: (_) {
-              filterPlaylists();
-            },
           ),
         ),
         Expanded(child: contentWidget(context)),

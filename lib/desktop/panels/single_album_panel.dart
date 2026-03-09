@@ -3,9 +3,10 @@ import 'package:particle_music/desktop/panels/song_list_panel.dart';
 import 'package:particle_music/desktop/title_bar.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 
-class RecentlyPanel extends StatelessWidget {
+class SingleAlbumPanel extends StatelessWidget {
+  final String album;
   final textController = TextEditingController();
-  RecentlyPanel({super.key});
+  SingleAlbumPanel({super.key, required this.album});
 
   @override
   Widget build(BuildContext context) {
@@ -24,7 +25,7 @@ class RecentlyPanel extends StatelessWidget {
         Expanded(
           child: SongListPanel(
             key: UniqueKey(),
-            ranking: AppLocalizations.of(context).recently,
+            album: album,
             textController: textController,
           ),
         ),

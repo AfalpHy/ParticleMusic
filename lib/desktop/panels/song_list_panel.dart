@@ -6,7 +6,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
-import 'package:particle_music/desktop/title_bar.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/metadata.dart';
 import 'package:particle_music/common_widgets/my_location.dart';
@@ -18,7 +17,6 @@ import 'package:smooth_corner/smooth_corner.dart';
 import 'package:super_context_menu/super_context_menu.dart';
 
 class SongListPanel extends BaseSongListWidget {
-  final Widget? foldersWidget;
   const SongListPanel({
     super.key,
     super.playlist,
@@ -27,7 +25,7 @@ class SongListPanel extends BaseSongListWidget {
     super.folder,
     super.ranking,
     super.recently,
-    this.foldersWidget,
+    required super.textController,
   });
 
   @override
@@ -50,51 +48,6 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
 
   @override
   Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-
-    return Column(
-      children: [
-        TitleBar(
-          searchField: TitleSearchField(
-            hintText: l10n.searchSongs,
-            textController: textController,
-            onChanged: (_) {
-              updateSongList();
-            },
-          ),
-        ),
-        Expanded(
-          child: Row(
-            children: [
-              Expanded(child: contentWithStack(context)),
-
-              if (widget.foldersWidget != null) ...[
-                SizedBox(width: 5),
-
-                ValueListenableBuilder(
-                  valueListenable: updateColorNotifier,
-                  builder: (context, value, child) {
-                    return VerticalDivider(
-                      thickness: 0.5,
-                      width: 0.5,
-                      color: dividerColor,
-                    );
-                  },
-                ),
-                SizedBox(width: 10),
-
-                widget.foldersWidget!,
-
-                SizedBox(width: 10),
-              ],
-            ],
-          ),
-        ),
-      ],
-    );
-  }
-
-  Widget contentWithStack(BuildContext context) {
     return Stack(
       children: [
         NotificationListener<UserScrollNotification>(

@@ -10,13 +10,11 @@ bool isTyping = false;
 class TitleSearchField extends StatefulWidget {
   final String hintText;
   final TextEditingController textController;
-  final Function(String) onChanged;
 
   const TitleSearchField({
     super.key,
     required this.hintText,
     required this.textController,
-    required this.onChanged,
   });
 
   @override
@@ -26,7 +24,6 @@ class TitleSearchField extends StatefulWidget {
 class _TitleSearchFieldState extends State<TitleSearchField> {
   late String hintText;
   late TextEditingController textController;
-  late Function(String) onChanged;
   final displayCancelNotifier = ValueNotifier(false);
   final FocusNode focusNode = FocusNode();
 
@@ -43,7 +40,6 @@ class _TitleSearchFieldState extends State<TitleSearchField> {
     super.initState();
     hintText = widget.hintText;
     textController = widget.textController;
-    onChanged = widget.onChanged;
 
     textController.addListener(displayCancelOrNot);
     focusNode.addListener(() {
@@ -91,7 +87,6 @@ class _TitleSearchFieldState extends State<TitleSearchField> {
                         ? IconButton(
                             onPressed: () {
                               textController.clear();
-                              onChanged('');
                             },
                             icon: Icon(Icons.close, size: 20, color: iconColor),
                           )
@@ -106,7 +101,6 @@ class _TitleSearchFieldState extends State<TitleSearchField> {
                   borderSide: BorderSide.none,
                 ),
               ),
-              onChanged: onChanged,
             );
           },
         ),

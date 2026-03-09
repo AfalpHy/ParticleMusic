@@ -49,6 +49,13 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
     useLargePictureNotifier = isArtist
         ? artistsUseLargePictureNotifier
         : albumsUseLargePictureNotifier;
+    textController.addListener(updateCurrentMapEntryList);
+  }
+
+  @override
+  void dispose() {
+    textController.dispose();
+    super.dispose();
   }
 
   @override
@@ -59,11 +66,9 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
       children: [
         TitleBar(
           searchField: TitleSearchField(
+            key: ValueKey(isArtist ? l10n.searchArtists : l10n.searchAlbums),
             hintText: isArtist ? l10n.searchArtists : l10n.searchAlbums,
             textController: textController,
-            onChanged: (value) {
-              updateCurrentMapEntryList();
-            },
           ),
         ),
         Expanded(child: contentWidget(context)),

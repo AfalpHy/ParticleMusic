@@ -128,7 +128,7 @@ class Sidebar extends StatelessWidget {
 
                     SliverToBoxAdapter(
                       child: sidebarItem(
-                        label: 'folders',
+                        label: 'folder',
 
                         leading: ImageIcon(
                           folderImage,
@@ -145,7 +145,7 @@ class Sidebar extends StatelessWidget {
                               duration: 2000,
                             );
                           } else {
-                            panelManager.pushPanel('folders');
+                            panelManager.pushPanel('folder');
                           }
                         },
                       ),

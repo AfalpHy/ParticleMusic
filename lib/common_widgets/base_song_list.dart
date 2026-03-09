@@ -17,6 +17,8 @@ abstract class BaseSongListWidget extends StatefulWidget {
   final String? ranking;
   final String? recently;
 
+  final TextEditingController? textController;
+
   const BaseSongListWidget({
     super.key,
     this.playlist,
@@ -25,6 +27,7 @@ abstract class BaseSongListWidget extends StatefulWidget {
     this.folder,
     this.ranking,
     this.recently,
+    this.textController,
   });
 }
 
@@ -48,7 +51,7 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
 
   final listIsScrollingNotifier = ValueNotifier(false);
   final scrollController = ScrollController();
-  final textController = TextEditingController();
+  late final TextEditingController textController;
 
   ValueNotifier<int> sortTypeNotifier = ValueNotifier(0);
 
@@ -69,6 +72,8 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
     folder = widget.folder;
     ranking = widget.ranking;
     recently = widget.recently;
+
+    textController = widget.textController ?? TextEditingController();
 
     if (playlist != null) {
       songList = playlist!.songList;
@@ -100,6 +105,7 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
     }
     updateSongList();
     sortTypeNotifier.addListener(updateSongList);
+    textController.addListener(updateSongList);
   }
 
   @override
@@ -116,8 +122,8 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
       librarySongListUpdateNotifier.removeListener(updateSongList);
     }
     sortTypeNotifier.removeListener(updateSongList);
+    textController.removeListener(updateSongList);
     scrollController.dispose();
-    textController.dispose();
     super.dispose();
   }
 
