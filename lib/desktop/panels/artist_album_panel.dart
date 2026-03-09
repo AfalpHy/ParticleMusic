@@ -206,10 +206,10 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
                     double coverArtWidth;
                     if (value) {
                       crossAxisCount = (panelWidth / 240).toInt();
-                      coverArtWidth = panelWidth / crossAxisCount - 40;
+                      coverArtWidth = panelWidth / crossAxisCount - 45;
                     } else {
                       crossAxisCount = (panelWidth / 120).toInt();
-                      coverArtWidth = panelWidth / crossAxisCount - 30;
+                      coverArtWidth = panelWidth / crossAxisCount - 35;
                     }
                     return ValueListenableBuilder(
                       valueListenable: currentMapEntryListNotifier,
@@ -249,7 +249,7 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
                                   ),
                                 ),
                                 SizedBox(
-                                  width: coverArtWidth - 20,
+                                  width: coverArtWidth - 5,
                                   child: Center(
                                     child: Text(
                                       key,

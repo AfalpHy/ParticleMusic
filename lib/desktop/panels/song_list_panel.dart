@@ -81,7 +81,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
             scrollController: scrollController,
             listIsScrollingNotifier: listIsScrollingNotifier,
             currentSongListNotifier: currentSongListNotifier,
-            offset: 200 - (MediaQuery.heightOf(context) - 280) / 2,
+            offset: 355 - (MediaQuery.heightOf(context) / 2),
           ),
         ),
       ],
