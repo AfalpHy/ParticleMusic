@@ -39,7 +39,7 @@ class AlbumsPage extends StatelessWidget {
         scrolledUnderElevation: 0,
         title: Text(l10n.albums),
         centerTitle: true,
-        actions: [searchField(), moreButton(context)],
+        actions: [searchField(l10n.searchAlbums), moreButton(context)],
       ),
       body: ValueListenableBuilder(
         valueListenable: currentMapEntryListNotifier,
@@ -50,8 +50,9 @@ class AlbumsPage extends StatelessWidget {
     );
   }
 
-  Widget searchField() {
+  Widget searchField(String hintText) {
     return MySearchField(
+      hintText: hintText,
       textController: textController,
       onSearchTextChanged: updateCurrentMapEntryList,
     );

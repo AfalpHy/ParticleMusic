@@ -46,7 +46,10 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
       backgroundColor: pageBackgroundColor,
       scrolledUnderElevation: 0,
       actions: [
-        MySearchField(textController: textController),
+        MySearchField(
+          hintText: AppLocalizations.of(context).searchSongs,
+          textController: textController,
+        ),
         moreButton(context),
       ],
     );

@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/l10n/generated/app_localizations.dart';
 
 class MySearchField extends StatelessWidget {
+  final String hintText;
   final ValueNotifier<bool> isSearch = ValueNotifier(false);
 
   final TextEditingController textController;
@@ -11,6 +11,7 @@ class MySearchField extends StatelessWidget {
 
   MySearchField({
     super.key,
+    required this.hintText,
     required this.textController,
     this.onSearchTextChanged,
   });
@@ -36,7 +37,7 @@ class MySearchField extends StatelessWidget {
                         style: TextStyle(color: textColor),
                         decoration: InputDecoration(
                           hint: Text(
-                            AppLocalizations.of(context).searchSongs,
+                            hintText,
                             style: TextStyle(color: textColor),
                           ),
                           prefixIcon: Icon(Icons.search, color: iconColor),

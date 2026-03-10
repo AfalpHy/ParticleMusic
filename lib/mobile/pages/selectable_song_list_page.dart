@@ -230,6 +230,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
         scrolledUnderElevation: 0,
         actions: [
           MySearchField(
+            hintText: l10n.searchSongs,
             textController: textController,
             onSearchTextChanged: updateSongList,
           ),
