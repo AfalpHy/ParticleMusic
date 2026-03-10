@@ -6,6 +6,7 @@ import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 import 'package:http/http.dart' as http;
+import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/mobile/sleep_timer.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
@@ -498,7 +499,7 @@ class SettingsList extends StatelessWidget {
                   onToggle: (value) async {
                     darkModeNotifier.value = value;
                     settingManager.saveSetting();
-                    settingManager.setColor();
+                    colorManager.setColor();
                     updateColorNotifier.value++;
                   },
                 ),
@@ -510,78 +511,16 @@ class SettingsList extends StatelessWidget {
     );
   }
 
-  Widget colorListTile(BuildContext context, AppLocalizations l10n, int type) {
+  Widget colorListTile(
+    BuildContext context,
+    String title,
+    AppLocalizations l10n,
+    CustomColor customColor,
+  ) {
     return ValueListenableBuilder(
       valueListenable: updateColorNotifier,
       builder: (context, value, child) {
-        String title;
-        Color pikerColor;
-        switch (type) {
-          case 0:
-            title = l10n.backgroundColor;
-            pikerColor = customPageBackgroundColor;
-            break;
-          case 1:
-            title = l10n.iconColor;
-            pikerColor = customIconColor;
-            break;
-          case 2:
-            title = l10n.textColor;
-            pikerColor = customTextColor;
-            break;
-          case 3:
-            title = l10n.highlightTextColor;
-            pikerColor = customHighlightTextColor;
-            break;
-          case 4:
-            title = l10n.switchColor;
-            pikerColor = customSwitchColor;
-            break;
-          case 44:
-            title = l10n.playBarColor;
-            pikerColor = customPlayBarColor;
-            break;
-          case 5:
-            title = l10n.panelColor;
-            pikerColor = customPanelColor;
-            break;
-          case 6:
-            title = l10n.sidebarColor;
-            pikerColor = customSidebarColor;
-            break;
-          case 7:
-            title = l10n.bottomColor;
-            pikerColor = customBottomColor;
-            break;
-          case 8:
-            title = l10n.searchFieldColor;
-            pikerColor = customSearchFieldColor;
-            break;
-          case 9:
-            title = l10n.buttonColor;
-            pikerColor = customButtonColor;
-            break;
-          case 10:
-            title = l10n.dividerColor;
-            pikerColor = customDividerColor;
-            break;
-          case 11:
-            title = l10n.selectedItemColor;
-            pikerColor = customSelectedItemColor;
-            break;
-          case 12:
-            title = l10n.seekBarColor;
-            pikerColor = customSeekBarColor;
-            break;
-          case 13:
-            title = l10n.volumeBarColor;
-            pikerColor = customVolumeBarColor;
-            break;
-          default:
-            title = l10n.lyricsBackgroundColor;
-            pikerColor = lyricsBackgroundColor;
-            break;
-        }
+        Color pikerColor = customColor.value;
         return ListTile(
           title: Text(title),
           trailing: Padding(
@@ -659,57 +598,8 @@ class SettingsList extends StatelessWidget {
                             ),
                           ),
                           onPressed: () {
-                            switch (type) {
-                              case 0:
-                                customPageBackgroundColor = tmpColor;
-                                break;
-                              case 1:
-                                customIconColor = tmpColor;
-                                break;
-                              case 2:
-                                customTextColor = tmpColor;
-                                break;
-                              case 3:
-                                customHighlightTextColor = tmpColor;
-                                break;
-                              case 4:
-                                customSwitchColor = tmpColor;
-                                break;
-                              case 44:
-                                customPlayBarColor = tmpColor;
-                                break;
-                              case 5:
-                                customPanelColor = tmpColor;
-                                break;
-                              case 6:
-                                customSidebarColor = tmpColor;
-                                break;
-                              case 7:
-                                customBottomColor = tmpColor;
-                                break;
-                              case 8:
-                                customSearchFieldColor = tmpColor;
-                                break;
-                              case 9:
-                                customButtonColor = tmpColor;
-                                break;
-                              case 10:
-                                customDividerColor = tmpColor;
-                                break;
-                              case 11:
-                                customSelectedItemColor = tmpColor;
-                                break;
-                              case 12:
-                                customSeekBarColor = tmpColor;
-                                break;
-                              case 13:
-                                customVolumeBarColor = tmpColor;
-                                break;
-                              default:
-                                lyricsBackgroundColor = tmpColor;
-                                break;
-                            }
-                            settingManager.setColor();
+                            customColor.value = tmpColor;
+                            colorManager.setColor();
                             updateColorNotifier.value++;
                             settingManager.saveSetting();
                             Navigator.pop(context);
@@ -732,6 +622,7 @@ class SettingsList extends StatelessWidget {
   }
 
   Widget paletteListTile(BuildContext context, AppLocalizations l10n) {
+    final nameMap = colorManager.getNameMap(l10n);
     return ListTile(
       leading: ImageIcon(
         paletteImage,
@@ -766,7 +657,7 @@ class SettingsList extends StatelessWidget {
                                 value: enableCustomColor,
                                 onToggle: (value) {
                                   enableCustomColorNotifier.value = value;
-                                  settingManager.setColor();
+                                  colorManager.setColor();
                                   updateColorNotifier.value++;
                                   settingManager.saveSetting();
                                 },
@@ -775,23 +666,6 @@ class SettingsList extends StatelessWidget {
                           ),
                         ),
                       ),
-
-                      if (isMobile) colorListTile(context, l10n, 0),
-                      colorListTile(context, l10n, 1),
-                      colorListTile(context, l10n, 2),
-                      colorListTile(context, l10n, 3),
-                      colorListTile(context, l10n, 4),
-                      if (isMobile) colorListTile(context, l10n, 44),
-
-                      if (!isMobile) colorListTile(context, l10n, 5),
-                      if (!isMobile) colorListTile(context, l10n, 6),
-                      if (!isMobile) colorListTile(context, l10n, 7),
-                      if (!isMobile) colorListTile(context, l10n, 8),
-                      if (!isMobile) colorListTile(context, l10n, 9),
-                      if (!isMobile) colorListTile(context, l10n, 10),
-                      if (!isMobile) colorListTile(context, l10n, 11),
-                      if (!isMobile) colorListTile(context, l10n, 12),
-                      if (!isMobile) colorListTile(context, l10n, 13),
 
                       ListTile(
                         title: Text(l10n.lyricsCustomMode),
@@ -808,7 +682,7 @@ class SettingsList extends StatelessWidget {
                                   onToggle: (value) {
                                     enableCustomLyricsPageNotifier.value =
                                         value;
-                                    settingManager.setColor();
+                                    colorManager.setColor();
                                     updateColorNotifier.value++;
                                     settingManager.saveSetting();
                                   },
@@ -819,35 +693,24 @@ class SettingsList extends StatelessWidget {
                         ),
                       ),
 
-                      colorListTile(context, l10n, 14),
+                      for (final customColor in colorManager.customColors)
+                        if (customColor.type == 0 ||
+                            (customColor.type == 1 && isMobile) ||
+                            (customColor.type == 2 && !isMobile))
+                          colorListTile(
+                            context,
+                            nameMap[customColor.name]!,
+                            l10n,
+                            customColor,
+                          ),
 
                       ListTile(
                         title: Text(l10n.reset),
                         onTap: () {
-                          customPageBackgroundColor = Color.fromARGB(
-                            255,
-                            245,
-                            245,
-                            245,
-                          );
-                          customIconColor = Colors.black;
-                          customTextColor = Color.fromARGB(255, 30, 30, 30);
-                          customHighlightTextColor = Colors.black;
-                          customSwitchColor = Colors.black87;
-                          customPlayBarColor = Colors.white70;
-                          customPanelColor = Colors.grey.shade100;
-                          customSidebarColor = Colors.grey.shade200;
-                          customBottomColor = Colors.grey.shade50;
-                          customSearchFieldColor = Colors.white;
-                          customButtonColor = Colors.white70;
-                          customDividerColor = Colors.grey;
-                          customSelectedItemColor = Colors.white;
-                          customSeekBarColor = Colors.black;
-                          customVolumeBarColor = Colors.black;
-
-                          lyricsBackgroundColor = Colors.black;
-
-                          settingManager.setColor();
+                          for (final customColor in colorManager.customColors) {
+                            customColor.reset();
+                          }
+                          colorManager.setColor();
                           updateColorNotifier.value++;
                           settingManager.saveSetting();
                         },

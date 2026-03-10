@@ -115,13 +115,12 @@ late SettingManager settingManager;
 
 final darkModeNotifier = ValueNotifier(false);
 
+Color currentCoverArtColor = Colors.grey;
+
 // for desktop
 Color backgroundFilterColor = Colors.grey;
 // for mobile
 late Color pageBackgroundColor;
-
-Color currentCoverArtColor = Colors.grey;
-Color lyricsBackgroundColor = Colors.black;
 
 late Color iconColor;
 late Color textColor;
@@ -137,51 +136,7 @@ late Color dividerColor;
 late Color selectedItemColor;
 late Color seekBarColor;
 late Color volumeBarColor;
-
-Color customPageBackgroundColor = Color.fromARGB(255, 245, 245, 245);
-Color customIconColor = Colors.black;
-Color customTextColor = Color.fromARGB(255, 30, 30, 30);
-Color customHighlightTextColor = Colors.black;
-Color customSwitchColor = Colors.black87;
-Color customPlayBarColor = Colors.white70;
-Color customPanelColor = Colors.grey.shade100;
-Color customSidebarColor = Colors.grey.shade200;
-Color customBottomColor = Colors.grey.shade50;
-Color customSearchFieldColor = Colors.white;
-Color customButtonColor = Colors.white70;
-Color customDividerColor = Colors.grey;
-Color customSelectedItemColor = Colors.white;
-Color customSeekBarColor = Colors.black;
-Color customVolumeBarColor = Colors.black;
-
-const Color lightModePageBackgroundColor = Color.fromARGB(255, 245, 245, 245);
-const Color lightModeIconColor = Colors.black;
-const Color lightModeTextColor = Color.fromARGB(255, 30, 30, 30);
-const Color lightModeHighlightTextColor = Colors.black;
-const Color lightModeSwitchColor = Colors.black87;
-const Color lightModePlayBarColor = Colors.white70;
-const Color lightModePanelColor = Color.fromARGB(100, 245, 245, 245);
-const Color lightModeSidebarColor = Color.fromARGB(100, 238, 238, 238);
-const Color lightModeBottomColor = Color.fromARGB(100, 250, 250, 250);
-const Color lightModeSeekBarColor = Colors.black;
-const Color lightModeVolumeBarColor = Colors.black;
-
-const Color darkModePageBackgroundColor = Color.fromARGB(255, 50, 50, 50);
-const Color darkModeCommonColor = Color.fromARGB(255, 97, 97, 97);
-const Color darkModeIconColor = Color.fromARGB(255, 195, 195, 195);
-const Color darkModeTextColor = Color.fromARGB(255, 195, 195, 195);
-const Color darkModeHighlightTextColor = Color.fromARGB(255, 230, 230, 230);
-const Color darkModeSwitchColor = Color.fromARGB(221, 0, 0, 0);
-const Color darkModePlayerColor = Color.fromARGB(128, 30, 30, 30);
-const Color darkModePanelColor = Color.fromARGB(255, 50, 50, 50);
-const Color darkModeSidebarColor = Color.fromARGB(255, 55, 55, 55);
-const Color darkModeBottomColor = Color.fromARGB(255, 60, 60, 60);
-const Color darkModeSearchFieldColor = darkModeCommonColor;
-const Color darkModeButtonColor = darkModeCommonColor;
-const Color darkModeDividerColor = darkModeCommonColor;
-const Color darkModeSelectedItemColor = darkModeCommonColor;
-const Color darkModeSeekBarColor = Color.fromARGB(255, 195, 195, 195);
-const Color darkModeVolumeBarColor = Color.fromARGB(255, 195, 195, 195);
+late Color lyricsBackgroundColor;
 
 // ===================================== Images =====================================
 
