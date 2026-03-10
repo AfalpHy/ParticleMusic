@@ -24,7 +24,7 @@ class RecentlyPanel extends StatelessWidget {
         Expanded(
           child: SongListPanel(
             key: UniqueKey(),
-            ranking: AppLocalizations.of(context).recently,
+            recently: AppLocalizations.of(context).recently,
             textController: textController,
           ),
         ),
