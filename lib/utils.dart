@@ -26,17 +26,20 @@ void showCenterMessage(
   final overlay = Overlay.of(context);
   final overlayEntry = OverlayEntry(
     builder: (context) => Center(
-      child: Material(
-        color: Colors.black,
-        shape: SmoothRectangleBorder(
-          smoothness: 1,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Padding(
-          padding: EdgeInsets.all(16),
-          child: Text(
-            message,
-            style: TextStyle(color: Colors.white, fontSize: 16),
+      child: ConstrainedBox(
+        constraints: const BoxConstraints(maxWidth: 300),
+        child: Material(
+          color: Colors.black,
+          shape: SmoothRectangleBorder(
+            smoothness: 1,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Padding(
+            padding: EdgeInsets.all(16),
+            child: Text(
+              message,
+              style: TextStyle(color: Colors.white, fontSize: 16),
+            ),
           ),
         ),
       ),
