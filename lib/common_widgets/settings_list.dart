@@ -940,90 +940,108 @@ class SettingsList extends StatelessWidget {
           'https://api.github.com/repos/AfalpHy/ParticleMusic/releases/latest',
         );
 
-        final response = await http.get(url);
-
-        if (response.statusCode != 200) {
-          if (context.mounted) {
-            showCenterMessage(context, 'Failed to fetch GitHub release');
+        try {
+          final response = await http
+              .get(url)
+              .timeout(const Duration(seconds: 3));
+          if (response.statusCode != 200) {
+            if (context.mounted) {
+              showCenterMessage(
+                context,
+                'Failed to fetch GitHub release:${response.statusCode}',
+                duration: 2000,
+              );
+            }
+            return;
           }
-        }
-
-        final data = jsonDecode(response.body);
-        String latestVersion = (data['tag_name'] as String).replaceFirst(
-          'v',
-          '',
-        );
-        if (_compareVersion(latestVersion, versionNumber) > 0) {
-          if (context.mounted) {
-            showDialog(
-              context: context,
-              builder: (BuildContext context) {
-                return AlertDialog(
-                  shape: SmoothRectangleBorder(
-                    smoothness: 1,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                  content: SizedBox(
-                    height: 300,
-                    width: 400,
-                    child: Padding(
-                      padding: const EdgeInsets.all(8.0),
-                      child: ListView(
-                        children: [
-                          Center(
-                            child: Text(
-                              data['tag_name'] as String,
-                              style: TextStyle(fontSize: 20, fontWeight: .bold),
+          final data = jsonDecode(response.body);
+          String latestVersion = (data['tag_name'] as String).replaceFirst(
+            'v',
+            '',
+          );
+          if (_compareVersion(latestVersion, versionNumber) > 0) {
+            if (context.mounted) {
+              showDialog(
+                context: context,
+                builder: (BuildContext context) {
+                  return AlertDialog(
+                    shape: SmoothRectangleBorder(
+                      smoothness: 1,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    content: SizedBox(
+                      height: 300,
+                      width: 400,
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: ListView(
+                          children: [
+                            Center(
+                              child: Text(
+                                data['tag_name'] as String,
+                                style: TextStyle(
+                                  fontSize: 20,
+                                  fontWeight: .bold,
+                                ),
+                              ),
                             ),
-                          ),
-                          SizedBox(height: 10),
+                            SizedBox(height: 10),
 
-                          Text(data['body'] as String),
-                        ],
-                      ),
-                    ),
-                  ),
-                  actions: [
-                    ElevatedButton(
-                      onPressed: () => Navigator.pop(context),
-                      style: ElevatedButton.styleFrom(
-                        elevation: 2,
-                        backgroundColor: buttonColor,
-                        shadowColor: Colors.black54,
-                        foregroundColor: Colors.black,
-                        shape: SmoothRectangleBorder(
-                          smoothness: 1,
-                          borderRadius: BorderRadius.circular(10),
+                            Text(data['body'] as String),
+                          ],
                         ),
                       ),
-                      child: Text(l10n.cancel),
                     ),
-                    ElevatedButton(
-                      onPressed: () => launchUrl(
-                        Uri.parse(
-                          "https://github.com/AfalpHy/ParticleMusic/releases/latest",
+                    actions: [
+                      ElevatedButton(
+                        onPressed: () => Navigator.pop(context),
+                        style: ElevatedButton.styleFrom(
+                          elevation: 2,
+                          backgroundColor: buttonColor,
+                          shadowColor: Colors.black54,
+                          foregroundColor: Colors.black,
+                          shape: SmoothRectangleBorder(
+                            smoothness: 1,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
                         ),
+                        child: Text(l10n.cancel),
                       ),
-                      style: ElevatedButton.styleFrom(
-                        elevation: 2,
-                        backgroundColor: buttonColor,
-                        shadowColor: Colors.black54,
-                        foregroundColor: Colors.black,
-                        shape: SmoothRectangleBorder(
-                          smoothness: 1,
-                          borderRadius: BorderRadius.circular(10),
+                      ElevatedButton(
+                        onPressed: () => launchUrl(
+                          Uri.parse(
+                            "https://github.com/AfalpHy/ParticleMusic/releases/latest",
+                          ),
                         ),
+                        style: ElevatedButton.styleFrom(
+                          elevation: 2,
+                          backgroundColor: buttonColor,
+                          shadowColor: Colors.black54,
+                          foregroundColor: Colors.black,
+                          shape: SmoothRectangleBorder(
+                            smoothness: 1,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: Text(l10n.go2Download),
                       ),
-                      child: Text(l10n.go2Download),
-                    ),
-                  ],
-                );
-              },
-            );
+                    ],
+                  );
+                },
+              );
+            }
+          } else {
+            if (context.mounted) {
+              showCenterMessage(context, l10n.alreadyLatest, duration: 2000);
+            }
           }
-        } else {
+        } catch (e) {
           if (context.mounted) {
-            showCenterMessage(context, l10n.alreadyLatest, duration: 2000);
+            showCenterMessage(
+              context,
+              'Failed to fetch GitHub release:$e',
+              duration: 5000,
+            );
           }
         }
       },
