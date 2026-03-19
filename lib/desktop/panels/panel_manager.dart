@@ -9,7 +9,6 @@ import 'package:particle_music/desktop/panels/setting_panel.dart';
 import 'package:particle_music/desktop/panels/single_album_panel.dart';
 import 'package:particle_music/desktop/panels/single_artist_panel.dart';
 import 'package:particle_music/desktop/panels/single_playlist_panel.dart';
-import 'package:particle_music/desktop/panels/song_list_panel.dart';
 import 'package:particle_music/desktop/panels/songs_panel.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/utils.dart';
@@ -79,7 +78,7 @@ class PanelManager {
   void removePlaylistPanel(Playlist playlist) {
     for (int i = panelStack.length - 1; i > 0; i--) {
       Widget tmp = panelStack[i];
-      if (tmp is SongListPanel && tmp.playlist == playlist) {
+      if (tmp is SinglePlaylistPanel && tmp.playlist == playlist.name) {
         panelStack.removeAt(i);
         sidebarHighlighLabelStack.removeAt(i);
       }
