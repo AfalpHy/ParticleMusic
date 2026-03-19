@@ -19,17 +19,20 @@ class SongsPage extends StatelessWidget {
       initialPage: displayNavidromeSongsNotifier.value && pageCnt == 2 ? 1 : 0,
     );
 
-    return PageView(
-      onPageChanged: (value) {
-        displayNavidromeSongsNotifier.value =
-            !displayNavidromeSongsNotifier.value;
-      },
-      controller: pageController,
-      children: [
-        if (librarySongList.isNotEmpty || navidromeSongList.isEmpty)
-          SongListPage(),
-        if (navidromeSongList.isNotEmpty) SongListPage(isNavidrome: true),
-      ],
+    return Container(
+      color: pageBackgroundColor,
+      child: PageView(
+        onPageChanged: (value) {
+          displayNavidromeSongsNotifier.value =
+              !displayNavidromeSongsNotifier.value;
+        },
+        controller: pageController,
+        children: [
+          if (librarySongList.isNotEmpty || navidromeSongList.isEmpty)
+            SongListPage(),
+          if (navidromeSongList.isNotEmpty) SongListPage(isNavidrome: true),
+        ],
+      ),
     );
   }
 }

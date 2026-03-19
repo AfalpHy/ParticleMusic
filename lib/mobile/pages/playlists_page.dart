@@ -105,22 +105,25 @@ class PlaylistsPage extends StatelessWidget {
                                 ? 1
                                 : 0,
                           );
-                          return PageView(
-                            onPageChanged: (value) {
-                              playlist.displayNavidromeNotifier.value =
-                                  !playlist.displayNavidromeNotifier.value;
-                            },
-                            controller: pageController,
-                            children: [
-                              if (playlist.songList.isNotEmpty ||
-                                  playlist.navidromeSongList.isEmpty)
-                                SongListPage(playlist: playlist),
-                              if (playlist.navidromeSongList.isNotEmpty)
-                                SongListPage(
-                                  playlist: playlist,
-                                  isNavidrome: true,
-                                ),
-                            ],
+                          return Container(
+                            color: pageBackgroundColor,
+                            child: PageView(
+                              onPageChanged: (value) {
+                                playlist.displayNavidromeNotifier.value =
+                                    !playlist.displayNavidromeNotifier.value;
+                              },
+                              controller: pageController,
+                              children: [
+                                if (playlist.songList.isNotEmpty ||
+                                    playlist.navidromeSongList.isEmpty)
+                                  SongListPage(playlist: playlist),
+                                if (playlist.navidromeSongList.isNotEmpty)
+                                  SongListPage(
+                                    playlist: playlist,
+                                    isNavidrome: true,
+                                  ),
+                              ],
+                            ),
                           );
                         },
                       ),
