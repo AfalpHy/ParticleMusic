@@ -17,6 +17,8 @@ import 'package:smooth_corner/smooth_corner.dart';
 import 'package:super_context_menu/super_context_menu.dart';
 
 class SongListPanel extends BaseSongListWidget {
+  final Function()? switchCallBack;
+
   const SongListPanel({
     super.key,
     super.playlist,
@@ -26,6 +28,8 @@ class SongListPanel extends BaseSongListWidget {
     super.ranking,
     super.recently,
     required super.textController,
+    super.isNavidrome,
+    this.switchCallBack,
   });
 
   @override
@@ -110,18 +114,16 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                 (_) => ValueNotifier(false),
               );
 
+              final isFixed =
+                  !reorderable ||
+                  textController.text.isNotEmpty ||
+                  sortTypeNotifier.value > 0;
+
               continuousSelectBeginIndex = 0;
 
               return SliverReorderableList(
                 itemExtent: 60,
                 itemBuilder: (context, index) {
-                  final isFixed =
-                      artist != null ||
-                      album != null ||
-                      ranking != null ||
-                      recently != null ||
-                      textController.text.isNotEmpty ||
-                      sortTypeNotifier.value > 0;
                   if (isFixed) {
                     return SizedBox(
                       key: ValueKey(songList[index]),
@@ -197,7 +199,10 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                   subtitle: ValueListenableBuilder(
                     valueListenable: currentSongListNotifier,
                     builder: (context, currentSongList, child) {
-                      return Text(l10n.songsCount(currentSongList.length));
+                      String prefix = isNavidrome ? "Navidrome" : l10n.local;
+                      return Text(
+                        "$prefix: ${l10n.songsCount(currentSongList.length)}",
+                      );
                     },
                   ),
                 ),
@@ -254,7 +259,15 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                           style: buttonStyle,
                           child: Text(l10n.shuffle),
                         ),
-                        SizedBox(width: 10),
+                        SizedBox(width: 15),
+                        if (widget.switchCallBack != null)
+                          ElevatedButton(
+                            onPressed: () async {
+                              widget.switchCallBack?.call();
+                            },
+                            style: buttonStyle,
+                            child: Text(l10n.switch_),
+                          ),
                       ],
                     );
                   },
@@ -521,7 +534,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
         return Menu(
           children: [
             if (selectedCnt == 1 &&
-                (isLibrary || folder != null || playlist != null) &&
+                reorderable &&
                 textController.text.isEmpty &&
                 sortTypeNotifier.value == 0)
               MenuAction(

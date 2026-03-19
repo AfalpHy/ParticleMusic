@@ -118,5 +118,10 @@
   "alreadyLatest": "已经是最新版本",
   "theme": "主题",
   "lightMode": "浅色模式",
-  "darkMode": "深色模式"
+  "darkMode": "深色模式",
+  "local": "本地",
+  "switch_": "切换",
+  "connect2Navidrome": "连接到Navidrome",
+  "username": "账号",
+  "password": "密码"
 }

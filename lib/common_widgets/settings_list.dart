@@ -11,6 +11,7 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/mobile/sleep_timer.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/common_widgets/my_switch.dart';
+import 'package:particle_music/navidrome_client.dart';
 import 'package:particle_music/utils.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 import 'package:url_launcher/url_launcher.dart';
@@ -105,6 +106,10 @@ class SettingsList extends StatelessWidget {
         isMobile
             ? selectMusicFoldersListTile(context, l10n)
             : paddingForDesktop(selectMusicFoldersListTile(context, l10n)),
+
+        isMobile
+            ? navidromeListTile(context, l10n)
+            : paddingForDesktop(navidromeListTile(context, l10n)),
 
         isMobile
             ? reloadListTile(context, l10n)
@@ -398,6 +403,197 @@ class SettingsList extends StatelessWidget {
                   ],
                 ),
               ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget navidromeListTile(BuildContext context, AppLocalizations l10n) {
+    return ListTile(
+      leading: ImageIcon(
+        navidromeImage,
+        color: iconColor,
+        size: isMobile ? 30 : null,
+      ),
+      title: Text(l10n.connect2Navidrome),
+      onTap: () {
+        final usernameTmp = TextEditingController(text: username);
+        final passwordTmp = TextEditingController(text: password);
+        final baseUrlTmp = TextEditingController(text: baseUrl);
+
+        showDialog(
+          context: context,
+          builder: (context) {
+            return AlertDialog(
+              shape: SmoothRectangleBorder(
+                smoothness: 1,
+                borderRadius: BorderRadius.circular(10),
+              ),
+              content: SizedBox(
+                height: 250,
+                width: 280,
+                child: Column(
+                  children: [
+                    SizedBox(height: 10),
+
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "${l10n.username}:",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    SizedBox(height: 5),
+
+                    TextField(
+                      style: TextStyle(fontSize: 12),
+                      controller: usernameTmp,
+                      decoration: InputDecoration(
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: textColor),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: textColor, width: 1.5),
+                        ),
+                        isDense: true,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "${l10n.password}:",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    SizedBox(height: 5),
+
+                    TextField(
+                      style: TextStyle(fontSize: 12),
+                      controller: passwordTmp,
+
+                      decoration: InputDecoration(
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: textColor),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: textColor, width: 1.5),
+                        ),
+                        isDense: true,
+                      ),
+                    ),
+                    SizedBox(height: 10),
+
+                    Align(
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        "Url:",
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                    SizedBox(height: 5),
+
+                    TextField(
+                      style: TextStyle(fontSize: 12),
+                      controller: baseUrlTmp,
+                      decoration: InputDecoration(
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: textColor),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(color: textColor, width: 1.5),
+                        ),
+                        isDense: true,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              actions: [
+                ElevatedButton(
+                  onPressed: () async {
+                    if (!await showConfirmDialog(context, l10n.clear)) {
+                      return;
+                    }
+                    username = '';
+                    password = '';
+                    baseUrl = '';
+                    settingManager.saveSetting();
+                    navidromeClient = NavidromeClient(
+                      username: username,
+                      password: password,
+                      baseUrl: baseUrl,
+                    );
+                    if (context.mounted) {
+                      Navigator.pop(context);
+                    }
+                    libraryManager.reload();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    elevation: 2,
+                    backgroundColor: Colors.white70,
+                    shadowColor: Colors.black54,
+                    foregroundColor: Colors.black,
+
+                    shape: SmoothRectangleBorder(
+                      smoothness: 1,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: Text(l10n.clear),
+                ),
+                ElevatedButton(
+                  onPressed: () async {
+                    final tmp = navidromeClient;
+                    try {
+                      navidromeClient = NavidromeClient(
+                        username: usernameTmp.text,
+                        password: passwordTmp.text,
+                        baseUrl: baseUrlTmp.text,
+                      );
+                    } catch (e) {
+                      navidromeClient = tmp;
+                      showCenterMessage(context, e.toString(), duration: 5000);
+                      return;
+                    }
+                    if (await navidromeClient.ping()) {
+                      if (context.mounted) {
+                        Navigator.pop(context);
+                      }
+                      username = usernameTmp.text;
+                      password = passwordTmp.text;
+                      baseUrl = baseUrlTmp.text;
+                      settingManager.saveSetting();
+
+                      await libraryManager.reload();
+                    } else {
+                      navidromeClient = tmp;
+                      if (context.mounted) {
+                        showCenterMessage(
+                          context,
+                          "Failed to connect to Navidrome!",
+                          duration: 2000,
+                        );
+                      }
+                    }
+                  },
+                  style: ElevatedButton.styleFrom(
+                    elevation: 2,
+                    backgroundColor: Colors.white70,
+                    shadowColor: Colors.black54,
+                    foregroundColor: Colors.black,
+
+                    shape: SmoothRectangleBorder(
+                      smoothness: 1,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                  ),
+                  child: Text(l10n.confirm),
+                ),
+              ],
             );
           },
         );

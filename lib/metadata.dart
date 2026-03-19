@@ -83,7 +83,7 @@ void showSongMetadataDialog(BuildContext context, MyAudioMetadata song) async {
                           }
 
                           bool success = writeMetadata(
-                            path: song.filePath,
+                            path: song.filePath!,
                             title: writeTitle,
                             artist: writeArtist,
                             album: writeAlbum,

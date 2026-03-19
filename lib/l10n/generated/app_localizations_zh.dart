@@ -375,4 +375,19 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get darkMode => '深色模式';
+
+  @override
+  String get local => '本地';
+
+  @override
+  String get switch_ => '切换';
+
+  @override
+  String get connect2Navidrome => '连接到Navidrome';
+
+  @override
+  String get username => '账号';
+
+  @override
+  String get password => '密码';
 }

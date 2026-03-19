@@ -5,18 +5,29 @@ import 'package:flutter/material.dart';
 import 'package:particle_music/common_widgets/lyrics.dart';
 
 class MyAudioMetadata {
-  final String filePath;
-  final DateTime modified;
+  final String? filePath;
+  final DateTime? modified;
+  final String? id;
+  final bool isNavidrome;
+
   final AudioMetadata _audioMetadata;
 
   bool pictureLoaded = false;
   Color? coverArtColor;
   ParsedLyrics? parsedLyrics;
 
+  String? navidromeUrl;
+
   final isFavoriteNotifier = ValueNotifier(false);
   final updateNotifier = ValueNotifier(0);
 
-  MyAudioMetadata(this.filePath, this.modified, this._audioMetadata);
+  MyAudioMetadata(
+    this._audioMetadata, {
+    this.filePath,
+    this.modified,
+    this.id,
+    this.isNavidrome = false,
+  });
 
   String? get title => _audioMetadata.title;
   String? get artist => _audioMetadata.artist;

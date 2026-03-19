@@ -38,6 +38,11 @@ List<MyAudioMetadata> libraryAdditionalSongList = [];
 ValueNotifier<int> librarySongListUpdateNotifier = ValueNotifier(0);
 Map<String, MyAudioMetadata> filePath2LibrarySong = {};
 
+List<MyAudioMetadata> navidromeSongList = [];
+Map<String, MyAudioMetadata> id2navidromeSong = {};
+
+final displayNavidromeSongsNotifier = ValueNotifier(false);
+
 final ValueNotifier<int> loadedCountNotifier = ValueNotifier(0);
 final ValueNotifier<String> currentLoadingFolderNotifier = ValueNotifier('');
 
@@ -174,6 +179,7 @@ const AssetImage maximizeImage = AssetImage('assets/images/maximize.png');
 const AssetImage miniModeImage = AssetImage('assets/images/mini_mode.png');
 const AssetImage minimizeImage = AssetImage('assets/images/minimize.png');
 const AssetImage musicNoteImage = AssetImage('assets/images/music_note.png');
+const AssetImage navidromeImage = AssetImage('assets/images/navidrome.png');
 const AssetImage nextButtonImage = AssetImage('assets/images/next_button.png');
 const AssetImage paletteImage = AssetImage('assets/images/palette.png');
 const AssetImage pauseCircleImage = AssetImage(

@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/navidrome_client.dart';
 
 class SettingManager {
   late final File file;
@@ -69,6 +70,10 @@ class SettingManager {
 
     exitOnCloseNotifier.value =
         json['exitOnClose'] as bool? ?? exitOnCloseNotifier.value;
+
+    username = json['username'] as String? ?? '';
+    password = json['password'] as String? ?? '';
+    baseUrl = json['baseUrl'] as String? ?? '';
   }
 
   void saveSetting() {
@@ -95,6 +100,10 @@ class SettingManager {
 
         'lyricsFontSizeOffset': lyricsFontSizeOffset,
         'exitOnClose': exitOnCloseNotifier.value,
+
+        'username': username,
+        'password': password,
+        'baseUrl': baseUrl,
       }),
     );
   }

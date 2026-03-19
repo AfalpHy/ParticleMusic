@@ -83,7 +83,13 @@ Future<void> setParsedLyrics(MyAudioMetadata song) async {
 
   List<String> lines = [];
   if (song.lyrics == null) {
-    String path = song.filePath;
+    if (song.isNavidrome) {
+      result.lyrics.add(
+        LyricLine(Duration.zero, 'lyrics file does not exist', []),
+      );
+      return;
+    }
+    String path = song.filePath!;
     path = "${path.substring(0, path.lastIndexOf('.'))}.lrc";
     final file = File(path);
     if (!file.existsSync()) {

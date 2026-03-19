@@ -23,15 +23,21 @@ class SongListPage extends BaseSongListWidget {
     super.folder,
     super.ranking,
     super.recently,
+    super.isNavidrome,
   });
 
   @override
   State<SongListPage> createState() => _SongListPageState();
 }
 
-class _SongListPageState extends BaseSongListState<SongListPage> {
+class _SongListPageState extends BaseSongListState<SongListPage>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Scaffold(
       backgroundColor: pageBackgroundColor,
       resizeToAvoidBottomInset: false,
@@ -133,6 +139,7 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
                     ranking: ranking,
                     recently: recently,
                     isLibrary: isLibrary,
+                    reorderable: reorderable,
                   ),
                 ),
               );
@@ -293,7 +300,10 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
                 subtitle: ValueListenableBuilder(
                   valueListenable: currentSongListNotifier,
                   builder: (context, currentSongList, child) {
-                    return Text(l10n.songsCount(currentSongList.length));
+                    String prefix = isNavidrome ? "Navidrome" : l10n.local;
+                    return Text(
+                      "$prefix: ${l10n.songsCount(currentSongList.length)}",
+                    );
                   },
                 ),
               ),

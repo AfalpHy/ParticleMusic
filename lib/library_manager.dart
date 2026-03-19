@@ -5,6 +5,7 @@ import 'package:audio_tags_lofty/audio_tags.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/folder_manager.dart';
 import 'package:particle_music/my_audio_metadata.dart';
+import 'package:particle_music/navidrome_client.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/setting_manager.dart';
 import 'package:particle_music/utils.dart';
@@ -35,6 +36,12 @@ class LibraryManager {
       "${appSupportDir.path}/song_metadata_list.txt",
     );
 
+    navidromeClient = NavidromeClient(
+      username: username,
+      password: password,
+      baseUrl: baseUrl,
+    );
+
     folderManager = FolderManager();
     await folderManager.initAllFolders();
 
@@ -60,8 +67,24 @@ class LibraryManager {
     await update();
     await _saveLibrarySongMetadataList();
 
+    currentLoadingFolderNotifier.value = "Navidrome";
+    final songs = await navidromeClient.getSongs();
+    for (var song in songs) {
+      MyAudioMetadata tmp = MyAudioMetadata(
+        mapNavidromeToAudioMetadata(song),
+        isNavidrome: true,
+        id: song['id'],
+      );
+      navidromeSongList.add(tmp);
+      id2navidromeSong[song['id']] = tmp;
+    }
+
+    displayNavidromeSongsNotifier.value =
+        librarySongList.isEmpty & navidromeSongList.isNotEmpty;
+
     _processArtistAndAlbum();
 
+    currentLoadingFolderNotifier.value = "Navidrome's playlist";
     await playlistsManager.load();
 
     if (isMobile) {
@@ -111,6 +134,9 @@ class LibraryManager {
     libraryAdditionalSongList = [];
     filePath2LibrarySong = {};
 
+    navidromeSongList = [];
+    id2navidromeSong = {};
+
     folderManager.clear();
 
     playlistsManager.clear();
@@ -148,8 +174,8 @@ class LibraryManager {
     for (final map in list) {
       final path = map['path'] as String;
       filePath2LibrarySong[path] = MyAudioMetadata(
-        revertFilePathIfNeed(path),
-        DateTime.fromMillisecondsSinceEpoch(map['modified'] as int),
+        filePath: revertFilePathIfNeed(path),
+        modified: DateTime.fromMillisecondsSinceEpoch(map['modified'] as int),
         AudioMetadata(
           title: map['title'] as String?,
           artist: map['artist'] as String?,
@@ -163,8 +189,8 @@ class LibraryManager {
 
   Map<String, dynamic> _myAudioMetadataToMap(MyAudioMetadata song) {
     return {
-      'modified': song.modified.millisecondsSinceEpoch,
-      'path': clipFilePathIfNeed(song.filePath),
+      'modified': song.modified!.millisecondsSinceEpoch,
+      'path': clipFilePathIfNeed(song.filePath!),
       'title': song.title,
       'artist': song.artist,
       'album': song.album,
@@ -176,7 +202,7 @@ class LibraryManager {
   Future<void> update() async {
     await _librarySongFilePathListFile.writeAsString(
       jsonEncode(
-        librarySongList.map((e) => clipFilePathIfNeed(e.filePath)).toList(),
+        librarySongList.map((e) => clipFilePathIfNeed(e.filePath!)).toList(),
       ),
     );
     if (!isMobile) {

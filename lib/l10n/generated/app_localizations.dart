@@ -817,6 +817,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dark Mode'**
   String get darkMode;
+
+  /// No description provided for @local.
+  ///
+  /// In en, this message translates to:
+  /// **'Local'**
+  String get local;
+
+  /// No description provided for @switch_.
+  ///
+  /// In en, this message translates to:
+  /// **'Switch'**
+  String get switch_;
+
+  /// No description provided for @connect2Navidrome.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to Navidrome'**
+  String get connect2Navidrome;
+
+  /// No description provided for @username.
+  ///
+  /// In en, this message translates to:
+  /// **'Username'**
+  String get username;
+
+  /// No description provided for @password.
+  ///
+  /// In en, this message translates to:
+  /// **'Password'**
+  String get password;
 }
 
 class _AppLocalizationsDelegate

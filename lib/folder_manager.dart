@@ -165,7 +165,7 @@ class Folder {
         final tmp = readMetadata(file.path, false);
 
         if (tmp != null) {
-          song = MyAudioMetadata(file.path, modified, tmp);
+          song = MyAudioMetadata(tmp, filePath: file.path, modified: modified);
 
           if (isAdditional) {
             additionalSongList.add(song);
@@ -191,7 +191,7 @@ class Folder {
 
   Future<void> update() async {
     await _songFilePathListFile.writeAsString(
-      jsonEncode(songList.map((e) => clipFilePathIfNeed(e.filePath)).toList()),
+      jsonEncode(songList.map((e) => clipFilePathIfNeed(e.filePath!)).toList()),
     );
     if (!isMobile) {
       panelManager.updateBackground();

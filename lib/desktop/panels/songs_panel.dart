@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/panels/song_list_panel.dart';
 import 'package:particle_music/desktop/title_bar.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 
 class SongsPanel extends StatelessWidget {
   final textController = TextEditingController();
-
   SongsPanel({super.key});
 
   @override
@@ -22,7 +22,26 @@ class SongsPanel extends StatelessWidget {
           ),
         ),
 
-        Expanded(child: SongListPanel(textController: textController)),
+        Expanded(
+          child: ValueListenableBuilder(
+            valueListenable: displayNavidromeSongsNotifier,
+            builder: (context, value, child) {
+              return SongListPanel(
+                key: UniqueKey(),
+                textController: textController,
+                isNavidrome: value,
+                switchCallBack:
+                    librarySongList.isNotEmpty && navidromeSongList.isNotEmpty
+                    ? () {
+                        displayNavidromeSongsNotifier.value =
+                            !displayNavidromeSongsNotifier.value;
+                        panelManager.updateBackground();
+                      }
+                    : null,
+              );
+            },
+          ),
+        ),
       ],
     );
   }

@@ -375,4 +375,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get darkMode => 'Dark Mode';
+
+  @override
+  String get local => 'Local';
+
+  @override
+  String get switch_ => 'Switch';
+
+  @override
+  String get connect2Navidrome => 'Connect to Navidrome';
+
+  @override
+  String get username => 'Username';
+
+  @override
+  String get password => 'Password';
 }

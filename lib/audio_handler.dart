@@ -9,6 +9,7 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/extensions/window_controller_extension.dart';
 import 'package:particle_music/common_widgets/lyrics.dart';
 import 'package:particle_music/my_audio_metadata.dart';
+import 'package:particle_music/navidrome_client.dart';
 import 'package:particle_music/utils.dart';
 import 'dart:async';
 
@@ -174,41 +175,51 @@ class MyAudioHandler extends BaseAudioHandler {
     }
   }
 
+  List<MyAudioMetadata> _restoreQueue(List<dynamic>? rawList) {
+    final result = <MyAudioMetadata>[];
+
+    for (final item in rawList ?? []) {
+      if (item is! Map<String, dynamic>) {
+        continue;
+      }
+
+      final isNavidrome = item['isNavidrome'] as bool;
+      final content = item['content'] as String;
+
+      final song = isNavidrome
+          ? id2navidromeSong[content]
+          : filePath2LibrarySong[content];
+
+      if (song != null) result.add(song);
+    }
+
+    return result;
+  }
+
   Future<void> loadPlayQueueState() async {
     final content = await _playQueueState.readAsString();
 
-    final Map<String, dynamic> json =
-        jsonDecode(content) as Map<String, dynamic>;
+    final json = jsonDecode(content) as Map<String, dynamic>;
 
-    List<String> tmp =
-        (json['playQueueTmp'] as List<dynamic>?)?.cast<String>() ?? [];
-    for (final path in tmp) {
-      MyAudioMetadata? song;
-      song = filePath2LibrarySong[path];
-      if (song != null) {
-        _playQueueTmp.add(song);
-      }
-    }
-
-    tmp = (json['playQueue'] as List<dynamic>?)?.cast<String>() ?? [];
-    for (final path in tmp) {
-      MyAudioMetadata? song;
-      song = filePath2LibrarySong[path];
-      if (song != null) {
-        playQueue.add(song);
-      }
-    }
+    _playQueueTmp.addAll(_restoreQueue(json['playQueueTmp']));
+    playQueue.addAll(_restoreQueue(json['playQueue']));
   }
 
   void _savePlayQueueState() {
     _playQueueState.writeAsStringSync(
       jsonEncode({
-        'playQueueTmp': _playQueueTmp
-            .map((e) => clipFilePathIfNeed(e.filePath))
-            .toList(),
-        'playQueue': playQueue
-            .map((e) => clipFilePathIfNeed(e.filePath))
-            .toList(),
+        'playQueueTmp': _playQueueTmp.map((e) {
+          return {
+            'isNavidrome': e.isNavidrome,
+            'content': e.isNavidrome ? e.id : clipFilePathIfNeed(e.filePath!),
+          };
+        }).toList(),
+        'playQueue': playQueue.map((e) {
+          return {
+            'isNavidrome': e.isNavidrome,
+            'content': e.isNavidrome ? e.id : clipFilePathIfNeed(e.filePath!),
+          };
+        }).toList(),
       }),
     );
   }
@@ -409,10 +420,20 @@ class MyAudioHandler extends BaseAudioHandler {
 
     isLoading = true;
     try {
-      await _player.open(
-        Media(currentSong.filePath),
-        play: isPlayingNotifier.value,
-      );
+      if (currentSong.isNavidrome) {
+        currentSong.navidromeUrl ??= navidromeClient.getStreamUrl(
+          currentSong.id!,
+        );
+        await _player.open(
+          Media(currentSong.navidromeUrl!),
+          play: isPlayingNotifier.value,
+        );
+      } else {
+        await _player.open(
+          Media(currentSong.filePath!),
+          play: isPlayingNotifier.value,
+        );
+      }
     } catch (error) {
       logger.output("[${currentSong.filePath}] $error");
     }
@@ -438,7 +459,7 @@ class MyAudioHandler extends BaseAudioHandler {
 
     mediaItem.add(
       MediaItem(
-        id: currentSong.filePath,
+        id: currentSong.isNavidrome ? currentSong.id! : currentSong.filePath!,
         title: getTitle(currentSong),
         artist: getArtist(currentSong),
         album: getAlbum(currentSong),

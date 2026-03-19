@@ -146,5 +146,10 @@
   "alreadyLatest": "Already on the latest version",
   "theme": "Theme",
   "lightMode": "Light Mode",
-  "darkMode": "Dark Mode"
+  "darkMode": "Dark Mode",
+  "local": "Local",
+  "switch_": "Switch",
+  "connect2Navidrome": "Connect to Navidrome",
+  "username": "Username",
+  "password": "Password"
 }

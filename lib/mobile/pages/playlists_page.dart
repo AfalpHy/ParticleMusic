@@ -64,7 +64,7 @@ class PlaylistsPage extends StatelessWidget {
                       return CoverArtWidget(
                         size: 50,
                         borderRadius: 5,
-                        song: getFirstSong(playlist.songList),
+                        song: playlist.getDisplaySong(),
                       );
                     },
                   ),
@@ -78,13 +78,51 @@ class PlaylistsPage extends StatelessWidget {
                   subtitle: ValueListenableBuilder(
                     valueListenable: playlist.updateNotifier,
                     builder: (_, _, _) {
-                      return Text(l10n.songsCount(playlist.songList.length));
+                      return Text(
+                        l10n.songsCount(
+                          playlist.songList.length +
+                              playlist.navidromeSongList.length,
+                        ),
+                      );
                     },
                   ),
                   onTap: () {
                     Navigator.of(context).push(
                       MaterialPageRoute(
-                        builder: (_) => SongListPage(playlist: playlist),
+                        builder: (_) {
+                          int pageCnt = 0;
+                          if (playlist.songList.isNotEmpty) {
+                            pageCnt++;
+                          }
+                          if (playlist.navidromeSongList.isNotEmpty) {
+                            pageCnt++;
+                          }
+
+                          PageController pageController = PageController(
+                            initialPage:
+                                playlist.displayNavidromeNotifier.value &&
+                                    pageCnt == 2
+                                ? 1
+                                : 0,
+                          );
+                          return PageView(
+                            onPageChanged: (value) {
+                              playlist.displayNavidromeNotifier.value =
+                                  !playlist.displayNavidromeNotifier.value;
+                            },
+                            controller: pageController,
+                            children: [
+                              if (playlist.songList.isNotEmpty ||
+                                  playlist.navidromeSongList.isEmpty)
+                                SongListPage(playlist: playlist),
+                              if (playlist.navidromeSongList.isNotEmpty)
+                                SongListPage(
+                                  playlist: playlist,
+                                  isNavidrome: true,
+                                ),
+                            ],
+                          );
+                        },
                       ),
                     );
                   },

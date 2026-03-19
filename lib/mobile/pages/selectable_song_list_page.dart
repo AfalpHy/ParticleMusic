@@ -22,6 +22,8 @@ class SelectableSongListPage extends StatefulWidget {
 
   final bool isLibrary;
 
+  final bool reorderable;
+
   const SelectableSongListPage({
     super.key,
     required this.songList,
@@ -32,6 +34,7 @@ class SelectableSongListPage extends StatefulWidget {
     this.ranking,
     this.recently,
     required this.isLibrary,
+    required this.reorderable,
   });
 
   @override
@@ -240,6 +243,10 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
       body: ValueListenableBuilder(
         valueListenable: currentSongListNotifier,
         builder: (context, currentSongList, child) {
+          bool reorderable =
+              widget.reorderable &&
+              textController.text.isEmpty &&
+              sortTypeNotifier.value == 0;
           return Column(
             children: [
               Row(
@@ -310,13 +317,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                       source: currentSongList,
                       isSelected: isSelectedList[index],
                       selectedNumNotifier: selectedNumNotifier,
-                      reorderable:
-                          !(artist != null ||
-                              album != null ||
-                              ranking != null ||
-                              recently != null ||
-                              textController.text.isNotEmpty ||
-                              sortTypeNotifier.value > 0),
+                      reorderable: reorderable,
                       isRanking: ranking != null,
                     );
                   },

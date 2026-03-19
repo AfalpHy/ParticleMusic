@@ -16,7 +16,7 @@ class RankingItem {
   }
 
   factory RankingItem.fromSong(MyAudioMetadata song, int times) {
-    return RankingItem(times, clipFilePathIfNeed(song.filePath), song);
+    return RankingItem(times, clipFilePathIfNeed(song.filePath!), song);
   }
 }
 
@@ -74,6 +74,9 @@ class HistoryManager {
   }
 
   void addSongTimes(MyAudioMetadata song, int times) {
+    if (song.isNavidrome) {
+      return;
+    }
     int index = -1;
     for (int i = 0; i < rankingItemList.length; i++) {
       if (song == rankingItemList[i].song) {
@@ -114,7 +117,10 @@ class HistoryManager {
   }
 
   void add2Recently(MyAudioMetadata song) {
-    String filePath = clipFilePathIfNeed(song.filePath);
+    if (song.isNavidrome) {
+      return;
+    }
+    String filePath = clipFilePathIfNeed(song.filePath!);
 
     recentlyPathList.remove(filePath);
     recentlyPathList.insert(0, filePath);

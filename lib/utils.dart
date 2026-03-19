@@ -14,6 +14,7 @@ import 'package:particle_music/desktop/single_instance.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/common_widgets/lyrics.dart';
 import 'package:particle_music/my_audio_metadata.dart';
+import 'package:particle_music/navidrome_client.dart';
 import 'package:path/path.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 import 'package:window_manager/window_manager.dart';
@@ -114,7 +115,7 @@ String getTitle(MyAudioMetadata? song) {
     return '';
   }
   if (song.title == null || song.title == '') {
-    return basename(song.filePath);
+    return basename(song.filePath!);
   }
   return song.title!;
 }
@@ -279,7 +280,9 @@ Future<Uint8List?> loadPictureBytes(MyAudioMetadata? song) async {
   if (song.pictureLoaded) {
     return song.pictureBytes;
   }
-  final result = await _readPictureAsync(song.filePath);
+  final result = song.isNavidrome
+      ? await navidromeClient.getPictureBytes(song.id!)
+      : await _readPictureAsync(song.filePath!);
   song.pictureBytes = result;
   song.pictureLoaded = true;
   return result;
@@ -419,6 +422,20 @@ void getDesktopLyricFromMap(dynamic data) {
 
   desktopLyricsIsKaraoke = map['isKaraoke'] as bool;
   updateDesktopLyricsNotifier.value++;
+}
+
+AudioMetadata mapNavidromeToAudioMetadata(Map<String, dynamic> song) {
+  final meta = AudioMetadata();
+
+  meta.title = song['title'];
+  meta.artist = song['artist'];
+  meta.album = song['album'];
+
+  if (song['duration'] != null) {
+    meta.duration = Duration(seconds: song['duration']);
+  }
+
+  return meta;
 }
 
 bool _exited = false;

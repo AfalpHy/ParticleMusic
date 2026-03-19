@@ -19,6 +19,8 @@ abstract class BaseSongListWidget extends StatefulWidget {
 
   final TextEditingController? textController;
 
+  final bool isNavidrome;
+
   const BaseSongListWidget({
     super.key,
     this.playlist,
@@ -28,6 +30,7 @@ abstract class BaseSongListWidget extends StatefulWidget {
     this.ranking,
     this.recently,
     this.textController,
+    this.isNavidrome = false,
   });
 }
 
@@ -43,6 +46,10 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
   String? recently;
 
   bool isLibrary = false;
+
+  bool reorderable = false;
+
+  late bool isNavidrome;
 
   Timer? timer;
 
@@ -75,11 +82,16 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
 
     textController = widget.textController ?? TextEditingController();
 
+    isNavidrome = widget.isNavidrome;
+
     if (playlist != null) {
-      songList = playlist!.songList;
+      songList = isNavidrome ? playlist!.navidromeSongList : playlist!.songList;
       title = playlist!.name;
-      sortTypeNotifier = playlist!.sortTypeNotifier;
+      sortTypeNotifier = isNavidrome
+          ? playlist!.navidromeSortTypeNotifier
+          : playlist!.sortTypeNotifier;
       playlist!.updateNotifier.addListener(updateSongList);
+      reorderable = true;
     } else if (artist != null) {
       songList = artist2SongList[artist]!;
       title = artist!;
@@ -90,6 +102,7 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
       songList = folder!.songList;
       title = folder!.path;
       folder!.updateNotifier.addListener(updateSongList);
+      reorderable = true;
     } else if (ranking != null) {
       songList = historyManager.rankingSongList;
       title = ranking!;
@@ -99,8 +112,13 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
       title = recently!;
       recentlyChangeNotifier.addListener(updateSongList);
     } else {
-      songList = librarySongList;
-      librarySongListUpdateNotifier.addListener(updateSongList);
+      if (isNavidrome) {
+        songList = navidromeSongList;
+      } else {
+        songList = librarySongList;
+        librarySongListUpdateNotifier.addListener(updateSongList);
+        reorderable = true;
+      }
       isLibrary = true;
     }
     updateSongList();

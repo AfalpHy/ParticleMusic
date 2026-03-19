@@ -50,7 +50,10 @@ class PanelManager {
       panelStack.add(PlaylistsPanel(key: UniqueKey()));
     } else if (label[0] == '_') {
       panelStack.add(
-        SinglePlaylistPanel(key: UniqueKey(), playlist: label.substring(1)),
+        SinglePlaylistPanel(
+          key: UniqueKey(),
+          playlist: playlistsManager.getPlaylistByName(label.substring(1))!,
+        ),
       );
     } else if (label == 'settings') {
       panelStack.add(SettingPanel(key: UniqueKey()));
@@ -78,7 +81,7 @@ class PanelManager {
   void removePlaylistPanel(Playlist playlist) {
     for (int i = panelStack.length - 1; i > 0; i--) {
       Widget tmp = panelStack[i];
-      if (tmp is SinglePlaylistPanel && tmp.playlist == playlist.name) {
+      if (tmp is SinglePlaylistPanel && tmp.playlist == playlist) {
         panelStack.removeAt(i);
         sidebarHighlighLabelStack.removeAt(i);
       }
@@ -110,14 +113,20 @@ class PanelManager {
       final songList = (panel as FolderPanel).folder.songList;
       backgroundSong = getFirstSong(songList);
     } else if (label == 'songs') {
-      backgroundSong = getFirstSong(librarySongList);
+      bool isNavidrome = displayNavidromeSongsNotifier.value;
+      backgroundSong = getFirstSong(
+        isNavidrome ? navidromeSongList : librarySongList,
+      );
     } else if (label == 'ranking') {
       backgroundSong = getFirstSong(historyManager.rankingSongList);
     } else if (label == 'recently') {
       backgroundSong = getFirstSong(historyManager.recentlySongList);
     } else if (label[0] == '_') {
       final playlist = playlistsManager.getPlaylistByName(label.substring(1));
-      backgroundSong = getFirstSong(playlist!.songList);
+      bool isNavidrome = playlist!.displayNavidromeNotifier.value;
+      backgroundSong = getFirstSong(
+        isNavidrome ? playlist.navidromeSongList : playlist.songList,
+      );
     } else {
       backgroundSong = currentSongNotifier.value;
     }
