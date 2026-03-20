@@ -6,9 +6,9 @@ import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:particle_music/common.dart';
 
-late String username;
-late String password;
-late String baseUrl;
+String username = '';
+String password = '';
+String baseUrl = '';
 
 late NavidromeClient navidromeClient;
 
