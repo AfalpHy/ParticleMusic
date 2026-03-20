@@ -3,8 +3,8 @@ import 'package:particle_music/artist_album_manager.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/mobile/pages/local_navidrome_pageview.dart';
-import 'package:particle_music/mobile/widgets/my_search_field.dart';
-import 'package:particle_music/mobile/widgets/my_sheet.dart';
+import 'package:particle_music/mobile/my_search_field.dart';
+import 'package:particle_music/mobile/my_sheet.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 
 import 'package:particle_music/common_widgets/my_switch.dart';

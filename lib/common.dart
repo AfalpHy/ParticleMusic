@@ -133,6 +133,7 @@ late Color lyricsBackgroundColor;
 
 // ===================================== Images =====================================
 
+const AssetImage addCircleImage = AssetImage('assets/images/add_circle.png');
 const AssetImage addImage = AssetImage('assets/images/add.png');
 const AssetImage albumImage = AssetImage('assets/images/album.png');
 const AssetImage arrowDownImage = AssetImage('assets/images/arrow_down.png');

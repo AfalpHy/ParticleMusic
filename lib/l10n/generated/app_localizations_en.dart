@@ -185,6 +185,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get playNext => 'Play Next';
 
   @override
+  String get add2Queue => 'Add to Queue';
+
+  @override
   String get editMetadata => 'Edit Metadata';
 
   @override

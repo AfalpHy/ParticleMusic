@@ -4,8 +4,8 @@ import 'package:particle_music/common_widgets/my_auto_size_text.dart';
 import 'package:particle_music/folder_manager.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/mobile/selectable_song_list_tile.dart';
-import 'package:particle_music/mobile/widgets/my_search_field.dart';
-import 'package:particle_music/mobile/widgets/my_sheet.dart';
+import 'package:particle_music/mobile/my_search_field.dart';
+import 'package:particle_music/mobile/my_sheet.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/utils.dart';
@@ -363,6 +363,43 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                     ),
                   ),
                 ),
+
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () async {
+                      if (valid) {
+                        tryVibrate();
+                        for (int i = 0; i < isSelectedList.length; i++) {
+                          if (isSelectedList[i].value) {
+                            audioHandler.add2Last(
+                              currentSongListNotifier.value[i],
+                            );
+                          }
+                        }
+                        showCenterMessage(
+                          context,
+                          'Added to Play Queue',
+                          duration: 1000,
+                        );
+                        if (audioHandler.currentIndex == -1) {
+                          await audioHandler.skipToNext();
+                          audioHandler.play();
+                        }
+
+                        audioHandler.saveAllStates();
+                      }
+                    },
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ImageIcon(addCircleImage, color: color),
+
+                        Text(l10n.add2Queue, style: TextStyle(color: color)),
+                      ],
+                    ),
+                  ),
+                ),
+
                 Expanded(
                   child: GestureDetector(
                     onTap: () {

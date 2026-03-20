@@ -595,8 +595,30 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
             ),
 
             MenuAction(
-              title: l10n.add2Playlists,
+              title: l10n.add2Queue,
               image: MenuImage.icon(Icons.playlist_add_rounded),
+              callback: () async {
+                bool needPlay = false;
+                if (playQueue.isEmpty) {
+                  needPlay = true;
+                }
+                for (int i = 0; i < isSelectedList.length; i++) {
+                  if (isSelectedList[i].value) {
+                    audioHandler.add2Last(currentSongList[i]);
+                  }
+                }
+
+                if (needPlay) {
+                  await audioHandler.skipToNext();
+                  audioHandler.play();
+                }
+                audioHandler.saveAllStates();
+              },
+            ),
+
+            MenuAction(
+              title: l10n.add2Playlists,
+              image: MenuImage.icon(Icons.add),
               callback: () {
                 final List<MyAudioMetadata> tmpSongList = [];
                 for (int i = isSelectedList.length - 1; i >= 0; i--) {

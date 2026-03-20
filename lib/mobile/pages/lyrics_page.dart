@@ -5,7 +5,7 @@ import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/my_auto_size_text.dart';
 import 'package:particle_music/mobile/sleep_timer.dart';
-import 'package:particle_music/mobile/widgets/my_sheet.dart';
+import 'package:particle_music/mobile/my_sheet.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/common_widgets/lyrics.dart';
 import 'package:particle_music/mobile/play_queue_sheet.dart';

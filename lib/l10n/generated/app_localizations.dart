@@ -434,6 +434,12 @@ abstract class AppLocalizations {
   /// **'Play Next'**
   String get playNext;
 
+  /// No description provided for @add2Queue.
+  ///
+  /// In en, this message translates to:
+  /// **'Add to Queue'**
+  String get add2Queue;
+
   /// No description provided for @editMetadata.
   ///
   /// In en, this message translates to:

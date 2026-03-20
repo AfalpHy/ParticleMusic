@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/mobile/widgets/my_sheet.dart';
+import 'package:particle_music/mobile/my_sheet.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/playlists.dart';
@@ -177,6 +177,26 @@ class SongListTile extends StatelessWidget {
                               audioHandler.singlePlay(source[index]);
                             } else {
                               audioHandler.insert2Next(source[index]);
+                            }
+                            Navigator.pop(context);
+                            audioHandler.saveAllStates();
+                          },
+                        ),
+                        ListTile(
+                          leading: ImageIcon(addCircleImage, color: iconColor),
+                          title: Text(
+                            l10n.add2Queue,
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          visualDensity: const VisualDensity(
+                            horizontal: 0,
+                            vertical: -4,
+                          ),
+                          onTap: () {
+                            if (playQueue.isEmpty) {
+                              audioHandler.singlePlay(source[index]);
+                            } else {
+                              audioHandler.add2Last(source[index]);
                             }
                             Navigator.pop(context);
                             audioHandler.saveAllStates();

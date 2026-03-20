@@ -185,6 +185,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get playNext => '下一首播放';
 
   @override
+  String get add2Queue => '添加到播放列表';
+
+  @override
   String get editMetadata => '编辑元数据';
 
   @override

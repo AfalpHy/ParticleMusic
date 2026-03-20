@@ -284,6 +284,27 @@ class MyAudioHandler extends BaseAudioHandler {
     return true;
   }
 
+  bool add2Last(MyAudioMetadata song) {
+    int songIndex = playQueue.indexOf(song);
+    if (songIndex != -1) {
+      if (songIndex == currentIndex) {
+        return false;
+      }
+      if (songIndex < currentIndex) {
+        currentIndex -= 1;
+      }
+      playQueue.removeAt(songIndex);
+      playQueue.add(song);
+    } else {
+      playQueue.add(song);
+      if (playModeNotifier.value == 1 ||
+          (playModeNotifier.value == 2 && audioHandler._tmpPlayMode == 1)) {
+        _playQueueTmp.add(song);
+      }
+    }
+    return true;
+  }
+
   void singlePlay(MyAudioMetadata song) async {
     if (insert2Next(song)) {
       await skipToNext();
