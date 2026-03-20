@@ -358,7 +358,10 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                       children: [
                         ImageIcon(playnextCircleImage, color: color),
 
-                        Text(l10n.playNext, style: TextStyle(color: color)),
+                        Text(
+                          l10n.playNext,
+                          style: TextStyle(color: color, fontSize: 13),
+                        ),
                       ],
                     ),
                   ),
@@ -394,7 +397,10 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                       children: [
                         ImageIcon(addCircleImage, color: color),
 
-                        Text(l10n.add2Queue, style: TextStyle(color: color)),
+                        Text(
+                          l10n.add2Queue,
+                          style: TextStyle(color: color, fontSize: 13),
+                        ),
                       ],
                     ),
                   ),
@@ -419,7 +425,10 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                       children: [
                         ImageIcon(playlistAddImage, color: color),
 
-                        Text(l10n.add2Playlist, style: TextStyle(color: color)),
+                        Text(
+                          l10n.add2Playlist,
+                          style: TextStyle(color: color, fontSize: 13),
+                        ),
                       ],
                     ),
                   ),
@@ -460,7 +469,10 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                         children: [
                           ImageIcon(deleteImage, color: color),
 
-                          Text(l10n.delete, style: TextStyle(color: color)),
+                          Text(
+                            l10n.delete,
+                            style: TextStyle(color: color, fontSize: 13),
+                          ),
                         ],
                       ),
                     ),

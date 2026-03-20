@@ -72,7 +72,7 @@ class SongListTile extends StatelessWidget {
       },
       trailing: isRanking
           ? SizedBox(
-              width: 80,
+              width: 100,
               child: Row(
                 children: [
                   Spacer(),
