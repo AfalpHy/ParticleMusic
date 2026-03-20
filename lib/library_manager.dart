@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:audio_tags_lofty/audio_tags.dart';
+import 'package:particle_music/artist_album_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/folder_manager.dart';
 import 'package:particle_music/my_audio_metadata.dart';
@@ -88,7 +89,7 @@ class LibraryManager {
     displayNavidromeSongsNotifier.value =
         librarySongList.isEmpty & navidromeSongList.isNotEmpty;
 
-    _processArtistAndAlbum();
+    artistAlbumManager.load();
 
     currentLoadingFolderNotifier.value = "Navidrome's playlist";
     await playlistsManager.load();
@@ -108,29 +109,6 @@ class LibraryManager {
     loadingLibraryNotifier.value = false;
   }
 
-  void _processArtistAndAlbum() {
-    for (final song in librarySongList) {
-      for (String artist in getArtist(song).split(RegExp(r'[/&,]'))) {
-        if (artist2SongList[artist] == null) {
-          artist2SongList[artist] = [];
-        }
-        artist2SongList[artist]!.add(song);
-      }
-
-      final songAlbum = getAlbum(song);
-      if (album2SongList[songAlbum] == null) {
-        album2SongList[songAlbum] = [];
-      }
-      album2SongList[songAlbum]!.add(song);
-    }
-
-    artistMapEntryList = artist2SongList.entries.toList();
-    sortArtists();
-
-    albumMapEntryList = album2SongList.entries.toList();
-    sortAlbums();
-  }
-
   Future<void> reload() async {
     await audioHandler.clearForReload();
 
@@ -147,10 +125,7 @@ class LibraryManager {
 
     playlistsManager.clear();
 
-    artist2SongList = {};
-    album2SongList = {};
-    artistMapEntryList = [];
-    albumMapEntryList = [];
+    artistAlbumManager.clear();
 
     historyManager.clear();
     if (!isMobile) {

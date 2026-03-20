@@ -1,27 +1,28 @@
 import 'package:flutter/material.dart';
+import 'package:particle_music/artist_album_manager.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/mobile/pages/local_navidrome_pageview.dart';
 import 'package:particle_music/mobile/widgets/my_search_field.dart';
 import 'package:particle_music/mobile/widgets/my_sheet.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
-import 'package:particle_music/mobile/pages/song_list_page.dart';
 import 'package:particle_music/common_widgets/my_switch.dart';
-import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/utils.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
 class ArtistsPage extends StatelessWidget {
-  final ValueNotifier<List<MapEntry<String, List<MyAudioMetadata>>>>
-  currentMapEntryListNotifier = ValueNotifier(artistMapEntryList);
+  final ValueNotifier<List<Artist>> currentArtistListNotifier = ValueNotifier(
+    artistAlbumManager.artistList,
+  );
 
   final textController = TextEditingController();
 
   ArtistsPage({super.key});
 
-  void updateCurrentMapEntryList() {
+  void updateCurrentArtistList() {
     final value = textController.text;
-    currentMapEntryListNotifier.value = artistMapEntryList
-        .where((e) => (e.key.toLowerCase().contains(value.toLowerCase())))
+    currentArtistListNotifier.value = artistAlbumManager.artistList
+        .where((e) => (e.name.toLowerCase().contains(value.toLowerCase())))
         .toList();
   }
 
@@ -42,14 +43,12 @@ class ArtistsPage extends StatelessWidget {
         actions: [searchField(l10n.searchArtists), moreButton(context)],
       ),
       body: ValueListenableBuilder(
-        valueListenable: artistsIsListViewNotifier,
+        valueListenable: artistAlbumManager.artistsIsListViewNotifier,
         builder: (context, isListView, child) {
           return ValueListenableBuilder(
-            valueListenable: currentMapEntryListNotifier,
-            builder: (context, mapEntryList, child) {
-              return isListView
-                  ? listView(mapEntryList)
-                  : gridView(mapEntryList);
+            valueListenable: currentArtistListNotifier,
+            builder: (context, list, child) {
+              return isListView ? listView(list) : gridView(list);
             },
           );
         },
@@ -61,7 +60,7 @@ class ArtistsPage extends StatelessWidget {
     return MySearchField(
       hintText: hintText,
       textController: textController,
-      onSearchTextChanged: updateCurrentMapEntryList,
+      onSearchTextChanged: updateCurrentArtistList,
     );
   }
 
@@ -93,7 +92,7 @@ class ArtistsPage extends StatelessWidget {
           Divider(thickness: 0.5, height: 1, color: dividerColor),
           ListTile(
             leading: ValueListenableBuilder(
-              valueListenable: artistsIsListViewNotifier,
+              valueListenable: artistAlbumManager.artistsIsListViewNotifier,
               builder: (context, value, child) {
                 return ImageIcon(
                   value ? listImage : gridImage,
@@ -107,10 +106,10 @@ class ArtistsPage extends StatelessWidget {
             ),
             visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
             onTap: () {
-              artistsIsListViewNotifier.value = true;
+              artistAlbumManager.artistsIsListViewNotifier.value = true;
             },
             trailing: ValueListenableBuilder(
-              valueListenable: artistsIsListViewNotifier,
+              valueListenable: artistAlbumManager.artistsIsListViewNotifier,
               builder: (context, value, child) {
                 return SizedBox(
                   width: 100,
@@ -123,7 +122,8 @@ class ArtistsPage extends StatelessWidget {
                         value: value,
                         onToggle: (value) async {
                           tryVibrate();
-                          artistsIsListViewNotifier.value = value;
+                          artistAlbumManager.artistsIsListViewNotifier.value =
+                              value;
                           settingManager.saveSetting();
                         },
                       ),
@@ -135,7 +135,7 @@ class ArtistsPage extends StatelessWidget {
           ),
 
           ValueListenableBuilder(
-            valueListenable: artistsIsListViewNotifier,
+            valueListenable: artistAlbumManager.artistsIsListViewNotifier,
             builder: (context, value, child) {
               if (value) {
                 return SizedBox.shrink();
@@ -147,7 +147,8 @@ class ArtistsPage extends StatelessWidget {
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
                 trailing: ValueListenableBuilder(
-                  valueListenable: artistsUseLargePictureNotifier,
+                  valueListenable:
+                      artistAlbumManager.artistsUseLargePictureNotifier,
                   builder: (context, useLargePicture, child) {
                     return SizedBox(
                       width: 100,
@@ -161,7 +162,10 @@ class ArtistsPage extends StatelessWidget {
                             value: useLargePicture,
                             onToggle: (value) async {
                               tryVibrate();
-                              artistsUseLargePictureNotifier.value = value;
+                              artistAlbumManager
+                                      .artistsUseLargePictureNotifier
+                                      .value =
+                                  value;
                               settingManager.saveSetting();
                             },
                           ),
@@ -182,7 +186,7 @@ class ArtistsPage extends StatelessWidget {
             ),
             visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
             trailing: ValueListenableBuilder(
-              valueListenable: artistsIsAscendingNotifier,
+              valueListenable: artistAlbumManager.artistsIsAscendingNotifier,
               builder: (context, value, child) {
                 return SizedBox(
                   width: 120,
@@ -196,11 +200,11 @@ class ArtistsPage extends StatelessWidget {
                         value: value,
                         onToggle: (value) async {
                           tryVibrate();
-                          artistsIsAscendingNotifier.value = value;
+                          artistAlbumManager.artistsIsAscendingNotifier.value =
+                              value;
                           settingManager.saveSetting();
-                          sortArtists();
-
-                          updateCurrentMapEntryList();
+                          artistAlbumManager.sortArtists();
+                          updateCurrentArtistList();
                         },
                       ),
                     ],
@@ -214,29 +218,41 @@ class ArtistsPage extends StatelessWidget {
     );
   }
 
-  Widget listView(List<MapEntry<String, List<MyAudioMetadata>>> mapEntryList) {
+  Widget listView(List<Artist> artistList) {
     return ListView.builder(
       itemExtent: 64,
-      itemCount: mapEntryList.length,
+      itemCount: artistList.length,
       itemBuilder: (context, index) {
-        final artist = mapEntryList[index].key;
-        final songList = mapEntryList[index].value;
+        final artist = artistList[index];
+
         return Center(
           child: ListTile(
             contentPadding: EdgeInsets.symmetric(horizontal: 20),
 
-            leading: CoverArtWidget(
-              size: 50,
-              borderRadius: 25,
-              song: songList.first,
+            leading: ValueListenableBuilder(
+              valueListenable: artist.displayNavidromeNotifier,
+              builder: (context, value, child) {
+                return CoverArtWidget(
+                  size: 50,
+                  borderRadius: 25,
+                  song: artist.getDisplaySong(),
+                );
+              },
             ),
-            title: Text(artist),
+            title: Text(artist.name),
             trailing: Text(
-              AppLocalizations.of(context).songsCount(songList.length),
+              AppLocalizations.of(context).songsCount(artist.getTotalCount()),
             ),
             onTap: () {
               Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => SongListPage(artist: artist)),
+                MaterialPageRoute(
+                  builder: (_) => LocalNavidromePageview(
+                    displayNavidromeNotifier: artist.displayNavidromeNotifier,
+                    localSongList: artist.songList,
+                    navidromeSongList: artist.navidromeSongList,
+                    artist: artist,
+                  ),
+                ),
               );
             },
           ),
@@ -245,9 +261,9 @@ class ArtistsPage extends StatelessWidget {
     );
   }
 
-  Widget gridView(List<MapEntry<String, List<MyAudioMetadata>>> mapEntryList) {
+  Widget gridView(List<Artist> artistList) {
     return ValueListenableBuilder(
-      valueListenable: artistsUseLargePictureNotifier,
+      valueListenable: artistAlbumManager.artistsUseLargePictureNotifier,
       builder: (context, useLargePicture, child) {
         double size = useLargePicture ? mobileWidth * 0.40 : mobileWidth * 0.25;
         double radius = useLargePicture
@@ -260,10 +276,9 @@ class ArtistsPage extends StatelessWidget {
             crossAxisCount: useLargePicture ? 2 : 3,
             childAspectRatio: childAspectRatio,
           ),
-          itemCount: mapEntryList.length,
+          itemCount: artistList.length,
           itemBuilder: (context, index) {
-            final artist = mapEntryList[index].key;
-            final songList = mapEntryList[index].value;
+            final artist = artistList[index];
             return Column(
               children: [
                 Material(
@@ -273,15 +288,26 @@ class ArtistsPage extends StatelessWidget {
                     borderRadius: BorderRadius.circular(radius),
                   ),
                   child: GestureDetector(
-                    child: CoverArtWidget(
-                      size: size,
-                      borderRadius: radius,
-                      song: songList.first,
+                    child: ValueListenableBuilder(
+                      valueListenable: artist.displayNavidromeNotifier,
+                      builder: (context, value, child) {
+                        return CoverArtWidget(
+                          size: size,
+                          borderRadius: radius,
+                          song: artist.getDisplaySong(),
+                        );
+                      },
                     ),
                     onTap: () {
                       Navigator.of(context).push(
                         MaterialPageRoute(
-                          builder: (_) => SongListPage(artist: artist),
+                          builder: (_) => LocalNavidromePageview(
+                            displayNavidromeNotifier:
+                                artist.displayNavidromeNotifier,
+                            localSongList: artist.songList,
+                            navidromeSongList: artist.navidromeSongList,
+                            artist: artist,
+                          ),
                         ),
                       );
                     },
@@ -293,14 +319,14 @@ class ArtistsPage extends StatelessWidget {
                   child: Column(
                     children: [
                       Text(
-                        artist,
+                        artist.name,
                         style: TextStyle(overflow: TextOverflow.ellipsis),
                       ),
 
                       Text(
                         AppLocalizations.of(
                           context,
-                        ).songsCount(songList.length),
+                        ).songsCount(artist.getTotalCount()),
                         style: TextStyle(fontSize: 12),
                       ),
                     ],

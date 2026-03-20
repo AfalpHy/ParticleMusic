@@ -46,11 +46,6 @@ final displayNavidromeSongsNotifier = ValueNotifier(false);
 final ValueNotifier<int> loadedCountNotifier = ValueNotifier(0);
 final ValueNotifier<String> currentLoadingFolderNotifier = ValueNotifier('');
 
-Map<String, List<MyAudioMetadata>> artist2SongList = {};
-Map<String, List<MyAudioMetadata>> album2SongList = {};
-List<MapEntry<String, List<MyAudioMetadata>>> artistMapEntryList = [];
-List<MapEntry<String, List<MyAudioMetadata>>> albumMapEntryList = [];
-
 final ValueNotifier<bool> loadingLibraryNotifier = ValueNotifier(true);
 
 // ===================================== Folder =====================================
@@ -95,13 +90,6 @@ ValueNotifier<int> remainTimes = ValueNotifier(0);
 ValueNotifier<bool> pauseAfterCompleted = ValueNotifier(false);
 bool needPause = false;
 Timer? pauseTimer;
-
-final artistsIsListViewNotifier = ValueNotifier(true);
-final artistsIsAscendingNotifier = ValueNotifier(true);
-final artistsUseLargePictureNotifier = ValueNotifier(false);
-
-final albumsIsAscendingNotifier = ValueNotifier(true);
-final albumsUseLargePictureNotifier = ValueNotifier(false);
 
 final playlistsUseLargePictureNotifier = ValueNotifier(true);
 

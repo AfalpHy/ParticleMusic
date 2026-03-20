@@ -608,9 +608,10 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
               },
             ),
 
-            if (selectedCnt == 1 || playlist != null) MenuSeparator(),
+            if ((selectedCnt == 1 && !isNavidrome) || playlist != null)
+              MenuSeparator(),
 
-            if (selectedCnt == 1)
+            if (selectedCnt == 1 && !isNavidrome)
               MenuAction(
                 title: l10n.editMetadata,
                 image: MenuImage.icon(Icons.edit_rounded),

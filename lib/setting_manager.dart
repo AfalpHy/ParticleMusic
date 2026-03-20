@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:particle_music/artist_album_manager.dart';
 import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/navidrome_client.dart';
@@ -21,22 +22,7 @@ class SettingManager {
     final Map<String, dynamic> json =
         jsonDecode(content) as Map<String, dynamic>;
 
-    artistsIsListViewNotifier.value =
-        json['artistsIsList'] as bool? ?? artistsIsListViewNotifier.value;
-
-    artistsIsAscendingNotifier.value =
-        json['artistsIsAscend'] as bool? ?? artistsIsAscendingNotifier.value;
-
-    artistsUseLargePictureNotifier.value =
-        json['artistsUseLargePicture'] as bool? ??
-        artistsUseLargePictureNotifier.value;
-
-    albumsIsAscendingNotifier.value =
-        json['albumsIsAscend'] as bool? ?? albumsIsAscendingNotifier.value;
-
-    albumsUseLargePictureNotifier.value =
-        json['albumsUseLargePicture'] as bool? ??
-        albumsUseLargePictureNotifier.value;
+    artistAlbumManager.loadSetting(json);
 
     playlistsUseLargePictureNotifier.value =
         json['playlistsUseLargePicture'] as bool? ??
@@ -79,12 +65,7 @@ class SettingManager {
   void saveSetting() {
     file.writeAsStringSync(
       jsonEncode({
-        'artistsIsList': artistsIsListViewNotifier.value,
-        'artistsIsAscend': artistsIsAscendingNotifier.value,
-        'artistsUseLargePicture': artistsUseLargePictureNotifier.value,
-
-        'albumsIsAscend': albumsIsAscendingNotifier.value,
-        'albumsUseLargePicture': albumsUseLargePictureNotifier.value,
+        ...artistAlbumManager.settingToMap(),
 
         'playlistsUseLargePicture': playlistsUseLargePictureNotifier.value,
 

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:particle_music/artist_album_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/mobile/pages/song_list_page.dart';
 import 'package:particle_music/my_audio_metadata.dart';
@@ -6,8 +7,8 @@ import 'package:particle_music/playlists.dart';
 
 class LocalNavidromePageview extends StatelessWidget {
   final Playlist? playlist;
-  final String? artist;
-  final String? album;
+  final Artist? artist;
+  final Album? album;
   final String? ranking;
   final String? recently;
 

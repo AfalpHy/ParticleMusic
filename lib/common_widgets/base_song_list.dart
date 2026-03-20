@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:particle_music/artist_album_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/folder_manager.dart';
@@ -11,8 +12,8 @@ import 'package:smooth_corner/smooth_corner.dart';
 
 abstract class BaseSongListWidget extends StatefulWidget {
   final Playlist? playlist;
-  final String? artist;
-  final String? album;
+  final Artist? artist;
+  final Album? album;
   final Folder? folder;
   final String? ranking;
   final String? recently;
@@ -39,8 +40,8 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
   late String title;
   late List<MyAudioMetadata> songList;
   Playlist? playlist;
-  String? artist;
-  String? album;
+  Artist? artist;
+  Album? album;
   Folder? folder;
   String? ranking;
   String? recently;
@@ -93,26 +94,22 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
       playlist!.updateNotifier.addListener(updateSongList);
       reorderable = true;
     } else if (artist != null) {
-      songList = artist2SongList[artist]!;
-      title = artist!;
+      songList = artist!.getSongList(isNavidrome);
+      title = artist!.name;
     } else if (album != null) {
-      songList = album2SongList[album]!;
-      title = album!;
+      songList = album!.getSongList(isNavidrome);
+      title = album!.name;
     } else if (folder != null) {
       songList = folder!.songList;
       title = folder!.path;
       folder!.updateNotifier.addListener(updateSongList);
       reorderable = true;
     } else if (ranking != null) {
-      songList = isNavidrome
-          ? historyManager.navidromeRankingSongList
-          : historyManager.rankingSongList;
+      songList = historyManager.getRankingSongList(isNavidrome);
       title = ranking!;
       rankingChangeNotifier.addListener(updateSongList);
     } else if (recently != null) {
-      songList = isNavidrome
-          ? historyManager.navidromeRecentlySongList
-          : historyManager.recentlySongList;
+      songList = historyManager.getRecentlySongList(isNavidrome);
       title = recently!;
       recentlyChangeNotifier.addListener(updateSongList);
     } else {
@@ -146,6 +143,7 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
     sortTypeNotifier.removeListener(updateSongList);
     textController.removeListener(updateSongList);
     scrollController.dispose();
+    timer?.cancel();
     super.dispose();
   }
 

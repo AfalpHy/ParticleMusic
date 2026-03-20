@@ -14,8 +14,6 @@ class SelectableSongListPage extends StatefulWidget {
   final List<MyAudioMetadata> songList;
 
   final Playlist? playlist;
-  final String? artist;
-  final String? album;
   final Folder? folder;
   final String? ranking;
   final String? recently;
@@ -28,8 +26,6 @@ class SelectableSongListPage extends StatefulWidget {
     super.key,
     required this.songList,
     this.playlist,
-    this.artist,
-    this.album,
     this.folder,
     this.ranking,
     this.recently,
@@ -44,8 +40,6 @@ class SelectableSongListPage extends StatefulWidget {
 class SelectableSongListPageState extends State<SelectableSongListPage> {
   late List<MyAudioMetadata> songList;
   Playlist? playlist;
-  String? artist;
-  String? album;
   Folder? folder;
   String? ranking;
   String? recently;
@@ -81,8 +75,6 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
 
     songList = widget.songList;
     playlist = widget.playlist;
-    artist = widget.artist;
-    album = widget.album;
     folder = widget.folder;
     ranking = widget.ranking;
     recently = widget.recently;

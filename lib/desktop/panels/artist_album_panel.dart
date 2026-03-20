@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:particle_music/artist_album_manager.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/title_bar.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/common_widgets/my_switch.dart';
-import 'package:particle_music/my_audio_metadata.dart';
-import 'package:particle_music/utils.dart';
 
 class ArtistAlbumPanel extends StatefulWidget {
   final bool isArtist;
@@ -19,37 +18,36 @@ class ArtistAlbumPanel extends StatefulWidget {
 class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
   late bool isArtist;
 
-  late final ValueNotifier<List<MapEntry<String, List<MyAudioMetadata>>>>
-  currentMapEntryListNotifier;
+  late final ValueNotifier<List<ArtistAlbumBase>>
+  currentArtistAlbumListNotifier;
 
   final textController = TextEditingController();
 
   late ValueNotifier<bool> isAscendingNotifier;
   late ValueNotifier<bool> useLargePictureNotifier;
 
-  void updateCurrentMapEntryList() {
+  void updateCurrentList() {
     final value = textController.text;
-    currentMapEntryListNotifier.value =
-        (isArtist ? artistMapEntryList : albumMapEntryList)
-            .where((e) => (e.key.toLowerCase().contains(value.toLowerCase())))
-            .toList();
+    currentArtistAlbumListNotifier.value = artistAlbumManager
+        .getArtistAlbumList(isArtist)
+        .where((e) => (e.name.toLowerCase().contains(value.toLowerCase())))
+        .toList();
   }
 
   @override
   void initState() {
     super.initState();
     isArtist = widget.isArtist;
-    currentMapEntryListNotifier = ValueNotifier(
-      isArtist ? artistMapEntryList : albumMapEntryList,
+    currentArtistAlbumListNotifier = ValueNotifier(
+      artistAlbumManager.getArtistAlbumList(isArtist),
     );
-    isAscendingNotifier = isArtist
-        ? artistsIsAscendingNotifier
-        : albumsIsAscendingNotifier;
+    isAscendingNotifier = artistAlbumManager.getIsAscendingNotifier(isArtist);
 
-    useLargePictureNotifier = isArtist
-        ? artistsUseLargePictureNotifier
-        : albumsUseLargePictureNotifier;
-    textController.addListener(updateCurrentMapEntryList);
+    useLargePictureNotifier = artistAlbumManager.getUseLargePictureNotifier(
+      isArtist,
+    );
+
+    textController.addListener(updateCurrentList);
   }
 
   @override
@@ -105,12 +103,12 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
                       ),
                     ),
                     subtitle: ValueListenableBuilder(
-                      valueListenable: currentMapEntryListNotifier,
-                      builder: (context, mapEntryList, child) {
+                      valueListenable: currentArtistAlbumListNotifier,
+                      builder: (context, list, child) {
                         return Text(
                           isArtist
-                              ? l10n.artistsCount(mapEntryList.length)
-                              : l10n.albumsCount(mapEntryList.length),
+                              ? l10n.artistsCount(list.length)
+                              : l10n.albumsCount(list.length),
                           style: TextStyle(fontSize: 12),
                         );
                       },
@@ -141,11 +139,11 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
                                       isAscendingNotifier.value = value;
                                       settingManager.saveSetting();
                                       if (isArtist) {
-                                        sortArtists();
+                                        artistAlbumManager.sortArtists();
                                       } else {
-                                        sortAlbums();
+                                        artistAlbumManager.sortAlbums();
                                       }
-                                      updateCurrentMapEntryList();
+                                      updateCurrentList();
                                     },
                                   );
                                 },
@@ -212,18 +210,16 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
                       coverArtWidth = panelWidth / crossAxisCount - 35;
                     }
                     return ValueListenableBuilder(
-                      valueListenable: currentMapEntryListNotifier,
-                      builder: (context, mapEntryList, child) {
+                      valueListenable: currentArtistAlbumListNotifier,
+                      builder: (context, list, child) {
                         return SliverGrid.builder(
                           gridDelegate:
                               SliverGridDelegateWithFixedCrossAxisCount(
                                 crossAxisCount: crossAxisCount,
                                 childAspectRatio: 1.05,
                               ),
-                          itemCount: mapEntryList.length,
+                          itemCount: list.length,
                           itemBuilder: (context, index) {
-                            final key = mapEntryList[index].key;
-                            final songList = mapEntryList[index].value;
                             return Column(
                               children: [
                                 MouseRegion(
@@ -231,19 +227,27 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
                                   child: GestureDetector(
                                     child: ValueListenableBuilder(
                                       valueListenable:
-                                          songList.first.updateNotifier,
-                                      builder: (_, _, _) {
-                                        return CoverArtWidget(
-                                          size: coverArtWidth,
-                                          borderRadius: 10,
-                                          song: songList.first,
+                                          list[index].displayNavidromeNotifier,
+                                      builder: (context, value, child) {
+                                        final displaySong = list[index]
+                                            .getDisplaySong();
+                                        return ValueListenableBuilder(
+                                          valueListenable:
+                                              displaySong.updateNotifier,
+                                          builder: (_, _, _) {
+                                            return CoverArtWidget(
+                                              size: coverArtWidth,
+                                              borderRadius: 10,
+                                              song: displaySong,
+                                            );
+                                          },
                                         );
                                       },
                                     ),
                                     onTap: () {
                                       panelManager.pushPanel(
                                         isArtist ? 'artists' : 'albums',
-                                        content: key,
+                                        content: list[index].name,
                                       );
                                     },
                                   ),
@@ -252,7 +256,7 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
                                   width: coverArtWidth - 5,
                                   child: Center(
                                     child: Text(
-                                      key,
+                                      list[index].name,
                                       style: TextStyle(
                                         overflow: TextOverflow.ellipsis,
                                       ),

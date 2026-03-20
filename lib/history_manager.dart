@@ -7,21 +7,6 @@ import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/navidrome_client.dart';
 import 'package:particle_music/utils.dart';
 
-class RankingItem {
-  int times;
-  String path;
-  MyAudioMetadata song;
-  RankingItem(this.times, this.path, this.song);
-
-  Map<String, dynamic> toMap() {
-    return {'times': times, 'path': path};
-  }
-
-  factory RankingItem.fromSong(MyAudioMetadata song, int times) {
-    return RankingItem(times, clipFilePathIfNeed(song.filePath!), song);
-  }
-}
-
 class HistoryManager {
   late File rankingFile;
   late File recentlyFile;
@@ -35,6 +20,14 @@ class HistoryManager {
 
   final displayNavidromeRankingNotifier = ValueNotifier(false);
   final displayNavidromeRecentlyNotifier = ValueNotifier(false);
+
+  List<MyAudioMetadata> getRankingSongList(bool isNavidrome) {
+    return isNavidrome ? navidromeRankingSongList : rankingSongList;
+  }
+
+  List<MyAudioMetadata> getRecentlySongList(bool isNavidrome) {
+    return isNavidrome ? navidromeRecentlySongList : recentlySongList;
+  }
 
   Future<void> load() async {
     rankingFile = File("${appSupportDir.path}/ranking.txt");

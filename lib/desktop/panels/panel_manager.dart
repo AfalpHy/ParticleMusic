@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:particle_music/artist_album_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/panels/artist_album_panel.dart';
 import 'package:particle_music/desktop/panels/folder_panel.dart';
@@ -28,9 +29,19 @@ class PanelManager {
     } else if (label == 'albums' && content == null) {
       panelStack.add(ArtistAlbumPanel(key: UniqueKey(), isArtist: false));
     } else if (label == 'artists' && content != null) {
-      panelStack.add(SingleArtistPanel(key: UniqueKey(), artist: content));
+      panelStack.add(
+        SingleArtistPanel(
+          key: UniqueKey(),
+          artist: artistAlbumManager.name2Artist[content]!,
+        ),
+      );
     } else if (label == 'albums' && content != null) {
-      panelStack.add(SingleAlbumPanel(key: UniqueKey(), album: content));
+      panelStack.add(
+        SingleAlbumPanel(
+          key: UniqueKey(),
+          album: artistAlbumManager.name2Album[content]!,
+        ),
+      );
     } else if (label == 'folder') {
       panelStack.add(
         FolderPanel(
@@ -106,9 +117,9 @@ class PanelManager {
     Widget panel = panelStack.last;
 
     if (label == 'artists' && panel is SingleArtistPanel) {
-      backgroundSong = artist2SongList[panel.artist]!.first;
+      backgroundSong = panel.artist.getDisplaySong();
     } else if (label == 'albums' && panel is SingleAlbumPanel) {
-      backgroundSong = album2SongList[panel.album]!.first;
+      backgroundSong = panel.album.getDisplaySong();
     } else if (label == 'folder') {
       final songList = (panel as FolderPanel).folder.songList;
       backgroundSong = getFirstSong(songList);
@@ -120,23 +131,16 @@ class PanelManager {
     } else if (label == 'ranking') {
       bool isNavidrome = historyManager.displayNavidromeRankingNotifier.value;
       backgroundSong = getFirstSong(
-        isNavidrome
-            ? historyManager.navidromeRankingSongList
-            : historyManager.rankingSongList,
+        historyManager.getRankingSongList(isNavidrome),
       );
     } else if (label == 'recently') {
       bool isNavidrome = historyManager.displayNavidromeRecentlyNotifier.value;
       backgroundSong = getFirstSong(
-        isNavidrome
-            ? historyManager.navidromeRecentlySongList
-            : historyManager.recentlySongList,
+        historyManager.getRecentlySongList(isNavidrome),
       );
     } else if (label[0] == '_') {
       final playlist = playlistsManager.getPlaylistByName(label.substring(1));
-      bool isNavidrome = playlist!.displayNavidromeNotifier.value;
-      backgroundSong = getFirstSong(
-        isNavidrome ? playlist.navidromeSongList : playlist.songList,
-      );
+      backgroundSong = playlist!.getDisplaySong();
     } else {
       backgroundSong = currentSongNotifier.value;
     }

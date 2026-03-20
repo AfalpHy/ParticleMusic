@@ -139,6 +139,10 @@ class Playlist {
     return getFirstSong(displayNavidrome ? navidromeSongList : songList);
   }
 
+  int getTotalCount() {
+    return songList.length + navidromeSongList.length;
+  }
+
   Future<void> load() async {
     final contents = await file.readAsString();
     if (contents != "") {

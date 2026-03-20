@@ -133,8 +133,6 @@ class _SongListPageState extends BaseSongListState<SongListPage>
                   builder: (_) => SelectableSongListPage(
                     songList: songList,
                     playlist: playlist,
-                    artist: artist,
-                    album: album,
                     folder: folder,
                     ranking: ranking,
                     recently: recently,

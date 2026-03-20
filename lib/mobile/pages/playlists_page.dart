@@ -83,12 +83,7 @@ class PlaylistsPage extends StatelessWidget {
                   subtitle: ValueListenableBuilder(
                     valueListenable: playlist.updateNotifier,
                     builder: (_, _, _) {
-                      return Text(
-                        l10n.songsCount(
-                          playlist.songList.length +
-                              playlist.navidromeSongList.length,
-                        ),
-                      );
+                      return Text(l10n.songsCount(playlist.getTotalCount()));
                     },
                   ),
                   onTap: () {
@@ -182,6 +177,7 @@ class PlaylistsPage extends StatelessWidget {
         scrolledUnderElevation: 0,
       ),
       body: ReorderableListView.builder(
+        header: playlistListTile(playlistsManager.playlists[0]),
         buildDefaultDragHandles: false,
         onReorder: (oldIndex, newIndex) {
           if (newIndex > oldIndex) newIndex -= 1;
@@ -208,41 +204,10 @@ class PlaylistsPage extends StatelessWidget {
           return Row(
             key: ValueKey(index),
             children: [
-              Expanded(
-                child: ListTile(
-                  contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
-                  visualDensity: const VisualDensity(
-                    horizontal: 0,
-                    vertical: -1,
-                  ),
+              Expanded(child: playlistListTile(playlist)),
 
-                  leading: CoverArtWidget(
-                    size: 50,
-                    borderRadius: 5,
-                    song: getFirstSong(playlist.songList),
-                  ),
-                  title: AutoSizeText(
-                    playlist.name,
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                    minFontSize: 15,
-                    maxFontSize: 15,
-                  ),
-                  subtitle: ValueListenableBuilder(
-                    valueListenable: playlist.updateNotifier,
-                    builder: (context, _, _) {
-                      return Text(
-                        AppLocalizations.of(
-                          context,
-                        ).songsCount(playlist.songList.length),
-                      );
-                    },
-                  ),
-                ),
-              ),
               SizedBox(
                 width: 60,
-                height: 60,
                 child: ReorderableDragStartListener(
                   index: index,
                   child: Container(
@@ -261,6 +226,34 @@ class PlaylistsPage extends StatelessWidget {
           );
         },
         footer: SizedBox(height: 80),
+      ),
+    );
+  }
+
+  Widget playlistListTile(Playlist playlist) {
+    return ListTile(
+      contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
+      visualDensity: const VisualDensity(horizontal: 0, vertical: -1),
+
+      leading: CoverArtWidget(
+        size: 50,
+        borderRadius: 5,
+        song: getFirstSong(playlist.songList),
+      ),
+      title: AutoSizeText(
+        playlist.name,
+        maxLines: 1,
+        overflow: TextOverflow.ellipsis,
+        minFontSize: 15,
+        maxFontSize: 15,
+      ),
+      subtitle: ValueListenableBuilder(
+        valueListenable: playlist.updateNotifier,
+        builder: (context, _, _) {
+          return Text(
+            AppLocalizations.of(context).songsCount(playlist.getTotalCount()),
+          );
+        },
       ),
     );
   }
