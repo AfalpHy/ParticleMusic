@@ -243,16 +243,40 @@ class NavidromeClient {
   }
 
   Future<Uint8List?> getPictureBytes(String id) async {
-    try {
-      final res = await dio.get(
-        '/rest/getCoverArt.view',
-        queryParameters: _params({'id': id}),
-        options: Options(responseType: ResponseType.bytes),
-      );
-      return res.data;
-    } catch (e) {
-      logger.output('Cover load failed: $e');
-      return null;
+    int maxRetries = 5;
+    int attempt = 0;
+
+    while (attempt < maxRetries) {
+      try {
+        final res = await dio.get(
+          '/rest/getCoverArt.view',
+          queryParameters: _params({'id': id}),
+          options: Options(
+            responseType: ResponseType.bytes,
+            validateStatus: (status) =>
+                status == 429 || (status != null && status < 400),
+          ),
+        );
+
+        if (res.statusCode == 429) {
+          attempt++;
+          final delay = Duration(milliseconds: 200 * attempt);
+          logger.output(
+            'Rate limit hit for $id, retrying in ${delay.inMilliseconds}ms (attempt $attempt)',
+          );
+          await Future.delayed(delay);
+          continue;
+        }
+
+        return res.data;
+      } catch (e) {
+        logger.output('Cover load failed on attempt ${attempt + 1}: $e');
+        attempt++;
+        await Future.delayed(Duration(milliseconds: 200 * attempt));
+      }
     }
+
+    logger.output('Failed to load cover for $id after $maxRetries attempts.');
+    return null;
   }
 }
