@@ -290,4 +290,51 @@ class NavidromeClient {
         ) ??
         false;
   }
+
+  Future<String?> getLyricsById(String songId) async {
+    return await _safeRequest(
+      () => dio.get(
+        '/rest/getLyricsBySongId.view',
+        queryParameters: _params({'id': songId}),
+      ),
+      (data) {
+        final response = data['subsonic-response'];
+        if (response == null) return '';
+
+        final lyricsList = response['lyricsList'];
+        if (lyricsList != null && lyricsList['structuredLyrics'] != null) {
+          final List structured = lyricsList['structuredLyrics'];
+          if (structured.isNotEmpty) {
+            final List lines = structured[0]['line'] ?? [];
+            final buffer = StringBuffer();
+
+            for (var l in lines) {
+              final int startMs = l['start'] ?? 0;
+              final String value = l['value'] ?? '';
+
+              // Convert ms to [mm:ss.SSS]
+              final minutes = (startMs ~/ 60000).toString().padLeft(2, '0');
+              final seconds = ((startMs % 60000) ~/ 1000).toString().padLeft(
+                2,
+                '0',
+              );
+              final millis = (startMs % 1000).toString().padLeft(3, '0');
+
+              final timestamp = '[$minutes:$seconds.$millis]';
+
+              buffer.writeln('$timestamp$value');
+            }
+            return buffer.toString();
+          }
+        }
+
+        final lyricsData = response['lyrics'];
+        if (lyricsData != null) {
+          return lyricsData['value'] as String? ?? '';
+        }
+
+        return '';
+      },
+    );
+  }
 }

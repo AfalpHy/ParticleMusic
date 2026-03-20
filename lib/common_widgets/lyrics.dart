@@ -7,6 +7,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/my_audio_metadata.dart';
+import 'package:particle_music/navidrome_client.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
@@ -81,20 +82,23 @@ Future<void> setParsedLyrics(MyAudioMetadata song) async {
   ParsedLyrics result = ParsedLyrics();
   song.parsedLyrics = result;
 
+  if (song.isNavidrome) {
+    final lyrics = await navidromeClient.getLyricsById(song.id!);
+    if (lyrics == null || lyrics == '') {
+      result.lyrics.add(LyricLine(Duration.zero, 'There are no lyrics', []));
+      return;
+    } else {
+      song.lyrics = lyrics;
+    }
+  }
   List<String> lines = [];
   if (song.lyrics == null) {
-    if (song.isNavidrome) {
-      result.lyrics.add(
-        LyricLine(Duration.zero, 'lyrics file does not exist', []),
-      );
-      return;
-    }
     String path = song.filePath!;
     path = "${path.substring(0, path.lastIndexOf('.'))}.lrc";
     final file = File(path);
     if (!file.existsSync()) {
       result.lyrics.add(
-        LyricLine(Duration.zero, 'lyrics file does not exist', []),
+        LyricLine(Duration.zero, 'Lyrics file does not exist', []),
       );
       return;
     }
