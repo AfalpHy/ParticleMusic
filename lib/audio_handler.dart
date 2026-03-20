@@ -130,9 +130,6 @@ class MyAudioHandler extends BaseAudioHandler {
 
   void updateIsPlaying(bool isPlaying) {
     if (isPlaying) {
-      if (_playedDuration == Duration.zero) {
-        historyManager.add2Recently(currentSongNotifier.value!);
-      }
       _playLastSyncTime = DateTime.now();
     } else if (_playLastSyncTime != null) {
       _playedDuration += DateTime.now().difference(_playLastSyncTime!);
@@ -414,9 +411,6 @@ class MyAudioHandler extends BaseAudioHandler {
     currentCoverArtColor = await computeCoverArtColor(currentSong);
 
     currentSongNotifier.value = currentSong;
-    if (isPlayingNotifier.value) {
-      historyManager.add2Recently(currentSong);
-    }
 
     isLoading = true;
     try {

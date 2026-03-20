@@ -104,11 +104,15 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
       folder!.updateNotifier.addListener(updateSongList);
       reorderable = true;
     } else if (ranking != null) {
-      songList = historyManager.rankingSongList;
+      songList = isNavidrome
+          ? historyManager.navidromeRankingSongList
+          : historyManager.rankingSongList;
       title = ranking!;
       rankingChangeNotifier.addListener(updateSongList);
     } else if (recently != null) {
-      songList = historyManager.recentlySongList;
+      songList = isNavidrome
+          ? historyManager.navidromeRecentlySongList
+          : historyManager.recentlySongList;
       title = recently!;
       recentlyChangeNotifier.addListener(updateSongList);
     } else {

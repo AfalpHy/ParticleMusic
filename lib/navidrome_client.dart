@@ -279,4 +279,15 @@ class NavidromeClient {
     logger.output('Failed to load cover for $id after $maxRetries attempts.');
     return null;
   }
+
+  Future<bool> scrobble(String songId) async {
+    return await _safeRequest(
+          () => dio.get(
+            '/rest/scrobble.view',
+            queryParameters: _params({'id': songId}),
+          ),
+          (_) => true,
+        ) ??
+        false;
+  }
 }

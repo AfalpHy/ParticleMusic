@@ -21,12 +21,17 @@ class MyAudioMetadata {
   final isFavoriteNotifier = ValueNotifier(false);
   final updateNotifier = ValueNotifier(0);
 
+  int playCount;
+  DateTime? lastPlayed;
+
   MyAudioMetadata(
     this._audioMetadata, {
     this.filePath,
     this.modified,
     this.id,
     this.isNavidrome = false,
+    this.playCount = 0,
+    this.lastPlayed,
   });
 
   String? get title => _audioMetadata.title;

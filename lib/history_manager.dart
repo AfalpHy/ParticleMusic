@@ -1,8 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/my_audio_metadata.dart';
+import 'package:particle_music/navidrome_client.dart';
 import 'package:particle_music/utils.dart';
 
 class RankingItem {
@@ -24,11 +26,15 @@ class HistoryManager {
   late File rankingFile;
   late File recentlyFile;
 
-  List<RankingItem> rankingItemList = [];
   List<MyAudioMetadata> rankingSongList = [];
+  List<MyAudioMetadata> navidromeRankingSongList = [];
 
   List<String> recentlyPathList = [];
   List<MyAudioMetadata> recentlySongList = [];
+  List<MyAudioMetadata> navidromeRecentlySongList = [];
+
+  final displayNavidromeRankingNotifier = ValueNotifier(false);
+  final displayNavidromeRecentlyNotifier = ValueNotifier(false);
 
   Future<void> load() async {
     rankingFile = File("${appSupportDir.path}/ranking.txt");
@@ -36,12 +42,15 @@ class HistoryManager {
       String content = rankingFile.readAsStringSync();
       List<dynamic> jsonList = jsonDecode(content);
 
-      rankingItemList = jsonList
-          .map((e) => createRankingItem(e as Map<String, dynamic>))
-          .whereType<RankingItem>()
-          .toList();
-
-      rankingSongList = rankingItemList.map((e) => e.song).toList();
+      for (final raw in jsonList) {
+        final map = Map<String, dynamic>.from(raw);
+        String path = map['path'] as String;
+        MyAudioMetadata? song = filePath2LibrarySong[path];
+        if (song != null) {
+          song.playCount = map['times'] as int;
+          rankingSongList.add(song);
+        }
+      }
     } else {
       rankingFile.writeAsStringSync(jsonEncode([]));
     }
@@ -61,54 +70,83 @@ class HistoryManager {
     } else {
       recentlyFile.writeAsStringSync(jsonEncode([]));
     }
+
+    for (final song in navidromeSongList) {
+      if (song.playCount > 0) {
+        navidromeRankingSongList.add(song);
+        navidromeRecentlySongList.add(song);
+      }
+      navidromeRankingSongList.sort((a, b) {
+        int tmp = b.playCount.compareTo(a.playCount);
+        return tmp != 0 ? tmp : a.lastPlayed!.compareTo(b.lastPlayed!);
+      });
+
+      navidromeRecentlySongList.sort(
+        (a, b) => b.lastPlayed!.compareTo(a.lastPlayed!),
+      );
+    }
+
+    displayNavidromeRankingNotifier.value =
+        rankingSongList.isEmpty & navidromeRankingSongList.isNotEmpty;
+
+    displayNavidromeRecentlyNotifier.value =
+        recentlySongList.isEmpty & navidromeRecentlySongList.isNotEmpty;
   }
 
-  RankingItem? createRankingItem(Map raw) {
-    final map = Map<String, dynamic>.from(raw);
-    String path = map['path'] as String;
-    MyAudioMetadata? song = filePath2LibrarySong[path];
-    if (song != null) {
-      return RankingItem(map['times'] as int, path, song);
-    }
-    return null;
-  }
-
-  void addSongTimes(MyAudioMetadata song, int times) {
-    if (song.isNavidrome) {
-      return;
-    }
+  void _addSongTimes(MyAudioMetadata song, int times) {
+    final currentRankingSongList = song.isNavidrome
+        ? navidromeRankingSongList
+        : rankingSongList;
     int index = -1;
-    for (int i = 0; i < rankingItemList.length; i++) {
-      if (song == rankingItemList[i].song) {
-        rankingItemList[i].times += times;
+    for (int i = 0; i < currentRankingSongList.length; i++) {
+      if (song == currentRankingSongList[i]) {
+        currentRankingSongList[i].playCount += times;
         index = i;
         break;
       }
     }
 
     if (index == -1) {
-      rankingItemList.add(RankingItem.fromSong(song, times));
-      index = rankingItemList.length - 1;
+      song.playCount = 1;
+      currentRankingSongList.add(song);
+      index = currentRankingSongList.length - 1;
     }
 
-    final tmp = rankingItemList[index];
+    final tmp = currentRankingSongList[index];
     for (int i = index - 1; i >= 0; i--) {
-      if (rankingItemList[i].times < tmp.times) {
-        rankingItemList[i + 1] = rankingItemList[i];
+      if (currentRankingSongList[i].playCount < tmp.playCount) {
+        currentRankingSongList[i + 1] = currentRankingSongList[i];
         index = i;
       } else {
         break;
       }
     }
-    rankingItemList[index] = tmp;
+    currentRankingSongList[index] = tmp;
+  }
 
-    rankingFile.writeAsStringSync(
-      jsonEncode(rankingItemList.map((e) => e.toMap()).toList()),
-    );
+  Future<void> addSongTimes(MyAudioMetadata song, int times) async {
+    _addSongTimes(song, times);
 
-    rankingSongList
-      ..clear()
-      ..addAll(rankingItemList.map((e) => e.song));
+    if (song.isNavidrome) {
+      while (times-- > 0) {
+        await navidromeClient.scrobble(song.id!);
+      }
+    } else {
+      rankingFile.writeAsStringSync(
+        jsonEncode(
+          rankingSongList
+              .map(
+                (e) => {
+                  'times': e.playCount,
+                  'path': clipFilePathIfNeed(e.filePath!),
+                },
+              )
+              .toList(),
+        ),
+      );
+    }
+
+    _add2Recently(song);
 
     if (!isMobile) {
       panelManager.updateBackground();
@@ -116,37 +154,33 @@ class HistoryManager {
     rankingChangeNotifier.value++;
   }
 
-  void add2Recently(MyAudioMetadata song) {
+  void _add2Recently(MyAudioMetadata song) {
     if (song.isNavidrome) {
-      return;
-    }
-    String filePath = clipFilePathIfNeed(song.filePath!);
+      navidromeRecentlySongList.remove(song);
+      navidromeRecentlySongList.insert(0, song);
+    } else {
+      String filePath = clipFilePathIfNeed(song.filePath!);
 
-    recentlyPathList.remove(filePath);
-    recentlyPathList.insert(0, filePath);
-    recentlySongList.remove(song);
-    recentlySongList.insert(0, song);
-    if (recentlyPathList.length > 500) {
-      recentlyPathList.removeLast();
-      recentlySongList.removeLast();
-    }
-    if (!isMobile) {
-      panelManager.updateBackground();
+      recentlyPathList.remove(filePath);
+      recentlyPathList.insert(0, filePath);
+      recentlySongList.remove(song);
+      recentlySongList.insert(0, song);
+      if (recentlyPathList.length > 500) {
+        recentlyPathList.removeLast();
+        recentlySongList.removeLast();
+      }
+      recentlyFile.writeAsStringSync(jsonEncode(recentlyPathList));
     }
 
-    updateRecently();
-  }
-
-  void updateRecently() {
-    recentlyFile.writeAsStringSync(jsonEncode(recentlyPathList));
     recentlyChangeNotifier.value++;
   }
 
   void clear() {
-    rankingItemList = [];
     rankingSongList = [];
+    navidromeRankingSongList = [];
 
     recentlyPathList = [];
     recentlySongList = [];
+    navidromeRecentlySongList = [];
   }
 }

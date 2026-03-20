@@ -70,13 +70,19 @@ class LibraryManager {
     currentLoadingFolderNotifier.value = "Navidrome";
     final songs = await navidromeClient.getSongs();
     for (var song in songs) {
+      DateTime? lastPlayed;
+      if (song['played'] is String) {
+        lastPlayed = DateTime.parse(song['played']);
+      }
       MyAudioMetadata tmp = MyAudioMetadata(
         mapNavidromeToAudioMetadata(song),
         isNavidrome: true,
         id: song['id'],
+        playCount: song['playCount'] as int? ?? 0,
+        lastPlayed: lastPlayed,
       );
       navidromeSongList.add(tmp);
-      id2navidromeSong[song['id']] = tmp;
+      id2navidromeSong[tmp.id!] = tmp;
     }
 
     displayNavidromeSongsNotifier.value =

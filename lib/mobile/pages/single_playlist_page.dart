@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:particle_music/desktop/panels/local_navidrome_panel.dart';
+import 'package:particle_music/mobile/pages/local_navidrome_pageview.dart';
 import 'package:particle_music/playlists.dart';
 
-class SinglePlaylistPanel extends StatelessWidget {
+class SinglePlaylistPage extends StatelessWidget {
   final Playlist playlist;
-
-  const SinglePlaylistPanel({super.key, required this.playlist});
-
+  const SinglePlaylistPage({super.key, required this.playlist});
   @override
   Widget build(BuildContext context) {
-    return LocalNavidromePanel(
+    return LocalNavidromePageview(
       displayNavidromeNotifier: playlist.displayNavidromeNotifier,
       localSongList: playlist.songList,
       navidromeSongList: playlist.navidromeSongList,

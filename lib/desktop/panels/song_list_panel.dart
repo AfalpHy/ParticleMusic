@@ -821,8 +821,7 @@ class SongListItemState extends State<SongListItem> {
                           SizedBox(
                             width: 50,
                             child: Text(
-                              historyManager.rankingItemList[index].times
-                                  .toString(),
+                              song.playCount.toString(),
                               overflow: TextOverflow.ellipsis,
                             ),
                           ),

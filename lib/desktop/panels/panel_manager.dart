@@ -118,9 +118,19 @@ class PanelManager {
         isNavidrome ? navidromeSongList : librarySongList,
       );
     } else if (label == 'ranking') {
-      backgroundSong = getFirstSong(historyManager.rankingSongList);
+      bool isNavidrome = historyManager.displayNavidromeRankingNotifier.value;
+      backgroundSong = getFirstSong(
+        isNavidrome
+            ? historyManager.navidromeRankingSongList
+            : historyManager.rankingSongList,
+      );
     } else if (label == 'recently') {
-      backgroundSong = getFirstSong(historyManager.recentlySongList);
+      bool isNavidrome = historyManager.displayNavidromeRecentlyNotifier.value;
+      backgroundSong = getFirstSong(
+        isNavidrome
+            ? historyManager.navidromeRecentlySongList
+            : historyManager.recentlySongList,
+      );
     } else if (label[0] == '_') {
       final playlist = playlistsManager.getPlaylistByName(label.substring(1));
       bool isNavidrome = playlist!.displayNavidromeNotifier.value;

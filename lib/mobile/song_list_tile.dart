@@ -77,7 +77,7 @@ class SongListTile extends StatelessWidget {
                 children: [
                   Spacer(),
                   ImageIcon(playOutlinedImage, size: 15, color: iconColor),
-                  Text(historyManager.rankingItemList[index].times.toString()),
+                  Text(song.playCount.toString()),
                   moreButton(context),
                 ],
               ),

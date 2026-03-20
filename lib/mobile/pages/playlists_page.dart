@@ -2,10 +2,10 @@ import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/mobile/pages/single_playlist_page.dart';
 import 'package:particle_music/mobile/widgets/my_sheet.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/playlists.dart';
-import 'package:particle_music/mobile/pages/song_list_page.dart';
 import 'package:particle_music/utils.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
@@ -61,10 +61,15 @@ class PlaylistsPage extends StatelessWidget {
                   leading: ValueListenableBuilder(
                     valueListenable: playlist.updateNotifier,
                     builder: (_, _, _) {
-                      return CoverArtWidget(
-                        size: 50,
-                        borderRadius: 5,
-                        song: playlist.getDisplaySong(),
+                      return ValueListenableBuilder(
+                        valueListenable: playlist.displayNavidromeNotifier,
+                        builder: (context, value, child) {
+                          return CoverArtWidget(
+                            size: 50,
+                            borderRadius: 5,
+                            song: playlist.getDisplaySong(),
+                          );
+                        },
                       );
                     },
                   ),
@@ -90,41 +95,7 @@ class PlaylistsPage extends StatelessWidget {
                     Navigator.of(context).push(
                       MaterialPageRoute(
                         builder: (_) {
-                          int pageCnt = 0;
-                          if (playlist.songList.isNotEmpty) {
-                            pageCnt++;
-                          }
-                          if (playlist.navidromeSongList.isNotEmpty) {
-                            pageCnt++;
-                          }
-
-                          PageController pageController = PageController(
-                            initialPage:
-                                playlist.displayNavidromeNotifier.value &&
-                                    pageCnt == 2
-                                ? 1
-                                : 0,
-                          );
-                          return Container(
-                            color: pageBackgroundColor,
-                            child: PageView(
-                              onPageChanged: (value) {
-                                playlist.displayNavidromeNotifier.value =
-                                    !playlist.displayNavidromeNotifier.value;
-                              },
-                              controller: pageController,
-                              children: [
-                                if (playlist.songList.isNotEmpty ||
-                                    playlist.navidromeSongList.isEmpty)
-                                  SongListPage(playlist: playlist),
-                                if (playlist.navidromeSongList.isNotEmpty)
-                                  SongListPage(
-                                    playlist: playlist,
-                                    isNavidrome: true,
-                                  ),
-                              ],
-                            ),
-                          );
+                          return SinglePlaylistPage(playlist: playlist);
                         },
                       ),
                     );
