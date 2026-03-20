@@ -82,29 +82,29 @@ Future<void> setParsedLyrics(MyAudioMetadata song) async {
   ParsedLyrics result = ParsedLyrics();
   song.parsedLyrics = result;
 
+  List<String> lines = [];
+
   if (song.isNavidrome) {
     final lyrics = await navidromeClient.getLyricsById(song.id!);
     if (lyrics == null || lyrics == '') {
       result.lyrics.add(LyricLine(Duration.zero, 'There are no lyrics', []));
       return;
     } else {
-      song.lyrics = lyrics;
+      lines = lyrics.split(RegExp(r'[\n]'));
     }
-  }
-  List<String> lines = [];
-  if (song.lyrics == null) {
-    String path = song.filePath!;
-    path = "${path.substring(0, path.lastIndexOf('.'))}.lrc";
-    final file = File(path);
-    if (!file.existsSync()) {
-      result.lyrics.add(
-        LyricLine(Duration.zero, 'Lyrics file does not exist', []),
-      );
-      return;
-    }
-    lines = await file.readAsLines(); // read file line by line
   } else {
-    lines = song.lyrics!.split(RegExp(r'[\n]'));
+    if (song.lyrics == null) {
+      String path = song.filePath!;
+      path = "${path.substring(0, path.lastIndexOf('.'))}.lrc";
+      final file = File(path);
+      if (!file.existsSync()) {
+        result.lyrics.add(LyricLine(Duration.zero, 'There are no lyrics.', []));
+        return;
+      }
+      lines = await file.readAsLines(); // read file line by line
+    } else {
+      lines = song.lyrics!.split(RegExp(r'[\n]'));
+    }
   }
 
   final lineTimeRegex = RegExp(r'^\[(\d{2}):(\d{2})[.:](\d{2,3})\]');
@@ -150,7 +150,7 @@ Future<void> setParsedLyrics(MyAudioMetadata song) async {
     }
   }
   if (result.lyrics.isEmpty) {
-    result.lyrics.add(LyricLine(Duration.zero, 'lyrics parsing failed', []));
+    result.lyrics.add(LyricLine(Duration.zero, 'Lyrics parsing failed', []));
   } else {
     if (result.lyrics.last.tokens.last.end == null) {
       result.lyrics.last.tokens.last.end = song.duration;
