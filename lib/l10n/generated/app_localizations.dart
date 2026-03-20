@@ -446,17 +446,17 @@ abstract class AppLocalizations {
   /// **'Edit Metadata'**
   String get editMetadata;
 
-  /// No description provided for @add2Playlists.
+  /// No description provided for @add2Playlist.
   ///
   /// In en, this message translates to:
-  /// **'Add to Playlists'**
-  String get add2Playlists;
+  /// **'Add to a Playlist'**
+  String get add2Playlist;
 
-  /// No description provided for @added2Playlists.
+  /// No description provided for @added2Playlist.
   ///
   /// In en, this message translates to:
-  /// **'Added to playlist'**
-  String get added2Playlists;
+  /// **'Added to a playlist'**
+  String get added2Playlist;
 
   /// No description provided for @selectAll.
   ///

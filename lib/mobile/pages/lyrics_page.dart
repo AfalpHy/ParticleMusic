@@ -237,7 +237,7 @@ class LyricsPage extends StatelessWidget {
                                     color: iconColor,
                                   ),
                                   title: Text(
-                                    l10n.add2Playlists,
+                                    l10n.add2Playlist,
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                     ),

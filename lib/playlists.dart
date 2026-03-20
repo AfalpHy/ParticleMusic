@@ -352,7 +352,7 @@ class _Add2PlaylistPanelState extends State<Add2PlaylistPanel> {
                   playlist.add(widget.songList);
                   showCenterMessage(
                     context,
-                    l10n.added2Playlists,
+                    l10n.added2Playlist,
                     duration: 1500,
                   );
                   Navigator.pop(context);

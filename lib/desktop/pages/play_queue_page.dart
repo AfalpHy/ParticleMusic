@@ -279,7 +279,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
         return Menu(
           children: [
             MenuAction(
-              title: l10n.add2Playlists,
+              title: l10n.add2Playlist,
               image: MenuImage.icon(Icons.playlist_add_rounded),
               callback: () {
                 final List<MyAudioMetadata> tmpSongList = [];

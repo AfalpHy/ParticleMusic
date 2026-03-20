@@ -191,10 +191,10 @@ class AppLocalizationsZh extends AppLocalizations {
   String get editMetadata => '编辑元数据';
 
   @override
-  String get add2Playlists => '添加到歌单';
+  String get add2Playlist => '添加到歌单';
 
   @override
-  String get added2Playlists => '已添加到歌单';
+  String get added2Playlist => '已添加到歌单';
 
   @override
   String get selectAll => '全选';

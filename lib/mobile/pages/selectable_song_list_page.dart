@@ -419,10 +419,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                       children: [
                         ImageIcon(playlistAddImage, color: color),
 
-                        Text(
-                          l10n.add2Playlists,
-                          style: TextStyle(color: color),
-                        ),
+                        Text(l10n.add2Playlist, style: TextStyle(color: color)),
                       ],
                     ),
                   ),
