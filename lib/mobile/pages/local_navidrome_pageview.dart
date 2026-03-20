@@ -31,6 +31,18 @@ class LocalNavidromePageview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (playlist == null) {
+      return pageView();
+    }
+    return ValueListenableBuilder(
+      valueListenable: playlist!.updateNotifier,
+      builder: (context, value, child) {
+        return pageView();
+      },
+    );
+  }
+
+  Widget pageView() {
     int pageCnt = 0;
     if (localSongList.isNotEmpty) {
       pageCnt++;
