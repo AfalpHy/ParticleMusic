@@ -61,10 +61,7 @@ class SettingsList extends StatelessWidget {
         isMobile
             ? ListTile(
                 leading: ImageIcon(infoImage, color: iconColor, size: 30),
-                title: Text(
-                  l10n.openSourceLicense,
-                  style: TextStyle(fontSize: 15),
-                ),
+                title: Text(l10n.openSourceLicense),
                 onTap: () {
                   Navigator.of(context, rootNavigator: true).push(
                     MaterialPageRoute(
@@ -93,10 +90,7 @@ class SettingsList extends StatelessWidget {
             : paddingForDesktop(
                 ListTile(
                   leading: ImageIcon(infoImage, color: iconColor),
-                  title: Text(
-                    l10n.openSourceLicense,
-                    style: TextStyle(fontSize: 15),
-                  ),
+                  title: Text(l10n.openSourceLicense),
                   onTap: () {
                     panelManager.pushPanel('licenses');
                   },

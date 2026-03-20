@@ -360,7 +360,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
 
                         Text(
                           l10n.playNext,
-                          style: TextStyle(color: color, fontSize: 13),
+                          style: TextStyle(color: color, fontSize: 12),
                         ),
                       ],
                     ),
@@ -399,7 +399,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
 
                         Text(
                           l10n.add2Queue,
-                          style: TextStyle(color: color, fontSize: 13),
+                          style: TextStyle(color: color, fontSize: 12),
                         ),
                       ],
                     ),
@@ -427,7 +427,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
 
                         Text(
                           l10n.add2Playlist,
-                          style: TextStyle(color: color, fontSize: 13),
+                          style: TextStyle(color: color, fontSize: 12),
                         ),
                       ],
                     ),
@@ -471,7 +471,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
 
                           Text(
                             l10n.delete,
-                            style: TextStyle(color: color, fontSize: 13),
+                            style: TextStyle(color: color, fontSize: 12),
                           ),
                         ],
                       ),
