@@ -43,6 +43,8 @@ class PlaylistsManager {
       }
       playlistsMap[name]!.id = id;
     }
+    // navidrome may add some playlists
+    update();
     for (final playlist in playlists) {
       await playlist.load();
     }
@@ -479,7 +481,7 @@ Future<bool> showCreatePlaylistDialog(BuildContext context) async {
   );
 
   if (result != null && result != '') {
-    playlistsManager.createPlaylist(result);
+    await playlistsManager.createPlaylist(result);
     return true;
   }
   return false;
