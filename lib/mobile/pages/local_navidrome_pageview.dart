@@ -65,6 +65,7 @@ class LocalNavidromePageview extends StatelessWidget {
         children: [
           if (localSongList.isNotEmpty || navidromeSongList.isEmpty)
             SongListPage(
+              key: UniqueKey(),
               playlist: playlist,
               artist: artist,
               album: album,
@@ -73,6 +74,7 @@ class LocalNavidromePageview extends StatelessWidget {
             ),
           if (navidromeSongList.isNotEmpty)
             SongListPage(
+              key: UniqueKey(),
               playlist: playlist,
               artist: artist,
               album: album,
