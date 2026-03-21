@@ -107,8 +107,8 @@ Future<void> setParsedLyrics(MyAudioMetadata song) async {
     }
   }
 
-  final lineTimeRegex = RegExp(r'^\[(\d{2}):(\d{2})[.:](\d{2,3})\]');
-  final wordRegex = RegExp(r'\[(\d{2}):(\d{2})[.:](\d{2,3})\]([^\[]*)');
+  final lineTimeRegex = RegExp(r'^[\[<](\d{2}):(\d{2})[.:](\d{2,3})[\]>]');
+  final wordRegex = RegExp(r'[\[<](\d{2}):(\d{2})[.:](\d{2,3})[\]>]([^\[<]*)');
 
   for (var line in lines) {
     final lineMatch = lineTimeRegex.firstMatch(line);
