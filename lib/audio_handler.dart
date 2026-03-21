@@ -64,6 +64,10 @@ class MyAudioHandler extends BaseAudioHandler {
         }
       }
     }
+    _player.stream.error.listen((onData) {
+      logger.output(onData);
+    });
+
     _player.stream.completed.listen((completed) async {
       if (completed) {
         bool needPauseTmp = needPause;
