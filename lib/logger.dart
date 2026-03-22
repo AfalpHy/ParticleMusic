@@ -1,5 +1,6 @@
 import 'dart:io';
 import 'package:particle_music/common.dart';
+import 'package:path/path.dart';
 
 String formatForFileName(DateTime t) {
   String two(int n) => n.toString().padLeft(2, '0');
@@ -17,7 +18,7 @@ class Logger {
 
   Future<void> init() async {
     final time = formatForFileName(DateTime.now());
-    _file = File('${appSupportDir.path}/logs/$time.log');
+    _file = File('${appSupportDir.path}/logs/$time.txt');
     _file.createSync(recursive: true);
     output('App init');
   }
@@ -30,5 +31,11 @@ class Logger {
       mode: FileMode.append,
       flush: true,
     );
+  }
+
+  void export2Directory(String directory) {
+    final fileName = basename(_file.path);
+    final newPath = join(directory, fileName);
+    _file.copySync(newPath);
   }
 }

@@ -393,4 +393,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get password => '密码';
+
+  @override
+  String get exportLog => '导出日志';
 }

@@ -146,6 +146,7 @@ const AssetImage deleteImage = AssetImage('assets/images/delete.png');
 const AssetImage desktopLyricsImage = AssetImage(
   'assets/images/desktop_lyrics.png',
 );
+const AssetImage exportLogImage = AssetImage('assets/images/export_log.png');
 const AssetImage folderImage = AssetImage('assets/images/folder.png');
 const AssetImage fullscreenExitImage = AssetImage(
   'assets/images/fullscreen_exit.png',

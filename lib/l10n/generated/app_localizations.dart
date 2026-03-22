@@ -853,6 +853,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Password'**
   String get password;
+
+  /// No description provided for @exportLog.
+  ///
+  /// In en, this message translates to:
+  /// **'Export Log'**
+  String get exportLog;
 }
 
 class _AppLocalizationsDelegate

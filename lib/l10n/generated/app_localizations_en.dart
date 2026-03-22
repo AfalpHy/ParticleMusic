@@ -393,4 +393,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get password => 'Password';
+
+  @override
+  String get exportLog => 'Export Log';
 }

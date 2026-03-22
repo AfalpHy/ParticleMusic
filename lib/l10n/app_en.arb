@@ -152,5 +152,6 @@
   "switch_": "Switch",
   "connect2Navidrome": "Connect to Navidrome",
   "username": "Username",
-  "password": "Password"
+  "password": "Password",
+  "exportLog": "Export Log"
 }

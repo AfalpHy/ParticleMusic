@@ -157,6 +157,8 @@ class SettingsList extends StatelessWidget {
             ? checkUpdate(context, l10n)
             : paddingForDesktop(checkUpdate(context, l10n)),
 
+        if (isMobile) exportLogListTile(context, l10n),
+
         if (isMobile) SizedBox(height: 100),
       ],
     );
@@ -1233,6 +1235,29 @@ class SettingsList extends StatelessWidget {
               duration: 5000,
             );
           }
+        }
+      },
+    );
+  }
+
+  Widget exportLogListTile(BuildContext context, AppLocalizations l10n) {
+    return ListTile(
+      leading: ImageIcon(exportLogImage, color: iconColor, size: 30),
+
+      title: Text(l10n.exportLog),
+      onTap: () async {
+        if (Platform.isAndroid) {
+          String? result = await FilePicker.platform.getDirectoryPath();
+          if (result == null) {
+            return;
+          }
+          logger.export2Directory(result);
+        } else {
+          Directory logsDir = Directory("${appDocs.path}/logs");
+          if (!logsDir.existsSync()) {
+            logsDir.createSync();
+          }
+          logger.export2Directory("${appDocs.path}/logs");
         }
       },
     );
