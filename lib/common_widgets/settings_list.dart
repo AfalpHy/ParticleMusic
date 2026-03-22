@@ -1258,6 +1258,11 @@ class SettingsList extends StatelessWidget {
             logsDir.createSync();
           }
           logger.export2Directory("${appDocs.path}/logs");
+          showCenterMessage(
+            context,
+            'Exported to \'Particle Music/logs\'',
+            duration: 3000,
+          );
         }
       },
     );
