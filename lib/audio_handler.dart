@@ -65,7 +65,7 @@ class MyAudioHandler extends BaseAudioHandler {
       }
     }
     _player.stream.error.listen((onData) {
-      logger.output(onData);
+      logger.output("player error:$onData");
     });
 
     _player.stream.completed.listen((completed) async {
