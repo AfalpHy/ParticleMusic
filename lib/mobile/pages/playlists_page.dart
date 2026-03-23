@@ -238,7 +238,7 @@ class PlaylistsPage extends StatelessWidget {
       leading: CoverArtWidget(
         size: 50,
         borderRadius: 5,
-        song: getFirstSong(playlist.songList),
+        song: playlist.getDisplaySong(),
       ),
       title: AutoSizeText(
         playlist.name,
