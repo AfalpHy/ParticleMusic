@@ -39,6 +39,7 @@ class MyAudioMetadata {
   String? get album => _audioMetadata.album;
   String? get genre => _audioMetadata.genre;
 
+  int? get year => _audioMetadata.year;
   int? get track => _audioMetadata.track;
   int? get disc => _audioMetadata.disc;
   int? get bitrate => _audioMetadata.bitrate;

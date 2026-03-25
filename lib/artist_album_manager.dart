@@ -47,30 +47,20 @@ class ArtistAlbumManager {
     sortArtists();
     sortAlbums();
 
-    for (final artist in artistList) {
-      artist.displayNavidromeNotifier.value =
-          artist.songList.isEmpty & artist.navidromeSongList.isNotEmpty;
-    }
-
     for (final album in albumList) {
       album.sort();
       album.displayNavidromeNotifier.value =
           album.songList.isEmpty & album.navidromeSongList.isNotEmpty;
     }
+
+    for (final artist in artistList) {
+      artist.combineAlbums();
+      artist.displayNavidromeNotifier.value =
+          artist.songList.isEmpty & artist.navidromeSongList.isNotEmpty;
+    }
   }
 
   void _processSong(MyAudioMetadata song) {
-    for (String artistName in getArtist(song).split(RegExp(r'[/&,]'))) {
-      late Artist artist;
-      if (name2Artist[artistName] == null) {
-        name2Artist[artistName] = Artist(artistName);
-      }
-      artist = name2Artist[artistName]!;
-      song.isNavidrome
-          ? artist.navidromeSongList.add(song)
-          : artist.songList.add(song);
-    }
-
     final albumName = getAlbum(song);
 
     late Album album;
@@ -79,9 +69,22 @@ class ArtistAlbumManager {
     }
     album = name2Album[albumName]!;
 
+    if (song.year != null && album.year == null) {
+      album.year = song.year;
+    }
+
     song.isNavidrome
         ? album.navidromeSongList.add(song)
         : album.songList.add(song);
+
+    for (String artistName in getArtist(song).split(RegExp(r'[/&,]'))) {
+      late Artist artist;
+      if (name2Artist[artistName] == null) {
+        name2Artist[artistName] = Artist(artistName);
+      }
+      artist = name2Artist[artistName]!;
+      artist.albumSet.add(album);
+    }
   }
 
   void sortArtists() {
@@ -168,10 +171,29 @@ abstract class ArtistAlbumBase {
 
 class Artist extends ArtistAlbumBase {
   Artist(String name) : super(name, true);
+
+  Set<Album> albumSet = {};
+
+  void combineAlbums() {
+    final albumList = albumSet.toList();
+    albumList.sort((a, b) {
+      int aYear = a.year ?? 9999;
+      int bYear = b.year ?? 9999;
+
+      return aYear.compareTo(bYear);
+    });
+
+    for (final album in albumList) {
+      songList.addAll(album.songList);
+      this.navidromeSongList.addAll(album.navidromeSongList);
+    }
+  }
 }
 
 class Album extends ArtistAlbumBase {
   Album(String name) : super(name, false);
+
+  int? year;
 
   int _sort(MyAudioMetadata a, MyAudioMetadata b) {
     final discA = a.disc ?? 9999;

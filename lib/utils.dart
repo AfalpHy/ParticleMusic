@@ -405,6 +405,7 @@ AudioMetadata mapNavidromeToAudioMetadata(Map<String, dynamic> song) {
     artist: song['artist'],
     album: song['album'],
     genre: song['genre'],
+    year: song['year'],
     track: song['track'],
     disc: song['discNumber'],
     bitrate: song['bitrate'],
