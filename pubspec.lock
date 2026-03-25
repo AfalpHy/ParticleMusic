@@ -79,7 +79,7 @@ packages:
     description:
       path: "."
       ref: main
-      resolved-ref: "95e72de083d876e96f39ae71287da53fac2ecac5"
+      resolved-ref: "570005bd0ca2c627b077449b53fa1d08a8628962"
       url: "https://github.com/AfalpHy/audio_tags_lofty.git"
     source: git
     version: "0.0.1"

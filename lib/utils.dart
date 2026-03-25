@@ -1,6 +1,5 @@
 import 'dart:convert';
 import 'dart:io';
-import 'dart:isolate';
 
 import 'package:audio_tags_lofty/audio_tags.dart';
 import 'package:flutter/material.dart';
@@ -248,10 +247,6 @@ void tryVibrate() {
   }
 }
 
-Future<Uint8List?> _readPictureAsync(String path) async {
-  return Isolate.run(() => readPicture(path));
-}
-
 Future<Uint8List?> loadPictureBytes(MyAudioMetadata? song) async {
   if (song == null) {
     return null;
@@ -262,7 +257,7 @@ Future<Uint8List?> loadPictureBytes(MyAudioMetadata? song) async {
   }
   final result = song.isNavidrome
       ? await navidromeClient.getPictureBytes(song.id!)
-      : await _readPictureAsync(song.filePath!);
+      : await readPictureAsync(song.filePath!);
   song.pictureBytes = result;
   song.pictureLoaded = true;
   return result;
@@ -405,17 +400,19 @@ void getDesktopLyricFromMap(dynamic data) {
 }
 
 AudioMetadata mapNavidromeToAudioMetadata(Map<String, dynamic> song) {
-  final meta = AudioMetadata();
-
-  meta.title = song['title'];
-  meta.artist = song['artist'];
-  meta.album = song['album'];
-
-  if (song['duration'] != null) {
-    meta.duration = Duration(seconds: song['duration']);
-  }
-
-  return meta;
+  return AudioMetadata(
+    title: song['title'],
+    artist: song['artist'],
+    album: song['album'],
+    genre: song['genre'],
+    track: song['track'],
+    disc: song['discNumber'],
+    bitrate: song['bitrate'],
+    samplerate: song['samplingate'],
+    duration: song['duration'] != null
+        ? Duration(seconds: song['duration'])
+        : null,
+  );
 }
 
 bool _exited = false;

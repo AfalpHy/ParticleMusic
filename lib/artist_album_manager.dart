@@ -53,6 +53,7 @@ class ArtistAlbumManager {
     }
 
     for (final album in albumList) {
+      album.sort();
       album.displayNavidromeNotifier.value =
           album.songList.isEmpty & album.navidromeSongList.isNotEmpty;
     }
@@ -171,4 +172,23 @@ class Artist extends ArtistAlbumBase {
 
 class Album extends ArtistAlbumBase {
   Album(String name) : super(name, false);
+
+  int _sort(MyAudioMetadata a, MyAudioMetadata b) {
+    final discA = a.disc ?? 9999;
+    final discB = b.disc ?? 9999;
+
+    final discCompare = discA.compareTo(discB);
+    if (discCompare != 0) return discCompare;
+
+    final trackA = a.track ?? 9999;
+    final trackB = b.track ?? 9999;
+
+    return trackA.compareTo(trackB);
+  }
+
+  void sort() {
+    songList.sort((a, b) => _sort(a, b));
+    // shoud add this to avoid using global, but it's weird
+    this.navidromeSongList.sort((a, b) => _sort(a, b));
+  }
 }
