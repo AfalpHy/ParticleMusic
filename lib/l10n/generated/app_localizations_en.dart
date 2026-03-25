@@ -263,6 +263,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get loadedSongs => 'Loaded Songs';
 
   @override
+  String get loadingNavidrome => 'Loading Navidrome';
+
+  @override
   String get canNotUpdate => 'Can not update the song that is playing';
 
   @override

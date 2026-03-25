@@ -48,6 +48,8 @@ final ValueNotifier<String> currentLoadingFolderNotifier = ValueNotifier('');
 
 final ValueNotifier<bool> loadingLibraryNotifier = ValueNotifier(true);
 
+final ValueNotifier<bool> loadingNavidromeNotifier = ValueNotifier(false);
+
 // ===================================== Folder =====================================
 
 late FolderManager folderManager;

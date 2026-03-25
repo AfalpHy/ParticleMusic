@@ -590,6 +590,12 @@ abstract class AppLocalizations {
   /// **'Loaded Songs'**
   String get loadedSongs;
 
+  /// No description provided for @loadingNavidrome.
+  ///
+  /// In en, this message translates to:
+  /// **'Loading Navidrome'**
+  String get loadingNavidrome;
+
   /// No description provided for @canNotUpdate.
   ///
   /// In en, this message translates to:

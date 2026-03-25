@@ -81,6 +81,7 @@
   "selectSortingType": "选择排序类型",
   "loadingFolder": "正在加载的文件夹",
   "loadedSongs": "已加载歌曲",
+  "loadingNavidrome": "正在加载Navidrome",
   "canNotUpdate": "无法修改正在播放的歌曲",
   "updateSuccessfully": "更新成功",
   "updateFailed": "更新失败",

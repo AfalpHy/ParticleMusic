@@ -54,6 +54,7 @@ class LibraryManager {
 
   Future<void> load() async {
     loadingLibraryNotifier.value = true;
+    loadingNavidromeNotifier.value = false;
     loadedCountNotifier.value = 0;
     await _prepare();
 
@@ -68,7 +69,7 @@ class LibraryManager {
     await update();
     await _saveLibrarySongMetadataList();
 
-    currentLoadingFolderNotifier.value = "Navidrome";
+    loadingNavidromeNotifier.value = true;
     final songs = await navidromeClient.getSongs();
     for (var song in songs) {
       DateTime? lastPlayed;
@@ -91,7 +92,6 @@ class LibraryManager {
 
     artistAlbumManager.load();
 
-    currentLoadingFolderNotifier.value = "Navidrome's playlist";
     await playlistsManager.load();
 
     if (isMobile) {

@@ -263,6 +263,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get loadedSongs => '已加载歌曲';
 
   @override
+  String get loadingNavidrome => '正在加载Navidrome';
+
+  @override
   String get canNotUpdate => '无法修改正在播放的歌曲';
 
   @override

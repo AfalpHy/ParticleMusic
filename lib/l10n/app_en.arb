@@ -109,6 +109,7 @@
   "selectSortingType": "Select sorting type",
   "loadingFolder": "Loading Folder",
   "loadedSongs": "Loaded Songs",
+  "loadingNavidrome": "Loading Navidrome",
   "canNotUpdate": "Can not update the song that is playing",
   "updateSuccessfully": "Update Successfully",
   "updateFailed": "Update failed",
