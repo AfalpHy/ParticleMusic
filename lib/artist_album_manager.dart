@@ -184,8 +184,16 @@ class Artist extends ArtistAlbumBase {
     });
 
     for (final album in albumList) {
-      songList.addAll(album.songList);
-      this.navidromeSongList.addAll(album.navidromeSongList);
+      for (final song in album.songList) {
+        if (getArtist(song).contains(name)) {
+          songList.add(song);
+        }
+      }
+      for (final song in album.navidromeSongList) {
+        if (getArtist(song).contains(name)) {
+          this.navidromeSongList.add(song);
+        }
+      }
     }
   }
 }
