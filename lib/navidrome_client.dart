@@ -305,7 +305,22 @@ class NavidromeClient {
         if (lyricsList != null && lyricsList['structuredLyrics'] != null) {
           final List structured = lyricsList['structuredLyrics'];
           if (structured.isNotEmpty) {
-            final List lines = structured[0]['line'] ?? [];
+            int index = 0;
+            int maxLength = 0;
+            for (int i = 0; i < structured.length; i++) {
+              final item = structured[i];
+              final lines = item['line'];
+              if (lines != null && lines is List && lines.isNotEmpty) {
+                final value = lines[0]['value'];
+                if (value != null &&
+                    value is String &&
+                    value.length > maxLength) {
+                  index = i;
+                  maxLength = value.length;
+                }
+              }
+            }
+            final List lines = structured[index]['line'] ?? [];
             final buffer = StringBuffer();
 
             for (var l in lines) {
