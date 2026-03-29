@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 
-import 'package:audio_tags_lofty/audio_tags.dart';
+import 'package:audio_tags_lofty/audio_tags_lofty.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';

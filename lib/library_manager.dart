@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:audio_tags_lofty/audio_tags.dart';
+import 'package:audio_tags_lofty/audio_tags_lofty.dart';
 import 'package:particle_music/artist_album_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/folder_manager.dart';
