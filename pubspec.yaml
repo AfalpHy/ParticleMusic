@@ -74,7 +74,6 @@ dependencies:
   flex_color_picker: ^3.8.0
   google_fonts: ^7.0.2
   flutter_overlay_window: ^0.5.0
-  ffi: ^2.1.5
   http: ^1.6.0
   url_launcher: ^6.3.2
   dio: ^5.9.2
