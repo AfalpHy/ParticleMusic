@@ -865,6 +865,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Export Log'**
   String get exportLog;
+
+  /// No description provided for @showApp.
+  ///
+  /// In en, this message translates to:
+  /// **'Show App'**
+  String get showApp;
+
+  /// No description provided for @skip2Previous.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip to Previous'**
+  String get skip2Previous;
+
+  /// No description provided for @skip2Next.
+  ///
+  /// In en, this message translates to:
+  /// **'Skip to Next'**
+  String get skip2Next;
+
+  /// No description provided for @playOrPause.
+  ///
+  /// In en, this message translates to:
+  /// **'Play/Pause'**
+  String get playOrPause;
+
+  /// No description provided for @unlockDeskLrc.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock Desktop Lyrics'**
+  String get unlockDeskLrc;
 }
 
 class _AppLocalizationsDelegate

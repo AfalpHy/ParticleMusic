@@ -399,4 +399,19 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get exportLog => '导出日志';
+
+  @override
+  String get showApp => '显示应用';
+
+  @override
+  String get skip2Previous => '上一首';
+
+  @override
+  String get skip2Next => '下一首';
+
+  @override
+  String get playOrPause => '播放/暂停';
+
+  @override
+  String get unlockDeskLrc => '解锁桌面歌词';
 }

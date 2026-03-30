@@ -399,4 +399,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get exportLog => 'Export Log';
+
+  @override
+  String get showApp => 'Show App';
+
+  @override
+  String get skip2Previous => 'Skip to Previous';
+
+  @override
+  String get skip2Next => 'Skip to Next';
+
+  @override
+  String get playOrPause => 'Play/Pause';
+
+  @override
+  String get unlockDeskLrc => 'Unlock Desktop Lyrics';
 }

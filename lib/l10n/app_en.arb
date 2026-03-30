@@ -154,5 +154,10 @@
   "connect2Navidrome": "Connect to Navidrome",
   "username": "Username",
   "password": "Password",
-  "exportLog": "Export Log"
+  "exportLog": "Export Log",
+  "showApp": "Show App",
+  "skip2Previous": "Skip to Previous",
+  "skip2Next": "Skip to Next",
+  "playOrPause": "Play/Pause",
+  "unlockDeskLrc": "Unlock Desktop Lyrics"
 }

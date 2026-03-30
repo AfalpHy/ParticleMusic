@@ -3,7 +3,6 @@ import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/desktop_lyrics.dart';
@@ -15,6 +14,7 @@ import 'package:particle_music/desktop/pages/main_page.dart';
 import 'package:particle_music/desktop/pages/mini_mode_page.dart';
 import 'package:particle_music/desktop/single_instance.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
+import 'package:particle_music/l10n/generated/app_localizations_en.dart';
 import 'package:particle_music/mobile/overlay_lyrics.dart';
 import 'package:particle_music/mobile/pages/main_page.dart';
 import 'dart:async';
@@ -72,12 +72,7 @@ Future<void> main() async {
             return MaterialApp(
               locale: locale,
               supportedLocales: AppLocalizations.supportedLocales,
-              localizationsDelegates: const [
-                AppLocalizations.delegate,
-                GlobalMaterialLocalizations.delegate,
-                GlobalWidgetsLocalizations.delegate,
-                GlobalCupertinoLocalizations.delegate,
-              ],
+              localizationsDelegates: AppLocalizations.localizationsDelegates,
               theme: ThemeData(
                 textTheme: Platform.isWindows
                     ? GoogleFonts.notoSerifScTextTheme()
@@ -221,6 +216,33 @@ Future<void> _setupDesktopLyricsWindow(
   });
 }
 
+Future<void> _setTrayMemu(Locale locale) async {
+  late AppLocalizations l10n;
+  try {
+    l10n = lookupAppLocalizations(locale);
+  } catch (_) {
+    l10n = AppLocalizationsEn();
+  }
+  await trayManager.setContextMenu(
+    Menu(
+      items: [
+        MenuItem(key: 'show', label: l10n.showApp),
+        MenuItem.separator(),
+
+        MenuItem(key: 'skipToPrevious', label: l10n.skip2Previous),
+        MenuItem(key: 'togglePlay', label: l10n.playOrPause),
+        MenuItem(key: 'skipToNext', label: l10n.skip2Next),
+        MenuItem.separator(),
+
+        MenuItem(key: 'unlock', label: l10n.unlockDeskLrc),
+
+        MenuItem.separator(),
+        MenuItem(key: 'exit', label: l10n.exit),
+      ],
+    ),
+  );
+}
+
 Future<void> _setupTray() async {
   await trayManager.setIcon(
     Platform.isWindows
@@ -235,24 +257,14 @@ Future<void> _setupTray() async {
     await trayManager.setToolTip('Particle Music');
   }
 
-  await trayManager.setContextMenu(
-    Menu(
-      items: [
-        MenuItem(key: 'show', label: 'Show App'),
-        MenuItem.separator(),
+  Locale systemLocale = PlatformDispatcher.instance.locale;
+  await _setTrayMemu(systemLocale);
 
-        MenuItem(key: 'skipToPrevious', label: 'Skip to Previous'),
-        MenuItem(key: 'togglePlay', label: 'Play/Pause'),
-        MenuItem(key: 'skipToNext', label: 'Skip to Next'),
-        MenuItem.separator(),
-
-        MenuItem(key: 'unlock', label: 'Unlock Desktop Lyrics'),
-
-        MenuItem.separator(),
-        MenuItem(key: 'exit', label: 'Exit'),
-      ],
-    ),
-  );
+  localeNotifier.addListener(() async {
+    Locale? locale = localeNotifier.value;
+    locale ??= PlatformDispatcher.instance.locale;
+    await _setTrayMemu(locale);
+  });
 
   trayManager.addListener(MyTrayListener());
 }
