@@ -20,7 +20,7 @@ version: 1.0.16+2
 
 environment:
   sdk: ^3.11.0
-  flutter: 3.41.1
+  flutter: 3.41.6
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -72,7 +72,7 @@ dependencies:
   desktop_multi_window: ^0.3.0
   lpinyin: ^2.0.3
   flex_color_picker: ^3.8.0
-  google_fonts: ^7.0.2
+  google_fonts: ^8.0.2
   flutter_overlay_window: ^0.5.0
   http: ^1.6.0
   url_launcher: ^6.3.2
