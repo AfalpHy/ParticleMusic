@@ -34,45 +34,31 @@ const Color darkModeSeekBarColor = Color.fromARGB(255, 195, 195, 195);
 const Color darkModeVolumeBarColor = Color.fromARGB(255, 195, 195, 195);
 
 class ColorManager {
-  List<CustomColor> customColors = [];
+  late List<CustomColor> customColors;
 
   ColorManager() {
-    customColors.add(
+    customColors = [
       CustomColor(
         'customPageBackgroundColor',
-        Color.fromARGB(255, 245, 245, 245),
+        const Color.fromARGB(255, 245, 245, 245),
         type: 1,
       ),
-    );
-    customColors.add(CustomColor('customIconColor', Colors.black));
-    customColors.add(
-      CustomColor('customTextColor', Color.fromARGB(255, 30, 30, 30)),
-    );
-    customColors.add(CustomColor('customHighlightTextColor', Colors.black));
-    customColors.add(CustomColor('customSwitchColor', Colors.black87));
-    customColors.add(
+      CustomColor('customIconColor', Colors.black),
+      CustomColor('customTextColor', const Color.fromARGB(255, 30, 30, 30)),
+      CustomColor('customHighlightTextColor', Colors.black),
+      CustomColor('customSwitchColor', Colors.black87),
       CustomColor('customPlayBarColor', Colors.white70, type: 1),
-    );
-    customColors.add(
       CustomColor('customPanelColor', Colors.grey.shade100, type: 2),
-    );
-    customColors.add(
       CustomColor('customSidebarColor', Colors.grey.shade200, type: 2),
-    );
-    customColors.add(
       CustomColor('customBottomColor', Colors.grey.shade50, type: 2),
-    );
-    customColors.add(CustomColor('customSearchFieldColor', Colors.white));
-    customColors.add(CustomColor('customButtonColor', Colors.white70));
-    customColors.add(CustomColor('customDividerColor', Colors.grey));
-    customColors.add(
+      CustomColor('customSearchFieldColor', Colors.white),
+      CustomColor('customButtonColor', Colors.white70),
+      CustomColor('customDividerColor', Colors.grey),
       CustomColor('customSelectedItemColor', Colors.white, type: 2),
-    );
-    customColors.add(CustomColor('customSeekBarColor', Colors.black, type: 2));
-    customColors.add(
+      CustomColor('customSeekBarColor', Colors.black, type: 2),
       CustomColor('customVolumeBarColor', Colors.black, type: 2),
-    );
-    customColors.add(CustomColor('lyricsBackgroundColor', Colors.black));
+      CustomColor('lyricsBackgroundColor', Colors.black),
+    ];
   }
 
   Map<String, int> customColorsToMap() {
