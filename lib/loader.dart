@@ -51,16 +51,11 @@ class Loader {
 
     await playlistsManager.load();
 
-    if (isMobile) {
-      swipeObserver.resetDeep();
-    }
-
     await audioHandler.loadPlayQueueState();
     await audioHandler.loadPlayState();
 
-    if (!isMobile) {
-      panelManager.pushPanel('songs');
-    }
+    panelManager.pushPanel('songs');
+
     loadingLibraryNotifier.value = false;
   }
 
@@ -74,9 +69,7 @@ class Loader {
     artistAlbumManager.clear();
 
     history.clear();
-    if (!isMobile) {
-      panelManager.clear();
-    }
+    panelManager.clear();
     await load();
   }
 }

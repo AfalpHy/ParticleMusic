@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
-import 'package:particle_music/mobile/my_sheet.dart';
+import 'package:particle_music/playlists.dart';
+import 'package:particle_music/common_widgets/my_sheet.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/utils.dart';
 import 'package:smooth_corner/smooth_corner.dart';
@@ -242,5 +243,82 @@ void showAddPlaylistDialog(
         ),
       );
     },
+  );
+}
+
+Widget reorderablePlaylistsView() {
+  return ReorderableListView.builder(
+    header: _playlistListTile(playlistsManager.playlists[0]),
+    buildDefaultDragHandles: false,
+    onReorder: (oldIndex, newIndex) {
+      if (newIndex > oldIndex) {
+        newIndex -= 1;
+      }
+      final item = playlistsManager.playlists.removeAt(oldIndex + 1);
+      playlistsManager.playlists.insert(newIndex + 1, item);
+      playlistsManager.update();
+    },
+    onReorderStart: (_) {
+      tryVibrate();
+    },
+    onReorderEnd: (_) {
+      tryVibrate();
+    },
+    proxyDecorator: (Widget child, int index, Animation<double> animation) {
+      return Material(elevation: 0.1, color: Colors.transparent, child: child);
+    },
+    itemCount: playlistsManager.playlists.length - 1,
+    itemBuilder: (_, index) {
+      final playlist = playlistsManager.getPlaylistByIndex(index + 1);
+      return Row(
+        key: ValueKey(index),
+        children: [
+          Expanded(child: _playlistListTile(playlist)),
+
+          SizedBox(
+            width: 60,
+            child: ReorderableDragStartListener(
+              index: index,
+              child: Container(
+                // must set color to make area valid
+                color: Colors.transparent,
+                child: Row(
+                  children: [
+                    SizedBox(width: 10),
+                    ImageIcon(reorderImage, color: iconColor),
+                  ],
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+    footer: SizedBox(height: 80),
+  );
+}
+
+Widget _playlistListTile(Playlist playlist) {
+  return Material(
+    color: Colors.transparent,
+    child: ListTile(
+      contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
+      visualDensity: const VisualDensity(horizontal: 0, vertical: -1),
+
+      leading: CoverArtWidget(
+        size: 50,
+        borderRadius: 5,
+        song: playlist.getDisplaySong(),
+      ),
+      title: Text(playlist.name),
+      subtitle: ValueListenableBuilder(
+        valueListenable: playlist.updateNotifier,
+        builder: (context, _, _) {
+          return Text(
+            AppLocalizations.of(context).songsCount(playlist.getTotalCount()),
+          );
+        },
+      ),
+    ),
   );
 }

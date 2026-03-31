@@ -5,21 +5,18 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/desktop/desktop_lyrics.dart';
-import 'package:particle_music/desktop/extensions/window_controller_extension.dart';
-import 'package:particle_music/desktop/keyboard.dart';
-import 'package:particle_music/desktop/my_tray_listener.dart';
-import 'package:particle_music/desktop/my_window_listener.dart';
-import 'package:particle_music/desktop/pages/main_page.dart';
-import 'package:particle_music/desktop/pages/mini_mode_page.dart';
-import 'package:particle_music/desktop/single_instance.dart';
+import 'package:particle_music/landscape_view/desktop_lyrics.dart';
+import 'package:particle_music/landscape_view/extensions/window_controller_extension.dart';
+import 'package:particle_music/landscape_view/keyboard.dart';
+import 'package:particle_music/landscape_view/my_tray_listener.dart';
+import 'package:particle_music/landscape_view/my_window_listener.dart';
+import 'package:particle_music/landscape_view/single_instance.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/l10n/generated/app_localizations_en.dart';
 import 'package:particle_music/loader.dart';
-import 'package:particle_music/mobile/overlay_lyrics.dart';
-import 'package:particle_music/mobile/pages/main_page.dart';
+import 'package:particle_music/portrait_view/overlay_lyrics.dart';
 import 'dart:async';
-import 'package:flutter/services.dart';
+import 'package:particle_music/view_entry.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
@@ -34,9 +31,6 @@ Future<void> main() async {
 
   if (isMobile) {
     await logger.init();
-    await SystemChrome.setPreferredOrientations([
-      DeviceOrientation.portraitUp, // only allow portrait
-    ]);
   } else {
     await windowManager.ensureInitialized();
     final windowController = await WindowController.fromCurrentEngine();
@@ -150,17 +144,11 @@ Future<void> main() async {
             return _loadingPage(context);
           }
 
-          return isMobile
-              ? MobileMainPage()
-              : ValueListenableBuilder(
-                  valueListenable: miniModeNotifier,
-                  builder: (context, miniMode, child) {
-                    if (miniMode) {
-                      return MiniModePage();
-                    }
-                    return DesktopMainPage();
-                  },
-                );
+          return MediaQuery.removePadding(
+            context: context,
+            removeLeft: true, // for mobile
+            child: ViewEntry(),
+          );
         },
       ),
     ),

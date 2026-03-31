@@ -6,7 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/desktop/extensions/window_controller_extension.dart';
+import 'package:particle_music/landscape_view/extensions/window_controller_extension.dart';
 import 'package:particle_music/common_widgets/lyrics.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/navidrome_client.dart';
@@ -87,9 +87,7 @@ class MyAudioHandler extends BaseAudioHandler {
 
     currentSongNotifier.addListener(() {
       needPause = false;
-      if (!isMobile) {
-        panelManager.updateBackground();
-      }
+      panelManager.updateBackground();
     });
 
     _player.stream.position.listen((position) {

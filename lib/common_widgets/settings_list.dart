@@ -9,7 +9,7 @@ import 'package:http/http.dart' as http;
 import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/loader.dart';
-import 'package:particle_music/mobile/sleep_timer.dart';
+import 'package:particle_music/portrait_view/sleep_timer.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/common_widgets/my_switch.dart';
 import 'package:particle_music/navidrome_client.dart';
@@ -18,7 +18,8 @@ import 'package:smooth_corner/smooth_corner.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SettingsList extends StatelessWidget {
-  const SettingsList({super.key});
+  final double? iconSize;
+  const SettingsList({super.key, this.iconSize});
 
   @override
   Widget build(BuildContext context) {
@@ -27,7 +28,7 @@ class SettingsList extends StatelessWidget {
     return ListView(
       physics: ClampingScrollPhysics(),
       children: [
-        if (!isMobile)
+        if (isLandscape)
           Padding(
             padding: const EdgeInsets.symmetric(horizontal: 20),
             child: SizedBox(
@@ -48,7 +49,7 @@ class SettingsList extends StatelessWidget {
             ),
           ),
 
-        if (!isMobile)
+        if (isLandscape)
           Divider(
             thickness: 0.5,
             height: 0.5,
@@ -57,11 +58,20 @@ class SettingsList extends StatelessWidget {
             color: dividerColor,
           ),
 
-        if (!isMobile) SizedBox(height: 10),
+        if (isLandscape) SizedBox(height: 10),
 
-        isMobile
-            ? ListTile(
-                leading: ImageIcon(infoImage, color: iconColor, size: 30),
+        isLandscape
+            ? paddingForLandscape(
+                ListTile(
+                  leading: ImageIcon(infoImage, color: iconColor),
+                  title: Text(l10n.openSourceLicense),
+                  onTap: () {
+                    panelManager.pushPanel('licenses');
+                  },
+                ),
+              )
+            : ListTile(
+                leading: ImageIcon(infoImage, color: iconColor, size: iconSize),
                 title: Text(l10n.openSourceLicense),
                 onTap: () {
                   Navigator.of(context, rootNavigator: true).push(
@@ -87,85 +97,76 @@ class SettingsList extends StatelessWidget {
                     ),
                   );
                 },
-              )
-            : paddingForDesktop(
-                ListTile(
-                  leading: ImageIcon(infoImage, color: iconColor),
-                  title: Text(l10n.openSourceLicense),
-                  onTap: () {
-                    panelManager.pushPanel('licenses');
-                  },
-                ),
               ),
 
-        isMobile
-            ? selectMusicFoldersListTile(context, l10n)
-            : paddingForDesktop(selectMusicFoldersListTile(context, l10n)),
+        isLandscape
+            ? paddingForLandscape(selectMusicFoldersListTile(context, l10n))
+            : selectMusicFoldersListTile(context, l10n),
 
-        isMobile
-            ? navidromeListTile(context, l10n)
-            : paddingForDesktop(navidromeListTile(context, l10n)),
+        isLandscape
+            ? paddingForLandscape(navidromeListTile(context, l10n))
+            : navidromeListTile(context, l10n),
 
-        isMobile
-            ? reloadListTile(context, l10n)
-            : paddingForDesktop(reloadListTile(context, l10n)),
+        isLandscape
+            ? paddingForLandscape(reloadListTile(context, l10n))
+            : reloadListTile(context, l10n),
 
-        isMobile
-            ? languageListTile(context, l10n)
-            : paddingForDesktop(languageListTile(context, l10n)),
+        isLandscape
+            ? paddingForLandscape(languageListTile(context, l10n))
+            : languageListTile(context, l10n),
 
         if (isMobile)
-          ListTile(
-            leading: ImageIcon(vibrationImage, color: iconColor, size: 30),
-            title: Text(l10n.vibration),
-            trailing: ValueListenableBuilder(
-              valueListenable: vibrationOnNoitifier,
-              builder: (context, value, child) {
-                return SizedBox(
-                  width: 50,
-                  child: MySwitch(
-                    value: value,
-                    onToggle: (value) {
-                      tryVibrate();
-                      vibrationOnNoitifier.value = value;
-                      settingManager.saveSetting();
-                    },
-                  ),
-                );
-              },
-            ),
-          ),
+          isLandscape
+              ? paddingForLandscape(vibrationListTile(l10n))
+              : vibrationListTile(l10n),
 
-        if (isMobile) sleepTimerListTile(context, l10n, true),
+        if (isMobile)
+          isLandscape
+              ? paddingForLandscape(
+                  sleepTimerListTile(context, l10n, true, iconSize: iconSize),
+                )
+              : sleepTimerListTile(context, l10n, true, iconSize: iconSize),
 
-        if (isMobile) pauseAfterCTListTile(context, l10n),
+        if (isMobile)
+          isLandscape
+              ? paddingForLandscape(pauseAfterCTListTile(context, l10n))
+              : pauseAfterCTListTile(context, l10n),
 
-        isMobile ? themeListTile(l10n) : paddingForDesktop(themeListTile(l10n)),
+        isLandscape
+            ? paddingForLandscape(themeListTile(l10n))
+            : themeListTile(l10n),
 
-        isMobile
-            ? paletteListTile(context, l10n)
-            : paddingForDesktop(paletteListTile(context, l10n)),
+        isLandscape
+            ? paddingForLandscape(paletteListTile(context, l10n))
+            : paletteListTile(context, l10n),
 
-        if (!isMobile) paddingForDesktop(exitOnClose(l10n)),
+        if (!isMobile) paddingForLandscape(exitOnClose(l10n)),
 
-        if (Platform.isAndroid) desktopLyricsOnAndroid(l10n),
+        if (Platform.isAndroid)
+          isLandscape
+              ? paddingForLandscape(desktopLyricsOnAndroid(l10n))
+              : desktopLyricsOnAndroid(l10n),
 
-        if (Platform.isAndroid) orientation(l10n),
+        if (Platform.isAndroid)
+          isLandscape
+              ? paddingForLandscape(lockAndUnlock(l10n))
+              : lockAndUnlock(l10n),
 
-        if (Platform.isAndroid) lockAndUnlock(l10n),
+        isLandscape
+            ? paddingForLandscape(checkUpdate(context, l10n))
+            : checkUpdate(context, l10n),
 
-        isMobile
-            ? checkUpdate(context, l10n)
-            : paddingForDesktop(checkUpdate(context, l10n)),
+        if (isMobile)
+          isLandscape
+              ? paddingForLandscape(exportLogListTile(context, l10n))
+              : exportLogListTile(context, l10n),
 
-        if (isMobile) exportLogListTile(context, l10n),
-
-        if (isMobile) SizedBox(height: 100),
+        if (!isLandscape) SizedBox(height: 100),
       ],
     );
   }
 
-  Widget paddingForDesktop(Widget child) {
+  Widget paddingForLandscape(Widget child) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 30),
       child: SmoothClipRRect(
@@ -178,11 +179,7 @@ class SettingsList extends StatelessWidget {
 
   Widget reloadListTile(BuildContext context, AppLocalizations l10n) {
     return ListTile(
-      leading: ImageIcon(
-        reloadImage,
-        color: iconColor,
-        size: isMobile ? 30 : null,
-      ),
+      leading: ImageIcon(reloadImage, color: iconColor, size: iconSize),
       title: Text(l10n.reload),
       onTap: () async {
         if (await showConfirmDialog(context, l10n.reload)) {
@@ -197,11 +194,7 @@ class SettingsList extends StatelessWidget {
     AppLocalizations l10n,
   ) {
     return ListTile(
-      leading: ImageIcon(
-        folderImage,
-        color: iconColor,
-        size: isMobile ? 30 : null,
-      ),
+      leading: ImageIcon(folderImage, color: iconColor, size: iconSize),
       title: Text(l10n.selectMusicFolder),
       onTap: () {
         showDialog(
@@ -409,11 +402,7 @@ class SettingsList extends StatelessWidget {
 
   Widget navidromeListTile(BuildContext context, AppLocalizations l10n) {
     return ListTile(
-      leading: ImageIcon(
-        navidromeImage,
-        color: iconColor,
-        size: isMobile ? 30 : null,
-      ),
+      leading: ImageIcon(navidromeImage, color: iconColor, size: iconSize),
       title: Text(l10n.connect2Navidrome),
       onTap: () {
         final usernameTmp = TextEditingController(text: username);
@@ -600,11 +589,7 @@ class SettingsList extends StatelessWidget {
 
   Widget languageListTile(BuildContext context, AppLocalizations l10n) {
     return ListTile(
-      leading: ImageIcon(
-        languageImage,
-        color: iconColor,
-        size: isMobile ? 30 : null,
-      ),
+      leading: ImageIcon(languageImage, color: iconColor, size: iconSize),
       title: Text(l10n.language),
       onTap: () {
         showDialog(
@@ -668,13 +653,32 @@ class SettingsList extends StatelessWidget {
     );
   }
 
+  Widget vibrationListTile(AppLocalizations l10n) {
+    return ListTile(
+      leading: ImageIcon(vibrationImage, color: iconColor, size: iconSize),
+      title: Text(l10n.vibration),
+      trailing: ValueListenableBuilder(
+        valueListenable: vibrationOnNoitifier,
+        builder: (context, value, child) {
+          return SizedBox(
+            width: 50,
+            child: MySwitch(
+              value: value,
+              onToggle: (value) {
+                tryVibrate();
+                vibrationOnNoitifier.value = value;
+                settingManager.saveSetting();
+              },
+            ),
+          );
+        },
+      ),
+    );
+  }
+
   Widget themeListTile(AppLocalizations l10n) {
     return ListTile(
-      leading: ImageIcon(
-        themeImage,
-        color: iconColor,
-        size: isMobile ? 30 : null,
-      ),
+      leading: ImageIcon(themeImage, color: iconColor, size: iconSize),
 
       title: Text(l10n.theme),
       trailing: SizedBox(
@@ -817,11 +821,7 @@ class SettingsList extends StatelessWidget {
   Widget paletteListTile(BuildContext context, AppLocalizations l10n) {
     final nameMap = colorManager.getNameMap(l10n);
     return ListTile(
-      leading: ImageIcon(
-        paletteImage,
-        color: iconColor,
-        size: isMobile ? 30 : null,
-      ),
+      leading: ImageIcon(paletteImage, color: iconColor, size: iconSize),
       title: Text(l10n.palette),
       onTap: () async {
         showDialog(
@@ -921,7 +921,7 @@ class SettingsList extends StatelessWidget {
 
   Widget desktopLyricsOnAndroid(AppLocalizations l10n) {
     return ListTile(
-      leading: ImageIcon(desktopLyricsImage, color: iconColor, size: 30),
+      leading: ImageIcon(desktopLyricsImage, color: iconColor, size: iconSize),
       title: Text(l10n.desktopLyrics),
       trailing: ValueListenableBuilder(
         valueListenable: showDesktopLrcOnAndroidNotifier,
@@ -963,59 +963,6 @@ class SettingsList extends StatelessWidget {
           );
         },
       ),
-    );
-  }
-
-  Widget orientation(AppLocalizations l10n) {
-    return ValueListenableBuilder(
-      valueListenable: showDesktopLrcOnAndroidNotifier,
-      builder: (context, value, child) {
-        if (!value) {
-          return SizedBox.shrink();
-        }
-        return ListTile(
-          trailing: SizedBox(
-            width: 150,
-            child: ValueListenableBuilder(
-              valueListenable: verticalDesktopLrcNotifier,
-              builder: (context, value, child) {
-                return Row(
-                  children: [
-                    Spacer(),
-                    Text(value ? l10n.vertical : l10n.horizontal),
-                    SizedBox(width: 10),
-                    MySwitch(
-                      value: value,
-                      onToggle: (value) async {
-                        tryVibrate();
-                        verticalDesktopLrcNotifier.value = value;
-                        await FlutterOverlayWindow.closeOverlay();
-
-                        final vertical = verticalDesktopLrcNotifier.value;
-
-                        await FlutterOverlayWindow.showOverlay(
-                          enableDrag: true,
-
-                          flag: lockDesktopLrcOnAndroidNotifier.value
-                              ? .clickThrough
-                              : .defaultFlag,
-                          visibility: NotificationVisibility.visibilityPublic,
-                          positionGravity: PositionGravity.none,
-
-                          height: vertical ? 2000 : 200,
-                          width: vertical ? 200 : 1200,
-                        );
-
-                        await FlutterOverlayWindow.shareData(value ? 1 : 0);
-                      },
-                    ),
-                  ],
-                );
-              },
-            ),
-          ),
-        );
-      },
     );
   }
 
@@ -1122,11 +1069,7 @@ class SettingsList extends StatelessWidget {
 
   Widget checkUpdate(BuildContext context, AppLocalizations l10n) {
     return ListTile(
-      leading: ImageIcon(
-        checkUpdateImage,
-        color: iconColor,
-        size: isMobile ? 30 : null,
-      ),
+      leading: ImageIcon(checkUpdateImage, color: iconColor, size: iconSize),
       title: Text(l10n.checkUpdate),
       onTap: () async {
         final url = Uri.parse(
@@ -1243,7 +1186,7 @@ class SettingsList extends StatelessWidget {
 
   Widget exportLogListTile(BuildContext context, AppLocalizations l10n) {
     return ListTile(
-      leading: ImageIcon(exportLogImage, color: iconColor, size: 30),
+      leading: ImageIcon(exportLogImage, color: iconColor, size: iconSize),
 
       title: Text(l10n.exportLog),
       onTap: () async {

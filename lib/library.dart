@@ -166,7 +166,7 @@ class Library {
   }
 
   Future<void> update() async {
-    if (!isMobile) {
+    if (isLandscape) {
       panelManager.updateBackground();
     }
     changeNotifier.value++;

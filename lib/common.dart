@@ -4,12 +4,11 @@ import 'dart:io';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/audio_handler.dart';
-import 'package:particle_music/desktop/panels/panel_manager.dart';
+import 'package:particle_music/landscape_view/panels/panel_manager.dart';
 import 'package:particle_music/history.dart';
 import 'package:particle_music/library.dart';
 import 'package:particle_music/logger.dart';
 import 'package:particle_music/common_widgets/lyrics.dart';
-import 'package:particle_music/mobile/pages/main_page.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/setting_manager.dart';
@@ -23,8 +22,11 @@ late Directory appSupportDir;
 late Directory tmpDir;
 
 late double mobileWidth;
+late double mobileHeight;
+late double shortestSide;
 
 final isMobile = Platform.isAndroid || Platform.isIOS;
+late bool isLandscape;
 
 // ===================================== Library =====================================
 
@@ -242,10 +244,6 @@ ValueNotifier<bool> isFullScreenNotifier = ValueNotifier(false);
 // ===================================== Desktop =====================================
 
 final PanelManager panelManager = PanelManager();
-
-// ===================================== Mobile =====================================
-
-final SwipeObserver swipeObserver = SwipeObserver();
 
 // ===================================== History =====================================
 

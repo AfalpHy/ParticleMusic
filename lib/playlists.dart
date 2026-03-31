@@ -242,7 +242,7 @@ class Playlist {
       displayNavidromeNotifier.value = true;
     }
 
-    if (!isMobile) {
+    if (isLandscape) {
       panelManager.updateBackground();
     }
     updateNotifier.value++;

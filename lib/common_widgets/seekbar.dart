@@ -28,7 +28,7 @@ class SeekBarState extends State<SeekBar> {
   void initState() {
     super.initState();
     assert(widget.widgetHeight > widget.seekBarHeight);
-    horizontalPadding = !isMobile && !widget.isMiniMode ? 45 : 0;
+    horizontalPadding = isLandscape && !widget.isMiniMode ? 45 : 0;
   }
 
   @override
