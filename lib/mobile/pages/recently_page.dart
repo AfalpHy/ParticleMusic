@@ -8,9 +8,9 @@ class RecentlyPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return LocalNavidromePageview(
-      displayNavidromeNotifier: historyManager.displayNavidromeRecentlyNotifier,
-      localSongList: historyManager.recentlySongList,
-      navidromeSongList: historyManager.navidromeRecentlySongList,
+      displayNavidromeNotifier: history.displayNavidromeRecentlyNotifier,
+      localSongList: history.recentlySongList,
+      navidromeSongList: history.navidromeRecentlySongList,
       recently: AppLocalizations.of(context).recently,
     );
   }

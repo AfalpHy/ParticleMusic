@@ -417,10 +417,7 @@ class MyAudioHandler extends BaseAudioHandler {
             _playedDuration.inSeconds /
             currentSongNotifier.value!.duration!.inSeconds;
         if (times > 0.5) {
-          historyManager.addSongTimes(
-            currentSongNotifier.value!,
-            times.round(),
-          );
+          history.addSongTimes(currentSongNotifier.value!, times.round());
         }
       }
 

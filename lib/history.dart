@@ -7,7 +7,7 @@ import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/navidrome_client.dart';
 import 'package:particle_music/utils.dart';
 
-class HistoryManager {
+class History {
   late File rankingFile;
   late File recentlyFile;
 

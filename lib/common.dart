@@ -5,7 +5,7 @@ import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/desktop/panels/panel_manager.dart';
-import 'package:particle_music/history_manager.dart';
+import 'package:particle_music/history.dart';
 import 'package:particle_music/library.dart';
 import 'package:particle_music/logger.dart';
 import 'package:particle_music/common_widgets/lyrics.dart';
@@ -249,7 +249,7 @@ final SwipeObserver swipeObserver = SwipeObserver();
 
 // ===================================== History =====================================
 
-final HistoryManager historyManager = HistoryManager();
+final History history = History();
 
 final rankingChangeNotifier = ValueNotifier(0);
 final recentlyChangeNotifier = ValueNotifier(0);

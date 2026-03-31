@@ -129,15 +129,11 @@ class PanelManager {
         isNavidrome ? library.navidromeSongList : library.songList,
       );
     } else if (label == 'ranking') {
-      bool isNavidrome = historyManager.displayNavidromeRankingNotifier.value;
-      backgroundSong = getFirstSong(
-        historyManager.getRankingSongList(isNavidrome),
-      );
+      bool isNavidrome = history.displayNavidromeRankingNotifier.value;
+      backgroundSong = getFirstSong(history.getRankingSongList(isNavidrome));
     } else if (label == 'recently') {
-      bool isNavidrome = historyManager.displayNavidromeRecentlyNotifier.value;
-      backgroundSong = getFirstSong(
-        historyManager.getRecentlySongList(isNavidrome),
-      );
+      bool isNavidrome = history.displayNavidromeRecentlyNotifier.value;
+      backgroundSong = getFirstSong(history.getRecentlySongList(isNavidrome));
     } else if (label[0] == '_') {
       final playlist = playlistsManager.getPlaylistByName(label.substring(1));
       backgroundSong = playlist!.getDisplaySong();

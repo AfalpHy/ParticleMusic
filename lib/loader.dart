@@ -47,7 +47,7 @@ class Loader {
 
     artistAlbumManager.load();
 
-    await historyManager.load();
+    await history.load();
 
     await playlistsManager.load();
 
@@ -73,7 +73,7 @@ class Loader {
 
     artistAlbumManager.clear();
 
-    historyManager.clear();
+    history.clear();
     if (!isMobile) {
       panelManager.clear();
     }

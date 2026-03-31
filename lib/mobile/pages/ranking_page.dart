@@ -9,9 +9,9 @@ class RankingPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return LocalNavidromePageview(
-      displayNavidromeNotifier: historyManager.displayNavidromeRankingNotifier,
-      localSongList: historyManager.rankingSongList,
-      navidromeSongList: historyManager.navidromeRankingSongList,
+      displayNavidromeNotifier: history.displayNavidromeRankingNotifier,
+      localSongList: history.rankingSongList,
+      navidromeSongList: history.navidromeRankingSongList,
       ranking: AppLocalizations.of(context).ranking,
     );
   }
