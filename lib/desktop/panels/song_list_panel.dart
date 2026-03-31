@@ -155,7 +155,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                   songList.insert(newIndex, item);
 
                   if (isLibrary) {
-                    libraryManager.update();
+                    library.update();
                   } else if (folder != null) {
                     folder!.update();
                   } else {
@@ -545,7 +545,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                   songList.insert(0, item);
 
                   if (isLibrary) {
-                    libraryManager.update();
+                    library.update();
                   } else if (folder != null) {
                     folder!.update();
                   } else {

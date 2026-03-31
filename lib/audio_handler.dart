@@ -188,8 +188,8 @@ class MyAudioHandler extends BaseAudioHandler {
       final content = item['content'] as String;
 
       final song = isNavidrome
-          ? id2navidromeSong[content]
-          : filePath2LibrarySong[content];
+          ? library.id2navidromeSong[content]
+          : library.filePath2Song[content];
 
       if (song != null) result.add(song);
     }

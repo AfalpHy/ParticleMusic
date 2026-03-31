@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:audio_tags_lofty/audio_tags_lofty.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common_widgets/lyrics.dart';
+import 'package:particle_music/utils.dart';
 
 class MyAudioMetadata {
   final String? filePath;
@@ -66,4 +67,71 @@ class MyAudioMetadata {
   set lyrics(String? value) => _audioMetadata.lyrics = value;
   set duration(Duration? value) => _audioMetadata.duration = value;
   set pictureBytes(Uint8List? value) => _audioMetadata.pictureBytes = value;
+
+  factory MyAudioMetadata.fromMap(Map<String, dynamic> map) {
+    final path = map['path'] as String;
+
+    return MyAudioMetadata(
+      filePath: revertFilePathIfNeed(path),
+      modified: DateTime.fromMillisecondsSinceEpoch(map['modified'] as int),
+      AudioMetadata(
+        title: map['title'] as String?,
+        artist: map['artist'] as String?,
+        album: map['album'] as String?,
+        genre: map['genre'] as String?,
+        year: map['year'] as int?,
+        track: map['track'] as int?,
+        disc: map['disc'] as int?,
+        bitrate: map['bitrate'] as int?,
+        samplerate: map['samplerate'] as int?,
+        duration: map['duration'] != null
+            ? Duration(milliseconds: map['duration'] as int)
+            : null,
+        lyrics: map['lyrics'] as String?,
+      ),
+    );
+  }
+
+  factory MyAudioMetadata.fromNavidromeMap(Map<String, dynamic> song) {
+    return MyAudioMetadata(
+      AudioMetadata(
+        title: song['title'],
+        artist: song['artist'],
+        album: song['album'],
+        genre: song['genre'],
+        year: song['year'],
+        track: song['track'],
+        disc: song['discNumber'],
+        bitrate: song['bitrate'],
+        samplerate: song['samplingate'],
+        duration: song['duration'] != null
+            ? Duration(seconds: song['duration'])
+            : null,
+      ),
+      isNavidrome: true,
+      id: song['id'],
+      playCount: song['playCount'] as int? ?? 0,
+      lastPlayed: song['played'] != null
+          ? DateTime.parse(song['played'])
+          : null,
+    );
+  }
+
+  Map<String, dynamic> toMap() {
+    return {
+      'modified': modified?.millisecondsSinceEpoch,
+      'path': clipFilePathIfNeed(filePath!),
+      'title': title,
+      'artist': artist,
+      'album': album,
+      'genre': genre,
+      'year': year,
+      'track': track,
+      'disc': disc,
+      'bitrate': bitrate,
+      'samplerate': samplerate,
+      'duration': duration?.inMilliseconds,
+      'lyrics': lyrics,
+    };
+  }
 }

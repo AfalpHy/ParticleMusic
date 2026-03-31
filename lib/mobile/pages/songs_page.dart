@@ -8,9 +8,9 @@ class SongsPage extends StatelessWidget {
   @override
   Widget build(BuildContext _) {
     return LocalNavidromePageview(
-      displayNavidromeNotifier: displayNavidromeSongsNotifier,
-      localSongList: librarySongList,
-      navidromeSongList: navidromeSongList,
+      displayNavidromeNotifier: library.displayNavidromeNotifier,
+      localSongList: library.songList,
+      navidromeSongList: library.navidromeSongList,
     );
   }
 }

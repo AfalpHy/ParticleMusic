@@ -15,6 +15,7 @@ import 'package:particle_music/desktop/pages/mini_mode_page.dart';
 import 'package:particle_music/desktop/single_instance.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/l10n/generated/app_localizations_en.dart';
+import 'package:particle_music/loader.dart';
 import 'package:particle_music/mobile/overlay_lyrics.dart';
 import 'package:particle_music/mobile/pages/main_page.dart';
 import 'dart:async';
@@ -60,7 +61,7 @@ Future<void> main() async {
 
   await initAudioService();
 
-  await libraryManager.init();
+  await Loader.init();
 
   runApp(
     ValueListenableBuilder(
@@ -165,7 +166,7 @@ Future<void> main() async {
     ),
   );
   logger.output('App start');
-  await libraryManager.load();
+  await Loader.load();
   if (!isMobile) {
     await initDesktopLyrics();
   }

@@ -357,11 +357,11 @@ Future<void> setSongList(
   if (jsonString.isNotEmpty) {
     final List<dynamic> songFilePathList = jsonDecode(jsonString);
     for (final path in songFilePathList) {
-      if (filePathValidSet.contains(path)) {
-        final song = filePath2LibrarySong[path]!;
+      if (library.filePathValidSet.contains(path)) {
+        final song = library.filePath2Song[path]!;
         destList.add(song);
       } else {
-        filePath2LibrarySong.remove(path);
+        library.filePath2Song.remove(path);
       }
     }
   }
@@ -397,23 +397,6 @@ void getDesktopLyricFromMap(dynamic data) {
 
   desktopLyricsIsKaraoke = map['isKaraoke'] as bool;
   updateDesktopLyricsNotifier.value++;
-}
-
-AudioMetadata mapNavidromeToAudioMetadata(Map<String, dynamic> song) {
-  return AudioMetadata(
-    title: song['title'],
-    artist: song['artist'],
-    album: song['album'],
-    genre: song['genre'],
-    year: song['year'],
-    track: song['track'],
-    disc: song['discNumber'],
-    bitrate: song['bitrate'],
-    samplerate: song['samplingate'],
-    duration: song['duration'] != null
-        ? Duration(seconds: song['duration'])
-        : null,
-  );
 }
 
 bool _exited = false;

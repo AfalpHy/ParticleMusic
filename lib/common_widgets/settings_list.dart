@@ -8,6 +8,7 @@ import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 import 'package:http/http.dart' as http;
 import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/loader.dart';
 import 'package:particle_music/mobile/sleep_timer.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/common_widgets/my_switch.dart';
@@ -185,7 +186,7 @@ class SettingsList extends StatelessWidget {
       title: Text(l10n.reload),
       onTap: () async {
         if (await showConfirmDialog(context, l10n.reload)) {
-          await libraryManager.reload();
+          await Loader.reload();
         }
       },
     );
@@ -206,7 +207,7 @@ class SettingsList extends StatelessWidget {
         showDialog(
           context: context,
           builder: (context) {
-            final currentFolderList = folderManager.folderList
+            final currentFolderList = library.folderList
                 .map((e) => e.path)
                 .toList();
             final updateNotifier = ValueNotifier(0);
@@ -380,10 +381,10 @@ class SettingsList extends StatelessWidget {
                             ElevatedButton(
                               onPressed: () async {
                                 Navigator.of(context).pop();
-                                if (await folderManager.updateFolders(
+                                if (await library.updateFolders(
                                   currentFolderList,
                                 )) {
-                                  libraryManager.reload();
+                                  Loader.reload();
                                 }
                               },
                               style: buttonStyle,
@@ -526,7 +527,7 @@ class SettingsList extends StatelessWidget {
                     if (context.mounted) {
                       Navigator.pop(context);
                     }
-                    libraryManager.reload();
+                    Loader.reload();
                   },
                   style: ElevatedButton.styleFrom(
                     elevation: 2,
@@ -564,7 +565,7 @@ class SettingsList extends StatelessWidget {
                       baseUrl = baseUrlTmp.text;
                       settingManager.saveSetting();
 
-                      await libraryManager.reload();
+                      await Loader.reload();
                     } else {
                       navidromeClient = tmp;
                       if (context.mounted) {

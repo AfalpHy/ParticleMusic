@@ -8,9 +8,9 @@ class SongsPanel extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return LocalNavidromePanel(
-      displayNavidromeNotifier: displayNavidromeSongsNotifier,
-      localSongList: librarySongList,
-      navidromeSongList: navidromeSongList,
+      displayNavidromeNotifier: library.displayNavidromeNotifier,
+      localSongList: library.songList,
+      navidromeSongList: library.navidromeSongList,
     );
   }
 }

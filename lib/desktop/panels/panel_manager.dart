@@ -47,8 +47,8 @@ class PanelManager {
         FolderPanel(
           key: UniqueKey(),
           folder: content == null
-              ? folderManager.folderList.first
-              : folderManager.getFolderByPath(content),
+              ? library.folderList.first
+              : library.getFolderByPath(content),
         ),
       );
     } else if (label == 'songs') {
@@ -124,9 +124,9 @@ class PanelManager {
       final songList = (panel as FolderPanel).folder.songList;
       backgroundSong = getFirstSong(songList);
     } else if (label == 'songs') {
-      bool isNavidrome = displayNavidromeSongsNotifier.value;
+      bool isNavidrome = library.displayNavidromeNotifier.value;
       backgroundSong = getFirstSong(
-        isNavidrome ? navidromeSongList : librarySongList,
+        isNavidrome ? library.navidromeSongList : library.songList,
       );
     } else if (label == 'ranking') {
       bool isNavidrome = historyManager.displayNavidromeRankingNotifier.value;

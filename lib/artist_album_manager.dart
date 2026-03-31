@@ -34,11 +34,11 @@ class ArtistAlbumManager {
   }
 
   void load() {
-    for (final song in librarySongList) {
+    for (final song in library.songList) {
       _processSong(song);
     }
 
-    for (final song in navidromeSongList) {
+    for (final song in library.navidromeSongList) {
       _processSong(song);
     }
 
@@ -191,7 +191,7 @@ class Artist extends ArtistAlbumBase {
       }
       for (final song in album.navidromeSongList) {
         if (getArtist(song).contains(name)) {
-          this.navidromeSongList.add(song);
+          navidromeSongList.add(song);
         }
       }
     }
@@ -218,7 +218,6 @@ class Album extends ArtistAlbumBase {
 
   void sort() {
     songList.sort((a, b) => _sort(a, b));
-    // shoud add this to avoid using global, but it's weird
-    this.navidromeSongList.sort((a, b) => _sort(a, b));
+    navidromeSongList.sort((a, b) => _sort(a, b));
   }
 }

@@ -150,7 +150,7 @@ class Playlist {
     if (contents != "") {
       List<dynamic> decoded = jsonDecode(contents);
       for (String filePath in decoded) {
-        MyAudioMetadata? song = filePath2LibrarySong[filePath];
+        MyAudioMetadata? song = library.filePath2Song[filePath];
         if (song == null) {
           continue;
         }
@@ -167,7 +167,7 @@ class Playlist {
       songIds = await navidromeClient.getPlaylistSongIds(id!);
     }
     for (final songId in songIds) {
-      final song = id2navidromeSong[songId];
+      final song = library.id2navidromeSong[songId];
       if (song == null) {
         continue;
       }

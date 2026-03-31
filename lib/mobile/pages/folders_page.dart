@@ -24,9 +24,9 @@ class FoldersPage extends StatelessWidget {
         centerTitle: true,
       ),
       body: ListView.builder(
-        itemCount: folderManager.folderList.length,
+        itemCount: library.folderList.length,
         itemBuilder: (_, index) {
-          final folder = folderManager.folderList[index];
+          final folder = library.folderList[index];
           return ListTile(
             leading: ValueListenableBuilder(
               valueListenable: folder.updateNotifier,

@@ -38,7 +38,7 @@ class HistoryManager {
       for (final raw in jsonList) {
         final map = Map<String, dynamic>.from(raw);
         String path = map['path'] as String;
-        MyAudioMetadata? song = filePath2LibrarySong[path];
+        MyAudioMetadata? song = library.filePath2Song[path];
         if (song != null) {
           song.playCount = map['times'] as int;
           rankingSongList.add(song);
@@ -54,7 +54,7 @@ class HistoryManager {
       List<dynamic> jsonList = jsonDecode(content);
 
       for (String filePath in jsonList) {
-        MyAudioMetadata? song = filePath2LibrarySong[filePath];
+        MyAudioMetadata? song = library.filePath2Song[filePath];
         if (song != null) {
           recentlyPathList.add(filePath);
           recentlySongList.add(song);
@@ -64,7 +64,7 @@ class HistoryManager {
       recentlyFile.writeAsStringSync(jsonEncode([]));
     }
 
-    for (final song in navidromeSongList) {
+    for (final song in library.navidromeSongList) {
       if (song.playCount > 0) {
         navidromeRankingSongList.add(song);
         navidromeRecentlySongList.add(song);

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/desktop/panels/song_list_panel.dart';
 import 'package:particle_music/desktop/title_bar.dart';
-import 'package:particle_music/folder_manager.dart';
+import 'package:particle_music/folder.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
@@ -53,9 +53,9 @@ class FolderPanel extends StatelessWidget {
                 width: 200,
 
                 child: ListView.builder(
-                  itemCount: folderManager.folderList.length,
+                  itemCount: library.folderList.length,
                   itemBuilder: (_, index) {
-                    final tmpFolder = folderManager.folderList[index];
+                    final tmpFolder = library.folderList[index];
                     return SmoothClipRRect(
                       borderRadius: BorderRadius.circular(10),
                       child: ValueListenableBuilder(

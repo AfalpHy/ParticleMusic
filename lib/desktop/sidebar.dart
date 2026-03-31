@@ -138,7 +138,7 @@ class Sidebar extends StatelessWidget {
                         content: l10n.folders,
 
                         onTap: () {
-                          if (folderManager.isEmpty) {
+                          if (library.folderList.isEmpty) {
                             showCenterMessage(
                               context,
                               'There are no folders',

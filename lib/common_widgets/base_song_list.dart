@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:particle_music/artist_album_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
-import 'package:particle_music/folder_manager.dart';
+import 'package:particle_music/folder.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/utils.dart';
@@ -114,10 +114,10 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
       recentlyChangeNotifier.addListener(updateSongList);
     } else {
       if (isNavidrome) {
-        songList = navidromeSongList;
+        songList = library.navidromeSongList;
       } else {
-        songList = librarySongList;
-        librarySongListUpdateNotifier.addListener(updateSongList);
+        songList = library.songList;
+        library.changeNotifier.addListener(updateSongList);
         reorderable = true;
       }
       isLibrary = true;
@@ -138,7 +138,7 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
     } else if (recently != null) {
       recentlyChangeNotifier.removeListener(updateSongList);
     } else if (isLibrary) {
-      librarySongListUpdateNotifier.removeListener(updateSongList);
+      library.changeNotifier.removeListener(updateSongList);
     }
     sortTypeNotifier.removeListener(updateSongList);
     textController.removeListener(updateSongList);

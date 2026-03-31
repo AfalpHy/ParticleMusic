@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/my_auto_size_text.dart';
-import 'package:particle_music/folder_manager.dart';
+import 'package:particle_music/folder.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/mobile/selectable_song_list_tile.dart';
 import 'package:particle_music/mobile/my_search_field.dart';
@@ -280,7 +280,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                     currentSongListNotifier.value = songList;
 
                     if (isLibrary) {
-                      libraryManager.update();
+                      library.update();
                     } else if (folder != null) {
                       folder!.update();
                     } else {

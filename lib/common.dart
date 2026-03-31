@@ -5,9 +5,8 @@ import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/desktop/panels/panel_manager.dart';
-import 'package:particle_music/folder_manager.dart';
 import 'package:particle_music/history_manager.dart';
-import 'package:particle_music/library_manager.dart';
+import 'package:particle_music/library.dart';
 import 'package:particle_music/logger.dart';
 import 'package:particle_music/common_widgets/lyrics.dart';
 import 'package:particle_music/mobile/pages/main_page.dart';
@@ -29,19 +28,7 @@ final isMobile = Platform.isAndroid || Platform.isIOS;
 
 // ===================================== Library =====================================
 
-LibraryManager libraryManager = LibraryManager();
-
-Set<String> filePathValidSet = {};
-
-List<MyAudioMetadata> librarySongList = [];
-List<MyAudioMetadata> libraryAdditionalSongList = [];
-ValueNotifier<int> librarySongListUpdateNotifier = ValueNotifier(0);
-Map<String, MyAudioMetadata> filePath2LibrarySong = {};
-
-List<MyAudioMetadata> navidromeSongList = [];
-Map<String, MyAudioMetadata> id2navidromeSong = {};
-
-final displayNavidromeSongsNotifier = ValueNotifier(false);
+late Library library;
 
 final ValueNotifier<int> loadedCountNotifier = ValueNotifier(0);
 final ValueNotifier<String> currentLoadingFolderNotifier = ValueNotifier('');
@@ -49,10 +36,6 @@ final ValueNotifier<String> currentLoadingFolderNotifier = ValueNotifier('');
 final ValueNotifier<bool> loadingLibraryNotifier = ValueNotifier(true);
 
 final ValueNotifier<bool> loadingNavidromeNotifier = ValueNotifier(false);
-
-// ===================================== Folder =====================================
-
-late FolderManager folderManager;
 
 // ===================================== MiniMode =====================================
 
