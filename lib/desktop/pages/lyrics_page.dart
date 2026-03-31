@@ -7,7 +7,7 @@ import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common_widgets/my_auto_size_text.dart';
 import 'package:particle_music/desktop/speaker.dart';
 import 'package:particle_music/desktop/title_bar.dart';
-import 'package:particle_music/common_widgets/full_width_track_shape.dart';
+import 'package:particle_music/desktop/volume_bar.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/common_widgets/lyrics.dart';
 import 'package:particle_music/common_widgets/seekbar.dart';
@@ -360,36 +360,7 @@ class LyricsPageState extends State<LyricsPage> {
               SizedBox(
                 height: 10,
                 width: width * 0.5,
-                child: ValueListenableBuilder(
-                  valueListenable: volumeNotifier,
-                  builder: (context, value, child) {
-                    return SliderTheme(
-                      data: SliderTheme.of(context).copyWith(
-                        trackHeight: 2,
-                        trackShape: const FullWidthTrackShape(),
-                        thumbShape: RoundSliderThumbShape(
-                          enabledThumbRadius: 0,
-                        ), // smaller thumb
-                        overlayColor: Colors.transparent,
-                        activeTrackColor: Colors.grey.shade50,
-                        inactiveTrackColor: Colors.black12,
-                        thumbColor: Colors.grey.shade50,
-                      ),
-                      child: Slider(
-                        value: value,
-                        min: 0,
-                        max: 1,
-                        onChanged: (value) {
-                          volumeNotifier.value = value;
-                          audioHandler.setVolume(value);
-                        },
-                        onChangeEnd: (value) {
-                          audioHandler.savePlayState();
-                        },
-                      ),
-                    );
-                  },
-                ),
+                child: VolumeBar(activeColor: Colors.grey.shade50),
               ),
               SizedBox(
                 width: 40,

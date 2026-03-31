@@ -8,8 +8,8 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common_widgets/seekbar.dart';
 import 'package:particle_music/desktop/pages/play_queue_page.dart';
-import 'package:particle_music/common_widgets/full_width_track_shape.dart';
 import 'package:particle_music/desktop/speaker.dart';
+import 'package:particle_music/desktop/volume_bar.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/common_widgets/lyrics.dart';
 import 'package:particle_music/my_audio_metadata.dart';
@@ -276,34 +276,7 @@ class _MiniModePageState extends State<MiniModePage> {
           SizedBox(
             height: 20,
             width: 120,
-            child: ValueListenableBuilder(
-              valueListenable: volumeNotifier,
-              builder: (context, value, child) {
-                return SliderTheme(
-                  data: SliderTheme.of(context).copyWith(
-                    trackHeight: 2,
-                    trackShape: const FullWidthTrackShape(),
-                    thumbShape: RoundSliderThumbShape(enabledThumbRadius: 0),
-                    overlayColor: Colors.transparent,
-                    activeTrackColor: Colors.grey.shade50,
-                    inactiveTrackColor: Colors.black12,
-                    thumbColor: Colors.grey.shade50,
-                  ),
-                  child: Slider(
-                    value: value,
-                    min: 0,
-                    max: 1,
-                    onChanged: (value) {
-                      volumeNotifier.value = value;
-                      audioHandler.setVolume(value);
-                    },
-                    onChangeEnd: (value) {
-                      audioHandler.savePlayState();
-                    },
-                  ),
-                );
-              },
-            ),
+            child: VolumeBar(activeColor: Colors.grey.shade50),
           ),
           Spacer(),
           IconButton(
