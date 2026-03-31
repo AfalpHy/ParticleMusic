@@ -20,6 +20,9 @@ version: 1.0.16+2
 
 environment:
   sdk: ^3.11.0
+  # Specify a fixed version to ensure consistent behavior.
+  # If you want to use a newer version, add ^ before the version number,
+  # or directly set the version you want.
   flutter: 3.41.6
 
 # Dependencies specify other packages that your package needs in order to work.
