@@ -16,25 +16,86 @@ import 'package:particle_music/common_widgets/seekbar.dart';
 import 'package:particle_music/utils.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
-class PortraitLyricsPage extends StatelessWidget {
+class PortraitLyricsPage extends StatefulWidget {
   const PortraitLyricsPage({super.key});
 
   @override
+  State<PortraitLyricsPage> createState() => _PortraitLyricsPageState();
+}
+
+class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
+  late double dragOffset;
+
+  int _animationDuration = 0;
+
+  void closeOrReset() {
+    if (displayLyricsPageNotifier.value) {
+      _resetSheet();
+    } else {
+      _closeSheet();
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    if (displayLyricsPageNotifier.value) {
+      dragOffset = 0;
+    } else {
+      dragOffset = 1;
+    }
+    displayLyricsPageNotifier.addListener(closeOrReset);
+  }
+
+  @override
+  void dispose() {
+    displayLyricsPageNotifier.removeListener(closeOrReset);
+    super.dispose();
+  }
+
+  void _resetSheet() {
+    setState(() {
+      _animationDuration = 300;
+      dragOffset = 0.0;
+    });
+  }
+
+  void _closeSheet() {
+    setState(() {
+      _animationDuration = 250;
+      dragOffset = 1.0;
+    });
+  }
+
+  @override
   Widget build(BuildContext context) {
+    final screenHeight = MediaQuery.of(context).size.height;
+
     return GestureDetector(
-      onVerticalDragEnd: (_) {
-        displayLyricsPageNotifier.value = false;
+      onVerticalDragUpdate: (details) {
+        setState(() {
+          _animationDuration = 0;
+          dragOffset += details.delta.dy / screenHeight;
+          dragOffset = dragOffset.clamp(0.0, 1.0);
+        });
       },
-      child: ValueListenableBuilder(
-        valueListenable: displayLyricsPageNotifier,
-        builder: (context, display, child) {
-          return AnimatedSlide(
-            offset: display ? Offset.zero : const Offset(0, 1),
-            duration: const Duration(milliseconds: 250),
-            curve: Curves.easeInOutCubic,
-            child: content(context),
-          );
-        },
+
+      onVerticalDragEnd: (details) {
+        double velocity = details.primaryVelocity ?? 0;
+
+        if (dragOffset > 0.25 || velocity > 500) {
+          displayLyricsPageNotifier.value = false;
+        } else {
+          _resetSheet();
+        }
+      },
+
+      child: AnimatedContainer(
+        duration: Duration(milliseconds: _animationDuration),
+        curve: Curves.easeOutCubic,
+
+        transform: Matrix4.translationValues(0, dragOffset * screenHeight, 0),
+        child: content(context),
       ),
     );
   }
