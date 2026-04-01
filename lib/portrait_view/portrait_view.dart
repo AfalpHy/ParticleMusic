@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -127,11 +128,18 @@ class _PortraitViewState extends State<PortraitView> {
               ),
               Positioned(
                 top: MediaQuery.of(context).padding.top + 5,
-                left: 10,
+                left: 5,
                 child: Builder(
                   builder: (context) => IconButton(
-                    icon: Icon(Icons.menu, color: iconColor),
-                    onPressed: () => Scaffold.of(context).openDrawer(),
+                    icon: Icon(
+                      Platform.isAndroid
+                          ? Icons.menu
+                          : Icons.arrow_back_ios_new_rounded,
+                      color: iconColor,
+                    ),
+                    onPressed: () => Platform.isAndroid
+                        ? Scaffold.of(context).openDrawer()
+                        : layersManager.popLayer(),
                   ),
                 ),
               ),

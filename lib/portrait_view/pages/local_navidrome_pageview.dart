@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/artists_albums_manager.dart';
+import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/portrait_view/pages/song_list_page.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/playlists.dart';
@@ -57,6 +58,7 @@ class LocalNavidromePageview extends StatelessWidget {
     return PageView(
       onPageChanged: (value) {
         displayNavidromeNotifier.value = !displayNavidromeNotifier.value;
+        layersManager.updateBackground();
       },
       controller: pageController,
       children: [

@@ -30,8 +30,8 @@ class PortraitLyricsPage extends StatelessWidget {
         builder: (context, display, child) {
           return AnimatedSlide(
             offset: display ? Offset.zero : const Offset(0, 1),
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.linear,
+            duration: const Duration(milliseconds: 250),
+            curve: Curves.easeInOutCubic,
             child: content(context),
           );
         },

@@ -129,13 +129,18 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                         borderRadius: coverArtSize * 0.025,
                         song: currentSong,
                       ),
-                      playControls(
-                        coverArtSize,
-                        pageHight,
-                        currentSong,
-                        context,
-                      ),
+                      if (pageHight > 600) ...[
+                        message(coverArtSize, pageHight, currentSong),
+                        playControls(
+                          coverArtSize,
+                          pageHight,
+                          currentSong,
+                          context,
+                        ),
+                      ],
+
                       Spacer(),
+                      SizedBox(height: pageHight * 0.05),
                     ],
                   ),
                   SizedBox(width: pageWidth * 0.05),
@@ -145,37 +150,8 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                       children: [
                         SizedBox(height: pageHight * 0.1),
                         if (pageHight <= 600)
-                          SizedBox(
-                            height: 36,
-                            child: Center(
-                              child: MyAutoSizeText(
-                                key: UniqueKey(),
-                                getTitle(currentSong),
-                                maxLines: 1,
-                                textStyle: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  fontSize: 20,
-                                  color: Colors.grey.shade50,
-                                ),
-                              ),
-                            ),
-                          ),
-                        if (pageHight <= 600)
-                          SizedBox(
-                            height: 28,
-                            child: Center(
-                              child: MyAutoSizeText(
-                                key: UniqueKey(),
-                                '${getArtist(currentSong)} - ${getAlbum(currentSong)}',
-                                maxLines: 1,
-                                textStyle: TextStyle(
-                                  fontSize: 14,
-                                  color: Colors.grey.shade100,
-                                ),
-                              ),
-                            ),
-                          ),
-                        if (pageHight <= 600) SizedBox(height: 10),
+                          message(pageWidth * 0.35, pageHight, currentSong),
+
                         Expanded(
                           child: ShaderMask(
                             shaderCallback: (rect) {
@@ -206,7 +182,7 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                                   ? SizedBox()
                                   : LyricsListView(
                                       key: ValueKey(currentSong),
-                                      expanded: true,
+                                      expanded: isMobile ? false : true,
                                       lyrics: currentSong.parsedLyrics!.lyrics,
                                       isKaraoke:
                                           currentSong.parsedLyrics!.isKaraoke,
@@ -214,6 +190,16 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                             ),
                           ),
                         ),
+
+                        if (pageHight <= 600) ...[
+                          playControls(
+                            pageWidth * 0.4,
+                            pageHight,
+                            currentSong,
+                            context,
+                          ),
+                          SizedBox(height: 10),
+                        ],
                       ],
                     ),
                   ),
@@ -276,6 +262,47 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
     );
   }
 
+  Widget message(double width, double pageHight, MyAudioMetadata? currentSong) {
+    return Column(
+      children: [
+        SizedBox(height: pageHight * 0.01),
+        SizedBox(
+          width: width - 30,
+
+          height: 36,
+          child: Center(
+            child: MyAutoSizeText(
+              key: UniqueKey(),
+              getTitle(currentSong),
+              maxLines: 1,
+              textStyle: TextStyle(
+                fontWeight: FontWeight.bold,
+                fontSize: 20,
+                color: Colors.grey.shade50,
+              ),
+            ),
+          ),
+        ),
+
+        SizedBox(
+          width: width - 30,
+
+          height: 28,
+          child: Center(
+            child: MyAutoSizeText(
+              key: UniqueKey(),
+              '${getArtist(currentSong)} - ${getAlbum(currentSong)}',
+              maxLines: 1,
+              textStyle: TextStyle(fontSize: 14, color: Colors.grey.shade100),
+            ),
+          ),
+        ),
+
+        SizedBox(height: pageHight * 0.01),
+      ],
+    );
+  }
+
   Widget playControls(
     double width,
     double pageHight,
@@ -286,44 +313,6 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
 
     return Column(
       children: [
-        SizedBox(height: pageHight * 0.01),
-        if (pageHight > 600)
-          SizedBox(
-            width: width - 30,
-
-            height: 36,
-            child: Center(
-              child: MyAutoSizeText(
-                key: UniqueKey(),
-                getTitle(currentSong),
-                maxLines: 1,
-                textStyle: TextStyle(
-                  fontWeight: FontWeight.bold,
-                  fontSize: 20,
-                  color: Colors.grey.shade50,
-                ),
-              ),
-            ),
-          ),
-
-        if (pageHight > 600)
-          SizedBox(
-            width: width - 30,
-
-            height: 28,
-            child: Center(
-              child: MyAutoSizeText(
-                key: UniqueKey(),
-                '${getArtist(currentSong)} - ${getAlbum(currentSong)}',
-                maxLines: 1,
-                textStyle: TextStyle(fontSize: 14, color: Colors.grey.shade100),
-              ),
-            ),
-          ),
-        if (pageHight <= 600) SizedBox(height: pageHight * 0.03),
-
-        SizedBox(height: pageHight * 0.01),
-
         SizedBox(
           width: width - 15,
           child: SeekBar(light: true, widgetHeight: 20, seekBarHeight: 10),
