@@ -2,13 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:particle_music/artist_album_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/landscape_view/panels/artist_album_panel.dart';
-import 'package:particle_music/landscape_view/panels/folder_panel.dart';
+import 'package:particle_music/landscape_view/panels/folders_panel.dart';
 import 'package:particle_music/landscape_view/panels/ranking_panel.dart';
 import 'package:particle_music/landscape_view/panels/playlists_panel.dart';
 import 'package:particle_music/landscape_view/panels/recently_panel.dart';
 import 'package:particle_music/landscape_view/panels/setting_panel.dart';
 import 'package:particle_music/landscape_view/panels/single_album_panel.dart';
 import 'package:particle_music/landscape_view/panels/single_artist_panel.dart';
+import 'package:particle_music/landscape_view/panels/single_folder_panel.dart';
 import 'package:particle_music/landscape_view/panels/single_playlist_panel.dart';
 import 'package:particle_music/landscape_view/panels/songs_panel.dart';
 import 'package:particle_music/playlists.dart';
@@ -42,13 +43,13 @@ class PanelManager {
           album: artistAlbumManager.name2Album[content]!,
         ),
       );
-    } else if (label == 'folder') {
+    } else if (label == 'folders' && content == null) {
+      panelStack.add(FoldersPanel(key: UniqueKey()));
+    } else if (label == 'folders' && content != null) {
       panelStack.add(
-        FolderPanel(
+        SingleFolderPanel(
           key: UniqueKey(),
-          folder: content == null
-              ? library.folderList.first
-              : library.getFolderByPath(content),
+          folder: library.getFolderByPath(content),
         ),
       );
     } else if (label == 'songs') {
@@ -120,8 +121,8 @@ class PanelManager {
       backgroundSong = panel.artist.getDisplaySong();
     } else if (label == 'albums' && panel is SingleAlbumPanel) {
       backgroundSong = panel.album.getDisplaySong();
-    } else if (label == 'folder') {
-      final songList = (panel as FolderPanel).folder.songList;
+    } else if (label == 'folders' && panel is SingleFolderPanel) {
+      final songList = panel.folder.songList;
       backgroundSong = getFirstSong(songList);
     } else if (label == 'songs') {
       bool isNavidrome = library.displayNavidromeNotifier.value;

@@ -188,64 +188,69 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
               itemCount: playQueue.length,
               itemBuilder: (_, index) {
                 final song = playQueue[index];
-                return ListTile(
+                return MediaQuery.removePadding(
                   key: ValueKey(song),
-                  contentPadding: EdgeInsets.fromLTRB(15, 0, 0, 0),
-                  leading: CoverArtWidget(
-                    size: 40,
-                    borderRadius: 4,
-                    song: song,
-                  ),
-                  title: ValueListenableBuilder(
-                    valueListenable: currentSongNotifier,
-                    builder: (_, currentSong, _) {
-                      return Text(
-                        getTitle(song),
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontWeight: song == currentSong
-                              ? FontWeight.bold
-                              : null,
-                        ),
-                      );
+                  context: context,
+                  removeLeft: true, // for mobile
+                  removeRight: true,
+                  child: ListTile(
+                    contentPadding: EdgeInsets.fromLTRB(15, 0, 0, 0),
+                    leading: CoverArtWidget(
+                      size: 40,
+                      borderRadius: 4,
+                      song: song,
+                    ),
+                    title: ValueListenableBuilder(
+                      valueListenable: currentSongNotifier,
+                      builder: (_, currentSong, _) {
+                        return Text(
+                          getTitle(song),
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontWeight: song == currentSong
+                                ? FontWeight.bold
+                                : null,
+                          ),
+                        );
+                      },
+                    ),
+                    subtitle: Text(
+                      "${getArtist(song)} - ${getAlbum(song)}",
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 12),
+                    ),
+                    visualDensity: VisualDensity(vertical: -4),
+                    onTap: () async {
+                      audioHandler.currentIndex = index;
+                      await audioHandler.load();
+                      audioHandler.play();
                     },
-                  ),
-                  subtitle: Text(
-                    "${getArtist(song)} - ${getAlbum(song)}",
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 12),
-                  ),
-                  visualDensity: VisualDensity(vertical: -4),
-                  onTap: () async {
-                    audioHandler.currentIndex = index;
-                    await audioHandler.load();
-                    audioHandler.play();
-                  },
 
-                  trailing: IconButton(
-                    color: iconColor,
+                    trailing: IconButton(
+                      color: iconColor,
 
-                    onPressed: () async {
-                      audioHandler.delete(index);
-                      setState(() {});
-                      if (index < audioHandler.currentIndex) {
-                        audioHandler.currentIndex -= 1;
-                      } else if (index == audioHandler.currentIndex) {
-                        if (playQueue.isEmpty) {
-                          while (Navigator.canPop(context)) {
-                            Navigator.pop(context);
+                      onPressed: () async {
+                        audioHandler.delete(index);
+                        setState(() {});
+                        if (index < audioHandler.currentIndex) {
+                          audioHandler.currentIndex -= 1;
+                        } else if (index == audioHandler.currentIndex) {
+                          if (playQueue.isEmpty) {
+                            while (Navigator.canPop(context)) {
+                              Navigator.pop(context);
+                            }
+                            await audioHandler.clear();
+                          } else {
+                            if (index == playQueue.length) {
+                              audioHandler.currentIndex = 0;
+                            }
+                            await audioHandler.load();
                           }
-                          await audioHandler.clear();
-                        } else {
-                          if (index == playQueue.length) {
-                            audioHandler.currentIndex = 0;
-                          }
-                          await audioHandler.load();
                         }
-                      }
-                      audioHandler.saveAllStates();
-                    },
-                    icon: Icon(Icons.clear_rounded, size: 20),
+                        audioHandler.saveAllStates();
+                      },
+                      icon: Icon(Icons.clear_rounded, size: 20),
+                    ),
                   ),
                 );
               },

@@ -296,6 +296,12 @@ abstract class AppLocalizations {
   /// **'{count} in total'**
   String playlistsCount(int count);
 
+  /// No description provided for @foldersCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} in total'**
+  String foldersCount(int count);
+
   /// No description provided for @searchSongs.
   ///
   /// In en, this message translates to:

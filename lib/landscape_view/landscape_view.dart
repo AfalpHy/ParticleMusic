@@ -131,55 +131,54 @@ class LandscapeView extends StatelessWidget {
           },
         ),
 
-        ValueListenableBuilder(
-          valueListenable: displayPlayQueuePageNotifier,
-          builder: (context, display, _) {
-            if (display) {
-              return GestureDetector(
-                onTap: () {
-                  displayPlayQueuePageNotifier.value = false;
-                },
-                child: Container(color: Colors.black.withAlpha(25)),
-              );
-            } else {
-              return SizedBox.shrink();
-            }
-          },
-        ),
-
-        Positioned(
-          top: 75,
-          bottom: isMobile ? 75 : 100,
-          right: 0,
-          child: ValueListenableBuilder(
+        if (!isMobile)
+          ValueListenableBuilder(
             valueListenable: displayPlayQueuePageNotifier,
             builder: (context, display, _) {
-              return AnimatedSlide(
-                offset: display ? Offset.zero : Offset(1, 0),
-                duration: const Duration(milliseconds: 200),
-                curve: Curves.linear,
-                child: Material(
-                  elevation: 1,
-                  color: sidebarColor.withAlpha(255),
-                  shape: SmoothRectangleBorder(
-                    smoothness: 1,
-                    borderRadius: BorderRadius.horizontal(
-                      left: Radius.circular(10),
-                    ),
-                  ),
-
-                  child: SizedBox(
-                    width: max(
-                      isMobile ? 400 : 350,
-                      MediaQuery.widthOf(context) * 0.2,
-                    ),
-                    child: PlayQueuePage(),
-                  ),
-                ),
-              );
+              if (display) {
+                return GestureDetector(
+                  onTap: () {
+                    displayPlayQueuePageNotifier.value = false;
+                  },
+                  child: Container(color: Colors.black.withAlpha(25)),
+                );
+              } else {
+                return SizedBox.shrink();
+              }
             },
           ),
-        ),
+
+        if (!isMobile)
+          Positioned(
+            top: 75,
+            bottom: isMobile ? 75 : 100,
+            right: 0,
+            child: ValueListenableBuilder(
+              valueListenable: displayPlayQueuePageNotifier,
+              builder: (context, display, _) {
+                return AnimatedSlide(
+                  offset: display ? Offset.zero : Offset(1, 0),
+                  duration: const Duration(milliseconds: 200),
+                  curve: Curves.linear,
+                  child: Material(
+                    elevation: 1,
+                    color: sidebarColor.withAlpha(255),
+                    shape: SmoothRectangleBorder(
+                      smoothness: 1,
+                      borderRadius: BorderRadius.horizontal(
+                        left: Radius.circular(10),
+                      ),
+                    ),
+
+                    child: SizedBox(
+                      width: max(350, MediaQuery.widthOf(context) * 0.2),
+                      child: PlayQueuePage(),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
       ],
     );
   }

@@ -60,6 +60,14 @@
       }
     }
   },
+  "foldersCount": "{count} in total",
+  "@foldersCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
   "searchSongs": "Search Songs",
   "searchArtists": "Search Artists",
   "searchAlbums": "Search Albums",

@@ -9,7 +9,7 @@ import 'package:particle_music/portrait_view/sleep_timer.dart';
 import 'package:particle_music/common_widgets/my_sheet.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/common_widgets/lyrics.dart';
-import 'package:particle_music/portrait_view/play_queue_sheet.dart';
+import 'package:particle_music/common_widgets/play_queue_sheet.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/common_widgets/seekbar.dart';

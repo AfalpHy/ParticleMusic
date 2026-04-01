@@ -116,6 +116,11 @@ class AppLocalizationsZh extends AppLocalizations {
   }
 
   @override
+  String foldersCount(int count) {
+    return '$count 个';
+  }
+
+  @override
   String get searchSongs => '搜索歌曲';
 
   @override

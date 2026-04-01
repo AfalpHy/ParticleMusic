@@ -32,6 +32,7 @@
   "artistsCount": "{count} 人",
   "albumsCount": "{count} 张",
   "playlistsCount": "{count} 个",
+  "foldersCount": "{count} 个",
   "searchSongs": "搜索歌曲",
   "searchArtists": "搜索艺术家",
   "searchAlbums": "搜索专辑",

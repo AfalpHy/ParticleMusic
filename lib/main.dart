@@ -147,6 +147,7 @@ Future<void> main() async {
           return MediaQuery.removePadding(
             context: context,
             removeLeft: true, // for mobile
+            removeRight: true,
             child: ViewEntry(),
           );
         },

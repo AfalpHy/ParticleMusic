@@ -67,10 +67,10 @@ class PlaylistsPanelState extends State<PlaylistsPanel> {
         double coverArtWidth;
         if (value) {
           crossAxisCount = (panelWidth / 240).toInt();
-          coverArtWidth = panelWidth / crossAxisCount - 40;
+          coverArtWidth = panelWidth / crossAxisCount - 45;
         } else {
           crossAxisCount = (panelWidth / 120).toInt();
-          coverArtWidth = panelWidth / crossAxisCount - 30;
+          coverArtWidth = panelWidth / crossAxisCount - 35;
         }
 
         return Column(
@@ -197,7 +197,7 @@ class PlaylistsPanelState extends State<PlaylistsPanel> {
                                       },
                                     ),
                                     SizedBox(
-                                      width: coverArtWidth - 20,
+                                      width: coverArtWidth - 5,
                                       child: Center(
                                         child: Text(
                                           playlist ==

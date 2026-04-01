@@ -21,7 +21,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
   int continuousSelectBeginIndex = 0;
 
   late bool isMiniMode;
-  double itemExtend = isMobile ? 60 : 64;
+  double itemExtend = 64;
 
   void updateIsSelectedList() {
     isSelectedList = List.generate(
@@ -65,58 +65,54 @@ class PlayQueuePageState extends State<PlayQueuePage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    return SafeArea(
-      top: false,
-      bottom: false,
-      child: Column(
-        children: [
-          SizedBox(height: isMobile ? 5 : 10),
-          topBar(l10n),
-          SizedBox(height: isMobile ? 5 : 10),
+    return Column(
+      children: [
+        SizedBox(height: 10),
+        topBar(l10n),
+        SizedBox(height: 10),
 
-          Expanded(
-            child: CustomScrollView(
-              controller: scrollController,
-              slivers: [
-                SliverReorderableList(
-                  itemExtent: itemExtend,
-                  onReorder: (oldIndex, newIndex) {
-                    if (newIndex > oldIndex) newIndex -= 1;
-                    if (oldIndex == audioHandler.currentIndex) {
-                      audioHandler.currentIndex = newIndex;
-                    } else if (oldIndex < audioHandler.currentIndex &&
-                        newIndex >= audioHandler.currentIndex) {
-                      audioHandler.currentIndex -= 1;
-                    } else if (oldIndex > audioHandler.currentIndex &&
-                        newIndex <= audioHandler.currentIndex) {
-                      audioHandler.currentIndex += 1;
-                    }
-                    final item = playQueue.removeAt(oldIndex);
-                    playQueue.insert(newIndex, item);
+        Expanded(
+          child: CustomScrollView(
+            controller: scrollController,
+            slivers: [
+              SliverReorderableList(
+                itemExtent: itemExtend,
+                onReorder: (oldIndex, newIndex) {
+                  if (newIndex > oldIndex) newIndex -= 1;
+                  if (oldIndex == audioHandler.currentIndex) {
+                    audioHandler.currentIndex = newIndex;
+                  } else if (oldIndex < audioHandler.currentIndex &&
+                      newIndex >= audioHandler.currentIndex) {
+                    audioHandler.currentIndex -= 1;
+                  } else if (oldIndex > audioHandler.currentIndex &&
+                      newIndex <= audioHandler.currentIndex) {
+                    audioHandler.currentIndex += 1;
+                  }
+                  final item = playQueue.removeAt(oldIndex);
+                  playQueue.insert(newIndex, item);
 
-                    audioHandler.saveAllStates();
+                  audioHandler.saveAllStates();
 
-                    // clearing selected after reordering
-                    for (var tmp in isSelectedList) {
-                      tmp.value = false;
-                    }
-                    continuousSelectBeginIndex = 0;
-                  },
+                  // clearing selected after reordering
+                  for (var tmp in isSelectedList) {
+                    tmp.value = false;
+                  }
+                  continuousSelectBeginIndex = 0;
+                },
 
-                  itemCount: playQueue.length,
-                  itemBuilder: (context, index) {
-                    return playQueueItemWithContextMenu(
-                      context,
-                      index,
-                      isSelectedList,
-                    );
-                  },
-                ),
-              ],
-            ),
+                itemCount: playQueue.length,
+                itemBuilder: (context, index) {
+                  return playQueueItemWithContextMenu(
+                    context,
+                    index,
+                    isSelectedList,
+                  );
+                },
+              ),
+            ],
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -374,73 +370,68 @@ class PlayQueueItemChildState extends State<PlayQueueItem> {
 
   Widget songListTile() {
     final song = playQueue[widget.index];
-    return Center(
-      child: ListTile(
-        visualDensity: isMobile
-            ? const VisualDensity(horizontal: 0, vertical: -4)
-            : null,
-        leading: Stack(
-          children: [
-            miniModeNotifier.value || isMobile
-                ? CoverArtWidget(size: 40, borderRadius: 4, song: song)
-                : CoverArtWidget(size: 50, borderRadius: 5, song: song),
-            ValueListenableBuilder(
-              valueListenable: showPlayButtonNotifier,
-              builder: (context, value, child) {
-                return value
-                    ? IconButton(
-                        onPressed: () async {
-                          audioHandler.currentIndex = widget.index;
-                          await audioHandler.load();
-                          await audioHandler.play();
-                        },
-                        icon: Icon(
-                          Icons.play_arrow_rounded,
-                          color: Colors.white,
-                          size: miniModeNotifier.value ? 20 : 30,
-                        ),
-                      )
-                    : SizedBox.shrink();
-              },
-            ),
-          ],
-        ),
-        title: ValueListenableBuilder(
-          valueListenable: currentSongNotifier,
-          builder: (_, currentSong, _) {
-            return Text(
-              getTitle(song),
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                color: song == currentSong
-                    ? miniModeNotifier.value
-                          ? Colors.white
-                          : highlightTextColor
-                    : miniModeNotifier.value
-                    ? Colors.grey.shade100
-                    : null,
+    return ListTile(
+      leading: Stack(
+        children: [
+          miniModeNotifier.value
+              ? CoverArtWidget(size: 40, borderRadius: 4, song: song)
+              : CoverArtWidget(size: 50, borderRadius: 5, song: song),
+          ValueListenableBuilder(
+            valueListenable: showPlayButtonNotifier,
+            builder: (context, value, child) {
+              return value
+                  ? IconButton(
+                      onPressed: () async {
+                        audioHandler.currentIndex = widget.index;
+                        await audioHandler.load();
+                        await audioHandler.play();
+                      },
+                      icon: Icon(
+                        Icons.play_arrow_rounded,
+                        color: Colors.white,
+                        size: miniModeNotifier.value ? 20 : 30,
+                      ),
+                    )
+                  : SizedBox.shrink();
+            },
+          ),
+        ],
+      ),
+      title: ValueListenableBuilder(
+        valueListenable: currentSongNotifier,
+        builder: (_, currentSong, _) {
+          return Text(
+            getTitle(song),
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+              color: song == currentSong
+                  ? miniModeNotifier.value
+                        ? Colors.white
+                        : highlightTextColor
+                  : miniModeNotifier.value
+                  ? Colors.grey.shade100
+                  : null,
 
-                fontWeight: song == currentSong ? FontWeight.bold : null,
-                fontSize: 15,
-              ),
-            );
-          },
+              fontWeight: song == currentSong ? FontWeight.bold : null,
+              fontSize: 15,
+            ),
+          );
+        },
+      ),
+      subtitle: Text(
+        "${getArtist(song)} - ${getAlbum(song)}",
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          fontSize: 12,
+          color: miniModeNotifier.value ? Colors.grey.shade100 : null,
         ),
-        subtitle: Text(
-          "${getArtist(song)} - ${getAlbum(song)}",
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontSize: 12,
-            color: miniModeNotifier.value ? Colors.grey.shade100 : null,
-          ),
-        ),
-        trailing: Text(
-          formatDuration(getDuration(song)),
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            fontSize: 12,
-            color: miniModeNotifier.value ? Colors.grey.shade100 : null,
-          ),
+      ),
+      trailing: Text(
+        formatDuration(getDuration(song)),
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(
+          fontSize: 12,
+          color: miniModeNotifier.value ? Colors.grey.shade100 : null,
         ),
       ),
     );
@@ -449,7 +440,6 @@ class PlayQueueItemChildState extends State<PlayQueueItem> {
   @override
   Widget build(BuildContext context) {
     return ReorderableDragStartListener(
-      enabled: !isMobile,
       index: widget.index,
       child: ValueListenableBuilder(
         valueListenable: widget.isSelected,

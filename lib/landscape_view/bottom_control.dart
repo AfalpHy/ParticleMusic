@@ -5,6 +5,7 @@ import 'package:particle_music/landscape_view/speaker.dart';
 import 'package:particle_music/landscape_view/volume_bar.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/common_widgets/seekbar.dart';
+import 'package:particle_music/common_widgets/play_queue_sheet.dart';
 import 'package:particle_music/utils.dart';
 
 class BottomControl extends StatelessWidget {
@@ -176,10 +177,20 @@ class BottomControl extends StatelessWidget {
                   if (playQueue.isEmpty) {
                     return;
                   }
-                  displayPlayQueuePageNotifier.value = true;
+                  if (isMobile) {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (context) {
+                        return PlayQueueSheet();
+                      },
+                    );
+                  } else {
+                    displayPlayQueuePageNotifier.value = true;
+                  }
                 },
               ),
-              isMobile ? SizedBox(width: 30) : Spacer(),
+              isMobile ? SizedBox(width: 20) : Spacer(),
             ],
           ),
         ),

@@ -116,6 +116,11 @@ class AppLocalizationsEn extends AppLocalizations {
   }
 
   @override
+  String foldersCount(int count) {
+    return '$count in total';
+  }
+
+  @override
   String get searchSongs => 'Search Songs';
 
   @override

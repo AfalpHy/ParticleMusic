@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common_widgets/my_auto_size_text.dart';
+import 'package:particle_music/common_widgets/play_queue_sheet.dart';
 import 'package:particle_music/landscape_view/speaker.dart';
 import 'package:particle_music/landscape_view/title_bar.dart';
 import 'package:particle_music/landscape_view/volume_bar.dart';
@@ -380,7 +381,17 @@ class LyricsPageState extends State<LyricsPage> {
                 color: Colors.grey.shade50,
                 icon: const ImageIcon(playQueueImage, size: 25),
                 onPressed: () {
-                  displayPlayQueuePageNotifier.value = true;
+                  if (isMobile) {
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (context) {
+                        return PlayQueueSheet();
+                      },
+                    );
+                  } else {
+                    displayPlayQueuePageNotifier.value = true;
+                  }
                 },
               ),
             ],
