@@ -169,7 +169,10 @@ class LandscapeView extends StatelessWidget {
                   ),
 
                   child: SizedBox(
-                    width: max(350, MediaQuery.widthOf(context) * 0.2),
+                    width: max(
+                      isMobile ? 400 : 350,
+                      MediaQuery.widthOf(context) * 0.2,
+                    ),
                     child: PlayQueuePage(),
                   ),
                 ),

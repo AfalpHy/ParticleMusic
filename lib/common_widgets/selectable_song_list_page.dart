@@ -233,89 +233,83 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
           moreButton(context),
         ],
       ),
-      body: ValueListenableBuilder(
-        valueListenable: currentSongListNotifier,
-        builder: (context, currentSongList, child) {
-          bool reorderable =
-              widget.reorderable &&
-              textController.text.isEmpty &&
-              sortTypeNotifier.value == 0;
-          return Column(
-            children: [
-              Row(
-                children: [
-                  if (isLandscape && shortestSide <= 600) SizedBox(width: 50),
-                  ValueListenableBuilder(
-                    valueListenable: allSelected,
-                    builder: (context, value, child) {
-                      return Checkbox(
-                        value: value,
-                        activeColor: iconColor,
-                        onChanged: (value) {
-                          for (var isSelected in isSelectedList) {
-                            isSelected.value = value!;
-                          }
-                          selectedNumNotifier.value = value!
-                              ? currentSongList.length
-                              : 0;
-                        },
-                        shape: const CircleBorder(),
-                        side: BorderSide(color: Colors.grey),
-                      );
-                    },
-                  ),
-                  Text(l10n.selectAll, style: TextStyle(fontSize: 16)),
-                ],
-              ),
-              Expanded(
-                child: ReorderableListView.builder(
-                  buildDefaultDragHandles: false,
-                  onReorder: (oldIndex, newIndex) {
-                    if (newIndex > oldIndex) newIndex -= 1;
-                    final checkBoxitem = isSelectedList.removeAt(oldIndex);
-                    isSelectedList.insert(newIndex, checkBoxitem);
-
-                    final item = songList.removeAt(oldIndex);
-                    songList.insert(newIndex, item);
-                    // This code is only reached when currentSongList == songList,
-                    // reassign it to avoid calling updateSongList to keep the isSelectedList state
-                    currentSongListNotifier.value = songList;
-
-                    if (isLibrary) {
-                      library.update();
-                    } else if (folder != null) {
-                      folder!.update();
-                    } else {
-                      playlist!.update();
-                    }
-                  },
-                  onReorderStart: (_) {
-                    tryVibrate();
-                  },
-                  onReorderEnd: (_) {
-                    tryVibrate();
-                  },
-                  proxyDecorator:
-                      (Widget child, int index, Animation<double> animation) {
-                        return Material(
-                          elevation: 0.1,
-                          color: Colors.transparent,
-                          child: child,
+      body: SafeArea(
+        child: ValueListenableBuilder(
+          valueListenable: currentSongListNotifier,
+          builder: (context, currentSongList, child) {
+            bool reorderable =
+                widget.reorderable &&
+                textController.text.isEmpty &&
+                sortTypeNotifier.value == 0;
+            return Column(
+              children: [
+                Row(
+                  children: [
+                    ValueListenableBuilder(
+                      valueListenable: allSelected,
+                      builder: (context, value, child) {
+                        return Checkbox(
+                          value: value,
+                          activeColor: iconColor,
+                          onChanged: (value) {
+                            for (var isSelected in isSelectedList) {
+                              isSelected.value = value!;
+                            }
+                            selectedNumNotifier.value = value!
+                                ? currentSongList.length
+                                : 0;
+                          },
+                          shape: const CircleBorder(),
+                          side: BorderSide(color: Colors.grey),
                         );
                       },
-                  itemCount: currentSongList.length,
-                  itemBuilder: (_, index) {
-                    return MediaQuery.removePadding(
-                      key: ValueKey(currentSongList[index]),
-                      context: context,
-                      removeLeft: true, // for mobile
-                      child: Padding(
-                        padding: EdgeInsets.fromLTRB(
-                          isLandscape && shortestSide <= 600 ? 50 : 0,
-                          0,
-                          0,
-                          0,
-                        ),
+                    ),
+                    Text(l10n.selectAll, style: TextStyle(fontSize: 16)),
+                  ],
+                ),
+                Expanded(
+                  child: ReorderableListView.builder(
+                    buildDefaultDragHandles: false,
+                    onReorder: (oldIndex, newIndex) {
+                      if (newIndex > oldIndex) newIndex -= 1;
+                      final checkBoxitem = isSelectedList.removeAt(oldIndex);
+                      isSelectedList.insert(newIndex, checkBoxitem);
+
+                      final item = songList.removeAt(oldIndex);
+                      songList.insert(newIndex, item);
+                      // This code is only reached when currentSongList == songList,
+                      // reassign it to avoid calling updateSongList to keep the isSelectedList state
+                      currentSongListNotifier.value = songList;
+
+                      if (isLibrary) {
+                        library.update();
+                      } else if (folder != null) {
+                        folder!.update();
+                      } else {
+                        playlist!.update();
+                      }
+                    },
+                    onReorderStart: (_) {
+                      tryVibrate();
+                    },
+                    onReorderEnd: (_) {
+                      tryVibrate();
+                    },
+                    proxyDecorator:
+                        (Widget child, int index, Animation<double> animation) {
+                          return Material(
+                            elevation: 0.1,
+                            color: Colors.transparent,
+                            child: child,
+                          );
+                        },
+                    itemCount: currentSongList.length,
+                    itemBuilder: (_, index) {
+                      return MediaQuery.removePadding(
+                        key: ValueKey(currentSongList[index]),
+                        context: context,
+                        removeLeft: true, // for mobile
+                        removeRight: true,
                         child: SelectableSongListTile(
                           index: index,
                           source: currentSongList,
@@ -324,14 +318,14 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                           reorderable: reorderable,
                           isRanking: ranking != null,
                         ),
-                      ),
-                    );
-                  },
+                      );
+                    },
+                  ),
                 ),
-              ),
-            ],
-          );
-        },
+              ],
+            );
+          },
+        ),
       ),
       bottomNavigationBar: ValueListenableBuilder(
         valueListenable: selectedNumNotifier,
