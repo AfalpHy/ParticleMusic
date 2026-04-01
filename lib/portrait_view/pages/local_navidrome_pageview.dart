@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:particle_music/artist_album_manager.dart';
-import 'package:particle_music/common.dart';
+import 'package:particle_music/artists_albums_manager.dart';
 import 'package:particle_music/portrait_view/pages/song_list_page.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/playlists.dart';
@@ -55,35 +54,32 @@ class LocalNavidromePageview extends StatelessWidget {
       initialPage: displayNavidromeNotifier.value && pageCnt == 2 ? 1 : 0,
     );
 
-    return Container(
-      color: pageBackgroundColor,
-      child: PageView(
-        onPageChanged: (value) {
-          displayNavidromeNotifier.value = !displayNavidromeNotifier.value;
-        },
-        controller: pageController,
-        children: [
-          if (localSongList.isNotEmpty || navidromeSongList.isEmpty)
-            SongListPage(
-              key: UniqueKey(),
-              playlist: playlist,
-              artist: artist,
-              album: album,
-              ranking: ranking,
-              recently: recently,
-            ),
-          if (navidromeSongList.isNotEmpty)
-            SongListPage(
-              key: UniqueKey(),
-              playlist: playlist,
-              artist: artist,
-              album: album,
-              ranking: ranking,
-              recently: recently,
-              isNavidrome: true,
-            ),
-        ],
-      ),
+    return PageView(
+      onPageChanged: (value) {
+        displayNavidromeNotifier.value = !displayNavidromeNotifier.value;
+      },
+      controller: pageController,
+      children: [
+        if (localSongList.isNotEmpty || navidromeSongList.isEmpty)
+          SongListPage(
+            key: UniqueKey(),
+            playlist: playlist,
+            artist: artist,
+            album: album,
+            ranking: ranking,
+            recently: recently,
+          ),
+        if (navidromeSongList.isNotEmpty)
+          SongListPage(
+            key: UniqueKey(),
+            playlist: playlist,
+            artist: artist,
+            album: album,
+            ranking: ranking,
+            recently: recently,
+            isNavidrome: true,
+          ),
+      ],
     );
   }
 }

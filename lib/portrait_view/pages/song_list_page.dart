@@ -39,17 +39,22 @@ class _SongListPageState extends BaseSongListState<SongListPage>
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
-      backgroundColor: pageBackgroundColor,
+      extendBodyBehindAppBar: true,
+      backgroundColor: Colors.transparent,
       resizeToAvoidBottomInset: false,
-      appBar: searchAndMore(context),
-      body: contentWithStack(),
+      body: Column(
+        children: [
+          searchAndMore(context),
+          Expanded(child: contentWithStack()),
+        ],
+      ),
     );
   }
 
   PreferredSizeWidget searchAndMore(BuildContext context) {
     return AppBar(
       iconTheme: IconThemeData(color: iconColor),
-      backgroundColor: pageBackgroundColor,
+      backgroundColor: Colors.transparent,
       scrolledUnderElevation: 0,
       actions: [
         MySearchField(

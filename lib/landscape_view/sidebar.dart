@@ -3,6 +3,7 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common_widgets/playlist_widgets.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
+import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/utils.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 import 'package:super_context_menu/super_context_menu.dart';
@@ -10,7 +11,8 @@ import 'package:window_manager/window_manager.dart';
 
 class Sidebar extends StatelessWidget {
   final ScrollController _scrollController = ScrollController();
-  Sidebar({super.key});
+  final void Function()? closeDrawer;
+  Sidebar({super.key, this.closeDrawer});
 
   Widget sidebarItem({
     required String label,
@@ -18,7 +20,7 @@ class Sidebar extends StatelessWidget {
     required String content,
     Widget? trailing,
     EdgeInsetsGeometry? contentPadding,
-    void Function()? onTap,
+    required Function() onTap,
   }) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 10),
@@ -44,7 +46,10 @@ class Sidebar extends StatelessWidget {
             contentPadding: contentPadding,
             visualDensity: const VisualDensity(horizontal: 0, vertical: -3.65),
             trailing: trailing,
-            onTap: onTap,
+            onTap: () {
+              onTap();
+              closeDrawer?.call();
+            },
           ),
         ),
       ),
@@ -104,7 +109,7 @@ class Sidebar extends StatelessWidget {
                         content: l10n.artists,
 
                         onTap: () {
-                          panelManager.pushPanel('artists');
+                          layersManager.pushLayer('artists');
                         },
                       ),
                     ),
@@ -121,7 +126,7 @@ class Sidebar extends StatelessWidget {
                         content: l10n.albums,
 
                         onTap: () {
-                          panelManager.pushPanel('albums');
+                          layersManager.pushLayer('albums');
                         },
                       ),
                     ),
@@ -145,7 +150,7 @@ class Sidebar extends StatelessWidget {
                               duration: 2000,
                             );
                           } else {
-                            panelManager.pushPanel('folders');
+                            layersManager.pushLayer('folders');
                           }
                         },
                       ),
@@ -163,7 +168,7 @@ class Sidebar extends StatelessWidget {
                         content: l10n.songs,
 
                         onTap: () {
-                          panelManager.pushPanel('songs');
+                          layersManager.pushLayer('songs');
                         },
                       ),
                     ),
@@ -192,7 +197,7 @@ class Sidebar extends StatelessWidget {
                         content: l10n.ranking,
 
                         onTap: () {
-                          panelManager.pushPanel('ranking');
+                          layersManager.pushLayer('ranking');
                         },
                       ),
                     ),
@@ -209,7 +214,7 @@ class Sidebar extends StatelessWidget {
                         content: l10n.recently,
 
                         onTap: () {
-                          panelManager.pushPanel('recently');
+                          layersManager.pushLayer('recently');
                         },
                       ),
                     ),
@@ -250,7 +255,7 @@ class Sidebar extends StatelessWidget {
                           ),
 
                           onTap: () {
-                            panelManager.pushPanel('playlists');
+                            layersManager.pushLayer('playlists');
                           },
                         ),
                         menuProvider: (_) {
@@ -328,6 +333,18 @@ class Sidebar extends StatelessWidget {
                 ),
               ),
             ),
+            if (!isLandscape)
+              SafeArea(
+                top: false,
+                child: sidebarItem(
+                  label: 'settings',
+                  leading: Icon(Icons.settings_rounded, size: 30),
+                  content: l10n.settings,
+                  onTap: () {
+                    layersManager.pushLayer('settings');
+                  },
+                ),
+              ),
           ],
         ),
       ),
@@ -365,7 +382,7 @@ class Sidebar extends StatelessWidget {
             content: index == 0 ? l10n.favorites : playlist.name,
 
             onTap: () {
-              panelManager.pushPanel('_${playlist.name}');
+              layersManager.pushLayer('_${playlist.name}');
             },
           ),
           menuProvider: (_) {
@@ -383,7 +400,7 @@ class Sidebar extends StatelessWidget {
                     image: MenuImage.icon(Icons.delete),
                     callback: () async {
                       if (await showConfirmDialog(context, l10n.delete)) {
-                        panelManager.removePlaylistPanel(playlist);
+                        layersManager.removePlaylistLayer(playlist);
                         playlistsManager.deletePlaylist(playlist);
                       }
                     },

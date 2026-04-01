@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
-import 'package:particle_music/portrait_view/pages/song_list_page.dart';
+import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/utils.dart';
 
 class FoldersPage extends StatelessWidget {
@@ -13,11 +13,10 @@ class FoldersPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      backgroundColor: pageBackgroundColor,
+      backgroundColor: Colors.transparent,
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        iconTheme: IconThemeData(color: iconColor),
-        backgroundColor: pageBackgroundColor,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
         title: Text(l10n.folders),
@@ -40,9 +39,7 @@ class FoldersPage extends StatelessWidget {
             ),
             title: Text(folder.path),
             onTap: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(builder: (_) => SongListPage(folder: folder)),
-              );
+              layersManager.pushLayer('folders', content: folder.path);
             },
           );
         },

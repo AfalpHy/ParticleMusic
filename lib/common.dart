@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/audio_handler.dart';
-import 'package:particle_music/landscape_view/panels/panel_manager.dart';
 import 'package:particle_music/history.dart';
 import 'package:particle_music/library.dart';
 import 'package:particle_music/logger.dart';
@@ -240,10 +239,6 @@ bool ctrlIsPressed = false;
 
 ValueNotifier<bool> isMaximizedNotifier = ValueNotifier(false);
 ValueNotifier<bool> isFullScreenNotifier = ValueNotifier(false);
-
-// ===================================== Desktop =====================================
-
-final PanelManager panelManager = PanelManager();
 
 // ===================================== History =====================================
 

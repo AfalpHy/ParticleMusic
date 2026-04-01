@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/navidrome_client.dart';
 import 'package:particle_music/utils.dart';
@@ -141,9 +142,7 @@ class History {
 
     _add2Recently(song);
 
-    if (!isMobile) {
-      panelManager.updateBackground();
-    }
+    layersManager.updateBackground();
     rankingChangeNotifier.value++;
   }
 

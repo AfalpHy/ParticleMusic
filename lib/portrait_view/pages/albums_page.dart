@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:particle_music/artist_album_manager.dart';
+import 'package:particle_music/artists_albums_manager.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/portrait_view/pages/local_navidrome_pageview.dart';
+import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/portrait_view/my_search_field.dart';
 import 'package:particle_music/common_widgets/my_sheet.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
@@ -13,7 +13,7 @@ import 'package:smooth_corner/smooth_corner.dart';
 
 class AlbumsPage extends StatelessWidget {
   final ValueNotifier<List<Album>> currentAlbumListNotifier = ValueNotifier(
-    artistAlbumManager.albumList,
+    artistsAlbumsManager.albumList,
   );
 
   final textController = TextEditingController();
@@ -22,7 +22,7 @@ class AlbumsPage extends StatelessWidget {
 
   void updateCurrentAlbumList() {
     final value = textController.text;
-    currentAlbumListNotifier.value = artistAlbumManager.albumList
+    currentAlbumListNotifier.value = artistsAlbumsManager.albumList
         .where((e) => (e.name.toLowerCase().contains(value.toLowerCase())))
         .toList();
   }
@@ -32,11 +32,11 @@ class AlbumsPage extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return Scaffold(
-      backgroundColor: pageBackgroundColor,
+      backgroundColor: Colors.transparent,
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
         iconTheme: IconThemeData(color: iconColor),
-        backgroundColor: pageBackgroundColor,
+        backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
         title: Text(l10n.albums),
@@ -94,7 +94,8 @@ class AlbumsPage extends StatelessWidget {
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             trailing: ValueListenableBuilder(
-              valueListenable: artistAlbumManager.albumsUseLargePictureNotifier,
+              valueListenable:
+                  artistsAlbumsManager.albumsUseLargePictureNotifier,
               builder: (context, useLargePicture, child) {
                 return SizedBox(
                   width: 100,
@@ -108,7 +109,7 @@ class AlbumsPage extends StatelessWidget {
                         value: useLargePicture,
                         onToggle: (value) async {
                           tryVibrate();
-                          artistAlbumManager
+                          artistsAlbumsManager
                                   .albumsUseLargePictureNotifier
                                   .value =
                               value;
@@ -130,7 +131,7 @@ class AlbumsPage extends StatelessWidget {
             ),
             visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
             trailing: ValueListenableBuilder(
-              valueListenable: artistAlbumManager.albumsIsAscendingNotifier,
+              valueListenable: artistsAlbumsManager.albumsIsAscendingNotifier,
               builder: (context, value, child) {
                 return SizedBox(
                   width: 120,
@@ -144,10 +145,10 @@ class AlbumsPage extends StatelessWidget {
                         value: value,
                         onToggle: (value) async {
                           tryVibrate();
-                          artistAlbumManager.albumsIsAscendingNotifier.value =
+                          artistsAlbumsManager.albumsIsAscendingNotifier.value =
                               value;
                           settingManager.saveSetting();
-                          artistAlbumManager.sortAlbums();
+                          artistsAlbumsManager.sortAlbums();
                           updateCurrentAlbumList();
                         },
                       ),
@@ -164,7 +165,7 @@ class AlbumsPage extends StatelessWidget {
 
   Widget gridView(List<Album> albumList) {
     return ValueListenableBuilder(
-      valueListenable: artistAlbumManager.albumsUseLargePictureNotifier,
+      valueListenable: artistsAlbumsManager.albumsUseLargePictureNotifier,
       builder: (context, useLargePicture, child) {
         double size = useLargePicture ? mobileWidth * 0.40 : mobileWidth * 0.25;
         double radius = useLargePicture
@@ -201,17 +202,7 @@ class AlbumsPage extends StatelessWidget {
                       },
                     ),
                     onTap: () {
-                      Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => LocalNavidromePageview(
-                            displayNavidromeNotifier:
-                                album.displayNavidromeNotifier,
-                            localSongList: album.songList,
-                            navidromeSongList: album.navidromeSongList,
-                            album: album,
-                          ),
-                        ),
-                      );
+                      layersManager.pushLayer('albums', content: album.name);
                     },
                   ),
                 ),

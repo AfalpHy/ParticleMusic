@@ -3,14 +3,14 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/landscape_view/title_bar.dart';
 import 'package:particle_music/common_widgets/settings_list.dart';
 
-class SettingPanel extends StatefulWidget {
-  const SettingPanel({super.key});
+class SettingsPanel extends StatefulWidget {
+  const SettingsPanel({super.key});
 
   @override
-  State<StatefulWidget> createState() => SettingPanelState();
+  State<StatefulWidget> createState() => _SettingsPanelState();
 }
 
-class SettingPanelState extends State<SettingPanel> {
+class _SettingsPanelState extends State<SettingsPanel> {
   @override
   Widget build(BuildContext context) {
     return Column(

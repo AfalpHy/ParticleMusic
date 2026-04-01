@@ -8,6 +8,7 @@ import 'package:media_kit/media_kit.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/landscape_view/extensions/window_controller_extension.dart';
 import 'package:particle_music/common_widgets/lyrics.dart';
+import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/navidrome_client.dart';
 import 'package:particle_music/utils.dart';
@@ -87,7 +88,7 @@ class MyAudioHandler extends BaseAudioHandler {
 
     currentSongNotifier.addListener(() {
       needPause = false;
-      panelManager.updateBackground();
+      layersManager.updateBackground();
     });
 
     _player.stream.position.listen((position) {

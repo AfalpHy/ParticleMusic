@@ -16,18 +16,30 @@ import 'package:particle_music/common_widgets/seekbar.dart';
 import 'package:particle_music/utils.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
-class LyricsPage extends StatelessWidget {
-  const LyricsPage({super.key});
+class PortraitLyricsPage extends StatelessWidget {
+  const PortraitLyricsPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    if (isLandscape) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        Navigator.of(context).pop();
-        displayLyricsPageNotifier.value = true;
-      });
-      return SizedBox.shrink();
-    }
+    return GestureDetector(
+      onVerticalDragEnd: (_) {
+        displayLyricsPageNotifier.value = false;
+      },
+      child: ValueListenableBuilder(
+        valueListenable: displayLyricsPageNotifier,
+        builder: (context, display, child) {
+          return AnimatedSlide(
+            offset: display ? Offset.zero : const Offset(0, 1),
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.linear,
+            child: content(context),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget content(BuildContext context) {
     return ValueListenableBuilder(
       valueListenable: currentSongNotifier,
       builder: (context, currentSong, child) {

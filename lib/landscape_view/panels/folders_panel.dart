@@ -3,6 +3,7 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/landscape_view/title_bar.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
+import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/utils.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
@@ -119,7 +120,7 @@ class FoldersPanel extends StatelessWidget {
                               ],
                             ),
                             onTap: () {
-                              panelManager.pushPanel(
+                              layersManager.pushLayer(
                                 'folders',
                                 content: folder.path,
                               );

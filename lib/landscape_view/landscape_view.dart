@@ -1,15 +1,12 @@
-import 'dart:async';
-import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/landscape_view/bottom_control.dart';
-import 'package:particle_music/landscape_view/pages/play_queue_page.dart';
+import 'package:particle_music/landscape_view/pages/landscape_lyrics_page.dart';
 import 'package:particle_music/landscape_view/sidebar.dart';
-import 'package:particle_music/landscape_view/pages/lyrics_page.dart';
-import 'package:smooth_corner/smooth_corner.dart';
+import 'package:particle_music/layer/layers_manager.dart';
 
 class LandscapeView extends StatelessWidget {
   const LandscapeView({super.key});
@@ -75,8 +72,8 @@ class LandscapeView extends StatelessWidget {
                         child: Material(
                           color: panelColor,
                           child: IndexedStack(
-                            index: panelManager.panelStack.length - 1,
-                            children: panelManager.panelStack,
+                            index: layersManager.layerStack.length - 1,
+                            children: layersManager.layerStack,
                           ),
                         ),
                       ),
@@ -89,96 +86,7 @@ class LandscapeView extends StatelessWidget {
           },
         ),
 
-        ValueListenableBuilder(
-          valueListenable: displayLyricsPageNotifier,
-          builder: (context, value, child) {
-            if (!value) {
-              immersiveModeTimer?.cancel();
-              immersiveModeTimer = null;
-            } else if (!isMobile) {
-              immersiveModeTimer = Timer(
-                const Duration(milliseconds: 5000),
-                () {
-                  immersiveModeNotifier.value = true;
-                  immersiveModeTimer = null;
-                },
-              );
-            }
-            return IgnorePointer(
-              ignoring: !value,
-              child: ValueListenableBuilder(
-                valueListenable: immersiveModeNotifier,
-                builder: (context, value, child) {
-                  return MouseRegion(
-                    cursor: value ? SystemMouseCursors.none : MouseCursor.defer,
-                    onHover: (event) {
-                      immersiveModeNotifier.value = false;
-                      immersiveModeTimer?.cancel();
-                      immersiveModeTimer = Timer(
-                        const Duration(milliseconds: 5000),
-                        () {
-                          immersiveModeNotifier.value = true;
-                          immersiveModeTimer = null;
-                        },
-                      );
-                    },
-                    child: child,
-                  );
-                },
-                child: LyricsPage(),
-              ),
-            );
-          },
-        ),
-
-        if (!isMobile)
-          ValueListenableBuilder(
-            valueListenable: displayPlayQueuePageNotifier,
-            builder: (context, display, _) {
-              if (display) {
-                return GestureDetector(
-                  onTap: () {
-                    displayPlayQueuePageNotifier.value = false;
-                  },
-                  child: Container(color: Colors.black.withAlpha(25)),
-                );
-              } else {
-                return SizedBox.shrink();
-              }
-            },
-          ),
-
-        if (!isMobile)
-          Positioned(
-            top: 75,
-            bottom: isMobile ? 75 : 100,
-            right: 0,
-            child: ValueListenableBuilder(
-              valueListenable: displayPlayQueuePageNotifier,
-              builder: (context, display, _) {
-                return AnimatedSlide(
-                  offset: display ? Offset.zero : Offset(1, 0),
-                  duration: const Duration(milliseconds: 200),
-                  curve: Curves.linear,
-                  child: Material(
-                    elevation: 1,
-                    color: sidebarColor.withAlpha(255),
-                    shape: SmoothRectangleBorder(
-                      smoothness: 1,
-                      borderRadius: BorderRadius.horizontal(
-                        left: Radius.circular(10),
-                      ),
-                    ),
-
-                    child: SizedBox(
-                      width: max(350, MediaQuery.widthOf(context) * 0.2),
-                      child: PlayQueuePage(),
-                    ),
-                  ),
-                );
-              },
-            ),
-          ),
+        LandscapeLyricsPage(),
       ],
     );
   }

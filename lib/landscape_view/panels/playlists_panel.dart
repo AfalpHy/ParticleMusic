@@ -4,15 +4,16 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/landscape_view/title_bar.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/common_widgets/my_switch.dart';
+import 'package:particle_music/layer/layers_manager.dart';
 
 class PlaylistsPanel extends StatefulWidget {
   const PlaylistsPanel({super.key});
 
   @override
-  State<StatefulWidget> createState() => PlaylistsPanelState();
+  State<StatefulWidget> createState() => _PlaylistsPanelState();
 }
 
-class PlaylistsPanelState extends State<PlaylistsPanel> {
+class _PlaylistsPanelState extends State<PlaylistsPanel> {
   final playlistsNotifier = ValueNotifier(playlistsManager.playlists);
   final textController = TextEditingController();
 
@@ -191,7 +192,7 @@ class PlaylistsPanelState extends State<PlaylistsPanel> {
                                               },
                                             ),
                                       onTap: () {
-                                        panelManager.pushPanel(
+                                        layersManager.pushLayer(
                                           '_${playlist.name}',
                                         );
                                       },

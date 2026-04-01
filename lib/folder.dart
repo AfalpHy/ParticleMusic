@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:audio_tags_lofty/audio_tags_lofty.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/utils.dart';
 import 'package:path/path.dart';
@@ -95,9 +96,7 @@ class Folder {
   }
 
   Future<void> update() async {
-    if (!isMobile) {
-      panelManager.updateBackground();
-    }
+    layersManager.updateBackground();
     updateNotifier.value++;
     await _saveSongFilePathList();
   }

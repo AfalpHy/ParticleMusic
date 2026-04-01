@@ -8,6 +8,7 @@ import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 import 'package:http/http.dart' as http;
 import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/loader.dart';
 import 'package:particle_music/portrait_view/sleep_timer.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
@@ -66,7 +67,7 @@ class SettingsList extends StatelessWidget {
                   leading: ImageIcon(infoImage, color: iconColor),
                   title: Text(l10n.openSourceLicense),
                   onTap: () {
-                    panelManager.pushPanel('licenses');
+                    layersManager.pushLayer('licenses');
                   },
                 ),
               )

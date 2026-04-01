@@ -1,7 +1,8 @@
 import 'dart:io';
 
-import 'package:particle_music/artist_album_manager.dart';
+import 'package:particle_music/artists_albums_manager.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/library.dart';
 import 'package:particle_music/navidrome_client.dart';
 import 'package:particle_music/playlists.dart';
@@ -45,7 +46,7 @@ class Loader {
 
     await library.load();
 
-    artistAlbumManager.load();
+    artistsAlbumsManager.load();
 
     await history.load();
 
@@ -54,7 +55,7 @@ class Loader {
     await audioHandler.loadPlayQueueState();
     await audioHandler.loadPlayState();
 
-    panelManager.pushPanel('songs');
+    layersManager.pushLayer('songs');
 
     loadingLibraryNotifier.value = false;
   }
@@ -66,10 +67,10 @@ class Loader {
 
     playlistsManager.clear();
 
-    artistAlbumManager.clear();
+    artistsAlbumsManager.clear();
 
     history.clear();
-    panelManager.clear();
+    layersManager.clear();
     await load();
   }
 }

@@ -1,21 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:particle_music/artist_album_manager.dart';
+import 'package:particle_music/artists_albums_manager.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/landscape_view/title_bar.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/common_widgets/my_switch.dart';
+import 'package:particle_music/layer/layers_manager.dart';
 
-class ArtistAlbumPanel extends StatefulWidget {
+class ArtistsAlbumsPanel extends StatefulWidget {
   final bool isArtist;
 
-  const ArtistAlbumPanel({super.key, required this.isArtist});
+  const ArtistsAlbumsPanel({super.key, required this.isArtist});
 
   @override
-  State<StatefulWidget> createState() => ArtistAlbumPanelState();
+  State<StatefulWidget> createState() => _ArtistsAlbumsPanelState();
 }
 
-class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
+class _ArtistsAlbumsPanelState extends State<ArtistsAlbumsPanel> {
   late bool isArtist;
 
   late final ValueNotifier<List<ArtistAlbumBase>>
@@ -28,7 +29,7 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
 
   void updateCurrentList() {
     final value = textController.text;
-    currentArtistAlbumListNotifier.value = artistAlbumManager
+    currentArtistAlbumListNotifier.value = artistsAlbumsManager
         .getArtistAlbumList(isArtist)
         .where((e) => (e.name.toLowerCase().contains(value.toLowerCase())))
         .toList();
@@ -39,11 +40,11 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
     super.initState();
     isArtist = widget.isArtist;
     currentArtistAlbumListNotifier = ValueNotifier(
-      artistAlbumManager.getArtistAlbumList(isArtist),
+      artistsAlbumsManager.getArtistAlbumList(isArtist),
     );
-    isAscendingNotifier = artistAlbumManager.getIsAscendingNotifier(isArtist);
+    isAscendingNotifier = artistsAlbumsManager.getIsAscendingNotifier(isArtist);
 
-    useLargePictureNotifier = artistAlbumManager.getUseLargePictureNotifier(
+    useLargePictureNotifier = artistsAlbumsManager.getUseLargePictureNotifier(
       isArtist,
     );
 
@@ -139,9 +140,9 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
                                       isAscendingNotifier.value = value;
                                       settingManager.saveSetting();
                                       if (isArtist) {
-                                        artistAlbumManager.sortArtists();
+                                        artistsAlbumsManager.sortArtists();
                                       } else {
-                                        artistAlbumManager.sortAlbums();
+                                        artistsAlbumsManager.sortAlbums();
                                       }
                                       updateCurrentList();
                                     },
@@ -245,7 +246,7 @@ class ArtistAlbumPanelState extends State<ArtistAlbumPanel> {
                                       },
                                     ),
                                     onTap: () {
-                                      panelManager.pushPanel(
+                                      layersManager.pushLayer(
                                         isArtist ? 'artists' : 'albums',
                                         content: list[index].name,
                                       );

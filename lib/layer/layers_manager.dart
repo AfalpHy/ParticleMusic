@@ -1,87 +1,89 @@
 import 'package:flutter/material.dart';
-import 'package:particle_music/artist_album_manager.dart';
+import 'package:particle_music/artists_albums_manager.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/landscape_view/panels/artist_album_panel.dart';
-import 'package:particle_music/landscape_view/panels/folders_panel.dart';
-import 'package:particle_music/landscape_view/panels/ranking_panel.dart';
-import 'package:particle_music/landscape_view/panels/playlists_panel.dart';
-import 'package:particle_music/landscape_view/panels/recently_panel.dart';
-import 'package:particle_music/landscape_view/panels/setting_panel.dart';
-import 'package:particle_music/landscape_view/panels/single_album_panel.dart';
-import 'package:particle_music/landscape_view/panels/single_artist_panel.dart';
-import 'package:particle_music/landscape_view/panels/single_folder_panel.dart';
-import 'package:particle_music/landscape_view/panels/single_playlist_panel.dart';
-import 'package:particle_music/landscape_view/panels/songs_panel.dart';
+import 'package:particle_music/layer/artists_albums_layer.dart';
+import 'package:particle_music/layer/folders_layer.dart';
+import 'package:particle_music/layer/playlists_layer.dart';
+import 'package:particle_music/layer/ranking_layer.dart';
+import 'package:particle_music/layer/recently_layer.dart';
+import 'package:particle_music/layer/settings_layer.dart';
+import 'package:particle_music/layer/single_album_layer.dart';
+import 'package:particle_music/layer/single_artist_layer.dart';
+import 'package:particle_music/layer/single_folder_layer.dart';
+import 'package:particle_music/layer/single_playlist_layer.dart';
+import 'package:particle_music/layer/songs_layer.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/utils.dart';
 
-class PanelManager {
-  final List<Widget> panelStack = [];
+final layersManager = LayersManager();
+
+class LayersManager {
+  final List<Widget> layerStack = [];
   final List<String> sidebarHighlighLabelStack = [];
 
-  bool get isEmpty => panelStack.isEmpty;
+  bool get isEmpty => layerStack.isEmpty;
 
-  void pushPanel(String label, {String? content}) {
+  void pushLayer(String label, {String? content}) {
     sidebarHighlighLabel.value = label;
     sidebarHighlighLabelStack.add(label);
 
     if (label == 'artists' && content == null) {
-      panelStack.add(ArtistAlbumPanel(key: UniqueKey(), isArtist: true));
+      layerStack.add(ArtistsAlbumsLayer(key: UniqueKey(), isArtist: true));
     } else if (label == 'albums' && content == null) {
-      panelStack.add(ArtistAlbumPanel(key: UniqueKey(), isArtist: false));
+      layerStack.add(ArtistsAlbumsLayer(key: UniqueKey(), isArtist: false));
     } else if (label == 'artists' && content != null) {
-      panelStack.add(
-        SingleArtistPanel(
+      layerStack.add(
+        SingleArtistLayer(
           key: UniqueKey(),
-          artist: artistAlbumManager.name2Artist[content]!,
+          artist: artistsAlbumsManager.name2Artist[content]!,
         ),
       );
     } else if (label == 'albums' && content != null) {
-      panelStack.add(
-        SingleAlbumPanel(
+      layerStack.add(
+        SingleAlbumLayer(
           key: UniqueKey(),
-          album: artistAlbumManager.name2Album[content]!,
+          album: artistsAlbumsManager.name2Album[content]!,
         ),
       );
     } else if (label == 'folders' && content == null) {
-      panelStack.add(FoldersPanel(key: UniqueKey()));
+      layerStack.add(FoldersLayer(key: UniqueKey()));
     } else if (label == 'folders' && content != null) {
-      panelStack.add(
-        SingleFolderPanel(
+      layerStack.add(
+        SingleFolderLayer(
           key: UniqueKey(),
           folder: library.getFolderByPath(content),
         ),
       );
     } else if (label == 'songs') {
-      panelStack.add(SongsPanel(key: UniqueKey()));
+      layerStack.add(SongsLayer(key: UniqueKey()));
     } else if (label == 'ranking') {
-      panelStack.add(RankingRanel(key: UniqueKey()));
+      layerStack.add(RankingLayer(key: UniqueKey()));
     } else if (label == 'recently') {
-      panelStack.add(RecentlyPanel(key: UniqueKey()));
+      layerStack.add(RecentlyLayer(key: UniqueKey()));
     } else if (label == 'playlists') {
-      panelStack.add(PlaylistsPanel(key: UniqueKey()));
+      layerStack.add(PlaylistsLayer(key: UniqueKey()));
     } else if (label[0] == '_') {
-      panelStack.add(
-        SinglePlaylistPanel(
+      layerStack.add(
+        SinglePlaylistLayer(
           key: UniqueKey(),
           playlist: playlistsManager.getPlaylistByName(label.substring(1))!,
         ),
       );
     } else if (label == 'settings') {
-      panelStack.add(SettingPanel(key: UniqueKey()));
+      layerStack.add(SettingsLayer(key: UniqueKey()));
     } else if (label == 'licenses') {
-      panelStack.add(LicensePagePanel(key: UniqueKey()));
+      layerStack.add(LicenseLayer(key: UniqueKey()));
     }
 
     updateBackground();
   }
 
-  void popPanel() {
-    if (panelStack.length == 1) {
+  void popLayer() {
+    if (layerStack.length == 1) {
       return;
     }
 
-    panelStack.removeLast();
+    layerStack.removeLast();
 
     sidebarHighlighLabelStack.removeLast();
 
@@ -90,11 +92,11 @@ class PanelManager {
     updateBackground();
   }
 
-  void removePlaylistPanel(Playlist playlist) {
-    for (int i = panelStack.length - 1; i > 0; i--) {
-      Widget tmp = panelStack[i];
-      if (tmp is SinglePlaylistPanel && tmp.playlist == playlist) {
-        panelStack.removeAt(i);
+  void removePlaylistLayer(Playlist playlist) {
+    for (int i = layerStack.length - 1; i > 0; i--) {
+      Widget tmp = layerStack[i];
+      if (tmp is SinglePlaylistLayer && tmp.playlist == playlist) {
+        layerStack.removeAt(i);
         sidebarHighlighLabelStack.removeAt(i);
       }
     }
@@ -105,7 +107,7 @@ class PanelManager {
   }
 
   void clear() {
-    panelStack.clear();
+    layerStack.clear();
     sidebarHighlighLabelStack.clear();
   }
 
@@ -115,13 +117,13 @@ class PanelManager {
     }
     final label = sidebarHighlighLabelStack.last;
 
-    Widget panel = panelStack.last;
+    Widget panel = layerStack.last;
 
-    if (label == 'artists' && panel is SingleArtistPanel) {
+    if (label == 'artists' && panel is SingleArtistLayer) {
       backgroundSong = panel.artist.getDisplaySong();
-    } else if (label == 'albums' && panel is SingleAlbumPanel) {
+    } else if (label == 'albums' && panel is SingleAlbumLayer) {
       backgroundSong = panel.album.getDisplaySong();
-    } else if (label == 'folders' && panel is SingleFolderPanel) {
+    } else if (label == 'folders' && panel is SingleFolderLayer) {
       final songList = panel.folder.songList;
       backgroundSong = getFirstSong(songList);
     } else if (label == 'songs') {

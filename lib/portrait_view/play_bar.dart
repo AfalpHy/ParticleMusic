@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common_widgets/my_auto_size_text.dart';
-import 'package:particle_music/portrait_view/pages/lyrics_page.dart';
 import 'package:particle_music/common_widgets/play_queue_sheet.dart';
 import 'package:particle_music/utils.dart';
 import 'package:smooth_corner/smooth_corner.dart';
@@ -27,19 +26,7 @@ class PlayBar extends StatelessWidget {
               color: playBarColor,
               child: InkWell(
                 onTap: () {
-                  showModalBottomSheet(
-                    context: context,
-                    isScrollControlled: true,
-                    constraints: const BoxConstraints(
-                      maxWidth: double.infinity,
-                    ),
-                    builder: (_) {
-                      return DraggableScrollableSheet(
-                        initialChildSize: 1.0,
-                        builder: (_, _) => LyricsPage(),
-                      );
-                    },
-                  );
+                  displayLyricsPageNotifier.value = true;
                 },
 
                 child: Row(

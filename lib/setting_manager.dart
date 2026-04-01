@@ -2,7 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:particle_music/artist_album_manager.dart';
+import 'package:particle_music/artists_albums_manager.dart';
 import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/navidrome_client.dart';
@@ -22,7 +22,7 @@ class SettingManager {
     final Map<String, dynamic> json =
         jsonDecode(content) as Map<String, dynamic>;
 
-    artistAlbumManager.loadSetting(json);
+    artistsAlbumsManager.loadSetting(json);
 
     playlistsUseLargePictureNotifier.value =
         json['playlistsUseLargePicture'] as bool? ??
@@ -65,7 +65,7 @@ class SettingManager {
   void saveSetting() {
     file.writeAsStringSync(
       jsonEncode({
-        ...artistAlbumManager.settingToMap(),
+        ...artistsAlbumsManager.settingToMap(),
 
         'playlistsUseLargePicture': playlistsUseLargePictureNotifier.value,
 

@@ -2,6 +2,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/utils.dart';
 import 'package:window_manager/window_manager.dart';
 
@@ -167,7 +168,7 @@ class TitleBar extends StatelessWidget {
                       IconButton(
                         color: iconColor,
                         onPressed: () {
-                          panelManager.popPanel();
+                          layersManager.popLayer();
                         },
                         icon: Icon(Icons.arrow_back_ios_rounded, size: 20),
                       )
@@ -229,7 +230,7 @@ class TitleBar extends StatelessWidget {
                       IconButton(
                         color: iconColor,
                         onPressed: () {
-                          panelManager.pushPanel('settings');
+                          layersManager.pushLayer('settings');
                         },
                         icon: Icon(Icons.settings_outlined, size: 20),
                       ),

@@ -3,9 +3,9 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/utils.dart';
 
-ArtistAlbumManager artistAlbumManager = ArtistAlbumManager();
+ArtistsAlbumsManager artistsAlbumsManager = ArtistsAlbumsManager();
 
-class ArtistAlbumManager {
+class ArtistsAlbumsManager {
   List<Artist> artistList = [];
   Map<String, Artist> name2Artist = {};
 

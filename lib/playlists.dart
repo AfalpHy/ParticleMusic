@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/navidrome_client.dart';
 import 'package:particle_music/utils.dart';
@@ -242,9 +243,7 @@ class Playlist {
       displayNavidromeNotifier.value = true;
     }
 
-    if (isLandscape) {
-      panelManager.updateBackground();
-    }
+    layersManager.updateBackground();
     updateNotifier.value++;
   }
 
