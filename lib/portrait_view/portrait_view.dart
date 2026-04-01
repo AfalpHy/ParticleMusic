@@ -42,6 +42,12 @@ class _PortraitViewState extends State<PortraitView> {
       GlobalKey<NavigatorState>();
 
   @override
+  void initState() {
+    super.initState();
+    _swipeProgressNotifier.value = 0;
+  }
+
+  @override
   Widget build(BuildContext context) {
     return Stack(
       children: [

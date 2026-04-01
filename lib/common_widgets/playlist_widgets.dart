@@ -99,6 +99,7 @@ Future<bool> showCreatePlaylistSheet(BuildContext context) async {
     useRootNavigator: true,
     builder: (context) {
       return MySheet(
+        height: 500,
         SizedBox(
           height: 250, // fixed height
           child: Column(

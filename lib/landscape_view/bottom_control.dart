@@ -190,7 +190,7 @@ class BottomControl extends StatelessWidget {
                   }
                 },
               ),
-              isMobile ? SizedBox(width: 20) : Spacer(),
+              isMobile ? SizedBox(width: 10) : Spacer(),
             ],
           ),
         ),

@@ -17,7 +17,7 @@ class MySheet extends StatelessWidget {
       borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
       child: Container(
         color: pageBackgroundColor,
-        height: height ?? min(500, mobileHeight * 0.6),
+        height: height ?? min(500, MediaQuery.heightOf(context) * 0.6),
         child: child,
       ),
     );

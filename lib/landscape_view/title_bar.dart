@@ -236,7 +236,7 @@ class TitleBar extends StatelessWidget {
 
                     if (!isMobile) windowControls(),
 
-                    SizedBox(width: 30),
+                    SizedBox(width: isMobile ? 10 : 30),
                   ],
                 ),
               ),

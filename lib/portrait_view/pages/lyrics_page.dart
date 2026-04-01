@@ -21,6 +21,13 @@ class LyricsPage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    if (isLandscape) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        Navigator.of(context).pop();
+        displayLyricsPageNotifier.value = true;
+      });
+      return SizedBox.shrink();
+    }
     return ValueListenableBuilder(
       valueListenable: currentSongNotifier,
       builder: (context, currentSong, child) {
