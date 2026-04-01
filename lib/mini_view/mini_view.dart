@@ -5,12 +5,12 @@ import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/common_widgets/buttons.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common_widgets/seekbar.dart';
 import 'package:particle_music/landscape_view/pages/play_queue_page.dart';
 import 'package:particle_music/landscape_view/speaker.dart';
 import 'package:particle_music/landscape_view/volume_bar.dart';
-import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/common_widgets/lyrics.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/utils.dart';
@@ -202,7 +202,7 @@ class _MiniViewState extends State<MiniView> {
                     topControls(),
                     centerListTile(currentSong),
                     seekBar(),
-                    bottomControls(context),
+                    bottomControls(),
                   ],
                 );
               },
@@ -258,7 +258,7 @@ class _MiniViewState extends State<MiniView> {
             ),
 
             seekBar(),
-            bottomControls(context),
+            bottomControls(),
           ],
         ),
       ),
@@ -389,9 +389,7 @@ class _MiniViewState extends State<MiniView> {
     );
   }
 
-  Widget bottomControls(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
-
+  Widget bottomControls() {
     return Positioned(
       bottom: 0,
       left: 10,
@@ -399,52 +397,8 @@ class _MiniViewState extends State<MiniView> {
       child: Row(
         children: [
           Spacer(),
-          ValueListenableBuilder(
-            valueListenable: playModeNotifier,
-            builder: (_, playMode, _) {
-              return IconButton(
-                color: Colors.grey.shade50,
-                icon: ImageIcon(
-                  playMode == 0
-                      ? loopImage
-                      : playMode == 1
-                      ? shuffleImage
-                      : repeatImage,
-                  size: 25,
-                ),
-                onPressed: () {
-                  if (playQueue.isEmpty) {
-                    return;
-                  }
-                  if (playModeNotifier.value != 2) {
-                    audioHandler.switchPlayMode();
-                    switch (playModeNotifier.value) {
-                      case 0:
-                        showCenterMessage(context, l10n.loop);
-                        break;
-                      default:
-                        showCenterMessage(context, l10n.shuffle);
-                        break;
-                    }
-                  }
-                },
-                onLongPress: () {
-                  audioHandler.toggleRepeat();
-                  switch (playModeNotifier.value) {
-                    case 0:
-                      showCenterMessage(context, l10n.loop);
-                      break;
-                    case 1:
-                      showCenterMessage(context, l10n.shuffle);
-                      break;
-                    default:
-                      showCenterMessage(context, l10n.repeat);
-                      break;
-                  }
-                },
-              );
-            },
-          ),
+          playModeButton(25, iconColor: Colors.grey.shade50),
+
           Spacer(),
 
           IconButton(
@@ -462,39 +416,16 @@ class _MiniViewState extends State<MiniView> {
           ),
           Spacer(),
 
-          IconButton(
-            color: Colors.grey.shade50,
-            icon: const ImageIcon(previousButtonImage, size: 25),
-            onPressed: () {
-              audioHandler.skipToPrevious();
-            },
-          ),
+          skip2PreviousButton(25, iconColor: Colors.grey.shade50),
+
           Spacer(),
 
-          IconButton(
-            color: Colors.grey.shade50,
-            icon: ValueListenableBuilder(
-              valueListenable: isPlayingNotifier,
-              builder: (_, isPlaying, _) {
-                return Icon(
-                  isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                  size: 35,
-                );
-              },
-            ),
-            onPressed: () {
-              audioHandler.togglePlay();
-            },
-          ),
+          playOrPauseButton(35, iconColor: Colors.grey.shade50),
+
           Spacer(),
 
-          IconButton(
-            color: Colors.grey.shade50,
-            icon: const ImageIcon(nextButtonImage, size: 25),
-            onPressed: () {
-              audioHandler.skipToNext();
-            },
-          ),
+          skip2NextButton(25, iconColor: Colors.grey.shade50),
+
           Spacer(),
 
           IconButton(

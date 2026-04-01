@@ -118,7 +118,7 @@ Widget sleepTimerListTile(
   double? iconSize,
 }) {
   return ListTile(
-    leading: ImageIcon(timerImage, color: iconColor, size: iconSize),
+    leading: ImageIcon(timerImage, size: iconSize),
 
     title: Text(
       l10n.sleepTimer,

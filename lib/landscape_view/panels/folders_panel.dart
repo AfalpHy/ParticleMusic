@@ -23,116 +23,102 @@ class FoldersPanel extends StatelessWidget {
   Widget contentWidget(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    return Column(
-      children: [
-        Expanded(
-          child: CustomScrollView(
-            slivers: [
-              SliverToBoxAdapter(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 30),
-                  child: ListTile(
-                    leading: ValueListenableBuilder(
-                      valueListenable: updateColorNotifier,
-                      builder: (_, _, _) {
-                        return ImageIcon(
-                          folderImage,
-                          size: 50,
-                          color: iconColor,
-                        );
-                      },
-                    ),
-                    title: Text(
-                      l10n.folders,
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
+    return CustomScrollView(
+      slivers: [
+        SliverToBoxAdapter(
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 30),
+            child: ListTile(
+              leading: ValueListenableBuilder(
+                valueListenable: updateColorNotifier,
+                builder: (_, _, _) {
+                  return ImageIcon(folderImage, size: 50, color: iconColor);
+                },
+              ),
+              title: Text(
+                l10n.folders,
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+              ),
+              subtitle: Text(
+                l10n.foldersCount(library.folderList.length),
+                style: TextStyle(fontSize: 12),
+              ),
+            ),
+          ),
+        ),
+        SliverToBoxAdapter(
+          child: ValueListenableBuilder(
+            valueListenable: updateColorNotifier,
+            builder: (context, value, child) {
+              return Divider(
+                thickness: 0.5,
+                height: 0.5,
+                indent: 30,
+                endIndent: 30,
+                color: dividerColor,
+              );
+            },
+          ),
+        ),
+        SliverToBoxAdapter(child: SizedBox(height: 15)),
+
+        SliverPadding(
+          padding: const EdgeInsets.symmetric(horizontal: 40),
+
+          sliver: SliverList.builder(
+            itemCount: library.folderList.length,
+            itemBuilder: (context, index) {
+              final folder = library.folderList[index];
+              return ValueListenableBuilder(
+                valueListenable: folder.updateNotifier,
+                builder: (context, value, child) {
+                  final displaySong = getFirstSong(folder.songList);
+                  return SizedBox(
+                    height: 64,
+                    child: InkWell(
+                      customBorder: SmoothRectangleBorder(
+                        smoothness: 1,
+                        borderRadius: BorderRadius.circular(10),
                       ),
-                    ),
-                    subtitle: Text(
-                      l10n.foldersCount(library.folderList.length),
-                      style: TextStyle(fontSize: 12),
-                    ),
-                  ),
-                ),
-              ),
-              SliverToBoxAdapter(
-                child: ValueListenableBuilder(
-                  valueListenable: updateColorNotifier,
-                  builder: (context, value, child) {
-                    return Divider(
-                      thickness: 0.5,
-                      height: 0.5,
-                      indent: 30,
-                      endIndent: 30,
-                      color: dividerColor,
-                    );
-                  },
-                ),
-              ),
-              SliverToBoxAdapter(child: SizedBox(height: 15)),
-
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 40),
-
-                sliver: SliverList.builder(
-                  itemCount: library.folderList.length,
-                  itemBuilder: (context, index) {
-                    final folder = library.folderList[index];
-                    return ValueListenableBuilder(
-                      valueListenable: folder.updateNotifier,
-                      builder: (context, value, child) {
-                        final displaySong = getFirstSong(folder.songList);
-                        return SizedBox(
-                          height: 64,
-                          child: InkWell(
-                            customBorder: SmoothRectangleBorder(
-                              smoothness: 1,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            mouseCursor: SystemMouseCursors.click,
-                            child: Row(
-                              children: [
-                                SizedBox(width: 20),
-                                displaySong == null
-                                    ? CoverArtWidget(
-                                        size: 50,
-                                        borderRadius: 5,
-                                        song: null,
-                                      )
-                                    : ValueListenableBuilder(
-                                        valueListenable:
-                                            displaySong.updateNotifier,
-                                        builder: (_, _, _) {
-                                          return CoverArtWidget(
-                                            size: 50,
-                                            borderRadius: 5,
-                                            song: displaySong,
-                                          );
-                                        },
-                                      ),
-                                SizedBox(width: 10),
-
-                                Text(
-                                  folder.path,
-                                  style: TextStyle(overflow: .ellipsis),
+                      mouseCursor: SystemMouseCursors.click,
+                      child: Row(
+                        children: [
+                          SizedBox(width: 20),
+                          displaySong == null
+                              ? CoverArtWidget(
+                                  size: 50,
+                                  borderRadius: 5,
+                                  song: null,
+                                )
+                              : ValueListenableBuilder(
+                                  valueListenable: displaySong.updateNotifier,
+                                  builder: (_, _, _) {
+                                    return CoverArtWidget(
+                                      size: 50,
+                                      borderRadius: 5,
+                                      song: displaySong,
+                                    );
+                                  },
                                 ),
-                              ],
-                            ),
-                            onTap: () {
-                              layersManager.pushLayer(
-                                'folders',
-                                content: folder.path,
-                              );
-                            },
+                          SizedBox(width: 10),
+
+                          Text(
+                            folder.path,
+                            style: TextStyle(overflow: .ellipsis),
                           ),
+                        ],
+                      ),
+                      onTap: () {
+                        layersManager.pushLayer(
+                          'folders',
+                          content: folder.path,
                         );
                       },
-                    );
-                  },
-                ),
-              ),
-            ],
+                    ),
+                  );
+                },
+              );
+            },
           ),
         ),
       ],

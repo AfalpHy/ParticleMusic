@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:particle_music/common_widgets/buttons.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/my_auto_size_text.dart';
@@ -361,77 +362,20 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
           children: [
             SizedBox(width: 25),
 
-            ValueListenableBuilder(
-              valueListenable: playModeNotifier,
-              builder: (_, playMode, _) {
-                return IconButton(
-                  color: Colors.grey.shade50,
-                  icon: ImageIcon(
-                    playMode == 0
-                        ? loopImage
-                        : playMode == 1
-                        ? shuffleImage
-                        : repeatImage,
-                    size: 32,
-                  ),
-                  onPressed: () {
-                    if (playModeNotifier.value != 2) {
-                      audioHandler.switchPlayMode();
-                      switch (playModeNotifier.value) {
-                        case 0:
-                          showCenterMessage(context, l10n.loop);
-                          break;
-                        default:
-                          showCenterMessage(context, l10n.shuffle);
-                          break;
-                      }
-                    }
-                  },
-                  onLongPress: () {
-                    audioHandler.toggleRepeat();
-                    switch (playModeNotifier.value) {
-                      case 0:
-                        showCenterMessage(context, l10n.loop);
-                        break;
-                      case 1:
-                        showCenterMessage(context, l10n.shuffle);
-                        break;
-                      default:
-                        showCenterMessage(context, l10n.repeat);
-                        break;
-                    }
-                  },
-                );
-              },
-            ),
-            Spacer(),
-            IconButton(
-              color: Colors.grey.shade50,
-              icon: const ImageIcon(previousButtonImage, size: 32),
-              onPressed: audioHandler.skipToPrevious,
-            ),
+            playModeButton(32, iconColor: Colors.grey.shade50),
+
             Spacer(),
 
-            IconButton(
-              color: Colors.grey.shade50,
-              icon: ValueListenableBuilder(
-                valueListenable: isPlayingNotifier,
-                builder: (_, isPlaying, _) {
-                  return Icon(
-                    isPlaying ? Icons.pause_rounded : Icons.play_arrow_rounded,
-                    size: 50,
-                  );
-                },
-              ),
-              onPressed: () => audioHandler.togglePlay(),
-            ),
+            skip2PreviousButton(32, iconColor: Colors.grey.shade50),
+
             Spacer(),
 
-            IconButton(
-              color: Colors.grey.shade50,
-              icon: const ImageIcon(nextButtonImage, size: 32),
-              onPressed: audioHandler.skipToNext,
-            ),
+            playOrPauseButton(50, iconColor: Colors.grey.shade50),
+
+            Spacer(),
+
+            skip2NextButton(32, iconColor: Colors.grey.shade50),
+
             Spacer(),
 
             IconButton(

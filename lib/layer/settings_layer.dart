@@ -27,7 +27,8 @@ class LicenseLayer extends StatelessWidget {
     return OrientationBuilder(
       builder: (context, orientation) {
         if (orientation == Orientation.portrait) {
-          return LicensePage();
+          // TODO
+          return SizedBox();
         } else {
           return LicensePagePanel();
         }

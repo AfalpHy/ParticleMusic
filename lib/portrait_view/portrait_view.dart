@@ -135,7 +135,6 @@ class _PortraitViewState extends State<PortraitView> {
                       Platform.isAndroid
                           ? Icons.menu
                           : Icons.arrow_back_ios_new_rounded,
-                      color: iconColor,
                     ),
                     onPressed: () => Platform.isAndroid
                         ? Scaffold.of(context).openDrawer()

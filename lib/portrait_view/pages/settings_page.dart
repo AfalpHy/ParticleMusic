@@ -14,7 +14,7 @@ class SettingsPage extends StatelessWidget {
         elevation: 0,
         scrolledUnderElevation: 0,
       ),
-      body: SettingsList(),
+      body: SettingsList(iconSize: 30),
     );
   }
 }

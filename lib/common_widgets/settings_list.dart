@@ -26,146 +26,111 @@ class SettingsList extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    return ListView(
-      physics: ClampingScrollPhysics(),
-      children: [
+    return CustomScrollView(
+      slivers: [
         if (isLandscape)
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: SizedBox(
-              height: 64,
-              child: Center(
-                child: ListTile(
-                  leading: Icon(
-                    Icons.settings_outlined,
-                    size: 35,
-                    color: iconColor,
-                  ),
-                  title: Text(
-                    l10n.settings,
-                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                  ),
+          sliverBox(
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+
+              child: ListTile(
+                leading: ImageIcon(settingImage, size: 50),
+                title: Text(
+                  l10n.settings,
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
           ),
 
         if (isLandscape)
-          Divider(
-            thickness: 0.5,
-            height: 0.5,
-            indent: 20,
-            endIndent: 20,
-            color: dividerColor,
+          sliverBox(
+            ValueListenableBuilder(
+              valueListenable: updateColorNotifier,
+              builder: (context, value, child) {
+                return Divider(
+                  thickness: 0.5,
+                  height: 0.5,
+                  indent: 20,
+                  endIndent: 20,
+                  color: dividerColor,
+                );
+              },
+            ),
           ),
 
-        if (isLandscape) SizedBox(height: 10),
+        if (isLandscape) sliverBox(const SizedBox(height: 10)),
 
-        isLandscape
-            ? paddingForLandscape(
-                ListTile(
-                  leading: ImageIcon(infoImage, color: iconColor),
-                  title: Text(l10n.openSourceLicense),
-                  onTap: () {
-                    layersManager.pushLayer('licenses');
-                  },
-                ),
-              )
-            : ListTile(
-                leading: ImageIcon(infoImage, color: iconColor, size: iconSize),
-                title: Text(l10n.openSourceLicense),
-                onTap: () {
-                  Navigator.of(context, rootNavigator: true).push(
-                    MaterialPageRoute(
-                      builder: (_) => Theme(
-                        data: ThemeData(
-                          colorScheme: ColorScheme.light(
-                            surface: Colors
-                                .grey
-                                .shade50, // <- this is what LicensePage uses
-                          ),
-                          appBarTheme: const AppBarTheme(
-                            scrolledUnderElevation: 0,
-                            centerTitle: true,
-                          ),
-                        ),
-                        child: const LicensePage(
-                          applicationName: 'Particle Music',
-                          applicationVersion: versionNumber,
-                          applicationLegalese: '© 2025-2026 AfalpHy',
-                        ),
-                      ),
-                    ),
-                  );
-                },
+        sliverBox(
+          paddingIfNeed(
+            isLandscape,
+            ListTile(
+              leading: ImageIcon(
+                infoImage,
+                size: isLandscape ? null : iconSize,
               ),
+              title: Text(l10n.openSourceLicense),
+              onTap: () {
+                layersManager.pushLayer('licenses');
+              },
+            ),
+          ),
+        ),
 
-        isLandscape
-            ? paddingForLandscape(selectMusicFoldersListTile(context, l10n))
-            : selectMusicFoldersListTile(context, l10n),
-
-        isLandscape
-            ? paddingForLandscape(navidromeListTile(context, l10n))
-            : navidromeListTile(context, l10n),
-
-        isLandscape
-            ? paddingForLandscape(reloadListTile(context, l10n))
-            : reloadListTile(context, l10n),
-
-        isLandscape
-            ? paddingForLandscape(languageListTile(context, l10n))
-            : languageListTile(context, l10n),
+        sliverBox(
+          paddingIfNeed(isLandscape, selectMusicFoldersListTile(context, l10n)),
+        ),
+        sliverBox(paddingIfNeed(isLandscape, navidromeListTile(context, l10n))),
+        sliverBox(paddingIfNeed(isLandscape, reloadListTile(context, l10n))),
+        sliverBox(paddingIfNeed(isLandscape, languageListTile(context, l10n))),
 
         if (isMobile)
-          isLandscape
-              ? paddingForLandscape(vibrationListTile(l10n))
-              : vibrationListTile(l10n),
+          sliverBox(paddingIfNeed(isLandscape, vibrationListTile(l10n))),
 
         if (isMobile)
-          isLandscape
-              ? paddingForLandscape(
-                  sleepTimerListTile(context, l10n, true, iconSize: iconSize),
-                )
-              : sleepTimerListTile(context, l10n, true, iconSize: iconSize),
+          sliverBox(
+            paddingIfNeed(
+              isLandscape,
+              sleepTimerListTile(context, l10n, true, iconSize: iconSize),
+            ),
+          ),
 
         if (isMobile)
-          isLandscape
-              ? paddingForLandscape(pauseAfterCTListTile(context, l10n))
-              : pauseAfterCTListTile(context, l10n),
+          sliverBox(
+            paddingIfNeed(isLandscape, pauseAfterCTListTile(context, l10n)),
+          ),
 
-        isLandscape
-            ? paddingForLandscape(themeListTile(l10n))
-            : themeListTile(l10n),
+        sliverBox(paddingIfNeed(isLandscape, themeListTile(l10n))),
+        sliverBox(paddingIfNeed(isLandscape, paletteListTile(context, l10n))),
 
-        isLandscape
-            ? paddingForLandscape(paletteListTile(context, l10n))
-            : paletteListTile(context, l10n),
-
-        if (!isMobile) paddingForLandscape(exitOnClose(l10n)),
+        if (!isMobile)
+          sliverBox(
+            paddingForLandscape(exitOnClose(l10n)),
+          ), // always landscape style
 
         if (Platform.isAndroid)
-          isLandscape
-              ? paddingForLandscape(desktopLyricsOnAndroid(l10n))
-              : desktopLyricsOnAndroid(l10n),
+          sliverBox(paddingIfNeed(isLandscape, desktopLyricsOnAndroid(l10n))),
 
         if (Platform.isAndroid)
-          isLandscape
-              ? paddingForLandscape(lockAndUnlock(l10n))
-              : lockAndUnlock(l10n),
+          sliverBox(paddingIfNeed(isLandscape, lockAndUnlock(l10n))),
 
-        isLandscape
-            ? paddingForLandscape(checkUpdate(context, l10n))
-            : checkUpdate(context, l10n),
+        sliverBox(paddingIfNeed(isLandscape, checkUpdate(context, l10n))),
 
         if (isMobile)
-          isLandscape
-              ? paddingForLandscape(exportLogListTile(context, l10n))
-              : exportLogListTile(context, l10n),
+          sliverBox(
+            paddingIfNeed(isLandscape, exportLogListTile(context, l10n)),
+          ),
 
-        if (!isLandscape) SizedBox(height: 100),
+        if (!isLandscape) sliverBox(const SizedBox(height: 100)),
       ],
     );
   }
+
+  Widget paddingIfNeed(bool isLandscape, Widget child) {
+    return isLandscape ? paddingForLandscape(child) : child;
+  }
+
+  Widget sliverBox(Widget child) => SliverToBoxAdapter(child: child);
 
   Widget paddingForLandscape(Widget child) {
     return Padding(
@@ -180,7 +145,7 @@ class SettingsList extends StatelessWidget {
 
   Widget reloadListTile(BuildContext context, AppLocalizations l10n) {
     return ListTile(
-      leading: ImageIcon(reloadImage, color: iconColor, size: iconSize),
+      leading: ImageIcon(reloadImage, size: iconSize),
       title: Text(l10n.reload),
       onTap: () async {
         if (await showConfirmDialog(context, l10n.reload)) {
@@ -195,7 +160,7 @@ class SettingsList extends StatelessWidget {
     AppLocalizations l10n,
   ) {
     return ListTile(
-      leading: ImageIcon(folderImage, color: iconColor, size: iconSize),
+      leading: ImageIcon(folderImage, size: iconSize),
       title: Text(l10n.selectMusicFolder),
       onTap: () {
         showDialog(
@@ -253,10 +218,7 @@ class SettingsList extends StatelessWidget {
                                     currentFolderList.removeAt(index);
                                     updateNotifier.value++;
                                   },
-                                  icon: Icon(
-                                    Icons.clear_rounded,
-                                    color: iconColor,
-                                  ),
+                                  icon: Icon(Icons.clear_rounded),
                                 ),
                               );
                             },
@@ -403,7 +365,7 @@ class SettingsList extends StatelessWidget {
 
   Widget navidromeListTile(BuildContext context, AppLocalizations l10n) {
     return ListTile(
-      leading: ImageIcon(navidromeImage, color: iconColor, size: iconSize),
+      leading: ImageIcon(navidromeImage, size: iconSize),
       title: Text(l10n.connect2Navidrome),
       onTap: () {
         final usernameTmp = TextEditingController(text: username);
@@ -590,7 +552,7 @@ class SettingsList extends StatelessWidget {
 
   Widget languageListTile(BuildContext context, AppLocalizations l10n) {
     return ListTile(
-      leading: ImageIcon(languageImage, color: iconColor, size: iconSize),
+      leading: ImageIcon(languageImage, size: iconSize),
       title: Text(l10n.language),
       onTap: () {
         showDialog(
@@ -656,7 +618,7 @@ class SettingsList extends StatelessWidget {
 
   Widget vibrationListTile(AppLocalizations l10n) {
     return ListTile(
-      leading: ImageIcon(vibrationImage, color: iconColor, size: iconSize),
+      leading: ImageIcon(vibrationImage, size: iconSize),
       title: Text(l10n.vibration),
       trailing: ValueListenableBuilder(
         valueListenable: vibrationOnNoitifier,
@@ -679,7 +641,7 @@ class SettingsList extends StatelessWidget {
 
   Widget themeListTile(AppLocalizations l10n) {
     return ListTile(
-      leading: ImageIcon(themeImage, color: iconColor, size: iconSize),
+      leading: ImageIcon(themeImage, size: iconSize),
 
       title: Text(l10n.theme),
       trailing: SizedBox(
@@ -822,7 +784,7 @@ class SettingsList extends StatelessWidget {
   Widget paletteListTile(BuildContext context, AppLocalizations l10n) {
     final nameMap = colorManager.getNameMap(l10n);
     return ListTile(
-      leading: ImageIcon(paletteImage, color: iconColor, size: iconSize),
+      leading: ImageIcon(paletteImage, size: iconSize),
       title: Text(l10n.palette),
       onTap: () async {
         showDialog(
@@ -922,7 +884,7 @@ class SettingsList extends StatelessWidget {
 
   Widget desktopLyricsOnAndroid(AppLocalizations l10n) {
     return ListTile(
-      leading: ImageIcon(desktopLyricsImage, color: iconColor, size: iconSize),
+      leading: ImageIcon(desktopLyricsImage, size: iconSize),
       title: Text(l10n.desktopLyrics),
       trailing: ValueListenableBuilder(
         valueListenable: showDesktopLrcOnAndroidNotifier,
@@ -1021,7 +983,7 @@ class SettingsList extends StatelessWidget {
 
   Widget exitOnClose(AppLocalizations l10n) {
     return ListTile(
-      leading: ImageIcon(powerOffImage, color: iconColor),
+      leading: ImageIcon(powerOffImage),
 
       title: Text(l10n.closeAction),
       trailing: SizedBox(
@@ -1070,7 +1032,7 @@ class SettingsList extends StatelessWidget {
 
   Widget checkUpdate(BuildContext context, AppLocalizations l10n) {
     return ListTile(
-      leading: ImageIcon(checkUpdateImage, color: iconColor, size: iconSize),
+      leading: ImageIcon(checkUpdateImage, size: iconSize),
       title: Text(l10n.checkUpdate),
       onTap: () async {
         final url = Uri.parse(
@@ -1187,7 +1149,7 @@ class SettingsList extends StatelessWidget {
 
   Widget exportLogListTile(BuildContext context, AppLocalizations l10n) {
     return ListTile(
-      leading: ImageIcon(exportLogImage, color: iconColor, size: iconSize),
+      leading: ImageIcon(exportLogImage, size: iconSize),
 
       title: Text(l10n.exportLog),
       onTap: () async {

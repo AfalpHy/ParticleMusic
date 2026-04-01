@@ -190,6 +190,7 @@ const AssetImage repeatImage = AssetImage('assets/images/repeat.png');
 const AssetImage reverseImage = AssetImage('assets/images/reverse.png');
 const AssetImage selectImage = AssetImage('assets/images/select.png');
 const AssetImage sequenceImage = AssetImage('assets/images/sequence.png');
+const AssetImage settingImage = AssetImage('assets/images/setting.png');
 const AssetImage shuffleImage = AssetImage('assets/images/shuffle.png');
 const AssetImage songsImage = AssetImage('assets/images/songs.png');
 const AssetImage speakerOffImage = AssetImage('assets/images/speaker_off.png');

@@ -101,11 +101,7 @@ class Sidebar extends StatelessWidget {
                     SliverToBoxAdapter(
                       child: sidebarItem(
                         label: 'artists',
-                        leading: ImageIcon(
-                          artistImage,
-                          size: 30,
-                          color: iconColor,
-                        ),
+                        leading: ImageIcon(artistImage, size: 30),
                         content: l10n.artists,
 
                         onTap: () {
@@ -118,11 +114,7 @@ class Sidebar extends StatelessWidget {
                       child: sidebarItem(
                         label: 'albums',
 
-                        leading: ImageIcon(
-                          albumImage,
-                          size: 30,
-                          color: iconColor,
-                        ),
+                        leading: ImageIcon(albumImage, size: 30),
                         content: l10n.albums,
 
                         onTap: () {
@@ -135,11 +127,7 @@ class Sidebar extends StatelessWidget {
                       child: sidebarItem(
                         label: 'folders',
 
-                        leading: ImageIcon(
-                          folderImage,
-                          size: 30,
-                          color: iconColor,
-                        ),
+                        leading: ImageIcon(folderImage, size: 30),
                         content: l10n.folders,
 
                         onTap: () {
@@ -160,11 +148,7 @@ class Sidebar extends StatelessWidget {
                       child: sidebarItem(
                         label: 'songs',
 
-                        leading: ImageIcon(
-                          songsImage,
-                          size: 30,
-                          color: iconColor,
-                        ),
+                        leading: ImageIcon(songsImage, size: 30),
                         content: l10n.songs,
 
                         onTap: () {
@@ -189,11 +173,7 @@ class Sidebar extends StatelessWidget {
                       child: sidebarItem(
                         label: 'ranking',
 
-                        leading: ImageIcon(
-                          rankingImage,
-                          size: 30,
-                          color: iconColor,
-                        ),
+                        leading: ImageIcon(rankingImage, size: 30),
                         content: l10n.ranking,
 
                         onTap: () {
@@ -206,11 +186,7 @@ class Sidebar extends StatelessWidget {
                       child: sidebarItem(
                         label: 'recently',
 
-                        leading: ImageIcon(
-                          recentlyImage,
-                          size: 30,
-                          color: iconColor,
-                        ),
+                        leading: ImageIcon(recentlyImage, size: 30),
                         content: l10n.recently,
 
                         onTap: () {
@@ -234,11 +210,7 @@ class Sidebar extends StatelessWidget {
                       child: ContextMenuWidget(
                         child: sidebarItem(
                           label: 'playlists',
-                          leading: ImageIcon(
-                            playlistsImage,
-                            size: 30,
-                            color: iconColor,
-                          ),
+                          leading: ImageIcon(playlistsImage, size: 30),
                           content: l10n.playlists,
                           contentPadding: EdgeInsets.fromLTRB(16, 0, 8, 0),
 
@@ -333,18 +305,17 @@ class Sidebar extends StatelessWidget {
                 ),
               ),
             ),
-            if (!isLandscape)
-              SafeArea(
-                top: false,
-                child: sidebarItem(
-                  label: 'settings',
-                  leading: Icon(Icons.settings_rounded, size: 30),
-                  content: l10n.settings,
-                  onTap: () {
-                    layersManager.pushLayer('settings');
-                  },
-                ),
+            if (!isLandscape) ...[
+              sidebarItem(
+                label: 'settings',
+                leading: ImageIcon(settingImage, size: 30),
+                content: l10n.settings,
+                onTap: () {
+                  layersManager.pushLayer('settings');
+                },
               ),
+              SizedBox(height: 40),
+            ],
           ],
         ),
       ),

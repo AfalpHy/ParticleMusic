@@ -4,13 +4,12 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/common_widgets/buttons.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common_widgets/my_auto_size_text.dart';
-import 'package:particle_music/common_widgets/play_queue_sheet.dart';
 import 'package:particle_music/landscape_view/speaker.dart';
 import 'package:particle_music/landscape_view/title_bar.dart';
 import 'package:particle_music/landscape_view/volume_bar.dart';
-import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/common_widgets/lyrics.dart';
 import 'package:particle_music/common_widgets/seekbar.dart';
 import 'package:particle_music/my_audio_metadata.dart';
@@ -131,12 +130,7 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                       ),
                       if (pageHight > 600) ...[
                         message(coverArtSize, pageHight, currentSong),
-                        playControls(
-                          coverArtSize,
-                          pageHight,
-                          currentSong,
-                          context,
-                        ),
+                        playControls(coverArtSize, pageHight, currentSong),
                       ],
 
                       Spacer(),
@@ -192,13 +186,8 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                         ),
 
                         if (pageHight <= 600) ...[
-                          playControls(
-                            pageWidth * 0.4,
-                            pageHight,
-                            currentSong,
-                            context,
-                          ),
-                          SizedBox(height: 10),
+                          playControls(pageWidth * 0.4, pageHight, currentSong),
+                          SizedBox(height: 30),
                         ],
                       ],
                     ),
@@ -208,8 +197,8 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
               ),
 
               Positioned(
-                right: 75,
-                bottom: 80,
+                right: 60,
+                bottom: 100,
                 child: ValueListenableBuilder(
                   valueListenable: immersiveModeNotifier,
                   builder: (context, value, child) {
@@ -307,10 +296,7 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
     double width,
     double pageHight,
     MyAudioMetadata? currentSong,
-    BuildContext context,
   ) {
-    final l10n = AppLocalizations.of(context);
-
     return Column(
       children: [
         SizedBox(
@@ -322,100 +308,17 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
           width: width,
           child: Row(
             children: [
-              ValueListenableBuilder(
-                valueListenable: playModeNotifier,
-                builder: (_, playMode, _) {
-                  return IconButton(
-                    color: Colors.grey.shade50,
-                    icon: ImageIcon(
-                      playMode == 0
-                          ? loopImage
-                          : playMode == 1
-                          ? shuffleImage
-                          : repeatImage,
-                      size: 25,
-                    ),
-                    onPressed: () {
-                      if (playModeNotifier.value != 2) {
-                        audioHandler.switchPlayMode();
-                        switch (playModeNotifier.value) {
-                          case 0:
-                            showCenterMessage(context, l10n.loop);
-                            break;
-                          default:
-                            showCenterMessage(context, l10n.shuffle);
-                            break;
-                        }
-                      }
-                    },
-                    onLongPress: () {
-                      audioHandler.toggleRepeat();
-                      switch (playModeNotifier.value) {
-                        case 0:
-                          showCenterMessage(context, l10n.loop);
-                          break;
-                        case 1:
-                          showCenterMessage(context, l10n.shuffle);
-                          break;
-                        default:
-                          showCenterMessage(context, l10n.repeat);
-                          break;
-                      }
-                    },
-                  );
-                },
-              ),
+              playModeButton(25, iconColor: Colors.grey.shade50),
               Spacer(),
-              IconButton(
-                color: Colors.grey.shade50,
-                icon: const ImageIcon(previousButtonImage, size: 25),
-                onPressed: () {
-                  audioHandler.skipToPrevious();
-                },
-              ),
 
-              IconButton(
-                color: Colors.grey.shade50,
-                icon: ValueListenableBuilder(
-                  valueListenable: isPlayingNotifier,
-                  builder: (_, isPlaying, _) {
-                    return Icon(
-                      isPlaying
-                          ? Icons.pause_rounded
-                          : Icons.play_arrow_rounded,
-                      size: 35,
-                    );
-                  },
-                ),
-                onPressed: () {
-                  audioHandler.togglePlay();
-                },
-              ),
-              IconButton(
-                color: Colors.grey.shade50,
-                icon: const ImageIcon(nextButtonImage, size: 25),
-                onPressed: () {
-                  audioHandler.skipToNext();
-                },
-              ),
+              skip2PreviousButton(25, iconColor: Colors.grey.shade50),
+
+              playOrPauseButton(35, iconColor: Colors.grey.shade50),
+
+              skip2NextButton(25, iconColor: Colors.grey.shade50),
+
               Spacer(),
-              IconButton(
-                color: Colors.grey.shade50,
-                icon: const ImageIcon(playQueueImage, size: 25),
-                onPressed: () {
-                  if (isMobile) {
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      builder: (context) {
-                        return PlayQueueSheet();
-                      },
-                    );
-                  } else {
-                    displayPlayQueuePageNotifier.value = true;
-                  }
-                },
-              ),
+              showPlayQueueButton(25, iconColor: Colors.grey.shade50),
             ],
           ),
         ),

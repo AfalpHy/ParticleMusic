@@ -88,6 +88,7 @@ Future<void> main() async {
                           fontWeight: FontWeight.bold,
                         ),
                       ),
+                iconTheme: IconThemeData(color: iconColor),
                 colorScheme: ColorScheme.light(onSurface: textColor),
                 dialogTheme: DialogThemeData(
                   backgroundColor: isMobile

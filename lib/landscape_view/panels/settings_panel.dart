@@ -16,17 +16,8 @@ class _SettingsPanelState extends State<SettingsPanel> {
     return Column(
       children: [
         TitleBar(),
-        Expanded(child: contentWidget(context)),
+        Expanded(child: SettingsList()),
       ],
-    );
-  }
-
-  Widget contentWidget(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: updateColorNotifier,
-      builder: (context, value, child) {
-        return SettingsList();
-      },
     );
   }
 }
@@ -52,26 +43,20 @@ class LicensePagePanelState extends State<LicensePagePanel> {
   }
 
   Widget contentWidget(BuildContext context) {
-    return Column(
-      children: [
-        Expanded(
-          child: Theme(
-            data: ThemeData(
-              colorScheme: ColorScheme.light(),
-              listTileTheme: ListTileThemeData(selectedColor: Colors.black),
-              appBarTheme: const AppBarTheme(
-                scrolledUnderElevation: 0,
-                centerTitle: true,
-              ),
-            ),
-            child: const LicensePage(
-              applicationName: 'Particle Music',
-              applicationVersion: versionNumber,
-              applicationLegalese: '© 2025-2026 AfalpHy',
-            ),
-          ),
+    return Theme(
+      data: ThemeData(
+        colorScheme: ColorScheme.light(),
+        listTileTheme: ListTileThemeData(selectedColor: Colors.black),
+        appBarTheme: const AppBarTheme(
+          scrolledUnderElevation: 0,
+          centerTitle: true,
         ),
-      ],
+      ),
+      child: const LicensePage(
+        applicationName: 'Particle Music',
+        applicationVersion: versionNumber,
+        applicationLegalese: '© 2025-2026 AfalpHy',
+      ),
     );
   }
 }
