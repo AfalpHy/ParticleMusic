@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/common_widgets/playlist_widgets.dart';
 import 'package:particle_music/common_widgets/my_sheet.dart';
+import 'package:particle_music/common_widgets/playlist_widgets.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/playlists.dart';
@@ -31,13 +31,18 @@ class SongListTile extends StatelessWidget {
       title: ValueListenableBuilder(
         valueListenable: currentSongNotifier,
         builder: (_, currentSong, _) {
-          return Text(
-            getTitle(song),
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-              color: song == currentSong ? highlightTextColor : null,
-              fontWeight: song == currentSong ? FontWeight.bold : null,
-            ),
+          return ValueListenableBuilder(
+            valueListenable: updateColorNotifier,
+            builder: (context, value, child) {
+              return Text(
+                getTitle(song),
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  color: song == currentSong ? highlightTextColor : null,
+                  fontWeight: song == currentSong ? FontWeight.bold : null,
+                ),
+              );
+            },
           );
         },
       ),
@@ -77,7 +82,7 @@ class SongListTile extends StatelessWidget {
               child: Row(
                 children: [
                   Spacer(),
-                  ImageIcon(playOutlinedImage, size: 15, color: iconColor),
+                  ImageIcon(playOutlinedImage, size: 15),
                   Text(song.playCount.toString()),
                   moreButton(context),
                 ],
@@ -92,7 +97,7 @@ class SongListTile extends StatelessWidget {
     final l10n = AppLocalizations.of(context);
 
     return IconButton(
-      icon: Icon(Icons.more_vert, size: 15, color: iconColor),
+      icon: Icon(Icons.more_vert, size: 15),
       onPressed: () {
         tryVibrate();
         showModalBottomSheet(
@@ -126,10 +131,7 @@ class SongListTile extends StatelessWidget {
                       physics: const ClampingScrollPhysics(),
                       children: [
                         ListTile(
-                          leading: ImageIcon(
-                            playlistAddImage,
-                            color: iconColor,
-                          ),
+                          leading: ImageIcon(playlistAddImage),
                           title: Text(
                             l10n.add2Playlist,
                             style: TextStyle(fontWeight: FontWeight.bold),
@@ -145,7 +147,7 @@ class SongListTile extends StatelessWidget {
                           },
                         ),
                         ListTile(
-                          leading: ImageIcon(playCircleImage, color: iconColor),
+                          leading: ImageIcon(playCircleImage),
                           title: Text(
                             l10n.playNow,
                             style: TextStyle(fontWeight: FontWeight.bold),
@@ -161,10 +163,7 @@ class SongListTile extends StatelessWidget {
                           },
                         ),
                         ListTile(
-                          leading: ImageIcon(
-                            playnextCircleImage,
-                            color: iconColor,
-                          ),
+                          leading: ImageIcon(playnextCircleImage),
                           title: Text(
                             l10n.playNext,
                             style: TextStyle(fontWeight: FontWeight.bold),
@@ -184,7 +183,7 @@ class SongListTile extends StatelessWidget {
                           },
                         ),
                         ListTile(
-                          leading: ImageIcon(addCircleImage, color: iconColor),
+                          leading: ImageIcon(addCircleImage),
                           title: Text(
                             l10n.add2Queue,
                             style: TextStyle(fontWeight: FontWeight.bold),
@@ -205,10 +204,7 @@ class SongListTile extends StatelessWidget {
                         ),
                         playlist != null
                             ? ListTile(
-                                leading: ImageIcon(
-                                  deleteImage,
-                                  color: iconColor,
-                                ),
+                                leading: ImageIcon(deleteImage),
                                 title: Text(
                                   l10n.delete,
                                   style: TextStyle(fontWeight: FontWeight.bold),

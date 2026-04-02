@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
@@ -53,7 +54,7 @@ class _SongListPageState extends BaseSongListState<SongListPage>
 
   PreferredSizeWidget searchAndMore(BuildContext context) {
     return AppBar(
-      iconTheme: IconThemeData(color: iconColor),
+      automaticallyImplyLeading: !Platform.isAndroid,
       backgroundColor: Colors.transparent,
       scrolledUnderElevation: 0,
       actions: [
@@ -305,7 +306,7 @@ class _SongListPageState extends BaseSongListState<SongListPage>
                   builder: (context, currentSongList, child) {
                     String prefix = isNavidrome ? "Navidrome" : l10n.local;
                     return Text(
-                      "$prefix: ${l10n.songsCount(currentSongList.length)}",
+                      "$prefix: ${l10n.songCount(currentSongList.length)}",
                     );
                   },
                 ),

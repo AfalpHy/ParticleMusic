@@ -96,28 +96,33 @@ class AppLocalizationsZh extends AppLocalizations {
   String get reorder => '调整顺序';
 
   @override
-  String songsCount(int count) {
+  String songCount(int count) {
     return '$count 首';
   }
 
   @override
-  String artistsCount(int count) {
+  String artistCount(int count) {
     return '$count 人';
   }
 
   @override
-  String albumsCount(int count) {
+  String albumCount(int count) {
     return '$count 张';
   }
 
   @override
-  String playlistsCount(int count) {
+  String playlistCount(int count) {
     return '$count 个';
   }
 
   @override
-  String foldersCount(int count) {
+  String folderCount(int count) {
     return '$count 个';
+  }
+
+  @override
+  String settingCount(int count) {
+    return '$count 项';
   }
 
   @override

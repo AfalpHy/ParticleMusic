@@ -102,8 +102,8 @@ class _ArtistsAlbumsPanelState extends State<ArtistsAlbumsPanel> {
                 builder: (context, list, child) {
                   return Text(
                     isArtist
-                        ? l10n.artistsCount(list.length)
-                        : l10n.albumsCount(list.length),
+                        ? l10n.artistCount(list.length)
+                        : l10n.albumCount(list.length),
                     style: TextStyle(fontSize: 12),
                   );
                 },

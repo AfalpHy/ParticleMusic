@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:audio_tags_lofty/audio_tags_lofty.dart';
 import 'package:flutter/material.dart';
@@ -107,6 +108,74 @@ Future<bool> showConfirmDialog(BuildContext context, String action) async {
     },
   );
   return result!;
+}
+
+void showAnimationDialog(
+  BuildContext context,
+  Widget child,
+  Color backgroundColor, {
+  double width = 300,
+  double height = 450,
+}) {
+  showGeneralDialog(
+    context: context,
+    barrierColor: Colors.transparent,
+    transitionDuration: const Duration(milliseconds: 300),
+
+    pageBuilder: (context, animation, _) {
+      return Stack(
+        children: [
+          GestureDetector(
+            onTap: () {
+              Navigator.of(context).pop();
+            },
+            child: AnimatedBuilder(
+              animation: animation,
+              builder: (_, _) {
+                return BackdropFilter(
+                  filter: ImageFilter.blur(
+                    sigmaX: 5 * animation.value,
+                    sigmaY: 5 * animation.value,
+                  ),
+                  child: Container(
+                    color: Colors.black.withValues(
+                      alpha: 0.3 * animation.value,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+
+          Center(
+            child: SlideTransition(
+              position:
+                  Tween<Offset>(
+                    begin: const Offset(0, 1),
+                    end: Offset.zero,
+                  ).animate(
+                    CurvedAnimation(
+                      parent: animation,
+                      curve: Curves.easeInOutCubic,
+                    ),
+                  ),
+              child: FadeTransition(
+                opacity: animation,
+                child: Material(
+                  shape: SmoothRectangleBorder(
+                    smoothness: 1,
+                    borderRadius: BorderRadius.circular(20),
+                  ),
+                  color: backgroundColor,
+                  child: SizedBox(width: width, height: height, child: child),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
+    },
+  );
 }
 
 String getTitle(MyAudioMetadata? song) {

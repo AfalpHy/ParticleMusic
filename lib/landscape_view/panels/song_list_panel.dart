@@ -194,7 +194,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                     builder: (context, currentSongList, child) {
                       String prefix = isNavidrome ? "Navidrome" : l10n.local;
                       return Text(
-                        "$prefix: ${l10n.songsCount(currentSongList.length)}",
+                        "$prefix: ${l10n.songCount(currentSongList.length)}",
                       );
                     },
                   ),

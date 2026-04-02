@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
@@ -15,7 +17,7 @@ class PlaylistsPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
-        iconTheme: IconThemeData(color: iconColor),
+        automaticallyImplyLeading: !Platform.isAndroid,
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
@@ -61,7 +63,7 @@ class PlaylistsPage extends StatelessWidget {
                 subtitle: ValueListenableBuilder(
                   valueListenable: playlist.updateNotifier,
                   builder: (_, _, _) {
-                    return Text(l10n.songsCount(playlist.getTotalCount()));
+                    return Text(l10n.songCount(playlist.getTotalCount()));
                   },
                 ),
                 onTap: () {

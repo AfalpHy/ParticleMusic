@@ -40,7 +40,7 @@ class FoldersPanel extends StatelessWidget {
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
               ),
               subtitle: Text(
-                l10n.foldersCount(library.folderList.length),
+                l10n.folderCount(library.folderList.length),
                 style: TextStyle(fontSize: 12),
               ),
             ),

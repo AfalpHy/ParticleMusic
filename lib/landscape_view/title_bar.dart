@@ -232,7 +232,7 @@ class TitleBar extends StatelessWidget {
                         onPressed: () {
                           layersManager.pushLayer('settings');
                         },
-                        icon: Icon(Icons.settings_outlined, size: 20),
+                        icon: ImageIcon(settingImage),
                       ),
 
                     if (!isMobile) windowControls(),

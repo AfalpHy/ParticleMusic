@@ -1,10 +1,8 @@
 import 'dart:io';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/landscape_view/sidebar.dart';
 import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/portrait_view/pages/portrait_lyrics_page.dart';
@@ -41,49 +39,7 @@ class _PortraitViewState extends State<PortraitView> {
 
   Widget content() {
     return Stack(
-      fit: StackFit.expand,
       children: [
-        ValueListenableBuilder(
-          valueListenable: enableCustomColorNotifier,
-          builder: (context, value, child) {
-            if (value) {
-              return SizedBox.shrink();
-            }
-            return ValueListenableBuilder(
-              valueListenable: updateColorNotifier,
-              builder: (context, value, child) {
-                return CoverArtWidget(song: backgroundSong);
-              },
-            );
-          },
-        ),
-        ValueListenableBuilder(
-          valueListenable: enableCustomColorNotifier,
-          builder: (context, value, child) {
-            if (value) {
-              return Container(color: Colors.white);
-            }
-            return ValueListenableBuilder(
-              valueListenable: updateColorNotifier,
-              builder: (context, value, child) {
-                final pageWidth = MediaQuery.widthOf(context);
-                final pageHight = MediaQuery.heightOf(context);
-
-                return ClipRect(
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(
-                      sigmaX: pageWidth * 0.03,
-                      sigmaY: pageHight * 0.03,
-                    ),
-                    child: Container(
-                      color: backgroundFilterColor.withAlpha(180),
-                    ),
-                  ),
-                );
-              },
-            );
-          },
-        ),
         Scaffold(
           extendBodyBehindAppBar: true,
           backgroundColor: Colors.transparent,
@@ -117,12 +73,9 @@ class _PortraitViewState extends State<PortraitView> {
               ValueListenableBuilder(
                 valueListenable: updateColorNotifier,
                 builder: (context, value, child) {
-                  return Material(
-                    color: panelColor,
-                    child: IndexedStack(
-                      index: layersManager.layerStack.length - 1,
-                      children: layersManager.layerStack,
-                    ),
+                  return Navigator(
+                    pages: layersManager.buildPages(),
+                    onDidRemovePage: (_) {},
                   );
                 },
               ),

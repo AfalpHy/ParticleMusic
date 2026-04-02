@@ -28,40 +28,48 @@
   "createPlaylist": "Create Playlist",
   "order": "Order",
   "reorder": "Reorder",
-  "songsCount": "{count} songs",
-  "@songsCount": {
+  "songCount": "{count} songs",
+  "@songCount": {
     "placeholders": {
       "count": {
         "type": "int"
       }
     }
   },
-  "artistsCount": "{count} in total",
-  "@artistsCount": {
+  "artistCount": "{count} in total",
+  "@artistCount": {
     "placeholders": {
       "count": {
         "type": "int"
       }
     }
   },
-  "albumsCount": "{count} in total",
-  "@albumsCount": {
+  "albumCount": "{count} in total",
+  "@albumCount": {
     "placeholders": {
       "count": {
         "type": "int"
       }
     }
   },
-  "playlistsCount": "{count} in total",
-  "@playlistsCount": {
+  "playlistCount": "{count} in total",
+  "@playlistCount": {
     "placeholders": {
       "count": {
         "type": "int"
       }
     }
   },
-  "foldersCount": "{count} in total",
-  "@foldersCount": {
+  "folderCount": "{count} in total",
+  "@folderCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "settingCount": "{count} in total",
+  "@settingCount": {
     "placeholders": {
       "count": {
         "type": "int"

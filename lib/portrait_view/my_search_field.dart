@@ -34,15 +34,10 @@ class MySearchField extends StatelessWidget {
                       child: TextField(
                         autofocus: true,
                         controller: textController,
-                        style: TextStyle(color: textColor),
                         decoration: InputDecoration(
-                          hint: Text(
-                            hintText,
-                            style: TextStyle(color: textColor),
-                          ),
-                          prefixIcon: Icon(Icons.search, color: iconColor),
+                          hint: Text(hintText),
+                          prefixIcon: Icon(Icons.search),
                           suffixIcon: IconButton(
-                            color: iconColor,
                             onPressed: () {
                               isSearch.value = false;
                               textController.clear();

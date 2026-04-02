@@ -272,35 +272,41 @@ abstract class AppLocalizations {
   /// **'Reorder'**
   String get reorder;
 
-  /// No description provided for @songsCount.
+  /// No description provided for @songCount.
   ///
   /// In en, this message translates to:
   /// **'{count} songs'**
-  String songsCount(int count);
+  String songCount(int count);
 
-  /// No description provided for @artistsCount.
+  /// No description provided for @artistCount.
   ///
   /// In en, this message translates to:
   /// **'{count} in total'**
-  String artistsCount(int count);
+  String artistCount(int count);
 
-  /// No description provided for @albumsCount.
+  /// No description provided for @albumCount.
   ///
   /// In en, this message translates to:
   /// **'{count} in total'**
-  String albumsCount(int count);
+  String albumCount(int count);
 
-  /// No description provided for @playlistsCount.
+  /// No description provided for @playlistCount.
   ///
   /// In en, this message translates to:
   /// **'{count} in total'**
-  String playlistsCount(int count);
+  String playlistCount(int count);
 
-  /// No description provided for @foldersCount.
+  /// No description provided for @folderCount.
   ///
   /// In en, this message translates to:
   /// **'{count} in total'**
-  String foldersCount(int count);
+  String folderCount(int count);
+
+  /// No description provided for @settingCount.
+  ///
+  /// In en, this message translates to:
+  /// **'{count} in total'**
+  String settingCount(int count);
 
   /// No description provided for @searchSongs.
   ///

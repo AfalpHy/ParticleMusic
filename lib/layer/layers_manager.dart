@@ -1,6 +1,9 @@
+import 'dart:ui';
+
 import 'package:flutter/material.dart';
 import 'package:particle_music/artists_albums_manager.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/layer/artists_albums_layer.dart';
 import 'package:particle_music/layer/folders_layer.dart';
 import 'package:particle_music/layer/playlists_layer.dart';
@@ -22,6 +25,63 @@ class LayersManager {
   final List<String> sidebarHighlighLabelStack = [];
 
   bool get isEmpty => layerStack.isEmpty;
+
+  List<Page> buildPages() {
+    return layerStack.map((layer) {
+      return MaterialPage(
+        key: ValueKey(layer),
+        child: Stack(
+          fit: StackFit.expand,
+
+          children: [
+            ValueListenableBuilder(
+              valueListenable: enableCustomColorNotifier,
+              builder: (context, value, child) {
+                if (value) {
+                  return SizedBox.shrink();
+                }
+                return ValueListenableBuilder(
+                  valueListenable: updateColorNotifier,
+                  builder: (context, value, child) {
+                    return CoverArtWidget(song: backgroundSong);
+                  },
+                );
+              },
+            ),
+            ValueListenableBuilder(
+              valueListenable: enableCustomColorNotifier,
+              builder: (context, value, child) {
+                if (value) {
+                  return Container(color: Colors.white);
+                }
+                return ValueListenableBuilder(
+                  valueListenable: updateColorNotifier,
+                  builder: (context, value, child) {
+                    final pageWidth = MediaQuery.widthOf(context);
+                    final pageHight = MediaQuery.heightOf(context);
+
+                    return ClipRect(
+                      child: BackdropFilter(
+                        filter: ImageFilter.blur(
+                          sigmaX: pageWidth * 0.03,
+                          sigmaY: pageHight * 0.03,
+                        ),
+                        child: Container(
+                          color: backgroundFilterColor.withAlpha(180),
+                        ),
+                      ),
+                    );
+                  },
+                );
+              },
+            ),
+
+            Material(color: panelColor, child: layer),
+          ],
+        ),
+      );
+    }).toList();
+  }
 
   void pushLayer(String label, {String? content}) {
     sidebarHighlighLabel.value = label;

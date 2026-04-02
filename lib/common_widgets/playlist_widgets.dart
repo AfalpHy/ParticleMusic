@@ -316,7 +316,7 @@ Widget _playlistListTile(Playlist playlist) {
         valueListenable: playlist.updateNotifier,
         builder: (context, _, _) {
           return Text(
-            AppLocalizations.of(context).songsCount(playlist.getTotalCount()),
+            AppLocalizations.of(context).songCount(playlist.getTotalCount()),
           );
         },
       ),

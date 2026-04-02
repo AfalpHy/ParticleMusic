@@ -96,27 +96,32 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reorder => 'Reorder';
 
   @override
-  String songsCount(int count) {
+  String songCount(int count) {
     return '$count songs';
   }
 
   @override
-  String artistsCount(int count) {
+  String artistCount(int count) {
     return '$count in total';
   }
 
   @override
-  String albumsCount(int count) {
+  String albumCount(int count) {
     return '$count in total';
   }
 
   @override
-  String playlistsCount(int count) {
+  String playlistCount(int count) {
     return '$count in total';
   }
 
   @override
-  String foldersCount(int count) {
+  String folderCount(int count) {
+    return '$count in total';
+  }
+
+  @override
+  String settingCount(int count) {
     return '$count in total';
   }
 

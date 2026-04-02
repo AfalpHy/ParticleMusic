@@ -104,7 +104,7 @@ class _PlaylistsPanelState extends State<PlaylistsPanel> {
                           valueListenable: playlistsNotifier,
                           builder: (context, playlists, child) {
                             return Text(
-                              l10n.playlistsCount(playlists.length),
+                              l10n.playlistCount(playlists.length),
                               style: TextStyle(fontSize: 12),
                             );
                           },

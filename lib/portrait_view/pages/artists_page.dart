@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:particle_music/artists_albums_manager.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
@@ -34,7 +36,7 @@ class ArtistsPage extends StatelessWidget {
       backgroundColor: Colors.transparent,
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        iconTheme: IconThemeData(color: iconColor),
+        automaticallyImplyLeading: !Platform.isAndroid,
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
@@ -243,7 +245,7 @@ class ArtistsPage extends StatelessWidget {
             ),
             title: Text(artist.name),
             trailing: Text(
-              AppLocalizations.of(context).songsCount(artist.getTotalCount()),
+              AppLocalizations.of(context).songCount(artist.getTotalCount()),
             ),
             onTap: () {
               layersManager.pushLayer('artists', content: artist.name);
@@ -309,7 +311,7 @@ class ArtistsPage extends StatelessWidget {
                       Text(
                         AppLocalizations.of(
                           context,
-                        ).songsCount(artist.getTotalCount()),
+                        ).songCount(artist.getTotalCount()),
                         style: TextStyle(fontSize: 12),
                       ),
                     ],
