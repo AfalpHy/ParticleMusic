@@ -44,30 +44,8 @@ class _PortraitViewState extends State<PortraitView> {
           extendBodyBehindAppBar: true,
           backgroundColor: Colors.transparent,
           resizeToAvoidBottomInset: false,
-          drawer: ValueListenableBuilder(
-            valueListenable: updateColorNotifier,
-            builder: (context, value, child) {
-              return Drawer(
-                backgroundColor: backgroundFilterColor,
-                width: 220,
-                child: Column(
-                  children: [
-                    Container(
-                      color: sidebarColor,
-                      height: MediaQuery.of(context).padding.top,
-                    ),
-                    Expanded(
-                      child: Sidebar(
-                        closeDrawer: () {
-                          Scaffold.of(context).closeDrawer();
-                        },
-                      ),
-                    ),
-                  ],
-                ),
-              );
-            },
-          ),
+          drawer: Platform.isAndroid ? myDrawer() : null,
+          endDrawer: Platform.isIOS ? myDrawer() : null,
           body: Stack(
             children: [
               ValueListenableBuilder(
@@ -111,6 +89,33 @@ class _PortraitViewState extends State<PortraitView> {
         ),
         PortraitLyricsPage(),
       ],
+    );
+  }
+
+  Widget myDrawer() {
+    return ValueListenableBuilder(
+      valueListenable: updateColorNotifier,
+      builder: (context, value, child) {
+        return Drawer(
+          backgroundColor: backgroundFilterColor,
+          width: 220,
+          child: Column(
+            children: [
+              Container(
+                color: sidebarColor,
+                height: MediaQuery.of(context).padding.top,
+              ),
+              Expanded(
+                child: Sidebar(
+                  closeDrawer: () {
+                    Scaffold.of(context).closeDrawer();
+                  },
+                ),
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }
