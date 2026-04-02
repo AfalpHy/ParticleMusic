@@ -18,43 +18,31 @@ class LandscapeView extends StatelessWidget {
 
       children: [
         ValueListenableBuilder(
-          valueListenable: enableCustomColorNotifier,
+          valueListenable: updateColorNotifier,
           builder: (context, value, child) {
-            if (value) {
+            if (enableCustomColorNotifier.value) {
               return SizedBox.shrink();
             }
-            return ValueListenableBuilder(
-              valueListenable: updateColorNotifier,
-              builder: (context, value, child) {
-                return CoverArtWidget(song: backgroundSong);
-              },
-            );
+            return CoverArtWidget(song: backgroundSong);
           },
         ),
         ValueListenableBuilder(
-          valueListenable: enableCustomColorNotifier,
+          valueListenable: updateColorNotifier,
           builder: (context, value, child) {
-            if (value) {
+            if (enableCustomColorNotifier.value) {
               return Container(color: Colors.white);
             }
-            return ValueListenableBuilder(
-              valueListenable: updateColorNotifier,
-              builder: (context, value, child) {
-                final pageWidth = MediaQuery.widthOf(context);
-                final pageHight = MediaQuery.heightOf(context);
+            final pageWidth = MediaQuery.widthOf(context);
+            final pageHight = MediaQuery.heightOf(context);
 
-                return ClipRect(
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(
-                      sigmaX: pageWidth * 0.03,
-                      sigmaY: pageHight * 0.03,
-                    ),
-                    child: Container(
-                      color: backgroundFilterColor.withAlpha(180),
-                    ),
-                  ),
-                );
-              },
+            return ClipRect(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(
+                  sigmaX: pageWidth * 0.03,
+                  sigmaY: pageHight * 0.03,
+                ),
+                child: Container(color: backgroundFilterColor.withAlpha(180)),
+              ),
             );
           },
         ),

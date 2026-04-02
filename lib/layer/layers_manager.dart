@@ -15,6 +15,7 @@ import 'package:particle_music/layer/single_artist_layer.dart';
 import 'package:particle_music/layer/single_folder_layer.dart';
 import 'package:particle_music/layer/single_playlist_layer.dart';
 import 'package:particle_music/layer/songs_layer.dart';
+import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/utils.dart';
 
@@ -35,37 +36,30 @@ class LayersManager {
 
           children: [
             ValueListenableBuilder(
-              valueListenable: enableCustomColorNotifier,
+              valueListenable: updateColorNotifier,
               builder: (context, value, child) {
-                if (value) {
+                if (enableCustomColorNotifier.value) {
                   return SizedBox.shrink();
                 }
-                return ValueListenableBuilder(
-                  valueListenable: updateColorNotifier,
-                  builder: (context, value, child) {
-                    return CoverArtWidget(song: backgroundSong);
-                  },
-                );
+
+                return CoverArtWidget(song: _getBackgroundSong(layer));
               },
             ),
             ValueListenableBuilder(
-              valueListenable: enableCustomColorNotifier,
+              valueListenable: updateColorNotifier,
               builder: (context, value, child) {
-                if (value) {
+                if (enableCustomColorNotifier.value) {
                   return Container(color: Colors.white);
                 }
-                return ValueListenableBuilder(
-                  valueListenable: updateColorNotifier,
-                  builder: (context, value, child) {
-                    return ClipRect(
-                      child: BackdropFilter(
-                        filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-                        child: Container(
-                          color: backgroundFilterColor.withAlpha(180),
-                        ),
-                      ),
-                    );
-                  },
+                return ClipRect(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                    child: Container(
+                      color: _getBackgroundSong(
+                        layer,
+                      )?.coverArtColor?.withAlpha(180),
+                    ),
+                  ),
                 );
               },
             ),
@@ -165,38 +159,40 @@ class LayersManager {
     sidebarHighlighLabelStack.clear();
   }
 
+  MyAudioMetadata? _getBackgroundSong(Widget layer) {
+    if (layer is SingleArtistLayer) {
+      return layer.artist.getDisplaySong();
+    } else if (layer is SingleAlbumLayer) {
+      return layer.album.getDisplaySong();
+    } else if (layer is SingleFolderLayer) {
+      final songList = layer.folder.songList;
+      return getFirstSong(songList);
+    } else if (layer is SongsLayer) {
+      bool isNavidrome = library.displayNavidromeNotifier.value;
+      return getFirstSong(
+        isNavidrome ? library.navidromeSongList : library.songList,
+      );
+    } else if (layer is RankingLayer) {
+      bool isNavidrome = history.displayNavidromeRankingNotifier.value;
+      return getFirstSong(history.getRankingSongList(isNavidrome));
+    } else if (layer is RecentlyLayer) {
+      bool isNavidrome = history.displayNavidromeRecentlyNotifier.value;
+      return getFirstSong(history.getRecentlySongList(isNavidrome));
+    } else if (layer is SinglePlaylistLayer) {
+      return layer.playlist.getDisplaySong();
+    } else {
+      return currentSongNotifier.value;
+    }
+  }
+
   Future<void> updateBackground() async {
     if (isEmpty) {
       return;
     }
-    final label = sidebarHighlighLabelStack.last;
 
-    Widget panel = layerStack.last;
+    Widget layer = layerStack.last;
 
-    if (label == 'artists' && panel is SingleArtistLayer) {
-      backgroundSong = panel.artist.getDisplaySong();
-    } else if (label == 'albums' && panel is SingleAlbumLayer) {
-      backgroundSong = panel.album.getDisplaySong();
-    } else if (label == 'folders' && panel is SingleFolderLayer) {
-      final songList = panel.folder.songList;
-      backgroundSong = getFirstSong(songList);
-    } else if (label == 'songs') {
-      bool isNavidrome = library.displayNavidromeNotifier.value;
-      backgroundSong = getFirstSong(
-        isNavidrome ? library.navidromeSongList : library.songList,
-      );
-    } else if (label == 'ranking') {
-      bool isNavidrome = history.displayNavidromeRankingNotifier.value;
-      backgroundSong = getFirstSong(history.getRankingSongList(isNavidrome));
-    } else if (label == 'recently') {
-      bool isNavidrome = history.displayNavidromeRecentlyNotifier.value;
-      backgroundSong = getFirstSong(history.getRecentlySongList(isNavidrome));
-    } else if (label[0] == '_') {
-      final playlist = playlistsManager.getPlaylistByName(label.substring(1));
-      backgroundSong = playlist!.getDisplaySong();
-    } else {
-      backgroundSong = currentSongNotifier.value;
-    }
+    backgroundSong = _getBackgroundSong(layer);
 
     backgroundFilterColor = await computeCoverArtColor(backgroundSong);
     if (!enableCustomColorNotifier.value && !darkModeNotifier.value) {
