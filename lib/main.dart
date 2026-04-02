@@ -91,7 +91,10 @@ Future<void> main() async {
                         ),
                       ),
                 iconTheme: IconThemeData(color: iconColor),
-                colorScheme: ColorScheme.light(onSurface: textColor),
+                listTileTheme: ListTileThemeData(
+                  iconColor: iconColor,
+                  textColor: textColor,
+                ),
 
                 // adjust magnifier color
                 cupertinoOverrideTheme: Platform.isIOS
