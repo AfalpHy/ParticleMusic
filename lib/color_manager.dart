@@ -4,7 +4,7 @@ import 'package:particle_music/l10n/generated/app_localizations.dart';
 
 ColorManager colorManager = ColorManager();
 
-const Color lightModePageBackgroundColor = Color.fromARGB(255, 245, 245, 245);
+const Color lightModePageBackgroundColor = Color.fromARGB(100, 245, 245, 245);
 const Color lightModeIconColor = Colors.black;
 const Color lightModeTextColor = Color.fromARGB(255, 30, 30, 30);
 const Color lightModeHighlightTextColor = Colors.black;
@@ -48,14 +48,14 @@ class ColorManager {
       CustomColor('customHighlightTextColor', Colors.black),
       CustomColor('customSwitchColor', Colors.black87),
       CustomColor('customPlayBarColor', Colors.white70, type: 1),
-      CustomColor('customPanelColor', Colors.grey.shade100, type: 2),
-      CustomColor('customSidebarColor', Colors.grey.shade200, type: 2),
-      CustomColor('customBottomColor', Colors.grey.shade50, type: 2),
+      CustomColor('customPanelColor', Colors.grey.shade100),
+      CustomColor('customSidebarColor', Colors.grey.shade200),
+      CustomColor('customBottomColor', Colors.grey.shade50),
       CustomColor('customSearchFieldColor', Colors.white),
       CustomColor('customButtonColor', Colors.white70),
       CustomColor('customDividerColor', Colors.grey),
-      CustomColor('customSelectedItemColor', Colors.white, type: 2),
-      CustomColor('customSeekBarColor', Colors.black, type: 2),
+      CustomColor('customSelectedItemColor', Colors.white),
+      CustomColor('customSeekBarColor', Colors.black),
       CustomColor('customVolumeBarColor', Colors.black, type: 2),
       CustomColor('lyricsBackgroundColor', Colors.black),
     ];
@@ -126,16 +126,10 @@ class ColorManager {
       panelColor = lightModePanelColor;
       sidebarColor = lightModeSidebarColor;
       bottomColor = lightModeBottomColor;
-      searchFieldColor = isMobile
-          ? Colors.white
-          : backgroundFilterColor.withAlpha(75);
-      buttonColor = isMobile
-          ? Colors.white70
-          : backgroundFilterColor.withAlpha(75);
-      dividerColor = isMobile ? Colors.grey : backgroundFilterColor;
-      selectedItemColor = isMobile
-          ? Colors.white
-          : backgroundFilterColor.withAlpha(75);
+      searchFieldColor = backgroundFilterColor.withAlpha(75);
+      buttonColor = backgroundFilterColor.withAlpha(75);
+      dividerColor = backgroundFilterColor;
+      selectedItemColor = backgroundFilterColor.withAlpha(75);
       seekBarColor = lightModeSeekBarColor;
       volumeBarColor = lightModeVolumeBarColor;
     }

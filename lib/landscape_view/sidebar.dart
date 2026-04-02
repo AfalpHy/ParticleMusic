@@ -233,37 +233,30 @@ class Sidebar extends StatelessWidget {
                         menuProvider: (_) {
                           return Menu(
                             children: [
-                              MenuAction(
-                                title: l10n.reorder,
-                                callback: () async {
-                                  showDialog(
-                                    context: context,
-                                    builder: (context) {
-                                      return Dialog(
-                                        shape: SmoothRectangleBorder(
-                                          smoothness: 1,
-                                          borderRadius: BorderRadius.circular(
+                              if (isMobile)
+                                MenuAction(
+                                  title: l10n.reorder,
+                                  callback: () async {
+                                    showAnimationDialog(
+                                      context: context,
+                                      height: isMobile ? 300 : 500,
+                                      width: 400,
+                                      pageBuilder: (context) {
+                                        return Padding(
+                                          padding: const EdgeInsets.fromLTRB(
                                             10,
+                                            10,
+                                            10,
+                                            0,
                                           ),
-                                        ),
-                                        child: SizedBox(
-                                          height: 500,
-                                          width: 400,
-                                          child: Padding(
-                                            padding: const EdgeInsets.fromLTRB(
-                                              10,
-                                              10,
-                                              10,
-                                              0,
-                                            ),
-                                            child: reorderablePlaylistsView(),
+                                          child: reorderablePlaylistsView(
+                                            context,
                                           ),
-                                        ),
-                                      );
-                                    },
-                                  );
-                                },
-                              ),
+                                        );
+                                      },
+                                    );
+                                  },
+                                ),
                             ],
                           );
                         },

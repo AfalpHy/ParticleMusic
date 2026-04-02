@@ -57,122 +57,136 @@ void showCenterMessage(
 Future<bool> showConfirmDialog(BuildContext context, String action) async {
   final l10n = AppLocalizations.of(context);
 
-  final result = await showDialog<bool>(
+  final result = await showAnimationDialog<bool>(
     context: context,
-    barrierDismissible: false,
-    builder: (BuildContext context) {
-      return AlertDialog(
-        shape: SmoothRectangleBorder(
-          smoothness: 1,
-          borderRadius: BorderRadius.circular(10),
+    width: isMobile ? 280 : 300,
+    height: 200,
+    pageBuilder: (context) {
+      return Padding(
+        padding: const EdgeInsets.all(20),
+        child: Column(
+          children: [
+            Align(
+              alignment: .centerLeft,
+              child: Text(
+                action,
+                style: TextStyle(fontSize: 25, fontWeight: .bold),
+              ),
+            ),
+            SizedBox(height: 15),
+            Align(
+              alignment: .centerLeft,
+              child: Text(l10n.continueMsg, style: TextStyle(fontSize: 14)),
+            ),
+            SizedBox(height: 25),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context, false),
+                  child: Text(l10n.cancel),
+                ),
+                const SizedBox(width: 20),
+                ElevatedButton(
+                  onPressed: () => Navigator.pop(context, true),
+                  style: ElevatedButton.styleFrom(foregroundColor: Colors.red),
+                  child: Text(l10n.confirm),
+                ),
+              ],
+            ),
+          ],
         ),
-        title: Text(action),
-        content: Text(l10n.continueMsg, style: TextStyle(fontSize: 14)),
-        actions: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context, false),
-                style: ElevatedButton.styleFrom(
-                  elevation: 2,
-                  backgroundColor: Colors.white70,
-                  shadowColor: Colors.black54,
-                  foregroundColor: Colors.black,
-                  shape: SmoothRectangleBorder(
-                    smoothness: 1,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: Text(l10n.cancel),
-              ),
-              const SizedBox(width: 20),
-              ElevatedButton(
-                onPressed: () => Navigator.pop(context, true),
-                style: ElevatedButton.styleFrom(
-                  elevation: 2,
-                  backgroundColor: Colors.white70,
-                  shadowColor: Colors.black54,
-                  foregroundColor: Colors.red,
-                  shape: SmoothRectangleBorder(
-                    smoothness: 1,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
-                child: Text(l10n.confirm),
-              ),
-            ],
-          ),
-        ],
       );
     },
   );
-  return result!;
+  return result ?? false;
 }
 
-void showAnimationDialog(
-  BuildContext context,
-  Widget child,
-  Color backgroundColor, {
+Future<T?> showAnimationDialog<T>({
+  required BuildContext context,
+  bool barrierDismissible = true,
   double width = 300,
   double height = 450,
-}) {
-  showGeneralDialog(
+  required Widget Function(BuildContext context) pageBuilder,
+}) async {
+  return await showGeneralDialog<T>(
     context: context,
     barrierColor: Colors.transparent,
     transitionDuration: const Duration(milliseconds: 300),
-
     pageBuilder: (context, animation, _) {
-      return Stack(
-        children: [
-          GestureDetector(
-            onTap: () {
-              Navigator.of(context).pop();
-            },
-            child: AnimatedBuilder(
-              animation: animation,
-              builder: (_, _) {
-                return BackdropFilter(
-                  filter: ImageFilter.blur(
-                    sigmaX: 5 * animation.value,
-                    sigmaY: 5 * animation.value,
-                  ),
-                  child: Container(
-                    color: Colors.black.withValues(
-                      alpha: 0.3 * animation.value,
-                    ),
-                  ),
-                );
+      return MediaQuery.removePadding(
+        context: context,
+        removeTop: true,
+        removeBottom: true,
+        child: Stack(
+          children: [
+            GestureDetector(
+              onTap: () {
+                if (barrierDismissible) {
+                  Navigator.pop(context);
+                }
               },
+              child: AnimatedBuilder(
+                animation: animation,
+                builder: (_, _) {
+                  return BackdropFilter(
+                    filter: ImageFilter.blur(
+                      sigmaX: 5 * animation.value,
+                      sigmaY: 5 * animation.value,
+                    ),
+                    child: Container(
+                      color: Colors.black.withValues(
+                        alpha: 0.3 * animation.value,
+                      ),
+                    ),
+                  );
+                },
+              ),
             ),
-          ),
 
-          Center(
-            child: SlideTransition(
-              position:
-                  Tween<Offset>(
-                    begin: const Offset(0, 1),
-                    end: Offset.zero,
-                  ).animate(
-                    CurvedAnimation(
-                      parent: animation,
-                      curve: Curves.easeInOutCubic,
+            Center(
+              child: SlideTransition(
+                position:
+                    Tween<Offset>(
+                      begin: const Offset(0, 1),
+                      end: Offset.zero,
+                    ).animate(
+                      CurvedAnimation(
+                        parent: animation,
+                        curve: Curves.easeInOutCubic,
+                      ),
+                    ),
+                child: FadeTransition(
+                  opacity: animation,
+                  child: Material(
+                    shape: SmoothRectangleBorder(
+                      smoothness: 1,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    color: enableCustomColorNotifier.value
+                        ? Colors.white
+                        : backgroundFilterColor,
+                    clipBehavior: .antiAlias,
+                    child: Container(
+                      color: isMobile ? pageBackgroundColor : panelColor,
+                      width: width,
+                      height: height,
+                      child: MediaQuery.removePadding(
+                        context: context,
+                        removeLeft: true, // for mobile
+                        removeRight: true,
+                        removeTop: true,
+                        removeBottom: true,
+                        child: pageBuilder(context),
+                      ),
                     ),
                   ),
-              child: FadeTransition(
-                opacity: animation,
-                child: Material(
-                  shape: SmoothRectangleBorder(
-                    smoothness: 1,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  color: backgroundColor,
-                  child: SizedBox(width: width, height: height, child: child),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       );
     },
   );

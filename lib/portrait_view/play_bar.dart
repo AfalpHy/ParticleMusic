@@ -18,11 +18,18 @@ class PlayBar extends StatelessWidget {
 
         return SizedBox(
           height: 50,
-          child: SmoothClipRRect(
-            smoothness: 1,
-            borderRadius: BorderRadius.circular(25), // rounded half-circle ends
-
-            child: Material(
+          child: Material(
+            shape: SmoothRectangleBorder(
+              smoothness: 1,
+              borderRadius: BorderRadius.circular(
+                25,
+              ), // rounded half-circle ends
+            ),
+            color: enableCustomColorNotifier.value
+                ? Colors.white
+                : backgroundFilterColor,
+            clipBehavior: .antiAlias,
+            child: Container(
               color: playBarColor,
               child: InkWell(
                 onTap: () {

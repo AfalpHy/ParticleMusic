@@ -205,9 +205,6 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                   valueListenable: updateColorNotifier,
                   builder: (_, _, _) {
                     final buttonStyle = ElevatedButton.styleFrom(
-                      backgroundColor: buttonColor,
-                      foregroundColor: textColor,
-                      shadowColor: Colors.black12,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(5),
                       ),

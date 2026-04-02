@@ -125,17 +125,6 @@ Future<bool> showCreatePlaylistSheet(BuildContext context) async {
                 onPressed: () {
                   Navigator.pop(context, controller.text); // close with value
                 },
-                style: ElevatedButton.styleFrom(
-                  elevation: 2,
-                  backgroundColor: Colors.white70,
-                  shadowColor: Colors.black54,
-                  foregroundColor: Colors.black,
-
-                  shape: SmoothRectangleBorder(
-                    smoothness: 1,
-                    borderRadius: BorderRadius.circular(10),
-                  ),
-                ),
                 child: Text(l10n.confirm),
               ),
             ],
@@ -156,48 +145,42 @@ Future<bool> showCreatePlaylistDialog(BuildContext context) async {
 
   final controller = TextEditingController();
 
-  final result = await showDialog<String>(
+  final result = await showAnimationDialog<String>(
     context: context,
-    builder: (context) {
-      return AlertDialog(
-        title: Center(child: Text(l10n.createPlaylist)),
-        shape: SmoothRectangleBorder(
-          smoothness: 1,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        content: TextField(
-          controller: controller,
-          autofocus: true,
-          style: TextStyle(fontSize: 12),
-          decoration: InputDecoration(
-            enabledBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: textColor),
+    width: 300,
+    height: 200,
+    pageBuilder: (context) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(30, 20, 30, 20),
+        child: Column(
+          children: [
+            Center(
+              child: Text(l10n.createPlaylist, style: TextStyle(fontSize: 25)),
             ),
-            focusedBorder: OutlineInputBorder(
-              borderSide: BorderSide(color: textColor, width: 1.5),
-            ),
-            isDense: true,
-          ),
-        ),
-        actions: [
-          Center(
-            child: ElevatedButton(
-              onPressed: () => Navigator.pop(context, controller.text),
-              style: ElevatedButton.styleFrom(
-                elevation: 2,
-                backgroundColor: Colors.white70,
-                shadowColor: Colors.black54,
-                foregroundColor: Colors.black,
-
-                shape: SmoothRectangleBorder(
-                  smoothness: 1,
-                  borderRadius: BorderRadius.circular(10),
+            SizedBox(height: 20),
+            TextField(
+              controller: controller,
+              autofocus: true,
+              style: TextStyle(fontSize: 12),
+              decoration: InputDecoration(
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: textColor),
                 ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: textColor, width: 1.5),
+                ),
+                isDense: true,
               ),
-              child: Text(l10n.confirm),
             ),
-          ),
-        ],
+            SizedBox(height: 30),
+            Center(
+              child: ElevatedButton(
+                onPressed: () => Navigator.pop(context, controller.text),
+                child: Text(l10n.confirm),
+              ),
+            ),
+          ],
+        ),
       );
     },
   );
@@ -226,30 +209,27 @@ void showAddPlaylistDialog(
   BuildContext context,
   List<MyAudioMetadata> songList,
 ) async {
-  await showDialog(
+  await showAnimationDialog(
     context: context,
-    builder: (context) {
-      return Dialog(
-        shape: SmoothRectangleBorder(
-          smoothness: 1,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: SizedBox(
-          height: 500,
-          width: 400,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
-            child: Add2PlaylistPanel(songList: songList),
-          ),
-        ),
+    height: 500,
+    width: 400,
+    pageBuilder: (context) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+        child: Add2PlaylistPanel(songList: songList),
       );
     },
   );
 }
 
-Widget reorderablePlaylistsView() {
+Widget reorderablePlaylistsView(BuildContext context) {
   return ReorderableListView.builder(
-    header: _playlistListTile(playlistsManager.playlists[0]),
+    header: MediaQuery.removePadding(
+      context: context,
+      removeLeft: true, // for mobile
+      removeRight: true,
+      child: _playlistListTile(playlistsManager.playlists[0]),
+    ),
     buildDefaultDragHandles: false,
     onReorder: (oldIndex, newIndex) {
       if (newIndex > oldIndex) {
@@ -269,30 +249,35 @@ Widget reorderablePlaylistsView() {
       return Material(elevation: 0.1, color: Colors.transparent, child: child);
     },
     itemCount: playlistsManager.playlists.length - 1,
-    itemBuilder: (_, index) {
+    itemBuilder: (context, index) {
       final playlist = playlistsManager.getPlaylistByIndex(index + 1);
-      return Row(
+      return MediaQuery.removePadding(
         key: ValueKey(index),
-        children: [
-          Expanded(child: _playlistListTile(playlist)),
+        context: context,
+        removeLeft: true, // for mobile
+        removeRight: true,
+        child: Row(
+          children: [
+            Expanded(child: _playlistListTile(playlist)),
 
-          SizedBox(
-            width: 60,
-            child: ReorderableDragStartListener(
-              index: index,
-              child: Container(
-                // must set color to make area valid
-                color: Colors.transparent,
-                child: Row(
-                  children: [
-                    SizedBox(width: 10),
-                    ImageIcon(reorderImage, color: iconColor),
-                  ],
+            SizedBox(
+              width: 60,
+              child: ReorderableDragStartListener(
+                index: index,
+                child: Container(
+                  // must set color to make area valid
+                  color: Colors.transparent,
+                  child: Row(
+                    children: [
+                      SizedBox(width: 10),
+                      ImageIcon(reorderImage, color: iconColor),
+                    ],
+                  ),
                 ),
               ),
             ),
-          ),
-        ],
+          ],
+        ),
       );
     },
     footer: SizedBox(height: 80),

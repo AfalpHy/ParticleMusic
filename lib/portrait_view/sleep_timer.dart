@@ -7,7 +7,6 @@ import 'package:particle_music/common_widgets/my_switch.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/common_widgets/my_sheet.dart';
 import 'package:particle_music/utils.dart';
-import 'package:smooth_corner/smooth_corner.dart';
 
 void displayTimedPauseSetting(BuildContext context) {
   showModalBottomSheet(
@@ -39,16 +38,6 @@ void displayTimedPauseSetting(BuildContext context) {
                       timedPause.value = false;
                       Navigator.pop(context);
                     },
-                    style: ElevatedButton.styleFrom(
-                      elevation: 1,
-                      backgroundColor: buttonColor,
-                      shadowColor: Colors.black54,
-                      foregroundColor: Colors.black,
-                      shape: SmoothRectangleBorder(
-                        smoothness: 1,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
                     child: Text(l10n.cancel),
                   ),
                   SizedBox(width: 30),
@@ -82,16 +71,6 @@ void displayTimedPauseSetting(BuildContext context) {
 
                       Navigator.pop(context);
                     },
-                    style: ElevatedButton.styleFrom(
-                      elevation: 1,
-                      backgroundColor: buttonColor,
-                      shadowColor: Colors.black54,
-                      foregroundColor: Colors.black,
-                      shape: SmoothRectangleBorder(
-                        smoothness: 1,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                    ),
                     child: Text(l10n.confirm),
                   ),
 

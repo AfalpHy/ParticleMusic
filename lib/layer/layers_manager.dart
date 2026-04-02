@@ -64,7 +64,7 @@ class LayersManager {
               },
             ),
 
-            Material(color: panelColor, child: layer),
+            Material(color: pageBackgroundColor, child: layer),
           ],
         ),
       );

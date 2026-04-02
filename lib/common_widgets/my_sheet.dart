@@ -12,13 +12,26 @@ class MySheet extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SmoothClipRRect(
-      smoothness: 1,
-      borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
+    return Material(
+      shape: SmoothRectangleBorder(
+        smoothness: 1,
+        borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
+      ),
+      color: enableCustomColorNotifier.value
+          ? Colors.white
+          : backgroundFilterColor,
+      clipBehavior: .antiAlias,
       child: Container(
         color: pageBackgroundColor,
         height: height ?? min(500, MediaQuery.heightOf(context) * 0.6),
-        child: child,
+        child: MediaQuery.removePadding(
+          context: context,
+          removeLeft: true, // for mobile
+          removeRight: true,
+          removeBottom: true,
+          removeTop: true,
+          child: child,
+        ),
       ),
     );
   }

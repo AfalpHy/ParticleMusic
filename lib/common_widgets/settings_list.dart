@@ -173,199 +173,184 @@ class SettingsList extends StatelessWidget {
       leading: ImageIcon(folderImage, size: iconSize),
       title: Text(l10n.selectMusicFolder),
       onTap: () {
-        showDialog(
+        showAnimationDialog(
           context: context,
-          builder: (context) {
+          height: isMobile ? 350 : 400,
+          width: isMobile ? 300 : 400,
+          pageBuilder: (context) {
             final currentFolderList = library.folderList
                 .map((e) => e.path)
                 .toList();
             final updateNotifier = ValueNotifier(0);
             final buttonStyle = ElevatedButton.styleFrom(
-              backgroundColor: Colors.white70,
-              foregroundColor: Colors.black,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(5),
-              ),
               padding: EdgeInsets.all(10),
             );
-            return Dialog(
-              shape: SmoothRectangleBorder(
-                smoothness: 1,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: SizedBox(
-                height: 400,
-                width: isMobile ? 300 : 400,
+            return Column(
+              children: [
+                SizedBox(height: 10),
+                Text(
+                  l10n.folders,
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+                ),
+                SizedBox(height: 10),
 
-                child: Column(
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 10),
+                    child: ValueListenableBuilder(
+                      valueListenable: updateNotifier,
+                      builder: (_, _, _) {
+                        return ListView.builder(
+                          itemCount: currentFolderList.length,
+                          itemBuilder: (_, index) {
+                            return ListTile(
+                              title: Text(currentFolderList[index]),
+                              contentPadding: EdgeInsets.fromLTRB(20, 0, 5, 0),
+
+                              trailing: IconButton(
+                                onPressed: () {
+                                  currentFolderList.removeAt(index);
+                                  updateNotifier.value++;
+                                },
+                                icon: Icon(Icons.clear_rounded),
+                              ),
+                            );
+                          },
+                        );
+                      },
+                    ),
+                  ),
+                ),
+                SizedBox(height: 10),
+
+                Row(
                   children: [
-                    SizedBox(height: 10),
-                    Text(
-                      l10n.folders,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                      ),
-                    ),
-                    Expanded(
-                      child: ValueListenableBuilder(
-                        valueListenable: updateNotifier,
-                        builder: (_, _, _) {
-                          return ListView.builder(
-                            itemCount: currentFolderList.length,
-                            itemBuilder: (_, index) {
-                              return ListTile(
-                                title: Text(currentFolderList[index]),
-                                contentPadding: EdgeInsets.fromLTRB(
-                                  20,
-                                  0,
-                                  5,
-                                  0,
-                                ),
-
-                                trailing: IconButton(
-                                  onPressed: () {
-                                    currentFolderList.removeAt(index);
-                                    updateNotifier.value++;
-                                  },
-                                  icon: Icon(Icons.clear_rounded),
-                                ),
-                              );
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                    Row(
+                    SizedBox(width: 20),
+                    Column(
+                      crossAxisAlignment: .start,
                       children: [
-                        SizedBox(width: 20),
-                        Column(
-                          crossAxisAlignment: .start,
-                          children: [
-                            ElevatedButton(
-                              onPressed: () async {
-                                String? result = await FilePicker.platform
-                                    .getDirectoryPath();
-                                if (result == null) {
-                                  return;
-                                }
+                        ElevatedButton(
+                          onPressed: () async {
+                            String? result = await FilePicker.platform
+                                .getDirectoryPath();
+                            if (result == null) {
+                              return;
+                            }
 
-                                if (Platform.isIOS) {
-                                  if (result.contains(appDocs.path)) {
-                                    result = result.substring(
-                                      result.indexOf('Documents'),
-                                    );
-                                    result = result.replaceFirst(
-                                      'Documents',
-                                      'Particle Music',
-                                    );
-                                  } else if (context.mounted) {
-                                    showCenterMessage(
-                                      context,
-                                      'No access permission',
-                                      duration: 2000,
-                                    );
-                                    return;
-                                  }
-                                }
-                                if (currentFolderList.contains(result) &&
-                                    context.mounted) {
-                                  showCenterMessage(
-                                    context,
-                                    'The folder already exists',
-                                    duration: 2000,
-                                  );
-                                  return;
-                                }
-                                currentFolderList.add(result);
-                                updateNotifier.value++;
-                              },
-                              style: buttonStyle,
-                              child: Text(l10n.addFolder),
-                            ),
-
-                            if (!isMobile) SizedBox(height: 5),
-
-                            ElevatedButton(
-                              onPressed: () async {
-                                String? result = await FilePicker.platform
-                                    .getDirectoryPath();
-                                if (result == null) {
-                                  return;
-                                }
-
-                                if (Platform.isIOS &&
-                                    !result.contains(appDocs.path)) {
-                                  if (context.mounted) {
-                                    showCenterMessage(
-                                      context,
-                                      'No access permission',
-                                      duration: 2000,
-                                    );
-                                    return;
-                                  }
-                                }
-
-                                Directory root = Directory(result);
-
-                                List<String> folderList = root
-                                    .listSync(recursive: true)
-                                    .whereType<Directory>()
-                                    .map((d) => d.path)
-                                    .toList();
-
-                                folderList.insert(0, result);
-
-                                for (String folder in folderList) {
-                                  folder = convertDirectoryPathIfNeed(folder);
-                                  if (!currentFolderList.contains(folder)) {
-                                    currentFolderList.add(folder);
-                                  }
-                                }
-
-                                updateNotifier.value++;
-                              },
-                              style: buttonStyle,
-                              child: Text(l10n.addRecursiveFolder),
-                            ),
-                          ],
+                            if (Platform.isIOS) {
+                              if (result.contains(appDocs.path)) {
+                                result = result.substring(
+                                  result.indexOf('Documents'),
+                                );
+                                result = result.replaceFirst(
+                                  'Documents',
+                                  'Particle Music',
+                                );
+                              } else if (context.mounted) {
+                                showCenterMessage(
+                                  context,
+                                  'No access permission',
+                                  duration: 2000,
+                                );
+                                return;
+                              }
+                            }
+                            if (currentFolderList.contains(result) &&
+                                context.mounted) {
+                              showCenterMessage(
+                                context,
+                                'The folder already exists',
+                                duration: 2000,
+                              );
+                              return;
+                            }
+                            currentFolderList.add(result);
+                            updateNotifier.value++;
+                          },
+                          style: buttonStyle,
+                          child: Text(l10n.addFolder),
                         ),
-                        Spacer(),
-                        Column(
-                          crossAxisAlignment: .end,
-                          children: [
-                            ElevatedButton(
-                              onPressed: () async {
-                                Navigator.of(context).pop();
-                              },
-                              style: buttonStyle,
-                              child: Text(l10n.cancel),
-                            ),
 
-                            if (!isMobile) SizedBox(height: 5),
+                        if (!isMobile) SizedBox(height: 5),
 
-                            ElevatedButton(
-                              onPressed: () async {
-                                Navigator.of(context).pop();
-                                if (await library.updateFolders(
-                                  currentFolderList,
-                                )) {
-                                  Loader.reload();
-                                }
-                              },
-                              style: buttonStyle,
-                              child: Text(l10n.confirm),
-                            ),
-                          ],
+                        ElevatedButton(
+                          onPressed: () async {
+                            String? result = await FilePicker.platform
+                                .getDirectoryPath();
+                            if (result == null) {
+                              return;
+                            }
+
+                            if (Platform.isIOS &&
+                                !result.contains(appDocs.path)) {
+                              if (context.mounted) {
+                                showCenterMessage(
+                                  context,
+                                  'No access permission',
+                                  duration: 2000,
+                                );
+                                return;
+                              }
+                            }
+
+                            Directory root = Directory(result);
+
+                            List<String> folderList = root
+                                .listSync(recursive: true)
+                                .whereType<Directory>()
+                                .map((d) => d.path)
+                                .toList();
+
+                            folderList.insert(0, result);
+
+                            for (String folder in folderList) {
+                              folder = convertDirectoryPathIfNeed(folder);
+                              if (!currentFolderList.contains(folder)) {
+                                currentFolderList.add(folder);
+                              }
+                            }
+
+                            updateNotifier.value++;
+                          },
+                          style: buttonStyle,
+                          child: Text(l10n.addRecursiveFolder),
                         ),
-                        SizedBox(width: 20),
                       ],
                     ),
+                    Spacer(),
+                    Column(
+                      crossAxisAlignment: .end,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () async {
+                            Navigator.of(context).pop();
+                          },
+                          style: buttonStyle,
+                          child: Text(l10n.cancel),
+                        ),
 
-                    SizedBox(height: 15),
+                        if (!isMobile) SizedBox(height: 5),
+
+                        ElevatedButton(
+                          onPressed: () async {
+                            Navigator.of(context).pop();
+                            if (await library.updateFolders(
+                              currentFolderList,
+                            )) {
+                              Loader.reload();
+                            }
+                          },
+                          style: buttonStyle,
+                          child: Text(l10n.confirm),
+                        ),
+                      ],
+                    ),
+                    SizedBox(width: 20),
                   ],
                 ),
-              ),
+
+                SizedBox(height: 15),
+              ],
             );
           },
         );
@@ -382,177 +367,158 @@ class SettingsList extends StatelessWidget {
         final passwordTmp = TextEditingController(text: password);
         final baseUrlTmp = TextEditingController(text: baseUrl);
 
-        showDialog(
+        showAnimationDialog(
           context: context,
-          builder: (context) {
-            return AlertDialog(
-              shape: SmoothRectangleBorder(
-                smoothness: 1,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              content: SizedBox(
-                height: 250,
-                width: 280,
-                child: Column(
-                  children: [
-                    SizedBox(height: 10),
-
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "${l10n.username}:",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    SizedBox(height: 5),
-
-                    TextField(
-                      style: TextStyle(fontSize: 12),
-                      controller: usernameTmp,
-                      decoration: InputDecoration(
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: textColor),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: textColor, width: 1.5),
-                        ),
-                        isDense: true,
-                      ),
-                    ),
-                    SizedBox(height: 10),
-
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "${l10n.password}:",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    SizedBox(height: 5),
-
-                    TextField(
-                      style: TextStyle(fontSize: 12),
-                      controller: passwordTmp,
-
-                      decoration: InputDecoration(
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: textColor),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: textColor, width: 1.5),
-                        ),
-                        isDense: true,
-                      ),
-                    ),
-                    SizedBox(height: 10),
-
-                    Align(
-                      alignment: Alignment.centerLeft,
-                      child: Text(
-                        "Url:",
-                        style: TextStyle(fontWeight: FontWeight.bold),
-                      ),
-                    ),
-                    SizedBox(height: 5),
-
-                    TextField(
-                      style: TextStyle(fontSize: 12),
-                      controller: baseUrlTmp,
-                      decoration: InputDecoration(
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: textColor),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(color: textColor, width: 1.5),
-                        ),
-                        isDense: true,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              actions: [
-                ElevatedButton(
-                  onPressed: () async {
-                    if (!await showConfirmDialog(context, l10n.clear)) {
-                      return;
-                    }
-                    username = '';
-                    password = '';
-                    baseUrl = '';
-                    settingManager.saveSetting();
-                    navidromeClient = NavidromeClient(
-                      username: username,
-                      password: password,
-                      baseUrl: baseUrl,
-                    );
-                    if (context.mounted) {
-                      Navigator.pop(context);
-                    }
-                    Loader.reload();
-                  },
-                  style: ElevatedButton.styleFrom(
-                    elevation: 2,
-                    backgroundColor: Colors.white70,
-                    shadowColor: Colors.black54,
-                    foregroundColor: Colors.black,
-
-                    shape: SmoothRectangleBorder(
-                      smoothness: 1,
-                      borderRadius: BorderRadius.circular(10),
+          height: 330,
+          width: 280,
+          pageBuilder: (context) {
+            return Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "${l10n.username}:",
+                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                   ),
-                  child: Text(l10n.clear),
-                ),
-                ElevatedButton(
-                  onPressed: () async {
-                    final tmp = navidromeClient;
-                    try {
-                      navidromeClient = NavidromeClient(
-                        username: usernameTmp.text,
-                        password: passwordTmp.text,
-                        baseUrl: baseUrlTmp.text,
-                      );
-                    } catch (e) {
-                      navidromeClient = tmp;
-                      showCenterMessage(context, e.toString(), duration: 5000);
-                      return;
-                    }
-                    if (await navidromeClient.ping()) {
-                      if (context.mounted) {
-                        Navigator.pop(context);
-                      }
-                      username = usernameTmp.text;
-                      password = passwordTmp.text;
-                      baseUrl = baseUrlTmp.text;
-                      settingManager.saveSetting();
+                  SizedBox(height: 5),
 
-                      await Loader.reload();
-                    } else {
-                      navidromeClient = tmp;
-                      if (context.mounted) {
-                        showCenterMessage(
-                          context,
-                          "Failed to connect to Navidrome!",
-                          duration: 2000,
-                        );
-                      }
-                    }
-                  },
-                  style: ElevatedButton.styleFrom(
-                    elevation: 2,
-                    backgroundColor: Colors.white70,
-                    shadowColor: Colors.black54,
-                    foregroundColor: Colors.black,
-
-                    shape: SmoothRectangleBorder(
-                      smoothness: 1,
-                      borderRadius: BorderRadius.circular(10),
+                  TextField(
+                    style: TextStyle(fontSize: 12),
+                    controller: usernameTmp,
+                    decoration: InputDecoration(
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: textColor),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: textColor, width: 1.5),
+                      ),
+                      isDense: true,
                     ),
                   ),
-                  child: Text(l10n.confirm),
-                ),
-              ],
+                  SizedBox(height: 10),
+
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "${l10n.password}:",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  SizedBox(height: 5),
+
+                  TextField(
+                    style: TextStyle(fontSize: 12),
+                    controller: passwordTmp,
+
+                    decoration: InputDecoration(
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: textColor),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: textColor, width: 1.5),
+                      ),
+                      isDense: true,
+                    ),
+                  ),
+                  SizedBox(height: 10),
+
+                  Align(
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      "Url:",
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                  ),
+                  SizedBox(height: 5),
+
+                  TextField(
+                    style: TextStyle(fontSize: 12),
+                    controller: baseUrlTmp,
+                    decoration: InputDecoration(
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: textColor),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: textColor, width: 1.5),
+                      ),
+                      isDense: true,
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Spacer(),
+                      ElevatedButton(
+                        onPressed: () async {
+                          if (!await showConfirmDialog(context, l10n.clear)) {
+                            return;
+                          }
+                          username = '';
+                          password = '';
+                          baseUrl = '';
+                          settingManager.saveSetting();
+                          navidromeClient = NavidromeClient(
+                            username: username,
+                            password: password,
+                            baseUrl: baseUrl,
+                          );
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                          }
+                          Loader.reload();
+                        },
+                        child: Text(l10n.clear),
+                      ),
+                      SizedBox(width: 10),
+                      ElevatedButton(
+                        onPressed: () async {
+                          final tmp = navidromeClient;
+                          try {
+                            navidromeClient = NavidromeClient(
+                              username: usernameTmp.text,
+                              password: passwordTmp.text,
+                              baseUrl: baseUrlTmp.text,
+                            );
+                          } catch (e) {
+                            navidromeClient = tmp;
+                            showCenterMessage(
+                              context,
+                              e.toString(),
+                              duration: 5000,
+                            );
+                            return;
+                          }
+                          if (await navidromeClient.ping()) {
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                            }
+                            username = usernameTmp.text;
+                            password = passwordTmp.text;
+                            baseUrl = baseUrlTmp.text;
+                            settingManager.saveSetting();
+
+                            await Loader.reload();
+                          } else {
+                            navidromeClient = tmp;
+                            if (context.mounted) {
+                              showCenterMessage(
+                                context,
+                                "Failed to connect to Navidrome!",
+                                duration: 2000,
+                              );
+                            }
+                          }
+                        },
+                        child: Text(l10n.confirm),
+                      ),
+                      Spacer(),
+                    ],
+                  ),
+                ],
+              ),
             );
           },
         );
@@ -565,59 +531,51 @@ class SettingsList extends StatelessWidget {
       leading: ImageIcon(languageImage, size: iconSize),
       title: Text(l10n.language),
       onTap: () {
-        showDialog(
+        showAnimationDialog(
           context: context,
-          builder: (context) {
-            return Dialog(
-              shape: SmoothRectangleBorder(
-                smoothness: 1,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: SizedBox(
-                height: 300,
-                width: 100,
-                child: Padding(
-                  padding: const EdgeInsets.all(10.0),
-                  child: ValueListenableBuilder(
-                    valueListenable: localeNotifier,
-                    builder: (context, value, child) {
-                      final l10n = AppLocalizations.of(context);
+          width: 280,
+          height: 300,
+          pageBuilder: (_) {
+            return Padding(
+              padding: const EdgeInsets.all(10.0),
+              child: ValueListenableBuilder(
+                valueListenable: localeNotifier,
+                builder: (context, value, child) {
+                  final l10n = AppLocalizations.of(context);
 
-                      return ListView(
-                        children: [
-                          ListTile(
-                            title: Text(l10n.followSystem),
-                            onTap: () {
-                              localeNotifier.value = null;
-                              settingManager.saveSetting();
-                            },
-                            trailing: value == null ? Icon(Icons.check) : null,
-                          ),
-                          ListTile(
-                            title: Text('English'),
-                            onTap: () {
-                              localeNotifier.value = Locale('en');
-                              settingManager.saveSetting();
-                            },
-                            trailing: value == Locale('en')
-                                ? Icon(Icons.check)
-                                : null,
-                          ),
-                          ListTile(
-                            title: Text('中文'),
-                            onTap: () {
-                              localeNotifier.value = Locale('zh');
-                              settingManager.saveSetting();
-                            },
-                            trailing: value == Locale('zh')
-                                ? Icon(Icons.check)
-                                : null,
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ),
+                  return ListView(
+                    children: [
+                      ListTile(
+                        title: Text(l10n.followSystem),
+                        onTap: () {
+                          localeNotifier.value = null;
+                          settingManager.saveSetting();
+                        },
+                        trailing: value == null ? Icon(Icons.check) : null,
+                      ),
+                      ListTile(
+                        title: Text('English'),
+                        onTap: () {
+                          localeNotifier.value = Locale('en');
+                          settingManager.saveSetting();
+                        },
+                        trailing: value == Locale('en')
+                            ? Icon(Icons.check)
+                            : null,
+                      ),
+                      ListTile(
+                        title: Text('中文'),
+                        onTap: () {
+                          localeNotifier.value = Locale('zh');
+                          settingManager.saveSetting();
+                        },
+                        trailing: value == Locale('zh')
+                            ? Icon(Icons.check)
+                            : null,
+                      ),
+                    ],
+                  );
+                },
               ),
             );
           },
@@ -710,9 +668,11 @@ class SettingsList extends StatelessWidget {
                 ),
                 onTap: () {
                   Color tmpColor = pikerColor;
-                  showDialog(
+                  showAnimationDialog(
                     context: context,
-                    builder: (_) => AlertDialog(
+                    height: 700,
+                    width: 500,
+                    pageBuilder: (_) => AlertDialog(
                       title: Text(title),
                       shape: SmoothRectangleBorder(
                         smoothness: 1,
@@ -737,16 +697,6 @@ class SettingsList extends StatelessWidget {
                       ),
                       actions: [
                         ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            elevation: 2,
-                            backgroundColor: Colors.white70,
-                            shadowColor: Colors.black54,
-                            foregroundColor: Colors.black,
-                            shape: SmoothRectangleBorder(
-                              smoothness: 1,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
                           onPressed: () {
                             Navigator.pop(context);
                           },
@@ -757,16 +707,6 @@ class SettingsList extends StatelessWidget {
                           ),
                         ),
                         ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            elevation: 2,
-                            backgroundColor: Colors.white70,
-                            shadowColor: Colors.black54,
-                            foregroundColor: Colors.black,
-                            shape: SmoothRectangleBorder(
-                              smoothness: 1,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                          ),
                           onPressed: () {
                             customColor.value = tmpColor;
                             colorManager.setColor();
@@ -797,93 +737,84 @@ class SettingsList extends StatelessWidget {
       leading: ImageIcon(paletteImage, size: iconSize),
       title: Text(l10n.palette),
       onTap: () async {
-        showDialog(
+        showAnimationDialog(
           context: context,
-          builder: (context) {
-            return Dialog(
-              shape: SmoothRectangleBorder(
-                smoothness: 1,
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: SizedBox(
-                height: isMobile ? 350 : 400,
-                width: isMobile ? 240 : 350,
-                child: Padding(
-                  padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
-                  child: ListView(
-                    children: [
-                      ListTile(
-                        title: Text(l10n.customMode),
-                        trailing: SizedBox(
-                          width: 45,
-                          child: ValueListenableBuilder(
-                            valueListenable: enableCustomColorNotifier,
-                            builder: (context, enableCustomColor, child) {
-                              return MySwitch(
-                                value: enableCustomColor,
-                                onToggle: (value) {
-                                  enableCustomColorNotifier.value = value;
-                                  colorManager.setColor();
-                                  updateColorNotifier.value++;
-                                  settingManager.saveSetting();
-                                },
-                              );
+          height: isMobile ? 350 : 400,
+          width: isMobile ? 300 : 350,
+          pageBuilder: (context) {
+            return Padding(
+              padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+              child: ListView(
+                children: [
+                  ListTile(
+                    title: Text(l10n.customMode),
+                    trailing: SizedBox(
+                      width: 45,
+                      child: ValueListenableBuilder(
+                        valueListenable: enableCustomColorNotifier,
+                        builder: (context, enableCustomColor, child) {
+                          return MySwitch(
+                            value: enableCustomColor,
+                            onToggle: (value) {
+                              enableCustomColorNotifier.value = value;
+                              colorManager.setColor();
+                              updateColorNotifier.value++;
+                              settingManager.saveSetting();
                             },
-                          ),
-                        ),
-                      ),
-
-                      ListTile(
-                        title: Text(l10n.lyricsCustomMode),
-                        trailing: SizedBox(
-                          width: 45,
-                          child: ValueListenableBuilder(
-                            valueListenable: enableCustomLyricsPageNotifier,
-                            builder: (context, enableCustomLyricsPage, child) {
-                              return MouseRegion(
-                                cursor: SystemMouseCursors.click,
-
-                                child: MySwitch(
-                                  value: enableCustomLyricsPage,
-                                  onToggle: (value) {
-                                    enableCustomLyricsPageNotifier.value =
-                                        value;
-                                    colorManager.setColor();
-                                    updateColorNotifier.value++;
-                                    settingManager.saveSetting();
-                                  },
-                                ),
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-
-                      for (final customColor in colorManager.customColors)
-                        if (customColor.type == 0 ||
-                            (customColor.type == 1 && isMobile) ||
-                            (customColor.type == 2 && !isMobile))
-                          colorListTile(
-                            context,
-                            nameMap[customColor.name]!,
-                            l10n,
-                            customColor,
-                          ),
-
-                      ListTile(
-                        title: Text(l10n.reset),
-                        onTap: () {
-                          for (final customColor in colorManager.customColors) {
-                            customColor.reset();
-                          }
-                          colorManager.setColor();
-                          updateColorNotifier.value++;
-                          settingManager.saveSetting();
+                          );
                         },
                       ),
-                    ],
+                    ),
                   ),
-                ),
+
+                  ListTile(
+                    title: Text(l10n.lyricsCustomMode),
+                    trailing: SizedBox(
+                      width: 45,
+                      child: ValueListenableBuilder(
+                        valueListenable: enableCustomLyricsPageNotifier,
+                        builder: (context, enableCustomLyricsPage, child) {
+                          return MouseRegion(
+                            cursor: SystemMouseCursors.click,
+
+                            child: MySwitch(
+                              value: enableCustomLyricsPage,
+                              onToggle: (value) {
+                                enableCustomLyricsPageNotifier.value = value;
+                                colorManager.setColor();
+                                updateColorNotifier.value++;
+                                settingManager.saveSetting();
+                              },
+                            ),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+
+                  for (final customColor in colorManager.customColors)
+                    if (customColor.type == 0 ||
+                        (customColor.type == 1 && isMobile) ||
+                        (customColor.type == 2 && !isMobile))
+                      colorListTile(
+                        context,
+                        nameMap[customColor.name]!,
+                        l10n,
+                        customColor,
+                      ),
+
+                  ListTile(
+                    title: Text(l10n.reset),
+                    onTap: () {
+                      for (final customColor in colorManager.customColors) {
+                        customColor.reset();
+                      }
+                      colorManager.setColor();
+                      updateColorNotifier.value++;
+                      settingManager.saveSetting();
+                    },
+                  ),
+                ],
               ),
             );
           },
@@ -1070,71 +1001,58 @@ class SettingsList extends StatelessWidget {
           );
           if (_compareVersion(latestVersion, versionNumber) > 0) {
             if (context.mounted) {
-              showDialog(
+              showAnimationDialog(
                 context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    shape: SmoothRectangleBorder(
-                      smoothness: 1,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    content: SizedBox(
-                      height: 300,
-                      width: 400,
-                      child: Padding(
-                        padding: const EdgeInsets.all(8.0),
-                        child: ListView(
+                height: isMobile ? 350 : 400,
+                width: isMobile ? 300 : 400,
+                pageBuilder: (BuildContext context) {
+                  return Padding(
+                    padding: const EdgeInsets.all(20),
+                    child: Column(
+                      children: [
+                        Expanded(
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 30),
+                            child: ListView(
+                              children: [
+                                Center(
+                                  child: Text(
+                                    data['tag_name'] as String,
+                                    style: TextStyle(
+                                      fontSize: 20,
+                                      fontWeight: .bold,
+                                    ),
+                                  ),
+                                ),
+                                SizedBox(height: 10),
+
+                                Text(data['body'] as String),
+                              ],
+                            ),
+                          ),
+                        ),
+                        SizedBox(height: 20),
+                        Row(
                           children: [
-                            Center(
-                              child: Text(
-                                data['tag_name'] as String,
-                                style: TextStyle(
-                                  fontSize: 20,
-                                  fontWeight: .bold,
+                            Spacer(),
+                            ElevatedButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: Text(l10n.cancel),
+                            ),
+                            SizedBox(width: 20),
+                            ElevatedButton(
+                              onPressed: () => launchUrl(
+                                Uri.parse(
+                                  "https://github.com/AfalpHy/ParticleMusic/releases/latest",
                                 ),
                               ),
+                              child: Text(l10n.go2Download),
                             ),
-                            SizedBox(height: 10),
-
-                            Text(data['body'] as String),
+                            Spacer(),
                           ],
                         ),
-                      ),
+                      ],
                     ),
-                    actions: [
-                      ElevatedButton(
-                        onPressed: () => Navigator.pop(context),
-                        style: ElevatedButton.styleFrom(
-                          elevation: 2,
-                          backgroundColor: buttonColor,
-                          shadowColor: Colors.black54,
-                          foregroundColor: Colors.black,
-                          shape: SmoothRectangleBorder(
-                            smoothness: 1,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        child: Text(l10n.cancel),
-                      ),
-                      ElevatedButton(
-                        onPressed: () => launchUrl(
-                          Uri.parse(
-                            "https://github.com/AfalpHy/ParticleMusic/releases/latest",
-                          ),
-                        ),
-                        style: ElevatedButton.styleFrom(
-                          elevation: 2,
-                          backgroundColor: buttonColor,
-                          shadowColor: Colors.black54,
-                          foregroundColor: Colors.black,
-                          shape: SmoothRectangleBorder(
-                            smoothness: 1,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        child: Text(l10n.go2Download),
-                      ),
-                    ],
                   );
                 },
               );

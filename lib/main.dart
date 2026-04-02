@@ -19,6 +19,7 @@ import 'package:particle_music/portrait_view/pages/custom_page_transition_builde
 import 'dart:async';
 import 'package:particle_music/view_entry.dart';
 import 'package:path_provider/path_provider.dart';
+import 'package:smooth_corner/smooth_corner.dart';
 import 'package:tray_manager/tray_manager.dart';
 import 'package:window_manager/window_manager.dart';
 import 'audio_handler.dart';
@@ -91,11 +92,7 @@ Future<void> main() async {
                       ),
                 iconTheme: IconThemeData(color: iconColor),
                 colorScheme: ColorScheme.light(onSurface: textColor),
-                dialogTheme: DialogThemeData(
-                  backgroundColor: isMobile
-                      ? pageBackgroundColor
-                      : panelColor.withAlpha(255),
-                ),
+
                 // adjust magnifier color
                 cupertinoOverrideTheme: Platform.isIOS
                     ? CupertinoThemeData(primaryColor: textColor)
@@ -124,6 +121,14 @@ Future<void> main() async {
                 elevatedButtonTheme: ElevatedButtonThemeData(
                   style: ElevatedButton.styleFrom(
                     enabledMouseCursor: SystemMouseCursors.click,
+                    elevation: 1,
+                    backgroundColor: buttonColor,
+                    foregroundColor: textColor,
+                    shadowColor: Colors.black12,
+                    shape: SmoothRectangleBorder(
+                      smoothness: 1,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
                   ),
                 ),
 
