@@ -53,7 +53,9 @@ class _PortraitViewState extends State<PortraitView> {
                 builder: (context, value, child) {
                   return Navigator(
                     pages: layersManager.buildPages(),
-                    onDidRemovePage: (_) {},
+                    onDidRemovePage: (_) {
+                      layersManager.popLayer();
+                    },
                   );
                 },
               ),
@@ -95,7 +97,7 @@ class _PortraitViewState extends State<PortraitView> {
   Widget myDrawer() {
     return ValueListenableBuilder(
       valueListenable: updateColorNotifier,
-      builder: (context, value, child) {
+      builder: (_, value, child) {
         return Drawer(
           backgroundColor: backgroundFilterColor,
           width: 220,
@@ -108,7 +110,7 @@ class _PortraitViewState extends State<PortraitView> {
               Expanded(
                 child: Sidebar(
                   closeDrawer: () {
-                    Scaffold.of(context).closeDrawer();
+                    Navigator.of(context).pop();
                   },
                 ),
               ),

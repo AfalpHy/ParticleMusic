@@ -57,15 +57,9 @@ class LayersManager {
                 return ValueListenableBuilder(
                   valueListenable: updateColorNotifier,
                   builder: (context, value, child) {
-                    final pageWidth = MediaQuery.widthOf(context);
-                    final pageHight = MediaQuery.heightOf(context);
-
                     return ClipRect(
                       child: BackdropFilter(
-                        filter: ImageFilter.blur(
-                          sigmaX: pageWidth * 0.03,
-                          sigmaY: pageHight * 0.03,
-                        ),
+                        filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
                         child: Container(
                           color: backgroundFilterColor.withAlpha(180),
                         ),

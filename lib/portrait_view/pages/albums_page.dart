@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:particle_music/artists_albums_manager.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
@@ -37,7 +35,7 @@ class AlbumsPage extends StatelessWidget {
       backgroundColor: Colors.transparent,
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
-        automaticallyImplyLeading: !Platform.isAndroid,
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,

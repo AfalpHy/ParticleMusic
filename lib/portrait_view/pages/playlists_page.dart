@@ -1,5 +1,3 @@
-import 'dart:io';
-
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
@@ -17,7 +15,7 @@ class PlaylistsPage extends StatelessWidget {
     return Scaffold(
       backgroundColor: Colors.transparent,
       appBar: AppBar(
-        automaticallyImplyLeading: !Platform.isAndroid,
+        automaticallyImplyLeading: false,
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
