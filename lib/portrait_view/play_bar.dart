@@ -25,9 +25,9 @@ class PlayBar extends StatelessWidget {
                 25,
               ), // rounded half-circle ends
             ),
-            color: enableCustomColorNotifier.value
-                ? Colors.white
-                : backgroundFilterColor,
+            color: enableCustomColorNotifier.value || darkModeNotifier.value
+                ? Colors.transparent
+                : backgroundFilterColor.withAlpha(180),
             clipBehavior: .antiAlias,
             child: Container(
               color: playBarColor,

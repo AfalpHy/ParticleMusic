@@ -369,7 +369,7 @@ class SettingsList extends StatelessWidget {
 
         showAnimationDialog(
           context: context,
-          height: 330,
+          height: isMobile ? 330 : 300,
           width: 280,
           pageBuilder: (context) {
             return Padding(
@@ -472,7 +472,7 @@ class SettingsList extends StatelessWidget {
                         },
                         child: Text(l10n.clear),
                       ),
-                      SizedBox(width: 10),
+                      SizedBox(width: 20),
                       ElevatedButton(
                         onPressed: () async {
                           final tmp = navidromeClient;

@@ -60,7 +60,7 @@ Future<bool> showConfirmDialog(BuildContext context, String action) async {
   final result = await showAnimationDialog<bool>(
     context: context,
     width: isMobile ? 280 : 300,
-    height: 200,
+    height: 180,
     pageBuilder: (context) {
       return Padding(
         padding: const EdgeInsets.all(20),
@@ -78,7 +78,7 @@ Future<bool> showConfirmDialog(BuildContext context, String action) async {
               alignment: .centerLeft,
               child: Text(l10n.continueMsg, style: TextStyle(fontSize: 14)),
             ),
-            SizedBox(height: 25),
+            SizedBox(height: 20),
 
             Row(
               mainAxisAlignment: MainAxisAlignment.center,

@@ -218,281 +218,302 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    return Scaffold(
-      backgroundColor: pageBackgroundColor,
-      appBar: AppBar(
-        iconTheme: IconThemeData(color: iconColor),
+    return Container(
+      color: enableCustomColorNotifier.value
+          ? Colors.white
+          : backgroundFilterColor,
+      child: Scaffold(
         backgroundColor: pageBackgroundColor,
-        scrolledUnderElevation: 0,
-        actions: [
-          MySearchField(
-            hintText: l10n.searchSongs,
-            textController: textController,
-            onSearchTextChanged: updateSongList,
-          ),
-          moreButton(context),
-        ],
-      ),
-      body: SafeArea(
-        child: ValueListenableBuilder(
-          valueListenable: currentSongListNotifier,
-          builder: (context, currentSongList, child) {
-            bool reorderable =
-                widget.reorderable &&
-                textController.text.isEmpty &&
-                sortTypeNotifier.value == 0;
-            return Column(
-              children: [
-                Row(
-                  children: [
-                    ValueListenableBuilder(
-                      valueListenable: allSelected,
-                      builder: (context, value, child) {
-                        return Checkbox(
-                          value: value,
-                          activeColor: iconColor,
-                          onChanged: (value) {
-                            for (var isSelected in isSelectedList) {
-                              isSelected.value = value!;
-                            }
-                            selectedNumNotifier.value = value!
-                                ? currentSongList.length
-                                : 0;
-                          },
-                          shape: const CircleBorder(),
-                          side: BorderSide(color: Colors.grey),
-                        );
-                      },
-                    ),
-                    Text(l10n.selectAll, style: TextStyle(fontSize: 16)),
-                  ],
-                ),
-                Expanded(
-                  child: ReorderableListView.builder(
-                    buildDefaultDragHandles: false,
-                    onReorder: (oldIndex, newIndex) {
-                      if (newIndex > oldIndex) newIndex -= 1;
-                      final checkBoxitem = isSelectedList.removeAt(oldIndex);
-                      isSelectedList.insert(newIndex, checkBoxitem);
-
-                      final item = songList.removeAt(oldIndex);
-                      songList.insert(newIndex, item);
-                      // This code is only reached when currentSongList == songList,
-                      // reassign it to avoid calling updateSongList to keep the isSelectedList state
-                      currentSongListNotifier.value = songList;
-
-                      if (isLibrary) {
-                        library.update();
-                      } else if (folder != null) {
-                        folder!.update();
-                      } else {
-                        playlist!.update();
-                      }
-                    },
-                    onReorderStart: (_) {
-                      tryVibrate();
-                    },
-                    onReorderEnd: (_) {
-                      tryVibrate();
-                    },
-                    proxyDecorator:
-                        (Widget child, int index, Animation<double> animation) {
-                          return Material(
-                            elevation: 0.1,
-                            color: Colors.transparent,
-                            child: child,
-                          );
-                        },
-                    itemCount: currentSongList.length,
-                    itemBuilder: (_, index) {
-                      return MediaQuery.removePadding(
-                        key: ValueKey(currentSongList[index]),
-                        context: context,
-                        removeLeft: true, // for mobile
-                        removeRight: true,
-                        child: SelectableSongListTile(
-                          index: index,
-                          source: currentSongList,
-                          isSelected: isSelectedList[index],
-                          selectedNumNotifier: selectedNumNotifier,
-                          reorderable: reorderable,
-                          isRanking: ranking != null,
-                        ),
-                      );
-                    },
-                  ),
-                ),
-              ],
-            );
-          },
+        resizeToAvoidBottomInset: false,
+        appBar: AppBar(
+          iconTheme: IconThemeData(color: iconColor),
+          backgroundColor: Colors.transparent,
+          scrolledUnderElevation: 0,
+          actions: [
+            MySearchField(
+              hintText: l10n.searchSongs,
+              textController: textController,
+              onSearchTextChanged: updateSongList,
+            ),
+            moreButton(context),
+          ],
         ),
-      ),
-      bottomNavigationBar: ValueListenableBuilder(
-        valueListenable: selectedNumNotifier,
-        builder: (context, value, child) {
-          final valid = value > 0;
-          final color = valid ? iconColor : iconColor.withAlpha(128);
-          return SizedBox(
-            height: 80,
-            child: Row(
-              children: [
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () async {
-                      if (valid) {
-                        tryVibrate();
-                        for (int i = isSelectedList.length - 1; i >= 0; i--) {
-                          if (isSelectedList[i].value) {
-                            audioHandler.insert2Next(
-                              currentSongListNotifier.value[i],
-                            );
-                          }
-                        }
-                        showCenterMessage(
-                          context,
-                          'Added to Play Queue',
-                          duration: 1000,
-                        );
-                        if (audioHandler.currentIndex == -1) {
-                          await audioHandler.skipToNext();
-                          audioHandler.play();
-                        }
-
-                        audioHandler.saveAllStates();
-                      }
-                    },
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
+        body: SafeArea(
+          child: Column(
+            children: [
+              Expanded(
+                child: ValueListenableBuilder(
+                  valueListenable: currentSongListNotifier,
+                  builder: (context, currentSongList, child) {
+                    bool reorderable =
+                        widget.reorderable &&
+                        textController.text.isEmpty &&
+                        sortTypeNotifier.value == 0;
+                    return Column(
                       children: [
-                        ImageIcon(playnextCircleImage, color: color),
+                        Row(
+                          children: [
+                            ValueListenableBuilder(
+                              valueListenable: allSelected,
+                              builder: (context, value, child) {
+                                return Checkbox(
+                                  value: value,
+                                  activeColor: iconColor,
+                                  onChanged: (value) {
+                                    for (var isSelected in isSelectedList) {
+                                      isSelected.value = value!;
+                                    }
+                                    selectedNumNotifier.value = value!
+                                        ? currentSongList.length
+                                        : 0;
+                                  },
+                                  shape: const CircleBorder(),
+                                  side: BorderSide(color: Colors.grey),
+                                );
+                              },
+                            ),
+                            Text(
+                              l10n.selectAll,
+                              style: TextStyle(fontSize: 16),
+                            ),
+                          ],
+                        ),
+                        Expanded(
+                          child: ReorderableListView.builder(
+                            buildDefaultDragHandles: false,
+                            onReorder: (oldIndex, newIndex) {
+                              if (newIndex > oldIndex) newIndex -= 1;
+                              final checkBoxitem = isSelectedList.removeAt(
+                                oldIndex,
+                              );
+                              isSelectedList.insert(newIndex, checkBoxitem);
 
-                        Text(
-                          l10n.playNext,
-                          style: TextStyle(color: color, fontSize: 12),
+                              final item = songList.removeAt(oldIndex);
+                              songList.insert(newIndex, item);
+                              // This code is only reached when currentSongList == songList,
+                              // reassign it to avoid calling updateSongList to keep the isSelectedList state
+                              currentSongListNotifier.value = songList;
+
+                              if (isLibrary) {
+                                library.update();
+                              } else if (folder != null) {
+                                folder!.update();
+                              } else {
+                                playlist!.update();
+                              }
+                            },
+                            onReorderStart: (_) {
+                              tryVibrate();
+                            },
+                            onReorderEnd: (_) {
+                              tryVibrate();
+                            },
+                            proxyDecorator:
+                                (
+                                  Widget child,
+                                  int index,
+                                  Animation<double> animation,
+                                ) {
+                                  return Material(
+                                    elevation: 0.1,
+                                    color: Colors.transparent,
+                                    child: child,
+                                  );
+                                },
+                            itemCount: currentSongList.length,
+                            itemBuilder: (_, index) {
+                              return MediaQuery.removePadding(
+                                key: ValueKey(currentSongList[index]),
+                                context: context,
+                                removeLeft: true, // for mobile
+                                removeRight: true,
+                                child: SelectableSongListTile(
+                                  index: index,
+                                  source: currentSongList,
+                                  isSelected: isSelectedList[index],
+                                  selectedNumNotifier: selectedNumNotifier,
+                                  reorderable: reorderable,
+                                  isRanking: ranking != null,
+                                ),
+                              );
+                            },
+                          ),
                         ),
                       ],
-                    ),
-                  ),
+                    );
+                  },
                 ),
-
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () async {
-                      if (valid) {
-                        tryVibrate();
-                        for (int i = 0; i < isSelectedList.length; i++) {
-                          if (isSelectedList[i].value) {
-                            audioHandler.add2Last(
-                              currentSongListNotifier.value[i],
-                            );
-                          }
-                        }
-                        showCenterMessage(
-                          context,
-                          'Added to Play Queue',
-                          duration: 1000,
-                        );
-                        if (audioHandler.currentIndex == -1) {
-                          await audioHandler.skipToNext();
-                          audioHandler.play();
-                        }
-
-                        audioHandler.saveAllStates();
-                      }
-                    },
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ImageIcon(addCircleImage, color: color),
-
-                        Text(
-                          l10n.add2Queue,
-                          style: TextStyle(color: color, fontSize: 12),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-
-                Expanded(
-                  child: GestureDetector(
-                    onTap: () {
-                      if (valid) {
-                        tryVibrate();
-                        List<MyAudioMetadata> tmpSongList = [];
-                        for (int i = isSelectedList.length - 1; i >= 0; i--) {
-                          if (isSelectedList[i].value) {
-                            tmpSongList.add(currentSongListNotifier.value[i]);
-                          }
-                        }
-                        if (isLandscape) {
-                          showAddPlaylistDialog(context, tmpSongList);
-                        } else {
-                          showAddPlaylistSheet(context, tmpSongList);
-                        }
-                      }
-                    },
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        ImageIcon(playlistAddImage, color: color),
-
-                        Text(
-                          l10n.add2Playlist,
-                          style: TextStyle(color: color, fontSize: 12),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-                if (playlist != null)
+              ),
+            ],
+          ),
+        ),
+        bottomNavigationBar: ValueListenableBuilder(
+          valueListenable: selectedNumNotifier,
+          builder: (context, value, child) {
+            final valid = value > 0;
+            final color = valid ? iconColor : iconColor.withAlpha(128);
+            return SizedBox(
+              height: 80,
+              child: Row(
+                children: [
                   Expanded(
                     child: GestureDetector(
                       onTap: () async {
                         if (valid) {
                           tryVibrate();
-                          if (await showConfirmDialog(context, l10n.delete)) {
-                            List<MyAudioMetadata> tmpSongList = [];
-                            for (
-                              int i = isSelectedList.length - 1;
-                              i >= 0;
-                              i--
-                            ) {
-                              if (isSelectedList[i].value) {
-                                tmpSongList.add(
-                                  currentSongListNotifier.value[i],
-                                );
-                              }
-                            }
-                            playlist!.remove(tmpSongList);
-                            updateSongList();
-                            if (context.mounted) {
-                              showCenterMessage(
-                                context,
-                                'Successfully Deleted',
-                                duration: 1000,
+                          for (int i = isSelectedList.length - 1; i >= 0; i--) {
+                            if (isSelectedList[i].value) {
+                              audioHandler.insert2Next(
+                                currentSongListNotifier.value[i],
                               );
                             }
                           }
+                          showCenterMessage(
+                            context,
+                            'Added to Play Queue',
+                            duration: 1000,
+                          );
+                          if (audioHandler.currentIndex == -1) {
+                            await audioHandler.skipToNext();
+                            audioHandler.play();
+                          }
+
+                          audioHandler.saveAllStates();
                         }
                       },
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          ImageIcon(deleteImage, color: color),
+                          ImageIcon(playnextCircleImage, color: color),
 
                           Text(
-                            l10n.delete,
+                            l10n.playNext,
                             style: TextStyle(color: color, fontSize: 12),
                           ),
                         ],
                       ),
                     ),
                   ),
-              ],
-            ),
-          );
-        },
+
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () async {
+                        if (valid) {
+                          tryVibrate();
+                          for (int i = 0; i < isSelectedList.length; i++) {
+                            if (isSelectedList[i].value) {
+                              audioHandler.add2Last(
+                                currentSongListNotifier.value[i],
+                              );
+                            }
+                          }
+                          showCenterMessage(
+                            context,
+                            'Added to Play Queue',
+                            duration: 1000,
+                          );
+                          if (audioHandler.currentIndex == -1) {
+                            await audioHandler.skipToNext();
+                            audioHandler.play();
+                          }
+
+                          audioHandler.saveAllStates();
+                        }
+                      },
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ImageIcon(addCircleImage, color: color),
+
+                          Text(
+                            l10n.add2Queue,
+                            style: TextStyle(color: color, fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+
+                  Expanded(
+                    child: GestureDetector(
+                      onTap: () {
+                        if (valid) {
+                          tryVibrate();
+                          List<MyAudioMetadata> tmpSongList = [];
+                          for (int i = isSelectedList.length - 1; i >= 0; i--) {
+                            if (isSelectedList[i].value) {
+                              tmpSongList.add(currentSongListNotifier.value[i]);
+                            }
+                          }
+                          if (isLandscape) {
+                            showAddPlaylistDialog(context, tmpSongList);
+                          } else {
+                            showAddPlaylistSheet(context, tmpSongList);
+                          }
+                        }
+                      },
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          ImageIcon(playlistAddImage, color: color),
+
+                          Text(
+                            l10n.add2Playlist,
+                            style: TextStyle(color: color, fontSize: 12),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  if (playlist != null)
+                    Expanded(
+                      child: GestureDetector(
+                        onTap: () async {
+                          if (valid) {
+                            tryVibrate();
+                            if (await showConfirmDialog(context, l10n.delete)) {
+                              List<MyAudioMetadata> tmpSongList = [];
+                              for (
+                                int i = isSelectedList.length - 1;
+                                i >= 0;
+                                i--
+                              ) {
+                                if (isSelectedList[i].value) {
+                                  tmpSongList.add(
+                                    currentSongListNotifier.value[i],
+                                  );
+                                }
+                              }
+                              playlist!.remove(tmpSongList);
+                              updateSongList();
+                              if (context.mounted) {
+                                showCenterMessage(
+                                  context,
+                                  'Successfully Deleted',
+                                  duration: 1000,
+                                );
+                              }
+                            }
+                          }
+                        },
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            ImageIcon(deleteImage, color: color),
+
+                            Text(
+                              l10n.delete,
+                              style: TextStyle(color: color, fontSize: 12),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                ],
+              ),
+            );
+          },
+        ),
       ),
     );
   }
