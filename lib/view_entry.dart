@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/landscape_view/landscape_view.dart';
 import 'package:particle_music/landscape_view/pages/play_queue_page.dart';
@@ -43,7 +44,7 @@ class ViewEntry extends StatelessWidget {
             if (!isMobile)
               Positioned(
                 top: 75,
-                bottom: isMobile ? 75 : 100,
+                bottom: 100,
                 right: 0,
                 child: ValueListenableBuilder(
                   valueListenable: displayPlayQueuePageNotifier,
@@ -54,15 +55,20 @@ class ViewEntry extends StatelessWidget {
                       curve: Curves.linear,
                       child: Material(
                         elevation: 1,
-                        color: sidebarColor.withAlpha(255),
+                        color: displayLyricsPageNotifier.value
+                            ? currentCoverArtColor
+                            : backgroundBaseColor,
                         shape: SmoothRectangleBorder(
                           smoothness: 1,
                           borderRadius: BorderRadius.horizontal(
                             left: Radius.circular(10),
                           ),
                         ),
-
-                        child: SizedBox(
+                        clipBehavior: .antiAlias,
+                        child: Container(
+                          color: displayLyricsPageNotifier.value
+                              ? lightModePanelColor
+                              : panelColor,
                           width: max(350, MediaQuery.widthOf(context) * 0.2),
                           child: PlayQueuePage(),
                         ),

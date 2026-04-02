@@ -23,11 +23,18 @@ void displayTimedPauseSetting(BuildContext context) {
           child: Column(
             children: [
               Spacer(),
-              CupertinoTimerPicker(
-                mode: CupertinoTimerPickerMode.hms, // hours, minutes, seconds
-                onTimerDurationChanged: (Duration newDuration) {
-                  currentDuration = newDuration;
-                },
+              CupertinoTheme(
+                data: CupertinoThemeData(
+                  brightness: displayLyricsPageNotifier.value
+                      ? Brightness.dark
+                      : null,
+                ),
+                child: CupertinoTimerPicker(
+                  mode: CupertinoTimerPickerMode.hms,
+                  onTimerDurationChanged: (Duration newDuration) {
+                    currentDuration = newDuration;
+                  },
+                ),
               ),
               SizedBox(height: 10),
               Row(
@@ -38,7 +45,19 @@ void displayTimedPauseSetting(BuildContext context) {
                       timedPause.value = false;
                       Navigator.pop(context);
                     },
-                    child: Text(l10n.cancel),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: displayLyricsPageNotifier.value
+                          ? currentCoverArtColor.withAlpha(75)
+                          : null,
+                    ),
+                    child: Text(
+                      l10n.cancel,
+                      style: TextStyle(
+                        color: displayLyricsPageNotifier.value
+                            ? Colors.grey.shade50
+                            : null,
+                      ),
+                    ),
                   ),
                   SizedBox(width: 30),
                   ElevatedButton(
@@ -71,7 +90,19 @@ void displayTimedPauseSetting(BuildContext context) {
 
                       Navigator.pop(context);
                     },
-                    child: Text(l10n.confirm),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: displayLyricsPageNotifier.value
+                          ? currentCoverArtColor.withAlpha(75)
+                          : null,
+                    ),
+                    child: Text(
+                      l10n.confirm,
+                      style: TextStyle(
+                        color: displayLyricsPageNotifier.value
+                            ? Colors.grey.shade50
+                            : null,
+                      ),
+                    ),
                   ),
 
                   Spacer(),
@@ -97,11 +128,18 @@ Widget sleepTimerListTile(
   double? iconSize,
 }) {
   return ListTile(
-    leading: ImageIcon(timerImage, size: iconSize),
+    leading: ImageIcon(
+      timerImage,
+      size: iconSize,
+      color: displayLyricsPageNotifier.value ? Colors.grey.shade50 : null,
+    ),
 
     title: Text(
       l10n.sleepTimer,
-      style: TextStyle(fontWeight: inSetting ? null : FontWeight.bold),
+      style: TextStyle(
+        fontWeight: inSetting ? null : FontWeight.bold,
+        color: displayLyricsPageNotifier.value ? Colors.grey.shade50 : null,
+      ),
     ),
     trailing: SizedBox(
       width: 150,
@@ -118,7 +156,14 @@ Widget sleepTimerListTile(
                 valueListenable: timedPause,
                 builder: (context, on, child) {
                   return value > 0 || on
-                      ? Text('$hours:$minutes:$secs')
+                      ? Text(
+                          '$hours:$minutes:$secs',
+                          style: TextStyle(
+                            color: displayLyricsPageNotifier.value
+                                ? Colors.grey.shade50
+                                : null,
+                          ),
+                        )
                       : SizedBox();
                 },
               );
@@ -161,7 +206,14 @@ Widget pauseAfterCTListTile(BuildContext context, AppLocalizations l10n) {
                 child: Row(
                   children: [
                     Spacer(),
-                    Text(l10n.pauseAfterCurrentTrack),
+                    Text(
+                      l10n.pauseAfterCurrentTrack,
+                      style: TextStyle(
+                        color: displayLyricsPageNotifier.value
+                            ? Colors.grey.shade50
+                            : null,
+                      ),
+                    ),
                     SizedBox(width: 10),
                     ValueListenableBuilder(
                       valueListenable: pauseAfterCompleted,

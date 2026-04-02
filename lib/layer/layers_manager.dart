@@ -38,7 +38,7 @@ class LayersManager {
             ValueListenableBuilder(
               valueListenable: updateColorNotifier,
               builder: (context, value, child) {
-                if (enableCustomColorNotifier.value) {
+                if (enableCustomColorNotifier.value || darkModeNotifier.value) {
                   return SizedBox.shrink();
                 }
 
@@ -48,8 +48,8 @@ class LayersManager {
             ValueListenableBuilder(
               valueListenable: updateColorNotifier,
               builder: (context, value, child) {
-                if (enableCustomColorNotifier.value) {
-                  return Container(color: Colors.white);
+                if (enableCustomColorNotifier.value || darkModeNotifier.value) {
+                  return SizedBox.shrink();
                 }
                 return ClipRect(
                   child: BackdropFilter(
@@ -190,16 +190,16 @@ class LayersManager {
       return;
     }
 
-    Widget layer = layerStack.last;
-
-    backgroundSong = _getBackgroundSong(layer);
-
-    backgroundFilterColor = await computeCoverArtColor(backgroundSong);
     if (!enableCustomColorNotifier.value && !darkModeNotifier.value) {
-      searchFieldColor = backgroundFilterColor.withAlpha(75);
-      buttonColor = backgroundFilterColor.withAlpha(75);
-      dividerColor = backgroundFilterColor;
-      selectedItemColor = backgroundFilterColor.withAlpha(75);
+      Widget layer = layerStack.last;
+      backgroundSong = _getBackgroundSong(layer);
+      backgroundBaseColor = await computeCoverArtColor(backgroundSong);
+      searchFieldColor = backgroundBaseColor.withAlpha(75);
+      buttonColor = backgroundBaseColor.withAlpha(75);
+      dividerColor = backgroundBaseColor;
+      selectedItemColor = backgroundBaseColor.withAlpha(75);
+    } else {
+      backgroundBaseColor = Colors.transparent;
     }
     updateColorNotifier.value++;
   }

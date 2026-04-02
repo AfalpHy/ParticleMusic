@@ -647,7 +647,11 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                     tmpSongList.add(currentSongList[i]);
                   }
                 }
-                showAddPlaylistDialog(context, tmpSongList);
+                if (isMobile) {
+                  showAddPlaylistSheet(context, tmpSongList);
+                } else {
+                  showAddPlaylistDialog(context, tmpSongList);
+                }
               },
             ),
 

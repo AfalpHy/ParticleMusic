@@ -125,13 +125,17 @@ class PlayQueuePageState extends State<PlayQueuePage> {
           style: TextStyle(
             fontSize: isMiniMode ? 18 : 20,
             fontWeight: FontWeight.bold,
-            color: isMiniMode ? Colors.grey.shade100 : null,
+            color: isMiniMode || displayLyricsPageNotifier.value
+                ? Colors.grey.shade50
+                : null,
           ),
         ),
         Spacer(),
 
         IconButton(
-          color: isMiniMode ? Colors.grey.shade100 : iconColor,
+          color: isMiniMode || displayLyricsPageNotifier.value
+              ? Colors.grey.shade50
+              : null,
           onPressed: () {
             audioHandler.reversePlayQueue();
             jumpToCurrentSong();
@@ -146,7 +150,9 @@ class PlayQueuePageState extends State<PlayQueuePage> {
           valueListenable: playModeNotifier,
           builder: (_, playMode, _) {
             return IconButton(
-              color: isMiniMode ? Colors.grey.shade100 : iconColor,
+              color: isMiniMode || displayLyricsPageNotifier.value
+                  ? Colors.grey.shade50
+                  : null,
               icon: ImageIcon(
                 playMode == 0
                     ? loopImage
@@ -191,7 +197,9 @@ class PlayQueuePageState extends State<PlayQueuePage> {
         ),
 
         IconButton(
-          color: isMiniMode ? Colors.grey.shade100 : iconColor,
+          color: isMiniMode || displayLyricsPageNotifier.value
+              ? Colors.grey.shade50
+              : null,
           onPressed: () {
             final position = scrollController.position;
             final maxScrollExtent = position.maxScrollExtent;
@@ -218,7 +226,9 @@ class PlayQueuePageState extends State<PlayQueuePage> {
           },
           icon: ImageIcon(
             deleteImage,
-            color: isMiniMode ? Colors.grey.shade100 : iconColor,
+            color: isMiniMode || displayLyricsPageNotifier.value
+                ? Colors.grey.shade50
+                : null,
           ),
         ),
       ],
@@ -370,6 +380,12 @@ class PlayQueueItemChildState extends State<PlayQueueItem> {
 
   Widget songListTile() {
     final song = playQueue[widget.index];
+    final highlight = miniModeNotifier.value || displayLyricsPageNotifier.value
+        ? Colors.white
+        : highlightTextColor;
+    final common = miniModeNotifier.value || displayLyricsPageNotifier.value
+        ? Colors.grey.shade50
+        : null;
     return ListTile(
       leading: Stack(
         children: [
@@ -404,13 +420,7 @@ class PlayQueueItemChildState extends State<PlayQueueItem> {
             getTitle(song),
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: song == currentSong
-                  ? miniModeNotifier.value
-                        ? Colors.white
-                        : highlightTextColor
-                  : miniModeNotifier.value
-                  ? Colors.grey.shade100
-                  : null,
+              color: song == currentSong ? highlight : common,
 
               fontWeight: song == currentSong ? FontWeight.bold : null,
               fontSize: 15,
@@ -421,18 +431,12 @@ class PlayQueueItemChildState extends State<PlayQueueItem> {
       subtitle: Text(
         "${getArtist(song)} - ${getAlbum(song)}",
         overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          fontSize: 12,
-          color: miniModeNotifier.value ? Colors.grey.shade100 : null,
-        ),
+        style: TextStyle(fontSize: 12, color: common),
       ),
       trailing: Text(
         formatDuration(getDuration(song)),
         overflow: TextOverflow.ellipsis,
-        style: TextStyle(
-          fontSize: 12,
-          color: miniModeNotifier.value ? Colors.grey.shade100 : null,
-        ),
+        style: TextStyle(fontSize: 12, color: common),
       ),
     );
   }
@@ -449,8 +453,8 @@ class PlayQueueItemChildState extends State<PlayQueueItem> {
             builder: (_, _, _) {
               return Material(
                 color: isSelected
-                    ? miniModeNotifier.value
-                          ? currentCoverArtColor
+                    ? miniModeNotifier.value || displayLyricsPageNotifier.value
+                          ? currentCoverArtColor.withAlpha(75)
                           : selectedItemColor
                     : Colors.transparent,
                 child: child,

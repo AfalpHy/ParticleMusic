@@ -270,7 +270,9 @@ Widget _loadingPage(BuildContext context) {
   final l10n = AppLocalizations.of(context);
 
   return Scaffold(
-    backgroundColor: isMobile ? pageBackgroundColor : panelColor.withAlpha(255),
+    backgroundColor: isMobile
+        ? pageBackgroundColor.withAlpha(255)
+        : panelColor.withAlpha(255),
     body: ValueListenableBuilder(
       valueListenable: loadingNavidromeNotifier,
       builder: (context, value, child) {

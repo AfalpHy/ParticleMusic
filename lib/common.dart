@@ -96,7 +96,7 @@ final darkModeNotifier = ValueNotifier(false);
 
 Color currentCoverArtColor = Colors.grey;
 
-Color backgroundFilterColor = Colors.grey;
+Color backgroundBaseColor = Colors.grey;
 // for mobile
 late Color pageBackgroundColor;
 

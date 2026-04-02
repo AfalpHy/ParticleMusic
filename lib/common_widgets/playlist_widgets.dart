@@ -26,6 +26,10 @@ class _Add2PlaylistPanelState extends State<Add2PlaylistPanel> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
+    final color = miniModeNotifier.value || displayLyricsPageNotifier.value
+        ? Colors.grey.shade50
+        : textColor;
+
     return Column(
       children: [
         ListTile(
@@ -35,10 +39,19 @@ class _Add2PlaylistPanelState extends State<Add2PlaylistPanel> {
             child: Material(
               elevation: 1,
               color: Colors.grey,
-              child: ImageIcon(addImage, size: 40, color: iconColor),
+              child: ImageIcon(
+                addImage,
+                size: 40,
+                color: miniModeNotifier.value || displayLyricsPageNotifier.value
+                    ? Colors.grey.shade50
+                    : null,
+              ),
             ),
           ),
-          title: Text(l10n.createPlaylist, style: TextStyle(fontSize: 14)),
+          title: Text(
+            l10n.createPlaylist,
+            style: TextStyle(fontSize: 14, color: color),
+          ),
           onTap: () async {
             if (isMobile) {
               if (await showCreatePlaylistSheet(context)) {
@@ -52,7 +65,13 @@ class _Add2PlaylistPanelState extends State<Add2PlaylistPanel> {
           },
         ),
         SizedBox(height: 5),
-        Divider(height: 1, thickness: 0.5, color: dividerColor),
+        Divider(
+          height: 1,
+          thickness: 0.5,
+          color: miniModeNotifier.value || displayLyricsPageNotifier.value
+              ? currentCoverArtColor
+              : dividerColor,
+        ),
         SizedBox(height: 5),
         Expanded(
           child: ListView.builder(
@@ -68,7 +87,7 @@ class _Add2PlaylistPanelState extends State<Add2PlaylistPanel> {
                 ),
                 title: Text(
                   index == 0 ? l10n.favorites : playlist.name,
-                  style: TextStyle(fontSize: 14),
+                  style: TextStyle(fontSize: 14, color: color),
                 ),
 
                 onTap: () {
@@ -98,6 +117,9 @@ Future<bool> showCreatePlaylistSheet(BuildContext context) async {
     isScrollControlled: true,
     useRootNavigator: true,
     builder: (context) {
+      final color = displayLyricsPageNotifier.value
+          ? Colors.grey.shade50
+          : textColor;
       return MySheet(
         height: 500,
         SizedBox(
@@ -107,15 +129,25 @@ Future<bool> showCreatePlaylistSheet(BuildContext context) async {
             children: [
               Padding(
                 padding: const EdgeInsets.fromLTRB(30, 30, 30, 0),
-                child: TextField(
-                  controller: controller,
-                  autofocus: true,
-                  decoration: InputDecoration(
-                    enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: textColor),
+                child: Theme(
+                  data: Theme.of(context).copyWith(
+                    textSelectionTheme: TextSelectionThemeData(
+                      selectionColor: color.withAlpha(50),
+                      cursorColor: color,
+                      selectionHandleColor: color,
                     ),
-                    focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: textColor, width: 1.5),
+                  ),
+                  child: TextField(
+                    controller: controller,
+                    autofocus: true,
+                    style: TextStyle(color: color),
+                    decoration: InputDecoration(
+                      enabledBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: color),
+                      ),
+                      focusedBorder: OutlineInputBorder(
+                        borderSide: BorderSide(color: color, width: 1.5),
+                      ),
                     ),
                   ),
                 ),
@@ -125,7 +157,12 @@ Future<bool> showCreatePlaylistSheet(BuildContext context) async {
                 onPressed: () {
                   Navigator.pop(context, controller.text); // close with value
                 },
-                child: Text(l10n.confirm),
+                style: displayLyricsPageNotifier.value
+                    ? ElevatedButton.styleFrom(
+                        backgroundColor: currentCoverArtColor.withAlpha(75),
+                      )
+                    : null,
+                child: Text(l10n.confirm, style: TextStyle(color: color)),
               ),
             ],
           ),
@@ -150,33 +187,53 @@ Future<bool> showCreatePlaylistDialog(BuildContext context) async {
     width: 300,
     height: 200,
     pageBuilder: (context) {
+      final color = miniModeNotifier.value || displayLyricsPageNotifier.value
+          ? Colors.grey.shade50
+          : textColor;
       return Padding(
         padding: const EdgeInsets.fromLTRB(30, 20, 30, 20),
         child: Column(
           children: [
             Center(
-              child: Text(l10n.createPlaylist, style: TextStyle(fontSize: 25)),
+              child: Text(
+                l10n.createPlaylist,
+                style: TextStyle(fontSize: 25, color: color),
+              ),
             ),
             SizedBox(height: 20),
-            TextField(
-              controller: controller,
-              autofocus: true,
-              style: TextStyle(fontSize: 12),
-              decoration: InputDecoration(
-                enabledBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: textColor),
+            Theme(
+              data: Theme.of(context).copyWith(
+                textSelectionTheme: TextSelectionThemeData(
+                  selectionColor: color.withAlpha(50),
+                  cursorColor: color,
+                  selectionHandleColor: color,
                 ),
-                focusedBorder: OutlineInputBorder(
-                  borderSide: BorderSide(color: textColor, width: 1.5),
+              ),
+              child: TextField(
+                controller: controller,
+                autofocus: true,
+                style: TextStyle(fontSize: 12, color: color),
+                decoration: InputDecoration(
+                  enabledBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: color),
+                  ),
+                  focusedBorder: OutlineInputBorder(
+                    borderSide: BorderSide(color: color, width: 1.5),
+                  ),
+                  isDense: true,
                 ),
-                isDense: true,
               ),
             ),
             SizedBox(height: 30),
             Center(
               child: ElevatedButton(
                 onPressed: () => Navigator.pop(context, controller.text),
-                child: Text(l10n.confirm),
+                style: miniModeNotifier.value || displayLyricsPageNotifier.value
+                    ? ElevatedButton.styleFrom(
+                        backgroundColor: currentCoverArtColor.withAlpha(75),
+                      )
+                    : null,
+                child: Text(l10n.confirm, style: TextStyle(color: color)),
               ),
             ),
           ],

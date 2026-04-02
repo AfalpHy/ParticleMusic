@@ -38,6 +38,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    final color = displayLyricsPageNotifier.value ? Colors.grey.shade50 : null;
 
     return MySheet(
       Column(
@@ -48,7 +49,9 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
             width: 50,
             height: 3,
             decoration: BoxDecoration(
-              color: Colors.grey,
+              color: displayLyricsPageNotifier.value
+                  ? Colors.grey.shade50
+                  : iconColor,
               borderRadius: BorderRadius.circular(10),
             ),
           ),
@@ -58,12 +61,16 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                 SizedBox(width: 15),
                 Text(
                   l10n.playQueue,
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                  style: TextStyle(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: color,
+                  ),
                 ),
                 Spacer(),
 
                 IconButton(
-                  color: iconColor,
+                  color: color,
                   onPressed: () {
                     audioHandler.reversePlayQueue();
                     jumpToCurrentSong();
@@ -73,7 +80,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                 ),
 
                 IconButton(
-                  color: iconColor,
+                  color: color,
                   icon: ValueListenableBuilder(
                     valueListenable: playModeNotifier,
                     builder: (context, value, child) {
@@ -117,7 +124,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                   },
                 ),
                 IconButton(
-                  color: iconColor,
+                  color: color,
                   onPressed: () {
                     final position = scrollController.position;
                     final maxScrollExtent = position.maxScrollExtent;
@@ -134,7 +141,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                   icon: ImageIcon(location),
                 ),
                 IconButton(
-                  color: iconColor,
+                  color: color,
                   onPressed: () async {
                     if (await showConfirmDialog(context, l10n.clear)) {
                       await audioHandler.clear();
@@ -188,6 +195,12 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
               itemCount: playQueue.length,
               itemBuilder: (_, index) {
                 final song = playQueue[index];
+                final highlight = displayLyricsPageNotifier.value
+                    ? Colors.white
+                    : highlightTextColor;
+                final common = displayLyricsPageNotifier.value
+                    ? Colors.grey.shade50
+                    : null;
                 return MediaQuery.removePadding(
                   key: ValueKey(song),
                   context: context,
@@ -210,6 +223,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                             fontWeight: song == currentSong
                                 ? FontWeight.bold
                                 : null,
+                            color: song == currentSong ? highlight : common,
                           ),
                         );
                       },
@@ -217,7 +231,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                     subtitle: Text(
                       "${getArtist(song)} - ${getAlbum(song)}",
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 12),
+                      style: TextStyle(fontSize: 12, color: common),
                     ),
                     visualDensity: VisualDensity(vertical: -4),
                     onTap: () async {
@@ -227,7 +241,9 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                     },
 
                     trailing: IconButton(
-                      color: iconColor,
+                      color: displayLyricsPageNotifier.value
+                          ? Colors.grey.shade50
+                          : null,
 
                       onPressed: () async {
                         audioHandler.delete(index);

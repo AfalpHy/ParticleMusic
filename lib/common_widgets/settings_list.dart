@@ -627,6 +627,7 @@ class SettingsList extends StatelessWidget {
                   onToggle: (value) async {
                     darkModeNotifier.value = value;
                     settingManager.saveSetting();
+                    layersManager.updateBackground();
                     colorManager.setColor();
                     updateColorNotifier.value++;
                   },

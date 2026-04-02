@@ -128,8 +128,6 @@ class BottomControl extends StatelessWidget {
       children: [
         Spacer(),
         IconButton(
-          color: iconColor,
-
           onPressed: () async {
             if (lyricsWindowVisible) {
               await lyricsWindowController!.hide();

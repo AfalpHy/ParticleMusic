@@ -20,7 +20,7 @@ class LandscapeView extends StatelessWidget {
         ValueListenableBuilder(
           valueListenable: updateColorNotifier,
           builder: (context, value, child) {
-            if (enableCustomColorNotifier.value) {
+            if (enableCustomColorNotifier.value || darkModeNotifier.value) {
               return SizedBox.shrink();
             }
             return CoverArtWidget(song: backgroundSong);
@@ -29,8 +29,8 @@ class LandscapeView extends StatelessWidget {
         ValueListenableBuilder(
           valueListenable: updateColorNotifier,
           builder: (context, value, child) {
-            if (enableCustomColorNotifier.value) {
-              return Container(color: Colors.white);
+            if (enableCustomColorNotifier.value || darkModeNotifier.value) {
+              return SizedBox.shrink();
             }
             final pageWidth = MediaQuery.widthOf(context);
             final pageHight = MediaQuery.heightOf(context);
@@ -41,7 +41,7 @@ class LandscapeView extends StatelessWidget {
                   sigmaX: pageWidth * 0.03,
                   sigmaY: pageHight * 0.03,
                 ),
-                child: Container(color: backgroundFilterColor.withAlpha(180)),
+                child: Container(color: backgroundBaseColor.withAlpha(180)),
               ),
             );
           },

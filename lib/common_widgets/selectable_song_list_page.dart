@@ -219,9 +219,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
     final l10n = AppLocalizations.of(context);
 
     return Container(
-      color: enableCustomColorNotifier.value
-          ? Colors.white
-          : backgroundFilterColor,
+      color: backgroundBaseColor,
       child: Scaffold(
         backgroundColor: pageBackgroundColor,
         resizeToAvoidBottomInset: false,
@@ -445,11 +443,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                               tmpSongList.add(currentSongListNotifier.value[i]);
                             }
                           }
-                          if (isLandscape) {
-                            showAddPlaylistDialog(context, tmpSongList);
-                          } else {
-                            showAddPlaylistSheet(context, tmpSongList);
-                          }
+                          showAddPlaylistSheet(context, tmpSongList);
                         }
                       },
                       child: Column(

@@ -126,10 +126,10 @@ class ColorManager {
       panelColor = lightModePanelColor;
       sidebarColor = lightModeSidebarColor;
       bottomColor = lightModeBottomColor;
-      searchFieldColor = backgroundFilterColor.withAlpha(75);
-      buttonColor = backgroundFilterColor.withAlpha(75);
-      dividerColor = backgroundFilterColor;
-      selectedItemColor = backgroundFilterColor.withAlpha(75);
+      searchFieldColor = backgroundBaseColor.withAlpha(75);
+      buttonColor = backgroundBaseColor.withAlpha(75);
+      dividerColor = backgroundBaseColor;
+      selectedItemColor = backgroundBaseColor.withAlpha(75);
       seekBarColor = lightModeSeekBarColor;
       volumeBarColor = lightModeVolumeBarColor;
     }

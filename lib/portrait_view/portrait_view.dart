@@ -99,7 +99,7 @@ class _PortraitViewState extends State<PortraitView> {
       valueListenable: updateColorNotifier,
       builder: (_, value, child) {
         return Drawer(
-          backgroundColor: backgroundFilterColor,
+          backgroundColor: backgroundBaseColor,
           width: 220,
           child: Column(
             children: [

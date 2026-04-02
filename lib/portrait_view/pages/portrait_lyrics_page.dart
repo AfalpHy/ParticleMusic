@@ -106,7 +106,7 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
       valueListenable: currentSongNotifier,
       builder: (context, currentSong, child) {
         return Material(
-          color: Colors.white,
+          color: Colors.transparent,
           child: Stack(
             fit: StackFit.expand,
             children: [
@@ -256,7 +256,7 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
             FavoriteButton(),
             Spacer(),
             IconButton(
-              color: Colors.white,
+              color: Colors.grey.shade50,
               onPressed: () {
                 lyricsFontSizeOffset += 2;
                 lyricsFontSizeOffsetChangeNotifier.value++;
@@ -265,7 +265,7 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
               icon: Icon(Icons.text_increase_rounded),
             ),
             IconButton(
-              color: Colors.white,
+              color: Colors.grey.shade50,
               onPressed: () {
                 if (lyricsFontSizeOffset < -2) {
                   return;
@@ -296,15 +296,17 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                             title: Text(
                               getTitle(currentSong),
                               overflow: TextOverflow.ellipsis,
+                              style: TextStyle(color: Colors.grey.shade50),
                             ),
                             subtitle: Text(
                               "${getArtist(currentSong)} - ${getAlbum(currentSong)}",
                               overflow: TextOverflow.ellipsis,
+                              style: TextStyle(color: Colors.grey.shade50),
                             ),
                           ),
 
                           Divider(
-                            color: dividerColor,
+                            color: currentCoverArtColor,
                             thickness: 0.5,
                             height: 1,
                           ),
@@ -316,12 +318,13 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                                 ListTile(
                                   leading: ImageIcon(
                                     playlistAddImage,
-                                    color: iconColor,
+                                    color: Colors.grey.shade50,
                                   ),
                                   title: Text(
                                     l10n.add2Playlist,
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
+                                      color: Colors.grey.shade50,
                                     ),
                                   ),
                                   visualDensity: const VisualDensity(

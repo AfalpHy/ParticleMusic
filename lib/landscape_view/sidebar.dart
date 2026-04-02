@@ -239,8 +239,8 @@ class Sidebar extends StatelessWidget {
                                   callback: () async {
                                     showAnimationDialog(
                                       context: context,
-                                      height: isMobile ? 300 : 500,
-                                      width: 400,
+                                      height: 300,
+                                      width: 300,
                                       pageBuilder: (context) {
                                         return Padding(
                                           padding: const EdgeInsets.fromLTRB(

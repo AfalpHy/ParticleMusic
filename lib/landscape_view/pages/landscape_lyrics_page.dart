@@ -84,7 +84,7 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
         final coverArtSize = min(pageWidth * 0.3, pageHight * 0.6);
 
         return Material(
-          color: Colors.white,
+          color: Colors.transparent,
           child: Stack(
             fit: StackFit.expand,
             children: [
@@ -187,7 +187,7 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
 
                         if (pageHight <= 600) ...[
                           playControls(pageWidth * 0.4, pageHight, currentSong),
-                          SizedBox(height: 30),
+                          SizedBox(height: 20),
                         ],
                       ],
                     ),
@@ -202,10 +202,7 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                 child: ValueListenableBuilder(
                   valueListenable: immersiveModeNotifier,
                   builder: (context, value, child) {
-                    return Offstage(offstage: value, child: child);
-                  },
-                  child: Row(
-                    children: [
+                    List<Widget> children = [
                       IconButton(
                         color: Colors.white,
                         onPressed: () {
@@ -227,8 +224,14 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                         },
                         icon: Icon(Icons.text_decrease_rounded, size: 18),
                       ),
-                    ],
-                  ),
+                    ];
+                    return Offstage(
+                      offstage: value,
+                      child: pageHight <= 600
+                          ? Column(children: children)
+                          : Row(children: children),
+                    );
+                  },
                 ),
               ),
 

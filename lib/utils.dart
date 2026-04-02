@@ -164,12 +164,20 @@ Future<T?> showAnimationDialog<T>({
                       smoothness: 1,
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    color: enableCustomColorNotifier.value
-                        ? Colors.white
-                        : backgroundFilterColor,
+                    color:
+                        miniModeNotifier.value ||
+                            displayLyricsPageNotifier.value
+                        ? currentCoverArtColor
+                        : backgroundBaseColor,
                     clipBehavior: .antiAlias,
                     child: Container(
-                      color: isMobile ? pageBackgroundColor : panelColor,
+                      color:
+                          miniModeNotifier.value ||
+                              displayLyricsPageNotifier.value
+                          ? Color.fromARGB(100, 245, 245, 245)
+                          : isMobile
+                          ? pageBackgroundColor
+                          : panelColor,
                       width: width,
                       height: height,
                       child: MediaQuery.removePadding(
