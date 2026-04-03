@@ -23,10 +23,7 @@ class LandscapeView extends StatelessWidget {
             if (mainPageThemeNotifier.value != 0) {
               return SizedBox.shrink();
             }
-            return Container(
-              color: backgroundSong == null ? Colors.grey : null,
-              child: CoverArtWidget(song: backgroundSong),
-            );
+            return CoverArtWidget(song: backgroundSong);
           },
         ),
         ValueListenableBuilder(

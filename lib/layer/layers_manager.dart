@@ -36,10 +36,7 @@ class LayersManager {
 
           children: [
             if (mainPageThemeNotifier.value == 0) ...[
-              Container(
-                color: backgroundSong == null ? Colors.grey : null,
-                child: CoverArtWidget(song: _getBackgroundSong(layer)),
-              ),
+              CoverArtWidget(song: _getBackgroundSong(layer)),
 
               ClipRect(
                 child: BackdropFilter(
