@@ -26,8 +26,10 @@ class _Add2PlaylistPanelState extends State<Add2PlaylistPanel> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    final color = miniModeNotifier.value || displayLyricsPageNotifier.value
+    final color = miniModeNotifier.value
         ? Colors.grey.shade50
+        : displayLyricsPageNotifier.value
+        ? lyricsPageForegroundColor
         : textColor;
 
     return Column(
@@ -41,8 +43,10 @@ class _Add2PlaylistPanelState extends State<Add2PlaylistPanel> {
               child: ImageIcon(
                 addImage,
                 size: 40,
-                color: miniModeNotifier.value || displayLyricsPageNotifier.value
+                color: miniModeNotifier.value
                     ? Colors.grey.shade50
+                    : displayLyricsPageNotifier.value
+                    ? lyricsPageForegroundColor
                     : null,
               ),
             ),
@@ -67,8 +71,10 @@ class _Add2PlaylistPanelState extends State<Add2PlaylistPanel> {
         Divider(
           height: 1,
           thickness: 0.5,
-          color: miniModeNotifier.value || displayLyricsPageNotifier.value
+          color: miniModeNotifier.value
               ? currentCoverArtColor
+              : displayLyricsPageNotifier.value
+              ? lyricsPageBackgroundColor
               : dividerColor,
         ),
         SizedBox(height: 5),
@@ -116,9 +122,12 @@ Future<bool> showCreatePlaylistSheet(BuildContext context) async {
     isScrollControlled: true,
     useRootNavigator: true,
     builder: (context) {
-      final color = displayLyricsPageNotifier.value
+      final color = miniModeNotifier.value
           ? Colors.grey.shade50
+          : displayLyricsPageNotifier.value
+          ? lyricsPageForegroundColor
           : textColor;
+
       return MySheet(
         height: 500,
         SizedBox(
@@ -158,7 +167,9 @@ Future<bool> showCreatePlaylistSheet(BuildContext context) async {
                 },
                 style: displayLyricsPageNotifier.value
                     ? ElevatedButton.styleFrom(
-                        backgroundColor: currentCoverArtColor.withAlpha(75),
+                        backgroundColor: lyricsPageBackgroundColor.withAlpha(
+                          75,
+                        ),
                       )
                     : null,
                 child: Text(l10n.confirm, style: TextStyle(color: color)),
@@ -186,9 +197,12 @@ Future<bool> showCreatePlaylistDialog(BuildContext context) async {
     width: 300,
     height: 200,
     pageBuilder: (context) {
-      final color = miniModeNotifier.value || displayLyricsPageNotifier.value
+      final color = miniModeNotifier.value
           ? Colors.grey.shade50
+          : displayLyricsPageNotifier.value
+          ? lyricsPageForegroundColor
           : textColor;
+
       return Padding(
         padding: const EdgeInsets.fromLTRB(30, 20, 30, 20),
         child: Column(
@@ -227,11 +241,13 @@ Future<bool> showCreatePlaylistDialog(BuildContext context) async {
             Center(
               child: ElevatedButton(
                 onPressed: () => Navigator.pop(context, controller.text),
-                style: miniModeNotifier.value || displayLyricsPageNotifier.value
-                    ? ElevatedButton.styleFrom(
-                        backgroundColor: currentCoverArtColor.withAlpha(75),
-                      )
-                    : null,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: miniModeNotifier.value
+                      ? currentCoverArtColor.withAlpha(75)
+                      : displayLyricsPageNotifier.value
+                      ? lyricsPageBackgroundColor.withAlpha(75)
+                      : null,
+                ),
                 child: Text(l10n.confirm, style: TextStyle(color: color)),
               ),
             ),

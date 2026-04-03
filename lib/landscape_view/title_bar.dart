@@ -179,7 +179,7 @@ class TitleBar extends StatelessWidget {
                           return isFullScreen
                               ? SizedBox.shrink()
                               : IconButton(
-                                  color: Colors.grey.shade50,
+                                  color: lyricsPageForegroundColor,
                                   onPressed: () {
                                     displayLyricsPageNotifier.value = false;
                                   },
@@ -192,7 +192,7 @@ class TitleBar extends StatelessWidget {
 
                     if (!isMainPage && !isMobile)
                       IconButton(
-                        color: Colors.grey.shade50,
+                        color: lyricsPageForegroundColor,
                         onPressed: () async {
                           if (isFullScreenNotifier.value) {
                             await windowManager.setFullScreen(false);
@@ -257,7 +257,7 @@ class TitleBar extends StatelessWidget {
             : Row(
                 children: [
                   IconButton(
-                    color: isMainPage ? iconColor : Colors.grey.shade50,
+                    color: isMainPage ? iconColor : lyricsPageForegroundColor,
                     onPressed: () async {
                       await windowManager.hide();
                       miniModeNotifier.value = true;
@@ -282,7 +282,7 @@ class TitleBar extends StatelessWidget {
                     icon: ImageIcon(miniModeImage),
                   ),
                   IconButton(
-                    color: isMainPage ? iconColor : Colors.grey.shade50,
+                    color: isMainPage ? iconColor : lyricsPageForegroundColor,
                     onPressed: () {
                       windowManager.minimize();
                     },
@@ -292,7 +292,9 @@ class TitleBar extends StatelessWidget {
                     valueListenable: isMaximizedNotifier,
                     builder: (context, value, child) {
                       return IconButton(
-                        color: isMainPage ? iconColor : Colors.grey.shade50,
+                        color: isMainPage
+                            ? iconColor
+                            : lyricsPageForegroundColor,
                         onPressed: () async {
                           isMaximizedNotifier.value
                               ? windowManager.unmaximize()
@@ -305,7 +307,7 @@ class TitleBar extends StatelessWidget {
                     },
                   ),
                   IconButton(
-                    color: isMainPage ? iconColor : Colors.grey.shade50,
+                    color: isMainPage ? iconColor : lyricsPageForegroundColor,
                     onPressed: () {
                       windowManager.close();
                     },

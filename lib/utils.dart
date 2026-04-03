@@ -8,6 +8,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 import 'package:image/image.dart' as image;
 import 'package:lpinyin/lpinyin.dart';
+import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/landscape_view/extensions/window_controller_extension.dart';
 import 'package:particle_music/landscape_view/single_instance.dart';
@@ -164,17 +165,15 @@ Future<T?> showAnimationDialog<T>({
                       smoothness: 1,
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    color:
-                        miniModeNotifier.value ||
-                            displayLyricsPageNotifier.value
+                    color: miniModeNotifier.value
                         ? currentCoverArtColor
                         : backgroundBaseColor,
-                    clipBehavior: .antiAlias,
+                    clipBehavior: .antiAliasWithSaveLayer,
                     child: Container(
-                      color:
-                          miniModeNotifier.value ||
-                              displayLyricsPageNotifier.value
-                          ? Color.fromARGB(100, 245, 245, 245)
+                      color: miniModeNotifier.value
+                          ? vividModePanelColor
+                          : displayLyricsPageNotifier.value
+                          ? lyricsPageBackgroundColor
                           : isMobile
                           ? pageBackgroundColor
                           : panelColor,

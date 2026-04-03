@@ -20,7 +20,7 @@ class LandscapeView extends StatelessWidget {
         ValueListenableBuilder(
           valueListenable: updateColorNotifier,
           builder: (context, value, child) {
-            if (enableCustomColorNotifier.value || darkModeNotifier.value) {
+            if (mainPageThemeNotifier.value != 0) {
               return SizedBox.shrink();
             }
             return Container(
@@ -32,7 +32,7 @@ class LandscapeView extends StatelessWidget {
         ValueListenableBuilder(
           valueListenable: updateColorNotifier,
           builder: (context, value, child) {
-            if (enableCustomColorNotifier.value || darkModeNotifier.value) {
+            if (mainPageThemeNotifier.value != 0) {
               return SizedBox.shrink();
             }
             final pageWidth = MediaQuery.widthOf(context);

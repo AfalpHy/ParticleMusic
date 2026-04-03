@@ -79,9 +79,6 @@ Timer? pauseTimer;
 
 final playlistsUseLargePictureNotifier = ValueNotifier(true);
 
-final enableCustomColorNotifier = ValueNotifier(false);
-final enableCustomLyricsPageNotifier = ValueNotifier(false);
-
 final updateColorNotifier = ValueNotifier(0);
 
 final ValueNotifier<Locale?> localeNotifier = ValueNotifier(null);
@@ -92,14 +89,14 @@ late SettingManager settingManager;
 
 // ===================================== Colors =====================================
 
-final darkModeNotifier = ValueNotifier(false);
+final mainPageThemeNotifier = ValueNotifier(0);
+final lyricsPageThemeNotifier = ValueNotifier(0);
 
 Color currentCoverArtColor = Colors.grey;
 
 Color backgroundBaseColor = Colors.grey;
-// for mobile
-late Color pageBackgroundColor;
 
+late Color pageBackgroundColor;
 late Color iconColor;
 late Color textColor;
 late Color highlightTextColor;
@@ -114,7 +111,9 @@ late Color dividerColor;
 late Color selectedItemColor;
 late Color seekBarColor;
 late Color volumeBarColor;
-late Color lyricsBackgroundColor;
+late Color lyricsPageBackgroundColor;
+late Color lyricsPageForegroundColor;
+late Color lyricsPageHighlightColor;
 
 // ===================================== Images =====================================
 

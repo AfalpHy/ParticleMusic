@@ -117,6 +117,11 @@ class PlayQueuePageState extends State<PlayQueuePage> {
   }
 
   Widget topBar(AppLocalizations l10n) {
+    final color = isMiniMode
+        ? Colors.grey.shade50
+        : displayLyricsPageNotifier.value
+        ? lyricsPageForegroundColor
+        : null;
     return Row(
       children: [
         SizedBox(width: 15),
@@ -125,17 +130,13 @@ class PlayQueuePageState extends State<PlayQueuePage> {
           style: TextStyle(
             fontSize: isMiniMode ? 18 : 20,
             fontWeight: FontWeight.bold,
-            color: isMiniMode || displayLyricsPageNotifier.value
-                ? Colors.grey.shade50
-                : null,
+            color: color,
           ),
         ),
         Spacer(),
 
         IconButton(
-          color: isMiniMode || displayLyricsPageNotifier.value
-              ? Colors.grey.shade50
-              : null,
+          color: color,
           onPressed: () {
             audioHandler.reversePlayQueue();
             jumpToCurrentSong();
@@ -150,9 +151,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
           valueListenable: playModeNotifier,
           builder: (_, playMode, _) {
             return IconButton(
-              color: isMiniMode || displayLyricsPageNotifier.value
-                  ? Colors.grey.shade50
-                  : null,
+              color: color,
               icon: ImageIcon(
                 playMode == 0
                     ? loopImage
@@ -197,9 +196,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
         ),
 
         IconButton(
-          color: isMiniMode || displayLyricsPageNotifier.value
-              ? Colors.grey.shade50
-              : null,
+          color: color,
           onPressed: () {
             final position = scrollController.position;
             final maxScrollExtent = position.maxScrollExtent;
@@ -224,12 +221,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
               displayLyricsPageNotifier.value = false;
             }
           },
-          icon: ImageIcon(
-            deleteImage,
-            color: isMiniMode || displayLyricsPageNotifier.value
-                ? Colors.grey.shade50
-                : null,
-          ),
+          icon: ImageIcon(deleteImage, color: color),
         ),
       ],
     );
@@ -380,11 +372,15 @@ class PlayQueueItemChildState extends State<PlayQueueItem> {
 
   Widget songListTile() {
     final song = playQueue[widget.index];
-    final highlight = miniModeNotifier.value || displayLyricsPageNotifier.value
+    final highlight = miniModeNotifier.value
         ? Colors.white
+        : displayLyricsPageNotifier.value
+        ? lyricsPageHighlightColor
         : highlightTextColor;
-    final common = miniModeNotifier.value || displayLyricsPageNotifier.value
+    final common = miniModeNotifier.value
         ? Colors.grey.shade50
+        : displayLyricsPageNotifier.value
+        ? lyricsPageForegroundColor
         : null;
     return ListTile(
       leading: Stack(
@@ -453,8 +449,10 @@ class PlayQueueItemChildState extends State<PlayQueueItem> {
             builder: (_, _, _) {
               return Material(
                 color: isSelected
-                    ? miniModeNotifier.value || displayLyricsPageNotifier.value
+                    ? miniModeNotifier.value
                           ? currentCoverArtColor.withAlpha(75)
+                          : displayLyricsPageNotifier.value
+                          ? lyricsPageBackgroundColor.withAlpha(75)
                           : selectedItemColor
                     : Colors.transparent,
                 child: child,

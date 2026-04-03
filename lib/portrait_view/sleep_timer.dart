@@ -47,14 +47,14 @@ void displayTimedPauseSetting(BuildContext context) {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: displayLyricsPageNotifier.value
-                          ? currentCoverArtColor.withAlpha(75)
+                          ? pageBackgroundColor.withAlpha(75)
                           : null,
                     ),
                     child: Text(
                       l10n.cancel,
                       style: TextStyle(
                         color: displayLyricsPageNotifier.value
-                            ? Colors.grey.shade50
+                            ? lyricsPageForegroundColor
                             : null,
                       ),
                     ),
@@ -92,14 +92,14 @@ void displayTimedPauseSetting(BuildContext context) {
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: displayLyricsPageNotifier.value
-                          ? currentCoverArtColor.withAlpha(75)
+                          ? pageBackgroundColor.withAlpha(75)
                           : null,
                     ),
                     child: Text(
                       l10n.confirm,
                       style: TextStyle(
                         color: displayLyricsPageNotifier.value
-                            ? Colors.grey.shade50
+                            ? lyricsPageForegroundColor
                             : null,
                       ),
                     ),
@@ -131,14 +131,16 @@ Widget sleepTimerListTile(
     leading: ImageIcon(
       timerImage,
       size: iconSize,
-      color: displayLyricsPageNotifier.value ? Colors.grey.shade50 : null,
+      color: displayLyricsPageNotifier.value ? lyricsPageForegroundColor : null,
     ),
 
     title: Text(
       l10n.sleepTimer,
       style: TextStyle(
         fontWeight: inSetting ? null : FontWeight.bold,
-        color: displayLyricsPageNotifier.value ? Colors.grey.shade50 : null,
+        color: displayLyricsPageNotifier.value
+            ? lyricsPageForegroundColor
+            : null,
       ),
     ),
     trailing: SizedBox(
@@ -160,7 +162,7 @@ Widget sleepTimerListTile(
                           '$hours:$minutes:$secs',
                           style: TextStyle(
                             color: displayLyricsPageNotifier.value
-                                ? Colors.grey.shade50
+                                ? lyricsPageForegroundColor
                                 : null,
                           ),
                         )
@@ -210,7 +212,7 @@ Widget pauseAfterCTListTile(BuildContext context, AppLocalizations l10n) {
                       l10n.pauseAfterCurrentTrack,
                       style: TextStyle(
                         color: displayLyricsPageNotifier.value
-                            ? Colors.grey.shade50
+                            ? lyricsPageForegroundColor
                             : null,
                       ),
                     ),

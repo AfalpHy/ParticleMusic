@@ -38,7 +38,9 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final color = displayLyricsPageNotifier.value ? Colors.grey.shade50 : null;
+    final color = displayLyricsPageNotifier.value
+        ? lyricsPageForegroundColor
+        : null;
 
     return MySheet(
       Column(
@@ -50,7 +52,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
             height: 3,
             decoration: BoxDecoration(
               color: displayLyricsPageNotifier.value
-                  ? Colors.grey.shade50
+                  ? lyricsPageForegroundColor
                   : iconColor,
               borderRadius: BorderRadius.circular(10),
             ),
@@ -196,10 +198,10 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
               itemBuilder: (_, index) {
                 final song = playQueue[index];
                 final highlight = displayLyricsPageNotifier.value
-                    ? Colors.white
+                    ? lyricsPageHighlightColor
                     : highlightTextColor;
                 final common = displayLyricsPageNotifier.value
-                    ? Colors.grey.shade50
+                    ? lyricsPageForegroundColor
                     : null;
                 return MediaQuery.removePadding(
                   key: ValueKey(song),
@@ -242,7 +244,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
 
                     trailing: IconButton(
                       color: displayLyricsPageNotifier.value
-                          ? Colors.grey.shade50
+                          ? lyricsPageForegroundColor
                           : null,
 
                       onPressed: () async {

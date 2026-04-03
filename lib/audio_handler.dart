@@ -430,6 +430,11 @@ class MyAudioHandler extends BaseAudioHandler {
 
     await setParsedLyrics(currentSong);
     currentCoverArtColor = await computeCoverArtColor(currentSong);
+    if (lyricsPageThemeNotifier.value == 0) {
+      lyricsPageBackgroundColor = currentCoverArtColor;
+      lyricsPageForegroundColor = Colors.grey.shade50;
+      lyricsPageHighlightColor = Colors.white;
+    }
 
     currentSongNotifier.value = currentSong;
 

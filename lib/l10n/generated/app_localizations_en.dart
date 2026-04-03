@@ -291,9 +291,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get palette => 'Palette';
 
   @override
-  String get customMode => 'Main Page Custom Mode';
-
-  @override
   String get backgroundColor => 'Background Color';
 
   @override
@@ -342,10 +339,13 @@ class AppLocalizationsEn extends AppLocalizations {
   String get volumeBarColor => 'Volume Bar Color';
 
   @override
-  String get lyricsCustomMode => 'Lyrics Page Custom Mode';
+  String get lyricsPageBackgroundColor => 'Lyrics Page Background Color';
 
   @override
-  String get lyricsBackgroundColor => 'Lyrics Background Color';
+  String get lyricsPageForegroundColor => 'Lyrics Page Foreground Color';
+
+  @override
+  String get lyricsPageHighlightColor => 'Lyrics Page Highlight Color';
 
   @override
   String get reset => 'Reset';
@@ -387,10 +387,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get theme => 'Theme';
 
   @override
+  String get mainPageTheme => 'Main Page Theme';
+
+  @override
+  String get lyricsPageTheme => 'Lyrics Page Theme';
+
+  @override
+  String get vividMode => 'Vivid Mode';
+
+  @override
   String get lightMode => 'Light Mode';
 
   @override
   String get darkMode => 'Dark Mode';
+
+  @override
+  String get customMode => 'Custom Mode';
 
   @override
   String get local => 'Local';

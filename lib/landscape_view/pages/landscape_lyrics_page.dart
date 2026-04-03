@@ -89,19 +89,19 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
             fit: StackFit.expand,
             children: [
               ValueListenableBuilder(
-                valueListenable: enableCustomLyricsPageNotifier,
-                builder: (context, enableCustomLyricsPage, child) {
-                  if (enableCustomLyricsPage) {
+                valueListenable: updateColorNotifier,
+                builder: (context, value, child) {
+                  if (lyricsPageThemeNotifier.value != 0) {
                     return SizedBox.shrink();
                   }
                   return CoverArtWidget(song: currentSong);
                 },
               ),
               ValueListenableBuilder(
-                valueListenable: enableCustomLyricsPageNotifier,
-                builder: (context, enableCustomLyricsPage, child) {
-                  if (enableCustomLyricsPage) {
-                    return Container(color: lyricsBackgroundColor);
+                valueListenable: updateColorNotifier,
+                builder: (context, value, child) {
+                  if (lyricsPageThemeNotifier.value != 0) {
+                    return Container(color: lyricsPageBackgroundColor);
                   }
                   return ClipRect(
                     child: BackdropFilter(
@@ -110,7 +110,7 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                         sigmaY: pageHight * 0.03,
                       ),
                       child: Container(
-                        color: currentCoverArtColor.withAlpha(180),
+                        color: lyricsPageBackgroundColor.withAlpha(180),
                       ),
                     ),
                   );
@@ -204,7 +204,7 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                   builder: (context, value, child) {
                     List<Widget> children = [
                       IconButton(
-                        color: Colors.white,
+                        color: lyricsPageForegroundColor,
                         onPressed: () {
                           lyricsFontSizeOffset += 2;
                           lyricsFontSizeOffsetChangeNotifier.value++;
@@ -213,7 +213,7 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                         icon: Icon(Icons.text_increase_rounded, size: 20),
                       ),
                       IconButton(
-                        color: Colors.white,
+                        color: lyricsPageForegroundColor,
                         onPressed: () {
                           if (lyricsFontSizeOffset < -2) {
                             return;
@@ -270,7 +270,7 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
               textStyle: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 20,
-                color: Colors.grey.shade50,
+                color: lyricsPageForegroundColor,
               ),
             ),
           ),
@@ -285,7 +285,10 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
               key: UniqueKey(),
               '${getArtist(currentSong)} - ${getAlbum(currentSong)}',
               maxLines: 1,
-              textStyle: TextStyle(fontSize: 14, color: Colors.grey.shade100),
+              textStyle: TextStyle(
+                fontSize: 14,
+                color: lyricsPageForegroundColor,
+              ),
             ),
           ),
         ),
@@ -304,24 +307,28 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
       children: [
         SizedBox(
           width: width - 15,
-          child: SeekBar(light: true, widgetHeight: 20, seekBarHeight: 10),
+          child: SeekBar(
+            color: lyricsPageForegroundColor,
+            widgetHeight: 20,
+            seekBarHeight: 10,
+          ),
         ),
 
         SizedBox(
           width: width,
           child: Row(
             children: [
-              playModeButton(25, iconColor: Colors.grey.shade50),
+              playModeButton(25, iconColor: lyricsPageForegroundColor),
               Spacer(),
 
-              skip2PreviousButton(25, iconColor: Colors.grey.shade50),
+              skip2PreviousButton(25, iconColor: lyricsPageForegroundColor),
 
-              playOrPauseButton(35, iconColor: Colors.grey.shade50),
+              playOrPauseButton(35, iconColor: lyricsPageForegroundColor),
 
-              skip2NextButton(25, iconColor: Colors.grey.shade50),
+              skip2NextButton(25, iconColor: lyricsPageForegroundColor),
 
               Spacer(),
-              showPlayQueueButton(25, iconColor: Colors.grey.shade50),
+              showPlayQueueButton(25, iconColor: lyricsPageForegroundColor),
             ],
           ),
         ),
@@ -332,11 +339,14 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
               children: [
                 Spacer(),
 
-                SizedBox(width: 40, child: Speaker(color: Colors.grey.shade50)),
+                SizedBox(
+                  width: 40,
+                  child: Speaker(color: lyricsPageForegroundColor),
+                ),
                 SizedBox(
                   height: 10,
                   width: width * 0.5,
-                  child: VolumeBar(activeColor: Colors.grey.shade50),
+                  child: VolumeBar(activeColor: lyricsPageForegroundColor),
                 ),
                 SizedBox(
                   width: 40,
@@ -352,7 +362,7 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                     },
                     icon: const ImageIcon(desktopLyricsImage, size: 25),
 
-                    color: Colors.grey.shade50,
+                    color: lyricsPageForegroundColor,
                   ),
                 ),
                 Spacer(),

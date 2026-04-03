@@ -19,12 +19,12 @@ class MySheet extends StatelessWidget {
         borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
       ),
       color: displayLyricsPageNotifier.value
-          ? currentCoverArtColor
+          ? lyricsPageBackgroundColor
           : backgroundBaseColor,
       clipBehavior: .antiAlias,
       child: Container(
         color: displayLyricsPageNotifier.value
-            ? lightModePageBackgroundColor
+            ? vividModePageBackgroundColor
             : pageBackgroundColor,
         height: height ?? min(500, MediaQuery.heightOf(context) * 0.6),
         child: MediaQuery.removePadding(

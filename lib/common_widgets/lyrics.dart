@@ -419,8 +419,8 @@ class LyricLineWidget extends StatelessWidget {
                     style: TextStyle(
                       fontSize: fontSize,
                       color: isCurrent
-                          ? Colors.white
-                          : Colors.white.withAlpha(128),
+                          ? lyricsPageForegroundColor
+                          : lyricsPageForegroundColor.withAlpha(128),
                     ),
                   );
                 },
@@ -530,7 +530,7 @@ class KaraokeTextState extends State<KaraokeText>
     final style = TextStyle(
       fontSize: widget.fontSize,
       fontWeight: isMobile ? FontWeight.bold : null,
-      color: Colors.white,
+      color: widget.isDesktopLyrics ? Colors.white : lyricsPageForegroundColor,
     );
 
     return WidgetSpan(
@@ -560,9 +560,15 @@ class KaraokeTextState extends State<KaraokeText>
               final p = progress.clamp(0.0, 1.0);
               return LinearGradient(
                 colors: [
-                  Colors.white,
-                  Colors.white,
-                  Colors.white.withAlpha(128),
+                  widget.isDesktopLyrics
+                      ? Colors.white
+                      : lyricsPageForegroundColor,
+                  widget.isDesktopLyrics
+                      ? Colors.white
+                      : lyricsPageForegroundColor,
+                  widget.isDesktopLyrics
+                      ? Colors.white
+                      : lyricsPageForegroundColor.withAlpha(128),
                 ],
                 stops: [0, p, p],
               ).createShader(Rect.fromLTWH(0, 0, bounds.width, bounds.height));

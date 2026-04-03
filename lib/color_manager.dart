@@ -4,56 +4,92 @@ import 'package:particle_music/l10n/generated/app_localizations.dart';
 
 ColorManager colorManager = ColorManager();
 
-const Color lightModePageBackgroundColor = Color.fromARGB(100, 245, 245, 245);
-const Color lightModeIconColor = Colors.black;
-const Color lightModeTextColor = Color.fromARGB(255, 30, 30, 30);
-const Color lightModeHighlightTextColor = Colors.black;
-const Color lightModeSwitchColor = Colors.black87;
-const Color lightModePlayBarColor = Color.fromARGB(100, 245, 245, 245);
-const Color lightModePanelColor = Color.fromARGB(100, 245, 245, 245);
-const Color lightModeSidebarColor = Color.fromARGB(100, 238, 238, 238);
-const Color lightModeBottomColor = Color.fromARGB(100, 250, 250, 250);
-const Color lightModeSeekBarColor = Colors.black;
-const Color lightModeVolumeBarColor = Colors.black;
+final Color vividModePageBackgroundColor = Color.fromARGB(100, 245, 245, 245);
+final Color vividModeIconColor = Colors.black;
+final Color vividModeTextColor = Colors.grey.shade900;
+final Color vividModeHighlightTextColor = Colors.black;
+final Color vividModeSwitchColor = Colors.black87;
+final Color vividModePlayBarColor = Color.fromARGB(100, 245, 245, 245);
+final Color vividModePanelColor = Color.fromARGB(100, 245, 245, 245);
+final Color vividModeSidebarColor = Color.fromARGB(100, 238, 238, 238);
+final Color vividModeBottomColor = Color.fromARGB(100, 250, 250, 250);
+final Color vividModeSeekBarColor = Colors.black;
+final Color vividModeVolumeBarColor = Colors.black;
 
-const Color darkModePageBackgroundColor = Color.fromARGB(255, 50, 50, 50);
-const Color darkModeCommonColor = Color.fromARGB(255, 97, 97, 97);
-const Color darkModeIconColor = Color.fromARGB(255, 195, 195, 195);
-const Color darkModeTextColor = Color.fromARGB(255, 195, 195, 195);
-const Color darkModeHighlightTextColor = Color.fromARGB(255, 230, 230, 230);
-const Color darkModeSwitchColor = Color.fromARGB(221, 0, 0, 0);
-const Color darkModePlayerColor = Color.fromARGB(128, 30, 30, 30);
-const Color darkModePanelColor = Color.fromARGB(255, 50, 50, 50);
-const Color darkModeSidebarColor = Color.fromARGB(255, 55, 55, 55);
-const Color darkModeBottomColor = Color.fromARGB(255, 60, 60, 60);
-const Color darkModeSearchFieldColor = darkModeCommonColor;
-const Color darkModeButtonColor = darkModeCommonColor;
-const Color darkModeDividerColor = darkModeCommonColor;
-const Color darkModeSelectedItemColor = darkModeCommonColor;
-const Color darkModeSeekBarColor = Color.fromARGB(255, 195, 195, 195);
-const Color darkModeVolumeBarColor = Color.fromARGB(255, 195, 195, 195);
+final Color lightModePageBackgroundColor = Colors.grey.shade200;
+final Color lightModeIconColor = Colors.black;
+final Color lightModeTextColor = Colors.grey.shade900;
+final Color lightModeHighlightTextColor = Colors.black;
+final Color lightModeSwitchColor = Colors.black87;
+final Color lightModePlayBarColor = Colors.white70;
+final Color lightModePanelColor = Colors.grey.shade100;
+final Color lightModeSidebarColor = Colors.grey.shade200;
+final Color lightModeBottomColor = Colors.grey.shade50;
+final Color lightModeSearchFieldColor = Colors.white;
+final Color lightModeButtonColor = Colors.white70;
+final Color lightModeDividerColor = Colors.grey;
+final Color lightModeSelectedItemColor = Colors.white;
+final Color lightModeSeekBarColor = Colors.black;
+final Color lightModeVolumeBarColor = Colors.black;
+final Color lightModeLyricsPageBackgroundColor = Colors.grey.shade200;
+final Color lightModeLyricsPageForegroundColor = Colors.grey.shade900;
+final Color lightModeLyricsPageHighlightColor = Colors.black;
+
+final Color darkModePageBackgroundColor = Color.fromARGB(255, 50, 50, 50);
+final Color darkModeIconColor = Colors.grey.shade400;
+final Color darkModeTextColor = Colors.grey.shade400;
+final Color darkModeHighlightTextColor = Color.fromARGB(255, 230, 230, 230);
+final Color darkModeSwitchColor = Color.fromARGB(221, 0, 0, 0);
+final Color darkModePlayerColor = Color.fromARGB(128, 30, 30, 30);
+final Color darkModePanelColor = Color.fromARGB(255, 50, 50, 50);
+final Color darkModeSidebarColor = Color.fromARGB(255, 55, 55, 55);
+final Color darkModeBottomColor = Color.fromARGB(255, 60, 60, 60);
+final Color darkModeSearchFieldColor = Colors.grey.shade700;
+final Color darkModeButtonColor = Colors.grey.shade700;
+final Color darkModeDividerColor = Colors.grey.shade700;
+final Color darkModeSelectedItemColor = Colors.grey.shade700;
+final Color darkModeSeekBarColor = Colors.grey.shade400;
+final Color darkModeVolumeBarColor = Colors.grey.shade400;
+final Color darkModeLyricsPageBackgroundColor = Color.fromARGB(255, 50, 50, 50);
+final Color darkModeLyricsPageForegroundColor = Colors.grey.shade300;
+final Color darkModeLyricsPageHighlightColor = Colors.grey.shade200;
 
 class ColorManager {
   late List<CustomColor> customColors;
 
   ColorManager() {
     customColors = [
-      CustomColor('customPageBackgroundColor', Colors.grey.shade200, type: 1),
-      CustomColor('customIconColor', Colors.black),
-      CustomColor('customTextColor', Colors.grey.shade900),
-      CustomColor('customHighlightTextColor', Colors.black),
-      CustomColor('customSwitchColor', Colors.black87),
-      CustomColor('customPlayBarColor', Colors.white70, type: 1),
-      CustomColor('customPanelColor', Colors.grey.shade100),
-      CustomColor('customSidebarColor', Colors.grey.shade200),
-      CustomColor('customBottomColor', Colors.grey.shade50),
-      CustomColor('customSearchFieldColor', Colors.white),
-      CustomColor('customButtonColor', Colors.white70),
-      CustomColor('customDividerColor', Colors.grey),
-      CustomColor('customSelectedItemColor', Colors.white),
-      CustomColor('customSeekBarColor', Colors.black),
-      CustomColor('customVolumeBarColor', Colors.black, type: 2),
-      CustomColor('lyricsBackgroundColor', Colors.black),
+      CustomColor(
+        'customPageBackgroundColor',
+        lightModePageBackgroundColor,
+        type: 1,
+      ),
+      CustomColor('customIconColor', lightModeIconColor),
+      CustomColor('customTextColor', lightModeTextColor),
+      CustomColor('customHighlightTextColor', lightModeHighlightTextColor),
+      CustomColor('customSwitchColor', lightModeSwitchColor),
+      CustomColor('customPlayBarColor', lightModePlayBarColor, type: 1),
+      CustomColor('customPanelColor', lightModePanelColor),
+      CustomColor('customSidebarColor', lightModeSidebarColor),
+      CustomColor('customBottomColor', lightModeBottomColor),
+      CustomColor('customSearchFieldColor', lightModeSearchFieldColor),
+      CustomColor('customButtonColor', lightModeButtonColor),
+      CustomColor('customDividerColor', lightModeDividerColor),
+      CustomColor('customSelectedItemColor', lightModeSelectedItemColor),
+      CustomColor('customSeekBarColor', lightModeSeekBarColor),
+      CustomColor('customVolumeBarColor', lightModeVolumeBarColor, type: 2),
+      CustomColor(
+        'lyricsPageBackgroundColor',
+        lightModeLyricsPageBackgroundColor,
+      ),
+      CustomColor(
+        'lyricsPageForegroundColor',
+        lightModeLyricsPageForegroundColor,
+      ),
+      CustomColor(
+        'lyricsPageHighlightColor',
+        lightModeLyricsPageHighlightColor,
+      ),
     ];
   }
 
@@ -80,23 +116,39 @@ class ColorManager {
   }
 
   void setColor() {
-    if (enableCustomColorNotifier.value) {
-      pageBackgroundColor = getCustomColorByName('customPageBackgroundColor');
-      iconColor = getCustomColorByName('customIconColor');
-      textColor = getCustomColorByName('customTextColor');
-      highlightTextColor = getCustomColorByName('customHighlightTextColor');
-      switchColor = getCustomColorByName('customSwitchColor');
-      playBarColor = getCustomColorByName('customPlayBarColor');
-      panelColor = getCustomColorByName('customPanelColor');
-      sidebarColor = getCustomColorByName('customSidebarColor');
-      bottomColor = getCustomColorByName('customBottomColor');
-      searchFieldColor = getCustomColorByName('customSearchFieldColor');
-      buttonColor = getCustomColorByName('customButtonColor');
-      dividerColor = getCustomColorByName('customDividerColor');
-      selectedItemColor = getCustomColorByName('customSelectedItemColor');
-      seekBarColor = getCustomColorByName('customSeekBarColor');
-      volumeBarColor = getCustomColorByName('customVolumeBarColor');
-    } else if (darkModeNotifier.value) {
+    if (mainPageThemeNotifier.value == 0) {
+      pageBackgroundColor = vividModePageBackgroundColor;
+      iconColor = vividModeIconColor;
+      textColor = vividModeTextColor;
+      highlightTextColor = vividModeHighlightTextColor;
+      switchColor = vividModeSwitchColor;
+      playBarColor = vividModePlayBarColor;
+      panelColor = vividModePanelColor;
+      sidebarColor = vividModeSidebarColor;
+      bottomColor = vividModeBottomColor;
+      searchFieldColor = backgroundBaseColor.withAlpha(75);
+      buttonColor = backgroundBaseColor.withAlpha(75);
+      dividerColor = backgroundBaseColor;
+      selectedItemColor = backgroundBaseColor.withAlpha(75);
+      seekBarColor = vividModeSeekBarColor;
+      volumeBarColor = vividModeVolumeBarColor;
+    } else if (mainPageThemeNotifier.value == 1) {
+      pageBackgroundColor = lightModePageBackgroundColor;
+      iconColor = lightModeIconColor;
+      textColor = lightModeTextColor;
+      highlightTextColor = lightModeHighlightTextColor;
+      switchColor = lightModeSwitchColor;
+      playBarColor = lightModePlayBarColor;
+      panelColor = lightModePanelColor;
+      sidebarColor = lightModeSidebarColor;
+      bottomColor = lightModeBottomColor;
+      searchFieldColor = lightModeSearchFieldColor;
+      buttonColor = lightModeButtonColor;
+      dividerColor = lightModeDividerColor;
+      selectedItemColor = lightModeSelectedItemColor;
+      seekBarColor = lightModeSeekBarColor;
+      volumeBarColor = lightModeVolumeBarColor;
+    } else if (mainPageThemeNotifier.value == 2) {
       pageBackgroundColor = darkModePageBackgroundColor;
       iconColor = darkModeIconColor;
       textColor = darkModeTextColor;
@@ -113,24 +165,46 @@ class ColorManager {
       seekBarColor = darkModeSeekBarColor;
       volumeBarColor = darkModeVolumeBarColor;
     } else {
-      pageBackgroundColor = lightModePageBackgroundColor;
-      iconColor = lightModeIconColor;
-      textColor = lightModeTextColor;
-      highlightTextColor = lightModeHighlightTextColor;
-      switchColor = lightModeSwitchColor;
-      playBarColor = lightModePlayBarColor;
-      panelColor = lightModePanelColor;
-      sidebarColor = lightModeSidebarColor;
-      bottomColor = lightModeBottomColor;
-      searchFieldColor = backgroundBaseColor.withAlpha(75);
-      buttonColor = backgroundBaseColor.withAlpha(75);
-      dividerColor = backgroundBaseColor;
-      selectedItemColor = backgroundBaseColor.withAlpha(75);
-      seekBarColor = lightModeSeekBarColor;
-      volumeBarColor = lightModeVolumeBarColor;
+      pageBackgroundColor = getCustomColorByName('customPageBackgroundColor');
+      iconColor = getCustomColorByName('customIconColor');
+      textColor = getCustomColorByName('customTextColor');
+      highlightTextColor = getCustomColorByName('customHighlightTextColor');
+      switchColor = getCustomColorByName('customSwitchColor');
+      playBarColor = getCustomColorByName('customPlayBarColor');
+      panelColor = getCustomColorByName('customPanelColor');
+      sidebarColor = getCustomColorByName('customSidebarColor');
+      bottomColor = getCustomColorByName('customBottomColor');
+      searchFieldColor = getCustomColorByName('customSearchFieldColor');
+      buttonColor = getCustomColorByName('customButtonColor');
+      dividerColor = getCustomColorByName('customDividerColor');
+      selectedItemColor = getCustomColorByName('customSelectedItemColor');
+      seekBarColor = getCustomColorByName('customSeekBarColor');
+      volumeBarColor = getCustomColorByName('customVolumeBarColor');
     }
 
-    lyricsBackgroundColor = getCustomColorByName('lyricsBackgroundColor');
+    if (lyricsPageThemeNotifier.value == 0) {
+      lyricsPageBackgroundColor = currentCoverArtColor;
+      lyricsPageForegroundColor = Colors.grey.shade50;
+      lyricsPageHighlightColor = Colors.white;
+    } else if (lyricsPageThemeNotifier.value == 1) {
+      lyricsPageBackgroundColor = lightModeLyricsPageBackgroundColor;
+      lyricsPageForegroundColor = lightModeLyricsPageForegroundColor;
+      lyricsPageHighlightColor = lightModeLyricsPageHighlightColor;
+    } else if (lyricsPageThemeNotifier.value == 2) {
+      lyricsPageBackgroundColor = darkModeLyricsPageBackgroundColor;
+      lyricsPageForegroundColor = darkModeLyricsPageForegroundColor;
+      lyricsPageHighlightColor = darkModeLyricsPageHighlightColor;
+    } else {
+      lyricsPageBackgroundColor = getCustomColorByName(
+        'lyricsPageBackgroundColor',
+      );
+      lyricsPageForegroundColor = getCustomColorByName(
+        'lyricsPageForegroundColor',
+      );
+      lyricsPageHighlightColor = getCustomColorByName(
+        'lyricsPageHighlightColor',
+      );
+    }
   }
 
   Map<String, String> getNameMap(AppLocalizations l10n) {
@@ -150,7 +224,9 @@ class ColorManager {
       'customSelectedItemColor': l10n.selectedItemColor,
       'customSeekBarColor': l10n.seekBarColor,
       'customVolumeBarColor': l10n.volumeBarColor,
-      'lyricsBackgroundColor': l10n.lyricsBackgroundColor,
+      'lyricsPageBackgroundColor': l10n.lyricsPageBackgroundColor,
+      'lyricsPageForegroundColor': l10n.lyricsPageForegroundColor,
+      'lyricsPageHighlightColor': l10n.lyricsPageHighlightColor,
     };
   }
 }

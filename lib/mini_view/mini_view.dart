@@ -70,7 +70,7 @@ class _MiniViewState extends State<MiniView> {
                   height: height - width,
                   child: Stack(
                     children: [
-                      Container(color: lightModePanelColor),
+                      Container(color: vividModePanelColor),
 
                       ValueListenableBuilder(
                         valueListenable: _lyricsOrPlayQueueNotifier,
@@ -381,7 +381,7 @@ class _MiniViewState extends State<MiniView> {
       left: 15,
       right: 15,
       child: SeekBar(
-        light: true,
+        color: Colors.grey.shade50,
         isMiniMode: true,
         widgetHeight: 50,
         seekBarHeight: 10,

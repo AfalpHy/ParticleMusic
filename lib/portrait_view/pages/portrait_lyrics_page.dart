@@ -111,25 +111,25 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
             fit: StackFit.expand,
             children: [
               ValueListenableBuilder(
-                valueListenable: enableCustomLyricsPageNotifier,
-                builder: (context, enableCustomLyricsPage, child) {
-                  if (enableCustomLyricsPage) {
+                valueListenable: updateColorNotifier,
+                builder: (context, value, child) {
+                  if (lyricsPageThemeNotifier.value != 0) {
                     return SizedBox.shrink();
                   }
                   return CoverArtWidget(song: currentSong);
                 },
               ),
               ValueListenableBuilder(
-                valueListenable: enableCustomLyricsPageNotifier,
-                builder: (context, enableCustomLyricsPage, child) {
-                  if (enableCustomLyricsPage) {
-                    return Container(color: lyricsBackgroundColor);
+                valueListenable: updateColorNotifier,
+                builder: (context, value, child) {
+                  if (lyricsPageThemeNotifier.value != 0) {
+                    return Container(color: lyricsPageBackgroundColor);
                   }
                   return ClipRect(
                     child: BackdropFilter(
                       filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
                       child: Container(
-                        color: currentCoverArtColor.withAlpha(180),
+                        color: lyricsPageBackgroundColor.withAlpha(180),
                       ),
                     ),
                   );
@@ -154,7 +154,7 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                                   textStyle: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 20,
-                                    color: Colors.grey.shade50,
+                                    color: lyricsPageForegroundColor,
                                   ),
                                 ),
                               ),
@@ -256,7 +256,7 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
             FavoriteButton(),
             Spacer(),
             IconButton(
-              color: Colors.grey.shade50,
+              color: lyricsPageForegroundColor,
               onPressed: () {
                 lyricsFontSizeOffset += 2;
                 lyricsFontSizeOffsetChangeNotifier.value++;
@@ -265,7 +265,7 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
               icon: Icon(Icons.text_increase_rounded),
             ),
             IconButton(
-              color: Colors.grey.shade50,
+              color: lyricsPageForegroundColor,
               onPressed: () {
                 if (lyricsFontSizeOffset < -2) {
                   return;
@@ -296,17 +296,21 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                             title: Text(
                               getTitle(currentSong),
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(color: Colors.grey.shade50),
+                              style: TextStyle(
+                                color: lyricsPageForegroundColor,
+                              ),
                             ),
                             subtitle: Text(
                               "${getArtist(currentSong)} - ${getAlbum(currentSong)}",
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(color: Colors.grey.shade50),
+                              style: TextStyle(
+                                color: lyricsPageForegroundColor,
+                              ),
                             ),
                           ),
 
                           Divider(
-                            color: currentCoverArtColor,
+                            color: pageBackgroundColor,
                             thickness: 0.5,
                             height: 1,
                           ),
@@ -318,13 +322,13 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                                 ListTile(
                                   leading: ImageIcon(
                                     playlistAddImage,
-                                    color: Colors.grey.shade50,
+                                    color: lyricsPageForegroundColor,
                                   ),
                                   title: Text(
                                     l10n.add2Playlist,
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
-                                      color: Colors.grey.shade50,
+                                      color: lyricsPageForegroundColor,
                                     ),
                                   ),
                                   visualDensity: const VisualDensity(
@@ -350,14 +354,18 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                   },
                 );
               },
-              icon: Icon(Icons.more_vert, color: Colors.grey.shade50),
+              icon: Icon(Icons.more_vert, color: lyricsPageForegroundColor),
             ),
             SizedBox(width: 25),
           ],
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 30),
-          child: SeekBar(light: true, widgetHeight: 60, seekBarHeight: 40),
+          child: SeekBar(
+            color: lyricsPageForegroundColor,
+            widgetHeight: 60,
+            seekBarHeight: 40,
+          ),
         ),
 
         // -------- Play Controls --------
@@ -365,24 +373,24 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
           children: [
             SizedBox(width: 25),
 
-            playModeButton(32, iconColor: Colors.grey.shade50),
+            playModeButton(32, iconColor: lyricsPageForegroundColor),
 
             Spacer(),
 
-            skip2PreviousButton(32, iconColor: Colors.grey.shade50),
+            skip2PreviousButton(32, iconColor: lyricsPageForegroundColor),
 
             Spacer(),
 
-            playOrPauseButton(50, iconColor: Colors.grey.shade50),
+            playOrPauseButton(50, iconColor: lyricsPageForegroundColor),
 
             Spacer(),
 
-            skip2NextButton(32, iconColor: Colors.grey.shade50),
+            skip2NextButton(32, iconColor: lyricsPageForegroundColor),
 
             Spacer(),
 
             IconButton(
-              color: Colors.grey.shade50,
+              color: lyricsPageForegroundColor,
 
               icon: const ImageIcon(playQueueImage, size: 32),
 
@@ -449,7 +457,7 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
           children: [
             Spacer(),
             IconButton(
-              color: Colors.grey.shade50,
+              color: lyricsPageForegroundColor,
               icon: ValueListenableBuilder(
                 valueListenable: isPlayingNotifier,
                 builder: (_, isPlaying, _) {
@@ -492,7 +500,7 @@ class FavoriteButton extends StatelessWidget {
               },
               icon: Icon(
                 value ? Icons.favorite : Icons.favorite_outline,
-                color: value ? Colors.red : Colors.grey.shade50,
+                color: value ? Colors.red : lyricsPageForegroundColor,
                 size: size,
               ),
             );

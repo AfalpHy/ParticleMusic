@@ -4,14 +4,14 @@ import 'package:particle_music/common_widgets/full_width_track_shape.dart';
 import 'package:particle_music/utils.dart';
 
 class SeekBar extends StatefulWidget {
-  final bool light;
+  final Color? color;
   final bool isMiniMode;
   final double widgetHeight;
   final double seekBarHeight;
 
   const SeekBar({
     super.key,
-    this.light = false,
+    this.color,
     this.isMiniMode = false,
     required this.widgetHeight,
     required this.seekBarHeight,
@@ -62,7 +62,7 @@ class SeekBarState extends State<SeekBar> {
                         Duration(milliseconds: sliderValue.toInt()),
                       ),
                       style: TextStyle(
-                        color: widget.light ? Colors.grey.shade50 : null,
+                        color: widget.color,
                         fontSize: isMobile
                             ? null
                             : widget.isMiniMode
@@ -73,7 +73,7 @@ class SeekBarState extends State<SeekBar> {
                     Text(
                       formatDuration(duration),
                       style: TextStyle(
-                        color: widget.light ? Colors.grey.shade50 : null,
+                        color: widget.color,
                         fontSize: isMobile
                             ? null
                             : widget.isMiniMode
@@ -90,16 +90,12 @@ class SeekBarState extends State<SeekBar> {
                 height: widget.seekBarHeight,
                 child: SliderTheme(
                   data: SliderTheme.of(context).copyWith(
-                    thumbColor: widget.light
-                        ? Colors.grey.shade50
-                        : seekBarColor,
+                    thumbColor: widget.color ?? seekBarColor,
                     trackHeight: isDragging ? 4 : 2,
                     trackShape: const FullWidthTrackShape(),
                     thumbShape: RoundSliderThumbShape(enabledThumbRadius: 0),
                     overlayShape: SliderComponentShape.noOverlay,
-                    activeTrackColor: widget.light
-                        ? Colors.grey.shade50
-                        : seekBarColor,
+                    activeTrackColor: widget.color ?? seekBarColor,
                     inactiveTrackColor: Colors.black12,
                   ),
                   child: Padding(

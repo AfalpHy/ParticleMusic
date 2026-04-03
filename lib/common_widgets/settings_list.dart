@@ -110,7 +110,7 @@ class SettingsList extends StatelessWidget {
             paddingIfNeed(isLandscape, pauseAfterCTListTile(context, l10n)),
           ),
 
-        sliverBox(paddingIfNeed(isLandscape, themeListTile(l10n))),
+        sliverBox(paddingIfNeed(isLandscape, themeListTile(context, l10n))),
         sliverBox(paddingIfNeed(isLandscape, paletteListTile(context, l10n))),
 
         if (!isMobile)
@@ -607,36 +607,130 @@ class SettingsList extends StatelessWidget {
     );
   }
 
-  Widget themeListTile(AppLocalizations l10n) {
+  void _updateTheme() {
+    settingManager.saveSetting();
+    layersManager.updateBackground();
+    colorManager.setColor();
+    updateColorNotifier.value++;
+  }
+
+  Widget themeListTile(BuildContext context, AppLocalizations l10n) {
     return ListTile(
       leading: ImageIcon(themeImage, size: iconSize),
-
       title: Text(l10n.theme),
-      trailing: SizedBox(
-        width: 150,
-        child: ValueListenableBuilder(
-          valueListenable: darkModeNotifier,
-          builder: (context, value, child) {
-            return Row(
-              children: [
-                Spacer(),
-                Text(value ? l10n.darkMode : l10n.lightMode),
-                SizedBox(width: 10),
-                MySwitch(
-                  value: value,
-                  onToggle: (value) async {
-                    darkModeNotifier.value = value;
-                    settingManager.saveSetting();
-                    layersManager.updateBackground();
-                    colorManager.setColor();
-                    updateColorNotifier.value++;
-                  },
-                ),
-              ],
+      onTap: () async {
+        mainPageThemeNotifier.addListener(_updateTheme);
+        lyricsPageThemeNotifier.addListener(_updateTheme);
+        await showAnimationDialog(
+          context: context,
+          width: 280,
+          height: 300,
+          pageBuilder: (_) {
+            return Padding(
+              padding: const EdgeInsets.all(15.0),
+              child: CustomScrollView(
+                slivers: [
+                  sliverBox(
+                    ValueListenableBuilder(
+                      valueListenable: mainPageThemeNotifier,
+                      builder: (context, value, child) {
+                        final l10n = AppLocalizations.of(context);
+                        return Column(
+                          children: [
+                            Text(l10n.mainPageTheme, style: .new(fontSize: 16)),
+                            ListTile(
+                              dense: true,
+                              title: Text(l10n.vividMode),
+                              onTap: () {
+                                mainPageThemeNotifier.value = 0;
+                              },
+                              trailing: value == 0 ? Icon(Icons.check) : null,
+                            ),
+                            ListTile(
+                              dense: true,
+                              title: Text(l10n.lightMode),
+                              onTap: () {
+                                mainPageThemeNotifier.value = 1;
+                              },
+                              trailing: value == 1 ? Icon(Icons.check) : null,
+                            ),
+                            ListTile(
+                              dense: true,
+                              title: Text(l10n.darkMode),
+                              onTap: () {
+                                mainPageThemeNotifier.value = 2;
+                              },
+                              trailing: value == 2 ? Icon(Icons.check) : null,
+                            ),
+                            ListTile(
+                              dense: true,
+                              title: Text(l10n.customMode),
+                              onTap: () {
+                                mainPageThemeNotifier.value = 3;
+                              },
+                              trailing: value == 3 ? Icon(Icons.check) : null,
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                  sliverBox(
+                    ValueListenableBuilder(
+                      valueListenable: lyricsPageThemeNotifier,
+                      builder: (context, value, child) {
+                        final l10n = AppLocalizations.of(context);
+                        return Column(
+                          children: [
+                            Text(
+                              l10n.lyricsPageTheme,
+                              style: .new(fontSize: 16),
+                            ),
+                            ListTile(
+                              dense: true,
+                              title: Text(l10n.vividMode),
+                              onTap: () {
+                                lyricsPageThemeNotifier.value = 0;
+                              },
+                              trailing: value == 0 ? Icon(Icons.check) : null,
+                            ),
+                            ListTile(
+                              dense: true,
+                              title: Text(l10n.lightMode),
+                              onTap: () {
+                                lyricsPageThemeNotifier.value = 1;
+                              },
+                              trailing: value == 1 ? Icon(Icons.check) : null,
+                            ),
+                            ListTile(
+                              dense: true,
+                              title: Text(l10n.darkMode),
+                              onTap: () {
+                                lyricsPageThemeNotifier.value = 2;
+                              },
+                              trailing: value == 2 ? Icon(Icons.check) : null,
+                            ),
+                            ListTile(
+                              dense: true,
+                              title: Text(l10n.customMode),
+                              onTap: () {
+                                lyricsPageThemeNotifier.value = 3;
+                              },
+                              trailing: value == 3 ? Icon(Icons.check) : null,
+                            ),
+                          ],
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
             );
           },
-        ),
-      ),
+        );
+        mainPageThemeNotifier.removeListener(_updateTheme);
+        lyricsPageThemeNotifier.removeListener(_updateTheme);
+      },
     );
   }
 
@@ -747,53 +841,6 @@ class SettingsList extends StatelessWidget {
               padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
               child: ListView(
                 children: [
-                  ListTile(
-                    title: Text(l10n.customMode),
-                    trailing: SizedBox(
-                      width: 45,
-                      child: ValueListenableBuilder(
-                        valueListenable: enableCustomColorNotifier,
-                        builder: (context, enableCustomColor, child) {
-                          return MySwitch(
-                            value: enableCustomColor,
-                            onToggle: (value) {
-                              enableCustomColorNotifier.value = value;
-                              layersManager.updateBackground();
-                              colorManager.setColor();
-                              updateColorNotifier.value++;
-                              settingManager.saveSetting();
-                            },
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-
-                  ListTile(
-                    title: Text(l10n.lyricsCustomMode),
-                    trailing: SizedBox(
-                      width: 45,
-                      child: ValueListenableBuilder(
-                        valueListenable: enableCustomLyricsPageNotifier,
-                        builder: (context, enableCustomLyricsPage, child) {
-                          return MouseRegion(
-                            cursor: SystemMouseCursors.click,
-
-                            child: MySwitch(
-                              value: enableCustomLyricsPage,
-                              onToggle: (value) {
-                                enableCustomLyricsPageNotifier.value = value;
-                                colorManager.setColor();
-                                updateColorNotifier.value++;
-                                settingManager.saveSetting();
-                              },
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ),
-
                   for (final customColor in colorManager.customColors)
                     if (customColor.type == 0 ||
                         (customColor.type == 1 && isMobile) ||

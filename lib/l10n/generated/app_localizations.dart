@@ -638,12 +638,6 @@ abstract class AppLocalizations {
   /// **'Palette'**
   String get palette;
 
-  /// No description provided for @customMode.
-  ///
-  /// In en, this message translates to:
-  /// **'Main Page Custom Mode'**
-  String get customMode;
-
   /// No description provided for @backgroundColor.
   ///
   /// In en, this message translates to:
@@ -740,17 +734,23 @@ abstract class AppLocalizations {
   /// **'Volume Bar Color'**
   String get volumeBarColor;
 
-  /// No description provided for @lyricsCustomMode.
+  /// No description provided for @lyricsPageBackgroundColor.
   ///
   /// In en, this message translates to:
-  /// **'Lyrics Page Custom Mode'**
-  String get lyricsCustomMode;
+  /// **'Lyrics Page Background Color'**
+  String get lyricsPageBackgroundColor;
 
-  /// No description provided for @lyricsBackgroundColor.
+  /// No description provided for @lyricsPageForegroundColor.
   ///
   /// In en, this message translates to:
-  /// **'Lyrics Background Color'**
-  String get lyricsBackgroundColor;
+  /// **'Lyrics Page Foreground Color'**
+  String get lyricsPageForegroundColor;
+
+  /// No description provided for @lyricsPageHighlightColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics Page Highlight Color'**
+  String get lyricsPageHighlightColor;
 
   /// No description provided for @reset.
   ///
@@ -830,6 +830,24 @@ abstract class AppLocalizations {
   /// **'Theme'**
   String get theme;
 
+  /// No description provided for @mainPageTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Main Page Theme'**
+  String get mainPageTheme;
+
+  /// No description provided for @lyricsPageTheme.
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics Page Theme'**
+  String get lyricsPageTheme;
+
+  /// No description provided for @vividMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Vivid Mode'**
+  String get vividMode;
+
   /// No description provided for @lightMode.
   ///
   /// In en, this message translates to:
@@ -841,6 +859,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Dark Mode'**
   String get darkMode;
+
+  /// No description provided for @customMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Custom Mode'**
+  String get customMode;
 
   /// No description provided for @local.
   ///

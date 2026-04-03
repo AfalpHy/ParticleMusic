@@ -291,9 +291,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get palette => '调色板';
 
   @override
-  String get customMode => '主页面自定义模式';
-
-  @override
   String get backgroundColor => '背景颜色';
 
   @override
@@ -342,10 +339,13 @@ class AppLocalizationsZh extends AppLocalizations {
   String get volumeBarColor => '音量条颜色';
 
   @override
-  String get lyricsCustomMode => '歌词页面自定义模式';
+  String get lyricsPageBackgroundColor => '歌词页面背景颜色';
 
   @override
-  String get lyricsBackgroundColor => '歌词背景颜色';
+  String get lyricsPageForegroundColor => '歌词页面前景颜色';
+
+  @override
+  String get lyricsPageHighlightColor => '歌词页面重点颜色';
 
   @override
   String get reset => '重置';
@@ -387,10 +387,22 @@ class AppLocalizationsZh extends AppLocalizations {
   String get theme => '主题';
 
   @override
+  String get mainPageTheme => '主页面主题';
+
+  @override
+  String get lyricsPageTheme => '歌词页面主题';
+
+  @override
+  String get vividMode => '生动模式';
+
+  @override
   String get lightMode => '浅色模式';
 
   @override
   String get darkMode => '深色模式';
+
+  @override
+  String get customMode => '自定义模式';
 
   @override
   String get local => '本地';

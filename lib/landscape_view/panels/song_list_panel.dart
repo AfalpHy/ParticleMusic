@@ -115,7 +115,6 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                 currentSongList.length,
                 (_) => ValueNotifier(false),
               );
-
               final isFixed =
                   isMobile ||
                   !reorderable ||
@@ -127,15 +126,25 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
               return SliverReorderableList(
                 itemExtent: 60,
                 itemBuilder: (context, index) {
+                  if (isFixed) {
+                    return SizedBox(
+                      key: ValueKey(currentSongList[index]),
+                      child: songListItemWithContextMenu(
+                        context,
+                        index,
+                        currentSongList,
+                        isSelectedList,
+                      ),
+                    );
+                  }
                   return ReorderableDragStartListener(
-                    enabled: !isFixed,
                     // reusing the same widget to avoid unnecessary rebuild
-                    key: ValueKey(currentSongList[index]),
+                    key: ValueKey(songList[index]),
                     index: index,
                     child: songListItemWithContextMenu(
                       context,
                       index,
-                      currentSongList,
+                      songList,
                       isSelectedList,
                     ),
                   );

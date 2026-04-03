@@ -38,10 +38,9 @@ class LayersManager {
             ValueListenableBuilder(
               valueListenable: updateColorNotifier,
               builder: (context, value, child) {
-                if (enableCustomColorNotifier.value || darkModeNotifier.value) {
+                if (mainPageThemeNotifier.value != 0) {
                   return SizedBox.shrink();
                 }
-
                 return Container(
                   color: backgroundSong == null ? Colors.grey : null,
                   child: CoverArtWidget(song: _getBackgroundSong(layer)),
@@ -51,7 +50,7 @@ class LayersManager {
             ValueListenableBuilder(
               valueListenable: updateColorNotifier,
               builder: (context, value, child) {
-                if (enableCustomColorNotifier.value || darkModeNotifier.value) {
+                if (mainPageThemeNotifier.value != 0) {
                   return SizedBox.shrink();
                 }
                 return ClipRect(
@@ -193,7 +192,7 @@ class LayersManager {
       return;
     }
 
-    if (!enableCustomColorNotifier.value && !darkModeNotifier.value) {
+    if (mainPageThemeNotifier.value == 0) {
       Widget layer = layerStack.last;
       backgroundSong = _getBackgroundSong(layer);
       backgroundBaseColor = await computeCoverArtColor(backgroundSong);

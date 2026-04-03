@@ -152,7 +152,7 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
       valueListenable: updateColorNotifier,
       builder: (context, value, child) {
         return Material(
-          color: enableCustomColorNotifier.value | darkModeNotifier.value
+          color: mainPageThemeNotifier.value != 0
               ? isMobile
                     ? pageBackgroundColor
                     : panelColor

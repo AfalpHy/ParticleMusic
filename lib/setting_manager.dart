@@ -37,15 +37,11 @@ class SettingManager {
       localeNotifier.value = Locale(languageCode);
     }
 
-    darkModeNotifier.value =
-        json['darkMode'] as bool? ?? darkModeNotifier.value;
+    mainPageThemeNotifier.value =
+        json['mainPageTheme'] as int? ?? mainPageThemeNotifier.value;
 
-    enableCustomColorNotifier.value =
-        json['enableCustomColor'] as bool? ?? enableCustomColorNotifier.value;
-
-    enableCustomLyricsPageNotifier.value =
-        json['enableCustomLyricsPage'] as bool? ??
-        enableCustomLyricsPageNotifier.value;
+    lyricsPageThemeNotifier.value =
+        json['lyricsPageTheme'] as int? ?? lyricsPageThemeNotifier.value;
 
     colorManager.loadCustomColors(json);
 
@@ -73,9 +69,8 @@ class SettingManager {
         'language': localeNotifier.value == null
             ? ''
             : localeNotifier.value!.languageCode,
-        'darkMode': darkModeNotifier.value,
-        'enableCustomColor': enableCustomColorNotifier.value,
-        'enableCustomLyricsPage': enableCustomLyricsPageNotifier.value,
+        'mainPageTheme': mainPageThemeNotifier.value,
+        'lyricsPageTheme': lyricsPageThemeNotifier.value,
 
         ...colorManager.customColorsToMap(),
 
