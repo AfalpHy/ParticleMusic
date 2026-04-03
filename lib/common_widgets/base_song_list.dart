@@ -22,6 +22,8 @@ abstract class BaseSongListWidget extends StatefulWidget {
 
   final bool isNavidrome;
 
+  final Function()? switchCallBack;
+
   const BaseSongListWidget({
     super.key,
     this.playlist,
@@ -32,6 +34,7 @@ abstract class BaseSongListWidget extends StatefulWidget {
     this.recently,
     this.textController,
     this.isNavidrome = false,
+    this.switchCallBack,
   });
 }
 

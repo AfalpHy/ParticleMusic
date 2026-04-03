@@ -35,36 +35,23 @@ class LayersManager {
           fit: StackFit.expand,
 
           children: [
-            ValueListenableBuilder(
-              valueListenable: updateColorNotifier,
-              builder: (context, value, child) {
-                if (mainPageThemeNotifier.value != 0) {
-                  return SizedBox.shrink();
-                }
-                return Container(
-                  color: backgroundSong == null ? Colors.grey : null,
-                  child: CoverArtWidget(song: _getBackgroundSong(layer)),
-                );
-              },
-            ),
-            ValueListenableBuilder(
-              valueListenable: updateColorNotifier,
-              builder: (context, value, child) {
-                if (mainPageThemeNotifier.value != 0) {
-                  return SizedBox.shrink();
-                }
-                return ClipRect(
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-                    child: Container(
-                      color: _getBackgroundSong(
-                        layer,
-                      )?.coverArtColor?.withAlpha(180),
-                    ),
+            if (mainPageThemeNotifier.value == 0) ...[
+              Container(
+                color: backgroundSong == null ? Colors.grey : null,
+                child: CoverArtWidget(song: _getBackgroundSong(layer)),
+              ),
+
+              ClipRect(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                  child: Container(
+                    color: _getBackgroundSong(
+                      layer,
+                    )?.coverArtColor?.withAlpha(180),
                   ),
-                );
-              },
-            ),
+                ),
+              ),
+            ],
 
             Material(color: pageBackgroundColor, child: layer),
           ],

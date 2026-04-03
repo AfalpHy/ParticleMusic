@@ -24,20 +24,16 @@ class SongListPage extends BaseSongListWidget {
     super.ranking,
     super.recently,
     super.isNavidrome,
+    super.switchCallBack,
   });
 
   @override
   State<SongListPage> createState() => _SongListPageState();
 }
 
-class _SongListPageState extends BaseSongListState<SongListPage>
-    with AutomaticKeepAliveClientMixin {
-  @override
-  bool get wantKeepAlive => true;
-
+class _SongListPageState extends BaseSongListState<SongListPage> {
   @override
   Widget build(BuildContext context) {
-    super.build(context);
     return Scaffold(
       extendBodyBehindAppBar: true,
       backgroundColor: Colors.transparent,
@@ -125,7 +121,7 @@ class _SongListPageState extends BaseSongListState<SongListPage>
           ),
           Divider(thickness: 0.5, height: 1, color: dividerColor),
           ListTile(
-            leading: ImageIcon(selectImage, color: iconColor),
+            leading: ImageIcon(selectImage),
             title: Text(
               l10n.select,
               style: TextStyle(fontWeight: FontWeight.bold),
@@ -150,7 +146,7 @@ class _SongListPageState extends BaseSongListState<SongListPage>
           ),
           if (ranking == null && recently == null)
             ListTile(
-              leading: ImageIcon(sequenceImage, color: iconColor),
+              leading: ImageIcon(sequenceImage),
               title: Text(
                 l10n.sortSongs,
                 style: TextStyle(fontWeight: FontWeight.bold),
@@ -217,9 +213,23 @@ class _SongListPageState extends BaseSongListState<SongListPage>
                 );
               },
             ),
+
+          if (widget.switchCallBack != null)
+            ListTile(
+              leading: ImageIcon(navidromeImage),
+              title: Text(
+                l10n.switch_,
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+              onTap: () async {
+                Navigator.of(context).pop();
+                widget.switchCallBack?.call();
+              },
+            ),
           if (playlist != null && playlist!.isNotFavorite)
             ListTile(
-              leading: ImageIcon(deleteImage, color: iconColor),
+              leading: ImageIcon(deleteImage),
               title: Text(
                 l10n.delete,
                 style: TextStyle(fontWeight: FontWeight.bold),

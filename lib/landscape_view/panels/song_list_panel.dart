@@ -19,8 +19,6 @@ import 'package:smooth_corner/smooth_corner.dart';
 import 'package:super_context_menu/super_context_menu.dart';
 
 class SongListPanel extends BaseSongListWidget {
-  final Function()? switchCallBack;
-
   const SongListPanel({
     super.key,
     super.playlist,
@@ -31,7 +29,7 @@ class SongListPanel extends BaseSongListWidget {
     super.recently,
     required super.textController,
     super.isNavidrome,
-    this.switchCallBack,
+    super.switchCallBack,
   });
 
   @override

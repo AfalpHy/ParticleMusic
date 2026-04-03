@@ -72,7 +72,7 @@ Future<void> main() async {
               localizationsDelegates: AppLocalizations.localizationsDelegates,
               theme: ThemeData(
                 appBarTheme: AppBarTheme(
-                  titleTextStyle: TextStyle(color: textColor, fontSize: 20),
+                  titleTextStyle: TextStyle(color: textColor, fontSize: 24),
                   iconTheme: IconThemeData(color: iconColor),
                 ),
                 textTheme: Platform.isWindows
