@@ -75,8 +75,14 @@ class CoverArtWidget extends StatelessWidget {
 
   Widget musicNote() {
     return Container(
-      color: Colors.grey,
-      child: ImageIcon(musicNoteImage, size: size),
+      color: Colors.white30,
+      child: ImageIcon(
+        musicNoteImage,
+        size: size,
+        color: miniModeNotifier.value || displayLyricsPageNotifier.value
+            ? Colors.grey.shade50
+            : null,
+      ),
     );
   }
 }

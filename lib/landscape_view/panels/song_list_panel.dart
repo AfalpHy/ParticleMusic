@@ -350,7 +350,6 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                                     ? longArrowUpImage
                                     : longArrowDownImage,
                                 size: 20,
-                                color: iconColor,
                               );
                             },
                           ),
@@ -400,7 +399,6 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                                     ? longArrowUpImage
                                     : longArrowDownImage,
                                 size: 20,
-                                color: iconColor,
                               );
                             },
                           );
@@ -457,7 +455,6 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                                     ? longArrowUpImage
                                     : longArrowDownImage,
                                 size: 20,
-                                color: iconColor,
                               );
                             },
                           );

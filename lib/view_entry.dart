@@ -49,30 +49,38 @@ class ViewEntry extends StatelessWidget {
                 child: ValueListenableBuilder(
                   valueListenable: displayPlayQueuePageNotifier,
                   builder: (context, display, _) {
-                    return AnimatedSlide(
-                      offset: display ? Offset.zero : Offset(1, 0),
-                      duration: const Duration(milliseconds: 200),
-                      curve: Curves.linear,
-                      child: Material(
-                        elevation: 1,
-                        color: displayLyricsPageNotifier.value
-                            ? currentCoverArtColor
-                            : backgroundBaseColor,
-                        shape: SmoothRectangleBorder(
-                          smoothness: 1,
-                          borderRadius: BorderRadius.horizontal(
-                            left: Radius.circular(10),
+                    return ValueListenableBuilder(
+                      valueListenable: currentSongNotifier,
+                      builder: (context, value, child) {
+                        return AnimatedSlide(
+                          offset: display ? Offset.zero : Offset(1, 0),
+                          duration: const Duration(milliseconds: 200),
+                          curve: Curves.linear,
+                          child: Material(
+                            elevation: 1,
+                            color: displayLyricsPageNotifier.value
+                                ? currentCoverArtColor
+                                : backgroundBaseColor,
+                            shape: SmoothRectangleBorder(
+                              smoothness: 1,
+                              borderRadius: BorderRadius.horizontal(
+                                left: Radius.circular(10),
+                              ),
+                            ),
+                            clipBehavior: .antiAlias,
+                            child: Container(
+                              color: displayLyricsPageNotifier.value
+                                  ? lightModePanelColor
+                                  : panelColor,
+                              width: max(
+                                350,
+                                MediaQuery.widthOf(context) * 0.2,
+                              ),
+                              child: PlayQueuePage(),
+                            ),
                           ),
-                        ),
-                        clipBehavior: .antiAlias,
-                        child: Container(
-                          color: displayLyricsPageNotifier.value
-                              ? lightModePanelColor
-                              : panelColor,
-                          width: max(350, MediaQuery.widthOf(context) * 0.2),
-                          child: PlayQueuePage(),
-                        ),
-                      ),
+                        );
+                      },
                     );
                   },
                 ),

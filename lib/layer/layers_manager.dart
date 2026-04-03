@@ -42,7 +42,10 @@ class LayersManager {
                   return SizedBox.shrink();
                 }
 
-                return CoverArtWidget(song: _getBackgroundSong(layer));
+                return Container(
+                  color: backgroundSong == null ? Colors.grey : null,
+                  child: CoverArtWidget(song: _getBackgroundSong(layer)),
+                );
               },
             ),
             ValueListenableBuilder(
@@ -198,8 +201,6 @@ class LayersManager {
       buttonColor = backgroundBaseColor.withAlpha(75);
       dividerColor = backgroundBaseColor;
       selectedItemColor = backgroundBaseColor.withAlpha(75);
-    } else {
-      backgroundBaseColor = Colors.transparent;
     }
     updateColorNotifier.value++;
   }

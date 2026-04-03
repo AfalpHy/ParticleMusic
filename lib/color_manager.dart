@@ -38,13 +38,9 @@ class ColorManager {
 
   ColorManager() {
     customColors = [
-      CustomColor(
-        'customPageBackgroundColor',
-        const Color.fromARGB(255, 245, 245, 245),
-        type: 1,
-      ),
+      CustomColor('customPageBackgroundColor', Colors.grey.shade200, type: 1),
       CustomColor('customIconColor', Colors.black),
-      CustomColor('customTextColor', const Color.fromARGB(255, 30, 30, 30)),
+      CustomColor('customTextColor', Colors.grey.shade900),
       CustomColor('customHighlightTextColor', Colors.black),
       CustomColor('customSwitchColor', Colors.black87),
       CustomColor('customPlayBarColor', Colors.white70, type: 1),

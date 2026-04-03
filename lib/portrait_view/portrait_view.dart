@@ -27,6 +27,10 @@ class _PortraitViewState extends State<PortraitView> {
       canPop: false,
       onPopInvokedWithResult: (bool didPop, dynamic result) {
         if (didPop) return;
+        if (displayLyricsPageNotifier.value) {
+          displayLyricsPageNotifier.value = false;
+          return;
+        }
         if (layersManager.layerStack.length == 1) {
           SystemNavigator.pop();
         } else {

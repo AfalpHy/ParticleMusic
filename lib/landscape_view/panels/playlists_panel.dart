@@ -172,30 +172,32 @@ class _PlaylistsPanelState extends State<PlaylistsPanel> {
                                 final displaySong = playlist.getDisplaySong();
                                 return Column(
                                   children: [
-                                    InkWell(
-                                      mouseCursor: SystemMouseCursors.click,
-                                      child: displaySong == null
-                                          ? CoverArtWidget(
-                                              size: coverArtWidth,
-                                              borderRadius: 10,
-                                              song: null,
-                                            )
-                                          : ValueListenableBuilder(
-                                              valueListenable:
-                                                  displaySong.updateNotifier,
-                                              builder: (_, _, _) {
-                                                return CoverArtWidget(
-                                                  size: coverArtWidth,
-                                                  borderRadius: 10,
-                                                  song: displaySong,
-                                                );
-                                              },
-                                            ),
-                                      onTap: () {
-                                        layersManager.pushLayer(
-                                          '_${playlist.name}',
-                                        );
-                                      },
+                                    MouseRegion(
+                                      cursor: SystemMouseCursors.click,
+                                      child: GestureDetector(
+                                        child: displaySong == null
+                                            ? CoverArtWidget(
+                                                size: coverArtWidth,
+                                                borderRadius: 10,
+                                                song: null,
+                                              )
+                                            : ValueListenableBuilder(
+                                                valueListenable:
+                                                    displaySong.updateNotifier,
+                                                builder: (_, _, _) {
+                                                  return CoverArtWidget(
+                                                    size: coverArtWidth,
+                                                    borderRadius: 10,
+                                                    song: displaySong,
+                                                  );
+                                                },
+                                              ),
+                                        onTap: () {
+                                          layersManager.pushLayer(
+                                            '_${playlist.name}',
+                                          );
+                                        },
+                                      ),
                                     ),
                                     SizedBox(
                                       width: coverArtWidth - 5,

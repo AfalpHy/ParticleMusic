@@ -148,13 +148,24 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
   }
 
   Widget mainCover(double size) {
-    return Material(
-      color: Colors.transparent,
-      elevation: 5,
-      shape: SmoothRectangleBorder(
-        smoothness: 1,
-        borderRadius: BorderRadius.circular(10),
-      ),
+    return ValueListenableBuilder(
+      valueListenable: updateColorNotifier,
+      builder: (context, value, child) {
+        return Material(
+          color: enableCustomColorNotifier.value | darkModeNotifier.value
+              ? isMobile
+                    ? pageBackgroundColor
+                    : panelColor
+              : Colors.grey,
+          elevation: 5,
+          shape: SmoothRectangleBorder(
+            smoothness: 1,
+            borderRadius: BorderRadius.circular(10),
+          ),
+          clipBehavior: .antiAlias,
+          child: child,
+        );
+      },
       child: ValueListenableBuilder(
         valueListenable: currentSongListNotifier,
         builder: (_, _, _) {

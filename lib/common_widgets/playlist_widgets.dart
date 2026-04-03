@@ -36,9 +36,8 @@ class _Add2PlaylistPanelState extends State<Add2PlaylistPanel> {
           leading: SmoothClipRRect(
             smoothness: 1,
             borderRadius: BorderRadius.circular(4),
-            child: Material(
-              elevation: 1,
-              color: Colors.grey,
+            child: Container(
+              color: Colors.white30,
               child: ImageIcon(
                 addImage,
                 size: 40,

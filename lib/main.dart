@@ -72,16 +72,16 @@ Future<void> main() async {
               localizationsDelegates: AppLocalizations.localizationsDelegates,
               theme: ThemeData(
                 textTheme: Platform.isWindows
-                    ? GoogleFonts.notoSerifScTextTheme()
-                          .apply(bodyColor: textColor, displayColor: textColor)
-                          .copyWith(
-                            bodyLarge: GoogleFonts.notoSerifSc(
-                              fontWeight: .w500,
-                            ),
-                            bodyMedium: GoogleFonts.notoSerifSc(
-                              fontWeight: .w500,
-                            ),
-                          )
+                    ? GoogleFonts.notoSerifScTextTheme().copyWith(
+                        bodyLarge: GoogleFonts.notoSerifSc(
+                          color: textColor,
+                          fontWeight: .w500,
+                        ),
+                        bodyMedium: GoogleFonts.notoSerifSc(
+                          color: textColor,
+                          fontWeight: .w500,
+                        ),
+                      )
                     : TextTheme(
                         bodyLarge: TextStyle(color: textColor),
                         bodyMedium: TextStyle(color: textColor),

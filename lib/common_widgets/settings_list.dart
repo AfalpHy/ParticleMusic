@@ -758,6 +758,7 @@ class SettingsList extends StatelessWidget {
                             value: enableCustomColor,
                             onToggle: (value) {
                               enableCustomColorNotifier.value = value;
+                              layersManager.updateBackground();
                               colorManager.setColor();
                               updateColorNotifier.value++;
                               settingManager.saveSetting();

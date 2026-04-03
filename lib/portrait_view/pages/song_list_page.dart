@@ -54,6 +54,7 @@ class _SongListPageState extends BaseSongListState<SongListPage>
   PreferredSizeWidget searchAndMore(BuildContext context) {
     return AppBar(
       automaticallyImplyLeading: false,
+      iconTheme: IconThemeData(color: iconColor),
       backgroundColor: Colors.transparent,
       scrolledUnderElevation: 0,
       actions: [
