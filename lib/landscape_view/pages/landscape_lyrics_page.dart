@@ -270,7 +270,7 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
               textStyle: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 20,
-                color: lyricsPageForegroundColor,
+                color: lyricsPageHighlightColor,
               ),
             ),
           ),

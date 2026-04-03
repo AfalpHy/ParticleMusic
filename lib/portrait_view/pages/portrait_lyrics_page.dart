@@ -154,7 +154,7 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                                   textStyle: TextStyle(
                                     fontWeight: FontWeight.bold,
                                     fontSize: 20,
-                                    color: lyricsPageForegroundColor,
+                                    color: lyricsPageHighlightColor,
                                   ),
                                 ),
                               ),
@@ -169,7 +169,7 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                                   maxLines: 1,
                                   textStyle: TextStyle(
                                     fontSize: 14,
-                                    color: Colors.grey.shade100,
+                                    color: lyricsPageForegroundColor,
                                   ),
                                 ),
                               ),
