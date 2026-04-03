@@ -452,7 +452,7 @@ class PlayQueueItemChildState extends State<PlayQueueItem> {
                     ? miniModeNotifier.value
                           ? currentCoverArtColor.withAlpha(75)
                           : displayLyricsPageNotifier.value
-                          ? lyricsPageBackgroundColor.withAlpha(75)
+                          ? lyricsPageSelectedItemColor
                           : selectedItemColor
                     : Colors.transparent,
                 child: child,

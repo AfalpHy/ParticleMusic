@@ -114,6 +114,9 @@ late Color volumeBarColor;
 late Color lyricsPageBackgroundColor;
 late Color lyricsPageForegroundColor;
 late Color lyricsPageHighlightColor;
+late Color lyricsPageDividerColor;
+late Color lyricsPageButtonColor;
+late Color lyricsPageSelectedItemColor;
 
 // ===================================== Images =====================================
 

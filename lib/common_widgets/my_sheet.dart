@@ -24,7 +24,9 @@ class MySheet extends StatelessWidget {
       clipBehavior: .antiAlias,
       child: Container(
         color: displayLyricsPageNotifier.value
-            ? vividModePageBackgroundColor
+            ? lyricsPageThemeNotifier.value == 0
+                  ? vividModePageBackgroundColor
+                  : Colors.transparent
             : pageBackgroundColor,
         height: height ?? min(500, MediaQuery.heightOf(context) * 0.6),
         child: MediaQuery.removePadding(

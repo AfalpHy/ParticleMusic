@@ -348,6 +348,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get lyricsPageHighlightColor => '歌词页面重点颜色';
 
   @override
+  String get lyricsPageButtonColor => '歌词页面按钮颜色';
+
+  @override
+  String get lyricsPageDividerColor => '歌词页面分割线颜色';
+
+  @override
+  String get lyricsPageSelectedItemColor => '歌词页面被选项颜色';
+
+  @override
   String get reset => '重置';
 
   @override

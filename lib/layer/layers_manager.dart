@@ -184,6 +184,8 @@ class LayersManager {
       buttonColor = backgroundBaseColor.withAlpha(75);
       dividerColor = backgroundBaseColor;
       selectedItemColor = backgroundBaseColor.withAlpha(75);
+    } else {
+      backgroundBaseColor = Colors.transparent;
     }
     updateColorNotifier.value++;
   }

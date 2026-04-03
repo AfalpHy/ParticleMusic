@@ -752,6 +752,24 @@ abstract class AppLocalizations {
   /// **'Lyrics Page Highlight Color'**
   String get lyricsPageHighlightColor;
 
+  /// No description provided for @lyricsPageButtonColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics Page Button Color'**
+  String get lyricsPageButtonColor;
+
+  /// No description provided for @lyricsPageDividerColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics Page Divider Color'**
+  String get lyricsPageDividerColor;
+
+  /// No description provided for @lyricsPageSelectedItemColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics Page Selected Item Color'**
+  String get lyricsPageSelectedItemColor;
+
   /// No description provided for @reset.
   ///
   /// In en, this message translates to:

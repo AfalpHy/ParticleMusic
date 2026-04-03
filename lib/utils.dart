@@ -167,13 +167,17 @@ Future<T?> showAnimationDialog<T>({
                     ),
                     color: miniModeNotifier.value
                         ? currentCoverArtColor
+                        : displayLyricsPageNotifier.value
+                        ? lyricsPageBackgroundColor
                         : backgroundBaseColor,
                     clipBehavior: .antiAliasWithSaveLayer,
                     child: Container(
                       color: miniModeNotifier.value
                           ? vividModePanelColor
                           : displayLyricsPageNotifier.value
-                          ? lyricsPageBackgroundColor
+                          ? lyricsPageThemeNotifier.value == 0
+                                ? vividModePanelColor
+                                : Colors.transparent
                           : isMobile
                           ? pageBackgroundColor
                           : panelColor,

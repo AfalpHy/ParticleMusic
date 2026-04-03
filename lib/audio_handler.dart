@@ -434,6 +434,9 @@ class MyAudioHandler extends BaseAudioHandler {
       lyricsPageBackgroundColor = currentCoverArtColor;
       lyricsPageForegroundColor = Colors.grey.shade50;
       lyricsPageHighlightColor = Colors.white;
+      lyricsPageButtonColor = currentCoverArtColor.withAlpha(75);
+      lyricsPageDividerColor = currentCoverArtColor.withAlpha(75);
+      lyricsPageSelectedItemColor = currentCoverArtColor.withAlpha(75);
     }
 
     currentSongNotifier.value = currentSong;

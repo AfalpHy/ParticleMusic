@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/landscape_view/landscape_view.dart';
 import 'package:particle_music/landscape_view/pages/play_queue_page.dart';
@@ -57,7 +58,9 @@ class ViewEntry extends StatelessWidget {
                           curve: Curves.linear,
                           child: Material(
                             elevation: 1,
-                            color: backgroundBaseColor,
+                            color: displayLyricsPageNotifier.value
+                                ? lyricsPageBackgroundColor
+                                : backgroundBaseColor,
                             shape: SmoothRectangleBorder(
                               smoothness: 1,
                               borderRadius: BorderRadius.horizontal(
@@ -67,7 +70,9 @@ class ViewEntry extends StatelessWidget {
                             clipBehavior: .antiAliasWithSaveLayer,
                             child: Container(
                               color: displayLyricsPageNotifier.value
-                                  ? lyricsPageBackgroundColor
+                                  ? lyricsPageThemeNotifier.value == 0
+                                        ? vividModePanelColor
+                                        : Colors.transparent
                                   : panelColor,
                               width: max(
                                 350,

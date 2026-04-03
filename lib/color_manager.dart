@@ -34,6 +34,9 @@ final Color lightModeVolumeBarColor = Colors.black;
 final Color lightModeLyricsPageBackgroundColor = Colors.grey.shade200;
 final Color lightModeLyricsPageForegroundColor = Colors.grey.shade900;
 final Color lightModeLyricsPageHighlightColor = Colors.black;
+final Color lightModelyricsPageButtonColor = Colors.white70;
+final Color lightModelyricsPageDividerColor = Colors.grey;
+final Color lightModelyricsPageSelectedItemColor = Colors.white;
 
 final Color darkModePageBackgroundColor = Color.fromARGB(255, 50, 50, 50);
 final Color darkModeIconColor = Colors.grey.shade400;
@@ -53,6 +56,9 @@ final Color darkModeVolumeBarColor = Colors.grey.shade400;
 final Color darkModeLyricsPageBackgroundColor = Color.fromARGB(255, 50, 50, 50);
 final Color darkModeLyricsPageForegroundColor = Colors.grey.shade300;
 final Color darkModeLyricsPageHighlightColor = Colors.grey.shade200;
+final Color darkModelyricsPageButtonColor = Colors.grey.shade700;
+final Color darkModelyricsPageDividerColor = Colors.grey.shade700;
+final Color darkModelyricsPageSelectedItemColor = Colors.grey.shade700;
 
 class ColorManager {
   late List<CustomColor> customColors;
@@ -79,16 +85,29 @@ class ColorManager {
       CustomColor('customSeekBarColor', lightModeSeekBarColor),
       CustomColor('customVolumeBarColor', lightModeVolumeBarColor, type: 2),
       CustomColor(
-        'lyricsPageBackgroundColor',
+        'customLyricsPageBackgroundColor',
         lightModeLyricsPageBackgroundColor,
       ),
       CustomColor(
-        'lyricsPageForegroundColor',
+        'customLyricsPageForegroundColor',
         lightModeLyricsPageForegroundColor,
       ),
       CustomColor(
-        'lyricsPageHighlightColor',
+        'customLyricsPageHighlightColor',
         lightModeLyricsPageHighlightColor,
+      ),
+      CustomColor(
+        'customLyricsPageButtonColor',
+        lightModelyricsPageButtonColor,
+      ),
+      CustomColor(
+        'customLyricsPageDividerColor',
+        lightModelyricsPageDividerColor,
+      ),
+      CustomColor(
+        'customLyricsPageSelectedItemColor',
+        lightModelyricsPageSelectedItemColor,
+        type: 2,
       ),
     ];
   }
@@ -186,23 +205,41 @@ class ColorManager {
       lyricsPageBackgroundColor = currentCoverArtColor;
       lyricsPageForegroundColor = Colors.grey.shade50;
       lyricsPageHighlightColor = Colors.white;
+      lyricsPageButtonColor = currentCoverArtColor.withAlpha(75);
+      lyricsPageDividerColor = currentCoverArtColor.withAlpha(75);
+      lyricsPageSelectedItemColor = currentCoverArtColor.withAlpha(75);
     } else if (lyricsPageThemeNotifier.value == 1) {
       lyricsPageBackgroundColor = lightModeLyricsPageBackgroundColor;
       lyricsPageForegroundColor = lightModeLyricsPageForegroundColor;
       lyricsPageHighlightColor = lightModeLyricsPageHighlightColor;
+      lyricsPageButtonColor = lightModelyricsPageButtonColor;
+      lyricsPageDividerColor = lightModelyricsPageDividerColor;
+      lyricsPageSelectedItemColor = lightModelyricsPageSelectedItemColor;
     } else if (lyricsPageThemeNotifier.value == 2) {
       lyricsPageBackgroundColor = darkModeLyricsPageBackgroundColor;
       lyricsPageForegroundColor = darkModeLyricsPageForegroundColor;
       lyricsPageHighlightColor = darkModeLyricsPageHighlightColor;
+      lyricsPageButtonColor = darkModelyricsPageButtonColor;
+      lyricsPageDividerColor = darkModelyricsPageDividerColor;
+      lyricsPageSelectedItemColor = darkModelyricsPageSelectedItemColor;
     } else {
       lyricsPageBackgroundColor = getCustomColorByName(
-        'lyricsPageBackgroundColor',
+        'customLyricsPageBackgroundColor',
       );
       lyricsPageForegroundColor = getCustomColorByName(
-        'lyricsPageForegroundColor',
+        'customLyricsPageForegroundColor',
       );
       lyricsPageHighlightColor = getCustomColorByName(
-        'lyricsPageHighlightColor',
+        'customLyricsPageHighlightColor',
+      );
+      lyricsPageButtonColor = getCustomColorByName(
+        'customLyricsPageButtonColor',
+      );
+      lyricsPageDividerColor = getCustomColorByName(
+        'customLyricsPageDividerColor',
+      );
+      lyricsPageSelectedItemColor = getCustomColorByName(
+        'customLyricsPageSelectedItemColor',
       );
     }
   }
@@ -224,9 +261,12 @@ class ColorManager {
       'customSelectedItemColor': l10n.selectedItemColor,
       'customSeekBarColor': l10n.seekBarColor,
       'customVolumeBarColor': l10n.volumeBarColor,
-      'lyricsPageBackgroundColor': l10n.lyricsPageBackgroundColor,
-      'lyricsPageForegroundColor': l10n.lyricsPageForegroundColor,
-      'lyricsPageHighlightColor': l10n.lyricsPageHighlightColor,
+      'customLyricsPageBackgroundColor': l10n.lyricsPageBackgroundColor,
+      'customLyricsPageForegroundColor': l10n.lyricsPageForegroundColor,
+      'customLyricsPageHighlightColor': l10n.lyricsPageHighlightColor,
+      'customLyricsPageButtonColor': l10n.lyricsPageButtonColor,
+      'customLyricsPageDividerColor': l10n.lyricsPageDividerColor,
+      'customLyricsPageSelectedItemColor': l10n.lyricsPageSelectedItemColor,
     };
   }
 }

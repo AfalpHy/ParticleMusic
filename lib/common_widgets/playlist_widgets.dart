@@ -74,7 +74,7 @@ class _Add2PlaylistPanelState extends State<Add2PlaylistPanel> {
           color: miniModeNotifier.value
               ? currentCoverArtColor
               : displayLyricsPageNotifier.value
-              ? lyricsPageBackgroundColor
+              ? lyricsPageDividerColor
               : dividerColor,
         ),
         SizedBox(height: 5),
@@ -167,9 +167,7 @@ Future<bool> showCreatePlaylistSheet(BuildContext context) async {
                 },
                 style: displayLyricsPageNotifier.value
                     ? ElevatedButton.styleFrom(
-                        backgroundColor: lyricsPageBackgroundColor.withAlpha(
-                          75,
-                        ),
+                        backgroundColor: lyricsPageButtonColor,
                       )
                     : null,
                 child: Text(l10n.confirm, style: TextStyle(color: color)),
@@ -245,7 +243,7 @@ Future<bool> showCreatePlaylistDialog(BuildContext context) async {
                   backgroundColor: miniModeNotifier.value
                       ? currentCoverArtColor.withAlpha(75)
                       : displayLyricsPageNotifier.value
-                      ? lyricsPageBackgroundColor.withAlpha(75)
+                      ? lyricsPageButtonColor
                       : null,
                 ),
                 child: Text(l10n.confirm, style: TextStyle(color: color)),
