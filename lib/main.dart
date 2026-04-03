@@ -71,6 +71,10 @@ Future<void> main() async {
               supportedLocales: AppLocalizations.supportedLocales,
               localizationsDelegates: AppLocalizations.localizationsDelegates,
               theme: ThemeData(
+                appBarTheme: AppBarTheme(
+                  titleTextStyle: TextStyle(color: textColor, fontSize: 20),
+                  iconTheme: IconThemeData(color: iconColor),
+                ),
                 textTheme: Platform.isWindows
                     ? GoogleFonts.notoSerifScTextTheme().copyWith(
                         bodyLarge: GoogleFonts.notoSerifSc(

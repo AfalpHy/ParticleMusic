@@ -35,7 +35,10 @@ class MySearchField extends StatelessWidget {
                         autofocus: true,
                         controller: textController,
                         decoration: InputDecoration(
-                          hint: Text(hintText),
+                          hint: Text(
+                            hintText,
+                            style: TextStyle(color: textColor),
+                          ),
                           prefixIcon: Icon(Icons.search),
                           suffixIcon: IconButton(
                             onPressed: () {

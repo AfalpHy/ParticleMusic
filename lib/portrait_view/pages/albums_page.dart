@@ -37,7 +37,6 @@ class AlbumsPage extends StatelessWidget {
       appBar: AppBar(
         automaticallyImplyLeading: false,
         backgroundColor: Colors.transparent,
-        iconTheme: IconThemeData(color: iconColor),
 
         scrolledUnderElevation: 0,
         title: Text(l10n.albums),
