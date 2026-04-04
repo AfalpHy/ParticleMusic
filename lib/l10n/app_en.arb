@@ -149,7 +149,7 @@
   "volumeBarColor": "Volume Bar Color",
   "lyricsPageBackgroundColor": "Lyrics Page Background Color",
   "lyricsPageForegroundColor": "Lyrics Page Foreground Color",
-  "lyricsPageHighlightColor": "Lyrics Page Highlight Color",
+  "lyricsPageHighlightTextColor": "Lyrics Page Highlight Text Color",
   "lyricsPageButtonColor": "Lyrics Page Button Color",
   "lyricsPageDividerColor": "Lyrics Page Divider Color",
   "lyricsPageSelectedItemColor": "Lyrics Page Selected Item Color",

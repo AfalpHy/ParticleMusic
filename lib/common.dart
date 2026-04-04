@@ -95,6 +95,7 @@ final lyricsPageThemeNotifier = ValueNotifier(0);
 Color currentCoverArtColor = Colors.grey;
 
 Color backgroundBaseColor = Colors.grey;
+Color lyricsPageBackgroundBaseColor = Colors.grey;
 
 late Color pageBackgroundColor;
 late Color iconColor;
@@ -113,7 +114,7 @@ late Color seekBarColor;
 late Color volumeBarColor;
 late Color lyricsPageBackgroundColor;
 late Color lyricsPageForegroundColor;
-late Color lyricsPageHighlightColor;
+late Color lyricsPageHighlightTextColor;
 late Color lyricsPageDividerColor;
 late Color lyricsPageButtonColor;
 late Color lyricsPageSelectedItemColor;

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
@@ -26,11 +27,7 @@ class _Add2PlaylistPanelState extends State<Add2PlaylistPanel> {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    final color = miniModeNotifier.value
-        ? Colors.grey.shade50
-        : displayLyricsPageNotifier.value
-        ? lyricsPageForegroundColor
-        : textColor;
+    final specificTextColor = colorManager.getSpecificTextColor();
 
     return Column(
       children: [
@@ -43,17 +40,13 @@ class _Add2PlaylistPanelState extends State<Add2PlaylistPanel> {
               child: ImageIcon(
                 addImage,
                 size: 40,
-                color: miniModeNotifier.value
-                    ? Colors.grey.shade50
-                    : displayLyricsPageNotifier.value
-                    ? lyricsPageForegroundColor
-                    : null,
+                color: colorManager.getSpecificIconColor(),
               ),
             ),
           ),
           title: Text(
             l10n.createPlaylist,
-            style: TextStyle(fontSize: 14, color: color),
+            style: TextStyle(fontSize: 14, color: specificTextColor),
           ),
           onTap: () async {
             if (isMobile) {
@@ -71,11 +64,7 @@ class _Add2PlaylistPanelState extends State<Add2PlaylistPanel> {
         Divider(
           height: 1,
           thickness: 0.5,
-          color: miniModeNotifier.value
-              ? currentCoverArtColor
-              : displayLyricsPageNotifier.value
-              ? lyricsPageDividerColor
-              : dividerColor,
+          color: colorManager.getSpecificDividerColor(),
         ),
         SizedBox(height: 5),
         Expanded(
@@ -92,7 +81,7 @@ class _Add2PlaylistPanelState extends State<Add2PlaylistPanel> {
                 ),
                 title: Text(
                   index == 0 ? l10n.favorites : playlist.name,
-                  style: TextStyle(fontSize: 14, color: color),
+                  style: TextStyle(fontSize: 14, color: specificTextColor),
                 ),
 
                 onTap: () {
@@ -122,11 +111,7 @@ Future<bool> showCreatePlaylistSheet(BuildContext context) async {
     isScrollControlled: true,
     useRootNavigator: true,
     builder: (context) {
-      final color = miniModeNotifier.value
-          ? Colors.grey.shade50
-          : displayLyricsPageNotifier.value
-          ? lyricsPageForegroundColor
-          : textColor;
+      final specificTextcolor = colorManager.getSpecificTextColor();
 
       return MySheet(
         height: 500,
@@ -140,21 +125,24 @@ Future<bool> showCreatePlaylistSheet(BuildContext context) async {
                 child: Theme(
                   data: Theme.of(context).copyWith(
                     textSelectionTheme: TextSelectionThemeData(
-                      selectionColor: color.withAlpha(50),
-                      cursorColor: color,
-                      selectionHandleColor: color,
+                      selectionColor: specificTextcolor.withAlpha(50),
+                      cursorColor: specificTextcolor,
+                      selectionHandleColor: specificTextcolor,
                     ),
                   ),
                   child: TextField(
                     controller: controller,
                     autofocus: true,
-                    style: TextStyle(color: color),
+                    style: TextStyle(color: specificTextcolor),
                     decoration: InputDecoration(
                       enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: color),
+                        borderSide: BorderSide(color: specificTextcolor),
                       ),
                       focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: color, width: 1.5),
+                        borderSide: BorderSide(
+                          color: specificTextcolor,
+                          width: 1.5,
+                        ),
                       ),
                     ),
                   ),
@@ -165,12 +153,11 @@ Future<bool> showCreatePlaylistSheet(BuildContext context) async {
                 onPressed: () {
                   Navigator.pop(context, controller.text); // close with value
                 },
-                style: displayLyricsPageNotifier.value
-                    ? ElevatedButton.styleFrom(
-                        backgroundColor: lyricsPageButtonColor,
-                      )
-                    : null,
-                child: Text(l10n.confirm, style: TextStyle(color: color)),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: colorManager.getSpecificButtonColor(),
+                  foregroundColor: specificTextcolor,
+                ),
+                child: Text(l10n.confirm),
               ),
             ],
           ),
@@ -195,11 +182,7 @@ Future<bool> showCreatePlaylistDialog(BuildContext context) async {
     width: 300,
     height: 200,
     pageBuilder: (context) {
-      final color = miniModeNotifier.value
-          ? Colors.grey.shade50
-          : displayLyricsPageNotifier.value
-          ? lyricsPageForegroundColor
-          : textColor;
+      final specificTextcolor = colorManager.getSpecificTextColor();
 
       return Padding(
         padding: const EdgeInsets.fromLTRB(30, 20, 30, 20),
@@ -208,28 +191,31 @@ Future<bool> showCreatePlaylistDialog(BuildContext context) async {
             Center(
               child: Text(
                 l10n.createPlaylist,
-                style: TextStyle(fontSize: 25, color: color),
+                style: TextStyle(fontSize: 25, color: specificTextcolor),
               ),
             ),
             SizedBox(height: 20),
             Theme(
               data: Theme.of(context).copyWith(
                 textSelectionTheme: TextSelectionThemeData(
-                  selectionColor: color.withAlpha(50),
-                  cursorColor: color,
-                  selectionHandleColor: color,
+                  selectionColor: specificTextcolor.withAlpha(50),
+                  cursorColor: specificTextcolor,
+                  selectionHandleColor: specificTextcolor,
                 ),
               ),
               child: TextField(
                 controller: controller,
                 autofocus: true,
-                style: TextStyle(fontSize: 12, color: color),
+                style: TextStyle(fontSize: 12, color: specificTextcolor),
                 decoration: InputDecoration(
                   enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: color),
+                    borderSide: BorderSide(color: specificTextcolor),
                   ),
                   focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: color, width: 1.5),
+                    borderSide: BorderSide(
+                      color: specificTextcolor,
+                      width: 1.5,
+                    ),
                   ),
                   isDense: true,
                 ),
@@ -240,13 +226,10 @@ Future<bool> showCreatePlaylistDialog(BuildContext context) async {
               child: ElevatedButton(
                 onPressed: () => Navigator.pop(context, controller.text),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: miniModeNotifier.value
-                      ? currentCoverArtColor.withAlpha(75)
-                      : displayLyricsPageNotifier.value
-                      ? lyricsPageButtonColor
-                      : null,
+                  backgroundColor: colorManager.getSpecificButtonColor(),
+                  foregroundColor: specificTextcolor,
                 ),
-                child: Text(l10n.confirm, style: TextStyle(color: color)),
+                child: Text(l10n.confirm),
               ),
             ),
           ],

@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/my_switch.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
@@ -16,7 +17,8 @@ void displayTimedPauseSetting(BuildContext context) {
     builder: (context) {
       Duration currentDuration = Duration();
       final l10n = AppLocalizations.of(context);
-
+      final specificTextColor = colorManager.getSpecificTextColor();
+      final specificButtonColor = colorManager.getSpecificButtonColor();
       return MySheet(
         height: 350,
         Center(
@@ -25,9 +27,12 @@ void displayTimedPauseSetting(BuildContext context) {
               Spacer(),
               CupertinoTheme(
                 data: CupertinoThemeData(
-                  brightness: displayLyricsPageNotifier.value
-                      ? Brightness.dark
-                      : null,
+                  textTheme: CupertinoTextThemeData(
+                    pickerTextStyle: TextStyle(
+                      color: specificTextColor,
+                      fontSize: 20,
+                    ),
+                  ),
                 ),
                 child: CupertinoTimerPicker(
                   mode: CupertinoTimerPickerMode.hms,
@@ -46,18 +51,10 @@ void displayTimedPauseSetting(BuildContext context) {
                       Navigator.pop(context);
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: displayLyricsPageNotifier.value
-                          ? pageBackgroundColor.withAlpha(75)
-                          : null,
+                      backgroundColor: specificButtonColor,
+                      foregroundColor: specificTextColor,
                     ),
-                    child: Text(
-                      l10n.cancel,
-                      style: TextStyle(
-                        color: displayLyricsPageNotifier.value
-                            ? lyricsPageForegroundColor
-                            : null,
-                      ),
-                    ),
+                    child: Text(l10n.cancel),
                   ),
                   SizedBox(width: 30),
                   ElevatedButton(
@@ -91,18 +88,10 @@ void displayTimedPauseSetting(BuildContext context) {
                       Navigator.pop(context);
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: displayLyricsPageNotifier.value
-                          ? pageBackgroundColor.withAlpha(75)
-                          : null,
+                      backgroundColor: specificButtonColor,
+                      foregroundColor: specificTextColor,
                     ),
-                    child: Text(
-                      l10n.confirm,
-                      style: TextStyle(
-                        color: displayLyricsPageNotifier.value
-                            ? lyricsPageForegroundColor
-                            : null,
-                      ),
-                    ),
+                    child: Text(l10n.confirm),
                   ),
 
                   Spacer(),
@@ -127,20 +116,20 @@ Widget sleepTimerListTile(
   bool inSetting, {
   double? iconSize,
 }) {
+  final specificTextColor = colorManager.getSpecificTextColor();
+
   return ListTile(
     leading: ImageIcon(
       timerImage,
       size: iconSize,
-      color: displayLyricsPageNotifier.value ? lyricsPageForegroundColor : null,
+      color: colorManager.getSpecificIconColor(),
     ),
 
     title: Text(
       l10n.sleepTimer,
       style: TextStyle(
         fontWeight: inSetting ? null : FontWeight.bold,
-        color: displayLyricsPageNotifier.value
-            ? lyricsPageForegroundColor
-            : null,
+        color: specificTextColor,
       ),
     ),
     trailing: SizedBox(
@@ -160,11 +149,7 @@ Widget sleepTimerListTile(
                   return value > 0 || on
                       ? Text(
                           '$hours:$minutes:$secs',
-                          style: TextStyle(
-                            color: displayLyricsPageNotifier.value
-                                ? lyricsPageForegroundColor
-                                : null,
-                          ),
+                          style: TextStyle(color: specificTextColor),
                         )
                       : SizedBox();
                 },
@@ -211,9 +196,7 @@ Widget pauseAfterCTListTile(BuildContext context, AppLocalizations l10n) {
                     Text(
                       l10n.pauseAfterCurrentTrack,
                       style: TextStyle(
-                        color: displayLyricsPageNotifier.value
-                            ? lyricsPageForegroundColor
-                            : null,
+                        color: colorManager.getSpecificTextColor(),
                       ),
                     ),
                     SizedBox(width: 10),

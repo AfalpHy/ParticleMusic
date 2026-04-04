@@ -345,7 +345,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get lyricsPageForegroundColor => '歌词页面前景颜色';
 
   @override
-  String get lyricsPageHighlightColor => '歌词页面重点颜色';
+  String get lyricsPageHighlightTextColor => '歌词页面重点文本颜色';
 
   @override
   String get lyricsPageButtonColor => '歌词页面按钮颜色';

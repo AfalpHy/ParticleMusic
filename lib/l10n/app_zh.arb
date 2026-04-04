@@ -107,7 +107,7 @@
   "volumeBarColor": "音量条颜色",
   "lyricsPageBackgroundColor": "歌词页面背景颜色",
   "lyricsPageForegroundColor": "歌词页面前景颜色",
-  "lyricsPageHighlightColor": "歌词页面重点颜色",
+  "lyricsPageHighlightTextColor": "歌词页面重点文本颜色",
   "lyricsPageButtonColor": "歌词页面按钮颜色",
   "lyricsPageDividerColor": "歌词页面分割线颜色",
   "lyricsPageSelectedItemColor": "歌词页面被选项颜色",

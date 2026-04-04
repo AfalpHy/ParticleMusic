@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common_widgets/playlist_widgets.dart';
@@ -117,11 +118,9 @@ class PlayQueuePageState extends State<PlayQueuePage> {
   }
 
   Widget topBar(AppLocalizations l10n) {
-    final color = isMiniMode
-        ? Colors.grey.shade50
-        : displayLyricsPageNotifier.value
-        ? lyricsPageForegroundColor
-        : null;
+    final specificTextColor = colorManager.getSpecificTextColor();
+    final specificIconColor = colorManager.getSpecificIconColor();
+
     return Row(
       children: [
         SizedBox(width: 15),
@@ -130,13 +129,13 @@ class PlayQueuePageState extends State<PlayQueuePage> {
           style: TextStyle(
             fontSize: isMiniMode ? 18 : 20,
             fontWeight: FontWeight.bold,
-            color: color,
+            color: specificTextColor,
           ),
         ),
         Spacer(),
 
         IconButton(
-          color: color,
+          color: specificIconColor,
           onPressed: () {
             audioHandler.reversePlayQueue();
             jumpToCurrentSong();
@@ -151,7 +150,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
           valueListenable: playModeNotifier,
           builder: (_, playMode, _) {
             return IconButton(
-              color: color,
+              color: specificIconColor,
               icon: ImageIcon(
                 playMode == 0
                     ? loopImage
@@ -196,7 +195,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
         ),
 
         IconButton(
-          color: color,
+          color: specificIconColor,
           onPressed: () {
             final position = scrollController.position;
             final maxScrollExtent = position.maxScrollExtent;
@@ -213,6 +212,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
           icon: ImageIcon(location),
         ),
         IconButton(
+          color: specificIconColor,
           onPressed: () async {
             if (await showConfirmDialog(context, l10n.clear)) {
               await audioHandler.clear();
@@ -221,7 +221,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
               displayLyricsPageNotifier.value = false;
             }
           },
-          icon: ImageIcon(deleteImage, color: color),
+          icon: ImageIcon(deleteImage),
         ),
       ],
     );
@@ -372,16 +372,9 @@ class PlayQueueItemChildState extends State<PlayQueueItem> {
 
   Widget songListTile() {
     final song = playQueue[widget.index];
-    final highlight = miniModeNotifier.value
-        ? Colors.white
-        : displayLyricsPageNotifier.value
-        ? lyricsPageHighlightColor
-        : highlightTextColor;
-    final common = miniModeNotifier.value
-        ? Colors.grey.shade50
-        : displayLyricsPageNotifier.value
-        ? lyricsPageForegroundColor
-        : null;
+    final specificTextColor = colorManager.getSpecificTextColor();
+    final specificHighlightText = colorManager.getSpecificHighlightTextColor();
+
     return ListTile(
       leading: Stack(
         children: [
@@ -416,7 +409,9 @@ class PlayQueueItemChildState extends State<PlayQueueItem> {
             getTitle(song),
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
-              color: song == currentSong ? highlight : common,
+              color: song == currentSong
+                  ? specificHighlightText
+                  : specificTextColor,
 
               fontWeight: song == currentSong ? FontWeight.bold : null,
               fontSize: 15,
@@ -427,12 +422,12 @@ class PlayQueueItemChildState extends State<PlayQueueItem> {
       subtitle: Text(
         "${getArtist(song)} - ${getAlbum(song)}",
         overflow: TextOverflow.ellipsis,
-        style: TextStyle(fontSize: 12, color: common),
+        style: TextStyle(fontSize: 12, color: specificTextColor),
       ),
       trailing: Text(
         formatDuration(getDuration(song)),
         overflow: TextOverflow.ellipsis,
-        style: TextStyle(fontSize: 12, color: common),
+        style: TextStyle(fontSize: 12, color: specificTextColor),
       ),
     );
   }
@@ -449,11 +444,7 @@ class PlayQueueItemChildState extends State<PlayQueueItem> {
             builder: (_, _, _) {
               return Material(
                 color: isSelected
-                    ? miniModeNotifier.value
-                          ? currentCoverArtColor.withAlpha(75)
-                          : displayLyricsPageNotifier.value
-                          ? lyricsPageSelectedItemColor
-                          : selectedItemColor
+                    ? colorManager.getSpecificSelectedItemColor()
                     : Colors.transparent,
                 child: child,
               );

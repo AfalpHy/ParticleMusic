@@ -746,11 +746,11 @@ abstract class AppLocalizations {
   /// **'Lyrics Page Foreground Color'**
   String get lyricsPageForegroundColor;
 
-  /// No description provided for @lyricsPageHighlightColor.
+  /// No description provided for @lyricsPageHighlightTextColor.
   ///
   /// In en, this message translates to:
-  /// **'Lyrics Page Highlight Color'**
-  String get lyricsPageHighlightColor;
+  /// **'Lyrics Page Highlight Text Color'**
+  String get lyricsPageHighlightTextColor;
 
   /// No description provided for @lyricsPageButtonColor.
   ///

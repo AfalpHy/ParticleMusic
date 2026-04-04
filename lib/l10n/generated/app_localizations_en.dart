@@ -345,7 +345,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get lyricsPageForegroundColor => 'Lyrics Page Foreground Color';
 
   @override
-  String get lyricsPageHighlightColor => 'Lyrics Page Highlight Color';
+  String get lyricsPageHighlightTextColor => 'Lyrics Page Highlight Text Color';
 
   @override
   String get lyricsPageButtonColor => 'Lyrics Page Button Color';

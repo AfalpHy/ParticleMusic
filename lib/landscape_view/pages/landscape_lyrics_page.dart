@@ -101,7 +101,7 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                 valueListenable: updateColorNotifier,
                 builder: (context, value, child) {
                   if (lyricsPageThemeNotifier.value != 0) {
-                    return Container(color: lyricsPageBackgroundColor);
+                    return SizedBox.shrink();
                   }
                   return ClipRect(
                     child: BackdropFilter(
@@ -110,90 +110,98 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                         sigmaY: pageHight * 0.03,
                       ),
                       child: Container(
-                        color: lyricsPageBackgroundColor.withAlpha(180),
+                        color: lyricsPageBackgroundBaseColor.withAlpha(180),
                       ),
                     ),
                   );
                 },
               ),
-              Row(
-                children: [
-                  Spacer(),
-                  Column(
-                    children: [
-                      SizedBox(height: pageHight * 0.1),
-                      Spacer(),
-                      CoverArtWidget(
-                        size: coverArtSize,
-                        borderRadius: coverArtSize * 0.025,
-                        song: currentSong,
-                      ),
-                      if (pageHight > 600) ...[
-                        message(coverArtSize, pageHight, currentSong),
-                        playControls(coverArtSize, pageHight, currentSong),
-                      ],
-
-                      Spacer(),
-                      SizedBox(height: pageHight * 0.05),
-                    ],
-                  ),
-                  SizedBox(width: pageWidth * 0.05),
-                  SizedBox(
-                    width: pageWidth * 0.45,
-                    child: Column(
+              Container(
+                color: lyricsPageBackgroundColor,
+                child: Row(
+                  children: [
+                    Spacer(),
+                    Column(
                       children: [
                         SizedBox(height: pageHight * 0.1),
-                        if (pageHight <= 600)
-                          message(pageWidth * 0.35, pageHight, currentSong),
-
-                        Expanded(
-                          child: ShaderMask(
-                            shaderCallback: (rect) {
-                              return LinearGradient(
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                                colors: [
-                                  Colors.transparent, // fade out at top
-                                  Colors.black, // fully visible
-                                  Colors.black, // fully visible
-                                  Colors.transparent, // fade out at bottom
-                                ],
-                                stops: [
-                                  0.0,
-                                  0.05,
-                                  0.95,
-                                  1.0,
-                                ], // adjust fade height
-                              ).createShader(rect);
-                            },
-                            blendMode: BlendMode.dstIn,
-                            // use key to force update
-                            child: ScrollConfiguration(
-                              behavior: ScrollConfiguration.of(
-                                context,
-                              ).copyWith(scrollbars: false),
-                              child: currentSong == null
-                                  ? SizedBox()
-                                  : LyricsListView(
-                                      key: ValueKey(currentSong),
-                                      expanded: isMobile ? false : true,
-                                      lyrics: currentSong.parsedLyrics!.lyrics,
-                                      isKaraoke:
-                                          currentSong.parsedLyrics!.isKaraoke,
-                                    ),
-                            ),
-                          ),
+                        Spacer(),
+                        CoverArtWidget(
+                          size: coverArtSize,
+                          borderRadius: coverArtSize * 0.025,
+                          song: currentSong,
                         ),
-
-                        if (pageHight <= 600) ...[
-                          playControls(pageWidth * 0.4, pageHight, currentSong),
-                          SizedBox(height: 20),
+                        if (pageHight > 600) ...[
+                          message(coverArtSize, pageHight, currentSong),
+                          playControls(coverArtSize, pageHight, currentSong),
                         ],
+
+                        Spacer(),
+                        SizedBox(height: pageHight * 0.05),
                       ],
                     ),
-                  ),
-                  SizedBox(width: pageWidth * 0.05),
-                ],
+                    SizedBox(width: pageWidth * 0.05),
+                    SizedBox(
+                      width: pageWidth * 0.45,
+                      child: Column(
+                        children: [
+                          SizedBox(height: pageHight * 0.1),
+                          if (pageHight <= 600)
+                            message(pageWidth * 0.35, pageHight, currentSong),
+
+                          Expanded(
+                            child: ShaderMask(
+                              shaderCallback: (rect) {
+                                return LinearGradient(
+                                  begin: Alignment.topCenter,
+                                  end: Alignment.bottomCenter,
+                                  colors: [
+                                    Colors.transparent, // fade out at top
+                                    Colors.black, // fully visible
+                                    Colors.black, // fully visible
+                                    Colors.transparent, // fade out at bottom
+                                  ],
+                                  stops: [
+                                    0.0,
+                                    0.05,
+                                    0.95,
+                                    1.0,
+                                  ], // adjust fade height
+                                ).createShader(rect);
+                              },
+                              blendMode: BlendMode.dstIn,
+                              // use key to force update
+                              child: ScrollConfiguration(
+                                behavior: ScrollConfiguration.of(
+                                  context,
+                                ).copyWith(scrollbars: false),
+                                child: currentSong == null
+                                    ? SizedBox()
+                                    : LyricsListView(
+                                        key: ValueKey(currentSong),
+                                        expanded: isMobile ? false : true,
+                                        lyrics:
+                                            currentSong.parsedLyrics!.lyrics,
+                                        isKaraoke:
+                                            currentSong.parsedLyrics!.isKaraoke,
+                                      ),
+                              ),
+                            ),
+                          ),
+
+                          if (pageHight <= 600) ...[
+                            playControls(
+                              pageWidth * 0.4,
+                              pageHight,
+                              currentSong,
+                            ),
+                            SizedBox(height: 20),
+                          ],
+                        ],
+                      ),
+                    ),
+                    SizedBox(width: pageWidth * 0.05),
+                  ],
+                ),
               ),
 
               Positioned(
@@ -270,7 +278,7 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
               textStyle: TextStyle(
                 fontWeight: FontWeight.bold,
                 fontSize: 20,
-                color: lyricsPageHighlightColor,
+                color: lyricsPageHighlightTextColor,
               ),
             ),
           ),

@@ -33,7 +33,7 @@ final Color lightModeSeekBarColor = Colors.black;
 final Color lightModeVolumeBarColor = Colors.black;
 final Color lightModeLyricsPageBackgroundColor = Colors.grey.shade200;
 final Color lightModeLyricsPageForegroundColor = Colors.grey.shade900;
-final Color lightModeLyricsPageHighlightColor = Colors.black;
+final Color lightModeLyricsPageHighlightTextColor = Colors.black;
 final Color lightModelyricsPageButtonColor = Colors.white70;
 final Color lightModelyricsPageDividerColor = Colors.grey;
 final Color lightModelyricsPageSelectedItemColor = Colors.white;
@@ -55,7 +55,7 @@ final Color darkModeSeekBarColor = Colors.grey.shade400;
 final Color darkModeVolumeBarColor = Colors.grey.shade400;
 final Color darkModeLyricsPageBackgroundColor = Color.fromARGB(255, 50, 50, 50);
 final Color darkModeLyricsPageForegroundColor = Colors.grey.shade300;
-final Color darkModeLyricsPageHighlightColor = Colors.grey.shade200;
+final Color darkModeLyricsPageHighlightTextColor = Colors.grey.shade200;
 final Color darkModelyricsPageButtonColor = Colors.grey.shade700;
 final Color darkModelyricsPageDividerColor = Colors.grey.shade700;
 final Color darkModelyricsPageSelectedItemColor = Colors.grey.shade700;
@@ -93,8 +93,8 @@ class ColorManager {
         lightModeLyricsPageForegroundColor,
       ),
       CustomColor(
-        'customLyricsPageHighlightColor',
-        lightModeLyricsPageHighlightColor,
+        'customLyricsPageHighlightTextColor',
+        lightModeLyricsPageHighlightTextColor,
       ),
       CustomColor(
         'customLyricsPageButtonColor',
@@ -201,24 +201,26 @@ class ColorManager {
       volumeBarColor = getCustomColorByName('customVolumeBarColor');
     }
 
+    lyricsPageBackgroundBaseColor = Colors.transparent;
     if (lyricsPageThemeNotifier.value == 0) {
-      lyricsPageBackgroundColor = currentCoverArtColor;
+      lyricsPageBackgroundBaseColor = currentCoverArtColor;
+      lyricsPageBackgroundColor = Colors.transparent;
       lyricsPageForegroundColor = Colors.grey.shade50;
-      lyricsPageHighlightColor = Colors.white;
-      lyricsPageButtonColor = currentCoverArtColor.withAlpha(75);
-      lyricsPageDividerColor = currentCoverArtColor.withAlpha(75);
-      lyricsPageSelectedItemColor = currentCoverArtColor.withAlpha(75);
+      lyricsPageHighlightTextColor = Colors.white;
+      lyricsPageButtonColor = Colors.white30;
+      lyricsPageDividerColor = Colors.grey.shade50;
+      lyricsPageSelectedItemColor = Colors.white30;
     } else if (lyricsPageThemeNotifier.value == 1) {
       lyricsPageBackgroundColor = lightModeLyricsPageBackgroundColor;
       lyricsPageForegroundColor = lightModeLyricsPageForegroundColor;
-      lyricsPageHighlightColor = lightModeLyricsPageHighlightColor;
+      lyricsPageHighlightTextColor = lightModeLyricsPageHighlightTextColor;
       lyricsPageButtonColor = lightModelyricsPageButtonColor;
       lyricsPageDividerColor = lightModelyricsPageDividerColor;
       lyricsPageSelectedItemColor = lightModelyricsPageSelectedItemColor;
     } else if (lyricsPageThemeNotifier.value == 2) {
       lyricsPageBackgroundColor = darkModeLyricsPageBackgroundColor;
       lyricsPageForegroundColor = darkModeLyricsPageForegroundColor;
-      lyricsPageHighlightColor = darkModeLyricsPageHighlightColor;
+      lyricsPageHighlightTextColor = darkModeLyricsPageHighlightTextColor;
       lyricsPageButtonColor = darkModelyricsPageButtonColor;
       lyricsPageDividerColor = darkModelyricsPageDividerColor;
       lyricsPageSelectedItemColor = darkModelyricsPageSelectedItemColor;
@@ -229,8 +231,8 @@ class ColorManager {
       lyricsPageForegroundColor = getCustomColorByName(
         'customLyricsPageForegroundColor',
       );
-      lyricsPageHighlightColor = getCustomColorByName(
-        'customLyricsPageHighlightColor',
+      lyricsPageHighlightTextColor = getCustomColorByName(
+        'customLyricsPageHighlightTextColor',
       );
       lyricsPageButtonColor = getCustomColorByName(
         'customLyricsPageButtonColor',
@@ -263,11 +265,77 @@ class ColorManager {
       'customVolumeBarColor': l10n.volumeBarColor,
       'customLyricsPageBackgroundColor': l10n.lyricsPageBackgroundColor,
       'customLyricsPageForegroundColor': l10n.lyricsPageForegroundColor,
-      'customLyricsPageHighlightColor': l10n.lyricsPageHighlightColor,
+      'customLyricsPageHighlightTextColor': l10n.lyricsPageHighlightTextColor,
       'customLyricsPageButtonColor': l10n.lyricsPageButtonColor,
       'customLyricsPageDividerColor': l10n.lyricsPageDividerColor,
       'customLyricsPageSelectedItemColor': l10n.lyricsPageSelectedItemColor,
     };
+  }
+
+  Color getSpecificBgBaseColor() {
+    return miniModeNotifier.value
+        ? currentCoverArtColor
+        : displayLyricsPageNotifier.value
+        ? lyricsPageBackgroundBaseColor
+        : backgroundBaseColor;
+  }
+
+  Color getSpecificBgColor() {
+    return miniModeNotifier.value
+        ? vividModePanelColor
+        : displayLyricsPageNotifier.value
+        ? lyricsPageBackgroundColor
+        : isMobile
+        ? pageBackgroundColor
+        : panelColor;
+  }
+
+  Color getSpecificTextColor() {
+    return miniModeNotifier.value
+        ? Colors.grey.shade50
+        : displayLyricsPageNotifier.value
+        ? lyricsPageForegroundColor
+        : textColor;
+  }
+
+  Color getSpecificHighlightTextColor() {
+    return miniModeNotifier.value
+        ? Colors.grey.shade50
+        : displayLyricsPageNotifier.value
+        ? lyricsPageHighlightTextColor
+        : highlightTextColor;
+  }
+
+  Color getSpecificIconColor() {
+    return miniModeNotifier.value
+        ? Colors.grey.shade50
+        : displayLyricsPageNotifier.value
+        ? lyricsPageForegroundColor
+        : iconColor;
+  }
+
+  Color getSpecificButtonColor() {
+    return miniModeNotifier.value
+        ? currentCoverArtColor.withAlpha(75)
+        : displayLyricsPageNotifier.value
+        ? lyricsPageButtonColor
+        : buttonColor;
+  }
+
+  Color getSpecificDividerColor() {
+    return miniModeNotifier.value
+        ? currentCoverArtColor
+        : displayLyricsPageNotifier.value
+        ? lyricsPageDividerColor
+        : dividerColor;
+  }
+
+  Color getSpecificSelectedItemColor() {
+    return miniModeNotifier.value
+        ? currentCoverArtColor.withAlpha(75)
+        : displayLyricsPageNotifier.value
+        ? lyricsPageSelectedItemColor
+        : selectedItemColor;
   }
 }
 

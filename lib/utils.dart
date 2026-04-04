@@ -165,22 +165,10 @@ Future<T?> showAnimationDialog<T>({
                       smoothness: 1,
                       borderRadius: BorderRadius.circular(10),
                     ),
-                    color: miniModeNotifier.value
-                        ? currentCoverArtColor
-                        : displayLyricsPageNotifier.value
-                        ? lyricsPageBackgroundColor
-                        : backgroundBaseColor,
+                    color: colorManager.getSpecificBgBaseColor(),
                     clipBehavior: .antiAliasWithSaveLayer,
                     child: Container(
-                      color: miniModeNotifier.value
-                          ? vividModePanelColor
-                          : displayLyricsPageNotifier.value
-                          ? lyricsPageThemeNotifier.value == 0
-                                ? vividModePanelColor
-                                : Colors.transparent
-                          : isMobile
-                          ? pageBackgroundColor
-                          : panelColor,
+                      color: colorManager.getSpecificBgColor(),
                       width: width,
                       height: height,
                       child: MediaQuery.removePadding(

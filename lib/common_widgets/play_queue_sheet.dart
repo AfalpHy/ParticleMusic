@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common_widgets/my_sheet.dart';
@@ -38,9 +39,9 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    final color = displayLyricsPageNotifier.value
-        ? lyricsPageForegroundColor
-        : null;
+    final specificTextColor = colorManager.getSpecificTextColor();
+    final specificIconColor = colorManager.getSpecificIconColor();
+    final specificHighlightText = colorManager.getSpecificHighlightTextColor();
 
     return MySheet(
       Column(
@@ -51,9 +52,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
             width: 50,
             height: 3,
             decoration: BoxDecoration(
-              color: displayLyricsPageNotifier.value
-                  ? lyricsPageForegroundColor
-                  : iconColor,
+              color: specificIconColor,
               borderRadius: BorderRadius.circular(10),
             ),
           ),
@@ -66,13 +65,13 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                   style: TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
-                    color: color,
+                    color: specificTextColor,
                   ),
                 ),
                 Spacer(),
 
                 IconButton(
-                  color: color,
+                  color: specificIconColor,
                   onPressed: () {
                     audioHandler.reversePlayQueue();
                     jumpToCurrentSong();
@@ -82,7 +81,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                 ),
 
                 IconButton(
-                  color: color,
+                  color: specificIconColor,
                   icon: ValueListenableBuilder(
                     valueListenable: playModeNotifier,
                     builder: (context, value, child) {
@@ -126,7 +125,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                   },
                 ),
                 IconButton(
-                  color: color,
+                  color: specificIconColor,
                   onPressed: () {
                     final position = scrollController.position;
                     final maxScrollExtent = position.maxScrollExtent;
@@ -143,7 +142,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                   icon: ImageIcon(location),
                 ),
                 IconButton(
-                  color: color,
+                  color: specificIconColor,
                   onPressed: () async {
                     if (await showConfirmDialog(context, l10n.clear)) {
                       await audioHandler.clear();
@@ -197,12 +196,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
               itemCount: playQueue.length,
               itemBuilder: (_, index) {
                 final song = playQueue[index];
-                final highlight = displayLyricsPageNotifier.value
-                    ? lyricsPageHighlightColor
-                    : highlightTextColor;
-                final common = displayLyricsPageNotifier.value
-                    ? lyricsPageForegroundColor
-                    : null;
+
                 return MediaQuery.removePadding(
                   key: ValueKey(song),
                   context: context,
@@ -225,7 +219,9 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                             fontWeight: song == currentSong
                                 ? FontWeight.bold
                                 : null,
-                            color: song == currentSong ? highlight : common,
+                            color: song == currentSong
+                                ? specificHighlightText
+                                : specificTextColor,
                           ),
                         );
                       },
@@ -233,7 +229,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                     subtitle: Text(
                       "${getArtist(song)} - ${getAlbum(song)}",
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 12, color: common),
+                      style: TextStyle(fontSize: 12, color: specificTextColor),
                     ),
                     visualDensity: VisualDensity(vertical: -4),
                     onTap: () async {
@@ -243,9 +239,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                     },
 
                     trailing: IconButton(
-                      color: displayLyricsPageNotifier.value
-                          ? lyricsPageForegroundColor
-                          : null,
+                      color: specificIconColor,
 
                       onPressed: () async {
                         audioHandler.delete(index);

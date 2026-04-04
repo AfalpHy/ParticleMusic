@@ -58,9 +58,7 @@ class ViewEntry extends StatelessWidget {
                           curve: Curves.linear,
                           child: Material(
                             elevation: 1,
-                            color: displayLyricsPageNotifier.value
-                                ? lyricsPageBackgroundColor
-                                : backgroundBaseColor,
+                            color: colorManager.getSpecificBgBaseColor(),
                             shape: SmoothRectangleBorder(
                               smoothness: 1,
                               borderRadius: BorderRadius.horizontal(
@@ -69,11 +67,7 @@ class ViewEntry extends StatelessWidget {
                             ),
                             clipBehavior: .antiAliasWithSaveLayer,
                             child: Container(
-                              color: displayLyricsPageNotifier.value
-                                  ? lyricsPageThemeNotifier.value == 0
-                                        ? vividModePanelColor
-                                        : Colors.transparent
-                                  : panelColor,
+                              color: colorManager.getSpecificBgColor(),
                               width: max(
                                 350,
                                 MediaQuery.widthOf(context) * 0.2,

@@ -108,6 +108,8 @@ class SongListTile extends StatelessWidget {
             return MySheet(
               Column(
                 children: [
+                  SizedBox(height: 5),
+
                   ListTile(
                     leading: CoverArtWidget(
                       size: 50,
@@ -124,7 +126,9 @@ class SongListTile extends StatelessWidget {
                     ),
                   ),
 
+                  SizedBox(height: 5),
                   Divider(color: dividerColor, thickness: 0.5, height: 1),
+                  SizedBox(height: 5),
 
                   Expanded(
                     child: ListView(
