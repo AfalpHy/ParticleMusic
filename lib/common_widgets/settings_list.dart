@@ -778,12 +778,12 @@ class SettingsList extends StatelessWidget {
                             ColorPickerType.accent: false,
                             ColorPickerType.primary: false,
                           },
-                          width: isMobile ? 20 : 30,
-                          height: isMobile ? 20 : 30,
+                          width: isMobile ? 25 : 30,
+                          height: isMobile ? 25 : 30,
                           enableOpacity: true,
                           opacityTrackHeight: 10,
                           opacityThumbRadius: 12,
-                          opacityTrackWidth: isMobile ? 260 : 360,
+                          opacityTrackWidth: isMobile ? 310 : 360,
                           wheelDiameter: isMobile ? 160 : 200,
                           onColorChanged: (color) {
                             colorNotifier.value = color;
