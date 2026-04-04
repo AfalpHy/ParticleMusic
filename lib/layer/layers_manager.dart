@@ -6,6 +6,7 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/layer/artists_albums_layer.dart';
 import 'package:particle_music/layer/folders_layer.dart';
+import 'package:particle_music/layer/license_layer.dart';
 import 'package:particle_music/layer/playlists_layer.dart';
 import 'package:particle_music/layer/ranking_layer.dart';
 import 'package:particle_music/layer/recently_layer.dart';

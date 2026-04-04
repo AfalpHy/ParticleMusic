@@ -332,6 +332,12 @@ abstract class AppLocalizations {
   /// **'Search Playlists'**
   String get searchPlaylists;
 
+  /// No description provided for @searchLicenses.
+  ///
+  /// In en, this message translates to:
+  /// **'Search Licenses'**
+  String get searchLicenses;
+
   /// No description provided for @ascending.
   ///
   /// In en, this message translates to:

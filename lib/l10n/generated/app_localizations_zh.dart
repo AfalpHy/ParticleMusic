@@ -138,6 +138,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get searchPlaylists => '搜索歌单';
 
   @override
+  String get searchLicenses => '搜索许可证';
+
+  @override
   String get ascending => '升序';
 
   @override
