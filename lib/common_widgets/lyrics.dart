@@ -419,7 +419,7 @@ class LyricLineWidget extends StatelessWidget {
                     style: TextStyle(
                       fontSize: fontSize,
                       color: isCurrent
-                          ? lyricsPageForegroundColor
+                          ? lyricsPageHighlightTextColor
                           : lyricsPageForegroundColor.withAlpha(128),
                     ),
                   );
@@ -530,7 +530,9 @@ class KaraokeTextState extends State<KaraokeText>
     final style = TextStyle(
       fontSize: widget.fontSize,
       fontWeight: isMobile ? FontWeight.bold : null,
-      color: widget.isDesktopLyrics ? Colors.white : lyricsPageForegroundColor,
+      color: widget.isDesktopLyrics
+          ? Colors.white
+          : lyricsPageHighlightTextColor,
     );
 
     return WidgetSpan(
@@ -562,13 +564,13 @@ class KaraokeTextState extends State<KaraokeText>
                 colors: [
                   widget.isDesktopLyrics
                       ? Colors.white
-                      : lyricsPageForegroundColor,
+                      : lyricsPageHighlightTextColor,
                   widget.isDesktopLyrics
                       ? Colors.white
-                      : lyricsPageForegroundColor,
+                      : lyricsPageHighlightTextColor,
                   widget.isDesktopLyrics
                       ? Colors.white
-                      : lyricsPageForegroundColor.withAlpha(128),
+                      : lyricsPageHighlightTextColor.withAlpha(128),
                 ],
                 stops: [0, p, p],
               ).createShader(Rect.fromLTWH(0, 0, bounds.width, bounds.height));
