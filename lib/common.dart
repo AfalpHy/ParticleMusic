@@ -22,7 +22,6 @@ late Directory tmpDir;
 
 late double mobileWidth;
 late double mobileHeight;
-late double shortestSide;
 
 final isMobile = Platform.isAndroid || Platform.isIOS;
 late bool isLandscape;

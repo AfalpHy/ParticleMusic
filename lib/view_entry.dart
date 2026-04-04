@@ -92,7 +92,6 @@ class ViewEntry extends StatelessWidget {
     if (isMobile) {
       mobileWidth = MediaQuery.widthOf(context);
       mobileHeight = MediaQuery.heightOf(context);
-      shortestSide = MediaQuery.of(context).size.shortestSide;
 
       return OrientationBuilder(
         builder: (context, orientation) {

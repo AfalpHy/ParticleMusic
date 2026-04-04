@@ -762,58 +762,68 @@ class SettingsList extends StatelessWidget {
                   child: Container(height: 35, width: 35, color: pikerColor),
                 ),
                 onTap: () {
-                  Color tmpColor = pikerColor;
+                  final colorNotifier = ValueNotifier(pikerColor);
                   showAnimationDialog(
                     context: context,
-                    height: 700,
-                    width: 500,
-                    pageBuilder: (_) => AlertDialog(
-                      title: Text(title),
-                      shape: SmoothRectangleBorder(
-                        smoothness: 1,
-                        borderRadius: BorderRadius.circular(10),
-                      ),
-                      content: SingleChildScrollView(
-                        child: ColorPicker(
+                    height: isMobile ? 380 : 430,
+                    width: isMobile ? 320 : 400,
+                    pageBuilder: (_) => Column(
+                      children: [
+                        Spacer(),
+                        ColorPicker(
                           color: pikerColor,
+                          padding: .zero,
                           pickersEnabled: const {
                             ColorPickerType.wheel: true,
                             ColorPickerType.accent: false,
                             ColorPickerType.primary: false,
                           },
-                          showColorCode: true,
-                          colorCodeHasColor: true,
+                          width: isMobile ? 20 : 30,
+                          height: isMobile ? 20 : 30,
                           enableOpacity: true,
-                          opacityTrackHeight: 15,
+                          opacityTrackHeight: 10,
+                          opacityThumbRadius: 12,
+                          opacityTrackWidth: isMobile ? 260 : 360,
+                          wheelDiameter: isMobile ? 160 : 200,
                           onColorChanged: (color) {
-                            tmpColor = color;
+                            colorNotifier.value = color;
                           },
                         ),
-                      ),
-                      actions: [
-                        ElevatedButton(
-                          onPressed: () {
-                            Navigator.pop(context);
-                          },
 
-                          child: Text(
-                            l10n.cancel,
-                            style: TextStyle(color: Colors.black),
-                          ),
-                        ),
-                        ElevatedButton(
-                          onPressed: () {
-                            customColor.value = tmpColor;
-                            colorManager.setColor();
-                            updateColorNotifier.value++;
-                            settingManager.saveSetting();
-                            Navigator.pop(context);
+                        ValueListenableBuilder(
+                          valueListenable: colorNotifier,
+                          builder: (context, value, child) {
+                            return Text(
+                              '$title: 0x${value.value32bit.toRadixString(16).toUpperCase().padLeft(8, '0')}',
+                            );
                           },
-                          child: Text(
-                            l10n.confirm,
-                            style: TextStyle(color: Colors.black),
-                          ),
                         ),
+                        SizedBox(height: 15),
+                        Row(
+                          children: [
+                            Spacer(),
+                            ElevatedButton(
+                              onPressed: () {
+                                Navigator.pop(context);
+                              },
+
+                              child: Text(l10n.cancel),
+                            ),
+                            SizedBox(width: 20),
+                            ElevatedButton(
+                              onPressed: () {
+                                customColor.value = colorNotifier.value;
+                                colorManager.setColor();
+                                updateColorNotifier.value++;
+                                settingManager.saveSetting();
+                                Navigator.pop(context);
+                              },
+                              child: Text(l10n.confirm),
+                            ),
+                            Spacer(),
+                          ],
+                        ),
+                        Spacer(),
                       ],
                     ),
                   );
