@@ -56,7 +56,14 @@ class _MyLicensePageState extends State<MyLicensePage> {
       body: Column(
         children: [
           search(context),
-          Expanded(child: _content()),
+          Expanded(
+            child: ValueListenableBuilder(
+              valueListenable: updateColorNotifier,
+              builder: (context, value, child) {
+                return _content();
+              },
+            ),
+          ),
         ],
       ),
     );
@@ -79,14 +86,20 @@ class _MyLicensePageState extends State<MyLicensePage> {
   Widget _content() {
     return Column(
       children: [
-        Text('Particle Music', style: .new(fontWeight: .bold, fontSize: 24)),
+        Text(
+          'Particle Music',
+          style: .new(
+            fontWeight: .bold,
+            fontSize: 20,
+            color: highlightTextColor,
+          ),
+        ),
         Text(versionNumber),
         SizedBox(height: 15),
         Text('© 2025-2026 AfalpHy'),
 
         SizedBox(height: 15),
         Text('Powered by Flutter'),
-        SizedBox(height: 10),
         Expanded(
           child: ValueListenableBuilder(
             valueListenable: packagesNotifier,
@@ -96,25 +109,20 @@ class _MyLicensePageState extends State<MyLicensePage> {
                 itemBuilder: (context, index) {
                   final pkg = packages[index];
 
-                  return ValueListenableBuilder(
-                    valueListenable: updateColorNotifier,
-                    builder: (context, value, child) {
-                      return ExpansionTile(
-                        title: Text(pkg),
-                        children: [
-                          SizedBox(
-                            height: 400,
-                            child: _buildLicenseDetail(pkg),
-                          ),
-                        ],
-                      );
-                    },
+                  return ExpansionTile(
+                    iconColor: iconColor,
+                    collapsedIconColor: iconColor,
+                    title: Text(pkg, style: .new(color: textColor)),
+                    children: [
+                      SizedBox(height: 300, child: _buildLicenseDetail(pkg)),
+                    ],
                   );
                 },
               );
             },
           ),
         ),
+        SizedBox(height: 70),
       ],
     );
   }
@@ -124,12 +132,8 @@ class _MyLicensePageState extends State<MyLicensePage> {
 
     return ListView.separated(
       itemCount: licenses.length,
-      separatorBuilder: (_, _) => ValueListenableBuilder(
-        valueListenable: updateColorNotifier,
-        builder: (context, value, child) {
-          return Divider(height: 1, thickness: 0.5, color: dividerColor);
-        },
-      ),
+      separatorBuilder: (_, _) =>
+          Divider(height: 1, thickness: 0.5, color: dividerColor),
       itemBuilder: (context, index) {
         final license = licenses[index];
 

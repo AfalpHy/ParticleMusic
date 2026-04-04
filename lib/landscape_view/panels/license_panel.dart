@@ -65,7 +65,14 @@ class _LicensePanelState extends State<LicensePanel> {
             textController: textController,
           ),
         ),
-        Expanded(child: _content()),
+        Expanded(
+          child: ValueListenableBuilder(
+            valueListenable: updateColorNotifier,
+            builder: (context, value, child) {
+              return _content();
+            },
+          ),
+        ),
       ],
     );
   }
@@ -73,7 +80,14 @@ class _LicensePanelState extends State<LicensePanel> {
   Widget _content() {
     return Column(
       children: [
-        Text('Particle Music', style: .new(fontWeight: .bold, fontSize: 24)),
+        Text(
+          'Particle Music',
+          style: .new(
+            fontWeight: .bold,
+            fontSize: 20,
+            color: highlightTextColor,
+          ),
+        ),
         Text(versionNumber),
         SizedBox(height: 15),
         Text('© 2025-2026 AfalpHy'),
@@ -102,20 +116,15 @@ class _LicensePanelState extends State<LicensePanel> {
                             borderRadius: .all(.circular(10)),
                           ),
                           clipBehavior: .antiAlias,
-                          child: ValueListenableBuilder(
-                            valueListenable: updateColorNotifier,
-                            builder: (context, value, child) {
-                              return ListTile(
-                                tileColor: pkg == selectedPackage
-                                    ? selectedItemColor
-                                    : null,
-                                title: Text(pkg),
-                                onTap: () {
-                                  setState(() {
-                                    selectedPackage = pkg;
-                                  });
-                                },
-                              );
+                          child: ListTile(
+                            tileColor: pkg == selectedPackage
+                                ? selectedItemColor
+                                : null,
+                            title: Text(pkg),
+                            onTap: () {
+                              setState(() {
+                                selectedPackage = pkg;
+                              });
                             },
                           ),
                         ),
@@ -124,16 +133,7 @@ class _LicensePanelState extends State<LicensePanel> {
                   ),
                 ),
 
-                ValueListenableBuilder(
-                  valueListenable: updateColorNotifier,
-                  builder: (context, value, child) {
-                    return VerticalDivider(
-                      width: 1,
-                      thickness: 0.5,
-                      color: dividerColor,
-                    );
-                  },
-                ),
+                VerticalDivider(width: 1, thickness: 0.5, color: dividerColor),
 
                 Expanded(flex: 5, child: _buildLicenseDetail()),
               ],
@@ -153,12 +153,8 @@ class _LicensePanelState extends State<LicensePanel> {
 
     return ListView.separated(
       itemCount: licenses.length,
-      separatorBuilder: (_, _) => ValueListenableBuilder(
-        valueListenable: updateColorNotifier,
-        builder: (context, value, child) {
-          return Divider(height: 1, thickness: 0.5, color: dividerColor);
-        },
-      ),
+      separatorBuilder: (_, _) =>
+          Divider(height: 1, thickness: 0.5, color: dividerColor),
       itemBuilder: (context, index) {
         final license = licenses[index];
 
