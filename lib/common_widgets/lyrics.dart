@@ -86,10 +86,7 @@ Future<void> setParsedLyrics(MyAudioMetadata song) async {
 
   if (song.isNavidrome) {
     final lyrics = await navidromeClient.getLyricsById(song.id!);
-    if (lyrics == null || lyrics == '') {
-      result.lyrics.add(LyricLine(Duration.zero, 'There are no lyrics', []));
-      return;
-    } else {
+    if (lyrics != null) {
       lines = lyrics.split(RegExp(r'[\n]'));
     }
   } else {
