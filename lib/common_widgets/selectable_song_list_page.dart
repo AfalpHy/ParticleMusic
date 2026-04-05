@@ -382,7 +382,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          ImageIcon(playnextCircleImage, color: color),
+                          Icon(Icons.navigate_next_rounded, color: color),
 
                           Text(
                             l10n.playNext,
@@ -421,7 +421,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          ImageIcon(addCircleImage, color: color),
+                          Icon(Icons.playlist_add_rounded, color: color),
 
                           Text(
                             l10n.add2Queue,
@@ -449,7 +449,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          ImageIcon(playlistAddImage, color: color),
+                          Icon(Icons.add_rounded, color: color),
 
                           Text(
                             l10n.add2Playlist,
@@ -493,7 +493,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
-                            ImageIcon(deleteImage, color: color),
+                            Icon(Icons.delete_rounded, color: color),
 
                             Text(
                               l10n.delete,

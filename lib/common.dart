@@ -120,7 +120,6 @@ late Color lyricsPageSelectedItemColor;
 
 // ===================================== Images =====================================
 
-const AssetImage addCircleImage = AssetImage('assets/images/add_circle.png');
 const AssetImage addImage = AssetImage('assets/images/add.png');
 const AssetImage albumImage = AssetImage('assets/images/album.png');
 const AssetImage arrowDownImage = AssetImage('assets/images/arrow_down.png');
@@ -163,22 +162,14 @@ const AssetImage pauseCircleImage = AssetImage(
   'assets/images/pause_circle.png',
 );
 const AssetImage pictureImage = AssetImage('assets/images/picture.png');
-
 const AssetImage playCircleFillImage = AssetImage(
   'assets/images/play_circle_fill.png',
 );
-const AssetImage playCircleImage = AssetImage('assets/images/play_circle.png');
 const AssetImage playOutlinedImage = AssetImage(
   'assets/images/play_outlined.png',
 );
 const AssetImage playQueueImage = AssetImage('assets/images/play_queue.png');
-const AssetImage playlistAddImage = AssetImage(
-  'assets/images/playlist_add.png',
-);
 const AssetImage playlistsImage = AssetImage('assets/images/playlists.png');
-const AssetImage playnextCircleImage = AssetImage(
-  'assets/images/playnext_circle.png',
-);
 const AssetImage powerOffImage = AssetImage('assets/images/power_off.png');
 const AssetImage previousButtonImage = AssetImage(
   'assets/images/previous_button.png',

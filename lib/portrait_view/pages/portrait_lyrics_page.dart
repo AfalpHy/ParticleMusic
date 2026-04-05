@@ -327,8 +327,8 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                               physics: const ClampingScrollPhysics(),
                               children: [
                                 ListTile(
-                                  leading: ImageIcon(
-                                    playlistAddImage,
+                                  leading: Icon(
+                                    Icons.add_rounded,
                                     color: lyricsPageForegroundColor,
                                   ),
                                   title: Text(
