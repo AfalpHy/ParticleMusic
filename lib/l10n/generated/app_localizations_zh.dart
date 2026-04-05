@@ -27,7 +27,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get track => '音轨编号';
 
   @override
-  String get disc => '蝶号';
+  String get disc => '碟号';
 
   @override
   String get lyrics => '歌词';

@@ -101,6 +101,7 @@ Future<void> setParsedLyrics(MyAudioMetadata song) async {
       lines = song.lyrics!.split(RegExp(r'[\n]'));
     }
   }
+  lines.removeWhere((e) => e.isEmpty);
   if (lines.isEmpty) {
     result.lyrics.add(LyricLine(Duration.zero, 'There are no lyrics', []));
     return;
