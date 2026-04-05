@@ -93,18 +93,20 @@ Future<void> setParsedLyrics(MyAudioMetadata song) async {
       lines = lyrics.split(RegExp(r'[\n]'));
     }
   } else {
-    if (song.lyrics == null) {
+    if (song.lyrics == null || song.lyrics!.isEmpty) {
       String path = song.filePath!;
       path = "${path.substring(0, path.lastIndexOf('.'))}.lrc";
       final file = File(path);
-      if (!file.existsSync()) {
-        result.lyrics.add(LyricLine(Duration.zero, 'There are no lyrics.', []));
-        return;
+      if (file.existsSync()) {
+        lines = await file.readAsLines(); // read file line by line
       }
-      lines = await file.readAsLines(); // read file line by line
     } else {
       lines = song.lyrics!.split(RegExp(r'[\n]'));
     }
+  }
+  if (lines.isEmpty) {
+    result.lyrics.add(LyricLine(Duration.zero, 'There are no lyrics', []));
+    return;
   }
 
   final lineTimeRegex = RegExp(r'^[\[<](\d{2}):(\d{2})[.:](\d{2,3})[\]>]');

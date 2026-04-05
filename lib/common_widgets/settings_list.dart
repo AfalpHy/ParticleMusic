@@ -369,84 +369,24 @@ class SettingsList extends StatelessWidget {
 
         showAnimationDialog(
           context: context,
-          height: isMobile ? 330 : 300,
-          width: 280,
+          height: isMobile ? 350 : 300,
+          width: 300,
           pageBuilder: (context) {
             return Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "${l10n.username}:",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  SizedBox(height: 5),
+                  Spacer(),
 
-                  TextField(
-                    style: TextStyle(fontSize: 12),
-                    controller: usernameTmp,
-                    decoration: InputDecoration(
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: textColor),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: textColor, width: 1.5),
-                      ),
-                      isDense: true,
-                    ),
-                  ),
+                  adaptiveTextField(context, l10n.username, usernameTmp),
+
                   SizedBox(height: 10),
 
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "${l10n.password}:",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  SizedBox(height: 5),
+                  adaptiveTextField(context, l10n.password, passwordTmp),
 
-                  TextField(
-                    style: TextStyle(fontSize: 12),
-                    controller: passwordTmp,
-
-                    decoration: InputDecoration(
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: textColor),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: textColor, width: 1.5),
-                      ),
-                      isDense: true,
-                    ),
-                  ),
                   SizedBox(height: 10),
+                  adaptiveTextField(context, 'Url', baseUrlTmp),
 
-                  Align(
-                    alignment: Alignment.centerLeft,
-                    child: Text(
-                      "Url:",
-                      style: TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                  SizedBox(height: 5),
-
-                  TextField(
-                    style: TextStyle(fontSize: 12),
-                    controller: baseUrlTmp,
-                    decoration: InputDecoration(
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: textColor),
-                      ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: textColor, width: 1.5),
-                      ),
-                      isDense: true,
-                    ),
-                  ),
                   SizedBox(height: 20),
                   Row(
                     children: [
@@ -517,6 +457,7 @@ class SettingsList extends StatelessWidget {
                       Spacer(),
                     ],
                   ),
+                  Spacer(),
                 ],
               ),
             );

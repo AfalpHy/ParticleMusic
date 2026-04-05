@@ -38,7 +38,7 @@ void showSongMetadataDialog(BuildContext context, MyAudioMetadata song) async {
 
   await showAnimationDialog(
     context: context,
-    height: isMobile ? 380 : 500,
+    height: isMobile ? 350 : 500,
     width: isMobile ? 300 : 400,
     pageBuilder: (context) {
       return Padding(
@@ -62,11 +62,11 @@ void showSongMetadataDialog(BuildContext context, MyAudioMetadata song) async {
                   _coverArt(context, song),
                   SizedBox(height: 5),
 
-                  _metadataTextField(context, l10n.title, _titleTextController),
+                  adaptiveTextField(context, l10n.title, _titleTextController),
 
                   SizedBox(height: 5),
 
-                  _metadataTextField(
+                  adaptiveTextField(
                     context,
                     l10n.artist,
                     _artistTextController,
@@ -74,15 +74,15 @@ void showSongMetadataDialog(BuildContext context, MyAudioMetadata song) async {
 
                   SizedBox(height: 5),
 
-                  _metadataTextField(context, l10n.album, _albumTextController),
+                  adaptiveTextField(context, l10n.album, _albumTextController),
 
                   SizedBox(height: 5),
 
-                  _metadataTextField(context, l10n.genre, _genreTextController),
+                  adaptiveTextField(context, l10n.genre, _genreTextController),
 
                   SizedBox(height: 5),
 
-                  _metadataTextField(
+                  adaptiveTextField(
                     context,
                     l10n.year,
                     _yearTextController,
@@ -91,7 +91,7 @@ void showSongMetadataDialog(BuildContext context, MyAudioMetadata song) async {
 
                   SizedBox(height: 5),
 
-                  _metadataTextField(
+                  adaptiveTextField(
                     context,
                     l10n.track,
                     _trackTextController,
@@ -100,7 +100,7 @@ void showSongMetadataDialog(BuildContext context, MyAudioMetadata song) async {
 
                   SizedBox(height: 5),
 
-                  _metadataTextField(
+                  adaptiveTextField(
                     context,
                     l10n.disc,
                     _discTextController,
@@ -109,7 +109,7 @@ void showSongMetadataDialog(BuildContext context, MyAudioMetadata song) async {
 
                   SizedBox(height: 5),
 
-                  _metadataTextField(
+                  adaptiveTextField(
                     context,
                     l10n.lyrics,
                     _lyricsTextController,
@@ -185,57 +185,6 @@ Widget _coverArt(BuildContext context, MyAudioMetadata song) {
           ),
         );
       },
-    ),
-  );
-}
-
-Widget _metadataTextField(
-  BuildContext context,
-  String type,
-  TextEditingController controller, {
-  bool expand = false,
-  bool onlyNumber = false,
-}) {
-  return Padding(
-    padding: EdgeInsets.symmetric(horizontal: isMobile ? 0 : 20),
-    child: Column(
-      children: [
-        Align(
-          alignment: Alignment.centerLeft,
-          child: Text('$type:', style: TextStyle(fontWeight: FontWeight.bold)),
-        ),
-
-        SizedBox(
-          height: expand ? 180 : null,
-          child: TextField(
-            keyboardType: onlyNumber ? .number : null,
-            readOnly: isMobile,
-            expands: expand,
-            maxLines: expand ? null : 1,
-            style: TextStyle(fontSize: 12),
-            controller: controller,
-            decoration: InputDecoration(
-              enabledBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: textColor),
-              ),
-              focusedBorder: OutlineInputBorder(
-                borderSide: BorderSide(color: textColor, width: 1.5),
-              ),
-              isDense: true,
-            ),
-            onTap: () {
-              if (isMobile) {
-                showTextFieldSheet(
-                  context,
-                  controller,
-                  expand: expand,
-                  onlyNumber: onlyNumber,
-                );
-              }
-            },
-          ),
-        ),
-      ],
     ),
   );
 }

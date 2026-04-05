@@ -105,6 +105,57 @@ Future<bool> showConfirmDialog(BuildContext context, String action) async {
   return result ?? false;
 }
 
+Widget adaptiveTextField(
+  BuildContext context,
+  String name,
+  TextEditingController controller, {
+  bool expand = false,
+  bool onlyNumber = false,
+}) {
+  return Padding(
+    padding: EdgeInsets.symmetric(horizontal: isMobile ? 0 : 20),
+    child: Column(
+      children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Text('$name:', style: TextStyle(fontWeight: FontWeight.bold)),
+        ),
+
+        SizedBox(
+          height: expand ? 180 : null,
+          child: TextField(
+            keyboardType: onlyNumber ? .number : null,
+            readOnly: isMobile,
+            expands: expand,
+            maxLines: expand ? null : 1,
+            style: TextStyle(fontSize: 12),
+            controller: controller,
+            decoration: InputDecoration(
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: textColor),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: textColor, width: 1.5),
+              ),
+              isDense: true,
+            ),
+            onTap: () {
+              if (isMobile) {
+                showTextFieldSheet(
+                  context,
+                  controller,
+                  expand: expand,
+                  onlyNumber: onlyNumber,
+                );
+              }
+            },
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
 Future<String> showTextFieldSheet(
   BuildContext context,
   TextEditingController controller, {
