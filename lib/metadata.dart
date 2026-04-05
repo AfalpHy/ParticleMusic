@@ -10,256 +10,290 @@ import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/utils.dart';
-import 'package:smooth_corner/smooth_corner.dart';
+
+TextEditingController _titleTextController = TextEditingController();
+TextEditingController _artistTextController = TextEditingController();
+TextEditingController _albumTextController = TextEditingController();
+TextEditingController _genreTextController = TextEditingController();
+TextEditingController _yearTextController = TextEditingController();
+TextEditingController _trackTextController = TextEditingController();
+TextEditingController _discTextController = TextEditingController();
+TextEditingController _lyricsTextController = TextEditingController();
+
+late ValueNotifier<Uint8List?> _pictureBytesNotifier;
 
 void showSongMetadataDialog(BuildContext context, MyAudioMetadata song) async {
-  final originalTitle = song.title ?? '';
-  final originalArtist = song.artist ?? '';
-  final originalAlbum = song.album ?? '';
+  _titleTextController.text = song.title ?? '';
+  _artistTextController.text = song.artist ?? '';
+  _albumTextController.text = song.album ?? '';
+  _genreTextController.text = song.genre ?? '';
+  _yearTextController.text = song.year?.toString() ?? '';
+  _trackTextController.text = song.track?.toString() ?? '';
+  _discTextController.text = song.disc?.toString() ?? '';
+  _lyricsTextController.text = song.lyrics ?? '';
 
-  final titleTextController = TextEditingController();
-  titleTextController.text = originalTitle;
-  final artistTextController = TextEditingController();
-  artistTextController.text = originalArtist;
-  final albumTextController = TextEditingController();
-  albumTextController.text = originalAlbum;
+  _pictureBytesNotifier = ValueNotifier(getPictureBytes(song));
 
-  final ValueNotifier<Uint8List?> pictureBytesNotifier = ValueNotifier(
-    getPictureBytes(song),
-  );
   final l10n = AppLocalizations.of(context);
 
-  await showDialog(
+  await showAnimationDialog(
     context: context,
-    builder: (context) {
-      return Dialog(
-        shape: SmoothRectangleBorder(
-          smoothness: 1,
-          borderRadius: BorderRadius.circular(10),
-        ),
-        child: SizedBox(
-          height: 280,
-          width: 600,
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(30, 10, 30, 20),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    Text(
-                      l10n.editMetadata,
-                      style: TextStyle(
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                      ),
-                    ),
-                    Spacer(),
+    height: isMobile ? 380 : 500,
+    width: isMobile ? 300 : 400,
+    pageBuilder: (context) {
+      return Padding(
+        padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
+        child: Column(
+          children: [
+            Text(
+              l10n.editMetadata,
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+            ),
+            Row(mainAxisAlignment: MainAxisAlignment.end, children: [Spacer()]),
+            SizedBox(height: 5),
 
-                    IconButton(
-                      icon: Icon(Icons.check_rounded),
+            Divider(thickness: 0.5, height: 1, color: dividerColor),
+            SizedBox(height: 5),
+            Expanded(
+              child: ListView(
+                children: [
+                  SizedBox(height: 5),
 
-                      onPressed: () async {
-                        if (await showConfirmDialog(
-                          context,
-                          l10n.updateMedata,
-                        )) {
-                          String? writeTitle;
-                          String? writeArtist;
-                          String? writeAlbum;
-                          Uint8List? writePictureBytes;
+                  _coverArt(context, song),
+                  SizedBox(height: 5),
 
-                          if (titleTextController.text != originalTitle) {
-                            writeTitle = titleTextController.text;
-                          }
-                          if (artistTextController.text != originalArtist) {
-                            writeArtist = artistTextController.text;
-                          }
-                          if (albumTextController.text != originalArtist) {
-                            writeAlbum = albumTextController.text;
-                          }
-                          if (pictureBytesNotifier.value !=
-                              getPictureBytes(song)) {
-                            writePictureBytes = pictureBytesNotifier.value;
-                          }
+                  _metadataTextField(context, l10n.title, _titleTextController),
 
-                          bool success = writeMetadata(
-                            path: song.filePath!,
-                            title: writeTitle,
-                            artist: writeArtist,
-                            album: writeAlbum,
-                            lyrics: null,
-                            pictureBytes: writePictureBytes,
-                          );
-                          if (success) {
-                            song.title = titleTextController.text.isNotEmpty
-                                ? titleTextController.text
-                                : null;
-                            song.artist = artistTextController.text.isNotEmpty
-                                ? artistTextController.text
-                                : null;
+                  SizedBox(height: 5),
 
-                            song.album = albumTextController.text.isNotEmpty
-                                ? albumTextController.text
-                                : null;
-                            song.pictureBytes = pictureBytesNotifier.value;
-                            song.coverArtColor = null;
+                  _metadataTextField(
+                    context,
+                    l10n.artist,
+                    _artistTextController,
+                  ),
 
-                            song.updateNotifier.value++;
-                            layersManager.updateBackground();
-                          }
-                          if (context.mounted) {
-                            showCenterMessage(
-                              context,
-                              success
-                                  ? l10n.updateSuccessfully
-                                  : l10n.updateFailed,
-                              duration: 2000,
-                            );
-                            Navigator.pop(context);
-                          }
-                        }
-                      },
-                    ),
-                  ],
-                ),
+                  SizedBox(height: 5),
 
-                Divider(thickness: 0.5, height: 1, color: dividerColor),
-                SizedBox(height: 5),
-                Expanded(
-                  child: Row(
+                  _metadataTextField(context, l10n.album, _albumTextController),
+
+                  SizedBox(height: 5),
+
+                  _metadataTextField(context, l10n.genre, _genreTextController),
+
+                  SizedBox(height: 5),
+
+                  _metadataTextField(
+                    context,
+                    l10n.year,
+                    _yearTextController,
+                    onlyNumber: true,
+                  ),
+
+                  SizedBox(height: 5),
+
+                  _metadataTextField(
+                    context,
+                    l10n.track,
+                    _trackTextController,
+                    onlyNumber: true,
+                  ),
+
+                  SizedBox(height: 5),
+
+                  _metadataTextField(
+                    context,
+                    l10n.disc,
+                    _discTextController,
+                    onlyNumber: true,
+                  ),
+
+                  SizedBox(height: 5),
+
+                  _metadataTextField(
+                    context,
+                    l10n.lyrics,
+                    _lyricsTextController,
+                    expand: true,
+                  ),
+                  SizedBox(height: 15),
+
+                  Row(
                     children: [
-                      ValueListenableBuilder(
-                        valueListenable: pictureBytesNotifier,
-                        builder: (context, pictureBytes, child) {
-                          return Tooltip(
-                            message: l10n.replacePicture,
-                            child: MouseRegion(
-                              cursor: SystemMouseCursors.click,
-                              child: GestureDetector(
-                                onTap: () async {
-                                  final result = await FilePicker.platform
-                                      .pickFiles(
-                                        type: FileType.image,
-                                        allowMultiple: false,
-                                      );
-                                  if (result == null || result.files.isEmpty) {
-                                    return;
-                                  }
-
-                                  final file = result.files.first;
-
-                                  final Uint8List bytes =
-                                      file.bytes ??
-                                      await File(file.path!).readAsBytes();
-
-                                  pictureBytesNotifier.value = bytes;
-                                },
-                                child: CoverArtWidget(
-                                  song: song,
-                                  pictureBytes: pictureBytes,
-                                  size: 180,
-                                  borderRadius: 10,
-                                ),
-                              ),
-                            ),
-                          );
+                      Spacer(),
+                      ElevatedButton(
+                        onPressed: () => Navigator.pop(context, false),
+                        child: Text(l10n.cancel),
+                      ),
+                      const SizedBox(width: 20),
+                      ElevatedButton(
+                        onPressed: () {
+                          _tryWriteMetadata(context, song);
                         },
-                      ),
-                      SizedBox(width: 30),
-                      Expanded(
-                        child: Column(
-                          children: [
-                            Spacer(),
-
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                "${l10n.title}:",
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                            ),
-                            TextField(
-                              style: TextStyle(fontSize: 12),
-                              controller: titleTextController,
-                              decoration: InputDecoration(
-                                enabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: textColor),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(
-                                    color: textColor,
-                                    width: 1.5,
-                                  ),
-                                ),
-                                isDense: true,
-                              ),
-                              onChanged: (value) {},
-                            ),
-                            Spacer(),
-
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                "${l10n.artist}:",
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                            ),
-
-                            TextField(
-                              style: TextStyle(fontSize: 12),
-                              controller: artistTextController,
-                              decoration: InputDecoration(
-                                enabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: textColor),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(
-                                    color: textColor,
-                                    width: 1.5,
-                                  ),
-                                ),
-                                isDense: true,
-                              ),
-                            ),
-                            Spacer(),
-
-                            Align(
-                              alignment: Alignment.centerLeft,
-                              child: Text(
-                                "${l10n.album}:",
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-                            ),
-
-                            TextField(
-                              style: TextStyle(fontSize: 12),
-                              controller: albumTextController,
-                              decoration: InputDecoration(
-                                enabledBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(color: textColor),
-                                ),
-                                focusedBorder: OutlineInputBorder(
-                                  borderSide: BorderSide(
-                                    color: textColor,
-                                    width: 1.5,
-                                  ),
-                                ),
-                                isDense: true,
-                              ),
-                            ),
-                            Spacer(),
-                          ],
+                        style: ElevatedButton.styleFrom(
+                          foregroundColor: Colors.red,
                         ),
+                        child: Text(l10n.confirm),
                       ),
+                      Spacer(),
                     ],
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
-          ),
+          ],
         ),
       );
     },
   );
+}
+
+Widget _coverArt(BuildContext context, MyAudioMetadata song) {
+  final l10n = AppLocalizations.of(context);
+
+  return Center(
+    child: ValueListenableBuilder(
+      valueListenable: _pictureBytesNotifier,
+      builder: (context, pictureBytes, child) {
+        return Tooltip(
+          message: l10n.replacePicture,
+          child: MouseRegion(
+            cursor: SystemMouseCursors.click,
+            child: GestureDetector(
+              onTap: () async {
+                final result = await FilePicker.platform.pickFiles(
+                  type: FileType.image,
+                  allowMultiple: false,
+                );
+                if (result == null || result.files.isEmpty) {
+                  return;
+                }
+
+                final file = result.files.first;
+
+                final Uint8List bytes =
+                    file.bytes ?? await File(file.path!).readAsBytes();
+
+                _pictureBytesNotifier.value = bytes;
+              },
+              child: CoverArtWidget(
+                song: song,
+                pictureBytes: pictureBytes,
+                size: isMobile ? 150 : 180,
+                borderRadius: 10,
+              ),
+            ),
+          ),
+        );
+      },
+    ),
+  );
+}
+
+Widget _metadataTextField(
+  BuildContext context,
+  String type,
+  TextEditingController controller, {
+  bool expand = false,
+  bool onlyNumber = false,
+}) {
+  return Padding(
+    padding: EdgeInsets.symmetric(horizontal: isMobile ? 0 : 20),
+    child: Column(
+      children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Text('$type:', style: TextStyle(fontWeight: FontWeight.bold)),
+        ),
+
+        SizedBox(
+          height: expand ? 180 : null,
+          child: TextField(
+            keyboardType: onlyNumber ? .number : null,
+            readOnly: isMobile,
+            expands: expand,
+            maxLines: expand ? null : 1,
+            style: TextStyle(fontSize: 12),
+            controller: controller,
+            decoration: InputDecoration(
+              enabledBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: textColor),
+              ),
+              focusedBorder: OutlineInputBorder(
+                borderSide: BorderSide(color: textColor, width: 1.5),
+              ),
+              isDense: true,
+            ),
+            onTap: () {
+              if (isMobile) {
+                showTextFieldSheet(
+                  context,
+                  controller,
+                  expand: expand,
+                  onlyNumber: onlyNumber,
+                );
+              }
+            },
+          ),
+        ),
+      ],
+    ),
+  );
+}
+
+Future<void> _tryWriteMetadata(
+  BuildContext context,
+  MyAudioMetadata song,
+) async {
+  final l10n = AppLocalizations.of(context);
+
+  if (await showConfirmDialog(context, l10n.updateMedata)) {
+    String writeTitle = _titleTextController.text;
+    String writeArtist = _artistTextController.text;
+    String writeAlbum = _albumTextController.text;
+    String writeGenre = _genreTextController.text;
+    String writeLyrics = _lyricsTextController.text;
+    int? writeYear = int.tryParse(_yearTextController.text);
+    int? writeTrack = int.tryParse(_trackTextController.text);
+    int? writeDisc = int.tryParse(_discTextController.text);
+
+    Uint8List? writePictureBytes = _pictureBytesNotifier.value;
+
+    bool success = writeMetadata(
+      path: song.filePath!,
+      title: writeTitle,
+      artist: writeArtist,
+      album: writeAlbum,
+      genre: writeGenre,
+      year: writeYear,
+      track: writeTrack,
+      disc: writeDisc,
+      lyrics: writeLyrics,
+      pictureBytes: writePictureBytes,
+    );
+    if (success) {
+      song.title = writeTitle;
+      song.artist = writeArtist;
+      song.album = writeAlbum;
+      song.genre = writeGenre;
+      song.lyrics = writeLyrics;
+      song.parsedLyrics = null;
+      song.year = writeYear;
+      song.track = writeTrack;
+      song.disc = writeDisc;
+
+      song.pictureBytes = _pictureBytesNotifier.value;
+      song.coverArtColor = null;
+
+      song.updateNotifier.value++;
+      layersManager.updateBackground();
+    }
+    if (context.mounted) {
+      showCenterMessage(
+        context,
+        success ? l10n.updateSuccessfully : l10n.updateFailed,
+        duration: 2000,
+      );
+      Navigator.pop(context);
+    }
+  }
 }

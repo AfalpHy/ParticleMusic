@@ -59,6 +59,7 @@ class MyAudioMetadata {
   set album(String? value) => _audioMetadata.album = value;
   set genre(String? value) => _audioMetadata.genre = value;
 
+  set year(int? value) => _audioMetadata.year = value;
   set track(int? value) => _audioMetadata.track = value;
   set disc(int? value) => _audioMetadata.disc = value;
   set bitrate(int? value) => _audioMetadata.bitrate = value;

@@ -116,6 +116,36 @@ abstract class AppLocalizations {
   /// **'Album'**
   String get album;
 
+  /// No description provided for @genre.
+  ///
+  /// In en, this message translates to:
+  /// **'Genre'**
+  String get genre;
+
+  /// No description provided for @year.
+  ///
+  /// In en, this message translates to:
+  /// **'Year'**
+  String get year;
+
+  /// No description provided for @track.
+  ///
+  /// In en, this message translates to:
+  /// **'Track'**
+  String get track;
+
+  /// No description provided for @disc.
+  ///
+  /// In en, this message translates to:
+  /// **'Disc'**
+  String get disc;
+
+  /// No description provided for @lyrics.
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics'**
+  String get lyrics;
+
   /// No description provided for @folder.
   ///
   /// In en, this message translates to:

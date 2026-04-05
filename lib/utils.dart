@@ -10,6 +10,7 @@ import 'package:image/image.dart' as image;
 import 'package:lpinyin/lpinyin.dart';
 import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/common_widgets/my_sheet.dart';
 import 'package:particle_music/landscape_view/extensions/window_controller_extension.dart';
 import 'package:particle_music/landscape_view/single_instance.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
@@ -102,6 +103,83 @@ Future<bool> showConfirmDialog(BuildContext context, String action) async {
     },
   );
   return result ?? false;
+}
+
+Future<String> showTextFieldSheet(
+  BuildContext context,
+  TextEditingController controller, {
+  bool expand = false,
+  bool needConfirmButton = false,
+  bool onlyNumber = false,
+}) async {
+  return await showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        useRootNavigator: true,
+        builder: (context) {
+          final specificTextcolor = colorManager.getSpecificTextColor();
+
+          return MySheet(
+            height: 500,
+            Column(
+              mainAxisAlignment: MainAxisAlignment.start, // center vertically
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(30, 30, 30, 0),
+                  child: Theme(
+                    data: Theme.of(context).copyWith(
+                      textSelectionTheme: TextSelectionThemeData(
+                        selectionColor: specificTextcolor.withAlpha(50),
+                        cursorColor: specificTextcolor,
+                        selectionHandleColor: specificTextcolor,
+                      ),
+                    ),
+                    child: SizedBox(
+                      height: expand ? 120 : 60,
+                      child: TextField(
+                        keyboardType: onlyNumber ? .number : null,
+                        expands: expand,
+                        maxLines: expand ? null : 1,
+                        controller: controller,
+                        autofocus: true,
+                        style: TextStyle(color: specificTextcolor),
+                        decoration: InputDecoration(
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: specificTextcolor),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: specificTextcolor,
+                              width: 1.5,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+
+                if (needConfirmButton) const SizedBox(height: 10),
+                if (needConfirmButton)
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(
+                        context,
+                        controller.text,
+                      ); // close with value
+                    },
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colorManager.getSpecificButtonColor(),
+                      foregroundColor: specificTextcolor,
+                    ),
+                    child: Text(AppLocalizations.of(context).confirm),
+                  ),
+              ],
+            ),
+          );
+        },
+      ) ??
+      "";
 }
 
 Future<T?> showAnimationDialog<T>({
