@@ -643,7 +643,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
 
             MenuAction(
               title: l10n.add2Playlist,
-              image: MenuImage.icon(Icons.add),
+              image: MenuImage.icon(Icons.add_rounded),
               callback: () {
                 final List<MyAudioMetadata> tmpSongList = [];
                 for (int i = isSelectedList.length - 1; i >= 0; i--) {

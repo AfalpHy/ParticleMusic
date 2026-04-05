@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/my_sheet.dart';
 import 'package:particle_music/common_widgets/playlist_widgets.dart';
+import 'package:particle_music/folder.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
+import 'package:particle_music/metadata.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/utils.dart';
@@ -10,20 +12,28 @@ import '../common_widgets/cover_art_widget.dart';
 
 class SongListTile extends StatelessWidget {
   final int index;
-  final List<MyAudioMetadata> source;
+  final List<MyAudioMetadata> songList;
+  final Folder? folder;
   final Playlist? playlist;
+
+  final bool isLibrary;
   final bool isRanking;
+  final bool reorderable;
+
   const SongListTile({
     super.key,
     required this.index,
-    required this.source,
-    this.playlist,
-    this.isRanking = false,
+    required this.songList,
+    required this.folder,
+    required this.playlist,
+    required this.isLibrary,
+    required this.isRanking,
+    required this.reorderable,
   });
 
   @override
   Widget build(BuildContext context) {
-    final song = source[index];
+    final song = songList[index];
 
     return ListTile(
       contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
@@ -72,7 +82,7 @@ class SongListTile extends StatelessWidget {
       visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
       onTap: () async {
         audioHandler.currentIndex = index;
-        await audioHandler.setPlayQueue(source);
+        await audioHandler.setPlayQueue(songList);
         await audioHandler.load();
         audioHandler.play();
       },
@@ -93,7 +103,7 @@ class SongListTile extends StatelessWidget {
   }
 
   Widget moreButton(BuildContext context) {
-    final song = source[index];
+    final song = songList[index];
     final l10n = AppLocalizations.of(context);
 
     return IconButton(
@@ -134,8 +144,93 @@ class SongListTile extends StatelessWidget {
                     child: ListView(
                       physics: const ClampingScrollPhysics(),
                       children: [
+                        if (reorderable)
+                          ListTile(
+                            leading: Icon(Icons.vertical_align_top_rounded),
+                            title: Text(
+                              l10n.move2Top,
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            visualDensity: const VisualDensity(
+                              horizontal: 0,
+                              vertical: -4,
+                            ),
+                            onTap: () {
+                              Navigator.pop(context);
+
+                              if (isLibrary) {
+                                final item = library.songList.removeAt(index);
+                                library.songList.insert(0, item);
+                                library.update();
+                              } else if (folder != null) {
+                                final item = folder!.songList.removeAt(index);
+                                folder!.songList.insert(0, item);
+                                folder!.update();
+                              } else {
+                                final item = playlist!.songList.removeAt(index);
+                                playlist!.songList.insert(0, item);
+                                playlist!.update();
+                              }
+                            },
+                          ),
                         ListTile(
-                          leading: ImageIcon(playlistAddImage),
+                          leading: Icon(Icons.play_arrow_rounded),
+                          title: Text(
+                            l10n.playNow,
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          visualDensity: const VisualDensity(
+                            horizontal: 0,
+                            vertical: -4,
+                          ),
+                          onTap: () {
+                            audioHandler.singlePlay(songList[index]);
+                            Navigator.pop(context);
+                            audioHandler.saveAllStates();
+                          },
+                        ),
+                        ListTile(
+                          leading: Icon(Icons.navigate_next_rounded),
+                          title: Text(
+                            l10n.playNext,
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          visualDensity: const VisualDensity(
+                            horizontal: 0,
+                            vertical: -4,
+                          ),
+                          onTap: () {
+                            if (playQueue.isEmpty) {
+                              audioHandler.singlePlay(songList[index]);
+                            } else {
+                              audioHandler.insert2Next(songList[index]);
+                            }
+                            Navigator.pop(context);
+                            audioHandler.saveAllStates();
+                          },
+                        ),
+                        ListTile(
+                          leading: Icon(Icons.playlist_add_rounded),
+                          title: Text(
+                            l10n.add2Queue,
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          visualDensity: const VisualDensity(
+                            horizontal: 0,
+                            vertical: -4,
+                          ),
+                          onTap: () {
+                            if (playQueue.isEmpty) {
+                              audioHandler.singlePlay(songList[index]);
+                            } else {
+                              audioHandler.add2Last(songList[index]);
+                            }
+                            Navigator.pop(context);
+                            audioHandler.saveAllStates();
+                          },
+                        ),
+                        ListTile(
+                          leading: Icon(Icons.add_rounded),
                           title: Text(
                             l10n.add2Playlist,
                             style: TextStyle(fontWeight: FontWeight.bold),
@@ -150,86 +245,46 @@ class SongListTile extends StatelessWidget {
                             showAddPlaylistSheet(context, [song]);
                           },
                         ),
-                        ListTile(
-                          leading: ImageIcon(playCircleImage),
-                          title: Text(
-                            l10n.playNow,
-                            style: TextStyle(fontWeight: FontWeight.bold),
+
+                        if (!song.isNavidrome)
+                          ListTile(
+                            leading: Icon(Icons.edit_rounded),
+                            title: Text(
+                              l10n.editMetadata,
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            visualDensity: const VisualDensity(
+                              horizontal: 0,
+                              vertical: -4,
+                            ),
+                            onTap: () async {
+                              Navigator.pop(context);
+                              showSongMetadataDialog(context, song);
+                            },
                           ),
-                          visualDensity: const VisualDensity(
-                            horizontal: 0,
-                            vertical: -4,
+                        if (playlist != null)
+                          ListTile(
+                            leading: Icon(Icons.delete_rounded),
+                            title: Text(
+                              l10n.delete,
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            visualDensity: const VisualDensity(
+                              horizontal: 0,
+                              vertical: -4,
+                            ),
+                            onTap: () async {
+                              if (await showConfirmDialog(
+                                context,
+                                l10n.delete,
+                              )) {
+                                playlist!.remove([song]);
+                                if (context.mounted) {
+                                  Navigator.pop(context);
+                                }
+                              }
+                            },
                           ),
-                          onTap: () {
-                            audioHandler.singlePlay(source[index]);
-                            Navigator.pop(context);
-                            audioHandler.saveAllStates();
-                          },
-                        ),
-                        ListTile(
-                          leading: ImageIcon(playnextCircleImage),
-                          title: Text(
-                            l10n.playNext,
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          visualDensity: const VisualDensity(
-                            horizontal: 0,
-                            vertical: -4,
-                          ),
-                          onTap: () {
-                            if (playQueue.isEmpty) {
-                              audioHandler.singlePlay(source[index]);
-                            } else {
-                              audioHandler.insert2Next(source[index]);
-                            }
-                            Navigator.pop(context);
-                            audioHandler.saveAllStates();
-                          },
-                        ),
-                        ListTile(
-                          leading: ImageIcon(addCircleImage),
-                          title: Text(
-                            l10n.add2Queue,
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          visualDensity: const VisualDensity(
-                            horizontal: 0,
-                            vertical: -4,
-                          ),
-                          onTap: () {
-                            if (playQueue.isEmpty) {
-                              audioHandler.singlePlay(source[index]);
-                            } else {
-                              audioHandler.add2Last(source[index]);
-                            }
-                            Navigator.pop(context);
-                            audioHandler.saveAllStates();
-                          },
-                        ),
-                        playlist != null
-                            ? ListTile(
-                                leading: ImageIcon(deleteImage),
-                                title: Text(
-                                  l10n.delete,
-                                  style: TextStyle(fontWeight: FontWeight.bold),
-                                ),
-                                visualDensity: const VisualDensity(
-                                  horizontal: 0,
-                                  vertical: -4,
-                                ),
-                                onTap: () async {
-                                  if (await showConfirmDialog(
-                                    context,
-                                    l10n.delete,
-                                  )) {
-                                    playlist!.remove([song]);
-                                    if (context.mounted) {
-                                      Navigator.pop(context);
-                                    }
-                                  }
-                                },
-                              )
-                            : SizedBox(),
                       ],
                     ),
                   ),

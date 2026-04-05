@@ -343,9 +343,15 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
                 return Center(
                   child: SongListTile(
                     index: index,
-                    source: currentSongList,
-                    playlist: widget.playlist,
+                    songList: currentSongList,
+                    folder: folder,
+                    playlist: playlist,
                     isRanking: ranking != null,
+                    isLibrary: isLibrary,
+                    reorderable:
+                        reorderable &&
+                        textController.text.isEmpty &&
+                        sortTypeNotifier.value == 0,
                   ),
                 );
               },
