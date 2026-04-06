@@ -232,6 +232,8 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
               hintText: l10n.searchSongs,
               textController: textController,
               onSearchTextChanged: updateSongList,
+              song: getFirstSong(songList),
+              useCurrentSong: false,
             ),
             moreButton(context),
           ],

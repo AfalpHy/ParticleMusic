@@ -280,12 +280,22 @@ class ColorManager {
     };
   }
 
-  Color? getSpecificMainPageCoverArtBaseColorForm(MyAudioMetadata song) {
+  Color? getSpecificMainPageCoverArtBaseColorForm(MyAudioMetadata? song) {
     return mainPageThemeNotifier.value == 0
-        ? song.coverArtColor
+        ? song == null
+              ? Colors.grey
+              : song.coverArtColor
         : isMobile
         ? pageBackgroundColor
         : panelColor;
+  }
+
+  Color? getSpecificMainPageSearchFieldColorForm(MyAudioMetadata? song) {
+    return mainPageThemeNotifier.value == 0
+        ? song == null
+              ? Colors.grey.withAlpha(75)
+              : song.coverArtColor?.withAlpha(75)
+        : searchFieldColor;
   }
 
   Color getSpecificMainPageCoverArtBaseColor() {

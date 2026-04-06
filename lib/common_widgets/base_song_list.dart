@@ -158,21 +158,23 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
 
   Widget mainCover(double size) {
     return ValueListenableBuilder(
-      valueListenable: currentSongListNotifier,
-      builder: (_, _, _) {
-        if (songList.isEmpty) {
-          return CoverArtWidget(
-            size: size,
-            borderRadius: 10,
-            song: null,
-            elevation: 5,
-            color: Colors.grey,
-          );
-        }
-        final song = songList.first;
+      valueListenable: updateColorNotifier,
+      builder: (context, value, child) {
         return ValueListenableBuilder(
-          valueListenable: updateColorNotifier,
-          builder: (context, value, child) {
+          valueListenable: currentSongListNotifier,
+          builder: (_, _, _) {
+            if (songList.isEmpty) {
+              return CoverArtWidget(
+                size: size,
+                borderRadius: 10,
+                song: null,
+                elevation: 5,
+                color: colorManager.getSpecificMainPageCoverArtBaseColorForm(
+                  null,
+                ),
+              );
+            }
+            final song = songList.first;
             return ValueListenableBuilder(
               valueListenable: song.updateNotifier,
               builder: (_, _, _) {

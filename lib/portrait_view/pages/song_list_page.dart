@@ -56,6 +56,8 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
         MySearchField(
           hintText: AppLocalizations.of(context).searchSongs,
           textController: textController,
+          song: getFirstSong(songList),
+          useCurrentSong: false,
         ),
         moreButton(context),
       ],

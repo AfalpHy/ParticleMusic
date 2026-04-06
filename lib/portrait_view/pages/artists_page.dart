@@ -274,16 +274,21 @@ class _ArtistsPageState extends State<ArtistsPage> {
     return ValueListenableBuilder(
       valueListenable: artistsAlbumsManager.artistsUseLargePictureNotifier,
       builder: (context, useLargePicture, child) {
-        double size = useLargePicture ? mobileWidth * 0.40 : mobileWidth * 0.25;
-        double radius = useLargePicture
-            ? mobileWidth * 0.025
-            : mobileWidth * 0.015;
-        double childAspectRatio = useLargePicture ? 0.85 : 0.8;
+        int crossAxisCount;
+        double coverArtWidth;
+        if (useLargePicture) {
+          crossAxisCount = (mobileWidth / 180).toInt();
+          coverArtWidth = mobileWidth / crossAxisCount - 45;
+        } else {
+          crossAxisCount = (mobileWidth / 120).toInt();
+          coverArtWidth = mobileWidth / crossAxisCount - 35;
+        }
+        double radius = useLargePicture ? 10 : 6;
         return GridView.builder(
           padding: EdgeInsets.symmetric(horizontal: 16),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: useLargePicture ? 2 : 3,
-            childAspectRatio: childAspectRatio,
+            crossAxisCount: crossAxisCount,
+            childAspectRatio: useLargePicture ? 0.9 : 0.85,
           ),
           itemCount: artistList.length,
           itemBuilder: (context, index) {
@@ -295,7 +300,7 @@ class _ArtistsPageState extends State<ArtistsPage> {
                     valueListenable: artist.displayNavidromeNotifier,
                     builder: (context, value, child) {
                       return CoverArtWidget(
-                        size: size,
+                        size: coverArtWidth,
                         borderRadius: radius,
                         song: artist.getDisplaySong(),
                       );
@@ -307,7 +312,7 @@ class _ArtistsPageState extends State<ArtistsPage> {
                 ),
                 SizedBox(height: 5),
                 SizedBox(
-                  width: size - 20,
+                  width: coverArtWidth - 20,
                   child: Column(
                     children: [
                       Text(

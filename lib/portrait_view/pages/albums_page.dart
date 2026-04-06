@@ -183,16 +183,21 @@ class _AlbumsPageState extends State<AlbumsPage> {
     return ValueListenableBuilder(
       valueListenable: artistsAlbumsManager.albumsUseLargePictureNotifier,
       builder: (context, useLargePicture, child) {
-        double size = useLargePicture ? mobileWidth * 0.40 : mobileWidth * 0.25;
-        double radius = useLargePicture
-            ? mobileWidth * 0.025
-            : mobileWidth * 0.015;
-        double childAspectRatio = useLargePicture ? 0.85 : 0.8;
+        int crossAxisCount;
+        double coverArtWidth;
+        if (useLargePicture) {
+          crossAxisCount = (mobileWidth / 180).toInt();
+          coverArtWidth = mobileWidth / crossAxisCount - 45;
+        } else {
+          crossAxisCount = (mobileWidth / 120).toInt();
+          coverArtWidth = mobileWidth / crossAxisCount - 35;
+        }
+        double radius = useLargePicture ? 10 : 6;
         return GridView.builder(
           padding: EdgeInsets.symmetric(horizontal: 16),
           gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-            crossAxisCount: useLargePicture ? 2 : 3,
-            childAspectRatio: childAspectRatio,
+            crossAxisCount: crossAxisCount,
+            childAspectRatio: useLargePicture ? 0.9 : 0.85,
           ),
           itemCount: albumList.length,
           itemBuilder: (context, index) {
@@ -205,7 +210,7 @@ class _AlbumsPageState extends State<AlbumsPage> {
                     valueListenable: album.displayNavidromeNotifier,
                     builder: (context, value, child) {
                       return CoverArtWidget(
-                        size: size,
+                        size: coverArtWidth,
                         borderRadius: radius,
                         song: album.getDisplaySong(),
                       );
@@ -217,7 +222,7 @@ class _AlbumsPageState extends State<AlbumsPage> {
                 ),
                 SizedBox(height: 5),
                 SizedBox(
-                  width: size - 20,
+                  width: coverArtWidth - 20,
                   child: Column(
                     children: [
                       Text(
