@@ -252,7 +252,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get unknown => '未知';
 
   @override
-  String get updateMedata => '更新元素据';
+  String get updateMedata => '更新元数据';
 
   @override
   String get defaultText => '默认';

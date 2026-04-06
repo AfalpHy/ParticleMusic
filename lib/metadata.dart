@@ -11,6 +11,7 @@ import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/utils.dart';
+import 'package:permission_handler/permission_handler.dart';
 
 TextEditingController _titleTextController = TextEditingController();
 TextEditingController _artistTextController = TextEditingController();
@@ -197,6 +198,14 @@ Future<void> _tryWriteMetadata(
   final l10n = AppLocalizations.of(context);
 
   if (await showConfirmDialog(context, l10n.updateMedata)) {
+    if (Platform.isAndroid) {
+      if (await Permission.manageExternalStorage.request() == .denied) {
+        if (context.mounted) {
+          showCenterMessage(context, l10n.updateFailed, duration: 2000);
+        }
+        return;
+      }
+    }
     String writeTitle = _titleTextController.text;
     String writeArtist = _artistTextController.text;
     String writeAlbum = _albumTextController.text;
