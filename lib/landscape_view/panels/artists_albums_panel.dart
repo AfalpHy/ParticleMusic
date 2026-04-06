@@ -49,11 +49,13 @@ class _ArtistsAlbumsPanelState extends State<ArtistsAlbumsPanel> {
     );
 
     textController.addListener(updateCurrentList);
+    artistsAlbumsManager.updateNotifier.addListener(updateCurrentList);
   }
 
   @override
   void dispose() {
     textController.dispose();
+    artistsAlbumsManager.updateNotifier.removeListener(updateCurrentList);
     super.dispose();
   }
 

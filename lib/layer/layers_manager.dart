@@ -37,7 +37,10 @@ class LayersManager {
 
           children: [
             if (mainPageThemeNotifier.value == 0) ...[
-              CoverArtWidget(song: _getBackgroundSong(layer)),
+              CoverArtWidget(
+                song: _getBackgroundSong(layer),
+                color: _getBackgroundSong(layer)?.coverArtColor,
+              ),
 
               ClipRect(
                 child: BackdropFilter(
@@ -131,6 +134,34 @@ class LayersManager {
     for (int i = layerStack.length - 1; i > 0; i--) {
       Widget tmp = layerStack[i];
       if (tmp is SinglePlaylistLayer && tmp.playlist == playlist) {
+        layerStack.removeAt(i);
+        sidebarHighlighLabelStack.removeAt(i);
+      }
+    }
+
+    sidebarHighlighLabel.value = sidebarHighlighLabelStack.last;
+
+    updateBackground();
+  }
+
+  void removeArtistLayer(Artist artist) {
+    for (int i = layerStack.length - 1; i > 0; i--) {
+      Widget tmp = layerStack[i];
+      if (tmp is SingleArtistLayer && tmp.artist == artist) {
+        layerStack.removeAt(i);
+        sidebarHighlighLabelStack.removeAt(i);
+      }
+    }
+
+    sidebarHighlighLabel.value = sidebarHighlighLabelStack.last;
+
+    updateBackground();
+  }
+
+  void removeAlbumLayer(Album album) {
+    for (int i = layerStack.length - 1; i > 0; i--) {
+      Widget tmp = layerStack[i];
+      if (tmp is SingleAlbumLayer && tmp.album == album) {
         layerStack.removeAt(i);
         sidebarHighlighLabelStack.removeAt(i);
       }

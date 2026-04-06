@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/utils.dart';
 
@@ -11,6 +12,7 @@ class ArtistsAlbumsManager {
 
   List<Album> albumList = [];
   Map<String, Album> name2Album = {};
+  final updateNotifier = ValueNotifier(0);
 
   final artistsIsListViewNotifier = ValueNotifier(true);
   final artistsIsAscendingNotifier = ValueNotifier(true);
@@ -42,32 +44,29 @@ class ArtistsAlbumsManager {
       _processSong(song);
     }
 
-    artistList = name2Artist.values.toList();
-    albumList = name2Album.values.toList();
     sortArtists();
     sortAlbums();
 
     for (final album in albumList) {
       album.sort();
-      album.displayNavidromeNotifier.value =
-          album.songList.isEmpty & album.navidromeSongList.isNotEmpty;
+      album.setDisplayNavidromeNotifier();
     }
 
     for (final artist in artistList) {
       artist.combineAlbums();
-      artist.displayNavidromeNotifier.value =
-          artist.songList.isEmpty & artist.navidromeSongList.isNotEmpty;
+      artist.setDisplayNavidromeNotifier();
     }
   }
 
   void _processSong(MyAudioMetadata song) {
     final albumName = getAlbum(song);
 
-    late Album album;
-    if (name2Album[albumName] == null) {
-      name2Album[albumName] = Album(albumName);
+    Album? album = name2Album[albumName];
+    if (album == null) {
+      album = Album(albumName);
+      albumList.add(album);
+      name2Album[albumName] = album;
     }
-    album = name2Album[albumName]!;
 
     if (song.year != null && album.year == null) {
       album.year = song.year;
@@ -78,11 +77,12 @@ class ArtistsAlbumsManager {
         : album.songList.add(song);
 
     for (String artistName in getArtist(song).split(RegExp(r'[/&,]'))) {
-      late Artist artist;
-      if (name2Artist[artistName] == null) {
-        name2Artist[artistName] = Artist(artistName);
+      Artist? artist = name2Artist[artistName];
+      if (artist == null) {
+        artist = Artist(artistName);
+        artistList.add(artist);
+        name2Artist[artistName] = artist;
       }
-      artist = name2Artist[artistName]!;
       artist.albumSet.add(album);
     }
   }
@@ -105,6 +105,75 @@ class ArtistsAlbumsManager {
         return compareMixed(b.name, a.name);
       }
     });
+  }
+
+  void updateArtistAlbum(
+    MyAudioMetadata song,
+    String originArtist,
+    String originAlbum,
+  ) {
+    final currentArtist = getArtist(song);
+    final currentAlbum = getAlbum(song);
+
+    final oldAlbum = name2Album[originAlbum]!;
+    oldAlbum.songList.remove(song);
+
+    _processSong(song);
+
+    oldAlbum.sort();
+    oldAlbum.updateNotifier.value++;
+    // Reset when displaying local music; keep it when displaying Navidrome
+    if (!oldAlbum.displayNavidromeNotifier.value) {
+      oldAlbum.setDisplayNavidromeNotifier();
+    }
+
+    if (currentAlbum != originAlbum) {
+      if (oldAlbum.isEmpty) {
+        albumList.remove(oldAlbum);
+        name2Album.remove(originAlbum);
+        layersManager.removeAlbumLayer(oldAlbum);
+      }
+      final newAlbum = name2Album[currentAlbum]!;
+      newAlbum.sort();
+      newAlbum.updateNotifier.value++;
+      if (!newAlbum.displayNavidromeNotifier.value) {
+        newAlbum.setDisplayNavidromeNotifier();
+      }
+    }
+
+    sortAlbums();
+
+    Set<Artist> needProcess = {};
+
+    for (String artistName in originArtist.split(RegExp(r'[/&,]'))) {
+      Artist artist = name2Artist[artistName]!;
+      needProcess.add(artist);
+    }
+
+    for (String artistName in currentArtist.split(RegExp(r'[/&,]'))) {
+      Artist artist = name2Artist[artistName]!;
+      needProcess.add(artist);
+    }
+
+    for (final artist in needProcess) {
+      artist.combineAlbums();
+      artist.updateNotifier.value++;
+
+      // Reset when displaying local music; keep it when displaying Navidrome
+      if (!artist.displayNavidromeNotifier.value) {
+        artist.setDisplayNavidromeNotifier();
+      }
+
+      if (artist.isEmpty) {
+        artistList.remove(artist);
+        name2Artist.remove(artist.name);
+        layersManager.removeArtistLayer(artist);
+      }
+    }
+
+    sortArtists();
+
+    updateNotifier.value++;
   }
 
   Map<String, bool> settingToMap() {
@@ -148,11 +217,20 @@ class ArtistsAlbumsManager {
 abstract class ArtistAlbumBase {
   final String name;
   final displayNavidromeNotifier = ValueNotifier(false);
+  final updateNotifier = ValueNotifier(0);
+
   final List<MyAudioMetadata> songList = [];
   final List<MyAudioMetadata> navidromeSongList = [];
 
   final bool isArtist;
   ArtistAlbumBase(this.name, this.isArtist);
+
+  bool get isEmpty => songList.isEmpty && navidromeSongList.isEmpty;
+
+  void setDisplayNavidromeNotifier() {
+    displayNavidromeNotifier.value =
+        songList.isEmpty & navidromeSongList.isNotEmpty;
+  }
 
   List<MyAudioMetadata> getSongList(bool isNavidrome) {
     return isNavidrome ? navidromeSongList : songList;
@@ -175,6 +253,9 @@ class Artist extends ArtistAlbumBase {
   Set<Album> albumSet = {};
 
   void combineAlbums() {
+    songList.clear();
+    navidromeSongList.clear();
+    albumSet.removeWhere((album) => album.isEmpty);
     final albumList = albumSet.toList();
     albumList.sort((a, b) {
       int aYear = a.year ?? 9999;
@@ -185,13 +266,20 @@ class Artist extends ArtistAlbumBase {
 
     for (final album in albumList) {
       for (final song in album.songList) {
-        if (getArtist(song).contains(name)) {
-          songList.add(song);
+        for (String artistName in getArtist(song).split(RegExp(r'[/&,]'))) {
+          if (artistName == name) {
+            songList.add(song);
+            break;
+          }
         }
       }
       for (final song in album.navidromeSongList) {
-        if (getArtist(song).contains(name)) {
-          navidromeSongList.add(song);
+        for (String artistName in getArtist(song).split(RegExp(r'[/&,]'))) {
+          if (artistName == name) {
+            navidromeSongList.add(song);
+
+            break;
+          }
         }
       }
     }

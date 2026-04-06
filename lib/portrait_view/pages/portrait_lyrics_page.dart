@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common_widgets/buttons.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
@@ -15,7 +16,6 @@ import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/common_widgets/seekbar.dart';
 import 'package:particle_music/utils.dart';
-import 'package:smooth_corner/smooth_corner.dart';
 
 class PortraitLyricsPage extends StatefulWidget {
   const PortraitLyricsPage({super.key});
@@ -116,7 +116,10 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                   if (lyricsPageThemeNotifier.value != 0) {
                     return SizedBox.shrink();
                   }
-                  return CoverArtWidget(song: currentSong);
+                  return CoverArtWidget(
+                    song: currentSong,
+                    color: colorManager.getSpecificCoverArtBaseColor(),
+                  );
                 },
               ),
               ValueListenableBuilder(
@@ -207,17 +210,17 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
 
     return Column(
       children: [
-        Material(
-          elevation: 15,
-          shape: SmoothRectangleBorder(
-            smoothness: 1,
-            borderRadius: BorderRadius.circular(mobileWidth * 0.04),
-          ),
-          child: CoverArtWidget(
-            size: mobileWidth * 0.84,
-            borderRadius: mobileWidth * 0.04,
-            song: currentSong,
-          ),
+        ValueListenableBuilder(
+          valueListenable: updateColorNotifier,
+          builder: (context, value, child) {
+            return CoverArtWidget(
+              size: mobileWidth * 0.84,
+              borderRadius: mobileWidth * 0.04,
+              song: currentSong,
+              elevation: 15,
+              color: colorManager.getSpecificCoverArtBaseColor(),
+            );
+          },
         ),
 
         const SizedBox(height: 30),

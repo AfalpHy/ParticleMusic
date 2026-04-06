@@ -3,6 +3,7 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/buttons.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
@@ -94,7 +95,10 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                   if (lyricsPageThemeNotifier.value != 0) {
                     return SizedBox.shrink();
                   }
-                  return CoverArtWidget(song: currentSong);
+                  return CoverArtWidget(
+                    song: currentSong,
+                    color: colorManager.getSpecificCoverArtBaseColor(),
+                  );
                 },
               ),
               ValueListenableBuilder(

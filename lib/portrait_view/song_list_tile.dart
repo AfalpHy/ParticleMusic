@@ -35,70 +35,79 @@ class SongListTile extends StatelessWidget {
   Widget build(BuildContext context) {
     final song = songList[index];
 
-    return ListTile(
-      contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
-      leading: CoverArtWidget(size: 40, borderRadius: 4, song: song),
-      title: ValueListenableBuilder(
-        valueListenable: currentSongNotifier,
-        builder: (_, currentSong, _) {
-          return ValueListenableBuilder(
-            valueListenable: updateColorNotifier,
-            builder: (context, value, child) {
-              return Text(
-                getTitle(song),
-                overflow: TextOverflow.ellipsis,
-                style: TextStyle(
-                  color: song == currentSong ? highlightTextColor : null,
-                  fontWeight: song == currentSong ? FontWeight.bold : null,
-                ),
+    return ValueListenableBuilder(
+      valueListenable: song.updateNotifier,
+      builder: (context, value, child) {
+        return ListTile(
+          contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
+          leading: CoverArtWidget(size: 40, borderRadius: 4, song: song),
+          title: ValueListenableBuilder(
+            valueListenable: currentSongNotifier,
+            builder: (_, currentSong, _) {
+              return ValueListenableBuilder(
+                valueListenable: updateColorNotifier,
+                builder: (context, value, child) {
+                  return Text(
+                    getTitle(song),
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: song == currentSong ? highlightTextColor : null,
+                      fontWeight: song == currentSong ? FontWeight.bold : null,
+                    ),
+                  );
+                },
               );
             },
-          );
-        },
-      ),
+          ),
 
-      subtitle: Row(
-        children: [
-          ValueListenableBuilder(
-            valueListenable: song.isFavoriteNotifier,
-            builder: (_, value, _) {
-              return value
-                  ? SizedBox(
-                      width: 20,
-                      child: Icon(Icons.favorite, color: Colors.red, size: 15),
-                    )
-                  : SizedBox();
-            },
-          ),
-          Expanded(
-            child: Text(
-              "${getArtist(song)} - ${getAlbum(song)}",
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(fontSize: 12),
-            ),
-          ),
-        ],
-      ),
-      visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-      onTap: () async {
-        audioHandler.currentIndex = index;
-        await audioHandler.setPlayQueue(songList);
-        await audioHandler.load();
-        audioHandler.play();
-      },
-      trailing: isRanking
-          ? SizedBox(
-              width: 100,
-              child: Row(
-                children: [
-                  Spacer(),
-                  ImageIcon(playOutlinedImage, size: 15),
-                  Text(song.playCount.toString()),
-                  moreButton(context),
-                ],
+          subtitle: Row(
+            children: [
+              ValueListenableBuilder(
+                valueListenable: song.isFavoriteNotifier,
+                builder: (_, value, _) {
+                  return value
+                      ? SizedBox(
+                          width: 20,
+                          child: Icon(
+                            Icons.favorite,
+                            color: Colors.red,
+                            size: 15,
+                          ),
+                        )
+                      : SizedBox();
+                },
               ),
-            )
-          : moreButton(context),
+              Expanded(
+                child: Text(
+                  "${getArtist(song)} - ${getAlbum(song)}",
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(fontSize: 12),
+                ),
+              ),
+            ],
+          ),
+          visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+          onTap: () async {
+            audioHandler.currentIndex = index;
+            await audioHandler.setPlayQueue(songList);
+            await audioHandler.load();
+            audioHandler.play();
+          },
+          trailing: isRanking
+              ? SizedBox(
+                  width: 100,
+                  child: Row(
+                    children: [
+                      Spacer(),
+                      ImageIcon(playOutlinedImage, size: 15),
+                      Text(song.playCount.toString()),
+                      moreButton(context),
+                    ],
+                  ),
+                )
+              : moreButton(context),
+        );
+      },
     );
   }
 

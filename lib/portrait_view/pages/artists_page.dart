@@ -8,16 +8,32 @@ import 'package:particle_music/common_widgets/my_sheet.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/common_widgets/my_switch.dart';
 import 'package:particle_music/utils.dart';
-import 'package:smooth_corner/smooth_corner.dart';
 
-class ArtistsPage extends StatelessWidget {
+class ArtistsPage extends StatefulWidget {
+  const ArtistsPage({super.key});
+
+  @override
+  State<StatefulWidget> createState() => _ArtistsPageState();
+}
+
+class _ArtistsPageState extends State<ArtistsPage> {
   final ValueNotifier<List<Artist>> currentArtistListNotifier = ValueNotifier(
     artistsAlbumsManager.artistList,
   );
 
   final textController = TextEditingController();
 
-  ArtistsPage({super.key});
+  @override
+  void initState() {
+    super.initState();
+    artistsAlbumsManager.updateNotifier.addListener(updateCurrentArtistList);
+  }
+
+  @override
+  void dispose() {
+    artistsAlbumsManager.updateNotifier.removeListener(updateCurrentArtistList);
+    super.dispose();
+  }
 
   void updateCurrentArtistList() {
     final value = textController.text;
@@ -274,27 +290,20 @@ class ArtistsPage extends StatelessWidget {
             final artist = artistList[index];
             return Column(
               children: [
-                Material(
-                  elevation: 1,
-                  shape: SmoothRectangleBorder(
-                    smoothness: 1,
-                    borderRadius: BorderRadius.circular(radius),
-                  ),
-                  child: GestureDetector(
-                    child: ValueListenableBuilder(
-                      valueListenable: artist.displayNavidromeNotifier,
-                      builder: (context, value, child) {
-                        return CoverArtWidget(
-                          size: size,
-                          borderRadius: radius,
-                          song: artist.getDisplaySong(),
-                        );
-                      },
-                    ),
-                    onTap: () {
-                      layersManager.pushLayer('artists', content: artist.name);
+                GestureDetector(
+                  child: ValueListenableBuilder(
+                    valueListenable: artist.displayNavidromeNotifier,
+                    builder: (context, value, child) {
+                      return CoverArtWidget(
+                        size: size,
+                        borderRadius: radius,
+                        song: artist.getDisplaySong(),
+                      );
                     },
                   ),
+                  onTap: () {
+                    layersManager.pushLayer('artists', content: artist.name);
+                  },
                 ),
                 SizedBox(height: 5),
                 SizedBox(

@@ -491,10 +491,16 @@ Future<Color> computeCoverArtColor(MyAudioMetadata? song) async {
   for (int y = 0; y < decoded.height; y += 5) {
     for (int x = 0; x < decoded.width; x += 5) {
       final pixel = decoded.getPixel(x, y);
+      if (pixel.a == 0) {
+        r += 128;
+        g += 128;
+        b += 128;
+      } else {
+        r += pixel.r.toDouble();
+        g += pixel.g.toDouble();
+        b += pixel.b.toDouble();
+      }
 
-      r += pixel.r.toDouble();
-      g += pixel.g.toDouble();
-      b += pixel.b.toDouble();
       count++;
     }
   }

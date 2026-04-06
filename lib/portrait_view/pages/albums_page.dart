@@ -9,16 +9,32 @@ import 'package:particle_music/l10n/generated/app_localizations.dart';
 
 import 'package:particle_music/common_widgets/my_switch.dart';
 import 'package:particle_music/utils.dart';
-import 'package:smooth_corner/smooth_corner.dart';
 
-class AlbumsPage extends StatelessWidget {
+class AlbumsPage extends StatefulWidget {
+  const AlbumsPage({super.key});
+
+  @override
+  State<StatefulWidget> createState() => _AlbumsPageState();
+}
+
+class _AlbumsPageState extends State<AlbumsPage> {
   final ValueNotifier<List<Album>> currentAlbumListNotifier = ValueNotifier(
     artistsAlbumsManager.albumList,
   );
 
   final textController = TextEditingController();
 
-  AlbumsPage({super.key});
+  @override
+  void initState() {
+    super.initState();
+    artistsAlbumsManager.updateNotifier.addListener(updateCurrentAlbumList);
+  }
+
+  @override
+  void dispose() {
+    artistsAlbumsManager.updateNotifier.removeListener(updateCurrentAlbumList);
+    super.dispose();
+  }
 
   void updateCurrentAlbumList() {
     final value = textController.text;
@@ -184,27 +200,20 @@ class AlbumsPage extends StatelessWidget {
 
             return Column(
               children: [
-                Material(
-                  elevation: 1,
-                  shape: SmoothRectangleBorder(
-                    smoothness: 1,
-                    borderRadius: BorderRadius.circular(radius),
-                  ),
-                  child: GestureDetector(
-                    child: ValueListenableBuilder(
-                      valueListenable: album.displayNavidromeNotifier,
-                      builder: (context, value, child) {
-                        return CoverArtWidget(
-                          size: size,
-                          borderRadius: radius,
-                          song: album.getDisplaySong(),
-                        );
-                      },
-                    ),
-                    onTap: () {
-                      layersManager.pushLayer('albums', content: album.name);
+                GestureDetector(
+                  child: ValueListenableBuilder(
+                    valueListenable: album.displayNavidromeNotifier,
+                    builder: (context, value, child) {
+                      return CoverArtWidget(
+                        size: size,
+                        borderRadius: radius,
+                        song: album.getDisplaySong(),
+                      );
                     },
                   ),
+                  onTap: () {
+                    layersManager.pushLayer('albums', content: album.name);
+                  },
                 ),
                 SizedBox(height: 5),
                 SizedBox(

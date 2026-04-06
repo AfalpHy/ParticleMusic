@@ -35,7 +35,7 @@ class LocalNavidromePage extends StatelessWidget {
       valueListenable: displayNavidromeNotifier,
       builder: (context, value, child) {
         return SongListPage(
-          key: UniqueKey(),
+          key: ValueKey(value),
           playlist: playlist,
           artist: artist,
           album: album,

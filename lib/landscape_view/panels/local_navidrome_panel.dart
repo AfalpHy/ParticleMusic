@@ -52,7 +52,7 @@ class LocalNavidromePanel extends StatelessWidget {
             valueListenable: displayNavidromeNotifier,
             builder: (context, value, child) {
               return SongListPanel(
-                key: UniqueKey(),
+                key: ValueKey(value),
                 textController: textController,
                 playlist: playlist,
                 artist: artist,

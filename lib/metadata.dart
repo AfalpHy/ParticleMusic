@@ -4,6 +4,7 @@ import 'dart:typed_data';
 import 'package:audio_tags_lofty/audio_tags_lofty.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:particle_music/artists_albums_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
@@ -220,18 +221,24 @@ Future<void> _tryWriteMetadata(
       pictureBytes: writePictureBytes,
     );
     if (success) {
+      final originArtist = getArtist(song);
+      final originAlbum = getAlbum(song);
+
       song.title = writeTitle;
       song.artist = writeArtist;
       song.album = writeAlbum;
       song.genre = writeGenre;
       song.lyrics = writeLyrics;
       song.parsedLyrics = null;
-      song.year = writeYear;
-      song.track = writeTrack;
-      song.disc = writeDisc;
+      // do not modify when writeValue is null
+      song.year = writeYear ?? song.year;
+      song.track = writeTrack ?? song.track;
+      song.disc = writeDisc ?? song.disc;
 
       song.pictureBytes = _pictureBytesNotifier.value;
       song.coverArtColor = null;
+
+      artistsAlbumsManager.updateArtistAlbum(song, originArtist, originAlbum);
 
       song.updateNotifier.value++;
       layersManager.updateBackground();

@@ -1,6 +1,7 @@
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/landscape_view/bottom_control.dart';
@@ -23,7 +24,10 @@ class LandscapeView extends StatelessWidget {
             if (mainPageThemeNotifier.value != 0) {
               return SizedBox.shrink();
             }
-            return CoverArtWidget(song: backgroundSong);
+            return CoverArtWidget(
+              song: backgroundSong,
+              color: colorManager.getSpecificBgBaseColor(),
+            );
           },
         ),
         ValueListenableBuilder(

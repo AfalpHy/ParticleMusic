@@ -272,6 +272,18 @@ class ColorManager {
     };
   }
 
+  Color getSpecificCoverArtBaseColor() {
+    return miniModeNotifier.value
+        ? currentCoverArtColor
+        : displayLyricsPageNotifier.value
+        ? lyricsPageBackgroundBaseColor
+        : mainPageThemeNotifier.value == 0
+        ? backgroundBaseColor
+        : isMobile
+        ? pageBackgroundColor
+        : panelColor;
+  }
+
   Color getSpecificBgBaseColor() {
     return miniModeNotifier.value
         ? currentCoverArtColor

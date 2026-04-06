@@ -2,13 +2,13 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:particle_music/artists_albums_manager.dart';
+import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/folder.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/utils.dart';
-import 'package:smooth_corner/smooth_corner.dart';
 
 abstract class BaseSongListWidget extends StatefulWidget {
   final Playlist? playlist;
@@ -99,9 +99,11 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
     } else if (artist != null) {
       songList = artist!.getSongList(isNavidrome);
       title = artist!.name;
+      artist!.updateNotifier.addListener(updateSongList);
     } else if (album != null) {
       songList = album!.getSongList(isNavidrome);
       title = album!.name;
+      album!.updateNotifier.addListener(updateSongList);
     } else if (folder != null) {
       songList = folder!.songList;
       title = folder!.path;
@@ -134,6 +136,10 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
   void dispose() {
     if (playlist != null) {
       playlist!.updateNotifier.removeListener(updateSongList);
+    } else if (artist != null) {
+      artist!.updateNotifier.removeListener(updateSongList);
+    } else if (album != null) {
+      album!.updateNotifier.removeListener(updateSongList);
     } else if (folder != null) {
       folder!.updateNotifier.removeListener(updateSongList);
     } else if (ranking != null) {
@@ -151,31 +157,37 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
   }
 
   Widget mainCover(double size) {
-    return Material(
-      color: Colors.transparent,
-      elevation: 5,
-      shape: SmoothRectangleBorder(
-        smoothness: 1,
-        borderRadius: BorderRadius.circular(10),
-      ),
-      child: ValueListenableBuilder(
-        valueListenable: currentSongListNotifier,
-        builder: (_, _, _) {
-          if (songList.isEmpty) {
-            return CoverArtWidget(size: size, borderRadius: 10, song: null);
-          }
-          return ValueListenableBuilder(
-            valueListenable: songList.first.updateNotifier,
-            builder: (_, _, _) {
+    return ValueListenableBuilder(
+      valueListenable: updateColorNotifier,
+      builder: (context, value, child) {
+        return ValueListenableBuilder(
+          valueListenable: currentSongListNotifier,
+          builder: (_, _, _) {
+            if (songList.isEmpty) {
               return CoverArtWidget(
                 size: size,
                 borderRadius: 10,
-                song: songList.first,
+                song: null,
+                elevation: 5,
+                color: colorManager.getSpecificCoverArtBaseColor(),
               );
-            },
-          );
-        },
-      ),
+            }
+            final song = songList.first;
+            return ValueListenableBuilder(
+              valueListenable: song.updateNotifier,
+              builder: (_, _, _) {
+                return CoverArtWidget(
+                  size: size,
+                  borderRadius: 10,
+                  song: song,
+                  elevation: 5,
+                  color: colorManager.getSpecificCoverArtBaseColor(),
+                );
+              },
+            );
+          },
+        );
+      },
     );
   }
 }
