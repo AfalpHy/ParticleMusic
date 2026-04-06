@@ -6,7 +6,6 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/navidrome_client.dart';
-import 'package:particle_music/utils.dart';
 
 class History {
   late File rankingFile;
@@ -129,12 +128,7 @@ class History {
       rankingFile.writeAsStringSync(
         jsonEncode(
           rankingSongList
-              .map(
-                (e) => {
-                  'times': e.playCount,
-                  'path': clipFilePathIfNeed(e.filePath!),
-                },
-              )
+              .map((e) => {'times': e.playCount, 'path': e.filePath!})
               .toList(),
         ),
       );
@@ -151,7 +145,7 @@ class History {
       navidromeRecentlySongList.remove(song);
       navidromeRecentlySongList.insert(0, song);
     } else {
-      String filePath = clipFilePathIfNeed(song.filePath!);
+      String filePath = song.filePath!;
 
       recentlyPathList.remove(filePath);
       recentlyPathList.insert(0, filePath);

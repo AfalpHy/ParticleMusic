@@ -1,12 +1,14 @@
+import 'dart:io';
 import 'dart:typed_data';
 
 import 'package:audio_tags_lofty/audio_tags_lofty.dart';
 import 'package:flutter/material.dart';
+import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/lyrics.dart';
-import 'package:particle_music/utils.dart';
 
 class MyAudioMetadata {
-  final String? filePath;
+  String? filePath;
+  String? iosPath;
   final DateTime? modified;
   final String? id;
   final bool isNavidrome;
@@ -28,6 +30,7 @@ class MyAudioMetadata {
   MyAudioMetadata(
     this._audioMetadata, {
     this.filePath,
+    this.iosPath,
     this.modified,
     this.id,
     this.isNavidrome = false,
@@ -35,6 +38,7 @@ class MyAudioMetadata {
     this.lastPlayed,
   });
 
+  String get fullFilePath => Platform.isIOS ? iosPath! : filePath!;
   String? get title => _audioMetadata.title;
   String? get artist => _audioMetadata.artist;
   String? get album => _audioMetadata.album;
@@ -71,9 +75,9 @@ class MyAudioMetadata {
 
   factory MyAudioMetadata.fromMap(Map<String, dynamic> map) {
     final path = map['path'] as String;
-
     return MyAudioMetadata(
-      filePath: revertFilePathIfNeed(path),
+      filePath: path,
+      iosPath: Platform.isIOS ? library.iosFileProviderStorage! + path : null,
       modified: DateTime.fromMillisecondsSinceEpoch(map['modified'] as int),
       AudioMetadata(
         title: map['title'] as String?,
@@ -121,7 +125,7 @@ class MyAudioMetadata {
   Map<String, dynamic> toMap() {
     return {
       'modified': modified?.millisecondsSinceEpoch,
-      'path': clipFilePathIfNeed(filePath!),
+      'path': filePath!,
       'title': title,
       'artist': artist,
       'album': album,

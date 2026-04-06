@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:particle_music/artists_albums_manager.dart';
+import 'package:particle_music/bookmark_service.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/library.dart';
@@ -15,10 +16,7 @@ class Loader {
       await Permission.storage.request();
       await Permission.audio.request();
     } else if (Platform.isIOS) {
-      final keepfile = File('${appDocs.path}/Particle Music.keep');
-      if (!(await keepfile.exists())) {
-        await keepfile.writeAsString("App initialized");
-      }
+      await BookmarkService.init();
     }
 
     settingManager = SettingManager();

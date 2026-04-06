@@ -211,13 +211,13 @@ class MyAudioHandler extends BaseAudioHandler {
         'playQueueTmp': _playQueueTmp.map((e) {
           return {
             'isNavidrome': e.isNavidrome,
-            'content': e.isNavidrome ? e.id : clipFilePathIfNeed(e.filePath!),
+            'content': e.isNavidrome ? e.id : e.filePath!,
           };
         }).toList(),
         'playQueue': playQueue.map((e) {
           return {
             'isNavidrome': e.isNavidrome,
-            'content': e.isNavidrome ? e.id : clipFilePathIfNeed(e.filePath!),
+            'content': e.isNavidrome ? e.id : e.filePath!,
           };
         }).toList(),
       }),
@@ -456,7 +456,7 @@ class MyAudioHandler extends BaseAudioHandler {
         );
       } else {
         await _player.open(
-          Media(currentSong.filePath!),
+          Media(currentSong.fullFilePath),
           play: isPlayingNotifier.value,
         );
       }

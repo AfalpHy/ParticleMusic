@@ -213,7 +213,7 @@ class Playlist {
 
   Future<void> update() async {
     await file.writeAsString(
-      jsonEncode(songList.map((e) => clipFilePathIfNeed(e.filePath!)).toList()),
+      jsonEncode(songList.map((e) => e.filePath!).toList()),
     );
     if (isFavorite) {
       await navidromeClient.unstarAllSongs();

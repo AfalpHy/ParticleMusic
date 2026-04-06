@@ -38,12 +38,17 @@ class Folder {
   final updateNotifier = ValueNotifier(0);
 
   Folder(this.index, this.path) {
-    _dir = Directory(revertDirectoryPathIfNeed(path));
+    _dir = Directory(path);
     _songFilePathListFile = File(_getFolderSongFilePathListPath(index));
   }
 
   Future<void> load() async {
-    if (!_dir.existsSync()) {
+    try {
+      if (!_dir.existsSync()) {
+        return;
+      }
+    } catch (e) {
+      logger.output(e.toString());
       return;
     }
 
@@ -57,7 +62,10 @@ class Folder {
         continue;
       }
 
-      String path = clipFilePathIfNeed(file.path);
+      String path = file.path;
+      if (Platform.isIOS) {
+        path = path.split('File Provider Storage/').last;
+      }
       MyAudioMetadata? song = library.filePath2Song[path];
       bool isAdditional = song == null;
       final modified = (await file.stat()).modified;
@@ -91,7 +99,7 @@ class Folder {
 
   Future<void> _saveSongFilePathList() async {
     await _songFilePathListFile.writeAsString(
-      jsonEncode(songList.map((e) => clipFilePathIfNeed(e.filePath!)).toList()),
+      jsonEncode(songList.map((e) => e.filePath!).toList()),
     );
   }
 

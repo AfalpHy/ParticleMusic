@@ -220,7 +220,7 @@ Future<void> _tryWriteMetadata(
     Uint8List? writePictureBytes = _pictureBytesNotifier.value;
 
     bool success = writeMetadata(
-      path: song.filePath!,
+      path: song.fullFilePath,
       title: writeTitle,
       artist: writeArtist,
       album: writeAlbum,

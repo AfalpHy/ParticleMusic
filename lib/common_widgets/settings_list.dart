@@ -6,6 +6,7 @@ import 'package:flex_color_picker/flex_color_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 import 'package:http/http.dart' as http;
+import 'package:particle_music/bookmark_service.dart';
 import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/layer/layers_manager.dart';
@@ -236,34 +237,31 @@ class SettingsList extends StatelessWidget {
                             if (result == null) {
                               return;
                             }
-
-                            if (Platform.isIOS) {
-                              if (result.contains(appDocs.path)) {
-                                result = result.substring(
-                                  result.indexOf('Documents'),
-                                );
-                                result = result.replaceFirst(
-                                  'Documents',
-                                  'Particle Music',
-                                );
-                              } else if (context.mounted) {
+                            if (currentFolderList.contains(result)) {
+                              if (context.mounted) {
                                 showCenterMessage(
                                   context,
-                                  'No access permission',
+                                  'The folder already exists',
                                   duration: 2000,
                                 );
-                                return;
                               }
-                            }
-                            if (currentFolderList.contains(result) &&
-                                context.mounted) {
-                              showCenterMessage(
-                                context,
-                                'The folder already exists',
-                                duration: 2000,
-                              );
                               return;
                             }
+                            if (Platform.isIOS) {
+                              if (result.contains('File Provider Storage/') ==
+                                  false) {
+                                if (context.mounted) {
+                                  showCenterMessage(
+                                    context,
+                                    'Do not support this folder',
+                                    duration: 2000,
+                                  );
+                                }
+                                return;
+                              }
+                              BookmarkService.active(result);
+                            }
+
                             currentFolderList.add(result);
                             updateNotifier.value++;
                           },
@@ -280,17 +278,19 @@ class SettingsList extends StatelessWidget {
                             if (result == null) {
                               return;
                             }
-
-                            if (Platform.isIOS &&
-                                !result.contains(appDocs.path)) {
-                              if (context.mounted) {
-                                showCenterMessage(
-                                  context,
-                                  'No access permission',
-                                  duration: 2000,
-                                );
+                            if (Platform.isIOS) {
+                              if (result.contains('File Provider Storage/') ==
+                                  false) {
+                                if (context.mounted) {
+                                  showCenterMessage(
+                                    context,
+                                    'Do not support this folder',
+                                    duration: 2000,
+                                  );
+                                }
                                 return;
                               }
+                              BookmarkService.active(result);
                             }
 
                             Directory root = Directory(result);
@@ -304,7 +304,6 @@ class SettingsList extends StatelessWidget {
                             folderList.insert(0, result);
 
                             for (String folder in folderList) {
-                              folder = convertDirectoryPathIfNeed(folder);
                               if (!currentFolderList.contains(folder)) {
                                 currentFolderList.add(folder);
                               }

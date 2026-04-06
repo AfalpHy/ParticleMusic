@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:particle_music/bookmark_service.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/folder.dart';
 import 'package:particle_music/layer/layers_manager.dart';
@@ -27,6 +28,7 @@ class Library {
 
   late final File _folderPathListFile;
   List<Folder> folderList = [];
+  String? iosFileProviderStorage;
 
   Library() {
     _songFilePathListFile = File(
@@ -53,7 +55,18 @@ class Library {
     final folderPathList = result.cast<String>();
 
     for (int i = 0; i < folderPathList.length; i++) {
-      folderList.add(Folder(i, folderPathList[i]));
+      String? path = folderPathList[i];
+
+      if (Platform.isIOS) {
+        path = await BookmarkService.getUrlById(path);
+        if (iosFileProviderStorage == null) {
+          path = path?.substring(0, path.indexOf('File Provider Storage/'));
+          iosFileProviderStorage = "${path}File Provider Storage/";
+        }
+      }
+      if (path != null) {
+        folderList.add(Folder(i, path));
+      }
     }
   }
 
@@ -101,9 +114,22 @@ class Library {
 
     folderList = newFolderList;
 
-    await _folderPathListFile.writeAsString(
-      jsonEncode(folderList.map((e) => e.path).toList()),
-    );
+    if (Platform.isIOS) {
+      await BookmarkService.clear();
+      List<String> ids = [];
+      for (final folder in folderList) {
+        String path = folder.path;
+        String id = path.split('File Provider Storage/').last;
+        if (await BookmarkService.saveDirectoryAndActive(id, path)) {
+          ids.add(id);
+        }
+      }
+      await _folderPathListFile.writeAsString(jsonEncode(ids));
+    } else {
+      await _folderPathListFile.writeAsString(
+        jsonEncode(folderList.map((e) => e.path).toList()),
+      );
+    }
     return true;
   }
 
@@ -126,8 +152,8 @@ class Library {
     final List<dynamic> list = jsonDecode(jsonString);
 
     for (final map in list) {
-      final path = map['path'] as String;
-      filePath2Song[path] = MyAudioMetadata.fromMap(map);
+      final song = MyAudioMetadata.fromMap(map);
+      filePath2Song[song.filePath!] = song;
     }
   }
 
@@ -162,7 +188,7 @@ class Library {
 
   Future<void> _saveSongFilePathList() async {
     await _songFilePathListFile.writeAsString(
-      jsonEncode(songList.map((e) => clipFilePathIfNeed(e.filePath!)).toList()),
+      jsonEncode(songList.map((e) => e.filePath!).toList()),
     );
   }
 
