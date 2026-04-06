@@ -158,7 +158,7 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
 
   Widget mainCover(double size) {
     return ValueListenableBuilder(
-      valueListenable: updateColorNotifier,
+      valueListenable: mainPageThemeNotifier,
       builder: (context, value, child) {
         return ValueListenableBuilder(
           valueListenable: currentSongListNotifier,

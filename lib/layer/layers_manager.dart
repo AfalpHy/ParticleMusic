@@ -30,6 +30,7 @@ class LayersManager {
 
   List<Page> buildPages() {
     return layerStack.map((layer) {
+      final currentBgSong = _getBackgroundSong(layer);
       return MaterialPage(
         key: ValueKey(layer),
         child: Stack(
@@ -38,17 +39,19 @@ class LayersManager {
           children: [
             if (mainPageThemeNotifier.value == 0) ...[
               CoverArtWidget(
-                song: _getBackgroundSong(layer),
-                color: _getBackgroundSong(layer)?.coverArtColor,
+                song: currentBgSong,
+                color: currentBgSong == null
+                    ? Colors.grey
+                    : currentBgSong.coverArtColor,
               ),
 
               ClipRect(
                 child: BackdropFilter(
                   filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
                   child: Container(
-                    color: _getBackgroundSong(
-                      layer,
-                    )?.coverArtColor?.withAlpha(180),
+                    color: currentBgSong == null
+                        ? Colors.grey.withAlpha(180)
+                        : currentBgSong.coverArtColor?.withAlpha(180),
                   ),
                 ),
               ),
