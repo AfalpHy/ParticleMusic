@@ -60,8 +60,12 @@ class Library {
       if (Platform.isIOS) {
         path = await BookmarkService.getUrlById(path);
         if (iosFileProviderStorage == null) {
-          path = path?.substring(0, path.indexOf('File Provider Storage/'));
-          iosFileProviderStorage = "${path}File Provider Storage/";
+          iosFileProviderStorage = path?.substring(
+            0,
+            path.indexOf('File Provider Storage/'),
+          );
+          iosFileProviderStorage =
+              "${iosFileProviderStorage}File Provider Storage/";
         }
       }
       if (path != null) {
@@ -120,6 +124,7 @@ class Library {
       for (final folder in folderList) {
         String path = folder.path;
         String id = path.split('File Provider Storage/').last;
+        library.iosFileProviderStorage ??= path.substring(0, path.indexOf(id));
         if (await BookmarkService.saveDirectoryAndActive(id, path)) {
           ids.add(id);
         }

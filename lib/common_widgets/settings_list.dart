@@ -204,8 +204,14 @@ class SettingsList extends StatelessWidget {
                         return ListView.builder(
                           itemCount: currentFolderList.length,
                           itemBuilder: (_, index) {
+                            final folderPath = currentFolderList[index];
+                            final displayName = Platform.isIOS
+                                ? folderPath
+                                      .split('File Provider Storage/')
+                                      .last
+                                : folderPath;
                             return ListTile(
-                              title: Text(currentFolderList[index]),
+                              title: Text(displayName),
                               contentPadding: EdgeInsets.fromLTRB(20, 0, 5, 0),
 
                               trailing: IconButton(

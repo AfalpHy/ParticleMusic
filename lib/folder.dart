@@ -42,6 +42,10 @@ class Folder {
     _songFilePathListFile = File(_getFolderSongFilePathListPath(index));
   }
 
+  String getDisplayName() {
+    return Platform.isIOS ? path.split('File Provider Storage/').last : path;
+  }
+
   Future<void> load() async {
     try {
       if (!_dir.existsSync()) {
@@ -74,7 +78,12 @@ class Folder {
         final tmp = readMetadata(file.path, false);
 
         if (tmp != null) {
-          song = MyAudioMetadata(tmp, filePath: file.path, modified: modified);
+          song = MyAudioMetadata(
+            tmp,
+            filePath: path,
+            iosPath: Platform.isIOS ? file.path : null,
+            modified: modified,
+          );
 
           if (isAdditional) {
             additionalSongList.add(song);

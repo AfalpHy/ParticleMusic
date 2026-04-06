@@ -40,7 +40,7 @@ class FoldersPage extends StatelessWidget {
                 );
               },
             ),
-            title: Text(folder.path),
+            title: Text(folder.getDisplayName()),
             onTap: () {
               layersManager.pushLayer('folders', content: folder.path);
             },

@@ -103,7 +103,7 @@ class FoldersPanel extends StatelessWidget {
                           SizedBox(width: 10),
 
                           Text(
-                            folder.path,
+                            folder.getDisplayName(),
                             style: TextStyle(overflow: .ellipsis),
                           ),
                         ],
