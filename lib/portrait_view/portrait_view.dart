@@ -63,22 +63,7 @@ class _PortraitViewState extends State<PortraitView> {
                   );
                 },
               ),
-              Positioned(
-                top: MediaQuery.of(context).padding.top + 5,
-                left: 5,
-                child: Builder(
-                  builder: (context) => IconButton(
-                    icon: Icon(
-                      Platform.isAndroid
-                          ? Icons.menu
-                          : Icons.arrow_back_ios_new_rounded,
-                    ),
-                    onPressed: () => Platform.isAndroid
-                        ? Scaffold.of(context).openDrawer()
-                        : layersManager.popLayer(),
-                  ),
-                ),
-              ),
+
               Positioned(
                 left: 20,
                 right: 20,

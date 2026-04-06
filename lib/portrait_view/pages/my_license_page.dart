@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
+import 'package:particle_music/portrait_view/custom_appbar_leading.dart';
 import 'package:particle_music/portrait_view/my_search_field.dart';
 
 class MyLicensePage extends StatefulWidget {
@@ -55,7 +56,7 @@ class _MyLicensePageState extends State<MyLicensePage> {
       resizeToAvoidBottomInset: false,
       body: Column(
         children: [
-          search(context),
+          customAppBar(context),
           Expanded(
             child: ValueListenableBuilder(
               valueListenable: updateColorNotifier,
@@ -69,9 +70,10 @@ class _MyLicensePageState extends State<MyLicensePage> {
     );
   }
 
-  PreferredSizeWidget search(BuildContext context) {
+  PreferredSizeWidget customAppBar(BuildContext context) {
     return AppBar(
       automaticallyImplyLeading: false,
+      leading: customAppBarLeading(context),
       backgroundColor: Colors.transparent,
       scrolledUnderElevation: 0,
       actions: [

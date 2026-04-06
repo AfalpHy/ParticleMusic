@@ -6,6 +6,7 @@ import 'package:flutter/rendering.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/my_auto_size_text.dart';
 import 'package:particle_music/common_widgets/selectable_song_list_page.dart';
+import 'package:particle_music/portrait_view/custom_appbar_leading.dart';
 import 'package:particle_music/portrait_view/my_search_field.dart';
 import 'package:particle_music/common_widgets/my_sheet.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
@@ -40,16 +41,17 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
       resizeToAvoidBottomInset: false,
       body: Column(
         children: [
-          searchAndMore(context),
+          customAppBar(context),
           Expanded(child: contentWithStack()),
         ],
       ),
     );
   }
 
-  PreferredSizeWidget searchAndMore(BuildContext context) {
+  PreferredSizeWidget customAppBar(BuildContext context) {
     return AppBar(
       automaticallyImplyLeading: false,
+      leading: customAppBarLeading(context),
       backgroundColor: Colors.transparent,
       scrolledUnderElevation: 0,
       actions: [

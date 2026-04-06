@@ -4,6 +4,7 @@ import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
+import 'package:particle_music/portrait_view/custom_appbar_leading.dart';
 
 class PlaylistsPage extends StatelessWidget {
   const PlaylistsPage({super.key});
@@ -16,6 +17,7 @@ class PlaylistsPage extends StatelessWidget {
       backgroundColor: Colors.transparent,
       appBar: AppBar(
         automaticallyImplyLeading: false,
+        leading: customAppBarLeading(context),
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,

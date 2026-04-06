@@ -3,6 +3,7 @@ import 'package:particle_music/artists_albums_manager.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/layer/layers_manager.dart';
+import 'package:particle_music/portrait_view/custom_appbar_leading.dart';
 import 'package:particle_music/portrait_view/my_search_field.dart';
 import 'package:particle_music/common_widgets/my_sheet.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
@@ -52,8 +53,8 @@ class _AlbumsPageState extends State<AlbumsPage> {
       resizeToAvoidBottomInset: false,
       appBar: AppBar(
         automaticallyImplyLeading: false,
+        leading: customAppBarLeading(context),
         backgroundColor: Colors.transparent,
-
         scrolledUnderElevation: 0,
         title: Text(l10n.albums),
         centerTitle: true,
