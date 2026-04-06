@@ -45,7 +45,7 @@ class SettingManager {
 
     colorManager.loadCustomColors(json);
 
-    colorManager.setColor();
+    colorManager.setColors();
 
     lyricsFontSizeOffset =
         json['lyricsFontSizeOffset'] as double? ?? lyricsFontSizeOffset;

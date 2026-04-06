@@ -480,11 +480,15 @@ Future<Color> computeCoverArtColor(MyAudioMetadata? song) async {
   }
   final bytes = await loadPictureBytes(song);
   if (bytes == null) {
+    song?.coverArtColor = Colors.grey;
     return Colors.grey;
   }
 
   final decoded = image.decodeImage(bytes);
-  if (decoded == null) return Colors.grey;
+  if (decoded == null) {
+    song?.coverArtColor = Colors.grey;
+    return Colors.grey;
+  }
 
   // simple average of top pixels
   double r = 0, g = 0, b = 0, count = 0;

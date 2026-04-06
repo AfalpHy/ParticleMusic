@@ -158,21 +158,21 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
 
   Widget mainCover(double size) {
     return ValueListenableBuilder(
-      valueListenable: mainPageThemeNotifier,
-      builder: (context, value, child) {
+      valueListenable: currentSongListNotifier,
+      builder: (_, _, _) {
+        if (songList.isEmpty) {
+          return CoverArtWidget(
+            size: size,
+            borderRadius: 10,
+            song: null,
+            elevation: 5,
+            color: Colors.grey,
+          );
+        }
+        final song = songList.first;
         return ValueListenableBuilder(
-          valueListenable: currentSongListNotifier,
-          builder: (_, _, _) {
-            if (songList.isEmpty) {
-              return CoverArtWidget(
-                size: size,
-                borderRadius: 10,
-                song: null,
-                elevation: 5,
-                color: colorManager.getSpecificCoverArtBaseColor(),
-              );
-            }
-            final song = songList.first;
+          valueListenable: updateColorNotifier,
+          builder: (context, value, child) {
             return ValueListenableBuilder(
               valueListenable: song.updateNotifier,
               builder: (_, _, _) {
@@ -181,7 +181,11 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
                   borderRadius: 10,
                   song: song,
                   elevation: 5,
-                  color: colorManager.getSpecificCoverArtBaseColor(),
+                  color: isLandscape
+                      ? colorManager.getSpecificMainPageCoverArtBaseColor()
+                      : colorManager.getSpecificMainPageCoverArtBaseColorForm(
+                          song,
+                        ), // keep stable color
                 );
               },
             );

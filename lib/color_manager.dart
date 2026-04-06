@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
+import 'package:particle_music/my_audio_metadata.dart';
 
 ColorManager colorManager = ColorManager();
 
@@ -134,7 +135,7 @@ class ColorManager {
     return value;
   }
 
-  void setColor() {
+  void setMainPageColors() {
     if (mainPageThemeNotifier.value == 0) {
       pageBackgroundColor = vividModePageBackgroundColor;
       iconColor = vividModeIconColor;
@@ -200,7 +201,9 @@ class ColorManager {
       seekBarColor = getCustomColorByName('customSeekBarColor');
       volumeBarColor = getCustomColorByName('customVolumeBarColor');
     }
+  }
 
+  void setLyricsPageColors() {
     lyricsPageBackgroundBaseColor = Colors.transparent;
     if (lyricsPageThemeNotifier.value == 0) {
       lyricsPageBackgroundBaseColor = currentCoverArtColor;
@@ -246,6 +249,11 @@ class ColorManager {
     }
   }
 
+  void setColors() {
+    setMainPageColors();
+    setLyricsPageColors();
+  }
+
   Map<String, String> getNameMap(AppLocalizations l10n) {
     return {
       'customPageBackgroundColor': l10n.backgroundColor,
@@ -272,16 +280,26 @@ class ColorManager {
     };
   }
 
-  Color getSpecificCoverArtBaseColor() {
-    return miniModeNotifier.value
-        ? currentCoverArtColor
-        : displayLyricsPageNotifier.value
-        ? lyricsPageBackgroundBaseColor
-        : mainPageThemeNotifier.value == 0
+  Color? getSpecificMainPageCoverArtBaseColorForm(MyAudioMetadata song) {
+    return mainPageThemeNotifier.value == 0
+        ? song.coverArtColor
+        : isMobile
+        ? pageBackgroundColor
+        : panelColor;
+  }
+
+  Color getSpecificMainPageCoverArtBaseColor() {
+    return mainPageThemeNotifier.value == 0
         ? backgroundBaseColor
         : isMobile
         ? pageBackgroundColor
         : panelColor;
+  }
+
+  Color getSpecificLyricsPageCoverArtBaseColor() {
+    return lyricsPageThemeNotifier.value == 0
+        ? lyricsPageBackgroundBaseColor
+        : lyricsPageBackgroundColor;
   }
 
   Color getSpecificBgBaseColor() {

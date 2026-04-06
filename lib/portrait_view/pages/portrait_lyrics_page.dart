@@ -118,7 +118,8 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                   }
                   return CoverArtWidget(
                     song: currentSong,
-                    color: colorManager.getSpecificCoverArtBaseColor(),
+                    color: colorManager
+                        .getSpecificLyricsPageCoverArtBaseColor(),
                   );
                 },
               ),
@@ -218,7 +219,7 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
               borderRadius: mobileWidth * 0.04,
               song: currentSong,
               elevation: 15,
-              color: colorManager.getSpecificCoverArtBaseColor(),
+              color: colorManager.getSpecificLyricsPageCoverArtBaseColor(),
             );
           },
         ),

@@ -548,10 +548,15 @@ class SettingsList extends StatelessWidget {
     );
   }
 
-  void _updateTheme() {
+  void _updateMainPageTheme() {
     settingManager.saveSetting();
     layersManager.updateBackground();
-    colorManager.setColor();
+    colorManager.setMainPageColors();
+  }
+
+  void _updateLyricsPageTheme() {
+    settingManager.saveSetting();
+    colorManager.setLyricsPageColors();
     updateColorNotifier.value++;
   }
 
@@ -560,8 +565,8 @@ class SettingsList extends StatelessWidget {
       leading: ImageIcon(themeImage, size: iconSize),
       title: Text(l10n.theme),
       onTap: () async {
-        mainPageThemeNotifier.addListener(_updateTheme);
-        lyricsPageThemeNotifier.addListener(_updateTheme);
+        mainPageThemeNotifier.addListener(_updateMainPageTheme);
+        lyricsPageThemeNotifier.addListener(_updateLyricsPageTheme);
         await showAnimationDialog(
           context: context,
           width: 280,
@@ -669,8 +674,8 @@ class SettingsList extends StatelessWidget {
             );
           },
         );
-        mainPageThemeNotifier.removeListener(_updateTheme);
-        lyricsPageThemeNotifier.removeListener(_updateTheme);
+        mainPageThemeNotifier.removeListener(_updateMainPageTheme);
+        lyricsPageThemeNotifier.removeListener(_updateLyricsPageTheme);
       },
     );
   }
@@ -754,7 +759,7 @@ class SettingsList extends StatelessWidget {
                             ElevatedButton(
                               onPressed: () {
                                 customColor.value = colorNotifier.value;
-                                colorManager.setColor();
+                                colorManager.setColors();
                                 updateColorNotifier.value++;
                                 settingManager.saveSetting();
                                 Navigator.pop(context);
@@ -809,7 +814,7 @@ class SettingsList extends StatelessWidget {
                       for (final customColor in colorManager.customColors) {
                         customColor.reset();
                       }
-                      colorManager.setColor();
+                      colorManager.setColors();
                       updateColorNotifier.value++;
                       settingManager.saveSetting();
                     },

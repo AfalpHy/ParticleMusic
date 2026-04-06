@@ -101,7 +101,7 @@ class MyAudioHandler extends BaseAudioHandler {
 
   void _tryUpdateDesktopLyrics(Duration position) {
     final currentSong = currentSongNotifier.value;
-    if (currentSong == null) {
+    if (currentSong == null || currentSong.parsedLyrics == null) {
       return;
     }
     ParsedLyrics parsedLyrics = currentSong.parsedLyrics!;

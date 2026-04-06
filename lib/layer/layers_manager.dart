@@ -212,8 +212,7 @@ class LayersManager {
     }
 
     if (mainPageThemeNotifier.value == 0) {
-      Widget layer = layerStack.last;
-      backgroundSong = _getBackgroundSong(layer);
+      backgroundSong = _getBackgroundSong(layerStack.last);
       backgroundBaseColor = await computeCoverArtColor(backgroundSong);
       searchFieldColor = backgroundBaseColor.withAlpha(75);
       buttonColor = backgroundBaseColor.withAlpha(75);

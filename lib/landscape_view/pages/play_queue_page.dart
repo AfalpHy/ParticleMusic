@@ -24,14 +24,6 @@ class PlayQueuePageState extends State<PlayQueuePage> {
   late bool isMiniMode;
   double itemExtend = 64;
 
-  void updateIsSelectedList() {
-    isSelectedList = List.generate(
-      playQueue.length,
-      (_) => ValueNotifier(false),
-    );
-    continuousSelectBeginIndex = 0;
-  }
-
   void jumpToCurrentSong() {
     final position = scrollController.position;
     final maxScrollExtent = position.maxScrollExtent;
@@ -48,23 +40,21 @@ class PlayQueuePageState extends State<PlayQueuePage> {
   void initState() {
     super.initState();
     isMiniMode = miniModeNotifier.value;
-    updateIsSelectedList();
-    if (!isMiniMode) {
-      displayPlayQueuePageNotifier.addListener(updateIsSelectedList);
-    }
   }
 
   @override
   void dispose() {
-    if (!isMiniMode) {
-      displayPlayQueuePageNotifier.removeListener(updateIsSelectedList);
-    }
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
+    isSelectedList = List.generate(
+      playQueue.length,
+      (_) => ValueNotifier(false),
+    );
+    continuousSelectBeginIndex = 0;
 
     return Column(
       children: [
@@ -140,9 +130,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
             audioHandler.reversePlayQueue();
             jumpToCurrentSong();
 
-            setState(() {
-              updateIsSelectedList();
-            });
+            setState(() {});
           },
           icon: ImageIcon(reverseImage),
         ),
@@ -171,9 +159,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                   }
                   jumpToCurrentSong();
 
-                  setState(() {
-                    updateIsSelectedList();
-                  });
+                  setState(() {});
                 }
               },
               onLongPress: () {
@@ -307,9 +293,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                   audioHandler.insert2Next(tmpSongList[i]);
                 }
                 audioHandler.saveAllStates();
-                setState(() {
-                  updateIsSelectedList();
-                });
+                setState(() {});
               },
             ),
             MenuAction(
@@ -331,9 +315,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                   }
                 }
 
-                setState(() {
-                  updateIsSelectedList();
-                });
+                setState(() {});
                 if (playQueue.isEmpty) {
                   await audioHandler.clear();
                   displayPlayQueuePageNotifier.value = false;

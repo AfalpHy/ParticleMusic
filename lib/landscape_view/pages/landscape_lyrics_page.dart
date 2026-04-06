@@ -97,7 +97,8 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                   }
                   return CoverArtWidget(
                     song: currentSong,
-                    color: colorManager.getSpecificCoverArtBaseColor(),
+                    color: colorManager
+                        .getSpecificLyricsPageCoverArtBaseColor(),
                   );
                 },
               ),
@@ -129,10 +130,18 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                       children: [
                         SizedBox(height: pageHight * 0.1),
                         Spacer(),
-                        CoverArtWidget(
-                          size: coverArtSize,
-                          borderRadius: coverArtSize * 0.025,
-                          song: currentSong,
+                        ValueListenableBuilder(
+                          valueListenable: lyricsPageThemeNotifier,
+                          builder: (context, value, child) {
+                            return CoverArtWidget(
+                              size: coverArtSize,
+                              borderRadius: coverArtSize * 0.05,
+                              song: currentSong,
+                              elevation: 15,
+                              color: colorManager
+                                  .getSpecificLyricsPageCoverArtBaseColor(),
+                            );
+                          },
                         ),
                         if (pageHight > 600) ...[
                           message(coverArtSize, pageHight, currentSong),
