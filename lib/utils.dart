@@ -572,6 +572,28 @@ Future<void> updateDesktopLyrics() async {
   );
 }
 
+// full path to short path
+String convertIOSPath(String path) {
+  if (path.contains('File Provider Storage/')) {
+    return path.split('File Provider Storage/').last;
+  } else {
+    path = path.substring(path.indexOf('Documents'));
+    return path.replaceFirst('Documents', 'Particle Music');
+  }
+}
+
+// short path to full path
+String revertIOSPath(String path) {
+  if (path.contains('Particle Music')) {
+    return "${appDocs.parent.path}/${path.replaceFirst('Particle Music', 'Documents')}";
+  } else {
+    if (library.iosFileProviderStorage == null) {
+      return '';
+    }
+    return library.iosFileProviderStorage! + path;
+  }
+}
+
 void getDesktopLyricFromMap(dynamic data) {
   final raw = data as Map;
   final map = Map<String, dynamic>.from(raw);

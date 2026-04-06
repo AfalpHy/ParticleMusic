@@ -31,19 +31,20 @@ final Set<String> _loftySupportedExts = {
 class Folder {
   int index;
   final String path;
+  final String? iosPath;
   late Directory _dir;
   late File _songFilePathListFile;
   List<MyAudioMetadata> songList = [];
   List<MyAudioMetadata> additionalSongList = [];
   final updateNotifier = ValueNotifier(0);
 
-  Folder(this.index, this.path) {
-    _dir = Directory(path);
+  Folder(this.index, this.path, {this.iosPath}) {
+    if (Platform.isIOS) {
+      _dir = Directory(iosPath!);
+    } else {
+      _dir = Directory(path);
+    }
     _songFilePathListFile = File(_getFolderSongFilePathListPath(index));
-  }
-
-  String getDisplayName() {
-    return Platform.isIOS ? path.split('File Provider Storage/').last : path;
   }
 
   Future<void> load() async {
@@ -51,59 +52,59 @@ class Folder {
       if (!_dir.existsSync()) {
         return;
       }
+
+      currentLoadingFolderNotifier.value = path;
+
+      await for (final file in _dir.list()) {
+        if (file is! File) continue;
+
+        final ext = extension(file.path).toLowerCase();
+        if (!_loftySupportedExts.contains(ext)) {
+          continue;
+        }
+
+        String filePath = file.path;
+        if (Platform.isIOS) {
+          filePath = convertIOSPath(filePath);
+        }
+        MyAudioMetadata? song = library.filePath2Song[filePath];
+        bool isAdditional = song == null;
+        final modified = (await file.stat()).modified;
+
+        if (song?.modified != modified) {
+          final tmp = readMetadata(file.path, false);
+
+          if (tmp != null) {
+            song = MyAudioMetadata(
+              tmp,
+              filePath: filePath,
+              iosPath: Platform.isIOS ? file.path : null,
+              modified: modified,
+            );
+
+            if (isAdditional) {
+              additionalSongList.add(song);
+            }
+
+            library.filePath2Song[filePath] = song;
+          } else {
+            song = null;
+          }
+        }
+
+        if (song != null) {
+          library.filePathValidSet.add(filePath);
+          loadedCountNotifier.value++;
+        }
+      }
+
+      await setSongList(_songFilePathListFile, additionalSongList, songList);
+
+      await _saveSongFilePathList();
     } catch (e) {
       logger.output(e.toString());
       return;
     }
-
-    currentLoadingFolderNotifier.value = path;
-
-    await for (final file in _dir.list()) {
-      if (file is! File) continue;
-
-      final ext = extension(file.path).toLowerCase();
-      if (!_loftySupportedExts.contains(ext)) {
-        continue;
-      }
-
-      String path = file.path;
-      if (Platform.isIOS) {
-        path = path.split('File Provider Storage/').last;
-      }
-      MyAudioMetadata? song = library.filePath2Song[path];
-      bool isAdditional = song == null;
-      final modified = (await file.stat()).modified;
-
-      if (song?.modified != modified) {
-        final tmp = readMetadata(file.path, false);
-
-        if (tmp != null) {
-          song = MyAudioMetadata(
-            tmp,
-            filePath: path,
-            iosPath: Platform.isIOS ? file.path : null,
-            modified: modified,
-          );
-
-          if (isAdditional) {
-            additionalSongList.add(song);
-          }
-
-          library.filePath2Song[path] = song;
-        } else {
-          song = null;
-        }
-      }
-
-      if (song != null) {
-        library.filePathValidSet.add(path);
-        loadedCountNotifier.value++;
-      }
-    }
-
-    await setSongList(_songFilePathListFile, additionalSongList, songList);
-
-    await _saveSongFilePathList();
   }
 
   Future<void> _saveSongFilePathList() async {

@@ -3,8 +3,8 @@ import 'dart:typed_data';
 
 import 'package:audio_tags_lofty/audio_tags_lofty.dart';
 import 'package:flutter/material.dart';
-import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/lyrics.dart';
+import 'package:particle_music/utils.dart';
 
 class MyAudioMetadata {
   String? filePath;
@@ -77,7 +77,7 @@ class MyAudioMetadata {
     final path = map['path'] as String;
     return MyAudioMetadata(
       filePath: path,
-      iosPath: Platform.isIOS ? library.iosFileProviderStorage! + path : null,
+      iosPath: Platform.isIOS ? revertIOSPath(path) : null,
       modified: DateTime.fromMillisecondsSinceEpoch(map['modified'] as int),
       AudioMetadata(
         title: map['title'] as String?,

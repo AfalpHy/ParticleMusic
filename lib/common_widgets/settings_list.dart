@@ -180,7 +180,7 @@ class SettingsList extends StatelessWidget {
           width: isMobile ? 300 : 400,
           pageBuilder: (context) {
             final currentFolderList = library.folderList
-                .map((e) => e.path)
+                .map((e) => Platform.isIOS ? e.iosPath! : e.path)
                 .toList();
             final updateNotifier = ValueNotifier(0);
             final buttonStyle = ElevatedButton.styleFrom(
@@ -206,9 +206,7 @@ class SettingsList extends StatelessWidget {
                           itemBuilder: (_, index) {
                             final folderPath = currentFolderList[index];
                             final displayName = Platform.isIOS
-                                ? folderPath
-                                      .split('File Provider Storage/')
-                                      .last
+                                ? convertIOSPath(folderPath)
                                 : folderPath;
                             return ListTile(
                               title: Text(displayName),
@@ -254,8 +252,8 @@ class SettingsList extends StatelessWidget {
                               return;
                             }
                             if (Platform.isIOS) {
-                              if (result.contains('File Provider Storage/') ==
-                                  false) {
+                              if (!result.contains('File Provider Storage/') &&
+                                  !result.contains(appDocs.path)) {
                                 if (context.mounted) {
                                   showCenterMessage(
                                     context,
@@ -265,7 +263,16 @@ class SettingsList extends StatelessWidget {
                                 }
                                 return;
                               }
-                              BookmarkService.active(result);
+                              if (!await BookmarkService.active(result)) {
+                                if (context.mounted) {
+                                  showCenterMessage(
+                                    context,
+                                    'Get permission failed',
+                                    duration: 2000,
+                                  );
+                                }
+                                return;
+                              }
                             }
 
                             currentFolderList.add(result);
@@ -285,8 +292,8 @@ class SettingsList extends StatelessWidget {
                               return;
                             }
                             if (Platform.isIOS) {
-                              if (result.contains('File Provider Storage/') ==
-                                  false) {
+                              if (!result.contains('File Provider Storage/') &&
+                                  !result.contains(appDocs.path)) {
                                 if (context.mounted) {
                                   showCenterMessage(
                                     context,
@@ -296,7 +303,16 @@ class SettingsList extends StatelessWidget {
                                 }
                                 return;
                               }
-                              BookmarkService.active(result);
+                              if (!await BookmarkService.active(result)) {
+                                if (context.mounted) {
+                                  showCenterMessage(
+                                    context,
+                                    'Get permission failed',
+                                    duration: 2000,
+                                  );
+                                }
+                                return;
+                              }
                             }
 
                             Directory root = Directory(result);

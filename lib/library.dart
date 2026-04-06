@@ -55,22 +55,24 @@ class Library {
     final folderPathList = result.cast<String>();
 
     for (int i = 0; i < folderPathList.length; i++) {
-      String? path = folderPathList[i];
-
+      String path = folderPathList[i];
+      String? iosPath;
       if (Platform.isIOS) {
-        path = await BookmarkService.getUrlById(path);
-        if (iosFileProviderStorage == null) {
-          iosFileProviderStorage = path?.substring(
-            0,
-            path.indexOf('File Provider Storage/'),
-          );
-          iosFileProviderStorage =
-              "${iosFileProviderStorage}File Provider Storage/";
+        if (path.contains('Particle Music')) {
+          iosPath = revertIOSPath(path);
+        } else {
+          iosPath = await BookmarkService.getUrlById(path);
+          if (iosFileProviderStorage == null && iosPath != null) {
+            iosFileProviderStorage = iosPath.substring(
+              0,
+              path.indexOf('File Provider Storage/'),
+            );
+            iosFileProviderStorage =
+                "${iosFileProviderStorage}File Provider Storage/";
+          }
         }
       }
-      if (path != null) {
-        folderList.add(Folder(i, path));
-      }
+      folderList.add(Folder(i, path, iosPath: iosPath));
     }
   }
 
@@ -78,7 +80,10 @@ class Library {
     bool needUpdate = false;
     if (pathList.length == folderList.length) {
       for (int i = 0; i < pathList.length; i++) {
-        if (pathList[i] != folderList[i].path) {
+        final path = Platform.isIOS
+            ? folderList[i].iosPath
+            : folderList[i].path;
+        if (pathList[i] != path) {
           needUpdate = true;
           break;
         }
@@ -94,18 +99,38 @@ class Library {
     }
     List<Folder> newFolderList = [];
     for (int i = 0; i < pathList.length; i++) {
-      String path = pathList[i];
-      bool exist = false;
-      for (final folder in folderList) {
-        if (folder.path == path) {
-          await folder.updateIndex(i);
-          newFolderList.add(folder);
-          exist = true;
-          break;
+      if (Platform.isIOS) {
+        String iosPath = pathList[i];
+        String path = convertIOSPath(iosPath);
+        bool exist = false;
+        for (final folder in folderList) {
+          final folderPath = folderList[i].iosPath;
+
+          if (folderPath == iosPath) {
+            await folder.updateIndex(i);
+            newFolderList.add(folder);
+            exist = true;
+            break;
+          }
         }
-      }
-      if (!exist) {
-        newFolderList.add(Folder(i, path));
+        if (!exist) {
+          newFolderList.add(Folder(i, path, iosPath: iosPath));
+        }
+      } else {
+        String path = pathList[i];
+        bool exist = false;
+        for (final folder in folderList) {
+          final folderPath = folderList[i].path;
+          if (folderPath == path) {
+            await folder.updateIndex(i);
+            newFolderList.add(folder);
+            exist = true;
+            break;
+          }
+        }
+        if (!exist) {
+          newFolderList.add(Folder(i, path));
+        }
       }
     }
 
@@ -120,21 +145,24 @@ class Library {
 
     if (Platform.isIOS) {
       await BookmarkService.clear();
-      List<String> ids = [];
       for (final folder in folderList) {
-        String path = folder.path;
-        String id = path.split('File Provider Storage/').last;
-        library.iosFileProviderStorage ??= path.substring(0, path.indexOf(id));
-        if (await BookmarkService.saveDirectoryAndActive(id, path)) {
-          ids.add(id);
+        if (!folder.iosPath!.contains('File Provider Storage/')) {
+          continue;
+        }
+        if (await BookmarkService.saveDirectoryAndActive(
+          folder.path,
+          folder.iosPath!,
+        )) {
+          library.iosFileProviderStorage ??= folder.iosPath!.substring(
+            0,
+            folder.iosPath!.indexOf(folder.path),
+          );
         }
       }
-      await _folderPathListFile.writeAsString(jsonEncode(ids));
-    } else {
-      await _folderPathListFile.writeAsString(
-        jsonEncode(folderList.map((e) => e.path).toList()),
-      );
     }
+    await _folderPathListFile.writeAsString(
+      jsonEncode(folderList.map((e) => e.path).toList()),
+    );
     return true;
   }
 
