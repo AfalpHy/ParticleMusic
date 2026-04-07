@@ -176,8 +176,16 @@ class SongListTile extends StatelessWidget {
                                 folder!.songList.insert(0, item);
                                 folder!.update();
                               } else {
-                                final item = playlist!.songList.removeAt(index);
-                                playlist!.songList.insert(0, item);
+                                if (song.isNavidrome) {
+                                  final item = playlist!.navidromeSongList
+                                      .removeAt(index);
+                                  playlist!.navidromeSongList.insert(0, item);
+                                } else {
+                                  final item = playlist!.songList.removeAt(
+                                    index,
+                                  );
+                                  playlist!.songList.insert(0, item);
+                                }
                                 playlist!.update();
                               }
                             },
