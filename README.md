@@ -119,49 +119,50 @@ flutter build apk
 
 ### On iOS
 <div>
-    <img src="./screenshot/mobile0.png" width="270" height="540" />
-    <img src="./screenshot/mobile1.png" width="270" height="540" />
-    <img src="./screenshot/mobile2.png" width="270" height="540" />
+    <img src="./screenshots/mobile0.png" width="270" height="540" />
+    <img src="./screenshots/mobile1.png" width="270" height="540" />
+    <img src="./screenshots/mobile2.png" width="270" height="540" />
 </div>
 
 <div>
-    <img src="./screenshot/mobile3.png" width="270" height="540" />
-    <img src="./screenshot/mobile4.png" width="270" height="540" />
-    <img src="./screenshot/mobile5.png" width="270" height="540" />
+    <img src="./screenshots/mobile3.png" width="270" height="540" />
+    <img src="./screenshots/mobile4.png" width="270" height="540" />
+    <img src="./screenshots/mobile5.png" width="270" height="540" />
 </div>
 
 <div>
-    <img src="./screenshot/mobile6.png" width="270" height="540" />
-    <img src="./screenshot/mobile7.png" width="270" height="540" />
-    <img src="./screenshot/mobile8.png" width="270" height="540" />
+    <img src="./screenshots/mobile6.png" width="270" height="540" />
+    <img src="./screenshots/mobile7.png" width="270" height="540" />
+    <img src="./screenshots/mobile8.png" width="270" height="540" />
 </div>
 
 <div>
-    <img src="./screenshot/mobile9.png" width="270" height="540" />
-    <img src="./screenshot/mobile10.png" width="270" height="540" />
-    <img src="./screenshot/mobile11.png" width="270" height="540" />
+    <img src="./screenshots/mobile9.png" width="270" height="540" />
+    <img src="./screenshots/mobile10.png" width="270" height="540" />
+    <img src="./screenshots/mobile11.png" width="270" height="540" />
 </div>
 
 <div>
-    <img src="./screenshot/mobile12.png" width="270" height="540" />
-    <img src="./screenshot/mobile13.png" width="270" height="540" />
-    <img src="./screenshot/mobile14.png" width="270" height="540" />
+    <img src="./screenshots/mobile12.png" width="270" height="540" />
+    <img src="./screenshots/mobile13.png" width="270" height="540" />
+    <img src="./screenshots/mobile14.png" width="270" height="540" />
 </div>
 
 <div>
-    <img src="./screenshot/mobile15.png" width="270" height="540" />
+    <img src="./screenshots/mobile15.png" width="270" height="540" />
+    <img src="./screenshots/mobile16.png" width="270" height="540" />
 </div>
 
 ### On Windows
 
-![](./screenshot/desktop0.png)
-![](./screenshot/desktop1.png)
-![](./screenshot/desktop2.png)
-![](./screenshot/desktop3.png)
-![](./screenshot/desktop4.png)
-![](./screenshot/desktop5.png)
-![](./screenshot/desktop6.png)
-![](./screenshot/desktop7.png)
-![](./screenshot/desktop8.png)
-![](./screenshot/desktop9.png)
-![](./screenshot/desktop10.png)
+![](./screenshots/desktop0.png)
+![](./screenshots/desktop1.png)
+![](./screenshots/desktop2.png)
+![](./screenshots/desktop3.png)
+![](./screenshots/desktop4.png)
+![](./screenshots/desktop5.png)
+![](./screenshots/desktop6.png)
+![](./screenshots/desktop7.png)
+![](./screenshots/desktop8.png)
+![](./screenshots/desktop9.png)
+![](./screenshots/desktop10.png)
