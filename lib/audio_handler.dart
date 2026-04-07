@@ -9,6 +9,7 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/landscape_view/extensions/window_controller_extension.dart';
 import 'package:particle_music/common_widgets/lyrics.dart';
 import 'package:particle_music/layer/layers_manager.dart';
+import 'package:particle_music/monet_color_generator.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/navidrome_client.dart';
 import 'package:particle_music/utils.dart';
@@ -452,8 +453,9 @@ class MyAudioHandler extends BaseAudioHandler {
     if (lyricsPageThemeNotifier.value == 0) {
       lyricsPageBackgroundBaseColor = currentCoverArtColor;
       lyricsPageBackgroundColor = Colors.transparent;
-      lyricsPageForegroundColor = Colors.grey.shade50;
-      lyricsPageHighlightTextColor = Colors.white;
+      final monetTheme = MonetColorGenerator.generate(currentCoverArtColor);
+      lyricsPageForegroundColor = monetTheme.regular;
+      lyricsPageHighlightTextColor = monetTheme.accent;
       lyricsPageButtonColor = Colors.white30;
       lyricsPageDividerColor = Colors.grey.shade50;
       lyricsPageSelectedItemColor = Colors.white30;

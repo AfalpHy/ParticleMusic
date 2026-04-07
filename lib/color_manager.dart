@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
+import 'package:particle_music/monet_color_generator.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 
 ColorManager colorManager = ColorManager();
@@ -208,8 +209,9 @@ class ColorManager {
     if (lyricsPageThemeNotifier.value == 0) {
       lyricsPageBackgroundBaseColor = currentCoverArtColor;
       lyricsPageBackgroundColor = Colors.transparent;
-      lyricsPageForegroundColor = Colors.grey.shade50;
-      lyricsPageHighlightTextColor = Colors.white;
+      final monetTheme = MonetColorGenerator.generate(currentCoverArtColor);
+      lyricsPageForegroundColor = monetTheme.regular;
+      lyricsPageHighlightTextColor = monetTheme.accent;
       lyricsPageButtonColor = Colors.white30;
       lyricsPageDividerColor = Colors.grey.shade50;
       lyricsPageSelectedItemColor = Colors.white30;
