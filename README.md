@@ -163,6 +163,3 @@ flutter build apk
 ![](./screenshots/desktop5.png)
 ![](./screenshots/desktop6.png)
 ![](./screenshots/desktop7.png)
-![](./screenshots/desktop8.png)
-![](./screenshots/desktop9.png)
-![](./screenshots/desktop10.png)
