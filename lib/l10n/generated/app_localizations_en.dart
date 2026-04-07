@@ -463,4 +463,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get unlockDeskLrc => 'Unlock Desktop Lyrics';
+
+  @override
+  String get autoPlayOnStartup => 'Auto-Play on Startup';
 }

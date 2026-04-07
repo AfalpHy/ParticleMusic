@@ -985,6 +985,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unlock Desktop Lyrics'**
   String get unlockDeskLrc;
+
+  /// No description provided for @autoPlayOnStartup.
+  ///
+  /// In en, this message translates to:
+  /// **'Auto-Play on Startup'**
+  String get autoPlayOnStartup;
 }
 
 class _AppLocalizationsDelegate

@@ -43,10 +43,10 @@ class SettingsList extends StatelessWidget {
                 subtitle: Text(
                   l10n.settingCount(
                     Platform.isAndroid
-                        ? 12
+                        ? 13
                         : Platform.isIOS
-                        ? 10
-                        : 8,
+                        ? 11
+                        : 10,
                   ),
                   style: TextStyle(fontSize: 12),
                 ),
@@ -113,6 +113,8 @@ class SettingsList extends StatelessWidget {
 
         sliverBox(paddingIfNeed(isLandscape, themeListTile(context, l10n))),
         sliverBox(paddingIfNeed(isLandscape, paletteListTile(context, l10n))),
+
+        sliverBox(paddingIfNeed(isLandscape, autoPlayOnStartupListTile(l10n))),
 
         if (!isMobile)
           sliverBox(
@@ -847,6 +849,29 @@ class SettingsList extends StatelessWidget {
           },
         );
       },
+    );
+  }
+
+  Widget autoPlayOnStartupListTile(AppLocalizations l10n) {
+    return ListTile(
+      leading: ImageIcon(playOutlinedImage),
+
+      title: Text(l10n.autoPlayOnStartup),
+      trailing: SizedBox(
+        width: 50,
+        child: ValueListenableBuilder(
+          valueListenable: autoPlayOnStartupNotifier,
+          builder: (context, value, child) {
+            return MySwitch(
+              value: value,
+              onToggle: (value) async {
+                autoPlayOnStartupNotifier.value = value;
+                settingManager.saveSetting();
+              },
+            );
+          },
+        ),
+      ),
     );
   }
 

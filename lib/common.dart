@@ -82,6 +82,8 @@ final updateColorNotifier = ValueNotifier(0);
 
 final ValueNotifier<Locale?> localeNotifier = ValueNotifier(null);
 
+final autoPlayOnStartupNotifier = ValueNotifier(false);
+
 final exitOnCloseNotifier = ValueNotifier(false);
 
 late SettingManager settingManager;

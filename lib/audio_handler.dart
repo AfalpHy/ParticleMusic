@@ -43,6 +43,7 @@ Future<void> initAudioService() async {
 
 class MyAudioHandler extends BaseAudioHandler {
   final _player = Player();
+  bool _started = false;
   int currentIndex = -1;
   List<MyAudioMetadata> _playQueueTmp = [];
   int _tmpPlayMode = 0;
@@ -234,6 +235,24 @@ class MyAudioHandler extends BaseAudioHandler {
     _tmpPlayMode = json['tmpPlayMode'] as int? ?? 0;
 
     volumeNotifier.value = json['volume'] as double? ?? 0.3;
+
+    if (!_started) {
+      _started = true;
+      if (autoPlayOnStartupNotifier.value) {
+        if (playQueue.isEmpty) {
+          currentIndex = 0;
+          playQueue = List.from(library.songList);
+        }
+        if (playQueue.isEmpty) {
+          playQueue = List.from(library.navidromeSongList);
+        }
+        if (playQueue.isNotEmpty) {
+          isPlayingNotifier.value = true;
+        } else {
+          currentIndex = -1;
+        }
+      }
+    }
 
     if (currentIndex != -1 && playQueue.isNotEmpty) {
       // reload may make some songs not in the library to be removed

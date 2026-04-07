@@ -463,4 +463,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get unlockDeskLrc => '解锁桌面歌词';
+
+  @override
+  String get autoPlayOnStartup => '启动后自动播放';
 }

@@ -37,6 +37,9 @@ class SettingManager {
       localeNotifier.value = Locale(languageCode);
     }
 
+    autoPlayOnStartupNotifier.value =
+        json['autoPlayOnStartup'] as bool? ?? false;
+
     mainPageThemeNotifier.value =
         json['mainPageTheme'] as int? ?? mainPageThemeNotifier.value;
 
@@ -69,6 +72,9 @@ class SettingManager {
         'language': localeNotifier.value == null
             ? ''
             : localeNotifier.value!.languageCode,
+
+        'autoPlayOnStartup': autoPlayOnStartupNotifier.value,
+
         'mainPageTheme': mainPageThemeNotifier.value,
         'lyricsPageTheme': lyricsPageThemeNotifier.value,
 
