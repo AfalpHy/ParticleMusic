@@ -12,7 +12,7 @@ import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/setting_manager.dart';
 
-const String versionNumber = '1.0.16.2';
+const String versionNumber = '2.0.0';
 
 // ===================================== App =====================================
 
