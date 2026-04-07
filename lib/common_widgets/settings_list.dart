@@ -854,7 +854,7 @@ class SettingsList extends StatelessWidget {
 
   Widget autoPlayOnStartupListTile(AppLocalizations l10n) {
     return ListTile(
-      leading: ImageIcon(playOutlinedImage),
+      leading: ImageIcon(playOutlinedImage, size: iconSize),
 
       title: Text(l10n.autoPlayOnStartup),
       trailing: SizedBox(
