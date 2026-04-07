@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
-import 'package:particle_music/monet_color_generator.dart';
+import 'package:particle_music/adaptive_contrast_color_generator.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 
 ColorManager colorManager = ColorManager();
@@ -209,12 +209,14 @@ class ColorManager {
     if (lyricsPageThemeNotifier.value == 0) {
       lyricsPageBackgroundBaseColor = currentCoverArtColor;
       lyricsPageBackgroundColor = Colors.transparent;
-      final monetTheme = MonetColorGenerator.generate(currentCoverArtColor);
-      lyricsPageForegroundColor = monetTheme.regular;
-      lyricsPageHighlightTextColor = monetTheme.accent;
-      lyricsPageButtonColor = monetTheme.regular.withAlpha(50);
-      lyricsPageDividerColor = monetTheme.regular;
-      lyricsPageSelectedItemColor = monetTheme.regular.withAlpha(50);
+      final adaptiveContrastColorTheme =
+          AdaptiveContrastColorGenerator.generate(currentCoverArtColor);
+      lyricsPageForegroundColor = adaptiveContrastColorTheme.regular;
+      lyricsPageHighlightTextColor = adaptiveContrastColorTheme.accent;
+      lyricsPageButtonColor = adaptiveContrastColorTheme.regular.withAlpha(50);
+      lyricsPageDividerColor = adaptiveContrastColorTheme.regular;
+      lyricsPageSelectedItemColor = adaptiveContrastColorTheme.regular
+          .withAlpha(50);
     } else if (lyricsPageThemeNotifier.value == 1) {
       lyricsPageBackgroundColor = lightModeLyricsPageBackgroundColor;
       lyricsPageForegroundColor = lightModeLyricsPageForegroundColor;

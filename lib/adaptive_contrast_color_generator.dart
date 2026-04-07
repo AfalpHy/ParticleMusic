@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 
-class MonetTextTheme {
+class AdaptiveContrastColorTextTheme {
   final Color regular;
   final Color accent;
 
-  MonetTextTheme({required this.regular, required this.accent});
+  AdaptiveContrastColorTextTheme({required this.regular, required this.accent});
 }
 
-class MonetColorGenerator {
-  /// Generates a refined Monet theme:
+class AdaptiveContrastColorGenerator {
   /// Regular: High-contrast complementary tint for best readability.
   /// Accent: Subtle neighboring hue for a gentle highlight.
-  static MonetTextTheme generate(Color backgroundColor) {
+  static AdaptiveContrastColorTextTheme generate(Color backgroundColor) {
     final hsl = HSLColor.fromColor(backgroundColor);
     final double luminance = backgroundColor.computeLuminance();
     final bool isDark = luminance < 0.45;
@@ -38,6 +37,9 @@ class MonetColorGenerator {
           : 0.15, // Make it slightly closer to white/black than the regular text
     ).toColor();
 
-    return MonetTextTheme(regular: regularColor, accent: accentColor);
+    return AdaptiveContrastColorTextTheme(
+      regular: regularColor,
+      accent: accentColor,
+    );
   }
 }
