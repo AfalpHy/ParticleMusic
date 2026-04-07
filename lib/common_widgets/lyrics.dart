@@ -42,6 +42,8 @@ class LyricLine {
   final String text;
   final List<LyricToken> tokens;
 
+  List<String> translates = [];
+
   LyricLine(this.start, this.text, this.tokens);
 
   Map<String, dynamic> toMap() {
@@ -49,17 +51,19 @@ class LyricLine {
       'start': start.inMilliseconds,
       'text': text,
       'tokens': tokens.map((t) => t.toMap()).toList(),
+      'translates': translates,
     };
   }
 
   factory LyricLine.fromMap(Map raw) {
     final map = Map<String, dynamic>.from(raw);
-
-    return LyricLine(
+    final lyricLine = LyricLine(
       Duration(milliseconds: map['start'] as int),
       map['text'] as String,
       (map['tokens'] as List).map((e) => LyricToken.fromMap(e as Map)).toList(),
     );
+    lyricLine.translates = List<String>.from(map['translates']);
+    return lyricLine;
   }
 }
 
@@ -116,9 +120,11 @@ Future<void> setParsedLyrics(MyAudioMetadata song) async {
 
     final lineStart = parseTime(lineMatch);
 
-    if (result.lyrics.isNotEmpty &&
-        result.lyrics.last.tokens.last.end == null) {
-      result.lyrics.last.tokens.last.end = lineStart;
+    final lastLyric = result.lyrics.isNotEmpty ? result.lyrics.last : null;
+    bool isTranslate = lastLyric?.start == lineStart;
+
+    if (lastLyric?.tokens.last.end == null && !isTranslate) {
+      lastLyric?.tokens.last.end = lineStart;
     }
 
     final tokenMatches = wordRegex.allMatches(line);
@@ -146,7 +152,11 @@ Future<void> setParsedLyrics(MyAudioMetadata song) async {
       if (tokens.length > 1) {
         result.isKaraoke = true;
       }
-      result.lyrics.add(LyricLine(lineStart, textBuffer.toString(), tokens));
+      if (isTranslate) {
+        lastLyric!.translates.add(textBuffer.toString());
+      } else {
+        result.lyrics.add(LyricLine(lineStart, textBuffer.toString(), tokens));
+      }
     }
   }
   if (result.lyrics.isEmpty) {
@@ -399,29 +409,43 @@ class LyricLineWidget extends StatelessWidget {
 
                   fontSize += fontSizeOffset;
 
-                  if (isCurrent && isKaraoke) {
-                    return ValueListenableBuilder(
-                      valueListenable: updateLyricsNotifier,
-                      builder: (context, value, child) {
-                        return KaraokeText(
-                          key: UniqueKey(),
-                          line: line,
-                          position: audioHandler.getPosition(),
-                          fontSize: fontSize,
-                          expanded: expanded,
-                        );
-                      },
-                    );
-                  }
-                  return Text(
-                    line.text,
-                    textAlign: expanded ? TextAlign.left : TextAlign.center,
-                    style: TextStyle(
-                      fontSize: fontSize,
-                      color: isCurrent
-                          ? lyricsPageHighlightTextColor
-                          : lyricsPageForegroundColor.withAlpha(128),
-                    ),
+                  return Column(
+                    crossAxisAlignment: expanded ? .start : .center,
+                    children: [
+                      if (isCurrent && isKaraoke)
+                        ValueListenableBuilder(
+                          valueListenable: updateLyricsNotifier,
+                          builder: (context, value, child) {
+                            return KaraokeText(
+                              key: UniqueKey(),
+                              line: line,
+                              position: audioHandler.getPosition(),
+                              fontSize: fontSize,
+                              expanded: expanded,
+                            );
+                          },
+                        )
+                      else
+                        Text(
+                          line.text,
+
+                          style: TextStyle(
+                            fontSize: fontSize,
+                            color: isCurrent
+                                ? lyricsPageHighlightTextColor
+                                : lyricsPageForegroundColor.withAlpha(128),
+                          ),
+                        ),
+                      for (final translate in line.translates)
+                        Text(
+                          translate,
+
+                          style: TextStyle(
+                            fontSize: fontSize - 6,
+                            color: lyricsPageForegroundColor.withAlpha(128),
+                          ),
+                        ),
+                    ],
                   );
                 },
               );
@@ -467,7 +491,6 @@ class KaraokeTextState extends State<KaraokeText>
     super.initState();
 
     displayPosition = widget.position;
-
     ticker = createTicker((_) {
       final now = DateTime.now();
       final elapsed = now.difference(lastSyncTime);
@@ -569,7 +592,7 @@ class KaraokeTextState extends State<KaraokeText>
                       ? Colors.white
                       : lyricsPageHighlightTextColor,
                   widget.isDesktopLyrics
-                      ? Colors.white
+                      ? Colors.white.withAlpha(128)
                       : lyricsPageHighlightTextColor.withAlpha(128),
                 ],
                 stops: [0, p, p],

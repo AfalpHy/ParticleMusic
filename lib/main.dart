@@ -207,7 +207,7 @@ Future<void> _setupDesktopLyricsWindow(
   await windowController.desktopLyricsCustomInitialize();
   WindowOptions windowOptions = WindowOptions(
     title: "Desktop Lyrics",
-    size: Platform.isLinux ? Size(850, 200) : Size(800, 150),
+    size: Platform.isLinux ? Size(1000, 250) : Size(1000, 200),
     center: true,
     backgroundColor: Colors.transparent,
     titleBarStyle: TitleBarStyle.hidden,

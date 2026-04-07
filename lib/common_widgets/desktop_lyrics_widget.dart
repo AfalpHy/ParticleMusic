@@ -27,31 +27,57 @@ class DesktopLyricsWidget extends StatelessWidget {
           );
         }
 
-        if (desktopLyricsIsKaraoke) {
-          return KaraokeText(
-            key: ValueKey(desktopLyricLine),
-            line: desktopLyricLine!,
-            position: desktopLyricsCurrentPosition,
-            fontSize: isMobile ? 20 : 30,
-            expanded: false,
-            isDesktopLyrics: true,
-          );
-        } else {
-          return Text(
-            desktopLyricLine!.text,
-            style: TextStyle(
-              fontSize: isMobile ? 20 : 30,
-              color: Colors.white,
-              shadows: [
-                Shadow(
-                  offset: Offset(0, 1),
-                  blurRadius: 1,
-                  color: Colors.black87,
+        return Column(
+          crossAxisAlignment: .center,
+          children: [
+            if (desktopLyricsIsKaraoke)
+              ValueListenableBuilder(
+                valueListenable: updateLyricsNotifier,
+                builder: (context, value, child) {
+                  return KaraokeText(
+                    key: UniqueKey(),
+                    line: desktopLyricLine!,
+                    position: desktopLyricsCurrentPosition,
+                    fontSize: isMobile ? 20 : 30,
+                    expanded: false,
+                    isDesktopLyrics: true,
+                  );
+                },
+              )
+            else
+              Text(
+                desktopLyricLine!.text,
+
+                style: TextStyle(
+                  fontSize: isMobile ? 20 : 30,
+                  color: Colors.white,
+                  shadows: [
+                    Shadow(
+                      offset: Offset(0, 1),
+                      blurRadius: 1,
+                      color: Colors.black87,
+                    ),
+                  ],
                 ),
-              ],
-            ),
-          );
-        }
+              ),
+            for (final translate in desktopLyricLine!.translates)
+              Text(
+                translate,
+
+                style: TextStyle(
+                  fontSize: isMobile ? 14 : 24,
+                  color: Colors.white.withAlpha(128),
+                  shadows: [
+                    Shadow(
+                      offset: Offset(0, 1),
+                      blurRadius: 1,
+                      color: Colors.black87,
+                    ),
+                  ],
+                ),
+              ),
+          ],
+        );
       },
     );
   }
