@@ -31,17 +31,19 @@ class PlaylistsManager {
   }
 
   Future<void> load() async {
-    final navidromePlaylists = await navidromeClient.getPlaylists();
-    for (final playlist in navidromePlaylists) {
-      String id = playlist['id'];
-      String name = playlist['name'];
-      if (playlistsMap[name] == null) {
-        addPlaylist(Playlist(name: name));
+    if (navidromeClient.valid) {
+      final navidromePlaylists = await navidromeClient.getPlaylists();
+      for (final playlist in navidromePlaylists) {
+        String id = playlist['id'];
+        String name = playlist['name'];
+        if (playlistsMap[name] == null) {
+          addPlaylist(Playlist(name: name));
+        }
+        playlistsMap[name]!.id = id;
       }
-      playlistsMap[name]!.id = id;
+      // navidrome may add some playlists
+      update();
     }
-    // navidrome may add some playlists
-    update();
     for (final playlist in playlists) {
       await playlist.load();
     }
@@ -157,20 +159,22 @@ class Playlist {
         }
       }
     }
-    List<String> songIds = [];
-    if (isFavorite) {
-      songIds = await navidromeClient.getFavoriteSongIds();
-    } else if (id != null) {
-      songIds = await navidromeClient.getPlaylistSongIds(id!);
-    }
-    for (final songId in songIds) {
-      final song = library.id2navidromeSong[songId];
-      if (song == null) {
-        continue;
-      }
-      navidromeSongList.add(song);
+    if (navidromeClient.valid) {
+      List<String> songIds = [];
       if (isFavorite) {
-        song.isFavoriteNotifier.value = true;
+        songIds = await navidromeClient.getFavoriteSongIds();
+      } else if (id != null) {
+        songIds = await navidromeClient.getPlaylistSongIds(id!);
+      }
+      for (final songId in songIds) {
+        final song = library.id2navidromeSong[songId];
+        if (song == null) {
+          continue;
+        }
+        navidromeSongList.add(song);
+        if (isFavorite) {
+          song.isFavoriteNotifier.value = true;
+        }
       }
     }
     displayNavidromeNotifier.value =

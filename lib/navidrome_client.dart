@@ -17,7 +17,7 @@ class NavidromeClient {
   final String username;
   final String password;
   final String baseUrl;
-
+  late bool valid;
   NavidromeClient({
     required this.username,
     required this.password,
@@ -28,7 +28,9 @@ class NavidromeClient {
            connectTimeout: const Duration(seconds: 3),
            receiveTimeout: const Duration(seconds: 5),
          ),
-       );
+       ) {
+    valid = username.isNotEmpty && password.isNotEmpty && baseUrl.isNotEmpty;
+  }
 
   String _randomSalt() {
     final rand = Random();
@@ -75,6 +77,9 @@ class NavidromeClient {
     Future<Response> Function() request,
     T Function(dynamic data) parser,
   ) async {
+    if (!valid) {
+      return null;
+    }
     try {
       final res = await request();
 
@@ -243,6 +248,9 @@ class NavidromeClient {
   }
 
   Future<Uint8List?> getPictureBytes(String id) async {
+    if (!valid) {
+      return null;
+    }
     int maxRetries = 5;
     int attempt = 0;
 

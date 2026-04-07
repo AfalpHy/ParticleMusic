@@ -201,12 +201,14 @@ class Library {
     await _saveSongFilePathList();
     await _saveSongMetadataList();
 
-    loadingNavidromeNotifier.value = true;
-    final list = await navidromeClient.getSongs();
-    for (final map in list) {
-      MyAudioMetadata song = MyAudioMetadata.fromNavidromeMap(map);
-      navidromeSongList.add(song);
-      id2navidromeSong[song.id!] = song;
+    if (navidromeClient.valid) {
+      loadingNavidromeNotifier.value = true;
+      final list = await navidromeClient.getSongs();
+      for (final map in list) {
+        MyAudioMetadata song = MyAudioMetadata.fromNavidromeMap(map);
+        navidromeSongList.add(song);
+        id2navidromeSong[song.id!] = song;
+      }
     }
 
     displayNavidromeNotifier.value =
