@@ -45,7 +45,7 @@ class SettingsList extends StatelessWidget {
                     Platform.isAndroid
                         ? 12
                         : Platform.isIOS
-                        ? 11
+                        ? 10
                         : 8,
                   ),
                   style: TextStyle(fontSize: 12),
@@ -127,7 +127,7 @@ class SettingsList extends StatelessWidget {
 
         sliverBox(paddingIfNeed(isLandscape, checkUpdate(context, l10n))),
 
-        if (isMobile)
+        if (Platform.isAndroid)
           sliverBox(
             paddingIfNeed(isLandscape, exportLogListTile(context, l10n)),
           ),
@@ -1108,24 +1108,11 @@ class SettingsList extends StatelessWidget {
 
       title: Text(l10n.exportLog),
       onTap: () async {
-        if (Platform.isAndroid) {
-          String? result = await FilePicker.platform.getDirectoryPath();
-          if (result == null) {
-            return;
-          }
-          logger.export2Directory(result);
-        } else {
-          Directory logsDir = Directory("${appDocs.path}/logs");
-          if (!logsDir.existsSync()) {
-            logsDir.createSync();
-          }
-          logger.export2Directory("${appDocs.path}/logs");
-          showCenterMessage(
-            context,
-            'Exported to \'Particle Music/logs\'',
-            duration: 3000,
-          );
+        String? result = await FilePicker.platform.getDirectoryPath();
+        if (result == null) {
+          return;
         }
+        logger.export2Directory(result);
       },
     );
   }
