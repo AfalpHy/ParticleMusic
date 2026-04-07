@@ -456,9 +456,9 @@ class MyAudioHandler extends BaseAudioHandler {
       final monetTheme = MonetColorGenerator.generate(currentCoverArtColor);
       lyricsPageForegroundColor = monetTheme.regular;
       lyricsPageHighlightTextColor = monetTheme.accent;
-      lyricsPageButtonColor = Colors.white30;
-      lyricsPageDividerColor = Colors.grey.shade50;
-      lyricsPageSelectedItemColor = Colors.white30;
+      lyricsPageButtonColor = monetTheme.regular.withAlpha(50);
+      lyricsPageDividerColor = monetTheme.regular;
+      lyricsPageSelectedItemColor = monetTheme.regular.withAlpha(50);
     } else {
       lyricsPageBackgroundBaseColor = currentCoverArtColor;
     }
