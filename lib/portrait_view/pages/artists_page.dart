@@ -23,6 +23,7 @@ class _ArtistsPageState extends State<ArtistsPage> {
   );
 
   final textController = TextEditingController();
+  final ValueNotifier<bool> isSearchNotifier = ValueNotifier(false);
 
   @override
   void initState() {
@@ -79,6 +80,7 @@ class _ArtistsPageState extends State<ArtistsPage> {
       hintText: hintText,
       textController: textController,
       onSearchTextChanged: updateCurrentArtistList,
+      isSearchNotifier: isSearchNotifier,
     );
   }
 

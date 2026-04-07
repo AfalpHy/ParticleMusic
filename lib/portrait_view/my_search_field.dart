@@ -12,11 +12,13 @@ class MySearchField extends StatefulWidget {
 
   final MyAudioMetadata? song;
   final bool useCurrentSong;
+  final ValueNotifier<bool> isSearchNotifier;
 
   const MySearchField({
     super.key,
     required this.hintText,
     required this.textController,
+    required this.isSearchNotifier,
     this.onSearchTextChanged,
     this.song,
     this.useCurrentSong = true,
@@ -27,15 +29,13 @@ class MySearchField extends StatefulWidget {
 }
 
 class _MySearchFieldState extends State<MySearchField> {
-  final ValueNotifier<bool> isSearch = ValueNotifier(false);
-
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
       valueListenable: updateColorNotifier,
       builder: (context, value, child) {
         return ValueListenableBuilder<bool>(
-          valueListenable: isSearch,
+          valueListenable: widget.isSearchNotifier,
           builder: (context, value, child) {
             return value
                 ? Expanded(
@@ -58,7 +58,7 @@ class _MySearchFieldState extends State<MySearchField> {
                               prefixIcon: Icon(Icons.search),
                               suffixIcon: IconButton(
                                 onPressed: () {
-                                  isSearch.value = false;
+                                  widget.isSearchNotifier.value = false;
                                   widget.textController.clear();
                                   FocusScope.of(context).unfocus();
                                   widget.onSearchTextChanged?.call();
@@ -90,7 +90,7 @@ class _MySearchFieldState extends State<MySearchField> {
                   )
                 : IconButton(
                     onPressed: () {
-                      isSearch.value = true;
+                      widget.isSearchNotifier.value = true;
                     },
                     icon: const Icon(Icons.search),
                   );

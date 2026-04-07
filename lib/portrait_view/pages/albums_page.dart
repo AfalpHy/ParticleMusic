@@ -24,6 +24,7 @@ class _AlbumsPageState extends State<AlbumsPage> {
   );
 
   final textController = TextEditingController();
+  final ValueNotifier<bool> isSearchNotifier = ValueNotifier(false);
 
   @override
   void initState() {
@@ -74,6 +75,7 @@ class _AlbumsPageState extends State<AlbumsPage> {
       hintText: hintText,
       textController: textController,
       onSearchTextChanged: updateCurrentAlbumList,
+      isSearchNotifier: isSearchNotifier,
     );
   }
 

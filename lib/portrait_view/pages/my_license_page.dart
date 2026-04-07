@@ -16,6 +16,7 @@ class _MyLicensePageState extends State<MyLicensePage> {
   final Map<String, List<LicenseEntry>> package2Licenses = {};
   final ValueNotifier<List<String>> packagesNotifier = ValueNotifier([]);
   final textController = TextEditingController();
+  final ValueNotifier<bool> isSearchNotifier = ValueNotifier(false);
 
   @override
   void initState() {
@@ -80,6 +81,7 @@ class _MyLicensePageState extends State<MyLicensePage> {
         MySearchField(
           hintText: AppLocalizations.of(context).searchLicenses,
           textController: textController,
+          isSearchNotifier: isSearchNotifier,
         ),
       ],
     );

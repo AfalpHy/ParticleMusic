@@ -33,6 +33,8 @@ class SongListPage extends BaseSongListWidget {
 }
 
 class _SongListPageState extends BaseSongListState<SongListPage> {
+  final ValueNotifier<bool> isSearchNotifier = ValueNotifier(false);
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -55,11 +57,18 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
       backgroundColor: Colors.transparent,
       scrolledUnderElevation: 0,
       actions: [
-        MySearchField(
-          hintText: AppLocalizations.of(context).searchSongs,
-          textController: textController,
-          song: getFirstSong(songList),
-          useCurrentSong: false,
+        ValueListenableBuilder(
+          valueListenable: updateColorNotifier,
+          builder: (context, value, child) {
+            return MySearchField(
+              key: ValueKey(getFirstSong(songList)),
+              hintText: AppLocalizations.of(context).searchSongs,
+              textController: textController,
+              isSearchNotifier: isSearchNotifier,
+              song: getFirstSong(songList),
+              useCurrentSong: false,
+            );
+          },
         ),
         moreButton(context),
       ],

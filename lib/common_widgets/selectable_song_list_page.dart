@@ -58,6 +58,8 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
   final ValueNotifier<List<MyAudioMetadata>> currentSongListNotifier =
       ValueNotifier([]);
 
+  final ValueNotifier<bool> isSearchNotifier = ValueNotifier(false);
+
   void updateSongList() {
     final value = textController.text;
     final filteredSongList = filterSongList(songList, value);
@@ -232,6 +234,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
               hintText: l10n.searchSongs,
               textController: textController,
               onSearchTextChanged: updateSongList,
+              isSearchNotifier: isSearchNotifier,
               song: getFirstSong(songList),
               useCurrentSong: false,
             ),
