@@ -40,7 +40,7 @@ class Folder {
 
   Folder(this.index, this.path, {this.iosPath}) {
     if (Platform.isIOS) {
-      _dir = Directory(iosPath!);
+      _dir = Directory(iosPath ?? '');
     } else {
       _dir = Directory(path);
     }
@@ -50,6 +50,7 @@ class Folder {
   Future<void> load() async {
     try {
       if (!_dir.existsSync()) {
+        logger.output('${_dir.path} is not exist');
         return;
       }
 

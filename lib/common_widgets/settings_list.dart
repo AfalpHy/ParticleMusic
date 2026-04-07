@@ -180,7 +180,8 @@ class SettingsList extends StatelessWidget {
           width: isMobile ? 300 : 400,
           pageBuilder: (context) {
             final currentFolderList = library.folderList
-                .map((e) => Platform.isIOS ? e.iosPath! : e.path)
+                .where((e) => Platform.isIOS ? e.iosPath != null : true)
+                .map((e) => e.iosPath ?? e.path)
                 .toList();
             final updateNotifier = ValueNotifier(0);
             final buttonStyle = ElevatedButton.styleFrom(
