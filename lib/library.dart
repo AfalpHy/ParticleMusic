@@ -65,7 +65,7 @@ class Library {
           if (iosFileProviderStorage == null && iosPath != null) {
             iosFileProviderStorage = iosPath.substring(
               0,
-              path.indexOf('File Provider Storage/'),
+              iosPath.indexOf('File Provider Storage/'),
             );
             iosFileProviderStorage =
                 "${iosFileProviderStorage}File Provider Storage/";
@@ -104,7 +104,7 @@ class Library {
         String path = convertIOSPath(iosPath);
         bool exist = false;
         for (final folder in folderList) {
-          final folderPath = folderList[i].iosPath;
+          final folderPath = folder.iosPath;
 
           if (folderPath == iosPath) {
             await folder.updateIndex(i);
@@ -120,7 +120,7 @@ class Library {
         String path = pathList[i];
         bool exist = false;
         for (final folder in folderList) {
-          final folderPath = folderList[i].path;
+          final folderPath = folder.path;
           if (folderPath == path) {
             await folder.updateIndex(i);
             newFolderList.add(folder);
