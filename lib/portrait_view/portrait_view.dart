@@ -17,12 +17,32 @@ class PortraitView extends StatefulWidget {
   State<StatefulWidget> createState() => _PortraitViewState();
 }
 
-class _PortraitViewState extends State<PortraitView> {
+class _PortraitViewState extends State<PortraitView>
+    with WidgetsBindingObserver {
   bool systemCanPop = false;
   Timer? _exitTimer;
+  final rebuildNotifier = ValueNotifier(0);
+
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+  }
+
+  @override
+  void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (state == AppLifecycleState.resumed) {
+      // rebuild Navigator to allow it to handle pop
+      if (layersManager.layerStack.length == 1) {
+        rebuildNotifier.value++;
+      }
+    }
   }
 
   @override
@@ -69,12 +89,17 @@ class _PortraitViewState extends State<PortraitView> {
       body: Stack(
         children: [
           ValueListenableBuilder(
-            valueListenable: updateColorNotifier,
+            valueListenable: rebuildNotifier,
             builder: (context, value, child) {
-              return Navigator(
-                pages: layersManager.buildPages(),
-                onDidRemovePage: (_) {
-                  layersManager.popLayer();
+              return ValueListenableBuilder(
+                valueListenable: updateColorNotifier,
+                builder: (context, value, child) {
+                  return Navigator(
+                    pages: layersManager.buildPages(),
+                    onDidRemovePage: (_) {
+                      layersManager.popLayer();
+                    },
+                  );
                 },
               );
             },
