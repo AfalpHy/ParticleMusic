@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
@@ -7,6 +8,7 @@ import 'package:particle_music/landscape_view/sidebar.dart';
 import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/portrait_view/pages/portrait_lyrics_page.dart';
 import 'package:particle_music/portrait_view/play_bar.dart';
+import 'package:particle_music/utils.dart';
 
 class PortraitView extends StatefulWidget {
   const PortraitView({super.key});
@@ -16,6 +18,8 @@ class PortraitView extends StatefulWidget {
 }
 
 class _PortraitViewState extends State<PortraitView> {
+  bool systemCanPop = false;
+  Timer? _exitTimer;
   @override
   void initState() {
     super.initState();
@@ -32,8 +36,22 @@ class _PortraitViewState extends State<PortraitView> {
           return;
         }
         if (layersManager.layerStack.length == 1) {
-          SystemNavigator.pop();
+          if (!systemCanPop) {
+            systemCanPop = true;
+            showCenterMessage(
+              context,
+              'Press back again to exit',
+              duration: 1500,
+            );
+            _exitTimer?.cancel();
+            _exitTimer = Timer(const Duration(seconds: 2), () {
+              systemCanPop = false;
+            });
+          } else {
+            SystemNavigator.pop();
+          }
         } else {
+          systemCanPop = false;
           layersManager.popLayer();
         }
       },
@@ -42,44 +60,40 @@ class _PortraitViewState extends State<PortraitView> {
   }
 
   Widget content() {
-    return Stack(
-      children: [
-        Scaffold(
-          extendBodyBehindAppBar: true,
-          backgroundColor: Colors.transparent,
-          resizeToAvoidBottomInset: false,
-          drawer: Platform.isAndroid ? myDrawer() : null,
-          endDrawer: Platform.isIOS ? myDrawer() : null,
-          body: Stack(
-            children: [
-              ValueListenableBuilder(
-                valueListenable: updateColorNotifier,
-                builder: (context, value, child) {
-                  return Navigator(
-                    pages: layersManager.buildPages(),
-                    onDidRemovePage: (_) {
-                      layersManager.popLayer();
-                    },
-                  );
+    return Scaffold(
+      extendBodyBehindAppBar: true,
+      backgroundColor: Colors.transparent,
+      resizeToAvoidBottomInset: false,
+      drawer: Platform.isAndroid ? myDrawer() : null,
+      endDrawer: Platform.isIOS ? myDrawer() : null,
+      body: Stack(
+        children: [
+          ValueListenableBuilder(
+            valueListenable: updateColorNotifier,
+            builder: (context, value, child) {
+              return Navigator(
+                pages: layersManager.buildPages(),
+                onDidRemovePage: (_) {
+                  layersManager.popLayer();
                 },
-              ),
-
-              Positioned(
-                left: 20,
-                right: 20,
-                bottom: 40,
-                child: ValueListenableBuilder(
-                  valueListenable: updateColorNotifier,
-                  builder: (context, value, child) {
-                    return PlayBar();
-                  },
-                ),
-              ),
-            ],
+              );
+            },
           ),
-        ),
-        PortraitLyricsPage(),
-      ],
+
+          Positioned(
+            left: 20,
+            right: 20,
+            bottom: 40,
+            child: ValueListenableBuilder(
+              valueListenable: updateColorNotifier,
+              builder: (context, value, child) {
+                return PlayBar();
+              },
+            ),
+          ),
+          PortraitLyricsPage(),
+        ],
+      ),
     );
   }
 

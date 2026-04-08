@@ -1,3 +1,4 @@
+import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -29,39 +30,43 @@ class LayersManager {
   bool get isEmpty => layerStack.isEmpty;
 
   List<Page> buildPages() {
-    return layerStack.map((layer) {
-      final currentBgSong = _getBackgroundSong(layer);
-      return MaterialPage(
-        key: ValueKey(layer),
-        child: Stack(
-          fit: StackFit.expand,
+    return [
+      // ensure Navigator can pop
+      if (Platform.isAndroid) const MaterialPage(child: SizedBox.shrink()),
+      ...layerStack.map((layer) {
+        final currentBgSong = _getBackgroundSong(layer);
+        return MaterialPage(
+          key: ValueKey(layer),
+          child: Stack(
+            fit: StackFit.expand,
 
-          children: [
-            if (mainPageThemeNotifier.value == 0) ...[
-              CoverArtWidget(
-                song: currentBgSong,
-                color: currentBgSong == null
-                    ? Colors.grey
-                    : currentBgSong.coverArtColor,
-              ),
+            children: [
+              if (mainPageThemeNotifier.value == 0) ...[
+                CoverArtWidget(
+                  song: currentBgSong,
+                  color: currentBgSong == null
+                      ? Colors.grey
+                      : currentBgSong.coverArtColor,
+                ),
 
-              ClipRect(
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-                  child: Container(
-                    color: currentBgSong == null
-                        ? Colors.grey.withAlpha(180)
-                        : currentBgSong.coverArtColor?.withAlpha(180),
+                ClipRect(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                    child: Container(
+                      color: currentBgSong == null
+                          ? Colors.grey.withAlpha(180)
+                          : currentBgSong.coverArtColor?.withAlpha(180),
+                    ),
                   ),
                 ),
-              ),
-            ],
+              ],
 
-            Material(color: pageBackgroundColor, child: layer),
-          ],
-        ),
-      );
-    }).toList();
+              Material(color: pageBackgroundColor, child: layer),
+            ],
+          ),
+        );
+      }),
+    ];
   }
 
   void pushLayer(String label, {String? content}) {
