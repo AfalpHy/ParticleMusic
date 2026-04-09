@@ -6,6 +6,17 @@ import 'package:particle_music/utils.dart';
 
 ArtistsAlbumsManager artistsAlbumsManager = ArtistsAlbumsManager();
 
+List<String> _getArtists(String artist) {
+  List<String> artists = [];
+  for (String artistName in artist.split(RegExp(r'[/&,]'))) {
+    if (artistName.isEmpty) {
+      return [artist];
+    }
+    artists.add(artistName);
+  }
+  return artists;
+}
+
 class ArtistsAlbumsManager {
   List<Artist> artistList = [];
   Map<String, Artist> name2Artist = {};
@@ -76,7 +87,7 @@ class ArtistsAlbumsManager {
         ? album.navidromeSongList.add(song)
         : album.songList.add(song);
 
-    for (String artistName in getArtist(song).split(RegExp(r'[/&,]'))) {
+    for (String artistName in _getArtists(getArtist(song))) {
       Artist? artist = name2Artist[artistName];
       if (artist == null) {
         artist = Artist(artistName);
@@ -145,12 +156,12 @@ class ArtistsAlbumsManager {
 
     Set<Artist> needProcess = {};
 
-    for (String artistName in originArtist.split(RegExp(r'[/&,]'))) {
+    for (String artistName in _getArtists(originArtist)) {
       Artist artist = name2Artist[artistName]!;
       needProcess.add(artist);
     }
 
-    for (String artistName in currentArtist.split(RegExp(r'[/&,]'))) {
+    for (String artistName in _getArtists(currentArtist)) {
       Artist artist = name2Artist[artistName]!;
       needProcess.add(artist);
     }
@@ -266,7 +277,7 @@ class Artist extends ArtistAlbumBase {
 
     for (final album in albumList) {
       for (final song in album.songList) {
-        for (String artistName in getArtist(song).split(RegExp(r'[/&,]'))) {
+        for (String artistName in _getArtists(getArtist(song))) {
           if (artistName == name) {
             songList.add(song);
             break;
@@ -274,7 +285,7 @@ class Artist extends ArtistAlbumBase {
         }
       }
       for (final song in album.navidromeSongList) {
-        for (String artistName in getArtist(song).split(RegExp(r'[/&,]'))) {
+        for (String artistName in _getArtists(getArtist(song))) {
           if (artistName == name) {
             navidromeSongList.add(song);
 
