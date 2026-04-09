@@ -215,7 +215,6 @@ class Sidebar extends StatelessWidget {
                           contentPadding: EdgeInsets.fromLTRB(16, 0, 8, 0),
 
                           trailing: IconButton(
-                            color: iconColor,
                             onPressed: () {
                               if (isMobile) {
                                 showCreatePlaylistSheet(context);

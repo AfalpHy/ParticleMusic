@@ -63,9 +63,14 @@ class LandscapeView extends StatelessWidget {
                       Expanded(
                         child: Material(
                           color: panelColor,
-                          child: IndexedStack(
-                            index: layersManager.layerStack.length - 1,
-                            children: layersManager.layerStack,
+                          child: ValueListenableBuilder(
+                            valueListenable: layersManager.updateNotifier,
+                            builder: (context, value, child) {
+                              return IndexedStack(
+                                index: layersManager.layerStack.length - 1,
+                                children: layersManager.layerStack,
+                              );
+                            },
                           ),
                         ),
                       ),

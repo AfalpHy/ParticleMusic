@@ -511,9 +511,18 @@ Future<Color> computeCoverArtColor(MyAudioMetadata? song) async {
   r /= count;
   g /= count;
   b /= count;
-
   final color = Color.fromARGB(255, r.toInt(), g.toInt(), b.toInt());
   song!.coverArtColor = color;
+
+  int luminance = image.getLuminanceRgb(r, g, b).toInt();
+  int maxLuminace = 200;
+  if (luminance > maxLuminace) {
+    r -= luminance - maxLuminace;
+    g -= luminance - maxLuminace;
+    b -= luminance - maxLuminace;
+    song.lowerLuminance = Color.fromARGB(255, r.toInt(), g.toInt(), b.toInt());
+  }
+
   return color;
 }
 

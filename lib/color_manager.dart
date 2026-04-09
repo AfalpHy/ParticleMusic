@@ -137,7 +137,9 @@ class ColorManager {
   }
 
   void setMainPageColors() {
+    backgroundBaseColor = Colors.transparent;
     if (mainPageThemeNotifier.value == 0) {
+      backgroundBaseColor = backgroundCoverArtColor;
       pageBackgroundColor = vividModePageBackgroundColor;
       iconColor = vividModeIconColor;
       textColor = vividModeTextColor;
@@ -147,10 +149,13 @@ class ColorManager {
       panelColor = vividModePanelColor;
       sidebarColor = vividModeSidebarColor;
       bottomColor = vividModeBottomColor;
-      searchFieldColor = backgroundBaseColor.withAlpha(75);
-      buttonColor = backgroundBaseColor.withAlpha(75);
-      dividerColor = backgroundBaseColor;
-      selectedItemColor = backgroundBaseColor.withAlpha(75);
+      backgroundBaseColor = backgroundCoverArtColor;
+      final tmpColor =
+          backgroundSong?.lowerLuminance ?? backgroundCoverArtColor;
+      searchFieldColor = tmpColor.withAlpha(75);
+      buttonColor = tmpColor.withAlpha(75);
+      dividerColor = tmpColor;
+      selectedItemColor = tmpColor.withAlpha(75);
       seekBarColor = vividModeSeekBarColor;
       volumeBarColor = vividModeVolumeBarColor;
     } else if (mainPageThemeNotifier.value == 1) {

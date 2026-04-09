@@ -249,6 +249,7 @@ Future<void> _tryWriteMetadata(
 
       song.pictureBytes = _pictureBytesNotifier.value;
       song.coverArtColor = null;
+      song.lowerLuminance = null;
       await computeCoverArtColor(song);
       if (song == currentSongNotifier.value) {
         currentCoverArtColor = song.coverArtColor!;

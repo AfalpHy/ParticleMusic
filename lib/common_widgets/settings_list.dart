@@ -574,8 +574,8 @@ class SettingsList extends StatelessWidget {
 
   void _updateMainPageTheme() {
     settingManager.saveSetting();
-    layersManager.updateBackground();
     colorManager.setMainPageColors();
+    updateColorNotifier.value++;
   }
 
   void _updateLyricsPageTheme() {

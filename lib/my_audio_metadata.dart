@@ -17,6 +17,7 @@ class MyAudioMetadata {
 
   bool pictureLoaded = false;
   Color? coverArtColor;
+  Color? lowerLuminance;
   ParsedLyrics? parsedLyrics;
 
   String? navidromeUrl;

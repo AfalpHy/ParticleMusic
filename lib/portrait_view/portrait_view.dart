@@ -88,18 +88,17 @@ class _PortraitViewState extends State<PortraitView>
       endDrawer: Platform.isIOS ? myDrawer() : null,
       body: Stack(
         children: [
-          ValueListenableBuilder(
-            valueListenable: rebuildNotifier,
-            builder: (context, value, child) {
-              return ValueListenableBuilder(
-                valueListenable: updateColorNotifier,
-                builder: (context, value, child) {
-                  return Navigator(
-                    pages: layersManager.buildPages(),
-                    onDidRemovePage: (_) {
-                      layersManager.popLayer();
-                    },
-                  );
+          ListenableBuilder(
+            listenable: Listenable.merge([
+              rebuildNotifier,
+              updateColorNotifier,
+              layersManager.updateNotifier,
+            ]),
+            builder: (context, _) {
+              return Navigator(
+                pages: layersManager.buildPages(),
+                onDidRemovePage: (_) {
+                  layersManager.popLayer();
                 },
               );
             },

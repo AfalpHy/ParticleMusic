@@ -93,6 +93,7 @@ late SettingManager settingManager;
 final mainPageThemeNotifier = ValueNotifier(0);
 final lyricsPageThemeNotifier = ValueNotifier(0);
 
+Color backgroundCoverArtColor = Colors.grey;
 Color currentCoverArtColor = Colors.grey;
 
 Color backgroundBaseColor = Colors.grey;

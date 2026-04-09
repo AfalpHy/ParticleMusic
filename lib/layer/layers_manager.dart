@@ -27,6 +27,8 @@ class LayersManager {
   final List<Widget> layerStack = [];
   final List<String> sidebarHighlighLabelStack = [];
 
+  final updateNotifier = ValueNotifier(0);
+
   bool get isEmpty => layerStack.isEmpty;
 
   List<Page> buildPages() {
@@ -136,6 +138,7 @@ class LayersManager {
     sidebarHighlighLabel.value = sidebarHighlighLabelStack.last;
 
     updateBackground();
+    updateNotifier.value++;
   }
 
   void removePlaylistLayer(Playlist playlist) {
@@ -150,6 +153,7 @@ class LayersManager {
     sidebarHighlighLabel.value = sidebarHighlighLabelStack.last;
 
     updateBackground();
+    updateNotifier.value++;
   }
 
   void removeArtistLayer(Artist artist) {
@@ -164,6 +168,7 @@ class LayersManager {
     sidebarHighlighLabel.value = sidebarHighlighLabelStack.last;
 
     updateBackground();
+    updateNotifier.value++;
   }
 
   void removeAlbumLayer(Album album) {
@@ -178,6 +183,7 @@ class LayersManager {
     sidebarHighlighLabel.value = sidebarHighlighLabelStack.last;
 
     updateBackground();
+    updateNotifier.value++;
   }
 
   void clear() {
@@ -215,17 +221,21 @@ class LayersManager {
     if (isEmpty) {
       return;
     }
-
-    if (mainPageThemeNotifier.value == 0) {
-      backgroundSong = _getBackgroundSong(layerStack.last);
-      backgroundBaseColor = await computeCoverArtColor(backgroundSong);
-      searchFieldColor = backgroundBaseColor.withAlpha(75);
-      buttonColor = backgroundBaseColor.withAlpha(75);
-      dividerColor = backgroundBaseColor;
-      selectedItemColor = backgroundBaseColor.withAlpha(75);
-    } else {
-      backgroundBaseColor = Colors.transparent;
+    final tmpBackgroundSong = backgroundSong;
+    backgroundSong = _getBackgroundSong(layerStack.last);
+    backgroundCoverArtColor = await computeCoverArtColor(backgroundSong);
+    if (tmpBackgroundSong == backgroundSong) {
+      return;
     }
-    updateColorNotifier.value++;
+    if (mainPageThemeNotifier.value == 0) {
+      backgroundBaseColor = backgroundCoverArtColor;
+      final tmpColor =
+          backgroundSong?.lowerLuminance ?? backgroundCoverArtColor;
+      searchFieldColor = tmpColor.withAlpha(75);
+      buttonColor = tmpColor.withAlpha(75);
+      dividerColor = tmpColor;
+      selectedItemColor = tmpColor.withAlpha(75);
+      updateColorNotifier.value++;
+    }
   }
 }
