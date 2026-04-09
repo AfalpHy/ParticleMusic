@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
+
 import 'package:particle_music/audio_handler.dart';
 import 'package:particle_music/history.dart';
 import 'package:particle_music/library.dart';
@@ -11,6 +12,7 @@ import 'package:particle_music/common_widgets/lyrics.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/setting_manager.dart';
+import 'package:webdav_client/webdav_client.dart';
 
 const String versionNumber = '2.0.0';
 
@@ -88,6 +90,11 @@ final exitOnCloseNotifier = ValueNotifier(false);
 
 late SettingManager settingManager;
 
+String webdavUsername = '';
+String webdavPassword = '';
+String webdavBaseUrl = '';
+
+Client? webdavClient;
 // ===================================== Colors =====================================
 
 final mainPageThemeNotifier = ValueNotifier(0);

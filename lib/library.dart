@@ -56,6 +56,10 @@ class Library {
 
     for (int i = 0; i < folderPathList.length; i++) {
       String path = folderPathList[i];
+      if (path.startsWith('WebDAV:')) {
+        folderList.add(Folder(i, path, isWebdav: true));
+        continue;
+      }
       String? iosPath;
       if (Platform.isIOS) {
         if (path.contains('Particle Music')) {
@@ -99,7 +103,23 @@ class Library {
     }
     List<Folder> newFolderList = [];
     for (int i = 0; i < pathList.length; i++) {
-      if (Platform.isIOS) {
+      bool isWebdav = pathList[i].startsWith('WebDAV:');
+      if (isWebdav || !Platform.isIOS) {
+        String path = pathList[i];
+        bool exist = false;
+        for (final folder in folderList) {
+          final folderPath = folder.path;
+          if (folderPath == path) {
+            await folder.updateIndex(i);
+            newFolderList.add(folder);
+            exist = true;
+            break;
+          }
+        }
+        if (!exist) {
+          newFolderList.add(Folder(i, path, isWebdav: isWebdav));
+        }
+      } else {
         String iosPath = pathList[i];
         String path = convertIOSPath(iosPath);
         bool exist = false;
@@ -116,21 +136,6 @@ class Library {
         if (!exist) {
           newFolderList.add(Folder(i, path, iosPath: iosPath));
         }
-      } else {
-        String path = pathList[i];
-        bool exist = false;
-        for (final folder in folderList) {
-          final folderPath = folder.path;
-          if (folderPath == path) {
-            await folder.updateIndex(i);
-            newFolderList.add(folder);
-            exist = true;
-            break;
-          }
-        }
-        if (!exist) {
-          newFolderList.add(Folder(i, path));
-        }
       }
     }
 
@@ -146,7 +151,8 @@ class Library {
     if (Platform.isIOS) {
       await BookmarkService.clear();
       for (final folder in folderList) {
-        if (!folder.iosPath!.contains('File Provider Storage/')) {
+        if (folder.path.startsWith('WebDAV') ||
+            !folder.iosPath!.contains('File Provider Storage/')) {
           continue;
         }
         if (await BookmarkService.saveDirectoryAndActive(

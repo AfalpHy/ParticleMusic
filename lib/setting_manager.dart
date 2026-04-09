@@ -59,6 +59,10 @@ class SettingManager {
     username = json['username'] as String? ?? '';
     password = json['password'] as String? ?? '';
     baseUrl = json['baseUrl'] as String? ?? '';
+
+    webdavUsername = json['webdavUsername'] as String? ?? '';
+    webdavPassword = json['webdavPassword'] as String? ?? '';
+    webdavBaseUrl = json['webdavBaseUrl'] as String? ?? '';
   }
 
   void saveSetting() {
@@ -86,6 +90,10 @@ class SettingManager {
         'username': username,
         'password': password,
         'baseUrl': baseUrl,
+
+        'webdavUsername': webdavUsername,
+        'webdavPassword': webdavPassword,
+        'webdavBaseUrl': webdavBaseUrl,
       }),
     );
   }

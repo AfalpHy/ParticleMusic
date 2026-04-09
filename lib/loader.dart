@@ -9,6 +9,7 @@ import 'package:particle_music/navidrome_client.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/setting_manager.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:webdav_client/webdav_client.dart';
 
 class Loader {
   static Future<void> init() async {
@@ -27,6 +28,10 @@ class Loader {
       password: password,
       baseUrl: baseUrl,
     );
+
+    if (webdavBaseUrl != '') {
+      webdavClient = newClient(webdavBaseUrl);
+    }
 
     library = Library();
     await library.initAllFolders();

@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 
@@ -9,6 +10,7 @@ import 'package:http/http.dart' as http;
 import 'package:particle_music/bookmark_service.dart';
 import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/common_widgets/webdav_dir_picker.dart';
 import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/loader.dart';
 import 'package:particle_music/portrait_view/sleep_timer.dart';
@@ -18,6 +20,7 @@ import 'package:particle_music/navidrome_client.dart';
 import 'package:particle_music/utils.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 import 'package:url_launcher/url_launcher.dart';
+import 'package:webdav_client/webdav_client.dart';
 
 class SettingsList extends StatelessWidget {
   final double? iconSize;
@@ -92,6 +95,8 @@ class SettingsList extends StatelessWidget {
           paddingIfNeed(isLandscape, selectMusicFoldersListTile(context, l10n)),
         ),
         sliverBox(paddingIfNeed(isLandscape, navidromeListTile(context, l10n))),
+        sliverBox(paddingIfNeed(isLandscape, webdavListTile(context, l10n))),
+
         sliverBox(paddingIfNeed(isLandscape, reloadListTile(context, l10n))),
         sliverBox(paddingIfNeed(isLandscape, languageListTile(context, l10n))),
 
@@ -178,7 +183,7 @@ class SettingsList extends StatelessWidget {
       onTap: () {
         showAnimationDialog(
           context: context,
-          height: isMobile ? 350 : 400,
+          height: isMobile ? 350 : 450,
           width: isMobile ? 300 : 400,
           pageBuilder: (context) {
             final currentFolderList = library.folderList
@@ -189,191 +194,267 @@ class SettingsList extends StatelessWidget {
             final buttonStyle = ElevatedButton.styleFrom(
               padding: EdgeInsets.all(10),
             );
-            return Column(
+            return ListView(
               children: [
                 SizedBox(height: 10),
-                Text(
-                  l10n.folders,
-                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-                ),
-                SizedBox(height: 10),
-
-                Expanded(
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 10),
-                    child: ValueListenableBuilder(
-                      valueListenable: updateNotifier,
-                      builder: (_, _, _) {
-                        return ListView.builder(
-                          itemCount: currentFolderList.length,
-                          itemBuilder: (_, index) {
-                            final folderPath = currentFolderList[index];
-                            final displayName = Platform.isIOS
-                                ? convertIOSPath(folderPath)
-                                : folderPath;
-                            return ListTile(
-                              title: Text(displayName),
-                              contentPadding: EdgeInsets.fromLTRB(20, 0, 5, 0),
-
-                              trailing: IconButton(
-                                onPressed: () {
-                                  currentFolderList.removeAt(index);
-                                  updateNotifier.value++;
-                                },
-                                icon: Icon(Icons.clear_rounded),
-                              ),
-                            );
-                          },
-                        );
-                      },
-                    ),
+                Center(
+                  child: Text(
+                    l10n.folders,
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
                   ),
                 ),
                 SizedBox(height: 10),
 
-                Row(
+                SizedBox(
+                  height: 200,
+                  child: ValueListenableBuilder(
+                    valueListenable: updateNotifier,
+                    builder: (_, _, _) {
+                      return ListView.builder(
+                        itemCount: currentFolderList.length,
+                        itemBuilder: (context, index) {
+                          final folderPath = currentFolderList[index];
+                          final displayName =
+                              folderPath.startsWith('WebDAV:') ||
+                                  !Platform.isIOS
+                              ? folderPath
+                              : convertIOSPath(folderPath);
+                          return ListTile(
+                            title: Text(displayName),
+                            contentPadding: EdgeInsets.fromLTRB(20, 0, 5, 0),
+                            trailing: IconButton(
+                              onPressed: () {
+                                currentFolderList.removeAt(index);
+                                updateNotifier.value++;
+                              },
+                              icon: Icon(Icons.clear_rounded),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
+                ),
+                SizedBox(height: 10),
+
+                Column(
                   children: [
-                    SizedBox(width: 20),
-                    Column(
-                      crossAxisAlignment: .start,
-                      children: [
-                        ElevatedButton(
-                          onPressed: () async {
-                            String? result = await FilePicker.platform
-                                .getDirectoryPath();
-                            if (result == null) {
-                              return;
+                    ElevatedButton(
+                      onPressed: () async {
+                        String? result = await FilePicker.platform
+                            .getDirectoryPath();
+                        if (result == null) {
+                          return;
+                        }
+                        if (currentFolderList.contains(result)) {
+                          if (context.mounted) {
+                            showCenterMessage(
+                              context,
+                              'The folder already exists',
+                              duration: 2000,
+                            );
+                          }
+                          return;
+                        }
+                        if (Platform.isIOS) {
+                          if (!result.contains('File Provider Storage/') &&
+                              !result.contains(appDocs.path)) {
+                            if (context.mounted) {
+                              showCenterMessage(
+                                context,
+                                'Do not support this folder',
+                                duration: 2000,
+                              );
                             }
-                            if (currentFolderList.contains(result)) {
-                              if (context.mounted) {
-                                showCenterMessage(
-                                  context,
-                                  'The folder already exists',
-                                  duration: 2000,
+                            return;
+                          }
+                          if (!await BookmarkService.active(result)) {
+                            if (context.mounted) {
+                              showCenterMessage(
+                                context,
+                                'Get permission failed',
+                                duration: 2000,
+                              );
+                            }
+                            return;
+                          }
+                        }
+
+                        currentFolderList.add(result);
+                        updateNotifier.value++;
+                      },
+                      style: buttonStyle,
+                      child: Text(l10n.addFolder),
+                    ),
+
+                    if (!isMobile) SizedBox(height: 5),
+
+                    ElevatedButton(
+                      onPressed: () async {
+                        if (webdavClient != null) {
+                          final result = await showAnimationDialog(
+                            context: context,
+                            height: 350,
+                            width: 300,
+                            pageBuilder: (context) {
+                              return WebdavDirPicker();
+                            },
+                          );
+                          if (result == null) {
+                            return;
+                          }
+                          if (currentFolderList.contains(result)) {
+                            if (context.mounted) {
+                              showCenterMessage(
+                                context,
+                                'The folder already exists',
+                                duration: 2000,
+                              );
+                            }
+                            return;
+                          }
+                          currentFolderList.add(result);
+                          updateNotifier.value++;
+                        }
+                      },
+                      style: buttonStyle,
+                      child: Text(l10n.addWebDAVFolder),
+                    ),
+
+                    if (!isMobile) SizedBox(height: 5),
+
+                    ElevatedButton(
+                      onPressed: () async {
+                        String? result = await FilePicker.platform
+                            .getDirectoryPath();
+                        if (result == null) {
+                          return;
+                        }
+                        if (Platform.isIOS) {
+                          if (!result.contains('File Provider Storage/') &&
+                              !result.contains(appDocs.path)) {
+                            if (context.mounted) {
+                              showCenterMessage(
+                                context,
+                                'Do not support this folder',
+                                duration: 2000,
+                              );
+                            }
+                            return;
+                          }
+                          if (!await BookmarkService.active(result)) {
+                            if (context.mounted) {
+                              showCenterMessage(
+                                context,
+                                'Get permission failed',
+                                duration: 2000,
+                              );
+                            }
+                            return;
+                          }
+                        }
+
+                        Directory root = Directory(result);
+
+                        List<String> folderList = root
+                            .listSync(recursive: true)
+                            .whereType<Directory>()
+                            .map((d) => d.path)
+                            .toList();
+
+                        folderList.insert(0, result);
+
+                        for (String folder in folderList) {
+                          if (!currentFolderList.contains(folder)) {
+                            currentFolderList.add(folder);
+                          }
+                        }
+
+                        updateNotifier.value++;
+                      },
+                      style: buttonStyle,
+                      child: Text(l10n.addRecursiveFolder),
+                    ),
+
+                    if (!isMobile) SizedBox(height: 5),
+
+                    ElevatedButton(
+                      onPressed: () async {
+                        if (webdavClient != null) {
+                          String? result = await showAnimationDialog(
+                            context: context,
+                            height: 350,
+                            width: 300,
+                            pageBuilder: (context) {
+                              return WebdavDirPicker();
+                            },
+                          );
+                          if (result == null) {
+                            return;
+                          }
+                          List<String> folderList = [result];
+                          Queue<String> folderQueue = Queue();
+                          folderQueue.add(result.substring(7));
+                          while (folderQueue.isNotEmpty) {
+                            String dir = folderQueue.first;
+                            folderQueue.removeFirst();
+                            final fileList = await webdavClient!.readDir(dir);
+                            for (final f in fileList) {
+                              if (f.isDir!) {
+                                final tmpPath = f.path!.substring(
+                                  0,
+                                  f.path!.length - 1,
                                 );
-                              }
-                              return;
-                            }
-                            if (Platform.isIOS) {
-                              if (!result.contains('File Provider Storage/') &&
-                                  !result.contains(appDocs.path)) {
-                                if (context.mounted) {
-                                  showCenterMessage(
-                                    context,
-                                    'Do not support this folder',
-                                    duration: 2000,
-                                  );
-                                }
-                                return;
-                              }
-                              if (!await BookmarkService.active(result)) {
-                                if (context.mounted) {
-                                  showCenterMessage(
-                                    context,
-                                    'Get permission failed',
-                                    duration: 2000,
-                                  );
-                                }
-                                return;
+                                folderList.add("WebDAV:$tmpPath");
+                                folderQueue.add(tmpPath);
                               }
                             }
-
-                            currentFolderList.add(result);
-                            updateNotifier.value++;
-                          },
-                          style: buttonStyle,
-                          child: Text(l10n.addFolder),
-                        ),
-
-                        if (!isMobile) SizedBox(height: 5),
-
-                        ElevatedButton(
-                          onPressed: () async {
-                            String? result = await FilePicker.platform
-                                .getDirectoryPath();
-                            if (result == null) {
-                              return;
+                          }
+                          for (final folder in folderList) {
+                            if (currentFolderList.contains(folder)) {
+                              continue;
                             }
-                            if (Platform.isIOS) {
-                              if (!result.contains('File Provider Storage/') &&
-                                  !result.contains(appDocs.path)) {
-                                if (context.mounted) {
-                                  showCenterMessage(
-                                    context,
-                                    'Do not support this folder',
-                                    duration: 2000,
-                                  );
-                                }
-                                return;
-                              }
-                              if (!await BookmarkService.active(result)) {
-                                if (context.mounted) {
-                                  showCenterMessage(
-                                    context,
-                                    'Get permission failed',
-                                    duration: 2000,
-                                  );
-                                }
-                                return;
-                              }
-                            }
-
-                            Directory root = Directory(result);
-
-                            List<String> folderList = root
-                                .listSync(recursive: true)
-                                .whereType<Directory>()
-                                .map((d) => d.path)
-                                .toList();
-
-                            folderList.insert(0, result);
-
-                            for (String folder in folderList) {
-                              if (!currentFolderList.contains(folder)) {
-                                currentFolderList.add(folder);
-                              }
-                            }
-
-                            updateNotifier.value++;
-                          },
-                          style: buttonStyle,
-                          child: Text(l10n.addRecursiveFolder),
-                        ),
-                      ],
+                            currentFolderList.add(folder);
+                          }
+                          updateNotifier.value++;
+                        }
+                      },
+                      style: buttonStyle,
+                      child: Text(l10n.addWebDAVRecursiveFolder),
                     ),
-                    Spacer(),
-                    Column(
-                      crossAxisAlignment: .end,
-                      children: [
-                        ElevatedButton(
-                          onPressed: () async {
-                            Navigator.of(context).pop();
-                          },
-                          style: buttonStyle,
-                          child: Text(l10n.cancel),
-                        ),
-
-                        if (!isMobile) SizedBox(height: 5),
-
-                        ElevatedButton(
-                          onPressed: () async {
-                            Navigator.of(context).pop();
-                            if (await library.updateFolders(
-                              currentFolderList,
-                            )) {
-                              Loader.reload();
-                            }
-                          },
-                          style: buttonStyle,
-                          child: Text(l10n.confirm),
-                        ),
-                      ],
-                    ),
-                    SizedBox(width: 20),
                   ],
                 ),
 
-                SizedBox(height: 15),
+                if (!isMobile) SizedBox(height: 5),
+
+                Row(
+                  children: [
+                    Spacer(),
+                    ElevatedButton(
+                      onPressed: () async {
+                        Navigator.of(context).pop();
+                      },
+                      style: buttonStyle,
+                      child: Text(l10n.cancel),
+                    ),
+
+                    SizedBox(width: 10),
+
+                    ElevatedButton(
+                      onPressed: () async {
+                        Navigator.of(context).pop();
+                        if (await library.updateFolders(currentFolderList)) {
+                          Loader.reload();
+                        }
+                      },
+                      style: buttonStyle,
+                      child: Text(l10n.confirm),
+                    ),
+                    Spacer(),
+                  ],
+                ),
+
+                SizedBox(height: 5),
               ],
             );
           },
@@ -471,6 +552,103 @@ class SettingsList extends StatelessWidget {
                               showCenterMessage(
                                 context,
                                 "Failed to connect to Navidrome!",
+                                duration: 2000,
+                              );
+                            }
+                          }
+                        },
+                        child: Text(l10n.confirm),
+                      ),
+                      Spacer(),
+                    ],
+                  ),
+                  Spacer(),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget webdavListTile(BuildContext context, AppLocalizations l10n) {
+    return ListTile(
+      leading: ImageIcon(navidromeImage, size: iconSize),
+      title: Text(l10n.connect2WebDAV),
+      onTap: () {
+        final usernameTmp = TextEditingController(text: webdavUsername);
+        final passwordTmp = TextEditingController(text: webdavPassword);
+        final baseUrlTmp = TextEditingController(text: webdavBaseUrl);
+
+        showAnimationDialog(
+          context: context,
+          height: isMobile ? 350 : 300,
+          width: 300,
+          pageBuilder: (context) {
+            return Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  Spacer(),
+
+                  adaptiveTextField(context, l10n.username, usernameTmp),
+
+                  SizedBox(height: 10),
+
+                  adaptiveTextField(context, l10n.password, passwordTmp),
+
+                  SizedBox(height: 10),
+                  adaptiveTextField(context, 'Url', baseUrlTmp),
+
+                  SizedBox(height: 20),
+                  Row(
+                    children: [
+                      Spacer(),
+                      ElevatedButton(
+                        onPressed: () async {
+                          if (!await showConfirmDialog(context, l10n.clear)) {
+                            return;
+                          }
+                          webdavUsername = '';
+                          webdavPassword = '';
+                          webdavBaseUrl = '';
+                          settingManager.saveSetting();
+                          webdavClient = null;
+                          if (context.mounted) {
+                            Navigator.pop(context);
+                          }
+                          Loader.reload();
+                        },
+                        child: Text(l10n.clear),
+                      ),
+                      SizedBox(width: 20),
+                      ElevatedButton(
+                        onPressed: () async {
+                          try {
+                            await newClient(
+                              baseUrlTmp.text,
+                              user: usernameTmp.text,
+                              password: passwordTmp.text,
+                            ).ping();
+                            webdavClient = newClient(
+                              baseUrlTmp.text,
+                              user: usernameTmp.text,
+                              password: passwordTmp.text,
+                            );
+                            webdavUsername = usernameTmp.text;
+                            webdavPassword = passwordTmp.text;
+                            webdavBaseUrl = baseUrlTmp.text;
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                            }
+                            settingManager.saveSetting();
+                            await Loader.reload();
+                          } catch (e) {
+                            if (context.mounted) {
+                              showCenterMessage(
+                                context,
+                                e.toString(),
                                 duration: 2000,
                               );
                             }

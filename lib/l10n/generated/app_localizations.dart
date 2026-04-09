@@ -548,6 +548,18 @@ abstract class AppLocalizations {
   /// **'Add Folder(Recursive)'**
   String get addRecursiveFolder;
 
+  /// No description provided for @addWebDAVFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Add WebDAV Folder'**
+  String get addWebDAVFolder;
+
+  /// No description provided for @addWebDAVRecursiveFolder.
+  ///
+  /// In en, this message translates to:
+  /// **'Add WebDAV Folder(Recursive)'**
+  String get addWebDAVRecursiveFolder;
+
   /// No description provided for @replacePicture.
   ///
   /// In en, this message translates to:
@@ -937,6 +949,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Connect to Navidrome'**
   String get connect2Navidrome;
+
+  /// No description provided for @connect2WebDAV.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to WebDAV'**
+  String get connect2WebDAV;
 
   /// No description provided for @username.
   ///

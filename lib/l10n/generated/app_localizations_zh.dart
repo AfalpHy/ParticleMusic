@@ -246,6 +246,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get addRecursiveFolder => '添加文件夹(包含子目录)';
 
   @override
+  String get addWebDAVFolder => '添加WebDAV文件夹';
+
+  @override
+  String get addWebDAVRecursiveFolder => '添加WebDAV文件夹(包含子目录)';
+
+  @override
   String get replacePicture => '替换图片';
 
   @override
@@ -439,6 +445,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get connect2Navidrome => '连接到Navidrome';
+
+  @override
+  String get connect2WebDAV => '连接到WebDAV';
 
   @override
   String get username => '账号';

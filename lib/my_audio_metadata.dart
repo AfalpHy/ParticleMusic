@@ -12,6 +12,7 @@ class MyAudioMetadata {
   final DateTime? modified;
   final String? id;
   final bool isNavidrome;
+  final bool isWebdav;
 
   final AudioMetadata _audioMetadata;
 
@@ -35,11 +36,12 @@ class MyAudioMetadata {
     this.modified,
     this.id,
     this.isNavidrome = false,
+    this.isWebdav = false,
     this.playCount = 0,
     this.lastPlayed,
   });
 
-  String get fullFilePath => Platform.isIOS ? iosPath! : filePath!;
+  String get fullFilePath => isWebdav || !Platform.isIOS ? filePath! : iosPath!;
   String? get title => _audioMetadata.title;
   String? get artist => _audioMetadata.artist;
   String? get album => _audioMetadata.album;
@@ -76,9 +78,11 @@ class MyAudioMetadata {
 
   factory MyAudioMetadata.fromMap(Map<String, dynamic> map) {
     final path = map['path'] as String;
+    bool isWebdav = path.startsWith('http://') | path.startsWith('https://');
     return MyAudioMetadata(
       filePath: path,
-      iosPath: Platform.isIOS ? revertIOSPath(path) : null,
+      iosPath: isWebdav | !Platform.isIOS ? null : revertIOSPath(path),
+      isWebdav: isWebdav,
       modified: DateTime.fromMillisecondsSinceEpoch(map['modified'] as int),
       AudioMetadata(
         title: map['title'] as String?,

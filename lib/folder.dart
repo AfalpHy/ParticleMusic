@@ -32,70 +32,113 @@ class Folder {
   int index;
   final String path;
   final String? iosPath;
-  late Directory _dir;
+  late Directory? _dir;
+  bool isWebdav;
   late File _songFilePathListFile;
   List<MyAudioMetadata> songList = [];
   List<MyAudioMetadata> additionalSongList = [];
   final updateNotifier = ValueNotifier(0);
 
-  Folder(this.index, this.path, {this.iosPath}) {
+  Folder(this.index, this.path, {this.iosPath, this.isWebdav = false}) {
     if (Platform.isIOS) {
       _dir = Directory(iosPath ?? '');
-    } else {
+    } else if (!isWebdav) {
       _dir = Directory(path);
     }
     _songFilePathListFile = File(_getFolderSongFilePathListPath(index));
   }
 
   Future<void> load() async {
+    currentLoadingFolderNotifier.value = path;
     try {
-      if (!_dir.existsSync()) {
-        logger.output('${_dir.path} is not exist');
-        return;
-      }
+      if (isWebdav) {
+        final filelist = await webdavClient!.readDir(path.substring(7));
+        for (final f in filelist) {
+          if (f.isDir!) {
+            continue;
+          }
+          final filePath = webdavBaseUrl + f.path!;
+          final ext = extension(filePath).toLowerCase();
+          if (!_loftySupportedExts.contains(ext)) {
+            continue;
+          }
+          MyAudioMetadata? song = library.filePath2Song[filePath];
+          bool isAdditional = song == null;
+          final modified = f.mTime;
 
-      currentLoadingFolderNotifier.value = path;
+          if (song?.modified != modified) {
+            final tmp = await readMetadataAsync(filePath, false);
 
-      await for (final file in _dir.list()) {
-        if (file is! File) continue;
+            if (tmp != null) {
+              song = MyAudioMetadata(
+                tmp,
+                filePath: filePath,
+                modified: modified,
+                isWebdav: true,
+              );
 
-        final ext = extension(file.path).toLowerCase();
-        if (!_loftySupportedExts.contains(ext)) {
-          continue;
-        }
+              if (isAdditional) {
+                additionalSongList.add(song);
+              }
 
-        String filePath = file.path;
-        if (Platform.isIOS) {
-          filePath = convertIOSPath(filePath);
-        }
-        MyAudioMetadata? song = library.filePath2Song[filePath];
-        bool isAdditional = song == null;
-        final modified = (await file.stat()).modified;
-
-        if (song?.modified != modified) {
-          final tmp = readMetadata(file.path, false);
-
-          if (tmp != null) {
-            song = MyAudioMetadata(
-              tmp,
-              filePath: filePath,
-              iosPath: Platform.isIOS ? file.path : null,
-              modified: modified,
-            );
-
-            if (isAdditional) {
-              additionalSongList.add(song);
+              library.filePath2Song[filePath] = song;
+            } else {
+              song = null;
             }
+          }
 
-            library.filePath2Song[filePath] = song;
-          } else {
-            song = null;
+          if (song != null) {
+            library.filePathValidSet.add(filePath);
+            loadedCountNotifier.value++;
           }
         }
+      } else {
+        if (!_dir!.existsSync()) {
+          logger.output('${_dir!.path} is not exist');
+          return;
+        }
 
-        if (song != null) {
-          library.filePathValidSet.add(filePath);
-          loadedCountNotifier.value++;
+        await for (final file in _dir!.list()) {
+          if (file is! File) continue;
+
+          final ext = extension(file.path).toLowerCase();
+          if (!_loftySupportedExts.contains(ext)) {
+            continue;
+          }
+
+          String filePath = file.path;
+          if (Platform.isIOS) {
+            filePath = convertIOSPath(filePath);
+          }
+          MyAudioMetadata? song = library.filePath2Song[filePath];
+          bool isAdditional = song == null;
+          final modified = (await file.stat()).modified;
+
+          if (song?.modified != modified) {
+            final tmp = readMetadata(file.path, false);
+
+            if (tmp != null) {
+              song = MyAudioMetadata(
+                tmp,
+                filePath: filePath,
+                iosPath: Platform.isIOS ? file.path : null,
+                modified: modified,
+              );
+
+              if (isAdditional) {
+                additionalSongList.add(song);
+              }
+
+              library.filePath2Song[filePath] = song;
+            } else {
+              song = null;
+            }
+          }
+
+          if (song != null) {
+            library.filePathValidSet.add(filePath);
+            loadedCountNotifier.value++;
+          }
         }
       }
 

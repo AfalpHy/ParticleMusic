@@ -246,6 +246,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addRecursiveFolder => 'Add Folder(Recursive)';
 
   @override
+  String get addWebDAVFolder => 'Add WebDAV Folder';
+
+  @override
+  String get addWebDAVRecursiveFolder => 'Add WebDAV Folder(Recursive)';
+
+  @override
   String get replacePicture => 'Replace Picture';
 
   @override
@@ -439,6 +445,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get connect2Navidrome => 'Connect to Navidrome';
+
+  @override
+  String get connect2WebDAV => 'Connect to WebDAV';
 
   @override
   String get username => 'Username';
