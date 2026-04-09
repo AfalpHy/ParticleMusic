@@ -124,6 +124,7 @@ class LayersManager {
     }
 
     updateBackground();
+    updateNotifier.value++;
   }
 
   void popLayer() {
@@ -223,8 +224,10 @@ class LayersManager {
     }
     final tmpBackgroundSong = backgroundSong;
     backgroundSong = _getBackgroundSong(layerStack.last);
+    final tmpBgCoverArtColor = backgroundCoverArtColor;
     backgroundCoverArtColor = await computeCoverArtColor(backgroundSong);
-    if (tmpBackgroundSong == backgroundSong) {
+    if (tmpBackgroundSong == backgroundSong &&
+        tmpBgCoverArtColor == backgroundCoverArtColor) {
       return;
     }
     if (mainPageThemeNotifier.value == 0) {
