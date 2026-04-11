@@ -152,7 +152,7 @@ class Folder {
     if (song?.modified != modified) {
       final tmp = isWebdav
           ? await readMetadataAsync(filePath, false)
-          : readMetadata(filePath, false);
+          : readMetadata(iosPath ?? filePath, false);
 
       if (tmp != null) {
         song = MyAudioMetadata(

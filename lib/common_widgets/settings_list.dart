@@ -264,6 +264,7 @@ class SettingsList extends StatelessWidget {
                             }
                             return;
                           }
+                          library.setIOSFileProviderStorageIfNeed(result);
                           result = convertIOSPath(result);
                         }
 
@@ -351,6 +352,7 @@ class SettingsList extends StatelessWidget {
                             }
                             return;
                           }
+                          library.setIOSFileProviderStorageIfNeed(result);
                         }
 
                         Directory root = Directory(result);
