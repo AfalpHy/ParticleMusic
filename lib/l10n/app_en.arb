@@ -192,5 +192,6 @@
   "skip2Next": "Skip to Next",
   "playOrPause": "Play/Pause",
   "unlockDeskLrc": "Unlock Desktop Lyrics",
-  "autoPlayOnStartup": "Auto-Play on Startup"
+  "autoPlayOnStartup": "Auto-Play on Startup",
+  "return2Previous": "Return to Previous"
 }

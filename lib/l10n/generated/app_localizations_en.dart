@@ -475,4 +475,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get autoPlayOnStartup => 'Auto-Play on Startup';
+
+  @override
+  String get return2Previous => 'Return to Previous';
 }

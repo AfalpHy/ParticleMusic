@@ -184,17 +184,20 @@ class Folder {
     await _prepare();
     if (isWebdav) {
       try {
-        final filelist = await webdavClient!.readDir(path.substring(7));
-        for (final f in filelist) {
-          if (f.isDir!) {
-            continue;
+        if (webdavClient != null) {
+          await webdavClient!.ping();
+          final filelist = await webdavClient!.readDir(path.substring(7));
+          for (final f in filelist) {
+            if (f.isDir!) {
+              continue;
+            }
+            final ext = extension(f.path!).toLowerCase();
+            if (!_loftySupportedExts.contains(ext)) {
+              continue;
+            }
+            final filePath = webdavBaseUrl + f.path!;
+            await _processSong(filePath, null, f.mTime!);
           }
-          final ext = extension(f.path!).toLowerCase();
-          if (!_loftySupportedExts.contains(ext)) {
-            continue;
-          }
-          final filePath = webdavBaseUrl + f.path!;
-          await _processSong(filePath, null, f.mTime!);
         }
       } catch (e) {
         logger.output(e.toString());

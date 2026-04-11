@@ -475,4 +475,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get autoPlayOnStartup => '启动后自动播放';
+
+  @override
+  String get return2Previous => '返回上一级';
 }

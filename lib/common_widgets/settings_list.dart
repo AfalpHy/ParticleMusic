@@ -290,31 +290,53 @@ class SettingsList extends StatelessWidget {
 
                     ElevatedButton(
                       onPressed: () async {
-                        if (webdavClient != null) {
-                          final result = await showAnimationDialog(
-                            context: context,
-                            height: 350,
-                            width: 300,
-                            pageBuilder: (context) {
-                              return WebdavDirPicker();
-                            },
+                        if (webdavClient == null) {
+                          showCenterMessage(
+                            context,
+                            'There is no connected WebDAV.',
+                            duration: 2000,
                           );
-                          if (result == null) {
-                            return;
-                          }
-                          if (currentFolderList.contains(result)) {
-                            if (context.mounted) {
-                              showCenterMessage(
-                                context,
-                                'The folder already exists',
-                                duration: 2000,
-                              );
-                            }
-                            return;
-                          }
-                          currentFolderList.add(result);
-                          updateNotifier.value++;
+                          return;
                         }
+                        try {
+                          await webdavClient!.ping();
+                        } catch (e) {
+                          if (!context.mounted) {
+                            return;
+                          }
+                          showCenterMessage(
+                            context,
+                            'Can not connect to WebDAV.',
+                            duration: 2000,
+                          );
+                          return;
+                        }
+                        if (!context.mounted) {
+                          return;
+                        }
+                        final result = await showAnimationDialog(
+                          context: context,
+                          height: 350,
+                          width: 300,
+                          pageBuilder: (context) {
+                            return WebdavDirPicker();
+                          },
+                        );
+                        if (result == null) {
+                          return;
+                        }
+                        if (currentFolderList.contains(result)) {
+                          if (context.mounted) {
+                            showCenterMessage(
+                              context,
+                              'The folder already exists',
+                              duration: 2000,
+                            );
+                          }
+                          return;
+                        }
+                        currentFolderList.add(result);
+                        updateNotifier.value++;
                       },
                       style: buttonStyle,
                       child: Text(l10n.addWebDAVFolder),
@@ -384,44 +406,66 @@ class SettingsList extends StatelessWidget {
 
                     ElevatedButton(
                       onPressed: () async {
-                        if (webdavClient != null) {
-                          String? result = await showAnimationDialog(
-                            context: context,
-                            height: 350,
-                            width: 300,
-                            pageBuilder: (context) {
-                              return WebdavDirPicker();
-                            },
+                        if (webdavClient == null) {
+                          showCenterMessage(
+                            context,
+                            'There is no connected WebDAV.',
+                            duration: 2000,
                           );
-                          if (result == null) {
+                          return;
+                        }
+                        try {
+                          await webdavClient!.ping();
+                        } catch (e) {
+                          if (!context.mounted) {
                             return;
                           }
-                          List<String> folderList = [result];
-                          Queue<String> folderQueue = Queue();
-                          folderQueue.add(result.substring(7));
-                          while (folderQueue.isNotEmpty) {
-                            String dir = folderQueue.first;
-                            folderQueue.removeFirst();
-                            final fileList = await webdavClient!.readDir(dir);
-                            for (final f in fileList) {
-                              if (f.isDir!) {
-                                final tmpPath = f.path!.substring(
-                                  0,
-                                  f.path!.length - 1,
-                                );
-                                folderList.add("WebDAV:$tmpPath");
-                                folderQueue.add(tmpPath);
-                              }
-                            }
-                          }
-                          for (final folder in folderList) {
-                            if (currentFolderList.contains(folder)) {
-                              continue;
-                            }
-                            currentFolderList.add(folder);
-                          }
-                          updateNotifier.value++;
+                          showCenterMessage(
+                            context,
+                            'Can not connect to WebDAV.',
+                            duration: 2000,
+                          );
+                          return;
                         }
+                        if (!context.mounted) {
+                          return;
+                        }
+                        String? result = await showAnimationDialog(
+                          context: context,
+                          height: 350,
+                          width: 300,
+                          pageBuilder: (context) {
+                            return WebdavDirPicker();
+                          },
+                        );
+                        if (result == null) {
+                          return;
+                        }
+                        List<String> folderList = [result];
+                        Queue<String> folderQueue = Queue();
+                        folderQueue.add(result.substring(7));
+                        while (folderQueue.isNotEmpty) {
+                          String dir = folderQueue.first;
+                          folderQueue.removeFirst();
+                          final fileList = await webdavClient!.readDir(dir);
+                          for (final f in fileList) {
+                            if (f.isDir!) {
+                              final tmpPath = f.path!.substring(
+                                0,
+                                f.path!.length - 1,
+                              );
+                              folderList.add("WebDAV:$tmpPath");
+                              folderQueue.add(tmpPath);
+                            }
+                          }
+                        }
+                        for (final folder in folderList) {
+                          if (currentFolderList.contains(folder)) {
+                            continue;
+                          }
+                          currentFolderList.add(folder);
+                        }
+                        updateNotifier.value++;
                       },
                       style: buttonStyle,
                       child: Text(l10n.addWebDAVRecursiveFolder),
@@ -645,14 +689,18 @@ class SettingsList extends StatelessWidget {
                             webdavBaseUrl = baseUrlTmp.text;
                             if (context.mounted) {
                               Navigator.pop(context);
+                              showCenterMessage(
+                                context,
+                                'Successfully connect to WebDAV.',
+                                duration: 2000,
+                              );
                             }
                             settingManager.saveSetting();
-                            await Loader.reload();
                           } catch (e) {
                             if (context.mounted) {
                               showCenterMessage(
                                 context,
-                                e.toString(),
+                                'Can not connect to WebDAV.',
                                 duration: 2000,
                               );
                             }

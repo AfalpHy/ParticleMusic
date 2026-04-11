@@ -150,5 +150,6 @@
   "skip2Next": "下一首",
   "playOrPause": "播放/暂停",
   "unlockDeskLrc": "解锁桌面歌词",
-  "autoPlayOnStartup": "启动后自动播放"
+  "autoPlayOnStartup": "启动后自动播放",
+  "return2Previous": "返回上一级"
 }

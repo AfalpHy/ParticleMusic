@@ -1009,6 +1009,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Auto-Play on Startup'**
   String get autoPlayOnStartup;
+
+  /// No description provided for @return2Previous.
+  ///
+  /// In en, this message translates to:
+  /// **'Return to Previous'**
+  String get return2Previous;
 }
 
 class _AppLocalizationsDelegate

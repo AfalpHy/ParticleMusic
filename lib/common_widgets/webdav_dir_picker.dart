@@ -12,7 +12,7 @@ class WebdavDirPicker extends StatefulWidget {
 class _WebdavDirPickerState extends State<WebdavDirPicker> {
   String currentPath = '/';
   List<String> directories = [];
-
+  bool isLoading = false;
   @override
   void initState() {
     super.initState();
@@ -36,8 +36,12 @@ class _WebdavDirPickerState extends State<WebdavDirPicker> {
   }
 
   void loadDirectories(String path) async {
+    setState(() {
+      isLoading = true;
+    });
     final dirs = await listDirectories(path);
     setState(() {
+      isLoading = false;
       currentPath = path;
       directories = dirs;
     });
@@ -55,20 +59,22 @@ class _WebdavDirPickerState extends State<WebdavDirPicker> {
           Expanded(
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: ListView.builder(
-                itemCount: directories.length,
-                itemBuilder: (context, index) {
-                  final dir = directories[index];
-                  return ListTile(
-                    title: Text(dir.split('/').last),
-                    leading: Icon(Icons.folder),
-                    dense: true,
-                    onTap: () {
-                      loadDirectories(dir); // navigate into subdirectory
-                    },
-                  );
-                },
-              ),
+              child: isLoading
+                  ? Center(child: CircularProgressIndicator(color: iconColor))
+                  : ListView.builder(
+                      itemCount: directories.length,
+                      itemBuilder: (context, index) {
+                        final dir = directories[index];
+                        return ListTile(
+                          title: Text(dir.split('/').last),
+                          leading: Icon(Icons.folder),
+                          dense: true,
+                          onTap: () {
+                            loadDirectories(dir); // navigate into subdirectory
+                          },
+                        );
+                      },
+                    ),
             ),
           ),
           SizedBox(height: 10),
@@ -83,7 +89,7 @@ class _WebdavDirPickerState extends State<WebdavDirPicker> {
                     currentPath.substring(0, currentPath.length - last.length),
                   );
                 },
-                child: Text('back'),
+                child: Text(AppLocalizations.of(context).return2Previous),
               ),
               SizedBox(width: 10),
               ElevatedButton(
