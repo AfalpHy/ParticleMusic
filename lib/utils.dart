@@ -537,24 +537,18 @@ Future<void> setSongList(
   File songFilePathListFile,
   List<MyAudioMetadata> additionalSongList,
   List<MyAudioMetadata> destList,
+  Map<String, MyAudioMetadata> filePath2Song,
 ) async {
-  if (!await songFilePathListFile.exists()) {
-    await songFilePathListFile.create();
-  }
-
   final jsonString = await songFilePathListFile.readAsString();
 
-  if (jsonString.isNotEmpty) {
-    final List<dynamic> songFilePathList = jsonDecode(jsonString);
-    for (final path in songFilePathList) {
-      if (library.filePathValidSet.contains(path)) {
-        final song = library.filePath2Song[path]!;
-        destList.add(song);
-      } else {
-        library.filePath2Song.remove(path);
-      }
+  final List<dynamic> songFilePathList = jsonDecode(jsonString);
+  for (final path in songFilePathList) {
+    final song = filePath2Song[path];
+    if (song != null) {
+      destList.add(song);
     }
   }
+
   destList.addAll(additionalSongList);
 }
 
@@ -575,6 +569,10 @@ Future<void> updateDesktopLyrics() async {
   );
 }
 
+bool isFileProviderStorePath(String path) {
+  return path.contains('File Provider Storage/');
+}
+
 // full path to short path
 String convertIOSPath(String path) {
   if (path.contains('File Provider Storage/')) {
@@ -587,7 +585,7 @@ String convertIOSPath(String path) {
 
 // short path to full path
 String revertIOSPath(String path) {
-  if (path.contains('Particle Music')) {
+  if (path.startsWith('Particle Music')) {
     return "${appDocs.parent.path}/${path.replaceFirst('Particle Music', 'Documents')}";
   } else {
     if (library.iosFileProviderStorage == null) {

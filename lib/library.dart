@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:particle_music/bookmark_service.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/folder.dart';
 import 'package:particle_music/layer/layers_manager.dart';
@@ -12,9 +11,6 @@ import 'package:particle_music/utils.dart';
 
 class Library {
   late File _songFilePathListFile;
-  late File _songMetadataListFile;
-
-  Set<String> filePathValidSet = {};
 
   List<MyAudioMetadata> songList = [];
   List<MyAudioMetadata> additionalSongList = [];
@@ -26,7 +22,7 @@ class Library {
 
   final displayNavidromeNotifier = ValueNotifier(false);
 
-  late final File _folderPathListFile;
+  late final File _folderMapListFile;
   List<Folder> folderList = [];
   String? iosFileProviderStorage;
 
@@ -34,49 +30,31 @@ class Library {
     _songFilePathListFile = File(
       "${appSupportDir.path}/song_file_path_list.txt",
     );
-    _songMetadataListFile = File(
-      "${appSupportDir.path}/song_metadata_list.txt",
-    );
-    if (!_songMetadataListFile.existsSync()) {
-      _songMetadataListFile.createSync();
+    if (!_songFilePathListFile.existsSync()) {
+      _songFilePathListFile.writeAsStringSync('[]');
     }
-    _folderPathListFile = File("${appSupportDir.path}/folder_paths.txt");
-    if (!_folderPathListFile.existsSync()) {
-      _folderPathListFile.createSync();
+
+    _folderMapListFile = File("${appSupportDir.path}/folder_map_list.txt");
+
+    if (!_folderMapListFile.existsSync()) {
+      _folderMapListFile.writeAsStringSync('[]');
     }
   }
 
   Future<void> initAllFolders() async {
-    final folderPathListContent = await _folderPathListFile.readAsString();
-    if (folderPathListContent.isEmpty) {
-      return;
-    }
-    List<dynamic> result = jsonDecode(folderPathListContent);
-    final folderPathList = result.cast<String>();
+    final jsonString = await _folderMapListFile.readAsString();
+    List<dynamic> result = jsonDecode(jsonString);
+    final folderMapList = result.cast<Map<String, dynamic>>();
 
-    for (int i = 0; i < folderPathList.length; i++) {
-      String path = folderPathList[i];
-      if (path.startsWith('WebDAV:')) {
-        folderList.add(Folder(i, path, isWebdav: true));
-        continue;
-      }
-      String? iosPath;
-      if (Platform.isIOS) {
-        if (path.contains('Particle Music')) {
-          iosPath = revertIOSPath(path);
-        } else {
-          iosPath = await BookmarkService.getUrlById(path);
-          if (iosFileProviderStorage == null && iosPath != null) {
-            iosFileProviderStorage = iosPath.substring(
-              0,
-              iosPath.indexOf('File Provider Storage/'),
-            );
-            iosFileProviderStorage =
-                "${iosFileProviderStorage}File Provider Storage/";
-          }
-        }
-      }
-      folderList.add(Folder(i, path, iosPath: iosPath));
+    for (final map in folderMapList) {
+      folderList.add(await Folder.from(map));
+    }
+  }
+
+  void setIOSFileProviderStorageIfNeed(String? iosPath) {
+    if (iosFileProviderStorage == null && iosPath != null) {
+      final tmp = iosPath.split('File Provider Storage/').first;
+      iosFileProviderStorage = "${tmp}File Provider Storage/";
     }
   }
 
@@ -84,10 +62,7 @@ class Library {
     bool needUpdate = false;
     if (pathList.length == folderList.length) {
       for (int i = 0; i < pathList.length; i++) {
-        final path = Platform.isIOS
-            ? folderList[i].iosPath
-            : folderList[i].path;
-        if (pathList[i] != path) {
+        if (pathList[i] != folderList[i].path) {
           needUpdate = true;
           break;
         }
@@ -98,44 +73,20 @@ class Library {
     if (!needUpdate) {
       return false;
     }
-    for (final folder in folderList) {
-      await folder.renameToTmp();
-    }
+
     List<Folder> newFolderList = [];
     for (int i = 0; i < pathList.length; i++) {
-      bool isWebdav = pathList[i].startsWith('WebDAV:');
-      if (isWebdav || !Platform.isIOS) {
-        String path = pathList[i];
-        bool exist = false;
-        for (final folder in folderList) {
-          final folderPath = folder.path;
-          if (folderPath == path) {
-            await folder.updateIndex(i);
-            newFolderList.add(folder);
-            exist = true;
-            break;
-          }
+      String path = pathList[i];
+      bool exist = false;
+      for (final folder in folderList) {
+        if (path == folder.path) {
+          newFolderList.add(folder);
+          exist = true;
+          break;
         }
-        if (!exist) {
-          newFolderList.add(Folder(i, path, isWebdav: isWebdav));
-        }
-      } else {
-        String iosPath = pathList[i];
-        String path = convertIOSPath(iosPath);
-        bool exist = false;
-        for (final folder in folderList) {
-          final folderPath = folder.iosPath;
-
-          if (folderPath == iosPath) {
-            await folder.updateIndex(i);
-            newFolderList.add(folder);
-            exist = true;
-            break;
-          }
-        }
-        if (!exist) {
-          newFolderList.add(Folder(i, path, iosPath: iosPath));
-        }
+      }
+      if (!exist) {
+        newFolderList.add(await Folder.create(path));
       }
     }
 
@@ -143,31 +94,13 @@ class Library {
       if (newFolderList.contains(folder)) {
         continue;
       }
-      await folder.delete();
+      folder.delete();
     }
 
     folderList = newFolderList;
 
-    if (Platform.isIOS) {
-      await BookmarkService.clear();
-      for (final folder in folderList) {
-        if (folder.path.startsWith('WebDAV') ||
-            !folder.iosPath!.contains('File Provider Storage/')) {
-          continue;
-        }
-        if (await BookmarkService.saveDirectoryAndActive(
-          folder.path,
-          folder.iosPath!,
-        )) {
-          library.iosFileProviderStorage ??= folder.iosPath!.substring(
-            0,
-            folder.iosPath!.indexOf(folder.path),
-          );
-        }
-      }
-    }
-    await _folderPathListFile.writeAsString(
-      jsonEncode(folderList.map((e) => e.path).toList()),
+    await _folderMapListFile.writeAsString(
+      jsonEncode(folderList.map((e) => e.toMap()).toList()),
     );
     return true;
   }
@@ -182,30 +115,21 @@ class Library {
     return result;
   }
 
-  Future<void> _prepare() async {
-    final jsonString = await _songMetadataListFile.readAsString();
-    if (jsonString.isEmpty) {
-      return;
-    }
-
-    final List<dynamic> list = jsonDecode(jsonString);
-
-    for (final map in list) {
-      final song = MyAudioMetadata.fromMap(map);
-      filePath2Song[song.filePath!] = song;
-    }
-  }
-
   Future<void> load() async {
-    await _prepare();
     for (final folder in folderList) {
       await folder.load();
       additionalSongList.addAll(folder.additionalSongList);
+      filePath2Song.addAll(folder.filePath2Song);
     }
 
-    await setSongList(_songFilePathListFile, additionalSongList, songList);
+    await setSongList(
+      _songFilePathListFile,
+      additionalSongList,
+      songList,
+      filePath2Song,
+    );
+
     await _saveSongFilePathList();
-    await _saveSongMetadataList();
 
     if (navidromeClient.valid) {
       loadingNavidromeNotifier.value = true;
@@ -221,12 +145,6 @@ class Library {
         songList.isEmpty & navidromeSongList.isNotEmpty;
   }
 
-  Future<void> _saveSongMetadataList() async {
-    await _songMetadataListFile.writeAsString(
-      jsonEncode(songList.map((e) => e.toMap()).toList()),
-    );
-  }
-
   Future<void> _saveSongFilePathList() async {
     await _songFilePathListFile.writeAsString(
       jsonEncode(songList.map((e) => e.filePath!).toList()),
@@ -240,8 +158,6 @@ class Library {
   }
 
   void clear() {
-    filePathValidSet = {};
-
     songList = [];
     additionalSongList = [];
     filePath2Song = {};

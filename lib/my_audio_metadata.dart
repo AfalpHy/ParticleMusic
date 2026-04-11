@@ -10,6 +10,7 @@ class MyAudioMetadata {
   String? filePath;
   String? iosPath;
   final DateTime? modified;
+  // for navidrome
   final String? id;
   final bool isNavidrome;
   final bool isWebdav;
@@ -22,6 +23,9 @@ class MyAudioMetadata {
   ParsedLyrics? parsedLyrics;
 
   String? navidromeUrl;
+
+  String? navidromeCachePath;
+  String? webdavCachePath;
 
   final isFavoriteNotifier = ValueNotifier(false);
   final updateNotifier = ValueNotifier(0);

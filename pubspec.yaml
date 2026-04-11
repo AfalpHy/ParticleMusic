@@ -82,6 +82,7 @@ dependencies:
   dio: ^5.9.2
   crypto: ^3.0.7
   webdav_client: ^1.2.2
+  uuid: ^4.5.3
 
 dev_dependencies:
   flutter_test:

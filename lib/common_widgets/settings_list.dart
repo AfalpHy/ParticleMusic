@@ -187,8 +187,7 @@ class SettingsList extends StatelessWidget {
           width: isMobile ? 300 : 400,
           pageBuilder: (context) {
             final currentFolderList = library.folderList
-                .where((e) => Platform.isIOS ? e.iosPath != null : true)
-                .map((e) => e.iosPath ?? e.path)
+                .map((e) => e.path)
                 .toList();
             final updateNotifier = ValueNotifier(0);
             final buttonStyle = ElevatedButton.styleFrom(
@@ -213,14 +212,8 @@ class SettingsList extends StatelessWidget {
                       return ListView.builder(
                         itemCount: currentFolderList.length,
                         itemBuilder: (context, index) {
-                          final folderPath = currentFolderList[index];
-                          final displayName =
-                              folderPath.startsWith('WebDAV:') ||
-                                  !Platform.isIOS
-                              ? folderPath
-                              : convertIOSPath(folderPath);
                           return ListTile(
-                            title: Text(displayName),
+                            title: Text(currentFolderList[index]),
                             contentPadding: EdgeInsets.fromLTRB(20, 0, 5, 0),
                             trailing: IconButton(
                               onPressed: () {
@@ -246,16 +239,7 @@ class SettingsList extends StatelessWidget {
                         if (result == null) {
                           return;
                         }
-                        if (currentFolderList.contains(result)) {
-                          if (context.mounted) {
-                            showCenterMessage(
-                              context,
-                              'The folder already exists',
-                              duration: 2000,
-                            );
-                          }
-                          return;
-                        }
+
                         if (Platform.isIOS) {
                           if (!result.contains('File Provider Storage/') &&
                               !result.contains(appDocs.path)) {
@@ -268,7 +252,9 @@ class SettingsList extends StatelessWidget {
                             }
                             return;
                           }
-                          if (!await BookmarkService.active(result)) {
+
+                          if (isFileProviderStorePath(result) &&
+                              !await BookmarkService.active(result)) {
                             if (context.mounted) {
                               showCenterMessage(
                                 context,
@@ -278,6 +264,18 @@ class SettingsList extends StatelessWidget {
                             }
                             return;
                           }
+                          result = convertIOSPath(result);
+                        }
+
+                        if (currentFolderList.contains(result)) {
+                          if (context.mounted) {
+                            showCenterMessage(
+                              context,
+                              'The folder already exists',
+                              duration: 2000,
+                            );
+                          }
+                          return;
                         }
 
                         currentFolderList.add(result);
@@ -342,7 +340,8 @@ class SettingsList extends StatelessWidget {
                             }
                             return;
                           }
-                          if (!await BookmarkService.active(result)) {
+                          if (isFileProviderStorePath(result) &&
+                              !await BookmarkService.active(result)) {
                             if (context.mounted) {
                               showCenterMessage(
                                 context,
@@ -365,6 +364,9 @@ class SettingsList extends StatelessWidget {
                         folderList.insert(0, result);
 
                         for (String folder in folderList) {
+                          if (Platform.isIOS) {
+                            folder = convertIOSPath(folder);
+                          }
                           if (!currentFolderList.contains(folder)) {
                             currentFolderList.add(folder);
                           }
