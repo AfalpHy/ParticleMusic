@@ -200,18 +200,22 @@ class SettingsList extends StatelessWidget {
         showAnimationDialog(
           context: context,
           child: SizedBox(
-            height: isMobile ? 350 : 300,
+            height: isMobile ? 350 : 320,
             width: 300,
             child: Padding(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(isMobile ? 20 : 15),
               child: Column(
                 children: [
+                  if (!isMobile) SizedBox(height: 10),
+
                   SizedBox(
                     child: Text(
                       'Navidrome',
                       style: .new(fontWeight: .bold, fontSize: 18),
                     ),
                   ),
+
+                  SizedBox(height: 10),
 
                   adaptiveTextField(context, l10n.username, usernameTmp),
 
@@ -222,7 +226,7 @@ class SettingsList extends StatelessWidget {
                   SizedBox(height: 10),
                   adaptiveTextField(context, 'Url', baseUrlTmp),
 
-                  SizedBox(height: 20),
+                  SizedBox(height: isMobile ? 10 : 20),
                   Builder(
                     builder: (context) {
                       return Row(
@@ -299,7 +303,6 @@ class SettingsList extends StatelessWidget {
                       );
                     },
                   ),
-                  Spacer(),
                 ],
               ),
             ),
@@ -322,18 +325,22 @@ class SettingsList extends StatelessWidget {
           context: context,
 
           child: SizedBox(
-            height: isMobile ? 350 : 300,
+            height: isMobile ? 350 : 320,
             width: 300,
             child: Padding(
-              padding: const EdgeInsets.all(20),
+              padding: EdgeInsets.all(isMobile ? 20 : 15),
               child: Column(
                 children: [
+                  if (!isMobile) SizedBox(height: 10),
+
                   SizedBox(
                     child: Text(
                       'WebDAV',
                       style: .new(fontWeight: .bold, fontSize: 18),
                     ),
                   ),
+
+                  SizedBox(height: 10),
 
                   adaptiveTextField(context, l10n.username, usernameTmp),
 
@@ -344,7 +351,7 @@ class SettingsList extends StatelessWidget {
                   SizedBox(height: 10),
                   adaptiveTextField(context, 'Url', baseUrlTmp),
 
-                  SizedBox(height: 20),
+                  SizedBox(height: isMobile ? 10 : 20),
                   Builder(
                     builder: (context) {
                       return Row(

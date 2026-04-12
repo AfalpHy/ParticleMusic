@@ -47,10 +47,10 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
         late double width;
         late double height;
         if (orientation == Orientation.portrait) {
-          width = max(300, appWidth * 0.5);
+          width = max(320, appWidth * 0.5);
           height = appHeight * 0.7;
         } else {
-          width = max(300, appWidth * 0.35);
+          width = max(320, appWidth * 0.35);
           height = max(350, appHeight * 0.7);
         }
 
