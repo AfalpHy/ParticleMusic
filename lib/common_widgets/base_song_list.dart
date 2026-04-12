@@ -183,7 +183,7 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
                   borderRadius: 10,
                   song: song,
                   elevation: 5,
-                  color: isLandscape
+                  color: MediaQuery.of(context).orientation == .landscape
                       ? colorManager.getSpecificMainPageCoverArtBaseColor()
                       : colorManager.getSpecificMainPageCoverArtBaseColorForm(
                           song,

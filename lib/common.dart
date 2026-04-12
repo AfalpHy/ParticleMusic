@@ -23,7 +23,6 @@ late Directory appSupportDir;
 late Directory tmpDir;
 
 final isMobile = Platform.isAndroid || Platform.isIOS;
-late bool isLandscape;
 
 // ===================================== Library =====================================
 

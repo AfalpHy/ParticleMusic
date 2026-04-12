@@ -88,21 +88,18 @@ class ViewEntry extends StatelessWidget {
   }
 
   Widget mainView(BuildContext context) {
-    isLandscape = false;
     if (isMobile) {
       return OrientationBuilder(
         builder: (context, orientation) {
           if (orientation == Orientation.portrait) {
             return PortraitView();
           } else {
-            isLandscape = true;
             return LandscapeView();
           }
         },
       );
     }
 
-    isLandscape = true;
     return LandscapeView();
   }
 }

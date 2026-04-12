@@ -314,7 +314,7 @@ class Sidebar extends StatelessWidget {
                 ),
               ),
             ),
-            if (!isLandscape) ...[
+            if (MediaQuery.of(context).orientation != .landscape) ...[
               sidebarItem(
                 label: 'settings',
                 leading: ImageIcon(settingImage, size: 30),

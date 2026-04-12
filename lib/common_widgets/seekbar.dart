@@ -23,16 +23,19 @@ class SeekBar extends StatefulWidget {
 class SeekBarState extends State<SeekBar> {
   double? dragValue;
   bool isDragging = false; // track if user is touching the thumb
-  late final double horizontalPadding;
+  double horizontalPadding = 0;
   @override
   void initState() {
     super.initState();
     assert(widget.widgetHeight > widget.seekBarHeight);
-    horizontalPadding = isLandscape && !widget.isMiniMode ? 45 : 0;
   }
 
   @override
   Widget build(BuildContext context) {
+    horizontalPadding =
+        MediaQuery.of(context).orientation == .landscape && !widget.isMiniMode
+        ? 45
+        : 0;
     final duration = currentSongNotifier.value?.duration ?? Duration.zero;
     final durationMs = duration.inMilliseconds.toDouble();
 
