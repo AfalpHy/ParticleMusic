@@ -483,5 +483,5 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addedFolders => 'Added Folders';
 
   @override
-  String get recursiveScan => 'Scan subfolders';
+  String get recursiveScan => 'Scan Subfolders';
 }

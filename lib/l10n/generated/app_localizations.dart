@@ -1025,7 +1025,7 @@ abstract class AppLocalizations {
   /// No description provided for @recursiveScan.
   ///
   /// In en, this message translates to:
-  /// **'Scan subfolders'**
+  /// **'Scan Subfolders'**
   String get recursiveScan;
 }
 
