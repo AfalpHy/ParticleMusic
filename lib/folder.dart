@@ -71,6 +71,10 @@ class Folder {
     String path = map['path'] as String;
     String songFilePathListPath = map['songFilePathListPath'] as String;
     String songMetadataListPath = map['songMetadataListPath'] as String;
+    if (Platform.isIOS) {
+      songFilePathListPath = appSupportDir.path + songFilePathListPath;
+      songMetadataListPath = appSupportDir.path + songMetadataListPath;
+    }
     bool isWebdav = path.startsWith('WebDAV:');
     if (isWebdav || !Platform.isIOS) {
       return Folder(
@@ -128,8 +132,12 @@ class Folder {
   Map<String, dynamic> toMap() {
     return {
       'path': path,
-      'songFilePathListPath': _songFilePathListFile.path,
-      'songMetadataListPath': _songMetadataListFile.path,
+      'songFilePathListPath': Platform.isIOS
+          ? _songFilePathListFile.path.split('Application Support').last
+          : _songFilePathListFile.path,
+      'songMetadataListPath': Platform.isIOS
+          ? _songMetadataListFile.path.split('Application Support').last
+          : _songMetadataListFile.path,
     };
   }
 
