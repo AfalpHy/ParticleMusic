@@ -206,8 +206,6 @@ class SettingsList extends StatelessWidget {
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  Spacer(),
-
                   SizedBox(
                     child: Text(
                       'Navidrome',
@@ -225,74 +223,81 @@ class SettingsList extends StatelessWidget {
                   adaptiveTextField(context, 'Url', baseUrlTmp),
 
                   SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Spacer(),
-                      ElevatedButton(
-                        onPressed: () async {
-                          if (!await showConfirmDialog(context, l10n.clear)) {
-                            return;
-                          }
-                          username = '';
-                          password = '';
-                          baseUrl = '';
-                          settingManager.saveSetting();
-                          navidromeClient = NavidromeClient(
-                            username: username,
-                            password: password,
-                            baseUrl: baseUrl,
-                          );
-                          if (context.mounted) {
-                            Navigator.pop(context);
-                          }
-                          Loader.reload();
-                        },
-                        child: Text(l10n.clear),
-                      ),
-                      SizedBox(width: 20),
-                      ElevatedButton(
-                        onPressed: () async {
-                          final tmp = navidromeClient;
-                          try {
-                            navidromeClient = NavidromeClient(
-                              username: usernameTmp.text,
-                              password: passwordTmp.text,
-                              baseUrl: baseUrlTmp.text,
-                            );
-                          } catch (e) {
-                            navidromeClient = tmp;
-                            showCenterMessage(
-                              context,
-                              e.toString(),
-                              duration: 5000,
-                            );
-                            return;
-                          }
-                          if (await navidromeClient.ping()) {
-                            if (context.mounted) {
-                              Navigator.pop(context);
-                            }
-                            username = usernameTmp.text;
-                            password = passwordTmp.text;
-                            baseUrl = baseUrlTmp.text;
-                            settingManager.saveSetting();
-
-                            await Loader.reload();
-                          } else {
-                            navidromeClient = tmp;
-                            if (context.mounted) {
-                              showCenterMessage(
+                  Builder(
+                    builder: (context) {
+                      return Row(
+                        children: [
+                          Spacer(),
+                          ElevatedButton(
+                            onPressed: () async {
+                              if (!await showConfirmDialog(
                                 context,
-                                "Failed to connect to Navidrome!",
-                                duration: 2000,
+                                l10n.clear,
+                              )) {
+                                return;
+                              }
+                              username = '';
+                              password = '';
+                              baseUrl = '';
+                              settingManager.saveSetting();
+                              navidromeClient = NavidromeClient(
+                                username: username,
+                                password: password,
+                                baseUrl: baseUrl,
                               );
-                            }
-                          }
-                        },
-                        child: Text(l10n.confirm),
-                      ),
-                      Spacer(),
-                    ],
+                              if (context.mounted) {
+                                Navigator.pop(context);
+                              }
+                              Loader.reload();
+                            },
+                            child: Text(l10n.clear),
+                          ),
+                          SizedBox(width: 20),
+                          ElevatedButton(
+                            onPressed: () async {
+                              final tmp = navidromeClient;
+                              try {
+                                navidromeClient = NavidromeClient(
+                                  username: usernameTmp.text,
+                                  password: passwordTmp.text,
+                                  baseUrl: baseUrlTmp.text,
+                                );
+                              } catch (e) {
+                                navidromeClient = tmp;
+                                showCenterMessage(
+                                  context,
+                                  e.toString(),
+                                  duration: 5000,
+                                );
+                                return;
+                              }
+                              if (await navidromeClient.ping()) {
+                                if (context.mounted) {
+                                  Navigator.pop(context);
+                                }
+                                username = usernameTmp.text;
+                                password = passwordTmp.text;
+                                baseUrl = baseUrlTmp.text;
+                                settingManager.saveSetting();
+
+                                await Loader.reload();
+                              } else {
+                                navidromeClient = tmp;
+                                if (context.mounted) {
+                                  showCenterMessage(
+                                    context,
+                                    "Failed to connect to Navidrome!",
+                                    duration: 2000,
+                                  );
+                                }
+                              }
+                            },
+                            child: Text(l10n.confirm),
+                          ),
+                          Spacer(),
+                        ],
+                      );
+                    },
                   ),
                   Spacer(),
                 ],
@@ -323,7 +328,6 @@ class SettingsList extends StatelessWidget {
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
-                  Spacer(),
                   SizedBox(
                     child: Text(
                       'WebDAV',
@@ -341,66 +345,73 @@ class SettingsList extends StatelessWidget {
                   adaptiveTextField(context, 'Url', baseUrlTmp),
 
                   SizedBox(height: 20),
-                  Row(
-                    children: [
-                      Spacer(),
-                      ElevatedButton(
-                        onPressed: () async {
-                          if (!await showConfirmDialog(context, l10n.clear)) {
-                            return;
-                          }
-                          webdavUsername = '';
-                          webdavPassword = '';
-                          webdavBaseUrl = '';
-                          settingManager.saveSetting();
-                          webdavClient = null;
-                          if (context.mounted) {
-                            Navigator.pop(context);
-                          }
-                          Loader.reload();
-                        },
-                        child: Text(l10n.clear),
-                      ),
-                      SizedBox(width: 20),
-                      ElevatedButton(
-                        onPressed: () async {
-                          try {
-                            await newClient(
-                              baseUrlTmp.text,
-                              user: usernameTmp.text,
-                              password: passwordTmp.text,
-                            ).ping();
-                            webdavClient = newClient(
-                              baseUrlTmp.text,
-                              user: usernameTmp.text,
-                              password: passwordTmp.text,
-                            );
-                            webdavUsername = usernameTmp.text;
-                            webdavPassword = passwordTmp.text;
-                            webdavBaseUrl = baseUrlTmp.text;
-                            if (context.mounted) {
-                              Navigator.pop(context);
-                              showCenterMessage(
+                  Builder(
+                    builder: (context) {
+                      return Row(
+                        children: [
+                          Spacer(),
+                          ElevatedButton(
+                            onPressed: () async {
+                              if (!await showConfirmDialog(
                                 context,
-                                'Successfully connect to WebDAV.',
-                                duration: 2000,
-                              );
-                            }
-                            settingManager.saveSetting();
-                          } catch (e) {
-                            if (context.mounted) {
-                              showCenterMessage(
-                                context,
-                                'Can not connect to WebDAV.',
-                                duration: 2000,
-                              );
-                            }
-                          }
-                        },
-                        child: Text(l10n.confirm),
-                      ),
-                      Spacer(),
-                    ],
+                                l10n.clear,
+                              )) {
+                                return;
+                              }
+                              webdavUsername = '';
+                              webdavPassword = '';
+                              webdavBaseUrl = '';
+                              settingManager.saveSetting();
+                              webdavClient = null;
+                              if (context.mounted) {
+                                Navigator.pop(context);
+                              }
+                              Loader.reload();
+                            },
+                            child: Text(l10n.clear),
+                          ),
+                          SizedBox(width: 20),
+                          ElevatedButton(
+                            onPressed: () async {
+                              try {
+                                await newClient(
+                                  baseUrlTmp.text,
+                                  user: usernameTmp.text,
+                                  password: passwordTmp.text,
+                                ).ping();
+                                webdavClient = newClient(
+                                  baseUrlTmp.text,
+                                  user: usernameTmp.text,
+                                  password: passwordTmp.text,
+                                );
+                                webdavUsername = usernameTmp.text;
+                                webdavPassword = passwordTmp.text;
+                                webdavBaseUrl = baseUrlTmp.text;
+                                if (context.mounted) {
+                                  Navigator.pop(context);
+                                  showCenterMessage(
+                                    context,
+                                    'Successfully connect to WebDAV.',
+                                    duration: 2000,
+                                  );
+                                }
+                                settingManager.saveSetting();
+                              } catch (e) {
+                                if (context.mounted) {
+                                  showCenterMessage(
+                                    context,
+                                    'Can not connect to WebDAV.',
+                                    duration: 2000,
+                                  );
+                                }
+                              }
+                            },
+                            child: Text(l10n.confirm),
+                          ),
+                          Spacer(),
+                        ],
+                      );
+                    },
                   ),
                   Spacer(),
                 ],
