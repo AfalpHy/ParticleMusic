@@ -228,7 +228,6 @@ class Folder {
             }
             final filePath = webdavBaseUrl + f.path!;
 
-            await webdavClient!.ping();
             await _processSong(filePath, null, f.mTime!);
           }
         }

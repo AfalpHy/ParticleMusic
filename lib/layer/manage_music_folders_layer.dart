@@ -17,6 +17,7 @@ import 'package:smooth_corner/smooth_corner.dart';
 List<String>? _currentFolderList;
 final _updateNotifier = ValueNotifier(0);
 ValueNotifier<bool>? _tmpRecursiveScanNotifier;
+int _cnt = 0;
 
 class ManageMusicFoldersLayer extends StatefulWidget {
   const ManageMusicFoldersLayer({super.key});
@@ -29,9 +30,19 @@ class _ManageMusicFoldersLayerState extends State<ManageMusicFoldersLayer> {
   @override
   void initState() {
     super.initState();
-
+    _cnt++;
     _currentFolderList ??= library.folderList.map((e) => e.path).toList();
     _tmpRecursiveScanNotifier ??= ValueNotifier(recursiveScanNotifier.value);
+  }
+
+  @override
+  void dispose() {
+    _cnt--;
+    if (_cnt == 0) {
+      _currentFolderList = null;
+      _tmpRecursiveScanNotifier = null;
+    }
+    super.dispose();
   }
 
   @override
@@ -59,7 +70,7 @@ class _ManageMusicFoldersLayerState extends State<ManageMusicFoldersLayer> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         scrolledUnderElevation: 0,
-        title: Text(l10n.folders),
+        title: Text(l10n.manageMusicFolder),
         centerTitle: true,
       ),
       body: ValueListenableBuilder(
@@ -129,7 +140,7 @@ class _ManageMusicFoldersLayerState extends State<ManageMusicFoldersLayer> {
                   child: Row(
                     children: [
                       SizedBox(
-                        width: 280,
+                        width: 250,
                         child: ListView(children: [options(context)]),
                       ),
                       VerticalDivider(
