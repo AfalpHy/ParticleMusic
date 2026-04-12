@@ -20,7 +20,7 @@
   "followSystem": "Follow System",
   "settings": "Settings",
   "reload": "Reload",
-  "selectMusicFolder": "Select Music Folders",
+  "manageMusicFolder": "Manage Music Folders",
   "openSourceLicense": "Open Source License",
   "sleepTimer": "Sleep Timer",
   "pauseAfterCurrentTrack": "Pause After Current Track",
@@ -193,5 +193,7 @@
   "playOrPause": "Play/Pause",
   "unlockDeskLrc": "Unlock Desktop Lyrics",
   "autoPlayOnStartup": "Auto-Play on Startup",
-  "return2Previous": "Return to Previous"
+  "return2Previous": "Return to Previous",
+  "addedFolders": "Added Folders",
+  "recursiveScan": "Scan subfolders"
 }

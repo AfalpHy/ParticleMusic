@@ -63,6 +63,8 @@ class SettingManager {
     webdavUsername = json['webdavUsername'] as String? ?? '';
     webdavPassword = json['webdavPassword'] as String? ?? '';
     webdavBaseUrl = json['webdavBaseUrl'] as String? ?? '';
+
+    recursiveScanNotifier.value = json['recursiveScan'] as bool? ?? false;
   }
 
   void saveSetting() {
@@ -94,6 +96,8 @@ class SettingManager {
         'webdavUsername': webdavUsername,
         'webdavPassword': webdavPassword,
         'webdavBaseUrl': webdavBaseUrl,
+
+        'recursiveScan': recursiveScanNotifier.value,
       }),
     );
   }

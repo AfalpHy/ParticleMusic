@@ -89,10 +89,10 @@ class _LicensePanelState extends State<LicensePanel> {
           ),
         ),
         Text(versionNumber),
-        SizedBox(height: 15),
+        SizedBox(height: 5),
         Text('© 2025-2026 AfalpHy'),
 
-        SizedBox(height: 15),
+        SizedBox(height: 5),
         Text('Powered by Flutter'),
         SizedBox(height: 10),
         Expanded(

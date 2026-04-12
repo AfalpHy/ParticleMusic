@@ -13,7 +13,6 @@ class Library {
   late File _songFilePathListFile;
 
   List<MyAudioMetadata> songList = [];
-  List<MyAudioMetadata> additionalSongList = [];
   ValueNotifier<int> changeNotifier = ValueNotifier(0);
   Map<String, MyAudioMetadata> filePath2Song = {};
 
@@ -116,18 +115,22 @@ class Library {
   }
 
   Future<void> load() async {
+    final Set<MyAudioMetadata> additionalSongSet = {};
+
     for (final folder in folderList) {
       await folder.load();
-      additionalSongList.addAll(folder.additionalSongList);
+      additionalSongSet.addAll(folder.additionalSongList);
       filePath2Song.addAll(folder.filePath2Song);
     }
 
-    await setSongList(
-      _songFilePathListFile,
-      additionalSongList,
-      songList,
-      filePath2Song,
-    );
+    await setSongList(_songFilePathListFile, songList, filePath2Song);
+    final songSet = songList.toSet();
+    for (final song in additionalSongSet) {
+      if (songSet.contains(song)) {
+        continue;
+      }
+      songList.add(song);
+    }
 
     await _saveSongFilePathList();
 
@@ -159,7 +162,6 @@ class Library {
 
   void clear() {
     songList = [];
-    additionalSongList = [];
     filePath2Song = {};
 
     navidromeSongList = [];

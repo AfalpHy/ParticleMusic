@@ -1,3 +1,4 @@
+import 'dart:collection';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:ui';
@@ -535,7 +536,6 @@ MyAudioMetadata? getFirstSong(List<MyAudioMetadata> songList) {
 
 Future<void> setSongList(
   File songFilePathListFile,
-  List<MyAudioMetadata> additionalSongList,
   List<MyAudioMetadata> destList,
   Map<String, MyAudioMetadata> filePath2Song,
 ) async {
@@ -548,8 +548,6 @@ Future<void> setSongList(
       destList.add(song);
     }
   }
-
-  destList.addAll(additionalSongList);
 }
 
 Future<void> updateDesktopLyrics() async {
@@ -567,6 +565,25 @@ Future<void> updateDesktopLyrics() async {
     currentLyricLine,
     currentLyricLineIsKaraoke,
   );
+}
+
+Future<List<String>> getWebdavSubDirectoriesFrom(String root) async {
+  List<String> dirList = [];
+  Queue<String> dirQueue = Queue();
+  dirQueue.add(root);
+  while (dirQueue.isNotEmpty) {
+    String dir = dirQueue.first;
+    dirQueue.removeFirst();
+    final fileList = await webdavClient!.readDir(dir);
+    for (final f in fileList) {
+      if (f.isDir!) {
+        final tmpPath = f.path!.substring(0, f.path!.length - 1);
+        dirList.add(tmpPath);
+        dirQueue.add(tmpPath);
+      }
+    }
+  }
+  return dirList;
 }
 
 bool isFileProviderStorePath(String path) {

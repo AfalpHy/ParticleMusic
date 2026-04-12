@@ -149,7 +149,6 @@ class ColorManager {
       panelColor = vividModePanelColor;
       sidebarColor = vividModeSidebarColor;
       bottomColor = vividModeBottomColor;
-      backgroundBaseColor = backgroundCoverArtColor;
       final tmpColor =
           backgroundSong?.lowerLuminance ?? backgroundCoverArtColor;
       searchFieldColor = tmpColor.withAlpha(75);

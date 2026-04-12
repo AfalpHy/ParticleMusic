@@ -41,6 +41,7 @@ class Folder {
   List<MyAudioMetadata> songList = [];
   List<MyAudioMetadata> additionalSongList = [];
   Map<String, MyAudioMetadata> filePath2Song = {};
+  Set<String> validFilePath = {};
 
   final updateNotifier = ValueNotifier(0);
 
@@ -149,6 +150,19 @@ class Folder {
     MyAudioMetadata? song = filePath2Song[filePath];
     bool isAdditional = song == null;
 
+    if (recursiveScanNotifier.value) {
+      MyAudioMetadata? song = library.filePath2Song[filePath];
+      if (song != null) {
+        if (isAdditional) {
+          additionalSongList.add(song);
+        }
+
+        filePath2Song[filePath] = song;
+        validFilePath.add(filePath);
+        return;
+      }
+    }
+
     if (song?.modified != modified) {
       final tmp = isWebdav
           ? await readMetadataAsync(filePath, false)
@@ -172,9 +186,8 @@ class Folder {
         song = null;
       }
     }
-    if (song == null) {
-      filePath2Song.remove(filePath);
-    } else {
+    if (song != null) {
+      validFilePath.add(filePath);
       loadedCountNotifier.value++;
     }
   }
@@ -183,10 +196,20 @@ class Folder {
     currentLoadingFolderNotifier.value = path;
     await _prepare();
     if (isWebdav) {
+      if (webdavClient == null) {
+        await setSongList(_songFilePathListFile, songList, filePath2Song);
+        logger.output('There are no WebDAV client.');
+        return;
+      }
+
       try {
-        if (webdavClient != null) {
-          await webdavClient!.ping();
-          final filelist = await webdavClient!.readDir(path.substring(7));
+        final List<String> dirList = [path.substring(7)];
+        if (recursiveScanNotifier.value) {
+          dirList.addAll(await getWebdavSubDirectoriesFrom(path.substring(7)));
+        }
+
+        for (final dir in dirList) {
+          final filelist = await webdavClient!.readDir(dir);
           for (final f in filelist) {
             if (f.isDir!) {
               continue;
@@ -196,19 +219,26 @@ class Folder {
               continue;
             }
             final filePath = webdavBaseUrl + f.path!;
+
+            await webdavClient!.ping();
             await _processSong(filePath, null, f.mTime!);
           }
         }
       } catch (e) {
+        // If it fails, keep the original data.
+        await setSongList(_songFilePathListFile, songList, filePath2Song);
+        additionalSongList.clear();
         logger.output(e.toString());
+        return;
       }
     } else {
       if (!_dir!.existsSync()) {
         logger.output('$path is not exist');
         return;
       }
-
-      await for (final file in _dir!.list()) {
+      await for (final file in _dir!.list(
+        recursive: recursiveScanNotifier.value,
+      )) {
         if (file is! File) continue;
 
         final ext = extension(file.path).toLowerCase();
@@ -227,12 +257,15 @@ class Folder {
       }
     }
 
-    await setSongList(
-      _songFilePathListFile,
-      additionalSongList,
-      songList,
-      filePath2Song,
-    );
+    final Map<String, MyAudioMetadata> newFilePath2Song = {};
+
+    for (final filePath in validFilePath) {
+      newFilePath2Song[filePath] = filePath2Song[filePath]!;
+    }
+    filePath2Song = newFilePath2Song;
+
+    await setSongList(_songFilePathListFile, songList, filePath2Song);
+    songList.addAll(additionalSongList);
 
     await _saveSongFilePathList();
     await _saveSongMetadataList();
@@ -268,6 +301,7 @@ class Folder {
   void clear() {
     songList = [];
     additionalSongList = [];
+    validFilePath = {};
     filePath2Song = {};
   }
 }

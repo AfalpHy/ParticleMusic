@@ -20,7 +20,7 @@
   "followSystem": "跟随系统",
   "settings": "设置",
   "reload": "重新加载",
-  "selectMusicFolder": "选择音乐文件夹",
+  "manageMusicFolder": "管理音乐文件夹",
   "openSourceLicense": "开源许可证",
   "sleepTimer": "定时关闭",
   "pauseAfterCurrentTrack": "播完整首歌再关闭",
@@ -151,5 +151,7 @@
   "playOrPause": "播放/暂停",
   "unlockDeskLrc": "解锁桌面歌词",
   "autoPlayOnStartup": "启动后自动播放",
-  "return2Previous": "返回上一级"
+  "return2Previous": "返回上一级",
+  "addedFolders": "已添加的目录",
+  "recursiveScan": "扫描子目录"
 }

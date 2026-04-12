@@ -80,44 +80,48 @@ class _PortraitViewState extends State<PortraitView>
   }
 
   Widget content() {
-    return Scaffold(
-      extendBodyBehindAppBar: true,
-      backgroundColor: Colors.transparent,
-      resizeToAvoidBottomInset: false,
-      drawer: Platform.isAndroid ? myDrawer() : null,
-      endDrawer: Platform.isIOS ? myDrawer() : null,
-      body: Stack(
-        children: [
-          ListenableBuilder(
-            listenable: Listenable.merge([
-              rebuildNotifier,
-              updateColorNotifier,
-              layersManager.updateNotifier,
-            ]),
-            builder: (context, _) {
-              return Navigator(
-                pages: layersManager.buildPages(),
-                onDidRemovePage: (_) {
-                  layersManager.popLayer();
+    return Stack(
+      children: [
+        Scaffold(
+          extendBodyBehindAppBar: true,
+          backgroundColor: Colors.transparent,
+          resizeToAvoidBottomInset: false,
+          drawer: Platform.isAndroid ? myDrawer() : null,
+          endDrawer: Platform.isIOS ? myDrawer() : null,
+          body: Stack(
+            children: [
+              ListenableBuilder(
+                listenable: Listenable.merge([
+                  rebuildNotifier,
+                  updateColorNotifier,
+                  layersManager.updateNotifier,
+                ]),
+                builder: (context, _) {
+                  return Navigator(
+                    pages: layersManager.buildPages(),
+                    onDidRemovePage: (_) {
+                      layersManager.popLayer();
+                    },
+                  );
                 },
-              );
-            },
-          ),
+              ),
 
-          Positioned(
-            left: 20,
-            right: 20,
-            bottom: 40,
-            child: ValueListenableBuilder(
-              valueListenable: updateColorNotifier,
-              builder: (context, value, child) {
-                return PlayBar();
-              },
-            ),
+              Positioned(
+                left: 20,
+                right: 20,
+                bottom: 40,
+                child: ValueListenableBuilder(
+                  valueListenable: updateColorNotifier,
+                  builder: (context, value, child) {
+                    return PlayBar();
+                  },
+                ),
+              ),
+            ],
           ),
-          PortraitLyricsPage(),
-        ],
-      ),
+        ),
+        PortraitLyricsPage(),
+      ],
     );
   }
 

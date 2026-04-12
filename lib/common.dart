@@ -39,6 +39,8 @@ final ValueNotifier<bool> loadingLibraryNotifier = ValueNotifier(true);
 
 final ValueNotifier<bool> loadingNavidromeNotifier = ValueNotifier(false);
 
+final ValueNotifier<bool> recursiveScanNotifier = ValueNotifier(false);
+
 // ===================================== MiniMode =====================================
 
 final miniModeNotifier = ValueNotifier(false);

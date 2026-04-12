@@ -72,7 +72,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get reload => '重新加载';
 
   @override
-  String get selectMusicFolder => '选择音乐文件夹';
+  String get manageMusicFolder => '管理音乐文件夹';
 
   @override
   String get openSourceLicense => '开源许可证';
@@ -478,4 +478,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get return2Previous => '返回上一级';
+
+  @override
+  String get addedFolders => '已添加的目录';
+
+  @override
+  String get recursiveScan => '扫描子目录';
 }

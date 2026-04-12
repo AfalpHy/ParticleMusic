@@ -72,7 +72,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get reload => 'Reload';
 
   @override
-  String get selectMusicFolder => 'Select Music Folders';
+  String get manageMusicFolder => 'Manage Music Folders';
 
   @override
   String get openSourceLicense => 'Open Source License';
@@ -478,4 +478,10 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get return2Previous => 'Return to Previous';
+
+  @override
+  String get addedFolders => 'Added Folders';
+
+  @override
+  String get recursiveScan => 'Scan subfolders';
 }

@@ -224,11 +224,11 @@ abstract class AppLocalizations {
   /// **'Reload'**
   String get reload;
 
-  /// No description provided for @selectMusicFolder.
+  /// No description provided for @manageMusicFolder.
   ///
   /// In en, this message translates to:
-  /// **'Select Music Folders'**
-  String get selectMusicFolder;
+  /// **'Manage Music Folders'**
+  String get manageMusicFolder;
 
   /// No description provided for @openSourceLicense.
   ///
@@ -1015,6 +1015,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Return to Previous'**
   String get return2Previous;
+
+  /// No description provided for @addedFolders.
+  ///
+  /// In en, this message translates to:
+  /// **'Added Folders'**
+  String get addedFolders;
+
+  /// No description provided for @recursiveScan.
+  ///
+  /// In en, this message translates to:
+  /// **'Scan subfolders'**
+  String get recursiveScan;
 }
 
 class _AppLocalizationsDelegate

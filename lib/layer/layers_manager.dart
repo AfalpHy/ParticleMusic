@@ -11,6 +11,7 @@ import 'package:particle_music/layer/license_layer.dart';
 import 'package:particle_music/layer/playlists_layer.dart';
 import 'package:particle_music/layer/ranking_layer.dart';
 import 'package:particle_music/layer/recently_layer.dart';
+import 'package:particle_music/layer/manage_music_folders_layer.dart';
 import 'package:particle_music/layer/settings_layer.dart';
 import 'package:particle_music/layer/single_album_layer.dart';
 import 'package:particle_music/layer/single_artist_layer.dart';
@@ -121,6 +122,8 @@ class LayersManager {
       layerStack.add(SettingsLayer(key: UniqueKey()));
     } else if (label == 'licenses') {
       layerStack.add(LicenseLayer(key: UniqueKey()));
+    } else if (label == 'manage_music_folders') {
+      layerStack.add(ManageMusicFoldersLayer());
     }
 
     updateBackground();
