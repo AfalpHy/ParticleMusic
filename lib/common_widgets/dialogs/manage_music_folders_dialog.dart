@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
@@ -7,41 +8,32 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/my_switch.dart';
 import 'package:particle_music/common_widgets/webdav_dir_picker.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
-import 'package:particle_music/landscape_view/title_bar.dart';
-import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/loader.dart';
-import 'package:particle_music/portrait_view/custom_appbar_leading.dart';
 import 'package:particle_music/utils.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
-List<String>? _currentFolderList;
-final _updateNotifier = ValueNotifier(0);
-ValueNotifier<bool>? _tmpRecursiveScanNotifier;
-int _cnt = 0;
-
-class ManageMusicFoldersLayer extends StatefulWidget {
-  const ManageMusicFoldersLayer({super.key});
+class ManageMusicFoldersDialog extends StatefulWidget {
+  const ManageMusicFoldersDialog({super.key});
 
   @override
-  State<StatefulWidget> createState() => _ManageMusicFoldersLayerState();
+  State<StatefulWidget> createState() => _ManageMusicFoldersDialogState();
 }
 
-class _ManageMusicFoldersLayerState extends State<ManageMusicFoldersLayer> {
+class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
+  late List<String> currentFolderList;
+  final updateNotifier = ValueNotifier(0);
+  late ValueNotifier<bool> tmpRecursiveScanNotifier;
+
   @override
   void initState() {
     super.initState();
-    _cnt++;
-    _currentFolderList ??= library.folderList.map((e) => e.path).toList();
-    _tmpRecursiveScanNotifier ??= ValueNotifier(recursiveScanNotifier.value);
+
+    currentFolderList = library.folderList.map((e) => e.path).toList();
+    tmpRecursiveScanNotifier = ValueNotifier(recursiveScanNotifier.value);
   }
 
   @override
   void dispose() {
-    _cnt--;
-    if (_cnt == 0) {
-      _currentFolderList = null;
-      _tmpRecursiveScanNotifier = null;
-    }
     super.dispose();
   }
 
@@ -49,114 +41,104 @@ class _ManageMusicFoldersLayerState extends State<ManageMusicFoldersLayer> {
   Widget build(BuildContext context) {
     return OrientationBuilder(
       builder: (context, orientation) {
+        final appWidth = MediaQuery.widthOf(context);
+        final appHeight = MediaQuery.heightOf(context);
+
+        late double width;
+        late double height;
         if (orientation == Orientation.portrait) {
-          return page(context);
+          width = max(300, appWidth * 0.5);
+          height = appHeight * 0.7;
         } else {
-          return panel(context);
+          width = max(300, appWidth * 0.35);
+          height = max(350, appHeight * 0.7);
         }
+
+        return SizedBox(height: height, width: width, child: _content(context));
       },
     );
   }
 
-  Widget page(BuildContext context) {
-    final l10n = AppLocalizations.of(context);
+  Widget _content(BuildContext context) {
+    return ValueListenableBuilder(
+      valueListenable: updateNotifier,
+      builder: (context, value, child) {
+        return Padding(
+          padding: const EdgeInsets.all(20),
+          child: ValueListenableBuilder(
+            valueListenable: updateColorNotifier,
+            builder: (context, value, child) {
+              return CustomScrollView(
+                slivers: [
+                  SliverToBoxAdapter(child: options(context)),
 
-    return Scaffold(
-      backgroundColor: Colors.transparent,
-      resizeToAvoidBottomInset: false,
-      appBar: AppBar(
-        automaticallyImplyLeading: false,
-        leading: customAppBarLeading(context),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        scrolledUnderElevation: 0,
-        title: Text(l10n.manageMusicFolder),
-        centerTitle: true,
-      ),
-      body: ValueListenableBuilder(
-        valueListenable: _updateNotifier,
-        builder: (context, value, child) {
-          return Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 20),
-            child: ValueListenableBuilder(
-              valueListenable: updateColorNotifier,
-              builder: (context, value, child) {
-                return Column(
-                  children: [
-                    Material(
-                      color: selectedItemColor,
-                      shape: SmoothRectangleBorder(
-                        smoothness: 1,
-                        borderRadius: .all(.circular(10)),
-                      ),
-                      clipBehavior: .antiAlias,
-                      child: options(context),
+                  SliverToBoxAdapter(
+                    child: Divider(
+                      thickness: 0.5,
+                      height: 1,
+                      color: dividerColor,
                     ),
-                    ListTile(title: Text("${l10n.addedFolders}:"), dense: true),
-                    Expanded(
-                      child: Material(
-                        color: selectedItemColor,
-                        shape: SmoothRectangleBorder(
-                          smoothness: 1,
-                          borderRadius: .all(.circular(10)),
-                        ),
-                        clipBehavior: .antiAlias,
-                        child: folderListWidget(),
+                  ),
+
+                  SliverToBoxAdapter(
+                    child: ListTile(
+                      title: Text(
+                        "${AppLocalizations.of(context).addedFolders}:",
                       ),
                     ),
-                    SizedBox(height: 100),
-                  ],
-                );
-              },
-            ),
-          );
-        },
-      ),
+                  ),
+
+                  folderListSliver(),
+
+                  SliverFillRemaining(
+                    hasScrollBody: false,
+                    child: Padding(
+                      padding: const EdgeInsets.all(20),
+                      child: Column(
+                        children: [
+                          const Spacer(),
+
+                          Align(
+                            alignment: Alignment.centerRight,
+                            child: confirmButton(context),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        );
+      },
     );
   }
 
-  Widget panel(BuildContext context) {
+  Widget confirmButton(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    return Column(
-      children: [
-        TitleBar(),
+    return ElevatedButton(
+      onPressed: () async {
+        if (await showConfirmDialog(context, l10n.confirm)) {
+          bool needReload =
+              tmpRecursiveScanNotifier.value != recursiveScanNotifier.value;
+          recursiveScanNotifier.value = tmpRecursiveScanNotifier.value;
 
-        Expanded(
-          child: Column(
-            children: [
-              Text(
-                l10n.manageMusicFolder,
-                style: .new(
-                  fontWeight: .bold,
-                  fontSize: 20,
-                  color: highlightTextColor,
-                ),
-              ),
-
-              Expanded(
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  child: Row(
-                    children: [
-                      SizedBox(
-                        width: 250,
-                        child: ListView(children: [options(context)]),
-                      ),
-                      VerticalDivider(
-                        width: 1,
-                        thickness: 0.5,
-                        color: dividerColor,
-                      ),
-                      Expanded(child: folderListWidget()),
-                    ],
-                  ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ],
+          settingManager.saveSetting();
+          if (await library.updateFolders(currentFolderList) || needReload) {
+            if (context.mounted) {
+              Navigator.pop(context);
+            }
+            await Loader.reload();
+          } else {
+            if (context.mounted) {
+              Navigator.pop(context);
+            }
+          }
+        }
+      },
+      child: Text(l10n.confirm),
     );
   }
 
@@ -173,17 +155,16 @@ class _ManageMusicFoldersLayerState extends State<ManageMusicFoldersLayer> {
           ),
           clipBehavior: .antiAlias,
           child: ListTile(
-            dense: true,
             title: Text(l10n.recursiveScan),
             trailing: ValueListenableBuilder(
-              valueListenable: _tmpRecursiveScanNotifier!,
+              valueListenable: tmpRecursiveScanNotifier,
               builder: (context, value, child) {
                 return SizedBox(
                   width: 50,
                   child: MySwitch(
                     value: value,
                     onToggle: (v) {
-                      _tmpRecursiveScanNotifier!.value = v;
+                      tmpRecursiveScanNotifier.value = v;
                     },
                   ),
                 );
@@ -200,8 +181,6 @@ class _ManageMusicFoldersLayerState extends State<ManageMusicFoldersLayer> {
           ),
           clipBehavior: .antiAlias,
           child: ListTile(
-            dense: true,
-
             onTap: () async {
               String? result = await FilePicker.platform.getDirectoryPath();
               if (result == null) {
@@ -236,7 +215,7 @@ class _ManageMusicFoldersLayerState extends State<ManageMusicFoldersLayer> {
                 result = convertIOSPath(result);
               }
 
-              if (_currentFolderList!.contains(result)) {
+              if (currentFolderList.contains(result)) {
                 if (context.mounted) {
                   showCenterMessage(
                     context,
@@ -247,8 +226,8 @@ class _ManageMusicFoldersLayerState extends State<ManageMusicFoldersLayer> {
                 return;
               }
 
-              _currentFolderList!.add(result);
-              _updateNotifier.value++;
+              currentFolderList.add(result);
+              updateNotifier.value++;
             },
             title: Text(l10n.addFolder),
           ),
@@ -262,8 +241,6 @@ class _ManageMusicFoldersLayerState extends State<ManageMusicFoldersLayer> {
           ),
           clipBehavior: .antiAlias,
           child: ListTile(
-            dense: true,
-
             onTap: () async {
               String? result = await FilePicker.platform.getDirectoryPath();
               if (result == null) {
@@ -309,12 +286,12 @@ class _ManageMusicFoldersLayerState extends State<ManageMusicFoldersLayer> {
                 if (Platform.isIOS) {
                   folder = convertIOSPath(folder);
                 }
-                if (!_currentFolderList!.contains(folder)) {
-                  _currentFolderList!.add(folder);
+                if (!currentFolderList.contains(folder)) {
+                  currentFolderList.add(folder);
                 }
               }
 
-              _updateNotifier.value++;
+              updateNotifier.value++;
             },
             title: Text(l10n.addRecursiveFolder),
           ),
@@ -328,8 +305,6 @@ class _ManageMusicFoldersLayerState extends State<ManageMusicFoldersLayer> {
           ),
           clipBehavior: .antiAlias,
           child: ListTile(
-            dense: true,
-
             onTap: () async {
               if (webdavClient == null) {
                 showCenterMessage(
@@ -367,7 +342,7 @@ class _ManageMusicFoldersLayerState extends State<ManageMusicFoldersLayer> {
               if (result == null) {
                 return;
               }
-              if (_currentFolderList!.contains(result)) {
+              if (currentFolderList.contains(result)) {
                 if (context.mounted) {
                   showCenterMessage(
                     context,
@@ -377,8 +352,8 @@ class _ManageMusicFoldersLayerState extends State<ManageMusicFoldersLayer> {
                 }
                 return;
               }
-              _currentFolderList!.add(result);
-              _updateNotifier.value++;
+              currentFolderList.add(result);
+              updateNotifier.value++;
             },
             title: Text(l10n.addWebDAVFolder),
           ),
@@ -392,8 +367,6 @@ class _ManageMusicFoldersLayerState extends State<ManageMusicFoldersLayer> {
           ),
           clipBehavior: .antiAlias,
           child: ListTile(
-            dense: true,
-
             onTap: () async {
               if (webdavClient == null) {
                 showCenterMessage(
@@ -440,69 +413,37 @@ class _ManageMusicFoldersLayerState extends State<ManageMusicFoldersLayer> {
               }
 
               for (final folder in folderList) {
-                if (_currentFolderList!.contains(folder)) {
+                if (currentFolderList.contains(folder)) {
                   continue;
                 }
-                _currentFolderList!.add(folder);
+                currentFolderList.add(folder);
               }
-              _updateNotifier.value++;
+              updateNotifier.value++;
             },
             title: Text(l10n.addWebDAVRecursiveFolder),
-          ),
-        ),
-
-        Material(
-          color: Colors.transparent,
-          shape: SmoothRectangleBorder(
-            smoothness: 1,
-            borderRadius: .all(.circular(10)),
-          ),
-          clipBehavior: .antiAlias,
-          child: ListTile(
-            dense: true,
-            title: Text(l10n.confirm),
-
-            onTap: () async {
-              if (await showConfirmDialog(context, l10n.confirm)) {
-                bool needReload =
-                    _tmpRecursiveScanNotifier!.value !=
-                    recursiveScanNotifier.value;
-                recursiveScanNotifier.value = _tmpRecursiveScanNotifier!.value;
-
-                settingManager.saveSetting();
-                if (await library.updateFolders(_currentFolderList!) ||
-                    needReload) {
-                  await Loader.reload();
-                } else {
-                  layersManager.popLayer();
-                }
-              }
-            },
           ),
         ),
       ],
     );
   }
 
-  Widget folderListWidget() {
+  Widget folderListSliver() {
     return ValueListenableBuilder(
-      valueListenable: _updateNotifier,
+      valueListenable: updateNotifier,
       builder: (context, value, child) {
-        return ListView.builder(
-          itemCount: _currentFolderList!.length,
-          itemBuilder: (context, index) {
+        return SliverList(
+          delegate: SliverChildBuilderDelegate((context, index) {
             return ListTile(
-              dense: true,
-              title: Text(_currentFolderList![index]),
+              title: Text(currentFolderList[index]),
               trailing: IconButton(
                 onPressed: () {
-                  _currentFolderList!.removeAt(index);
-                  _updateNotifier.value++;
+                  currentFolderList.removeAt(index);
+                  updateNotifier.value++;
                 },
                 icon: Icon(Icons.clear_rounded),
               ),
             );
-          },
+          }, childCount: currentFolderList.length),
         );
       },
     );

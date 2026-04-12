@@ -10,6 +10,7 @@ import 'package:http/http.dart' as http;
 import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/layer/layers_manager.dart';
+import 'package:particle_music/common_widgets/dialogs/manage_music_folders_dialog.dart';
 import 'package:particle_music/loader.dart';
 import 'package:particle_music/portrait_view/sleep_timer.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
@@ -179,7 +180,10 @@ class SettingsList extends StatelessWidget {
       leading: ImageIcon(folderImage, size: iconSize),
       title: Text(l10n.manageMusicFolder),
       onTap: () {
-        layersManager.pushLayer('manage_music_folders');
+        showAnimationDialog(
+          context: context,
+          child: ManageMusicFoldersDialog(),
+        );
       },
     );
   }
