@@ -105,7 +105,7 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
           ListTile(
             title: SizedBox(
               height: 40,
-              width: mobileWidth * 0.9,
+              width: MediaQuery.widthOf(context) * 0.9,
               child: Row(
                 children: [
                   if (playlist != null)

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:math';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flex_color_picker/flex_color_picker.dart';
@@ -194,14 +195,21 @@ class SettingsList extends StatelessWidget {
 
         showAnimationDialog(
           context: context,
-          height: isMobile ? 350 : 300,
-          width: 300,
-          pageBuilder: (context) {
-            return Padding(
+          child: SizedBox(
+            height: isMobile ? 350 : 300,
+            width: 300,
+            child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
                   Spacer(),
+
+                  SizedBox(
+                    child: Text(
+                      'Navidrome',
+                      style: .new(fontWeight: .bold, fontSize: 18),
+                    ),
+                  ),
 
                   adaptiveTextField(context, l10n.username, usernameTmp),
 
@@ -285,8 +293,8 @@ class SettingsList extends StatelessWidget {
                   Spacer(),
                 ],
               ),
-            );
-          },
+            ),
+          ),
         );
       },
     );
@@ -303,14 +311,21 @@ class SettingsList extends StatelessWidget {
 
         showAnimationDialog(
           context: context,
-          height: isMobile ? 350 : 300,
-          width: 300,
-          pageBuilder: (context) {
-            return Padding(
+
+          child: SizedBox(
+            height: isMobile ? 350 : 300,
+            width: 300,
+            child: Padding(
               padding: const EdgeInsets.all(20),
               child: Column(
                 children: [
                   Spacer(),
+                  SizedBox(
+                    child: Text(
+                      'WebDAV',
+                      style: .new(fontWeight: .bold, fontSize: 18),
+                    ),
+                  ),
 
                   adaptiveTextField(context, l10n.username, usernameTmp),
 
@@ -386,8 +401,8 @@ class SettingsList extends StatelessWidget {
                   Spacer(),
                 ],
               ),
-            );
-          },
+            ),
+          ),
         );
       },
     );
@@ -400,10 +415,11 @@ class SettingsList extends StatelessWidget {
       onTap: () {
         showAnimationDialog(
           context: context,
-          width: 280,
-          height: 300,
-          pageBuilder: (_) {
-            return Padding(
+
+          child: SizedBox(
+            width: 280,
+            height: 300,
+            child: Padding(
               padding: const EdgeInsets.all(10.0),
               child: ValueListenableBuilder(
                 valueListenable: localeNotifier,
@@ -444,8 +460,8 @@ class SettingsList extends StatelessWidget {
                   );
                 },
               ),
-            );
-          },
+            ),
+          ),
         );
       },
     );
@@ -495,110 +511,146 @@ class SettingsList extends StatelessWidget {
         lyricsPageThemeNotifier.addListener(_updateLyricsPageTheme);
         await showAnimationDialog(
           context: context,
-          width: 280,
-          height: 300,
-          pageBuilder: (_) {
-            return Padding(
-              padding: const EdgeInsets.all(15.0),
-              child: CustomScrollView(
-                slivers: [
-                  sliverBox(
-                    ValueListenableBuilder(
-                      valueListenable: mainPageThemeNotifier,
-                      builder: (context, value, child) {
-                        final l10n = AppLocalizations.of(context);
-                        return Column(
-                          children: [
-                            Text(l10n.mainPageTheme, style: .new(fontSize: 16)),
-                            ListTile(
-                              dense: true,
-                              title: Text(l10n.vividMode),
-                              onTap: () {
-                                mainPageThemeNotifier.value = 0;
-                              },
-                              trailing: value == 0 ? Icon(Icons.check) : null,
-                            ),
-                            ListTile(
-                              dense: true,
-                              title: Text(l10n.lightMode),
-                              onTap: () {
-                                mainPageThemeNotifier.value = 1;
-                              },
-                              trailing: value == 1 ? Icon(Icons.check) : null,
-                            ),
-                            ListTile(
-                              dense: true,
-                              title: Text(l10n.darkMode),
-                              onTap: () {
-                                mainPageThemeNotifier.value = 2;
-                              },
-                              trailing: value == 2 ? Icon(Icons.check) : null,
-                            ),
-                            ListTile(
-                              dense: true,
-                              title: Text(l10n.customMode),
-                              onTap: () {
-                                mainPageThemeNotifier.value = 3;
-                              },
-                              trailing: value == 3 ? Icon(Icons.check) : null,
-                            ),
-                          ],
-                        );
-                      },
-                    ),
+
+          child: OrientationBuilder(
+            builder: (context, orientation) {
+              final appHeight = MediaQuery.heightOf(context);
+
+              late double height;
+              if (orientation == Orientation.portrait) {
+                height = 460;
+              } else {
+                if (isMobile) {
+                  height = appHeight > 600 ? 460 : 350;
+                } else {
+                  height = 400;
+                }
+              }
+              return SizedBox(
+                width: 300,
+                height: height,
+                child: Padding(
+                  padding: const EdgeInsets.all(15.0),
+                  child: CustomScrollView(
+                    slivers: [
+                      sliverBox(
+                        ValueListenableBuilder(
+                          valueListenable: mainPageThemeNotifier,
+                          builder: (context, value, child) {
+                            final l10n = AppLocalizations.of(context);
+                            return Column(
+                              children: [
+                                Text(
+                                  l10n.mainPageTheme,
+                                  style: .new(fontSize: 16),
+                                ),
+                                ListTile(
+                                  dense: true,
+                                  title: Text(l10n.vividMode),
+                                  onTap: () {
+                                    mainPageThemeNotifier.value = 0;
+                                  },
+                                  trailing: value == 0
+                                      ? Icon(Icons.check)
+                                      : null,
+                                ),
+                                ListTile(
+                                  dense: true,
+                                  title: Text(l10n.lightMode),
+                                  onTap: () {
+                                    mainPageThemeNotifier.value = 1;
+                                  },
+                                  trailing: value == 1
+                                      ? Icon(Icons.check)
+                                      : null,
+                                ),
+                                ListTile(
+                                  dense: true,
+                                  title: Text(l10n.darkMode),
+                                  onTap: () {
+                                    mainPageThemeNotifier.value = 2;
+                                  },
+                                  trailing: value == 2
+                                      ? Icon(Icons.check)
+                                      : null,
+                                ),
+                                ListTile(
+                                  dense: true,
+                                  title: Text(l10n.customMode),
+                                  onTap: () {
+                                    mainPageThemeNotifier.value = 3;
+                                  },
+                                  trailing: value == 3
+                                      ? Icon(Icons.check)
+                                      : null,
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      ),
+                      sliverBox(
+                        ValueListenableBuilder(
+                          valueListenable: lyricsPageThemeNotifier,
+                          builder: (context, value, child) {
+                            final l10n = AppLocalizations.of(context);
+                            return Column(
+                              children: [
+                                Text(
+                                  l10n.lyricsPageTheme,
+                                  style: .new(fontSize: 16),
+                                ),
+                                ListTile(
+                                  dense: true,
+                                  title: Text(l10n.vividMode),
+                                  onTap: () {
+                                    lyricsPageThemeNotifier.value = 0;
+                                  },
+                                  trailing: value == 0
+                                      ? Icon(Icons.check)
+                                      : null,
+                                ),
+                                ListTile(
+                                  dense: true,
+                                  title: Text(l10n.lightMode),
+                                  onTap: () {
+                                    lyricsPageThemeNotifier.value = 1;
+                                  },
+                                  trailing: value == 1
+                                      ? Icon(Icons.check)
+                                      : null,
+                                ),
+                                ListTile(
+                                  dense: true,
+                                  title: Text(l10n.darkMode),
+                                  onTap: () {
+                                    lyricsPageThemeNotifier.value = 2;
+                                  },
+                                  trailing: value == 2
+                                      ? Icon(Icons.check)
+                                      : null,
+                                ),
+                                ListTile(
+                                  dense: true,
+                                  title: Text(l10n.customMode),
+                                  onTap: () {
+                                    lyricsPageThemeNotifier.value = 3;
+                                  },
+                                  trailing: value == 3
+                                      ? Icon(Icons.check)
+                                      : null,
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+                      ),
+                    ],
                   ),
-                  sliverBox(
-                    ValueListenableBuilder(
-                      valueListenable: lyricsPageThemeNotifier,
-                      builder: (context, value, child) {
-                        final l10n = AppLocalizations.of(context);
-                        return Column(
-                          children: [
-                            Text(
-                              l10n.lyricsPageTheme,
-                              style: .new(fontSize: 16),
-                            ),
-                            ListTile(
-                              dense: true,
-                              title: Text(l10n.vividMode),
-                              onTap: () {
-                                lyricsPageThemeNotifier.value = 0;
-                              },
-                              trailing: value == 0 ? Icon(Icons.check) : null,
-                            ),
-                            ListTile(
-                              dense: true,
-                              title: Text(l10n.lightMode),
-                              onTap: () {
-                                lyricsPageThemeNotifier.value = 1;
-                              },
-                              trailing: value == 1 ? Icon(Icons.check) : null,
-                            ),
-                            ListTile(
-                              dense: true,
-                              title: Text(l10n.darkMode),
-                              onTap: () {
-                                lyricsPageThemeNotifier.value = 2;
-                              },
-                              trailing: value == 2 ? Icon(Icons.check) : null,
-                            ),
-                            ListTile(
-                              dense: true,
-                              title: Text(l10n.customMode),
-                              onTap: () {
-                                lyricsPageThemeNotifier.value = 3;
-                              },
-                              trailing: value == 3 ? Icon(Icons.check) : null,
-                            ),
-                          ],
-                        );
-                      },
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
+                ),
+              );
+            },
+          ),
         );
         mainPageThemeNotifier.removeListener(_updateMainPageTheme);
         lyricsPageThemeNotifier.removeListener(_updateLyricsPageTheme);
@@ -637,66 +689,69 @@ class SettingsList extends StatelessWidget {
                   final colorNotifier = ValueNotifier(pikerColor);
                   showAnimationDialog(
                     context: context,
-                    height: isMobile ? 380 : 430,
-                    width: isMobile ? 320 : 400,
-                    pageBuilder: (_) => Column(
-                      children: [
-                        Spacer(),
-                        ColorPicker(
-                          color: pikerColor,
-                          padding: .zero,
-                          pickersEnabled: const {
-                            ColorPickerType.wheel: true,
-                            ColorPickerType.accent: false,
-                            ColorPickerType.primary: false,
-                          },
-                          width: isMobile ? 25 : 30,
-                          height: isMobile ? 25 : 30,
-                          enableOpacity: true,
-                          opacityTrackHeight: 10,
-                          opacityThumbRadius: 12,
-                          opacityTrackWidth: isMobile ? 310 : 360,
-                          wheelDiameter: isMobile ? 160 : 200,
-                          onColorChanged: (color) {
-                            colorNotifier.value = color;
-                          },
-                        ),
 
-                        ValueListenableBuilder(
-                          valueListenable: colorNotifier,
-                          builder: (context, value, child) {
-                            return Text(
-                              '$title: 0x${value.value32bit.toRadixString(16).toUpperCase().padLeft(8, '0')}',
-                            );
-                          },
-                        ),
-                        SizedBox(height: 15),
-                        Row(
-                          children: [
-                            Spacer(),
-                            ElevatedButton(
-                              onPressed: () {
-                                Navigator.pop(context);
-                              },
+                    child: SizedBox(
+                      height: isMobile ? 380 : 430,
+                      width: isMobile ? 320 : 400,
+                      child: Column(
+                        children: [
+                          Spacer(),
+                          ColorPicker(
+                            color: pikerColor,
+                            padding: .zero,
+                            pickersEnabled: const {
+                              ColorPickerType.wheel: true,
+                              ColorPickerType.accent: false,
+                              ColorPickerType.primary: false,
+                            },
+                            width: isMobile ? 25 : 30,
+                            height: isMobile ? 25 : 30,
+                            enableOpacity: true,
+                            opacityTrackHeight: 10,
+                            opacityThumbRadius: 12,
+                            opacityTrackWidth: isMobile ? 310 : 360,
+                            wheelDiameter: isMobile ? 160 : 200,
+                            onColorChanged: (color) {
+                              colorNotifier.value = color;
+                            },
+                          ),
 
-                              child: Text(l10n.cancel),
-                            ),
-                            SizedBox(width: 20),
-                            ElevatedButton(
-                              onPressed: () {
-                                customColor.value = colorNotifier.value;
-                                colorManager.setColors();
-                                updateColorNotifier.value++;
-                                settingManager.saveSetting();
-                                Navigator.pop(context);
-                              },
-                              child: Text(l10n.confirm),
-                            ),
-                            Spacer(),
-                          ],
-                        ),
-                        Spacer(),
-                      ],
+                          ValueListenableBuilder(
+                            valueListenable: colorNotifier,
+                            builder: (context, value, child) {
+                              return Text(
+                                '$title: 0x${value.value32bit.toRadixString(16).toUpperCase().padLeft(8, '0')}',
+                              );
+                            },
+                          ),
+                          SizedBox(height: 15),
+                          Row(
+                            children: [
+                              Spacer(),
+                              ElevatedButton(
+                                onPressed: () {
+                                  Navigator.pop(context);
+                                },
+
+                                child: Text(l10n.cancel),
+                              ),
+                              SizedBox(width: 20),
+                              ElevatedButton(
+                                onPressed: () {
+                                  customColor.value = colorNotifier.value;
+                                  colorManager.setColors();
+                                  updateColorNotifier.value++;
+                                  settingManager.saveSetting();
+                                  Navigator.pop(context);
+                                },
+                                child: Text(l10n.confirm),
+                              ),
+                              Spacer(),
+                            ],
+                          ),
+                          Spacer(),
+                        ],
+                      ),
                     ),
                   );
                 },
@@ -716,39 +771,56 @@ class SettingsList extends StatelessWidget {
       onTap: () async {
         showAnimationDialog(
           context: context,
-          height: isMobile ? 350 : 400,
-          width: isMobile ? 300 : 350,
-          pageBuilder: (context) {
-            return Padding(
-              padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
-              child: ListView(
-                children: [
-                  for (final customColor in colorManager.customColors)
-                    if (customColor.type == 0 ||
-                        (customColor.type == 1 && isMobile) ||
-                        (customColor.type == 2 && !isMobile))
-                      colorListTile(
-                        context,
-                        nameMap[customColor.name]!,
-                        l10n,
-                        customColor,
-                      ),
 
-                  ListTile(
-                    title: Text(l10n.reset),
-                    onTap: () {
-                      for (final customColor in colorManager.customColors) {
-                        customColor.reset();
-                      }
-                      colorManager.setColors();
-                      updateColorNotifier.value++;
-                      settingManager.saveSetting();
-                    },
+          child: OrientationBuilder(
+            builder: (context, orientation) {
+              final appWidth = MediaQuery.widthOf(context);
+              final appHeight = MediaQuery.heightOf(context);
+
+              late double width;
+              late double height;
+              if (orientation == Orientation.portrait) {
+                width = max(300, appWidth * 0.5);
+                height = appHeight * 0.7;
+              } else {
+                width = max(300, appWidth * 0.3);
+                height = max(350, appHeight * 0.6);
+              }
+              return SizedBox(
+                height: height,
+                width: width,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+                  child: ListView(
+                    children: [
+                      for (final customColor in colorManager.customColors)
+                        if (customColor.type == 0 ||
+                            (customColor.type == 1 && isMobile) ||
+                            (customColor.type == 2 && !isMobile))
+                          colorListTile(
+                            context,
+                            nameMap[customColor.name]!,
+                            l10n,
+                            customColor,
+                          ),
+
+                      ListTile(
+                        title: Text(l10n.reset),
+                        onTap: () {
+                          for (final customColor in colorManager.customColors) {
+                            customColor.reset();
+                          }
+                          colorManager.setColors();
+                          updateColorNotifier.value++;
+                          settingManager.saveSetting();
+                        },
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            );
-          },
+                ),
+              );
+            },
+          ),
         );
       },
     );
@@ -957,10 +1029,11 @@ class SettingsList extends StatelessWidget {
             if (context.mounted) {
               showAnimationDialog(
                 context: context,
-                height: isMobile ? 350 : 400,
-                width: isMobile ? 300 : 400,
-                pageBuilder: (BuildContext context) {
-                  return Padding(
+
+                child: SizedBox(
+                  height: isMobile ? 350 : 400,
+                  width: isMobile ? 300 : 400,
+                  child: Padding(
                     padding: const EdgeInsets.all(20),
                     child: Column(
                       children: [
@@ -1007,8 +1080,8 @@ class SettingsList extends StatelessWidget {
                         ),
                       ],
                     ),
-                  );
-                },
+                  ),
+                ),
               );
             }
           } else {

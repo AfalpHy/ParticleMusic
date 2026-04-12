@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:math';
 import 'dart:typed_data';
 
 import 'package:audio_tags_lofty/audio_tags_lofty.dart';
@@ -38,116 +39,9 @@ void showSongMetadataDialog(BuildContext context, MyAudioMetadata song) async {
 
   _pictureBytesNotifier = ValueNotifier(getPictureBytes(song));
 
-  final l10n = AppLocalizations.of(context);
-
   await showAnimationDialog(
     context: context,
-    height: isMobile ? 350 : 500,
-    width: isMobile ? 300 : 400,
-    pageBuilder: (context) {
-      return Padding(
-        padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
-        child: Column(
-          children: [
-            Text(
-              l10n.editMetadata,
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
-            ),
-            Row(mainAxisAlignment: MainAxisAlignment.end, children: [Spacer()]),
-            SizedBox(height: 5),
-
-            Divider(thickness: 0.5, height: 1, color: dividerColor),
-            SizedBox(height: 5),
-            Expanded(
-              child: ListView(
-                children: [
-                  SizedBox(height: 5),
-
-                  _coverArt(context, song),
-                  SizedBox(height: 5),
-
-                  adaptiveTextField(context, l10n.title, _titleTextController),
-
-                  SizedBox(height: 5),
-
-                  adaptiveTextField(
-                    context,
-                    l10n.artist,
-                    _artistTextController,
-                  ),
-
-                  SizedBox(height: 5),
-
-                  adaptiveTextField(context, l10n.album, _albumTextController),
-
-                  SizedBox(height: 5),
-
-                  adaptiveTextField(context, l10n.genre, _genreTextController),
-
-                  SizedBox(height: 5),
-
-                  adaptiveTextField(
-                    context,
-                    l10n.year,
-                    _yearTextController,
-                    onlyNumber: true,
-                  ),
-
-                  SizedBox(height: 5),
-
-                  adaptiveTextField(
-                    context,
-                    l10n.track,
-                    _trackTextController,
-                    onlyNumber: true,
-                  ),
-
-                  SizedBox(height: 5),
-
-                  adaptiveTextField(
-                    context,
-                    l10n.disc,
-                    _discTextController,
-                    onlyNumber: true,
-                  ),
-
-                  SizedBox(height: 5),
-
-                  adaptiveTextField(
-                    context,
-                    l10n.lyrics,
-                    _lyricsTextController,
-                    expand: true,
-                  ),
-                  SizedBox(height: 15),
-
-                  Row(
-                    children: [
-                      Spacer(),
-                      ElevatedButton(
-                        onPressed: () => Navigator.pop(context, false),
-                        child: Text(l10n.cancel),
-                      ),
-                      const SizedBox(width: 20),
-                      ElevatedButton(
-                        onPressed: () {
-                          _tryWriteMetadata(context, song);
-                        },
-                        style: ElevatedButton.styleFrom(
-                          foregroundColor: Colors.red,
-                        ),
-                        child: Text(l10n.confirm),
-                      ),
-                      Spacer(),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-          ],
-        ),
-      );
-    },
+    child: _MetadataDialog(song: song),
   );
 }
 
@@ -268,5 +162,135 @@ Future<void> _tryWriteMetadata(
       );
       Navigator.pop(context);
     }
+  }
+}
+
+class _MetadataDialog extends StatelessWidget {
+  final MyAudioMetadata song;
+
+  const _MetadataDialog({required this.song});
+
+  @override
+  Widget build(BuildContext context) {
+    return OrientationBuilder(
+      builder: (context, orientation) {
+        final appWidth = MediaQuery.widthOf(context);
+        final appHeight = MediaQuery.heightOf(context);
+
+        late double width;
+        late double height;
+        if (orientation == Orientation.portrait) {
+          width = max(300, appWidth * 0.5);
+          height = appHeight * 0.7;
+        } else {
+          width = max(300, appWidth * 0.35);
+          height = max(350, appHeight * 0.7);
+        }
+        return SizedBox(height: height, width: width, child: _content(context));
+      },
+    );
+  }
+
+  Widget _content(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
+      child: Column(
+        children: [
+          Text(
+            l10n.editMetadata,
+            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
+          ),
+          Row(mainAxisAlignment: MainAxisAlignment.end, children: [Spacer()]),
+          SizedBox(height: 5),
+
+          Divider(thickness: 0.5, height: 1, color: dividerColor),
+          SizedBox(height: 5),
+          Expanded(
+            child: ListView(
+              children: [
+                SizedBox(height: 5),
+
+                _coverArt(context, song),
+                SizedBox(height: 5),
+
+                adaptiveTextField(context, l10n.title, _titleTextController),
+
+                SizedBox(height: 5),
+
+                adaptiveTextField(context, l10n.artist, _artistTextController),
+
+                SizedBox(height: 5),
+
+                adaptiveTextField(context, l10n.album, _albumTextController),
+
+                SizedBox(height: 5),
+
+                adaptiveTextField(context, l10n.genre, _genreTextController),
+
+                SizedBox(height: 5),
+
+                adaptiveTextField(
+                  context,
+                  l10n.year,
+                  _yearTextController,
+                  onlyNumber: true,
+                ),
+
+                SizedBox(height: 5),
+
+                adaptiveTextField(
+                  context,
+                  l10n.track,
+                  _trackTextController,
+                  onlyNumber: true,
+                ),
+
+                SizedBox(height: 5),
+
+                adaptiveTextField(
+                  context,
+                  l10n.disc,
+                  _discTextController,
+                  onlyNumber: true,
+                ),
+
+                SizedBox(height: 5),
+
+                adaptiveTextField(
+                  context,
+                  l10n.lyrics,
+                  _lyricsTextController,
+                  expand: true,
+                ),
+                SizedBox(height: 15),
+
+                Row(
+                  children: [
+                    Spacer(),
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: Text(l10n.cancel),
+                    ),
+                    const SizedBox(width: 20),
+                    ElevatedButton(
+                      onPressed: () {
+                        _tryWriteMetadata(context, song);
+                      },
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.red,
+                      ),
+                      child: Text(l10n.confirm),
+                    ),
+                    Spacer(),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

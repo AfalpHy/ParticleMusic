@@ -90,9 +90,6 @@ class ViewEntry extends StatelessWidget {
   Widget mainView(BuildContext context) {
     isLandscape = false;
     if (isMobile) {
-      mobileWidth = MediaQuery.widthOf(context);
-      mobileHeight = MediaQuery.heightOf(context);
-
       return OrientationBuilder(
         builder: (context, orientation) {
           if (orientation == Orientation.portrait) {

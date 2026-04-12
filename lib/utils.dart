@@ -62,46 +62,52 @@ Future<bool> showConfirmDialog(BuildContext context, String action) async {
 
   final result = await showAnimationDialog<bool>(
     context: context,
-    width: isMobile ? 280 : 300,
-    height: 180,
-    pageBuilder: (context) {
-      return Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            Align(
-              alignment: .centerLeft,
-              child: Text(
-                action,
-                style: TextStyle(fontSize: 25, fontWeight: .bold),
-              ),
-            ),
-            SizedBox(height: 15),
-            Align(
-              alignment: .centerLeft,
-              child: Text(l10n.continueMsg, style: TextStyle(fontSize: 14)),
-            ),
-            SizedBox(height: 20),
-
-            Row(
-              mainAxisAlignment: MainAxisAlignment.center,
+    child: Builder(
+      builder: (context) {
+        return SizedBox(
+          width: isMobile ? 280 : 300,
+          height: 180,
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
               children: [
-                ElevatedButton(
-                  onPressed: () => Navigator.pop(context, false),
-                  child: Text(l10n.cancel),
+                Align(
+                  alignment: .centerLeft,
+                  child: Text(
+                    action,
+                    style: TextStyle(fontSize: 25, fontWeight: .bold),
+                  ),
                 ),
-                const SizedBox(width: 20),
-                ElevatedButton(
-                  onPressed: () => Navigator.pop(context, true),
-                  style: ElevatedButton.styleFrom(foregroundColor: Colors.red),
-                  child: Text(l10n.confirm),
+                SizedBox(height: 15),
+                Align(
+                  alignment: .centerLeft,
+                  child: Text(l10n.continueMsg, style: TextStyle(fontSize: 14)),
+                ),
+                SizedBox(height: 20),
+
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(context, false),
+                      child: Text(l10n.cancel),
+                    ),
+                    const SizedBox(width: 20),
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(context, true),
+                      style: ElevatedButton.styleFrom(
+                        foregroundColor: Colors.red,
+                      ),
+                      child: Text(l10n.confirm),
+                    ),
+                  ],
                 ),
               ],
             ),
-          ],
-        ),
-      );
-    },
+          ),
+        );
+      },
+    ),
   );
   return result ?? false;
 }
@@ -237,9 +243,7 @@ Future<String> showTextFieldSheet(
 Future<T?> showAnimationDialog<T>({
   required BuildContext context,
   bool barrierDismissible = true,
-  double width = 300,
-  double height = 450,
-  required Widget Function(BuildContext context) pageBuilder,
+  required Widget child,
 }) async {
   return await showGeneralDialog<T>(
     context: context,
@@ -299,15 +303,13 @@ Future<T?> showAnimationDialog<T>({
                     clipBehavior: .antiAliasWithSaveLayer,
                     child: Container(
                       color: colorManager.getSpecificBgColor(),
-                      width: width,
-                      height: height,
                       child: MediaQuery.removePadding(
                         context: context,
                         removeLeft: true, // for mobile
                         removeRight: true,
                         removeTop: true,
                         removeBottom: true,
-                        child: pageBuilder(context),
+                        child: child,
                       ),
                     ),
                   ),

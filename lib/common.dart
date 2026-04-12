@@ -22,9 +22,6 @@ late Directory appDocs;
 late Directory appSupportDir;
 late Directory tmpDir;
 
-late double mobileWidth;
-late double mobileHeight;
-
 final isMobile = Platform.isAndroid || Platform.isIOS;
 late bool isLandscape;
 

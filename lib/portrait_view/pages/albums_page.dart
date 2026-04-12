@@ -188,6 +188,7 @@ class _AlbumsPageState extends State<AlbumsPage> {
       builder: (context, useLargePicture, child) {
         int crossAxisCount;
         double coverArtWidth;
+        final mobileWidth = MediaQuery.widthOf(context);
         if (useLargePicture) {
           crossAxisCount = (mobileWidth / 180).toInt();
           coverArtWidth = mobileWidth / crossAxisCount - 45;

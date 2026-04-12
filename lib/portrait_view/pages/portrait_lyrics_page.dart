@@ -208,6 +208,7 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
 
   Widget artPage(BuildContext context, MyAudioMetadata? currentSong) {
     final l10n = AppLocalizations.of(context);
+    final mobileWidth = MediaQuery.widthOf(context);
 
     return Column(
       children: [

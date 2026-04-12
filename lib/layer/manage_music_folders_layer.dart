@@ -357,11 +357,12 @@ class _ManageMusicFoldersLayerState extends State<ManageMusicFoldersLayer> {
               }
               final result = await showAnimationDialog(
                 context: context,
-                height: 350,
-                width: 300,
-                pageBuilder: (context) {
-                  return WebdavDirPicker();
-                },
+
+                child: SizedBox(
+                  height: 350,
+                  width: 300,
+                  child: WebdavDirPicker(),
+                ),
               );
               if (result == null) {
                 return;
@@ -420,11 +421,12 @@ class _ManageMusicFoldersLayerState extends State<ManageMusicFoldersLayer> {
               }
               String? result = await showAnimationDialog(
                 context: context,
-                height: 350,
-                width: 300,
-                pageBuilder: (context) {
-                  return WebdavDirPicker();
-                },
+
+                child: SizedBox(
+                  height: 350,
+                  width: 300,
+                  child: WebdavDirPicker(),
+                ),
               );
               if (result == null) {
                 return;

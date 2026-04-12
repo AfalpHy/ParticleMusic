@@ -1,3 +1,5 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
@@ -230,21 +232,44 @@ class Sidebar extends StatelessWidget {
                                   callback: () async {
                                     showAnimationDialog(
                                       context: context,
-                                      height: 300,
-                                      width: 300,
-                                      pageBuilder: (context) {
-                                        return Padding(
-                                          padding: const EdgeInsets.fromLTRB(
-                                            10,
-                                            10,
-                                            10,
-                                            0,
-                                          ),
-                                          child: reorderablePlaylistsView(
+
+                                      child: OrientationBuilder(
+                                        builder: (context, orientation) {
+                                          final appWidth = MediaQuery.widthOf(
                                             context,
-                                          ),
-                                        );
-                                      },
+                                          );
+                                          final appHeight = MediaQuery.heightOf(
+                                            context,
+                                          );
+
+                                          late double width;
+                                          late double height;
+                                          if (orientation ==
+                                              Orientation.portrait) {
+                                            width = max(300, appWidth * 0.5);
+                                            height = appHeight * 0.7;
+                                          } else {
+                                            width = max(300, appWidth * 0.35);
+                                            height = max(350, appHeight * 0.7);
+                                          }
+                                          return SizedBox(
+                                            height: height,
+                                            width: width,
+                                            child: Padding(
+                                              padding:
+                                                  const EdgeInsets.fromLTRB(
+                                                    10,
+                                                    10,
+                                                    10,
+                                                    0,
+                                                  ),
+                                              child: reorderablePlaylistsView(
+                                                context,
+                                              ),
+                                            ),
+                                          );
+                                        },
+                                      ),
                                     );
                                   },
                                 ),

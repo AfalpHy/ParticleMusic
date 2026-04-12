@@ -120,15 +120,14 @@ Future<bool> showCreatePlaylistDialog(BuildContext context) async {
   final l10n = AppLocalizations.of(context);
 
   final controller = TextEditingController();
+  final specificTextcolor = colorManager.getSpecificTextColor();
 
   final result = await showAnimationDialog<String>(
     context: context,
-    width: 300,
-    height: 200,
-    pageBuilder: (context) {
-      final specificTextcolor = colorManager.getSpecificTextColor();
-
-      return Padding(
+    child: SizedBox(
+      width: 300,
+      height: 200,
+      child: Padding(
         padding: const EdgeInsets.fromLTRB(30, 20, 30, 20),
         child: Column(
           children: [
@@ -178,8 +177,8 @@ Future<bool> showCreatePlaylistDialog(BuildContext context) async {
             ),
           ],
         ),
-      );
-    },
+      ),
+    ),
   );
 
   if (result != null && result != '') {
@@ -215,14 +214,15 @@ void showAddPlaylistDialog(
 ) async {
   await showAnimationDialog(
     context: context,
-    height: 500,
-    width: 400,
-    pageBuilder: (context) {
-      return Padding(
+    child: SizedBox(
+      height: 500,
+      width: 400,
+
+      child: Padding(
         padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
         child: Add2PlaylistPanel(songList: songList),
-      );
-    },
+      ),
+    ),
   );
 }
 

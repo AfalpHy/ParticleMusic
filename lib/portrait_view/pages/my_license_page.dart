@@ -99,10 +99,10 @@ class _MyLicensePageState extends State<MyLicensePage> {
           ),
         ),
         Text(versionNumber),
-        SizedBox(height: 15),
+        SizedBox(height: 5),
         Text('© 2025-2026 AfalpHy'),
 
-        SizedBox(height: 15),
+        SizedBox(height: 5),
         Text('Powered by Flutter'),
         Expanded(
           child: ValueListenableBuilder(
