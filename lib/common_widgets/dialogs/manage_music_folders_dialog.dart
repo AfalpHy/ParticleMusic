@@ -44,33 +44,37 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
         final appWidth = MediaQuery.widthOf(context);
         final appHeight = MediaQuery.heightOf(context);
 
-        late double width;
-        late double height;
         if (orientation == Orientation.portrait) {
-          width = max(320, appWidth * 0.5);
-          height = appHeight * 0.7;
+          return SizedBox(
+            height: appHeight * 0.7,
+            width: max(300, appWidth * 0.5),
+            child: _portraitView(context),
+          );
         } else {
-          width = max(320, appWidth * 0.35);
-          height = max(350, appHeight * 0.7);
+          return SizedBox(
+            height: 350,
+            width: 700,
+            child: _landscapeView(context),
+          );
         }
-
-        return SizedBox(height: height, width: width, child: _content(context));
       },
     );
   }
 
-  Widget _content(BuildContext context) {
+  Widget _portraitView(BuildContext context) {
     return ValueListenableBuilder(
       valueListenable: updateNotifier,
       builder: (context, value, child) {
         return Padding(
-          padding: const EdgeInsets.all(20),
+          padding: const EdgeInsets.all(10),
           child: ValueListenableBuilder(
             valueListenable: updateColorNotifier,
             builder: (context, value, child) {
               return CustomScrollView(
                 slivers: [
                   SliverToBoxAdapter(child: options(context)),
+
+                  SliverToBoxAdapter(child: SizedBox(height: 10)),
 
                   SliverToBoxAdapter(
                     child: Divider(
@@ -80,13 +84,7 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
                     ),
                   ),
 
-                  SliverToBoxAdapter(
-                    child: ListTile(
-                      title: Text(
-                        "${AppLocalizations.of(context).addedFolders}:",
-                      ),
-                    ),
-                  ),
+                  SliverToBoxAdapter(child: SizedBox(height: 10)),
 
                   folderListSliver(),
 
@@ -104,6 +102,94 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
                           ),
                         ],
                       ),
+                    ),
+                  ),
+                ],
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _landscapeView(BuildContext context) {
+    final l10n = AppLocalizations.of(context);
+
+    return ValueListenableBuilder(
+      valueListenable: updateNotifier,
+      builder: (context, value, child) {
+        return Padding(
+          padding: const EdgeInsets.all(10),
+          child: ValueListenableBuilder(
+            valueListenable: updateColorNotifier,
+            builder: (context, value, child) {
+              return Row(
+                children: [
+                  SizedBox(
+                    width: isMobile ? 280 : 290,
+                    child: Column(
+                      children: [
+                        Spacer(),
+                        options(context),
+                        Material(
+                          color: Colors.transparent,
+                          shape: SmoothRectangleBorder(
+                            smoothness: 1,
+                            borderRadius: .all(.circular(10)),
+                          ),
+                          clipBehavior: .antiAlias,
+                          child: ListTile(
+                            visualDensity: .new(vertical: -2),
+                            title: Text(l10n.confirm),
+                            onTap: () async {
+                              if (await showConfirmDialog(
+                                context,
+                                l10n.confirm,
+                              )) {
+                                bool needReload =
+                                    tmpRecursiveScanNotifier.value !=
+                                    recursiveScanNotifier.value;
+                                recursiveScanNotifier.value =
+                                    tmpRecursiveScanNotifier.value;
+
+                                settingManager.saveSetting();
+                                if (await library.updateFolders(
+                                      currentFolderList,
+                                    ) ||
+                                    needReload) {
+                                  if (context.mounted) {
+                                    Navigator.pop(context);
+                                  }
+                                  await Loader.reload();
+                                } else {
+                                  if (context.mounted) {
+                                    Navigator.pop(context);
+                                  }
+                                }
+                              }
+                            },
+                          ),
+                        ),
+                        Spacer(),
+                      ],
+                    ),
+                  ),
+                  SizedBox(width: 10),
+                  VerticalDivider(
+                    thickness: 0.5,
+                    width: 1,
+                    color: dividerColor,
+                  ),
+
+                  Expanded(
+                    child: Column(
+                      children: [
+                        SizedBox(height: 5),
+                        Expanded(child: folderList()),
+
+                        SizedBox(height: 25),
+                      ],
                     ),
                   ),
                 ],
@@ -156,6 +242,7 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
           clipBehavior: .antiAlias,
           child: ListTile(
             title: Text(l10n.recursiveScan),
+            visualDensity: .new(vertical: -2),
             trailing: ValueListenableBuilder(
               valueListenable: tmpRecursiveScanNotifier,
               builder: (context, value, child) {
@@ -181,6 +268,7 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
           ),
           clipBehavior: .antiAlias,
           child: ListTile(
+            visualDensity: .new(vertical: -2),
             onTap: () async {
               String? result = await FilePicker.platform.getDirectoryPath();
               if (result == null) {
@@ -241,6 +329,7 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
           ),
           clipBehavior: .antiAlias,
           child: ListTile(
+            visualDensity: .new(vertical: -2),
             onTap: () async {
               String? result = await FilePicker.platform.getDirectoryPath();
               if (result == null) {
@@ -305,6 +394,7 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
           ),
           clipBehavior: .antiAlias,
           child: ListTile(
+            visualDensity: .new(vertical: -2),
             onTap: () async {
               if (webdavClient == null) {
                 showCenterMessage(
@@ -367,6 +457,7 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
           ),
           clipBehavior: .antiAlias,
           child: ListTile(
+            visualDensity: .new(vertical: -2),
             onTap: () async {
               if (webdavClient == null) {
                 showCenterMessage(
@@ -434,6 +525,8 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
         return SliverList(
           delegate: SliverChildBuilderDelegate((context, index) {
             return ListTile(
+              visualDensity: .new(vertical: -2),
+              contentPadding: .fromLTRB(15, 0, 10, 0),
               title: Text(currentFolderList[index]),
               trailing: IconButton(
                 onPressed: () {
@@ -444,6 +537,31 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
               ),
             );
           }, childCount: currentFolderList.length),
+        );
+      },
+    );
+  }
+
+  Widget folderList() {
+    return ValueListenableBuilder(
+      valueListenable: updateNotifier,
+      builder: (context, value, child) {
+        return ListView.builder(
+          itemBuilder: (context, index) {
+            return ListTile(
+              visualDensity: .new(vertical: -2),
+              contentPadding: .fromLTRB(20, 0, 0, 0),
+              title: Text(currentFolderList[index]),
+              trailing: IconButton(
+                onPressed: () {
+                  currentFolderList.removeAt(index);
+                  updateNotifier.value++;
+                },
+                icon: Icon(Icons.clear_rounded),
+              ),
+            );
+          },
+          itemCount: currentFolderList.length,
         );
       },
     );
