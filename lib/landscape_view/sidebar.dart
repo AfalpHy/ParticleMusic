@@ -235,26 +235,15 @@ class Sidebar extends StatelessWidget {
 
                                       child: OrientationBuilder(
                                         builder: (context, orientation) {
-                                          final appWidth = MediaQuery.widthOf(
+                                          final size = MediaQuery.of(
                                             context,
-                                          );
-                                          final appHeight = MediaQuery.heightOf(
-                                            context,
-                                          );
+                                          ).size;
+                                          final shortSide = size.shortestSide;
 
-                                          late double width;
-                                          late double height;
-                                          if (orientation ==
-                                              Orientation.portrait) {
-                                            width = max(300, appWidth * 0.5);
-                                            height = appHeight * 0.7;
-                                          } else {
-                                            width = max(300, appWidth * 0.35);
-                                            height = max(350, appHeight * 0.7);
-                                          }
+                                          bool isPhone = shortSide < 600;
                                           return SizedBox(
-                                            height: height,
-                                            width: width,
+                                            height: max(350, size.height * 0.7),
+                                            width: isPhone ? 320 : 400,
                                             child: Padding(
                                               padding:
                                                   const EdgeInsets.fromLTRB(

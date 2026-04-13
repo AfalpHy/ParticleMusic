@@ -195,5 +195,10 @@
   "autoPlayOnStartup": "Auto-Play on Startup",
   "return2Previous": "Return to Previous",
   "addedFolders": "Added Folders",
-  "recursiveScan": "Scan Subfolders"
+  "recursiveScan": "Scan Subfolders",
+  "songInfo": "Song Info",
+  "format": "Format",
+  "bitrate": "Bitrate",
+  "samplerate": "Sample Rate",
+  "filePath": "File Path"
 }

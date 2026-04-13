@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:particle_music/common.dart';
 import 'package:particle_music/landscape_view/panels/folders_panel.dart';
 import 'package:particle_music/portrait_view/pages/folders_page.dart';
 
@@ -9,7 +10,7 @@ class FoldersLayer extends StatelessWidget {
   Widget build(BuildContext context) {
     return OrientationBuilder(
       builder: (context, orientation) {
-        if (orientation == Orientation.portrait) {
+        if (isMobile && orientation == Orientation.portrait) {
           return FoldersPage();
         } else {
           return FoldersPanel();

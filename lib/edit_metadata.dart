@@ -27,7 +27,7 @@ TextEditingController _lyricsTextController = TextEditingController();
 
 late ValueNotifier<Uint8List?> _pictureBytesNotifier;
 
-void showSongMetadataDialog(BuildContext context, MyAudioMetadata song) async {
+void showEditMetadataDialog(BuildContext context, MyAudioMetadata song) async {
   _titleTextController.text = song.title ?? '';
   _artistTextController.text = song.artist ?? '';
   _albumTextController.text = song.album ?? '';
@@ -76,7 +76,7 @@ Widget _coverArt(BuildContext context, MyAudioMetadata song) {
               child: CoverArtWidget(
                 song: song,
                 pictureBytes: pictureBytes,
-                size: isMobile ? 150 : 180,
+                size: 180,
                 borderRadius: 10,
               ),
             ),
@@ -174,19 +174,15 @@ class _MetadataDialog extends StatelessWidget {
   Widget build(BuildContext context) {
     return OrientationBuilder(
       builder: (context, orientation) {
-        final appWidth = MediaQuery.widthOf(context);
-        final appHeight = MediaQuery.heightOf(context);
+        final size = MediaQuery.of(context).size;
+        final shortSide = size.shortestSide;
 
-        late double width;
-        late double height;
-        if (orientation == Orientation.portrait) {
-          width = max(300, appWidth * 0.5);
-          height = appHeight * 0.7;
-        } else {
-          width = max(300, appWidth * 0.35);
-          height = max(350, appHeight * 0.7);
-        }
-        return SizedBox(height: height, width: width, child: _content(context));
+        bool isPhone = shortSide < 600;
+        return SizedBox(
+          height: max(350, size.height * 0.7),
+          width: isPhone ? 320 : 400,
+          child: _content(context),
+        );
       },
     );
   }
@@ -202,17 +198,52 @@ class _MetadataDialog extends StatelessWidget {
             l10n.editMetadata,
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
           ),
-          Row(mainAxisAlignment: MainAxisAlignment.end, children: [Spacer()]),
           SizedBox(height: 5),
 
           Divider(thickness: 0.5, height: 1, color: dividerColor),
           SizedBox(height: 5),
           Expanded(
             child: ListView(
+              padding: .symmetric(horizontal: isMobile ? 5 : 15),
               children: [
                 SizedBox(height: 5),
 
-                _coverArt(context, song),
+                Row(
+                  children: [
+                    _coverArt(context, song),
+                    SizedBox(width: 10),
+                    Expanded(
+                      child: Column(
+                        children: [
+                          adaptiveTextField(
+                            context,
+                            l10n.year,
+                            _yearTextController,
+                            onlyNumber: true,
+                          ),
+
+                          SizedBox(height: 5),
+
+                          adaptiveTextField(
+                            context,
+                            l10n.track,
+                            _trackTextController,
+                            onlyNumber: true,
+                          ),
+
+                          SizedBox(height: 5),
+
+                          adaptiveTextField(
+                            context,
+                            l10n.disc,
+                            _discTextController,
+                            onlyNumber: true,
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
                 SizedBox(height: 5),
 
                 adaptiveTextField(context, l10n.title, _titleTextController),
@@ -228,33 +259,6 @@ class _MetadataDialog extends StatelessWidget {
                 SizedBox(height: 5),
 
                 adaptiveTextField(context, l10n.genre, _genreTextController),
-
-                SizedBox(height: 5),
-
-                adaptiveTextField(
-                  context,
-                  l10n.year,
-                  _yearTextController,
-                  onlyNumber: true,
-                ),
-
-                SizedBox(height: 5),
-
-                adaptiveTextField(
-                  context,
-                  l10n.track,
-                  _trackTextController,
-                  onlyNumber: true,
-                ),
-
-                SizedBox(height: 5),
-
-                adaptiveTextField(
-                  context,
-                  l10n.disc,
-                  _discTextController,
-                  onlyNumber: true,
-                ),
 
                 SizedBox(height: 5),
 

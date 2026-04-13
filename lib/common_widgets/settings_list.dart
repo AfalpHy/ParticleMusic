@@ -200,14 +200,13 @@ class SettingsList extends StatelessWidget {
         showAnimationDialog(
           context: context,
           child: SizedBox(
-            height: isMobile ? 350 : 320,
-            width: 300,
+            height: 320,
+            width: 320,
             child: Padding(
-              padding: EdgeInsets.all(isMobile ? 20 : 15),
+              padding: .fromLTRB(20, 15, 20, 15),
               child: Column(
                 children: [
-                  if (!isMobile) SizedBox(height: 10),
-
+                  Spacer(),
                   SizedBox(
                     child: Text(
                       'Navidrome',
@@ -303,6 +302,7 @@ class SettingsList extends StatelessWidget {
                       );
                     },
                   ),
+                  Spacer(),
                 ],
               ),
             ),
@@ -325,14 +325,13 @@ class SettingsList extends StatelessWidget {
           context: context,
 
           child: SizedBox(
-            height: isMobile ? 350 : 320,
-            width: 300,
+            height: 320,
+            width: 320,
             child: Padding(
-              padding: EdgeInsets.all(isMobile ? 20 : 15),
+              padding: .fromLTRB(20, 15, 20, 15),
               child: Column(
                 children: [
-                  if (!isMobile) SizedBox(height: 10),
-
+                  Spacer(),
                   SizedBox(
                     child: Text(
                       'WebDAV',
@@ -440,7 +439,7 @@ class SettingsList extends StatelessWidget {
 
           child: SizedBox(
             width: 280,
-            height: 300,
+            height: 320,
             child: Padding(
               padding: const EdgeInsets.all(10.0),
               child: ValueListenableBuilder(
@@ -539,7 +538,7 @@ class SettingsList extends StatelessWidget {
               final appHeight = MediaQuery.heightOf(context);
 
               late double height;
-              if (orientation == Orientation.portrait) {
+              if (isMobile && orientation == Orientation.portrait) {
                 height = 460;
               } else {
                 if (isMobile) {
@@ -549,7 +548,7 @@ class SettingsList extends StatelessWidget {
                 }
               }
               return SizedBox(
-                width: 300,
+                width: 320,
                 height: height,
                 child: Padding(
                   padding: const EdgeInsets.all(15.0),
@@ -796,21 +795,13 @@ class SettingsList extends StatelessWidget {
 
           child: OrientationBuilder(
             builder: (context, orientation) {
-              final appWidth = MediaQuery.widthOf(context);
-              final appHeight = MediaQuery.heightOf(context);
+              final size = MediaQuery.of(context).size;
+              final shortSide = size.shortestSide;
 
-              late double width;
-              late double height;
-              if (orientation == Orientation.portrait) {
-                width = max(300, appWidth * 0.5);
-                height = appHeight * 0.7;
-              } else {
-                width = max(300, appWidth * 0.3);
-                height = max(350, appHeight * 0.6);
-              }
+              bool isPhone = shortSide < 600;
               return SizedBox(
-                height: height,
-                width: width,
+                height: max(350, size.height * 0.6),
+                width: isPhone ? 320 : 400,
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
                   child: ListView(
@@ -1054,7 +1045,7 @@ class SettingsList extends StatelessWidget {
 
                 child: SizedBox(
                   height: isMobile ? 350 : 400,
-                  width: isMobile ? 300 : 400,
+                  width: isMobile ? 320 : 400,
                   child: Padding(
                     padding: const EdgeInsets.all(20),
                     child: Column(

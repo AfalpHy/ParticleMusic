@@ -44,16 +44,16 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
         final appWidth = MediaQuery.widthOf(context);
         final appHeight = MediaQuery.heightOf(context);
 
-        if (orientation == Orientation.portrait) {
+        if (isMobile && orientation == Orientation.portrait) {
           return SizedBox(
             height: appHeight * 0.7,
-            width: max(300, appWidth * 0.5),
+            width: max(320, appWidth * 0.5),
             child: _portraitView(context),
           );
         } else {
           return SizedBox(
             height: 350,
-            width: 700,
+            width: 675,
             child: _landscapeView(context),
           );
         }
@@ -66,7 +66,7 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
       valueListenable: updateNotifier,
       builder: (context, value, child) {
         return Padding(
-          padding: const EdgeInsets.all(10),
+          padding: const EdgeInsets.all(20),
           child: ValueListenableBuilder(
             valueListenable: updateColorNotifier,
             builder: (context, value, child) {
@@ -90,18 +90,15 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
 
                   SliverFillRemaining(
                     hasScrollBody: false,
-                    child: Padding(
-                      padding: const EdgeInsets.all(20),
-                      child: Column(
-                        children: [
-                          const Spacer(),
+                    child: Column(
+                      children: [
+                        const Spacer(),
 
-                          Align(
-                            alignment: Alignment.centerRight,
-                            child: confirmButton(context),
-                          ),
-                        ],
-                      ),
+                        Align(
+                          alignment: Alignment.centerRight,
+                          child: confirmButton(context),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -127,7 +124,7 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
               return Row(
                 children: [
                   SizedBox(
-                    width: isMobile ? 280 : 290,
+                    width: 280,
                     child: Column(
                       children: [
                         Spacer(),
@@ -140,6 +137,7 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
                           ),
                           clipBehavior: .antiAlias,
                           child: ListTile(
+                            contentPadding: .fromLTRB(15, 0, 0, 0),
                             visualDensity: .new(vertical: -2),
                             title: Text(l10n.confirm),
                             onTap: () async {
@@ -242,6 +240,7 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
           clipBehavior: .antiAlias,
           child: ListTile(
             title: Text(l10n.recursiveScan),
+            contentPadding: .fromLTRB(15, 0, 0, 0),
             visualDensity: .new(vertical: -2),
             trailing: ValueListenableBuilder(
               valueListenable: tmpRecursiveScanNotifier,
@@ -268,6 +267,7 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
           ),
           clipBehavior: .antiAlias,
           child: ListTile(
+            contentPadding: .fromLTRB(15, 0, 0, 0),
             visualDensity: .new(vertical: -2),
             onTap: () async {
               String? result = await FilePicker.platform.getDirectoryPath();
@@ -329,6 +329,7 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
           ),
           clipBehavior: .antiAlias,
           child: ListTile(
+            contentPadding: .fromLTRB(15, 0, 0, 0),
             visualDensity: .new(vertical: -2),
             onTap: () async {
               String? result = await FilePicker.platform.getDirectoryPath();
@@ -394,6 +395,7 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
           ),
           clipBehavior: .antiAlias,
           child: ListTile(
+            contentPadding: .fromLTRB(15, 0, 0, 0),
             visualDensity: .new(vertical: -2),
             onTap: () async {
               if (webdavClient == null) {
@@ -425,7 +427,7 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
 
                 child: SizedBox(
                   height: 350,
-                  width: 300,
+                  width: 320,
                   child: WebdavDirPicker(),
                 ),
               );
@@ -457,6 +459,7 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
           ),
           clipBehavior: .antiAlias,
           child: ListTile(
+            contentPadding: .fromLTRB(15, 0, 0, 0),
             visualDensity: .new(vertical: -2),
             onTap: () async {
               if (webdavClient == null) {
@@ -488,7 +491,7 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
 
                 child: SizedBox(
                   height: 350,
-                  width: 300,
+                  width: 320,
                   child: WebdavDirPicker(),
                 ),
               );
@@ -526,7 +529,7 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
           delegate: SliverChildBuilderDelegate((context, index) {
             return ListTile(
               visualDensity: .new(vertical: -2),
-              contentPadding: .fromLTRB(15, 0, 10, 0),
+              contentPadding: .fromLTRB(15, 0, 0, 0),
               title: Text(currentFolderList[index]),
               trailing: IconButton(
                 onPressed: () {

@@ -8,12 +8,13 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common_widgets/playlist_widgets.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
-import 'package:particle_music/metadata.dart';
+import 'package:particle_music/edit_metadata.dart';
 import 'package:particle_music/common_widgets/my_location.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/common_widgets/base_song_list.dart';
 import 'package:particle_music/common_widgets/selectable_song_list_page.dart';
+import 'package:particle_music/song_info.dart';
 import 'package:particle_music/utils.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 import 'package:super_context_menu/super_context_menu.dart';
@@ -177,7 +178,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
       height: 200,
       child: Row(
         children: [
-          mainCover(165),
+          mainCover(160),
           SizedBox(width: 10),
           Expanded(
             child: Column(
@@ -659,15 +660,23 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
               },
             ),
 
-            if ((selectedCnt == 1 && !isNavidrome) || playlist != null)
-              MenuSeparator(),
+            MenuSeparator(),
+
+            if (selectedCnt == 1)
+              MenuAction(
+                title: l10n.songInfo,
+                image: MenuImage.icon(Icons.info_outline_rounded),
+                callback: () {
+                  showSongInfoDialog(context, currentSongList[index]);
+                },
+              ),
 
             if (selectedCnt == 1 && !isNavidrome)
               MenuAction(
                 title: l10n.editMetadata,
                 image: MenuImage.icon(Icons.edit_rounded),
                 callback: () {
-                  showSongMetadataDialog(context, currentSongList[index]);
+                  showEditMetadataDialog(context, currentSongList[index]);
                 },
               ),
             if (playlist != null)

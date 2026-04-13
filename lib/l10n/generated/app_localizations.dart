@@ -1027,6 +1027,36 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Scan Subfolders'**
   String get recursiveScan;
+
+  /// No description provided for @songInfo.
+  ///
+  /// In en, this message translates to:
+  /// **'Song Info'**
+  String get songInfo;
+
+  /// No description provided for @format.
+  ///
+  /// In en, this message translates to:
+  /// **'Format'**
+  String get format;
+
+  /// No description provided for @bitrate.
+  ///
+  /// In en, this message translates to:
+  /// **'Bitrate'**
+  String get bitrate;
+
+  /// No description provided for @samplerate.
+  ///
+  /// In en, this message translates to:
+  /// **'Sample Rate'**
+  String get samplerate;
+
+  /// No description provided for @filePath.
+  ///
+  /// In en, this message translates to:
+  /// **'File Path'**
+  String get filePath;
 }
 
 class _AppLocalizationsDelegate

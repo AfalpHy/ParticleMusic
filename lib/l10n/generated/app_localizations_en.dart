@@ -484,4 +484,19 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get recursiveScan => 'Scan Subfolders';
+
+  @override
+  String get songInfo => 'Song Info';
+
+  @override
+  String get format => 'Format';
+
+  @override
+  String get bitrate => 'Bitrate';
+
+  @override
+  String get samplerate => 'Sample Rate';
+
+  @override
+  String get filePath => 'File Path';
 }

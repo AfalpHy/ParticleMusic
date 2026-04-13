@@ -215,7 +215,7 @@ void showAddPlaylistDialog(
   await showAnimationDialog(
     context: context,
     child: SizedBox(
-      height: 500,
+      height: MediaQuery.heightOf(context) * 0.7,
       width: 400,
 
       child: Padding(

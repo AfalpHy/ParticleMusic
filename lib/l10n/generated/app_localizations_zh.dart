@@ -484,4 +484,19 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get recursiveScan => '扫描子目录';
+
+  @override
+  String get songInfo => '歌曲信息';
+
+  @override
+  String get format => '格式';
+
+  @override
+  String get bitrate => '比特率';
+
+  @override
+  String get samplerate => '采样率';
+
+  @override
+  String get filePath => '文件路径';
 }

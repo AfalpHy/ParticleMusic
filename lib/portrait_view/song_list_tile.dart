@@ -4,9 +4,10 @@ import 'package:particle_music/common_widgets/my_sheet.dart';
 import 'package:particle_music/common_widgets/playlist_widgets.dart';
 import 'package:particle_music/folder.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
-import 'package:particle_music/metadata.dart';
+import 'package:particle_music/edit_metadata.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/playlists.dart';
+import 'package:particle_music/song_info.dart';
 import 'package:particle_music/utils.dart';
 import '../common_widgets/cover_art_widget.dart';
 
@@ -263,6 +264,22 @@ class SongListTile extends StatelessWidget {
                           },
                         ),
 
+                        ListTile(
+                          leading: Icon(Icons.info_outline_rounded),
+                          title: Text(
+                            l10n.songInfo,
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          visualDensity: const VisualDensity(
+                            horizontal: 0,
+                            vertical: -4,
+                          ),
+                          onTap: () async {
+                            Navigator.pop(context);
+                            showSongInfoDialog(context, song);
+                          },
+                        ),
+
                         if (!song.isNavidrome)
                           ListTile(
                             leading: Icon(Icons.edit_rounded),
@@ -276,7 +293,7 @@ class SongListTile extends StatelessWidget {
                             ),
                             onTap: () async {
                               Navigator.pop(context);
-                              showSongMetadataDialog(context, song);
+                              showEditMetadataDialog(context, song);
                             },
                           ),
                         if (playlist != null)

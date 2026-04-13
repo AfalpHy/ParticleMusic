@@ -153,5 +153,10 @@
   "autoPlayOnStartup": "启动后自动播放",
   "return2Previous": "返回上一级",
   "addedFolders": "已添加的目录",
-  "recursiveScan": "扫描子目录"
+  "recursiveScan": "扫描子目录",
+  "songInfo": "歌曲信息",
+  "format": "格式",
+  "bitrate": "比特率",
+  "samplerate": "采样率",
+  "filePath": "文件路径"
 }
