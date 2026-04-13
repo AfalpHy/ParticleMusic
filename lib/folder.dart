@@ -240,6 +240,7 @@ class Folder {
       }
     } else {
       if (!_dir!.existsSync()) {
+        await setSongList(_songFilePathListFile, songList, filePath2Song);
         logger.output('$path is not exist');
         return;
       }
