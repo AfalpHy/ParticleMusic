@@ -229,79 +229,149 @@ Future<T?> showAnimationDialog<T>({
   bool barrierDismissible = true,
   required Widget child,
 }) async {
+  Offset offset = Offset.zero;
+
+  final GlobalKey childKey = GlobalKey();
+  double childHeight = 0;
+  void measureChild() {
+    final renderBox = childKey.currentContext?.findRenderObject() as RenderBox?;
+    if (renderBox != null) {
+      final newHeight = renderBox.size.height;
+      if (newHeight != childHeight) {
+        childHeight = newHeight;
+      }
+    }
+  }
+
   return await showGeneralDialog<T>(
     context: context,
     barrierColor: Colors.transparent,
     transitionDuration: const Duration(milliseconds: 300),
     pageBuilder: (context, animation, _) {
-      return MediaQuery.removePadding(
-        context: context,
-        removeTop: true,
-        removeBottom: true,
-        child: Stack(
-          children: [
-            GestureDetector(
-              onTap: () {
-                if (barrierDismissible) {
-                  Navigator.pop(context);
-                }
-              },
-              child: AnimatedBuilder(
-                animation: animation,
-                builder: (_, _) {
-                  return BackdropFilter(
-                    filter: ImageFilter.blur(
-                      sigmaX: 5 * animation.value,
-                      sigmaY: 5 * animation.value,
-                    ),
-                    child: Container(
-                      color: Colors.black.withValues(
-                        alpha: 0.3 * animation.value,
-                      ),
-                    ),
-                  );
-                },
-              ),
-            ),
+      return StatefulBuilder(
+        builder: (context, setState) {
+          final mediaQuery = MediaQuery.of(context);
+          final screenHeight = mediaQuery.size.height;
+          final keyboardHeight = mediaQuery.viewInsets.bottom;
+          final isKeyboardOpen = keyboardHeight > 0;
+          double getMinOffset() {
+            if (childHeight == 0) return double.negativeInfinity;
+            return screenHeight / 2 - keyboardHeight - childHeight / 2 - 30;
+          }
 
-            Center(
-              child: SlideTransition(
-                position:
-                    Tween<Offset>(
-                      begin: const Offset(0, 1),
-                      end: Offset.zero,
-                    ).animate(
-                      CurvedAnimation(
-                        parent: animation,
-                        curve: Curves.easeInOutCubic,
+          WidgetsBinding.instance.addPostFrameCallback((_) {
+            measureChild();
+            if (!isKeyboardOpen && offset != .zero) {
+              setState(() {
+                offset = .zero;
+              });
+            }
+          });
+
+          return MediaQuery.removePadding(
+            context: context,
+            removeTop: true,
+            removeBottom: true,
+            child: Stack(
+              children: [
+                AnimatedBuilder(
+                  animation: animation,
+                  builder: (_, _) {
+                    return BackdropFilter(
+                      filter: ImageFilter.blur(
+                        sigmaX: 5 * animation.value,
+                        sigmaY: 5 * animation.value,
                       ),
-                    ),
-                child: FadeTransition(
-                  opacity: animation,
-                  child: Material(
-                    shape: SmoothRectangleBorder(
-                      smoothness: 1,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    color: colorManager.getSpecificBgBaseColor(),
-                    clipBehavior: .antiAliasWithSaveLayer,
-                    child: Container(
-                      color: colorManager.getSpecificBgColor(),
-                      child: MediaQuery.removePadding(
-                        context: context,
-                        removeLeft: true, // for mobile
-                        removeRight: true,
-                        removeTop: true,
-                        removeBottom: true,
-                        child: child,
+                      child: Container(
+                        color: Colors.black.withValues(
+                          alpha: 0.3 * animation.value,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+
+                ModalBarrier(
+                  dismissible: barrierDismissible,
+                  color: Colors.black.withValues(alpha: 0.3 * animation.value),
+                  onDismiss: () {
+                    Navigator.pop(context);
+                  },
+                ),
+
+                Center(
+                  child: AnimatedContainer(
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeOutCubic,
+                    transform: Matrix4.translationValues(0, offset.dy, 0),
+                    child: GestureDetector(
+                      onVerticalDragUpdate: (details) {
+                        if (!isKeyboardOpen) return;
+
+                        setState(() {
+                          if (offset.dy < getMinOffset() || offset.dy > 0) {
+                            offset += Offset(0, details.delta.dy * 0.15);
+                          } else {
+                            offset += Offset(0, details.delta.dy);
+                          }
+                        });
+                      },
+
+                      onVerticalDragEnd: (_) {
+                        if (!isKeyboardOpen) return;
+
+                        final minOffset = getMinOffset();
+                        setState(() {
+                          if (offset.dy < minOffset) {
+                            offset = Offset(0, minOffset);
+                          } else if (offset.dy > 0) {
+                            offset = .zero;
+                          }
+                        });
+                      },
+
+                      child: SlideTransition(
+                        position:
+                            Tween<Offset>(
+                              begin: const Offset(0, 1),
+                              end: Offset.zero,
+                            ).animate(
+                              CurvedAnimation(
+                                parent: animation,
+                                curve: Curves.easeInOutCubic,
+                              ),
+                            ),
+                        child: FadeTransition(
+                          opacity: animation,
+                          child: Material(
+                            key: childKey,
+                            shape: SmoothRectangleBorder(
+                              smoothness: 1,
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            color: colorManager.getSpecificBgBaseColor(),
+                            clipBehavior: Clip.antiAliasWithSaveLayer,
+                            child: Container(
+                              color: colorManager.getSpecificBgColor(),
+                              child: MediaQuery.removePadding(
+                                context: context,
+                                removeLeft: true,
+                                removeRight: true,
+                                removeTop: true,
+                                removeBottom: true,
+                                child: child,
+                              ),
+                            ),
+                          ),
+                        ),
                       ),
                     ),
                   ),
                 ),
-              ),
+              ],
             ),
-          ],
-        ),
+          );
+        },
       );
     },
   );

@@ -284,7 +284,6 @@ Widget reorderablePlaylistsView(BuildContext context) {
         ),
       );
     },
-    footer: SizedBox(height: 80),
   );
 }
 
