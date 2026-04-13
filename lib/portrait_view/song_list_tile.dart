@@ -5,6 +5,7 @@ import 'package:particle_music/common_widgets/playlist_widgets.dart';
 import 'package:particle_music/folder.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/edit_metadata.dart';
+import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/song_info.dart';
@@ -261,6 +262,78 @@ class SongListTile extends StatelessWidget {
                             Navigator.pop(context);
 
                             showAddPlaylistSheet(context, [song]);
+                          },
+                        ),
+
+                        ListTile(
+                          leading: Icon(Icons.people),
+                          title: Text(
+                            l10n.go2Artist,
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          visualDensity: const VisualDensity(
+                            horizontal: 0,
+                            vertical: -4,
+                          ),
+                          onTap: () async {
+                            Navigator.pop(context);
+                            final artists = getArtists(getArtist(song));
+                            if (artists.length > 1) {
+                              showAnimationDialog(
+                                context: context,
+                                child: SizedBox(
+                                  width: 320,
+                                  height: 350,
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: ListView.builder(
+                                      itemCount: artists.length,
+                                      itemBuilder: (context, index) {
+                                        return ListTile(
+                                          title: Text(artists[index]),
+                                          onTap: () async {
+                                            Navigator.pop(context);
+                                            await Future.delayed(
+                                              Duration(milliseconds: 300),
+                                            );
+                                            layersManager.pushLayer(
+                                              'artists',
+                                              content: artists[index],
+                                            );
+                                          },
+                                        );
+                                      },
+                                    ),
+                                  ),
+                                ),
+                              );
+                            } else {
+                              await Future.delayed(Duration(milliseconds: 300));
+                              layersManager.pushLayer(
+                                'artists',
+                                content: artists[0],
+                              );
+                            }
+                          },
+                        ),
+
+                        ListTile(
+                          leading: Icon(Icons.album_rounded),
+                          title: Text(
+                            l10n.go2Album,
+                            style: TextStyle(fontWeight: FontWeight.bold),
+                          ),
+                          visualDensity: const VisualDensity(
+                            horizontal: 0,
+                            vertical: -4,
+                          ),
+                          onTap: () async {
+                            Navigator.pop(context);
+                            await Future.delayed(Duration(milliseconds: 300));
+                            layersManager.pushLayer(
+                              'albums',
+                              content: getAlbum(song),
+                            );
                           },
                         ),
 

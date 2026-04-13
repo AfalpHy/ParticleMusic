@@ -499,4 +499,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get filePath => '文件路径';
+
+  @override
+  String get go2Artist => '查看艺术家';
+
+  @override
+  String get go2Album => '查看专辑';
 }

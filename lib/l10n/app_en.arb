@@ -200,5 +200,7 @@
   "format": "Format",
   "bitrate": "Bitrate",
   "samplerate": "Sample Rate",
-  "filePath": "File Path"
+  "filePath": "File Path",
+  "go2Artist": "Go to Artist",
+  "go2Album": "Go to Album"
 }

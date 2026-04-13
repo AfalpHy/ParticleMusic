@@ -10,6 +10,7 @@ import 'package:particle_music/common_widgets/playlist_widgets.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/edit_metadata.dart';
 import 'package:particle_music/common_widgets/my_location.dart';
+import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/playlists.dart';
 import 'package:particle_music/common_widgets/base_song_list.dart';
@@ -661,6 +662,62 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
             ),
 
             MenuSeparator(),
+
+            if (selectedCnt == 1)
+              MenuAction(
+                title: l10n.go2Artist,
+                image: MenuImage.icon(Icons.people),
+                callback: () async {
+                  final artists = getArtists(getArtist(currentSongList[index]));
+                  if (artists.length > 1) {
+                    showAnimationDialog(
+                      context: context,
+                      child: SizedBox(
+                        width: 320,
+                        height: 350,
+                        child: Padding(
+                          padding: const EdgeInsets.all(8.0),
+                          child: ListView.builder(
+                            itemCount: artists.length,
+                            itemBuilder: (_, index) {
+                              return ListTile(
+                                title: Text(artists[index]),
+                                onTap: () async {
+                                  Navigator.pop(context);
+                                  await Future.delayed(
+                                    Duration(milliseconds: 300),
+                                  );
+
+                                  layersManager.pushLayer(
+                                    'artists',
+                                    content: artists[index],
+                                  );
+                                },
+                              );
+                            },
+                          ),
+                        ),
+                      ),
+                    );
+                  } else {
+                    await Future.delayed(Duration(milliseconds: 300));
+                    layersManager.pushLayer('artists', content: artists[0]);
+                  }
+                },
+              ),
+
+            if (selectedCnt == 1)
+              MenuAction(
+                title: l10n.go2Album,
+                image: MenuImage.icon(Icons.album_rounded),
+                callback: () async {
+                  await Future.delayed(Duration(milliseconds: 300));
+                  layersManager.pushLayer(
+                    'albums',
+                    content: getAlbum(currentSongList[index]),
+                  );
+                },
+              ),
 
             if (selectedCnt == 1)
               MenuAction(

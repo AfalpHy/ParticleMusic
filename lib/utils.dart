@@ -397,6 +397,17 @@ String getArtist(MyAudioMetadata? song) {
   return song.artist!;
 }
 
+List<String> getArtists(String artist) {
+  List<String> artists = [];
+  for (String artistName in artist.split(RegExp(r'[/&,]'))) {
+    if (artistName.isEmpty) {
+      return [artist];
+    }
+    artists.add(artistName);
+  }
+  return artists;
+}
+
 String getAlbum(MyAudioMetadata? song) {
   if (song == null) {
     return '';
