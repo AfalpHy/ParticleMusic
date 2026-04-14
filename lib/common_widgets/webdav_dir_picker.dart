@@ -67,7 +67,7 @@ class _WebdavDirPickerState extends State<WebdavDirPicker> {
               Center(
                 child: Column(
                   children: [
-                    SizedBox(height: 5),
+                    SizedBox(height: 3),
                     Text(
                       currentPath,
                       style: .new(fontWeight: .bold, fontSize: 18),
