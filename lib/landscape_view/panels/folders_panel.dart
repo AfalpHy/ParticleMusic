@@ -102,9 +102,11 @@ class FoldersPanel extends StatelessWidget {
                                 ),
                           SizedBox(width: 10),
 
-                          Text(
-                            folder.path,
-                            style: TextStyle(overflow: .ellipsis),
+                          Expanded(
+                            child: Text(
+                              folder.path,
+                              style: TextStyle(overflow: .ellipsis),
+                            ),
                           ),
                         ],
                       ),
