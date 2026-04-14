@@ -53,45 +53,55 @@ class _WebdavDirPickerState extends State<WebdavDirPicker> {
       padding: const EdgeInsets.all(10),
       child: Column(
         children: [
-          Text(currentPath, style: .new(fontWeight: .bold, fontSize: 18)),
-          SizedBox(height: 10),
-
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: isLoading
-                  ? Center(child: CircularProgressIndicator(color: iconColor))
-                  : ListView.builder(
-                      itemCount: directories.length,
-                      itemBuilder: (context, index) {
-                        final dir = directories[index];
-                        return ListTile(
-                          title: Text(dir.split('/').last),
-                          leading: Icon(Icons.folder),
-                          dense: true,
-                          onTap: () {
-                            loadDirectories(dir); // navigate into subdirectory
-                          },
-                        );
-                      },
-                    ),
-            ),
-          ),
-          SizedBox(height: 10),
-
-          Row(
-            mainAxisAlignment: .center,
+          Stack(
             children: [
-              ElevatedButton(
+              IconButton(
                 onPressed: () {
                   final last = currentPath.split('/').last;
                   loadDirectories(
                     currentPath.substring(0, currentPath.length - last.length),
                   );
                 },
-                child: Text(AppLocalizations.of(context).return2Previous),
+                icon: Icon(Icons.arrow_back_ios_rounded),
               ),
-              SizedBox(width: 10),
+              Center(
+                child: Column(
+                  children: [
+                    SizedBox(height: 5),
+                    Text(
+                      currentPath,
+                      style: .new(fontWeight: .bold, fontSize: 18),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          SizedBox(height: 10),
+
+          Expanded(
+            child: isLoading
+                ? Center(child: CircularProgressIndicator(color: iconColor))
+                : ListView.builder(
+                    itemCount: directories.length,
+                    itemBuilder: (context, index) {
+                      final dir = directories[index];
+                      return ListTile(
+                        title: Text(dir.split('/').last),
+                        leading: Icon(Icons.folder),
+                        dense: true,
+                        onTap: () {
+                          loadDirectories(dir); // navigate into subdirectory
+                        },
+                      );
+                    },
+                  ),
+          ),
+          SizedBox(height: 10),
+
+          Row(
+            mainAxisAlignment: .end,
+            children: [
               ElevatedButton(
                 onPressed: () {
                   Navigator.pop(context, "WebDAV:$currentPath");

@@ -53,7 +53,7 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
         } else {
           return SizedBox(
             height: 320,
-            width: 560,
+            width: 600,
             child: _landscapeView(context),
           );
         }
@@ -124,7 +124,7 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
               return Row(
                 children: [
                   SizedBox(
-                    width: 220,
+                    width: 230,
                     child: Column(
                       children: [
                         Spacer(),
@@ -427,7 +427,7 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
 
                 child: SizedBox(
                   height: 350,
-                  width: 320,
+                  width: 300,
                   child: WebdavDirPicker(),
                 ),
               );
@@ -491,7 +491,7 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
 
                 child: SizedBox(
                   height: 350,
-                  width: 320,
+                  width: 300,
                   child: WebdavDirPicker(),
                 ),
               );
