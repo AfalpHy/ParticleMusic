@@ -45,10 +45,10 @@ class SettingsList extends StatelessWidget {
                 subtitle: Text(
                   l10n.settingCount(
                     Platform.isAndroid
-                        ? 13
+                        ? 14
                         : Platform.isIOS
-                        ? 11
-                        : 10,
+                        ? 12
+                        : 11,
                   ),
                   style: TextStyle(fontSize: 12),
                 ),
