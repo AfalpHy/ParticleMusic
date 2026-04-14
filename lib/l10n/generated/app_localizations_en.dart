@@ -505,4 +505,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get go2Album => 'Go to Album';
+
+  @override
+  String get equalizer => 'Equalizer';
 }

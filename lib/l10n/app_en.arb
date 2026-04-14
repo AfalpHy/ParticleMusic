@@ -202,5 +202,6 @@
   "samplerate": "Sample Rate",
   "filePath": "File Path",
   "go2Artist": "Go to Artist",
-  "go2Album": "Go to Album"
+  "go2Album": "Go to Album",
+  "equalizer": "Equalizer"
 }

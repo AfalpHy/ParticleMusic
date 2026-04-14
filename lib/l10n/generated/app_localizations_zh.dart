@@ -505,4 +505,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get go2Album => '查看专辑';
+
+  @override
+  String get equalizer => '均衡器';
 }

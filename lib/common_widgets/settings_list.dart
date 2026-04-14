@@ -9,6 +9,7 @@ import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 import 'package:http/http.dart' as http;
 import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/common_widgets/equalizer.dart';
 import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/common_widgets/dialogs/manage_music_folders_dialog.dart';
 import 'package:particle_music/loader.dart';
@@ -117,6 +118,8 @@ class SettingsList extends StatelessWidget {
 
         sliverBox(paddingIfNeed(isLandscape, themeListTile(context, l10n))),
         sliverBox(paddingIfNeed(isLandscape, paletteListTile(context, l10n))),
+
+        sliverBox(paddingIfNeed(isLandscape, equalizerListTile(context, l10n))),
 
         sliverBox(paddingIfNeed(isLandscape, autoPlayOnStartupListTile(l10n))),
 
@@ -832,6 +835,39 @@ class SettingsList extends StatelessWidget {
                   ),
                 ),
               );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget equalizerListTile(BuildContext context, AppLocalizations l10n) {
+    return ListTile(
+      leading: ImageIcon(equalizerImage, size: iconSize),
+      title: Text(l10n.equalizer),
+      onTap: () {
+        showAnimationDialog(
+          context: context,
+          child: OrientationBuilder(
+            builder: (context, orientation) {
+              final size = MediaQuery.of(context).size;
+              final shortSide = size.shortestSide;
+
+              bool isPhone = shortSide < 600;
+              if (isMobile && orientation == .portrait) {
+                return SizedBox(
+                  height: 500,
+                  width: isPhone ? 300 : 400,
+                  child: EqualizerWidget(),
+                );
+              } else {
+                return SizedBox(
+                  height: isPhone ? 350 : 400,
+                  width: 540,
+                  child: EqualizerWidget(),
+                );
+              }
             },
           ),
         );

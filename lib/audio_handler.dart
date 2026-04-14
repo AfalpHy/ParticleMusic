@@ -585,4 +585,8 @@ class MyAudioHandler extends BaseAudioHandler {
   void setVolume(double volume) {
     _player.setVolume(volume * 100);
   }
+
+  void setAudioParams(String af) async {
+    await (_player.platform as NativePlayer).setProperty('af', af);
+  }
 }
