@@ -143,7 +143,7 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                             );
                           },
                         ),
-                        if (pageHight > 600) ...[
+                        if (pageHight >= 600) ...[
                           message(coverArtSize, pageHight, currentSong),
                           playControls(coverArtSize, pageHight, currentSong),
                         ],
@@ -158,7 +158,7 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                       child: Column(
                         children: [
                           SizedBox(height: pageHight * 0.1),
-                          if (pageHight <= 600)
+                          if (pageHight < 600)
                             message(pageWidth * 0.35, pageHight, currentSong),
 
                           Expanded(
@@ -191,7 +191,9 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                                     ? SizedBox()
                                     : LyricsListView(
                                         key: ValueKey(currentSong),
-                                        expanded: isMobile ? false : true,
+                                        expanded: pageHight < 600
+                                            ? false
+                                            : true,
                                         lyrics:
                                             currentSong.parsedLyrics!.lyrics,
                                         isKaraoke:
@@ -201,7 +203,7 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                             ),
                           ),
 
-                          if (pageHight <= 600) ...[
+                          if (pageHight < 600) ...[
                             playControls(
                               pageWidth * 0.4,
                               pageHight,

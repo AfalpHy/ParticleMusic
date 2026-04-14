@@ -124,12 +124,15 @@ Widget sleepTimerListTile(
   return ValueListenableBuilder(
     valueListenable: updateColorNotifier,
     builder: (context, value, child) {
-      final specificTextColor = colorManager.getSpecificTextColor();
+      final specificTextColor = inSetting
+          ? textColor
+          : lyricsPageForegroundColor;
+
       return ListTile(
         leading: ImageIcon(
           timerImage,
           size: iconSize,
-          color: colorManager.getSpecificIconColor(),
+          color: inSetting ? iconColor : lyricsPageForegroundColor,
         ),
 
         title: Text(
