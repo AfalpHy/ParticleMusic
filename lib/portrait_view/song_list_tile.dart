@@ -282,7 +282,7 @@ class SongListTile extends StatelessWidget {
                               showAnimationDialog(
                                 context: context,
                                 child: SizedBox(
-                                  width: 320,
+                                  width: 300,
                                   height: 350,
                                   child: Padding(
                                     padding: const EdgeInsets.all(8.0),
