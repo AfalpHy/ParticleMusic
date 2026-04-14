@@ -45,48 +45,6 @@ void showEditMetadataDialog(BuildContext context, MyAudioMetadata song) async {
   );
 }
 
-Widget _coverArt(BuildContext context, MyAudioMetadata song) {
-  final l10n = AppLocalizations.of(context);
-
-  return Center(
-    child: ValueListenableBuilder(
-      valueListenable: _pictureBytesNotifier,
-      builder: (context, pictureBytes, child) {
-        return Tooltip(
-          message: l10n.replacePicture,
-          child: MouseRegion(
-            cursor: SystemMouseCursors.click,
-            child: GestureDetector(
-              onTap: () async {
-                final result = await FilePicker.platform.pickFiles(
-                  type: FileType.image,
-                  allowMultiple: false,
-                );
-                if (result == null || result.files.isEmpty) {
-                  return;
-                }
-
-                final file = result.files.first;
-
-                final Uint8List bytes =
-                    file.bytes ?? await File(file.path!).readAsBytes();
-
-                _pictureBytesNotifier.value = bytes;
-              },
-              child: CoverArtWidget(
-                song: song,
-                pictureBytes: pictureBytes,
-                size: 180,
-                borderRadius: 10,
-              ),
-            ),
-          ),
-        );
-      },
-    ),
-  );
-}
-
 Future<void> _tryWriteMetadata(
   BuildContext context,
   MyAudioMetadata song,
@@ -180,14 +138,14 @@ class _MetadataDialog extends StatelessWidget {
         bool isPhone = shortSide < 600;
         return SizedBox(
           height: max(350, size.height * 0.7),
-          width: isPhone ? 320 : 400,
-          child: _content(context),
+          width: isPhone ? 300 : 400,
+          child: _content(context, isPhone),
         );
       },
     );
   }
 
-  Widget _content(BuildContext context) {
+  Widget _content(BuildContext context, bool isPhone) {
     final l10n = AppLocalizations.of(context);
 
     return Padding(
@@ -204,13 +162,13 @@ class _MetadataDialog extends StatelessWidget {
           SizedBox(height: 5),
           Expanded(
             child: ListView(
-              padding: .symmetric(horizontal: isMobile ? 5 : 15),
+              padding: .symmetric(horizontal: isMobile ? 10 : 15),
               children: [
-                SizedBox(height: 5),
+                SizedBox(height: 10),
 
                 Row(
                   children: [
-                    _coverArt(context, song),
+                    _coverArt(context, song, isPhone),
                     SizedBox(width: 10),
                     Expanded(
                       child: Column(
@@ -222,7 +180,7 @@ class _MetadataDialog extends StatelessWidget {
                             onlyNumber: true,
                           ),
 
-                          SizedBox(height: 5),
+                          if (!isPhone) SizedBox(height: 10),
 
                           adaptiveTextField(
                             context,
@@ -231,7 +189,7 @@ class _MetadataDialog extends StatelessWidget {
                             onlyNumber: true,
                           ),
 
-                          SizedBox(height: 5),
+                          if (!isPhone) SizedBox(height: 10),
 
                           adaptiveTextField(
                             context,
@@ -244,7 +202,7 @@ class _MetadataDialog extends StatelessWidget {
                     ),
                   ],
                 ),
-                SizedBox(height: 5),
+                SizedBox(height: 10),
 
                 adaptiveTextField(context, l10n.title, _titleTextController),
 
@@ -294,6 +252,48 @@ class _MetadataDialog extends StatelessWidget {
             ),
           ),
         ],
+      ),
+    );
+  }
+
+  Widget _coverArt(BuildContext context, MyAudioMetadata song, bool isPhone) {
+    final l10n = AppLocalizations.of(context);
+
+    return Center(
+      child: ValueListenableBuilder(
+        valueListenable: _pictureBytesNotifier,
+        builder: (context, pictureBytes, child) {
+          return Tooltip(
+            message: l10n.replacePicture,
+            child: MouseRegion(
+              cursor: SystemMouseCursors.click,
+              child: GestureDetector(
+                onTap: () async {
+                  final result = await FilePicker.platform.pickFiles(
+                    type: FileType.image,
+                    allowMultiple: false,
+                  );
+                  if (result == null || result.files.isEmpty) {
+                    return;
+                  }
+
+                  final file = result.files.first;
+
+                  final Uint8List bytes =
+                      file.bytes ?? await File(file.path!).readAsBytes();
+
+                  _pictureBytesNotifier.value = bytes;
+                },
+                child: CoverArtWidget(
+                  song: song,
+                  pictureBytes: pictureBytes,
+                  size: isPhone ? 150 : 180,
+                  borderRadius: 10,
+                ),
+              ),
+            ),
+          );
+        },
       ),
     );
   }

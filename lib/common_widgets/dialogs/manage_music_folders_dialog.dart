@@ -47,13 +47,13 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
         if (isMobile && orientation == Orientation.portrait) {
           return SizedBox(
             height: appHeight * 0.7,
-            width: max(320, appWidth * 0.5),
+            width: max(300, appWidth * 0.5),
             child: _portraitView(context),
           );
         } else {
           return SizedBox(
-            height: 350,
-            width: 675,
+            height: 320,
+            width: 560,
             child: _landscapeView(context),
           );
         }
@@ -124,7 +124,7 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
               return Row(
                 children: [
                   SizedBox(
-                    width: 280,
+                    width: 220,
                     child: Column(
                       children: [
                         Spacer(),
@@ -138,7 +138,7 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
                           clipBehavior: .antiAlias,
                           child: ListTile(
                             contentPadding: .fromLTRB(15, 0, 0, 0),
-                            visualDensity: .new(vertical: -2),
+                            dense: true,
                             title: Text(l10n.confirm),
                             onTap: () async {
                               if (await showConfirmDialog(
@@ -183,10 +183,10 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
                   Expanded(
                     child: Column(
                       children: [
-                        SizedBox(height: 5),
+                        SizedBox(height: 10),
                         Expanded(child: folderList()),
 
-                        SizedBox(height: 25),
+                        SizedBox(height: 10),
                       ],
                     ),
                   ),
@@ -241,7 +241,7 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
           child: ListTile(
             title: Text(l10n.recursiveScan),
             contentPadding: .fromLTRB(15, 0, 0, 0),
-            visualDensity: .new(vertical: -2),
+            dense: true,
             trailing: ValueListenableBuilder(
               valueListenable: tmpRecursiveScanNotifier,
               builder: (context, value, child) {
@@ -268,7 +268,7 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
           clipBehavior: .antiAlias,
           child: ListTile(
             contentPadding: .fromLTRB(15, 0, 0, 0),
-            visualDensity: .new(vertical: -2),
+            dense: true,
             onTap: () async {
               String? result = await FilePicker.platform.getDirectoryPath();
               if (result == null) {
@@ -330,7 +330,7 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
           clipBehavior: .antiAlias,
           child: ListTile(
             contentPadding: .fromLTRB(15, 0, 0, 0),
-            visualDensity: .new(vertical: -2),
+            dense: true,
             onTap: () async {
               String? result = await FilePicker.platform.getDirectoryPath();
               if (result == null) {
@@ -396,7 +396,7 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
           clipBehavior: .antiAlias,
           child: ListTile(
             contentPadding: .fromLTRB(15, 0, 0, 0),
-            visualDensity: .new(vertical: -2),
+            dense: true,
             onTap: () async {
               if (webdavClient == null) {
                 showCenterMessage(
@@ -460,7 +460,7 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
           clipBehavior: .antiAlias,
           child: ListTile(
             contentPadding: .fromLTRB(15, 0, 0, 0),
-            visualDensity: .new(vertical: -2),
+            dense: true,
             onTap: () async {
               if (webdavClient == null) {
                 showCenterMessage(
@@ -528,7 +528,7 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
         return SliverList(
           delegate: SliverChildBuilderDelegate((context, index) {
             return ListTile(
-              visualDensity: .new(vertical: -2),
+              dense: true,
               contentPadding: .fromLTRB(15, 0, 0, 0),
               title: Text(currentFolderList[index]),
               trailing: IconButton(
@@ -552,7 +552,7 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
         return ListView.builder(
           itemBuilder: (context, index) {
             return ListTile(
-              visualDensity: .new(vertical: -2),
+              dense: true,
               contentPadding: .fromLTRB(20, 0, 0, 0),
               title: Text(currentFolderList[index]),
               trailing: IconButton(

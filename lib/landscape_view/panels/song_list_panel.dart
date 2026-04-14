@@ -175,16 +175,21 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
   Widget header() {
     final l10n = AppLocalizations.of(context);
 
+    final size = MediaQuery.of(context).size;
+    final shortSide = size.shortestSide;
+
+    bool isPhone = shortSide < 600;
+
     return SizedBox(
-      height: 200,
+      height: isPhone ? 160 : 200,
       child: Row(
         children: [
-          mainCover(160),
+          mainCover(isPhone ? 120 : 160),
           SizedBox(width: 10),
           Expanded(
             child: Column(
               children: [
-                SizedBox(height: 30),
+                SizedBox(height: isPhone ? 15 : 30),
                 ListTile(
                   title: AutoSizeText(
                     isLibrary
@@ -294,7 +299,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                     );
                   },
                 ),
-                SizedBox(height: 30),
+                SizedBox(height: isPhone ? 20 : 30),
               ],
             ),
           ),
@@ -700,7 +705,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                       ),
                     );
                   } else {
-                    await Future.delayed(Duration(milliseconds: 300));
+                    await Future.delayed(Duration(milliseconds: 250));
                     layersManager.pushLayer('artists', content: artists[0]);
                   }
                 },
@@ -711,7 +716,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                 title: l10n.go2Album,
                 image: MenuImage.icon(Icons.album_rounded),
                 callback: () async {
-                  await Future.delayed(Duration(milliseconds: 300));
+                  await Future.delayed(Duration(milliseconds: 250));
                   layersManager.pushLayer(
                     'albums',
                     content: getAlbum(currentSongList[index]),

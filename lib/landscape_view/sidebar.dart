@@ -50,7 +50,7 @@ class Sidebar extends StatelessWidget {
             trailing: trailing,
             onTap: () async {
               closeDrawer?.call();
-              await Future.delayed(Duration(milliseconds: 300));
+              await Future.delayed(Duration(milliseconds: 250));
               onTap();
             },
           ),
@@ -244,7 +244,7 @@ class Sidebar extends StatelessWidget {
                                           bool isPhone = shortSide < 600;
                                           return SizedBox(
                                             height: max(350, size.height * 0.7),
-                                            width: isPhone ? 320 : 400,
+                                            width: isPhone ? 300 : 400,
                                             child: Padding(
                                               padding:
                                                   const EdgeInsets.fromLTRB(

@@ -301,6 +301,10 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
 
   Widget header() {
     final l10n = AppLocalizations.of(context);
+    final size = MediaQuery.of(context).size;
+    final shortSide = size.shortestSide;
+
+    bool isPhone = shortSide < 600;
 
     return Column(
       children: [
@@ -308,7 +312,7 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
         Row(
           children: [
             SizedBox(width: 20),
-            mainCover(120),
+            mainCover(isPhone ? 120 : 160),
             Expanded(
               child: ListTile(
                 title: AutoSizeText(

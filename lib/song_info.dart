@@ -29,7 +29,7 @@ class _SongInfo extends StatelessWidget {
         bool isPhone = shortSide < 600;
         return SizedBox(
           height: max(350, size.height * 0.7),
-          width: isPhone ? 320 : 400,
+          width: isPhone ? 300 : 400,
           child: _content(context, isPhone),
         );
       },
@@ -38,6 +38,7 @@ class _SongInfo extends StatelessWidget {
 
   Widget _content(BuildContext context, bool isPhone) {
     final l10n = AppLocalizations.of(context);
+    final double verticalPadding = isPhone ? 5 : 10;
 
     return Padding(
       padding: const EdgeInsets.fromLTRB(20, 10, 20, 20),
@@ -47,19 +48,22 @@ class _SongInfo extends StatelessWidget {
             l10n.songInfo,
             style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20),
           ),
-          SizedBox(height: 5),
 
-          Divider(thickness: 0.5, height: 1, color: dividerColor),
-          SizedBox(height: 5),
+          paddingDivider(verticalPadding),
+
           Expanded(
             child: ListView(
               padding: .symmetric(horizontal: isMobile ? 5 : 15),
               children: [
-                SizedBox(height: 5),
+                SizedBox(height: 10),
 
                 Row(
                   children: [
-                    CoverArtWidget(size: 180, borderRadius: 10, song: song),
+                    CoverArtWidget(
+                      size: isPhone ? 150 : 180,
+                      borderRadius: 10,
+                      song: song,
+                    ),
                     SizedBox(width: 10),
                     Expanded(
                       child: Column(
@@ -68,24 +72,12 @@ class _SongInfo extends StatelessWidget {
                           Text('${l10n.format}:'),
                           Text('Unknown'),
 
-                          SizedBox(height: 10),
-                          Divider(
-                            thickness: 0.5,
-                            height: 1,
-                            color: dividerColor,
-                          ),
-                          SizedBox(height: 10),
+                          paddingDivider(verticalPadding),
 
                           Text('${l10n.bitrate}:'),
                           Text('${song.bitrate?.toString() ?? ''} Kbps'),
 
-                          SizedBox(height: 10),
-                          Divider(
-                            thickness: 0.5,
-                            height: 1,
-                            color: dividerColor,
-                          ),
-                          SizedBox(height: 10),
+                          paddingDivider(verticalPadding),
 
                           Text('${l10n.samplerate}:'),
                           if (song.samplerate == null)
@@ -100,65 +92,46 @@ class _SongInfo extends StatelessWidget {
                   ],
                 ),
 
-                SizedBox(height: 15),
-                Divider(thickness: 0.5, height: 1, color: dividerColor),
                 SizedBox(height: 10),
+                paddingDivider(verticalPadding),
 
                 Text('${l10n.title}: ${getTitle(song)}'),
 
-                SizedBox(height: 10),
-                Divider(thickness: 0.5, height: 1, color: dividerColor),
-                SizedBox(height: 10),
+                paddingDivider(verticalPadding),
 
                 Text('${l10n.artist}: ${getArtist(song)}'),
 
-                SizedBox(height: 10),
-                Divider(thickness: 0.5, height: 1, color: dividerColor),
-                SizedBox(height: 10),
+                paddingDivider(verticalPadding),
 
                 Text('${l10n.album}: ${getAlbum(song)}'),
 
-                SizedBox(height: 10),
-                Divider(thickness: 0.5, height: 1, color: dividerColor),
-                SizedBox(height: 10),
+                paddingDivider(verticalPadding),
 
                 Text('${l10n.genre}: ${getGenre(song)}'),
 
-                SizedBox(height: 10),
-                Divider(thickness: 0.5, height: 1, color: dividerColor),
-                SizedBox(height: 10),
+                paddingDivider(verticalPadding),
 
                 Text('${l10n.year}: ${song.year?.toString() ?? ''}'),
 
-                SizedBox(height: 10),
-                Divider(thickness: 0.5, height: 1, color: dividerColor),
-                SizedBox(height: 10),
+                paddingDivider(verticalPadding),
 
                 Text('${l10n.track}: ${song.track?.toString() ?? ''}'),
 
-                SizedBox(height: 10),
-                Divider(thickness: 0.5, height: 1, color: dividerColor),
-                SizedBox(height: 10),
+                paddingDivider(verticalPadding),
 
                 Text('${l10n.disc}: ${song.disc?.toString() ?? ''}'),
 
-                SizedBox(height: 10),
-                Divider(thickness: 0.5, height: 1, color: dividerColor),
-                SizedBox(height: 10),
+                paddingDivider(verticalPadding),
 
                 Text('${l10n.duration}: ${song.duration?.toString() ?? ''}'),
 
-                SizedBox(height: 10),
-                Divider(thickness: 0.5, height: 1, color: dividerColor),
-                SizedBox(height: 10),
+                paddingDivider(verticalPadding),
 
                 Text('File Path: '),
 
                 Text(song.filePath ?? ''),
 
-                SizedBox(height: 10),
-                Divider(thickness: 0.5, height: 1, color: dividerColor),
-                SizedBox(height: 10),
+                paddingDivider(verticalPadding),
 
                 Text('${l10n.lyrics}:'),
 
@@ -168,6 +141,13 @@ class _SongInfo extends StatelessWidget {
           ),
         ],
       ),
+    );
+  }
+
+  Widget paddingDivider(double verticalPadding) {
+    return Padding(
+      padding: .symmetric(vertical: verticalPadding),
+      child: Divider(thickness: 0.5, height: 1, color: dividerColor),
     );
   }
 }

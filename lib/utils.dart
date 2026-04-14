@@ -65,7 +65,7 @@ Future<bool> showConfirmDialog(BuildContext context, String action) async {
     child: Builder(
       builder: (context) {
         return SizedBox(
-          width: isMobile ? 280 : 300,
+          width: 300,
           height: 180,
           child: Padding(
             padding: const EdgeInsets.all(20),
@@ -133,7 +133,7 @@ Widget adaptiveTextField(
         style: TextStyle(fontSize: 12),
         controller: controller,
         decoration: InputDecoration(
-          visualDensity: .new(vertical: -1.5),
+          visualDensity: .new(vertical: -3),
           enabledBorder: OutlineInputBorder(
             borderSide: BorderSide(color: textColor),
           ),

@@ -200,8 +200,8 @@ class SettingsList extends StatelessWidget {
         showAnimationDialog(
           context: context,
           child: SizedBox(
-            height: 320,
-            width: 320,
+            height: 300,
+            width: 300,
             child: Padding(
               padding: .fromLTRB(20, 15, 20, 15),
               child: Column(
@@ -325,8 +325,8 @@ class SettingsList extends StatelessWidget {
           context: context,
 
           child: SizedBox(
-            height: 320,
-            width: 320,
+            height: 300,
+            width: 300,
             child: Padding(
               padding: .fromLTRB(20, 15, 20, 15),
               child: Column(
@@ -438,8 +438,8 @@ class SettingsList extends StatelessWidget {
           context: context,
 
           child: SizedBox(
-            width: 280,
-            height: 320,
+            width: 300,
+            height: 300,
             child: Padding(
               padding: const EdgeInsets.all(10.0),
               child: ValueListenableBuilder(
@@ -548,7 +548,7 @@ class SettingsList extends StatelessWidget {
                 }
               }
               return SizedBox(
-                width: 320,
+                width: 300,
                 height: height,
                 child: Padding(
                   padding: const EdgeInsets.all(15.0),
@@ -800,8 +800,8 @@ class SettingsList extends StatelessWidget {
 
               bool isPhone = shortSide < 600;
               return SizedBox(
-                height: max(350, size.height * 0.6),
-                width: isPhone ? 320 : 400,
+                height: max(350, size.height * 0.7),
+                width: isPhone ? 300 : 400,
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
                   child: ListView(
