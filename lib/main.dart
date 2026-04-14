@@ -15,7 +15,7 @@ import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/l10n/generated/app_localizations_en.dart';
 import 'package:particle_music/loader.dart';
 import 'package:particle_music/portrait_view/overlay_lyrics.dart';
-import 'package:particle_music/portrait_view/pages/custom_page_transition_builder.dart';
+import 'package:particle_music/portrait_view/custom_page_transition_builder.dart';
 import 'dart:async';
 import 'package:particle_music/view_entry.dart';
 import 'package:path_provider/path_provider.dart';

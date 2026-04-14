@@ -49,8 +49,10 @@ class Sidebar extends StatelessWidget {
             visualDensity: const VisualDensity(horizontal: 0, vertical: -3.65),
             trailing: trailing,
             onTap: () async {
-              closeDrawer?.call();
-              await Future.delayed(Duration(milliseconds: 250));
+              if (closeDrawer != null) {
+                closeDrawer!.call();
+                await Future.delayed(Duration(milliseconds: 250));
+              }
               onTap();
             },
           ),

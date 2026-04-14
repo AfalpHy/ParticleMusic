@@ -4,11 +4,11 @@ import 'package:particle_music/common_widgets/my_sheet.dart';
 import 'package:particle_music/common_widgets/playlist_widgets.dart';
 import 'package:particle_music/folder.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
-import 'package:particle_music/edit_metadata.dart';
+import 'package:particle_music/common_widgets/edit_metadata.dart';
 import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/playlists.dart';
-import 'package:particle_music/song_info.dart';
+import 'package:particle_music/common_widgets/song_info.dart';
 import 'package:particle_music/utils.dart';
 import '../common_widgets/cover_art_widget.dart';
 

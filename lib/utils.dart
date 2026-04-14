@@ -11,7 +11,6 @@ import 'package:image/image.dart' as image;
 import 'package:lpinyin/lpinyin.dart';
 import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/common_widgets/my_sheet.dart';
 import 'package:particle_music/landscape_view/extensions/window_controller_extension.dart';
 import 'package:particle_music/landscape_view/single_instance.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
@@ -147,83 +146,6 @@ Widget adaptiveTextField(
   );
 }
 
-Future<String> showTextFieldSheet(
-  BuildContext context,
-  TextEditingController controller, {
-  bool expand = false,
-  bool needConfirmButton = false,
-  bool onlyNumber = false,
-}) async {
-  return await showModalBottomSheet(
-        context: context,
-        isScrollControlled: true,
-        useRootNavigator: true,
-        builder: (context) {
-          final specificTextcolor = colorManager.getSpecificTextColor();
-
-          return MySheet(
-            height: 500,
-            Column(
-              mainAxisAlignment: MainAxisAlignment.start, // center vertically
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(30, 30, 30, 0),
-                  child: Theme(
-                    data: Theme.of(context).copyWith(
-                      textSelectionTheme: TextSelectionThemeData(
-                        selectionColor: specificTextcolor.withAlpha(50),
-                        cursorColor: specificTextcolor,
-                        selectionHandleColor: specificTextcolor,
-                      ),
-                    ),
-                    child: SizedBox(
-                      height: expand ? 120 : 60,
-                      child: TextField(
-                        keyboardType: onlyNumber ? .number : null,
-                        expands: expand,
-                        maxLines: expand ? null : 1,
-                        controller: controller,
-                        autofocus: true,
-                        style: TextStyle(color: specificTextcolor),
-                        decoration: InputDecoration(
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: specificTextcolor),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                              color: specificTextcolor,
-                              width: 1.5,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-
-                if (needConfirmButton) const SizedBox(height: 10),
-                if (needConfirmButton)
-                  ElevatedButton(
-                    onPressed: () {
-                      Navigator.pop(
-                        context,
-                        controller.text,
-                      ); // close with value
-                    },
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: colorManager.getSpecificButtonColor(),
-                      foregroundColor: specificTextcolor,
-                    ),
-                    child: Text(AppLocalizations.of(context).confirm),
-                  ),
-              ],
-            ),
-          );
-        },
-      ) ??
-      "";
-}
-
 Future<T?> showAnimationDialog<T>({
   required BuildContext context,
   bool barrierDismissible = true,
@@ -268,99 +190,94 @@ Future<T?> showAnimationDialog<T>({
             }
           });
 
-          return MediaQuery.removePadding(
-            context: context,
-            removeTop: true,
-            removeBottom: true,
-            child: Stack(
-              children: [
-                AnimatedBuilder(
-                  animation: animation,
-                  builder: (_, _) {
-                    return BackdropFilter(
-                      filter: ImageFilter.blur(
-                        sigmaX: 5 * animation.value,
-                        sigmaY: 5 * animation.value,
+          return Stack(
+            children: [
+              AnimatedBuilder(
+                animation: animation,
+                builder: (_, _) {
+                  return BackdropFilter(
+                    filter: ImageFilter.blur(
+                      sigmaX: 5 * animation.value,
+                      sigmaY: 5 * animation.value,
+                    ),
+                    child: Container(
+                      color: Colors.black.withValues(
+                        alpha: 0.3 * animation.value,
                       ),
-                      child: Container(
-                        color: Colors.black.withValues(
-                          alpha: 0.3 * animation.value,
-                        ),
-                      ),
-                    );
-                  },
-                ),
+                    ),
+                  );
+                },
+              ),
 
-                ModalBarrier(
-                  dismissible: barrierDismissible,
-                  color: Colors.black.withValues(alpha: 0.3 * animation.value),
-                  onDismiss: () {
-                    Navigator.pop(context);
-                  },
-                ),
+              ModalBarrier(
+                dismissible: barrierDismissible,
+                color: Colors.black.withValues(alpha: 0.3 * animation.value),
+                onDismiss: () {
+                  Navigator.pop(context);
+                },
+              ),
 
-                Center(
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 250),
-                    curve: Curves.easeOutCubic,
-                    transform: Matrix4.translationValues(0, offset.dy, 0),
-                    child: GestureDetector(
-                      onVerticalDragUpdate: (details) {
-                        if (!isKeyboardOpen) return;
+              Center(
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 250),
+                  curve: Curves.easeOutCubic,
+                  transform: Matrix4.translationValues(0, offset.dy, 0),
+                  child: GestureDetector(
+                    onVerticalDragUpdate: (details) {
+                      if (!isKeyboardOpen) return;
 
-                        setState(() {
-                          if (offset.dy < getMinOffset() || offset.dy > 0) {
-                            offset += Offset(0, details.delta.dy * 0.15);
-                          } else {
-                            offset += Offset(0, details.delta.dy);
-                          }
-                        });
-                      },
+                      setState(() {
+                        if (offset.dy < getMinOffset() || offset.dy > 0) {
+                          offset += Offset(0, details.delta.dy * 0.15);
+                        } else {
+                          offset += Offset(0, details.delta.dy);
+                        }
+                      });
+                    },
 
-                      onVerticalDragEnd: (_) {
-                        if (!isKeyboardOpen) return;
+                    onVerticalDragEnd: (_) {
+                      if (!isKeyboardOpen) return;
 
-                        final minOffset = getMinOffset();
-                        setState(() {
-                          if (offset.dy < minOffset) {
-                            offset = Offset(0, minOffset);
-                          } else if (offset.dy > 0) {
-                            offset = .zero;
-                          }
-                        });
-                      },
+                      final minOffset = getMinOffset();
+                      setState(() {
+                        if (offset.dy < minOffset) {
+                          offset = Offset(0, minOffset);
+                        } else if (offset.dy > 0) {
+                          offset = .zero;
+                        }
+                      });
+                    },
 
-                      child: SlideTransition(
-                        position:
-                            Tween<Offset>(
-                              begin: const Offset(0, 1),
-                              end: Offset.zero,
-                            ).animate(
-                              CurvedAnimation(
-                                parent: animation,
-                                curve: Curves.easeInOutCubic,
-                              ),
+                    child: SlideTransition(
+                      position:
+                          Tween<Offset>(
+                            begin: const Offset(0, 1),
+                            end: Offset.zero,
+                          ).animate(
+                            CurvedAnimation(
+                              parent: animation,
+                              curve: Curves.easeInOutCubic,
                             ),
-                        child: FadeTransition(
-                          opacity: animation,
-                          child: Material(
-                            key: childKey,
-                            shape: SmoothRectangleBorder(
-                              smoothness: 1,
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            color: colorManager.getSpecificBgBaseColor(),
-                            clipBehavior: Clip.antiAliasWithSaveLayer,
-                            child: Container(
-                              color: colorManager.getSpecificBgColor(),
-                              child: MediaQuery.removePadding(
-                                context: context,
-                                removeLeft: true,
-                                removeRight: true,
-                                removeTop: true,
-                                removeBottom: true,
-                                child: child,
-                              ),
+                          ),
+                      child: FadeTransition(
+                        opacity: animation,
+                        child: Material(
+                          key: childKey,
+                          shape: SmoothRectangleBorder(
+                            smoothness: 1,
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          color: colorManager.getSpecificBgBaseColor(),
+                          clipBehavior: Clip.antiAliasWithSaveLayer,
+                          child: Container(
+                            color: colorManager.getSpecificBgColor(),
+                            child: MediaQuery.removePadding(
+                              context: context,
+                              removeLeft: true,
+                              removeRight: true,
+                              removeTop: true,
+                              removeBottom: true,
+                              child: child,
                             ),
                           ),
                         ),
@@ -368,8 +285,8 @@ Future<T?> showAnimationDialog<T>({
                     ),
                   ),
                 ),
-              ],
-            ),
+              ),
+            ],
           );
         },
       );
@@ -509,14 +426,14 @@ String formatDuration(Duration duration) {
   return "$minutes:$seconds";
 }
 
-bool isEnglish(String s) {
+bool _isEnglish(String s) {
   final c = s[0];
   return RegExp(r'^[A-Za-z]').hasMatch(c);
 }
 
 int compareMixed(String a, String b) {
-  final aIsEng = isEnglish(a);
-  final bIsEng = isEnglish(b);
+  final aIsEng = _isEnglish(a);
+  final bIsEng = _isEnglish(b);
 
   if (aIsEng && !bIsEng) return -1;
   if (!aIsEng && bIsEng) return 1;
