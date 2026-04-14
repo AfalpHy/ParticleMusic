@@ -29,6 +29,7 @@ class MySearchField extends StatefulWidget {
 }
 
 class _MySearchFieldState extends State<MySearchField> {
+  bool isInside = true;
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder(
@@ -45,7 +46,14 @@ class _MySearchFieldState extends State<MySearchField> {
                         height: 30,
                         child: TapRegion(
                           onTapOutside: (_) {
+                            if (!isInside) {
+                              return;
+                            }
+                            isInside = false;
                             FocusManager.instance.primaryFocus?.unfocus();
+                          },
+                          onTapInside: (_) {
+                            isInside = true;
                           },
                           child: TextField(
                             autofocus: true,
