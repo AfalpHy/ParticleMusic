@@ -116,8 +116,8 @@ class MyAudioMetadata {
         year: song['year'],
         track: song['track'],
         disc: song['discNumber'],
-        bitrate: song['bitrate'],
-        samplerate: song['samplingate'],
+        bitrate: song['bitRate'],
+        samplerate: song['samplingRate'],
         duration: song['duration'] != null
             ? Duration(seconds: song['duration'])
             : null,
