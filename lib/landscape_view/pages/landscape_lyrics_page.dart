@@ -128,7 +128,7 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                     Spacer(),
                     Column(
                       children: [
-                        SizedBox(height: pageHight * 0.1),
+                        if (pageHight >= 600) SizedBox(height: 75),
                         Spacer(),
                         ValueListenableBuilder(
                           valueListenable: lyricsPageThemeNotifier,
@@ -149,7 +149,6 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                         ],
 
                         Spacer(),
-                        SizedBox(height: pageHight * 0.05),
                       ],
                     ),
                     SizedBox(width: pageWidth * 0.05),
