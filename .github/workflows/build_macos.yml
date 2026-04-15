@@ -23,14 +23,14 @@ jobs:
       # Build Universal
       - name: Build Universal
         run: |
-          flutter build macos --release --no-codesign
+          flutter build macos --release
           mkdir -p output/universal
           cp -R build/macos/Build/Products/Release/*.app output/universal/
 
       # Build Intel (x86_64)
       - name: Build Intel
         run: |
-          flutter build macos --release --no-codesign
+          flutter build macos --release
           mkdir -p output/x86
           cp -R build/macos/Build/Products/Release/*.app output/x86/
         env:
@@ -39,7 +39,7 @@ jobs:
       # Build ARM64
       - name: Build ARM64
         run: |
-          flutter build macos --release --no-codesign
+          flutter build macos --release
           mkdir -p output/arm
           cp -R build/macos/Build/Products/Release/*.app output/arm/
         env:
