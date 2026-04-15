@@ -56,6 +56,9 @@ class MyAudioHandler extends BaseAudioHandler {
 
   bool isLoading = false;
 
+  // for repeat
+  bool _seek2begin = false;
+
   MyAudioHandler() {
     // avoid reading .lrc files
     (_player.platform as NativePlayer).setProperty('sub-auto', 'no');
@@ -77,6 +80,7 @@ class MyAudioHandler extends BaseAudioHandler {
 
         if (playModeNotifier.value == 2) {
           // repeat
+          _seek2begin = true;
           await load();
         } else {
           await skipToNext(); // automatically go to next song
@@ -443,6 +447,13 @@ class MyAudioHandler extends BaseAudioHandler {
       _playLastSyncTime = null;
     }
 
+    if (_seek2begin) {
+      await seek(Duration.zero);
+      _seek2begin = true;
+      _playLastSyncTime = DateTime.now();
+      _playedDuration = Duration.zero;
+      return;
+    }
     // save currentIndex
     savePlayState();
 
