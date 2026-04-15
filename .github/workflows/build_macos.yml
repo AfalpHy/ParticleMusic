@@ -23,14 +23,16 @@ jobs:
       # Build Universal
       - name: Build Universal
         run: |
-          flutter build macos --release
+          flutter build macos --release \
+            --rename-xcode-properties CODE_SIGNING_ALLOWED=NO
           mkdir -p output/universal
           cp -R build/macos/Build/Products/Release/*.app output/universal/
 
       # Build Intel (x86_64)
       - name: Build Intel
         run: |
-          flutter build macos --release
+          flutter build macos --release \
+            --rename-xcode-properties CODE_SIGNING_ALLOWED=NO
           mkdir -p output/x86
           cp -R build/macos/Build/Products/Release/*.app output/x86/
         env:
@@ -39,7 +41,8 @@ jobs:
       # Build ARM64
       - name: Build ARM64
         run: |
-          flutter build macos --release
+          flutter build macos --release \
+            --rename-xcode-properties CODE_SIGNING_ALLOWED=NO
           mkdir -p output/arm
           cp -R build/macos/Build/Products/Release/*.app output/arm/
         env:
