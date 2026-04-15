@@ -4,6 +4,18 @@ import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/full_width_track_shape.dart';
 
+final List<int> freqs = [31, 62, 125, 250, 500, 1000, 2000, 4000, 8000, 16000];
+List<double> gains = List.filled(freqs.length, 0);
+
+final Map<String, List<double>> presets = {
+  "Flat": List.filled(10, 0),
+  "Rock": [5, 3, -2, -3, 2, 4, 5, 6, 6, 6],
+  "Pop": [-1, 2, 4, 5, 3, 0, -1, -1, 2, 3],
+  "Bass Boost": [6, 5, 4, 2, 0, -2, -3, -4, -5, -6],
+};
+
+String currentPreset = "Flat";
+
 class EqualizerWidget extends StatefulWidget {
   const EqualizerWidget({super.key});
 
@@ -12,41 +24,16 @@ class EqualizerWidget extends StatefulWidget {
 }
 
 class _EqualizerWidgetState extends State<EqualizerWidget> {
-  final List<int> freqs = [
-    31,
-    62,
-    125,
-    250,
-    500,
-    1000,
-    2000,
-    4000,
-    8000,
-    16000,
-  ];
-
-  late List<double> gains;
-
   Timer? _debounce;
-
-  final Map<String, List<double>> presets = {
-    "Flat": List.filled(10, 0),
-    "Rock": [5, 3, -2, -3, 2, 4, 5, 6, 6, 6],
-    "Pop": [-1, 2, 4, 5, 3, 0, -1, -1, 2, 3],
-    "Bass Boost": [6, 5, 4, 2, 0, -2, -3, -4, -5, -6],
-  };
-
-  String currentPreset = "Flat";
 
   @override
   void initState() {
     super.initState();
-    gains = List.filled(freqs.length, 0);
   }
 
   void _applyEQ() {
     final af = List.generate(freqs.length, (i) {
-      return 'equalizer=f=${freqs[i]}:t=o:w=1:g=${gains[i]}';
+      return 'equalizer=f=${freqs[i]}:t=o:w=0.5:g=${gains[i]}';
     }).join(',');
 
     audioHandler.setAudioParams(af);
