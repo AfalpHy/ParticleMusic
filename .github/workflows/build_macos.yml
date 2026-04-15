@@ -1,0 +1,53 @@
+name: Build macOS
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: macos-14 # Native M-series runner
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.41.6'
+          channel: 'stable'
+          architecture: arm64
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      # Build Universal
+      - name: Build Universal
+        run: |
+          flutter build macos --release --no-codesign
+          mkdir -p output/universal
+          cp -R build/macos/Build/Products/Release/*.app output/universal/
+
+      # Build Intel (x86_64)
+      - name: Build Intel
+        run: |
+          flutter build macos --release --no-codesign
+          mkdir -p output/x86
+          cp -R build/macos/Build/Products/Release/*.app output/x86/
+        env:
+          FLUTTER_XCODE_ARCHS: x86_64
+
+      # Build ARM64
+      - name: Build ARM64
+        run: |
+          flutter build macos --release --no-codesign
+          mkdir -p output/arm
+          cp -R build/macos/Build/Products/Release/*.app output/arm/
+        env:
+          FLUTTER_XCODE_ARCHS: arm64
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: Flutter-3.41.6-macOS-Builds
+          path: output/
