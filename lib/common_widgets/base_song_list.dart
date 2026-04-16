@@ -107,6 +107,7 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
     } else if (folder != null) {
       songList = folder!.songList;
       title = folder!.path;
+      sortTypeNotifier = folder!.sortTypeNotifier;
       folder!.updateNotifier.addListener(updateSongList);
       reorderable = true;
     } else if (ranking != null) {
@@ -120,8 +121,10 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
     } else {
       if (isNavidrome) {
         songList = library.navidromeSongList;
+        sortTypeNotifier = library.navidromeSortTypeNotifier;
       } else {
         songList = library.songList;
+        sortTypeNotifier = library.sortTypeNotifier;
         library.changeNotifier.addListener(updateSongList);
         reorderable = true;
       }
@@ -146,7 +149,7 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
       rankingChangeNotifier.removeListener(updateSongList);
     } else if (recently != null) {
       recentlyChangeNotifier.removeListener(updateSongList);
-    } else if (isLibrary) {
+    } else if (isLibrary && !isNavidrome) {
       library.changeNotifier.removeListener(updateSongList);
     }
     sortTypeNotifier.removeListener(updateSongList);

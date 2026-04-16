@@ -919,10 +919,11 @@ packages:
   super_context_menu:
     dependency: "direct main"
     description:
-      name: super_context_menu
-      sha256: "44570d342bea2381c57520f181016207c0ffde401f05f641e6dfec495fa728fe"
-      url: "https://pub.dev"
-    source: hosted
+      path: super_context_menu
+      ref: main
+      resolved-ref: "151c5f10b28f69acb98e6fa5561fc3306b177023"
+      url: "https://github.com/AfalpHy/super_native_extensions"
+    source: git
     version: "0.9.1"
   super_native_extensions:
     dependency: transitive

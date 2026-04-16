@@ -414,6 +414,17 @@ void sortSongList(int sortType, List<MyAudioMetadata> songList) {
         return b.duration!.compareTo(a.duration!);
       });
       break;
+    case 9: // modified time Ascending
+      songList.sort((a, b) {
+        return a.modified!.compareTo(b.modified!);
+      });
+    case 10: // modified time Descending
+      songList.sort((a, b) {
+        return b.modified!.compareTo(a.modified!);
+      });
+    case 11:
+      songList.shuffle();
+      break;
     default:
       break;
   }

@@ -17,12 +17,18 @@ class ArtistsAlbumsManager {
   final artistsIsListViewNotifier = ValueNotifier(true);
   final artistsIsAscendingNotifier = ValueNotifier(true);
   final artistsUseLargePictureNotifier = ValueNotifier(false);
+  final artistsRandomizeNotifier = ValueNotifier(false);
 
   final albumsIsAscendingNotifier = ValueNotifier(true);
   final albumsUseLargePictureNotifier = ValueNotifier(false);
+  final albumsRandomizeNotifier = ValueNotifier(false);
 
   List<ArtistAlbumBase> getArtistAlbumList(bool isArtist) {
     return isArtist ? artistList : albumList;
+  }
+
+  ValueNotifier<bool> getIsRandomizeNotifier(bool isArtist) {
+    return isArtist ? artistsRandomizeNotifier : albumsRandomizeNotifier;
   }
 
   ValueNotifier<bool> getIsAscendingNotifier(bool isArtist) {

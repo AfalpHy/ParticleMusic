@@ -205,6 +205,28 @@ class Sidebar extends StatelessWidget {
 
                     SliverToBoxAdapter(
                       child: ContextMenuWidget(
+                        previewBuilder: (context, child) {
+                          return Material(
+                            color: selectedItemColor.withAlpha(255),
+                            shape: SmoothRectangleBorder(
+                              smoothness: 1,
+                              borderRadius: .circular(5),
+                            ),
+                            clipBehavior: .antiAlias,
+                            child: child,
+                          );
+                        },
+                        liftBuilder: (context, child) {
+                          return Material(
+                            color: selectedItemColor.withAlpha(255),
+                            shape: SmoothRectangleBorder(
+                              smoothness: 1,
+                              borderRadius: .circular(5),
+                            ),
+                            clipBehavior: .antiAlias,
+                            child: child,
+                          );
+                        },
                         child: sidebarItem(
                           label: 'playlists',
                           leading: ImageIcon(playlistsImage, size: 30),
@@ -330,6 +352,28 @@ class Sidebar extends StatelessWidget {
       builder: (context, value, child) {
         final playlist = playlistsManager.getPlaylistByIndex(index);
         return ContextMenuWidget(
+          previewBuilder: (context, child) {
+            return Material(
+              color: selectedItemColor.withAlpha(255),
+              shape: SmoothRectangleBorder(
+                smoothness: 1,
+                borderRadius: .circular(5),
+              ),
+              clipBehavior: .antiAlias,
+              child: child,
+            );
+          },
+          liftBuilder: (context, child) {
+            return Material(
+              color: selectedItemColor.withAlpha(255),
+              shape: SmoothRectangleBorder(
+                smoothness: 1,
+                borderRadius: .circular(5),
+              ),
+              clipBehavior: .antiAlias,
+              child: child,
+            );
+          },
           child: sidebarItem(
             label: '_${playlist.name}',
             leading: ValueListenableBuilder(

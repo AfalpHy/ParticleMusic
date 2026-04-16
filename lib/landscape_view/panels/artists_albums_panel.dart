@@ -24,6 +24,7 @@ class _ArtistsAlbumsPanelState extends State<ArtistsAlbumsPanel> {
 
   final textController = TextEditingController();
 
+  late ValueNotifier<bool> randomizeNotifier;
   late ValueNotifier<bool> isAscendingNotifier;
   late ValueNotifier<bool> useLargePictureNotifier;
 
@@ -33,6 +34,9 @@ class _ArtistsAlbumsPanelState extends State<ArtistsAlbumsPanel> {
         .getArtistAlbumList(isArtist)
         .where((e) => (e.name.toLowerCase().contains(value.toLowerCase())))
         .toList();
+    if (randomizeNotifier.value) {
+      currentArtistAlbumListNotifier.value.shuffle();
+    }
   }
 
   @override
@@ -42,12 +46,16 @@ class _ArtistsAlbumsPanelState extends State<ArtistsAlbumsPanel> {
     currentArtistAlbumListNotifier = ValueNotifier(
       artistsAlbumsManager.getArtistAlbumList(isArtist),
     );
+
+    randomizeNotifier = artistsAlbumsManager.getIsRandomizeNotifier(isArtist);
+
     isAscendingNotifier = artistsAlbumsManager.getIsAscendingNotifier(isArtist);
 
     useLargePictureNotifier = artistsAlbumsManager.getUseLargePictureNotifier(
       isArtist,
     );
 
+    updateCurrentList();
     textController.addListener(updateCurrentList);
     artistsAlbumsManager.updateNotifier.addListener(updateCurrentList);
   }
@@ -111,42 +119,67 @@ class _ArtistsAlbumsPanelState extends State<ArtistsAlbumsPanel> {
                 },
               ),
               trailing: SizedBox(
-                width: 240,
+                width: 350,
                 child: Column(
                   children: [
                     SizedBox(height: 20),
                     Row(
                       children: [
                         Spacer(),
-                        ValueListenableBuilder(
-                          valueListenable: isAscendingNotifier,
-                          builder: (context, value, child) {
-                            return Text(
-                              value ? l10n.ascending : l10n.descending,
-                            );
-                          },
-                        ),
-                        SizedBox(width: 10),
-                        ValueListenableBuilder(
-                          valueListenable: isAscendingNotifier,
-                          builder: (context, value, child) {
-                            return MySwitch(
-                              value: value,
-                              onToggle: (value) async {
-                                isAscendingNotifier.value = value;
-                                settingManager.saveSetting();
-                                if (isArtist) {
-                                  artistsAlbumsManager.sortArtists();
-                                } else {
-                                  artistsAlbumsManager.sortAlbums();
-                                }
-                                updateCurrentList();
-                              },
-                            );
-                          },
-                        ),
-                        SizedBox(width: 10),
 
+                        ValueListenableBuilder(
+                          valueListenable: randomizeNotifier,
+                          builder: (context, value, child) {
+                            return Row(
+                              children: [
+                                if (!value) ...[
+                                  ValueListenableBuilder(
+                                    valueListenable: isAscendingNotifier,
+                                    builder: (context, value, child) {
+                                      return Text(
+                                        value
+                                            ? l10n.ascending
+                                            : l10n.descending,
+                                      );
+                                    },
+                                  ),
+                                  SizedBox(width: 10),
+                                  ValueListenableBuilder(
+                                    valueListenable: isAscendingNotifier,
+                                    builder: (context, value, child) {
+                                      return MySwitch(
+                                        value: value,
+                                        onToggle: (value) async {
+                                          isAscendingNotifier.value = value;
+                                          settingManager.saveSetting();
+                                          if (isArtist) {
+                                            artistsAlbumsManager.sortArtists();
+                                          } else {
+                                            artistsAlbumsManager.sortAlbums();
+                                          }
+                                          updateCurrentList();
+                                        },
+                                      );
+                                    },
+                                  ),
+                                  SizedBox(width: 10),
+                                ],
+                                Text(value ? l10n.randomize : l10n.normal),
+                                SizedBox(width: 10),
+                                MySwitch(
+                                  value: value,
+                                  onToggle: (value) async {
+                                    randomizeNotifier.value = value;
+
+                                    updateCurrentList();
+                                  },
+                                ),
+                              ],
+                            );
+                          },
+                        ),
+
+                        SizedBox(width: 10),
                         ValueListenableBuilder(
                           valueListenable: useLargePictureNotifier,
                           builder: (context, value, child) {

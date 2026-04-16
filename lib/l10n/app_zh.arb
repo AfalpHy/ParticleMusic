@@ -161,5 +161,13 @@
   "filePath": "文件路径",
   "go2Artist": "查看艺术家",
   "go2Album": "查看专辑",
-  "equalizer": "均衡器"
+  "equalizer": "均衡器",
+  "more": "更多",
+  "randomize": "随机",
+  "normal": "正常",
+  "randomizeTemp": "随机(暂时)",
+  "randomizePermanent": "随机(永久)",
+  "modifiedTimeAscending": "修改时间升序",
+  "modifiedTimedescending": "修改时间降序",
+  "cannotBeUndone": "不可撤销"
 }

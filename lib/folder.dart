@@ -43,6 +43,8 @@ class Folder {
   Map<String, MyAudioMetadata> filePath2Song = {};
   Set<String> validFilePath = {};
 
+  ValueNotifier<int> sortTypeNotifier = ValueNotifier(0);
+
   final updateNotifier = ValueNotifier(0);
 
   Folder(
@@ -291,8 +293,13 @@ class Folder {
     );
   }
 
+  void shuffle() {
+    songList.shuffle();
+    update();
+  }
+
   Future<void> update() async {
-    layersManager.updateBackground();
+    await layersManager.updateBackground();
     updateNotifier.value++;
     await _saveSongFilePathList();
   }

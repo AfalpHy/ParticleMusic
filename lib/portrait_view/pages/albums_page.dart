@@ -29,6 +29,7 @@ class _AlbumsPageState extends State<AlbumsPage> {
   @override
   void initState() {
     super.initState();
+    updateCurrentAlbumList();
     artistsAlbumsManager.updateNotifier.addListener(updateCurrentAlbumList);
   }
 
@@ -43,6 +44,10 @@ class _AlbumsPageState extends State<AlbumsPage> {
     currentAlbumListNotifier.value = artistsAlbumsManager.albumList
         .where((e) => (e.name.toLowerCase().contains(value.toLowerCase())))
         .toList();
+
+    if (artistsAlbumsManager.albumsRandomizeNotifier.value) {
+      currentAlbumListNotifier.value.shuffle();
+    }
   }
 
   @override
@@ -150,7 +155,7 @@ class _AlbumsPageState extends State<AlbumsPage> {
             ),
             visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
             trailing: ValueListenableBuilder(
-              valueListenable: artistsAlbumsManager.albumsIsAscendingNotifier,
+              valueListenable: artistsAlbumsManager.albumsRandomizeNotifier,
               builder: (context, value, child) {
                 return SizedBox(
                   width: 120,
@@ -158,16 +163,14 @@ class _AlbumsPageState extends State<AlbumsPage> {
                   child: Row(
                     children: [
                       Spacer(),
-                      Text(value ? l10n.ascending : l10n.descending),
+                      Text(value ? l10n.randomize : l10n.normal),
                       SizedBox(width: 10),
                       MySwitch(
                         value: value,
                         onToggle: (value) async {
                           tryVibrate();
-                          artistsAlbumsManager.albumsIsAscendingNotifier.value =
+                          artistsAlbumsManager.albumsRandomizeNotifier.value =
                               value;
-                          settingManager.saveSetting();
-                          artistsAlbumsManager.sortAlbums();
                           updateCurrentAlbumList();
                         },
                       ),
@@ -176,6 +179,48 @@ class _AlbumsPageState extends State<AlbumsPage> {
                 );
               },
             ),
+          ),
+
+          ValueListenableBuilder(
+            valueListenable: artistsAlbumsManager.albumsRandomizeNotifier,
+            builder: (_, randomize, _) {
+              if (randomize) {
+                return SizedBox();
+              }
+              return ListTile(
+                visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+                trailing: ValueListenableBuilder(
+                  valueListenable:
+                      artistsAlbumsManager.albumsIsAscendingNotifier,
+                  builder: (context, value, child) {
+                    return SizedBox(
+                      width: 120,
+
+                      child: Row(
+                        children: [
+                          Spacer(),
+                          Text(value ? l10n.ascending : l10n.descending),
+                          SizedBox(width: 10),
+                          MySwitch(
+                            value: value,
+                            onToggle: (value) async {
+                              tryVibrate();
+                              artistsAlbumsManager
+                                      .albumsIsAscendingNotifier
+                                      .value =
+                                  value;
+                              settingManager.saveSetting();
+                              artistsAlbumsManager.sortAlbums();
+                              updateCurrentAlbumList();
+                            },
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              );
+            },
           ),
         ],
       ),

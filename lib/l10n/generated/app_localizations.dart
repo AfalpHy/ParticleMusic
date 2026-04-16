@@ -1075,6 +1075,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Equalizer'**
   String get equalizer;
+
+  /// No description provided for @more.
+  ///
+  /// In en, this message translates to:
+  /// **'More'**
+  String get more;
+
+  /// No description provided for @randomize.
+  ///
+  /// In en, this message translates to:
+  /// **'Randomize'**
+  String get randomize;
+
+  /// No description provided for @normal.
+  ///
+  /// In en, this message translates to:
+  /// **'Normal'**
+  String get normal;
+
+  /// No description provided for @randomizeTemp.
+  ///
+  /// In en, this message translates to:
+  /// **'Randomize(Temporary)'**
+  String get randomizeTemp;
+
+  /// No description provided for @randomizePermanent.
+  ///
+  /// In en, this message translates to:
+  /// **'Randomize(Permanent)'**
+  String get randomizePermanent;
+
+  /// No description provided for @modifiedTimeAscending.
+  ///
+  /// In en, this message translates to:
+  /// **'Modified Time Ascending'**
+  String get modifiedTimeAscending;
+
+  /// No description provided for @modifiedTimedescending.
+  ///
+  /// In en, this message translates to:
+  /// **'Modified Time Descending'**
+  String get modifiedTimedescending;
+
+  /// No description provided for @cannotBeUndone.
+  ///
+  /// In en, this message translates to:
+  /// **'Cannot be Undone'**
+  String get cannotBeUndone;
 }
 
 class _AppLocalizationsDelegate

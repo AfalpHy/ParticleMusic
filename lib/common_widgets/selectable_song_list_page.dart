@@ -168,6 +168,13 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                       l10n.durationAscending,
                       l10n.durationDescending,
                     ];
+
+                    if (isLibrary && songList == library.songList ||
+                        folder != null) {
+                      orderText.add(l10n.modifiedTimeAscending);
+                      orderText.add(l10n.modifiedTimedescending);
+                      orderText.add(l10n.randomizeTemp);
+                    }
                     List<Widget> orderWidget = [];
                     for (int i = 0; i < orderText.length; i++) {
                       String text = orderText[i];
@@ -202,10 +209,13 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                             color: dividerColor,
                           ),
 
-                          ...orderWidget,
+                          Expanded(
+                            child: ListView(
+                              children: [...orderWidget, SizedBox(height: 50)],
+                            ),
+                          ),
                         ],
                       ),
-                      height: 400,
                     );
                   },
                 );

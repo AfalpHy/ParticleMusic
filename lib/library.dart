@@ -13,11 +13,14 @@ class Library {
   late File _songFilePathListFile;
 
   List<MyAudioMetadata> songList = [];
-  ValueNotifier<int> changeNotifier = ValueNotifier(0);
   Map<String, MyAudioMetadata> filePath2Song = {};
 
   List<MyAudioMetadata> navidromeSongList = [];
   Map<String, MyAudioMetadata> id2navidromeSong = {};
+
+  ValueNotifier<int> changeNotifier = ValueNotifier(0);
+  ValueNotifier<int> sortTypeNotifier = ValueNotifier(0);
+  ValueNotifier<int> navidromeSortTypeNotifier = ValueNotifier(0);
 
   final displayNavidromeNotifier = ValueNotifier(false);
 
@@ -154,8 +157,13 @@ class Library {
     );
   }
 
+  void shuffle() {
+    songList.shuffle();
+    update();
+  }
+
   Future<void> update() async {
-    layersManager.updateBackground();
+    await layersManager.updateBackground();
     changeNotifier.value++;
     await _saveSongFilePathList();
   }

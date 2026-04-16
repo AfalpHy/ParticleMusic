@@ -508,4 +508,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get equalizer => 'Equalizer';
+
+  @override
+  String get more => 'More';
+
+  @override
+  String get randomize => 'Randomize';
+
+  @override
+  String get normal => 'Normal';
+
+  @override
+  String get randomizeTemp => 'Randomize(Temporary)';
+
+  @override
+  String get randomizePermanent => 'Randomize(Permanent)';
+
+  @override
+  String get modifiedTimeAscending => 'Modified Time Ascending';
+
+  @override
+  String get modifiedTimedescending => 'Modified Time Descending';
+
+  @override
+  String get cannotBeUndone => 'Cannot be Undone';
 }

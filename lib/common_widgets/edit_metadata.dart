@@ -11,7 +11,6 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common_widgets/lyrics.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
-import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/utils.dart';
 import 'package:permission_handler/permission_handler.dart';
@@ -84,6 +83,7 @@ Future<void> _tryWriteMetadata(
       pictureBytes: writePictureBytes,
     );
     if (success) {
+      song.modified = DateTime.now();
       final originArtist = getArtist(song);
       final originAlbum = getAlbum(song);
 
@@ -110,7 +110,12 @@ Future<void> _tryWriteMetadata(
       artistsAlbumsManager.updateArtistAlbum(song, originArtist, originAlbum);
 
       song.updateNotifier.value++;
-      layersManager.updateBackground();
+      await library.update();
+      for (final folder in library.folderList) {
+        if (folder.filePath2Song[song.filePath] != null) {
+          await folder.update();
+        }
+      }
     }
     if (context.mounted) {
       showCenterMessage(

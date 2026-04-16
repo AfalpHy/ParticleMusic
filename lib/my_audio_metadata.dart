@@ -9,7 +9,7 @@ import 'package:particle_music/utils.dart';
 class MyAudioMetadata {
   String? filePath;
   String? iosPath;
-  final DateTime? modified;
+  DateTime? modified;
   // for navidrome
   final String? id;
   final bool isNavidrome;

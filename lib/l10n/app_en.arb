@@ -203,5 +203,13 @@
   "filePath": "File Path",
   "go2Artist": "Go to Artist",
   "go2Album": "Go to Album",
-  "equalizer": "Equalizer"
+  "equalizer": "Equalizer",
+  "more": "More",
+  "randomize": "Randomize",
+  "normal": "Normal",
+  "randomizeTemp": "Randomize(Temporary)",
+  "randomizePermanent": "Randomize(Permanent)",
+  "modifiedTimeAscending": "Modified Time Ascending",
+  "modifiedTimedescending": "Modified Time Descending",
+  "cannotBeUndone": "Cannot be Undone"
 }

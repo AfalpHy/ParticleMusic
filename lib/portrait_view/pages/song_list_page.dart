@@ -183,6 +183,12 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
                       l10n.durationAscending,
                       l10n.durationDescending,
                     ];
+                    if (isLibrary && !isNavidrome || folder != null) {
+                      orderText.add(l10n.modifiedTimeAscending);
+                      orderText.add(l10n.modifiedTimedescending);
+                      orderText.add(l10n.randomizeTemp);
+                      orderText.add(l10n.randomizePermanent);
+                    }
                     List<Widget> orderWidget = [];
                     for (int i = 0; i < orderText.length; i++) {
                       String text = orderText[i];
@@ -192,9 +198,28 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
                           builder: (context, value, child) {
                             return ListTile(
                               title: Text(text),
-                              onTap: () {
-                                sortTypeNotifier.value = i;
-                                playlist?.saveSetting();
+                              onTap: () async {
+                                if (i == 12) {
+                                  if (!await showConfirmDialog(
+                                    context,
+                                    l10n.cannotBeUndone,
+                                  )) {
+                                    return;
+                                  }
+                                  sortTypeNotifier.value = 0;
+                                  if (isLibrary) {
+                                    library.shuffle();
+                                  } else {
+                                    folder!.shuffle();
+                                  }
+                                } else {
+                                  if (i == 11 && sortTypeNotifier.value == 11) {
+                                    updateSongList();
+                                  }
+                                  sortTypeNotifier.value = i;
+
+                                  playlist?.saveSetting();
+                                }
                               },
                               trailing: value == i ? Icon(Icons.check) : null,
                               dense: true,
@@ -217,10 +242,13 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
                             color: dividerColor,
                           ),
 
-                          ...orderWidget,
+                          Expanded(
+                            child: ListView(
+                              children: [...orderWidget, SizedBox(height: 50)],
+                            ),
+                          ),
                         ],
                       ),
-                      height: 400,
                     );
                   },
                 );

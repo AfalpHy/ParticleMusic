@@ -28,6 +28,7 @@ class _ArtistsPageState extends State<ArtistsPage> {
   @override
   void initState() {
     super.initState();
+    updateCurrentArtistList();
     artistsAlbumsManager.updateNotifier.addListener(updateCurrentArtistList);
   }
 
@@ -42,6 +43,9 @@ class _ArtistsPageState extends State<ArtistsPage> {
     currentArtistListNotifier.value = artistsAlbumsManager.artistList
         .where((e) => (e.name.toLowerCase().contains(value.toLowerCase())))
         .toList();
+    if (artistsAlbumsManager.artistsRandomizeNotifier.value) {
+      currentArtistListNotifier.value.shuffle();
+    }
   }
 
   @override
@@ -206,7 +210,7 @@ class _ArtistsPageState extends State<ArtistsPage> {
             ),
             visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
             trailing: ValueListenableBuilder(
-              valueListenable: artistsAlbumsManager.artistsIsAscendingNotifier,
+              valueListenable: artistsAlbumsManager.artistsRandomizeNotifier,
               builder: (context, value, child) {
                 return SizedBox(
                   width: 120,
@@ -214,18 +218,15 @@ class _ArtistsPageState extends State<ArtistsPage> {
                   child: Row(
                     children: [
                       Spacer(),
-                      Text(value ? l10n.ascending : l10n.descending),
+                      Text(value ? l10n.randomize : l10n.normal),
                       SizedBox(width: 10),
                       MySwitch(
                         value: value,
                         onToggle: (value) async {
                           tryVibrate();
-                          artistsAlbumsManager
-                                  .artistsIsAscendingNotifier
-                                  .value =
+                          artistsAlbumsManager.artistsRandomizeNotifier.value =
                               value;
-                          settingManager.saveSetting();
-                          artistsAlbumsManager.sortArtists();
+
                           updateCurrentArtistList();
                         },
                       ),
@@ -234,6 +235,48 @@ class _ArtistsPageState extends State<ArtistsPage> {
                 );
               },
             ),
+          ),
+
+          ValueListenableBuilder(
+            valueListenable: artistsAlbumsManager.artistsRandomizeNotifier,
+            builder: (_, randomize, _) {
+              if (randomize) {
+                return SizedBox();
+              }
+              return ListTile(
+                visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+                trailing: ValueListenableBuilder(
+                  valueListenable:
+                      artistsAlbumsManager.artistsIsAscendingNotifier,
+                  builder: (context, value, child) {
+                    return SizedBox(
+                      width: 120,
+
+                      child: Row(
+                        children: [
+                          Spacer(),
+                          Text(value ? l10n.ascending : l10n.descending),
+                          SizedBox(width: 10),
+                          MySwitch(
+                            value: value,
+                            onToggle: (value) async {
+                              tryVibrate();
+                              artistsAlbumsManager
+                                      .artistsIsAscendingNotifier
+                                      .value =
+                                  value;
+                              settingManager.saveSetting();
+                              artistsAlbumsManager.sortArtists();
+                              updateCurrentArtistList();
+                            },
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              );
+            },
           ),
         ],
       ),

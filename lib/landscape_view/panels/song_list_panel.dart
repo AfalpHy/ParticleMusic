@@ -263,9 +263,9 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                           style: buttonStyle,
                           child: Text(l10n.shuffle),
                         ),
-                        SizedBox(width: 15),
 
-                        if (isMobile)
+                        if (isMobile) ...[
+                          SizedBox(width: 15),
                           ElevatedButton(
                             onPressed: () {
                               Navigator.of(context).push(
@@ -285,9 +285,10 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                             style: buttonStyle,
                             child: Text(l10n.select),
                           ),
-                        if (isMobile) SizedBox(width: 15),
+                        ],
 
-                        if (widget.switchCallBack != null)
+                        if (widget.switchCallBack != null) ...[
+                          SizedBox(width: 15),
                           ElevatedButton(
                             onPressed: () async {
                               widget.switchCallBack?.call();
@@ -295,6 +296,120 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                             style: buttonStyle,
                             child: Text(l10n.switch_),
                           ),
+                        ],
+
+                        if (isLibrary && !isNavidrome || folder != null) ...[
+                          SizedBox(width: 15),
+                          ContextMenuWidget(
+                            allowTap: true,
+                            previewBuilder: (context, child) {
+                              return Material(
+                                color: selectedItemColor.withAlpha(255),
+                                shape: SmoothRectangleBorder(
+                                  smoothness: 1,
+                                  borderRadius: .circular(5),
+                                ),
+                                clipBehavior: .antiAlias,
+                                child: child,
+                              );
+                            },
+                            liftBuilder: (context, child) {
+                              return Material(
+                                color: selectedItemColor.withAlpha(255),
+                                shape: SmoothRectangleBorder(
+                                  smoothness: 1,
+                                  borderRadius: .circular(5),
+                                ),
+                                clipBehavior: .antiAlias,
+                                child: child,
+                              );
+                            },
+                            menuProvider: (request) {
+                              return Menu(
+                                children: [
+                                  MenuAction(
+                                    state: sortTypeNotifier.value == 0
+                                        ? .checkOn
+                                        : .none,
+
+                                    title: l10n.defaultText,
+                                    image: MenuImage.icon(Icons.sort),
+                                    callback: () {
+                                      sortTypeNotifier.value = 0;
+                                    },
+                                  ),
+
+                                  MenuAction(
+                                    state: sortTypeNotifier.value == 9
+                                        ? .checkOn
+                                        : .none,
+                                    title: l10n.modifiedTimeAscending,
+                                    image: MenuImage.icon(
+                                      Icons.arrow_upward_rounded,
+                                    ),
+                                    callback: () {
+                                      sortTypeNotifier.value = 9;
+                                    },
+                                  ),
+
+                                  MenuAction(
+                                    state: sortTypeNotifier.value == 10
+                                        ? .checkOn
+                                        : .none,
+
+                                    title: l10n.modifiedTimedescending,
+                                    image: MenuImage.icon(
+                                      Icons.arrow_downward_rounded,
+                                    ),
+                                    callback: () {
+                                      sortTypeNotifier.value = 10;
+                                    },
+                                  ),
+
+                                  MenuAction(
+                                    state: sortTypeNotifier.value == 11
+                                        ? .checkOn
+                                        : .none,
+
+                                    title: l10n.randomizeTemp,
+                                    image: MenuImage.icon(Icons.shuffle),
+                                    callback: () {
+                                      if (sortTypeNotifier.value == 11) {
+                                        updateSongList();
+                                      } else {
+                                        sortTypeNotifier.value = 11;
+                                      }
+                                    },
+                                  ),
+
+                                  MenuAction(
+                                    title: l10n.randomizePermanent,
+                                    image: MenuImage.icon(Icons.shuffle),
+                                    callback: () async {
+                                      if (!await showConfirmDialog(
+                                        context,
+                                        l10n.cannotBeUndone,
+                                      )) {
+                                        return;
+                                      }
+                                      sortTypeNotifier.value = 0;
+                                      if (isLibrary) {
+                                        library.shuffle();
+                                      } else {
+                                        folder!.shuffle();
+                                      }
+                                    },
+                                  ),
+                                ],
+                              );
+                            },
+                            child: ElevatedButton(
+                              onPressed: () {},
+                              style: buttonStyle,
+                              child: Text(l10n.more),
+                            ),
+                          ),
+                        ],
                       ],
                     );
                   },
@@ -504,6 +619,28 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
     final l10n = AppLocalizations.of(context);
 
     return ContextMenuWidget(
+      previewBuilder: (context, child) {
+        return Material(
+          color: selectedItemColor.withAlpha(255),
+          shape: SmoothRectangleBorder(
+            smoothness: 1,
+            borderRadius: .circular(5),
+          ),
+          clipBehavior: .antiAlias,
+          child: child,
+        );
+      },
+      liftBuilder: (context, child) {
+        return Material(
+          color: selectedItemColor.withAlpha(255),
+          shape: SmoothRectangleBorder(
+            smoothness: 1,
+            borderRadius: .circular(5),
+          ),
+          clipBehavior: .antiAlias,
+          child: child,
+        );
+      },
       child: SongListItem(
         index: index,
         isSelected: isSelected,

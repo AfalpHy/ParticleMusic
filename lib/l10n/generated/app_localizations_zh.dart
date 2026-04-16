@@ -508,4 +508,28 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get equalizer => '均衡器';
+
+  @override
+  String get more => '更多';
+
+  @override
+  String get randomize => '随机';
+
+  @override
+  String get normal => '正常';
+
+  @override
+  String get randomizeTemp => '随机(暂时)';
+
+  @override
+  String get randomizePermanent => '随机(永久)';
+
+  @override
+  String get modifiedTimeAscending => '修改时间升序';
+
+  @override
+  String get modifiedTimedescending => '修改时间降序';
+
+  @override
+  String get cannotBeUndone => '不可撤销';
 }
