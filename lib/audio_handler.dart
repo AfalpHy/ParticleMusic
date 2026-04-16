@@ -450,7 +450,7 @@ class MyAudioHandler extends BaseAudioHandler {
 
     if (_seek2begin) {
       await seek(Duration.zero);
-      _seek2begin = true;
+      _seek2begin = false;
       _playLastSyncTime = DateTime.now();
       _playedDuration = Duration.zero;
       return;

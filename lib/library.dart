@@ -280,11 +280,35 @@ class Library {
   }
 
   Future<void> _saveWebdavCache() async {
-    await _webdavCacheMapFile.writeAsString(jsonEncode(_filePath2WebdavCache));
+    if (Platform.isIOS) {
+      await _webdavCacheMapFile.writeAsString(
+        jsonEncode(
+          _filePath2WebdavCache.map(
+            (key, value) => MapEntry(key, convertIOSSupportPath(value)),
+          ),
+        ),
+      );
+    } else {
+      await _webdavCacheMapFile.writeAsString(
+        jsonEncode(_filePath2WebdavCache),
+      );
+    }
   }
 
   Future<void> _saveNavidromeCache() async {
-    await _navidromeCacheMapFile.writeAsString(jsonEncode(_id2navidromeCache));
+    if (Platform.isIOS) {
+      await _navidromeCacheMapFile.writeAsString(
+        jsonEncode(
+          _id2navidromeCache.map(
+            (key, value) => MapEntry(key, convertIOSSupportPath(value)),
+          ),
+        ),
+      );
+    } else {
+      await _navidromeCacheMapFile.writeAsString(
+        jsonEncode(_id2navidromeCache),
+      );
+    }
   }
 
   Future<void> clearCache() async {

@@ -119,7 +119,7 @@ class _ArtistsAlbumsPanelState extends State<ArtistsAlbumsPanel> {
                 },
               ),
               trailing: SizedBox(
-                width: 350,
+                width: 320,
                 child: Column(
                   children: [
                     SizedBox(height: 20),
