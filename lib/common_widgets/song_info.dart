@@ -70,7 +70,7 @@ class _SongInfo extends StatelessWidget {
                         crossAxisAlignment: isPhone ? .start : .center,
                         children: [
                           Text('${l10n.format}:'),
-                          Text('Unknown'),
+                          Text(song.format?.toUpperCase() ?? "Unknown"),
 
                           paddingDivider(verticalPadding),
 
@@ -104,6 +104,10 @@ class _SongInfo extends StatelessWidget {
                 paddingDivider(verticalPadding),
 
                 Text('${l10n.album}: ${getAlbum(song)}'),
+
+                paddingDivider(verticalPadding),
+
+                Text('${l10n.albumArtist}: ${getAlbumArtist(song)}'),
 
                 paddingDivider(verticalPadding),
 

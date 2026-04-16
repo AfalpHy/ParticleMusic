@@ -51,9 +51,11 @@ class MyAudioMetadata {
       ? filePath!
       : iosPath!;
 
+  String? get format => _audioMetadata.format;
   String? get title => _audioMetadata.title;
   String? get artist => _audioMetadata.artist;
   String? get album => _audioMetadata.album;
+  String? get albumArtist => _audioMetadata.albumArtist;
   String? get genre => _audioMetadata.genre;
 
   int? get year => _audioMetadata.year;
@@ -73,6 +75,7 @@ class MyAudioMetadata {
   set title(String? value) => _audioMetadata.title = value;
   set artist(String? value) => _audioMetadata.artist = value;
   set album(String? value) => _audioMetadata.album = value;
+  set albumArtist(String? value) => _audioMetadata.albumArtist = value;
   set genre(String? value) => _audioMetadata.genre = value;
 
   set year(int? value) => _audioMetadata.year = value;
@@ -94,6 +97,7 @@ class MyAudioMetadata {
       isWebdav: isWebdav,
       modified: DateTime.fromMillisecondsSinceEpoch(map['modified'] as int),
       AudioMetadata(
+        format: map['format'] as String?,
         title: map['title'] as String?,
         artist: map['artist'] as String?,
         album: map['album'] as String?,
@@ -114,9 +118,11 @@ class MyAudioMetadata {
   factory MyAudioMetadata.fromNavidromeMap(Map<String, dynamic> song) {
     return MyAudioMetadata(
       AudioMetadata(
+        format: (song['contentType'] as String?)?.split('audio/').last,
         title: song['title'],
         artist: song['artist'],
         album: song['album'],
+        albumArtist: song['displayAlbumArtist'],
         genre: song['genre'],
         year: song['year'],
         track: song['track'],
@@ -138,11 +144,13 @@ class MyAudioMetadata {
 
   Map<String, dynamic> toMap() {
     return {
+      'format': format,
       'modified': modified?.millisecondsSinceEpoch,
       'path': filePath!,
       'title': title,
       'artist': artist,
       'album': album,
+      'albumArtist': albumArtist,
       'genre': genre,
       'year': year,
       'track': track,

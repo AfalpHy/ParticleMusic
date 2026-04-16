@@ -214,9 +214,13 @@ class Library {
     cacheMap.removeWhere((key, value) => value == '');
   }
 
-  Future<void> downloadFile(String url, String savePath) async {
+  Future<void> _downloadFile(
+    String url,
+    String savePath, {
+    Map<String, String>? headers,
+  }) async {
     try {
-      final response = await http.get(Uri.parse(url));
+      final response = await http.get(Uri.parse(url), headers: headers);
 
       if (response.statusCode == 200) {
         final file = File(savePath);
@@ -239,7 +243,11 @@ class Library {
         final uuid = Uuid();
         final savePath = "${appSupportDir.path}/webdavCache/${uuid.v4()}";
 
-        await downloadFile(song.filePath!, savePath);
+        await _downloadFile(
+          song.filePath!,
+          savePath,
+          headers: {'Authorization': getWebdavAuth()},
+        );
 
         final tmp = File(savePath);
         if (await tmp.exists()) {
@@ -256,7 +264,7 @@ class Library {
         final uuid = Uuid();
         final savePath = "${appSupportDir.path}/navidromeCache/${uuid.v4()}";
 
-        await downloadFile(song.navidromeUrl!, savePath);
+        await _downloadFile(song.navidromeUrl!, savePath);
 
         final tmp = File(savePath);
         if (await tmp.exists()) {
@@ -329,6 +337,7 @@ class Library {
   void clear() {
     _filePath2WebdavCache = {};
     _id2navidromeCache = {};
+    cacheSizeNotifier.value = 0;
 
     songList = [];
     filePath2Song = {};

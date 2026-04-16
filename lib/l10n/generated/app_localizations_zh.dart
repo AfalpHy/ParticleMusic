@@ -18,6 +18,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get album => '专辑';
 
   @override
+  String get albumArtist => '专辑艺术家';
+
+  @override
   String get genre => '流派';
 
   @override

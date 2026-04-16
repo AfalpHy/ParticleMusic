@@ -2,6 +2,7 @@
   "title": "Title",
   "artist": "Artist",
   "album": "Album",
+  "albumArtist": "Album Artist",
   "genre": "Genre",
   "year": "Year",
   "track": "Track",

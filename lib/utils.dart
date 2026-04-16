@@ -335,6 +335,16 @@ String getAlbum(MyAudioMetadata? song) {
   return song.album!;
 }
 
+String getAlbumArtist(MyAudioMetadata? song) {
+  if (song == null) {
+    return '';
+  }
+  if (song.albumArtist == null || song.albumArtist == '') {
+    return 'Unknown Album Artist';
+  }
+  return song.albumArtist!;
+}
+
 String getGenre(MyAudioMetadata? song) {
   if (song == null) {
     return '';
@@ -472,12 +482,27 @@ Future<Uint8List?> loadPictureBytes(MyAudioMetadata? song) async {
   if (song.pictureLoaded) {
     return song.pictureBytes;
   }
-  final result = song.isNavidrome
-      ? await navidromeClient.getPictureBytes(song.id!)
-      : await readPictureAsync(song.fullFilePath);
-  song.pictureBytes = result;
-  song.pictureLoaded = true;
-  return result;
+
+  try {
+    final result = song.isNavidrome
+        ? await navidromeClient.getPictureBytes(song.id!)
+        : song.isWebdav && song.webdavCachePath == null
+        ? await readPictureAsync(
+            song.fullFilePath,
+            username: webdavUsername,
+            password: webdavPassword,
+          )
+        : await readPictureAsync(song.fullFilePath);
+
+    song.pictureBytes = result;
+    song.pictureLoaded = true;
+    return result;
+  } catch (e) {
+    song.pictureBytes = null;
+    song.pictureLoaded = true;
+    logger.output(e.toString());
+  }
+  return null;
 }
 
 Future<Color> computeCoverArtColor(MyAudioMetadata? song) async {
@@ -639,6 +664,10 @@ void getDesktopLyricFromMap(dynamic data) {
 
   desktopLyricsIsKaraoke = map['isKaraoke'] as bool;
   updateDesktopLyricsNotifier.value++;
+}
+
+String getWebdavAuth() {
+  return 'Basic ${base64Encode(utf8.encode('$webdavUsername:$webdavPassword'))}';
 }
 
 bool _exited = false;

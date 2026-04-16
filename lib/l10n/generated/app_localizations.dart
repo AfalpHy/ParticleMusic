@@ -116,6 +116,12 @@ abstract class AppLocalizations {
   /// **'Album'**
   String get album;
 
+  /// No description provided for @albumArtist.
+  ///
+  /// In en, this message translates to:
+  /// **'Album Artist'**
+  String get albumArtist;
+
   /// No description provided for @genre.
   ///
   /// In en, this message translates to:

@@ -30,7 +30,11 @@ class Loader {
     );
 
     if (webdavBaseUrl != '') {
-      webdavClient = newClient(webdavBaseUrl);
+      webdavClient = newClient(
+        user: webdavUsername,
+        password: webdavPassword,
+        webdavBaseUrl,
+      );
     }
 
     library = Library();

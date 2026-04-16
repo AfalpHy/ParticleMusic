@@ -18,6 +18,7 @@ import 'package:permission_handler/permission_handler.dart';
 TextEditingController _titleTextController = TextEditingController();
 TextEditingController _artistTextController = TextEditingController();
 TextEditingController _albumTextController = TextEditingController();
+TextEditingController _albumArtistTextController = TextEditingController();
 TextEditingController _genreTextController = TextEditingController();
 TextEditingController _yearTextController = TextEditingController();
 TextEditingController _trackTextController = TextEditingController();
@@ -30,6 +31,7 @@ void showEditMetadataDialog(BuildContext context, MyAudioMetadata song) async {
   _titleTextController.text = song.title ?? '';
   _artistTextController.text = song.artist ?? '';
   _albumTextController.text = song.album ?? '';
+  _albumArtistTextController.text = song.albumArtist ?? '';
   _genreTextController.text = song.genre ?? '';
   _yearTextController.text = song.year?.toString() ?? '';
   _trackTextController.text = song.track?.toString() ?? '';
@@ -62,6 +64,7 @@ Future<void> _tryWriteMetadata(
     String writeTitle = _titleTextController.text;
     String writeArtist = _artistTextController.text;
     String writeAlbum = _albumTextController.text;
+    String writeAlbumArtist = _albumArtistTextController.text;
     String writeGenre = _genreTextController.text;
     String writeLyrics = _lyricsTextController.text;
     int? writeYear = int.tryParse(_yearTextController.text);
@@ -75,12 +78,15 @@ Future<void> _tryWriteMetadata(
       title: writeTitle,
       artist: writeArtist,
       album: writeAlbum,
+      albumArtist: writeAlbumArtist,
       genre: writeGenre,
       year: writeYear,
       track: writeTrack,
       disc: writeDisc,
       lyrics: writeLyrics,
       pictureBytes: writePictureBytes,
+      username: song.isWebdav ? webdavUsername : null,
+      password: song.isWebdav ? webdavPassword : null,
     );
     if (success) {
       song.modified = DateTime.now();
@@ -92,6 +98,7 @@ Future<void> _tryWriteMetadata(
       song.title = writeTitle;
       song.artist = writeArtist;
       song.album = writeAlbum;
+      song.albumArtist = writeAlbumArtist;
       song.genre = writeGenre;
       song.lyrics = writeLyrics;
       song.parsedLyrics = null;
@@ -220,6 +227,14 @@ class _MetadataDialog extends StatelessWidget {
                 SizedBox(height: 5),
 
                 adaptiveTextField(context, l10n.album, _albumTextController),
+
+                SizedBox(height: 5),
+
+                adaptiveTextField(
+                  context,
+                  l10n.albumArtist,
+                  _albumArtistTextController,
+                ),
 
                 SizedBox(height: 5),
 

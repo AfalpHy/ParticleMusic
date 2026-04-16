@@ -490,10 +490,20 @@ class MyAudioHandler extends BaseAudioHandler {
           play: isPlayingNotifier.value,
         );
       } else {
-        await _player.open(
-          Media(currentSong.fullFilePath),
-          play: isPlayingNotifier.value,
-        );
+        if (currentSong.isWebdav && currentSong.webdavCachePath == null) {
+          await _player.open(
+            Media(
+              currentSong.filePath!,
+              httpHeaders: {'Authorization': getWebdavAuth()},
+            ),
+            play: isPlayingNotifier.value,
+          );
+        } else {
+          await _player.open(
+            Media(currentSong.fullFilePath),
+            play: isPlayingNotifier.value,
+          );
+        }
       }
     } catch (error) {
       logger.output("[${currentSong.filePath}] $error");

@@ -174,26 +174,36 @@ class Folder {
     }
 
     if (song?.modified != modified) {
-      final tmp = isWebdav
-          ? await readMetadataAsync(filePath, false)
-          : readMetadata(iosPath ?? filePath, false);
+      try {
+        final tmp = isWebdav
+            ? await readMetadataAsync(
+                filePath,
+                false,
+                username: webdavUsername,
+                password: webdavPassword,
+              )
+            : readMetadata(iosPath ?? filePath, false);
 
-      if (tmp != null) {
-        song = MyAudioMetadata(
-          tmp,
-          filePath: filePath,
-          iosPath: iosPath,
-          modified: modified,
-          isWebdav: isWebdav,
-        );
+        if (tmp != null) {
+          song = MyAudioMetadata(
+            tmp,
+            filePath: filePath,
+            iosPath: iosPath,
+            modified: modified,
+            isWebdav: isWebdav,
+          );
 
-        if (isAdditional) {
-          additionalSongList.add(song);
+          if (isAdditional) {
+            additionalSongList.add(song);
+          }
+
+          filePath2Song[filePath] = song;
+        } else {
+          song = null;
         }
-
-        filePath2Song[filePath] = song;
-      } else {
+      } catch (e) {
         song = null;
+        logger.output(e.toString());
       }
     }
     if (song != null) {

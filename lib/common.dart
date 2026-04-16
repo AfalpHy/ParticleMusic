@@ -91,6 +91,7 @@ late SettingManager settingManager;
 String webdavUsername = '';
 String webdavPassword = '';
 String webdavBaseUrl = '';
+String webdavAuth = '';
 
 Client? webdavClient;
 // ===================================== Colors =====================================

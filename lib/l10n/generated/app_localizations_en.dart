@@ -18,6 +18,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get album => 'Album';
 
   @override
+  String get albumArtist => 'Album Artist';
+
+  @override
   String get genre => 'Genre';
 
   @override

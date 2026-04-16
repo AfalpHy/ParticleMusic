@@ -2,6 +2,7 @@
   "title": "标题",
   "artist": "艺术家",
   "album": "专辑",
+  "albumArtist": "专辑艺术家",
   "genre": "流派",
   "year": "年份",
   "track": "音轨编号",
