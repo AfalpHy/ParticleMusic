@@ -129,9 +129,6 @@ class _ArtistsPageState extends State<ArtistsPage> {
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-            onTap: () {
-              artistsAlbumsManager.artistsIsListViewNotifier.value = true;
-            },
             trailing: ValueListenableBuilder(
               valueListenable: artistsAlbumsManager.artistsIsListViewNotifier,
               builder: (context, value, child) {
