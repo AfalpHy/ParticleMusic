@@ -46,10 +46,10 @@ class SettingsList extends StatelessWidget {
                 subtitle: Text(
                   l10n.settingCount(
                     Platform.isAndroid
-                        ? 14
+                        ? 16
                         : Platform.isIOS
-                        ? 12
-                        : 11,
+                        ? 14
+                        : 13,
                   ),
                   style: TextStyle(fontSize: 12),
                 ),
@@ -98,6 +98,11 @@ class SettingsList extends StatelessWidget {
         sliverBox(paddingIfNeed(isLandscape, webdavListTile(context, l10n))),
 
         sliverBox(paddingIfNeed(isLandscape, reloadListTile(context, l10n))),
+
+        sliverBox(
+          paddingIfNeed(isLandscape, cleanCacheListTile(context, l10n)),
+        ),
+
         sliverBox(paddingIfNeed(isLandscape, languageListTile(context, l10n))),
 
         if (isMobile)
@@ -429,6 +434,25 @@ class SettingsList extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  Widget cleanCacheListTile(BuildContext context, AppLocalizations l10n) {
+    return ListTile(
+      leading: ImageIcon(cacheImage, size: iconSize),
+      title: Text(l10n.clearCache),
+      onTap: () async {
+        if (await showConfirmDialog(context, l10n.clear)) {
+          library.clearCache();
+        }
+      },
+      trailing: ValueListenableBuilder(
+        valueListenable: library.cacheSizeNotifier,
+        builder: (context, value, child) {
+          // use blank as placeholders
+          return Text("${value.toStringAsFixed(1)}MB  ");
+        },
+      ),
     );
   }
 

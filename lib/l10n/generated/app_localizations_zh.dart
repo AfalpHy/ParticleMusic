@@ -532,4 +532,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get cannotBeUndone => '不可撤销';
+
+  @override
+  String get clearCache => '清除缓存';
 }

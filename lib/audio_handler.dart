@@ -440,6 +440,7 @@ class MyAudioHandler extends BaseAudioHandler {
             _playedDuration.inSeconds /
             currentSongNotifier.value!.duration!.inSeconds;
         if (times > 0.5) {
+          library.tryAddCache(currentSongNotifier.value!);
           history.addSongTimes(currentSongNotifier.value!, times.round());
         }
       }
@@ -485,7 +486,7 @@ class MyAudioHandler extends BaseAudioHandler {
           currentSong.id!,
         );
         await _player.open(
-          Media(currentSong.navidromeUrl!),
+          Media(currentSong.navidromeCachePath ?? currentSong.navidromeUrl!),
           play: isPlayingNotifier.value,
         );
       } else {

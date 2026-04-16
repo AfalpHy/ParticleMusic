@@ -211,5 +211,6 @@
   "randomizePermanent": "Randomize(Permanent)",
   "modifiedTimeAscending": "Modified Time Ascending",
   "modifiedTimedescending": "Modified Time Descending",
-  "cannotBeUndone": "Cannot be Undone"
+  "cannotBeUndone": "Cannot be Undone",
+  "clearCache": "Clear Cache"
 }

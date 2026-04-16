@@ -532,4 +532,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get cannotBeUndone => 'Cannot be Undone';
+
+  @override
+  String get clearCache => 'Clear Cache';
 }

@@ -45,7 +45,12 @@ class MyAudioMetadata {
     this.lastPlayed,
   });
 
-  String get fullFilePath => isWebdav || !Platform.isIOS ? filePath! : iosPath!;
+  String get fullFilePath => webdavCachePath != null
+      ? webdavCachePath!
+      : isWebdav || !Platform.isIOS
+      ? filePath!
+      : iosPath!;
+
   String? get title => _audioMetadata.title;
   String? get artist => _audioMetadata.artist;
   String? get album => _audioMetadata.album;

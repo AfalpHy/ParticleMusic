@@ -84,6 +84,8 @@ Future<void> _tryWriteMetadata(
     );
     if (success) {
       song.modified = DateTime.now();
+      song.webdavCachePath = null;
+
       final originArtist = getArtist(song);
       final originAlbum = getAlbum(song);
 

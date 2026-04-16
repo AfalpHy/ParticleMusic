@@ -1123,6 +1123,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Cannot be Undone'**
   String get cannotBeUndone;
+
+  /// No description provided for @clearCache.
+  ///
+  /// In en, this message translates to:
+  /// **'Clear Cache'**
+  String get clearCache;
 }
 
 class _AppLocalizationsDelegate

@@ -617,6 +617,16 @@ String revertIOSPath(String path) {
   }
 }
 
+// full path to short path
+String convertIOSSupportPath(String path) {
+  return path.split('Application Support/').last;
+}
+
+// short path to full path
+String revertIOSSupportPath(String path) {
+  return "${appSupportDir.path}/$path";
+}
+
 void getDesktopLyricFromMap(dynamic data) {
   final raw = data as Map;
   final map = Map<String, dynamic>.from(raw);
