@@ -7,6 +7,7 @@ import 'package:audio_tags_lofty/audio_tags_lofty.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
+import 'package:http/http.dart' as http;
 import 'package:image/image.dart' as image;
 import 'package:lpinyin/lpinyin.dart';
 import 'package:particle_music/color_manager.dart';
@@ -679,6 +680,26 @@ void getDesktopLyricFromMap(dynamic data) {
 
 String getWebdavAuth() {
   return 'Basic ${base64Encode(utf8.encode('$webdavUsername:$webdavPassword'))}';
+}
+
+Future<void> downloadFile(
+  String url,
+  String savePath, {
+  Map<String, String>? headers,
+}) async {
+  try {
+    final response = await http.get(Uri.parse(url), headers: headers);
+
+    if (response.statusCode == 200) {
+      final file = File(savePath);
+      await file.create(recursive: true);
+      await file.writeAsBytes(response.bodyBytes);
+    } else {
+      logger.output('download failed');
+    }
+  } catch (e) {
+    logger.output(e.toString());
+  }
 }
 
 bool _exited = false;

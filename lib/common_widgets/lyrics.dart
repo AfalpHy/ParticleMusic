@@ -8,6 +8,7 @@ import 'package:flutter/scheduler.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/navidrome_client.dart';
+import 'package:particle_music/utils.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
@@ -95,10 +96,21 @@ Future<void> setParsedLyrics(MyAudioMetadata song) async {
     }
   } else {
     if (song.lyrics == null || song.lyrics!.isEmpty) {
-      // TODO: temporarily skip webdav
-      if (!song.isWebdav) {
-        String path = song.path!;
-        path = "${path.substring(0, path.lastIndexOf('.'))}.lrc";
+      String path = song.path!;
+      path = "${path.substring(0, path.lastIndexOf('.'))}.lrc";
+
+      if (song.isWebdav) {
+        final file = File('${tmpDir.path}/particle_music_lyric');
+        await downloadFile(
+          path,
+          file.path,
+          headers: {'Authorization': getWebdavAuth()},
+        );
+
+        if (file.existsSync()) {
+          lines = await file.readAsLines(); // read file line by line
+        }
+      } else {
         final file = File(path);
         if (file.existsSync()) {
           lines = await file.readAsLines(); // read file line by line

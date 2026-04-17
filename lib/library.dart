@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:particle_music/common.dart';
 import 'package:particle_music/folder.dart';
 import 'package:particle_music/layer/layers_manager.dart';
@@ -209,26 +208,6 @@ class Library {
     cacheMap.removeWhere((key, value) => value == '');
   }
 
-  Future<void> _downloadFile(
-    String url,
-    String savePath, {
-    Map<String, String>? headers,
-  }) async {
-    try {
-      final response = await http.get(Uri.parse(url), headers: headers);
-
-      if (response.statusCode == 200) {
-        final file = File(savePath);
-        await file.create(recursive: true);
-        await file.writeAsBytes(response.bodyBytes);
-      } else {
-        logger.output('download failed');
-      }
-    } catch (e) {
-      logger.output(e.toString());
-    }
-  }
-
   Future<void> tryAddCache(MyAudioMetadata song) async {
     try {
       if (song.isWebdav) {
@@ -238,7 +217,7 @@ class Library {
         final uuid = Uuid();
         final savePath = "${cacheConfigDir.path}/webdavCache/${uuid.v4()}";
 
-        await _downloadFile(
+        await downloadFile(
           song.path!,
           savePath,
           headers: {'Authorization': getWebdavAuth()},
@@ -259,7 +238,7 @@ class Library {
         final uuid = Uuid();
         final savePath = "${cacheConfigDir.path}/navidromeCache/${uuid.v4()}";
 
-        await _downloadFile(song.navidromeUrl!, savePath);
+        await downloadFile(song.navidromeUrl!, savePath);
 
         final tmp = File(savePath);
         if (await tmp.exists()) {
