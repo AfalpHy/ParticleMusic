@@ -149,7 +149,7 @@ class History {
         recentlySongList.removeLast();
       }
       recentlyFile.writeAsStringSync(
-        jsonEncode(recentlySongList.map((e) => e.id)),
+        jsonEncode(recentlySongList.map((e) => e.id).toList()),
       );
     }
 
