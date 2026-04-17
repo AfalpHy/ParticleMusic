@@ -147,10 +147,14 @@ class Loader {
 
       for (String name in jsonList) {
         tmp = File('${appSupportDir.path}/$name.json');
-        tmp.renameSync('${playlistConfigDir.path}/$name.json');
+        if (tmp.existsSync()) {
+          tmp.renameSync('${playlistConfigDir.path}/$name.json');
+        }
 
         tmp = File('${appSupportDir.path}/${name}_setting.json');
-        tmp.renameSync('${playlistConfigDir.path}/${name}_setting.json');
+        if (tmp.existsSync()) {
+          tmp.renameSync('${playlistConfigDir.path}/${name}_setting.json');
+        }
       }
     }
 
@@ -172,8 +176,12 @@ class Loader {
         }
         folderMapList.add({
           'id': id,
-          'songIdListPath': songIdListPath,
-          'songMetadataListPath': songMetadataListPath,
+          'songIdListPath': Platform.isIOS
+              ? songIdListPath.split('folder_config/').last
+              : songIdListPath,
+          'songMetadataListPath': Platform.isIOS
+              ? songMetadataListPath.split('folder_config/').last
+              : songMetadataListPath,
         });
       }
 
