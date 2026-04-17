@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:particle_music/common.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:window_manager/window_manager.dart';
 
 class SingleInstance {
@@ -11,13 +10,12 @@ class SingleInstance {
   static Future<void> start() async {
     logger.output('Single instance init');
 
-    final dir = await getApplicationSupportDirectory();
-    final lockFile = File('${dir.path}/particle_music.lock');
+    final lockFile = File('${appSupportDir.path}/particle_music.lock');
     if (!lockFile.existsSync()) {
       lockFile.createSync();
     }
 
-    final portFile = File('${dir.path}/particle_music.port');
+    final portFile = File('${appSupportDir.path}/particle_music.port');
     if (!portFile.existsSync()) {
       portFile.createSync();
     }

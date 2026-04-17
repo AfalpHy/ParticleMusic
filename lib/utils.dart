@@ -583,8 +583,8 @@ Future<void> setSongList(
   final jsonString = await songIdListFile.readAsString();
 
   final List<dynamic> songIdList = jsonDecode(jsonString);
-  for (final path in songIdList) {
-    final song = id2Song[path];
+  for (final id in songIdList) {
+    final song = id2Song[id];
     if (song != null) {
       destList.add(song);
     }
