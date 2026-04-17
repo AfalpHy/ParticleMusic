@@ -41,16 +41,7 @@ class SongListPanel extends BaseSongListWidget {
 class _SongListPanel extends BaseSongListState<SongListPanel> {
   int continuousSelectBeginIndex = 0;
 
-  late EdgeInsets padding;
-
-  @override
-  void initState() {
-    super.initState();
-
-    padding = folder == null
-        ? const EdgeInsets.symmetric(horizontal: 30)
-        : const EdgeInsets.fromLTRB(30, 0, 10, 0);
-  }
+  EdgeInsets padding = const EdgeInsets.symmetric(horizontal: 30);
 
   @override
   Widget build(BuildContext context) {
@@ -77,12 +68,12 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
           child: content(context),
         ),
         Positioned(
-          right: folder != null || recently != null
+          right: recently != null
               ? 100
               : ranking != null
               ? 150
-              : 120,
-          bottom: 100,
+              : 115,
+          bottom: MediaQuery.sizeOf(context).shortestSide < 600 ? 50 : 100,
           child: MyLocation(
             scrollController: scrollController,
             listIsScrollingNotifier: listIsScrollingNotifier,
