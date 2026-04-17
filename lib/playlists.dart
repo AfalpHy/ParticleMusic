@@ -16,7 +16,7 @@ class PlaylistsManager {
   ValueNotifier<int> updateNotifier = ValueNotifier(0);
 
   PlaylistsManager() {
-    file = File("${appSupportDir.path}/playlists.txt");
+    file = File("${playlistConfigDir.path}/particle_music_playlists.json");
     if (!(file.existsSync())) {
       file.writeAsStringSync(jsonEncode(['Favorite']));
     }
@@ -120,8 +120,8 @@ class Playlist {
   late bool isNotFavorite;
 
   Playlist({required this.name}) {
-    file = File("${appSupportDir.path}/$name.json");
-    settingFile = File("${appSupportDir.path}/${name}_setting.json");
+    file = File("${playlistConfigDir.path}/$name.json");
+    settingFile = File("${playlistConfigDir.path}/${name}_setting.json");
     if (!file.existsSync()) {
       file.createSync();
     }
@@ -148,8 +148,8 @@ class Playlist {
     final contents = await file.readAsString();
     if (contents != "") {
       List<dynamic> decoded = jsonDecode(contents);
-      for (String filePath in decoded) {
-        MyAudioMetadata? song = library.filePath2Song[filePath];
+      for (String id in decoded) {
+        MyAudioMetadata? song = library.id2Song[id];
         if (song == null) {
           continue;
         }
@@ -167,7 +167,7 @@ class Playlist {
         songIds = await navidromeClient.getPlaylistSongIds(id!);
       }
       for (final songId in songIds) {
-        final song = library.id2navidromeSong[songId];
+        final song = library.id2Song[songId];
         if (song == null) {
           continue;
         }
@@ -216,13 +216,11 @@ class Playlist {
   }
 
   Future<void> update() async {
-    await file.writeAsString(
-      jsonEncode(songList.map((e) => e.filePath!).toList()),
-    );
+    await file.writeAsString(jsonEncode(songList.map((e) => e.id).toList()));
     if (isFavorite) {
       await navidromeClient.unstarAllSongs();
       await navidromeClient.starSongs(
-        navidromeSongList.map((e) => e.id!).toList().reversed.toList(),
+        navidromeSongList.map((e) => e.id).toList().reversed.toList(),
       );
     } else if (id != null || navidromeSongList.isNotEmpty) {
       if (id != null) {
@@ -232,7 +230,7 @@ class Playlist {
       if (id != null) {
         await navidromeClient.addSongsToPlaylist(
           id!,
-          navidromeSongList.map((e) => e.id!).toList(),
+          navidromeSongList.map((e) => e.id).toList(),
         );
       }
     }

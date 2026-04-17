@@ -1064,6 +1064,12 @@ abstract class AppLocalizations {
   /// **'File Path'**
   String get filePath;
 
+  /// No description provided for @path.
+  ///
+  /// In en, this message translates to:
+  /// **'Path'**
+  String get path;
+
   /// No description provided for @go2Artist.
   ///
   /// In en, this message translates to:

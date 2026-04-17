@@ -104,17 +104,14 @@ class FoldersPanel extends StatelessWidget {
 
                           Expanded(
                             child: Text(
-                              folder.path,
+                              folder.id,
                               style: TextStyle(overflow: .ellipsis),
                             ),
                           ),
                         ],
                       ),
                       onTap: () {
-                        layersManager.pushLayer(
-                          'folders',
-                          content: folder.path,
-                        );
+                        layersManager.pushLayer('folders', content: folder.id);
                       },
                     ),
                   );

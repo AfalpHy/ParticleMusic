@@ -12,19 +12,17 @@ import 'package:particle_music/utils.dart';
 import 'package:uuid/uuid.dart';
 
 class Library {
-  late File _songFilePathListFile;
+  late File _songIdListFile;
 
   late File _webdavCacheMapFile;
   late File _navidromeCacheMapFile;
-  Map<String, String> _filePath2WebdavCache = {};
+  Map<String, String> _id2WebdavCache = {};
   Map<String, String> _id2navidromeCache = {};
   ValueNotifier<double> cacheSizeNotifier = ValueNotifier(0);
 
   List<MyAudioMetadata> songList = [];
-  Map<String, MyAudioMetadata> filePath2Song = {};
-
   List<MyAudioMetadata> navidromeSongList = [];
-  Map<String, MyAudioMetadata> id2navidromeSong = {};
+  Map<String, MyAudioMetadata> id2Song = {};
 
   ValueNotifier<int> changeNotifier = ValueNotifier(0);
   ValueNotifier<int> sortTypeNotifier = ValueNotifier(0);
@@ -37,27 +35,24 @@ class Library {
   String? iosFileProviderStorage;
 
   Library() {
-    _songFilePathListFile = File(
-      "${appSupportDir.path}/song_file_path_list.txt",
-    );
-    if (!_songFilePathListFile.existsSync()) {
-      _songFilePathListFile.writeAsStringSync('[]');
+    _songIdListFile = File("${appSupportDir.path}/song_id_list.json");
+    if (!_songIdListFile.existsSync()) {
+      _songIdListFile.writeAsStringSync('[]');
     }
 
-    _webdavCacheMapFile = File("${appSupportDir.path}/webdav_cache_map.txt");
+    _webdavCacheMapFile = File("${cacheConfigDir.path}/webdav_cache_map.json");
     if (!_webdavCacheMapFile.existsSync()) {
       _webdavCacheMapFile.writeAsStringSync('{}');
     }
 
     _navidromeCacheMapFile = File(
-      "${appSupportDir.path}/navidrome_cache_map.txt",
+      "${cacheConfigDir.path}/navidrome_cache_map.json",
     );
     if (!_navidromeCacheMapFile.existsSync()) {
       _navidromeCacheMapFile.writeAsStringSync('{}');
     }
 
-    _folderMapListFile = File("${appSupportDir.path}/folder_map_list.txt");
-
+    _folderMapListFile = File("${folderConfigDir.path}/folder_map_list.json");
     if (!_folderMapListFile.existsSync()) {
       _folderMapListFile.writeAsStringSync('[]');
     }
@@ -80,11 +75,11 @@ class Library {
     }
   }
 
-  Future<bool> updateFolders(List<String> pathList) async {
+  Future<bool> updateFolders(List<String> idList) async {
     bool needUpdate = false;
-    if (pathList.length == folderList.length) {
-      for (int i = 0; i < pathList.length; i++) {
-        if (pathList[i] != folderList[i].path) {
+    if (idList.length == folderList.length) {
+      for (int i = 0; i < idList.length; i++) {
+        if (idList[i] != folderList[i].id) {
           needUpdate = true;
           break;
         }
@@ -97,18 +92,18 @@ class Library {
     }
 
     List<Folder> newFolderList = [];
-    for (int i = 0; i < pathList.length; i++) {
-      String path = pathList[i];
+    for (int i = 0; i < idList.length; i++) {
+      String id = idList[i];
       bool exist = false;
       for (final folder in folderList) {
-        if (path == folder.path) {
+        if (id == folder.id) {
           newFolderList.add(folder);
           exist = true;
           break;
         }
       }
       if (!exist) {
-        newFolderList.add(await Folder.create(path));
+        newFolderList.add(await Folder.create(id));
       }
     }
 
@@ -127,10 +122,10 @@ class Library {
     return true;
   }
 
-  Folder getFolderByPath(String path) {
+  Folder getFolderById(String id) {
     late Folder result;
     for (final folder in folderList) {
-      if (folder.path == path) {
+      if (folder.id == id) {
         result = folder;
       }
     }
@@ -143,10 +138,10 @@ class Library {
     for (final folder in folderList) {
       await folder.load();
       additionalSongSet.addAll(folder.additionalSongList);
-      filePath2Song.addAll(folder.filePath2Song);
+      id2Song.addAll(folder.id2Song);
     }
 
-    await setSongList(_songFilePathListFile, songList, filePath2Song);
+    await setSongList(_songIdListFile, songList, id2Song);
     final songSet = songList.toSet();
     for (final song in additionalSongSet) {
       if (songSet.contains(song)) {
@@ -155,7 +150,7 @@ class Library {
       songList.add(song);
     }
 
-    await _saveSongFilePathList();
+    await _saveSongIdList();
 
     if (navidromeClient.valid) {
       loadingNavidromeNotifier.value = true;
@@ -163,7 +158,7 @@ class Library {
       for (final map in list) {
         MyAudioMetadata song = MyAudioMetadata.fromNavidromeMap(map);
         navidromeSongList.add(song);
-        id2navidromeSong[song.id!] = song;
+        id2Song[song.id] = song;
       }
     }
 
@@ -181,16 +176,16 @@ class Library {
     final cacheMapFile = isWebdav
         ? _webdavCacheMapFile
         : _navidromeCacheMapFile;
-    final cacheMap = isWebdav ? _filePath2WebdavCache : _id2navidromeCache;
+    final cacheMap = isWebdav ? _id2WebdavCache : _id2navidromeCache;
 
     cacheMap.addAll(
       (jsonDecode(await cacheMapFile.readAsString()) as Map<String, dynamic>)
           .cast(),
     );
 
-    for (final key in cacheMap.keys) {
-      final song = isWebdav ? filePath2Song[key] : id2navidromeSong[key];
-      String cachePath = cacheMap[key]!;
+    for (final id in cacheMap.keys) {
+      final song = id2Song[id];
+      String cachePath = cacheMap[id]!;
 
       if (Platform.isIOS) {
         cachePath = revertIOSSupportPath(cachePath);
@@ -207,7 +202,7 @@ class Library {
         if (await cacheFile.exists()) {
           await cacheFile.delete();
         }
-        cacheMap[key] = '';
+        cacheMap[id] = '';
       }
     }
 
@@ -241,17 +236,17 @@ class Library {
           return;
         }
         final uuid = Uuid();
-        final savePath = "${appSupportDir.path}/webdavCache/${uuid.v4()}";
+        final savePath = "${cacheConfigDir.path}/webdavCache/${uuid.v4()}";
 
         await _downloadFile(
-          song.filePath!,
+          song.path!,
           savePath,
           headers: {'Authorization': getWebdavAuth()},
         );
 
         final tmp = File(savePath);
         if (await tmp.exists()) {
-          _filePath2WebdavCache[song.filePath!] = savePath;
+          _id2WebdavCache[song.id] = savePath;
           song.webdavCachePath = savePath;
           cacheSizeNotifier.value += await tmp.length() / (1024 * 1024);
           await _saveWebdavCache();
@@ -262,13 +257,13 @@ class Library {
         }
 
         final uuid = Uuid();
-        final savePath = "${appSupportDir.path}/navidromeCache/${uuid.v4()}";
+        final savePath = "${cacheConfigDir.path}/navidromeCache/${uuid.v4()}";
 
         await _downloadFile(song.navidromeUrl!, savePath);
 
         final tmp = File(savePath);
         if (await tmp.exists()) {
-          _id2navidromeCache[song.id!] = savePath;
+          _id2navidromeCache[song.id] = savePath;
           song.navidromeCachePath = savePath;
           cacheSizeNotifier.value += await tmp.length() / (1024 * 1024);
           await _saveNavidromeCache();
@@ -283,15 +278,13 @@ class Library {
     if (Platform.isIOS) {
       await _webdavCacheMapFile.writeAsString(
         jsonEncode(
-          _filePath2WebdavCache.map(
+          _id2WebdavCache.map(
             (key, value) => MapEntry(key, convertIOSSupportPath(value)),
           ),
         ),
       );
     } else {
-      await _webdavCacheMapFile.writeAsString(
-        jsonEncode(_filePath2WebdavCache),
-      );
+      await _webdavCacheMapFile.writeAsString(jsonEncode(_id2WebdavCache));
     }
   }
 
@@ -312,22 +305,22 @@ class Library {
   }
 
   Future<void> clearCache() async {
-    for (final filePath in _filePath2WebdavCache.keys) {
-      final song = filePath2Song[filePath];
+    for (final id in _id2WebdavCache.keys) {
+      final song = id2Song[id];
       song!.webdavCachePath = null;
     }
 
     for (final id in _id2navidromeCache.keys) {
-      final song = id2navidromeSong[id];
+      final song = id2Song[id];
       song!.navidromeCachePath = null;
     }
 
-    Directory webdavCacheDir = Directory("${appSupportDir.path}/webdavCache");
+    Directory webdavCacheDir = Directory("${cacheConfigDir.path}/webdavCache");
     if (await webdavCacheDir.exists()) {
       await webdavCacheDir.delete(recursive: true);
     }
     Directory navidromeCacheDir = Directory(
-      "${appSupportDir.path}/navidromeCache",
+      "${cacheConfigDir.path}/navidromeCache",
     );
     if (await navidromeCacheDir.exists()) {
       await navidromeCacheDir.delete(recursive: true);
@@ -335,15 +328,15 @@ class Library {
 
     cacheSizeNotifier.value = 0;
 
-    _filePath2WebdavCache = {};
+    _id2WebdavCache = {};
     await _saveWebdavCache();
     _id2navidromeCache = {};
     await _saveNavidromeCache();
   }
 
-  Future<void> _saveSongFilePathList() async {
-    await _songFilePathListFile.writeAsString(
-      jsonEncode(songList.map((e) => e.filePath!).toList()),
+  Future<void> _saveSongIdList() async {
+    await _songIdListFile.writeAsString(
+      jsonEncode(songList.map((e) => e.id).toList()),
     );
   }
 
@@ -355,19 +348,18 @@ class Library {
   Future<void> update() async {
     await layersManager.updateBackground();
     changeNotifier.value++;
-    await _saveSongFilePathList();
+    await _saveSongIdList();
   }
 
   void clear() {
-    _filePath2WebdavCache = {};
+    _id2WebdavCache = {};
     _id2navidromeCache = {};
     cacheSizeNotifier.value = 0;
 
     songList = [];
-    filePath2Song = {};
+    id2Song = {};
 
     navidromeSongList = [];
-    id2navidromeSong = {};
 
     for (final folder in folderList) {
       folder.clear();

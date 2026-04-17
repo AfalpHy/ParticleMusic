@@ -504,6 +504,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get filePath => 'File Path';
 
   @override
+  String get path => 'Path';
+
+  @override
   String get go2Artist => 'Go to Artist';
 
   @override

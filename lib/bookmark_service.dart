@@ -22,11 +22,6 @@ class BookmarkService {
     _inventory = jsonDecode(content) as Map<String, dynamic>;
   }
 
-  static Future<void> clear() async {
-    _inventory = {};
-    await file.writeAsString(jsonEncode(_inventory));
-  }
-
   // Saves a new directory bookmark associated with a specific ID
   static Future<bool> saveDirectoryAndActive(String id, String path) async {
     try {
@@ -39,16 +34,10 @@ class BookmarkService {
       _inventory[id] = bookmark;
 
       await file.writeAsString(jsonEncode(_inventory));
-      try {
-        await _channel.invokeMethod('activateAndGetPath', {
-          'bookmark': bookmark,
-        });
-      } catch (e) {
-        logger.output("Error activating directory $id: $e");
-        return false;
-      }
+
+      await _channel.invokeMethod('activateAndGetPath', {'bookmark': bookmark});
     } on PlatformException catch (e) {
-      logger.output("Error saving bookmark for $id: ${e.message}");
+      logger.output(e.toString());
       return false;
     }
     return true;
@@ -60,16 +49,10 @@ class BookmarkService {
         'getBookmarkFromPath',
         {'path': path},
       );
-      try {
-        await _channel.invokeMethod('activateAndGetPath', {
-          'bookmark': bookmark,
-        });
-      } catch (e) {
-        logger.output("Error activating directory  $e");
-        return false;
-      }
+
+      await _channel.invokeMethod('activateAndGetPath', {'bookmark': bookmark});
     } on PlatformException catch (e) {
-      logger.output("Error saving bookmark for ${e.message}");
+      logger.output(e.toString());
       return false;
     }
     return true;
@@ -88,7 +71,7 @@ class BookmarkService {
         return securePath;
       }
     } catch (e) {
-      logger.output("Error activating directory $id: $e");
+      logger.output(e.toString());
     }
     return null;
   }

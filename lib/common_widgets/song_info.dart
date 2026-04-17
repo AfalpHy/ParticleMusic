@@ -131,9 +131,9 @@ class _SongInfo extends StatelessWidget {
 
                 paddingDivider(verticalPadding),
 
-                Text('File Path: '),
+                Text('${l10n.path}:'),
 
-                Text(song.filePath ?? ''),
+                Text(song.path ?? ''),
 
                 paddingDivider(verticalPadding),
 

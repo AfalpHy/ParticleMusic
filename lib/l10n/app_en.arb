@@ -202,6 +202,7 @@
   "bitrate": "Bitrate",
   "samplerate": "Sample Rate",
   "filePath": "File Path",
+  "path": "Path",
   "go2Artist": "Go to Artist",
   "go2Album": "Go to Album",
   "equalizer": "Equalizer",

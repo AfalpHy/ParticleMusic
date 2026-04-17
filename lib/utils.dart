@@ -299,7 +299,7 @@ String getTitle(MyAudioMetadata? song) {
     return '';
   }
   if (song.title == null || song.title == '') {
-    return basename(song.filePath!);
+    return basename(song.id);
   }
   return song.title!;
 }
@@ -484,15 +484,26 @@ Future<Uint8List?> loadPictureBytes(MyAudioMetadata? song) async {
   }
 
   try {
-    final result = song.isNavidrome
-        ? await navidromeClient.getPictureBytes(song.id!)
-        : song.isWebdav && song.webdavCachePath == null
-        ? await readPictureAsync(
-            song.fullFilePath,
-            username: webdavUsername,
-            password: webdavPassword,
-          )
-        : await readPictureAsync(song.fullFilePath);
+    late Uint8List? result;
+    if (song.isNavidrome) {
+      if (song.navidromeCachePath != null) {
+        result = await readPictureAsync(song.navidromeCachePath!);
+      } else {
+        result = await navidromeClient.getPictureBytes(song.id);
+      }
+    } else if (song.isWebdav) {
+      if (song.webdavCachePath != null) {
+        result = await readPictureAsync(song.webdavCachePath!);
+      } else {
+        result = await readPictureAsync(
+          song.path!,
+          username: webdavUsername,
+          password: webdavPassword,
+        );
+      }
+    } else {
+      result = await readPictureAsync(song.path!);
+    }
 
     song.pictureBytes = result;
     song.pictureLoaded = true;
@@ -565,15 +576,15 @@ MyAudioMetadata? getFirstSong(List<MyAudioMetadata> songList) {
 }
 
 Future<void> setSongList(
-  File songFilePathListFile,
+  File songIdListFile,
   List<MyAudioMetadata> destList,
-  Map<String, MyAudioMetadata> filePath2Song,
+  Map<String, MyAudioMetadata> id2Song,
 ) async {
-  final jsonString = await songFilePathListFile.readAsString();
+  final jsonString = await songIdListFile.readAsString();
 
-  final List<dynamic> songFilePathList = jsonDecode(jsonString);
-  for (final path in songFilePathList) {
-    final song = filePath2Song[path];
+  final List<dynamic> songIdList = jsonDecode(jsonString);
+  for (final path in songIdList) {
+    final song = id2Song[path];
     if (song != null) {
       destList.add(song);
     }

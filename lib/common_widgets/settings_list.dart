@@ -11,7 +11,7 @@ import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/equalizer.dart';
 import 'package:particle_music/layer/layers_manager.dart';
-import 'package:particle_music/common_widgets/dialogs/manage_music_folders_dialog.dart';
+import 'package:particle_music/common_widgets/manage_music_folders.dart';
 import 'package:particle_music/loader.dart';
 import 'package:particle_music/portrait_view/sleep_timer.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
@@ -188,10 +188,7 @@ class SettingsList extends StatelessWidget {
       leading: ImageIcon(folderImage, size: iconSize),
       title: Text(l10n.manageMusicFolder),
       onTap: () {
-        showAnimationDialog(
-          context: context,
-          child: ManageMusicFoldersDialog(),
-        );
+        showAnimationDialog(context: context, child: ManageMusicFolders());
       },
     );
   }
@@ -297,7 +294,7 @@ class SettingsList extends StatelessWidget {
                                 if (context.mounted) {
                                   showCenterMessage(
                                     context,
-                                    "Failed to connect to Navidrome!",
+                                    "Failed to connect to Navidrome",
                                     duration: 2000,
                                   );
                                 }
@@ -405,7 +402,7 @@ class SettingsList extends StatelessWidget {
                                   Navigator.pop(context);
                                   showCenterMessage(
                                     context,
-                                    'Successfully connect to WebDAV.',
+                                    'Successfully connect to WebDAV',
                                     duration: 2000,
                                   );
                                 }
@@ -414,7 +411,7 @@ class SettingsList extends StatelessWidget {
                                 if (context.mounted) {
                                   showCenterMessage(
                                     context,
-                                    'Can not connect to WebDAV.',
+                                    'Can not connect to WebDAV',
                                     duration: 2000,
                                   );
                                 }

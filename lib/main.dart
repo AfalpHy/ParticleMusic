@@ -31,6 +31,21 @@ Future<void> main() async {
   appSupportDir = await getApplicationSupportDirectory();
   tmpDir = await getTemporaryDirectory();
 
+  folderConfigDir = Directory("${appSupportDir.path}/folder_config");
+  if (!folderConfigDir.existsSync()) {
+    folderConfigDir.createSync();
+  }
+
+  playlistConfigDir = Directory("${appSupportDir.path}/playlist_config");
+  if (!playlistConfigDir.existsSync()) {
+    playlistConfigDir.createSync();
+  }
+
+  cacheConfigDir = Directory("${appSupportDir.path}/cache_config");
+  if (!cacheConfigDir.existsSync()) {
+    cacheConfigDir.createSync();
+  }
+
   if (isMobile) {
     await logger.init();
   } else {

@@ -160,6 +160,7 @@
   "bitrate": "比特率",
   "samplerate": "采样率",
   "filePath": "文件路径",
+  "path": "路径",
   "go2Artist": "查看艺术家",
   "go2Album": "查看专辑",
   "equalizer": "均衡器",

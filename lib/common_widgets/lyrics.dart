@@ -89,17 +89,20 @@ Future<void> setParsedLyrics(MyAudioMetadata song) async {
   List<String> lines = [];
 
   if (song.isNavidrome) {
-    final lyrics = await navidromeClient.getLyricsById(song.id!);
+    final lyrics = await navidromeClient.getLyricsById(song.id);
     if (lyrics != null) {
       lines = lyrics.split(RegExp(r'[\n]'));
     }
   } else {
     if (song.lyrics == null || song.lyrics!.isEmpty) {
-      String path = song.filePath!;
-      path = "${path.substring(0, path.lastIndexOf('.'))}.lrc";
-      final file = File(path);
-      if (file.existsSync()) {
-        lines = await file.readAsLines(); // read file line by line
+      // TODO: temporarily skip webdav
+      if (!song.isWebdav) {
+        String path = song.path!;
+        path = "${path.substring(0, path.lastIndexOf('.'))}.lrc";
+        final file = File(path);
+        if (file.existsSync()) {
+          lines = await file.readAsLines(); // read file line by line
+        }
       }
     } else {
       lines = song.lyrics!.split(RegExp(r'[\n]'));

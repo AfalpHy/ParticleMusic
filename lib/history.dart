@@ -14,7 +14,6 @@ class History {
   List<MyAudioMetadata> rankingSongList = [];
   List<MyAudioMetadata> navidromeRankingSongList = [];
 
-  List<String> recentlyPathList = [];
   List<MyAudioMetadata> recentlySongList = [];
   List<MyAudioMetadata> navidromeRecentlySongList = [];
 
@@ -30,15 +29,15 @@ class History {
   }
 
   Future<void> load() async {
-    rankingFile = File("${appSupportDir.path}/ranking.txt");
+    rankingFile = File("${appSupportDir.path}/ranking.json");
     if (rankingFile.existsSync()) {
       String content = rankingFile.readAsStringSync();
       List<dynamic> jsonList = jsonDecode(content);
 
       for (final raw in jsonList) {
         final map = Map<String, dynamic>.from(raw);
-        String path = map['path'] as String;
-        MyAudioMetadata? song = library.filePath2Song[path];
+        String id = map['id'] as String;
+        MyAudioMetadata? song = library.id2Song[id];
         if (song != null) {
           song.playCount = map['times'] as int;
           rankingSongList.add(song);
@@ -48,15 +47,14 @@ class History {
       rankingFile.writeAsStringSync(jsonEncode([]));
     }
 
-    recentlyFile = File("${appSupportDir.path}/recently.txt");
+    recentlyFile = File("${appSupportDir.path}/recently.json");
     if (recentlyFile.existsSync()) {
       String content = recentlyFile.readAsStringSync();
       List<dynamic> jsonList = jsonDecode(content);
 
-      for (String filePath in jsonList) {
-        MyAudioMetadata? song = library.filePath2Song[filePath];
+      for (String id in jsonList) {
+        MyAudioMetadata? song = library.id2Song[id];
         if (song != null) {
-          recentlyPathList.add(filePath);
           recentlySongList.add(song);
         }
       }
@@ -122,13 +120,13 @@ class History {
 
     if (song.isNavidrome) {
       while (times-- > 0) {
-        await navidromeClient.scrobble(song.id!);
+        await navidromeClient.scrobble(song.id);
       }
     } else {
       rankingFile.writeAsStringSync(
         jsonEncode(
           rankingSongList
-              .map((e) => {'times': e.playCount, 'path': e.filePath!})
+              .map((e) => {'times': e.playCount, 'id': e.id})
               .toList(),
         ),
       );
@@ -145,17 +143,14 @@ class History {
       navidromeRecentlySongList.remove(song);
       navidromeRecentlySongList.insert(0, song);
     } else {
-      String filePath = song.filePath!;
-
-      recentlyPathList.remove(filePath);
-      recentlyPathList.insert(0, filePath);
       recentlySongList.remove(song);
       recentlySongList.insert(0, song);
-      if (recentlyPathList.length > 500) {
-        recentlyPathList.removeLast();
+      if (recentlySongList.length > 500) {
         recentlySongList.removeLast();
       }
-      recentlyFile.writeAsStringSync(jsonEncode(recentlyPathList));
+      recentlyFile.writeAsStringSync(
+        jsonEncode(recentlySongList.map((e) => e.id)),
+      );
     }
 
     recentlyChangeNotifier.value++;
@@ -165,7 +160,6 @@ class History {
     rankingSongList = [];
     navidromeRankingSongList = [];
 
-    recentlyPathList = [];
     recentlySongList = [];
     navidromeRecentlySongList = [];
   }

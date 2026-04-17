@@ -21,6 +21,9 @@ const String versionNumber = '2.0.0';
 late Directory appDocs;
 late Directory appSupportDir;
 late Directory tmpDir;
+late Directory folderConfigDir;
+late Directory playlistConfigDir;
+late Directory cacheConfigDir;
 
 final isMobile = Platform.isAndroid || Platform.isIOS;
 

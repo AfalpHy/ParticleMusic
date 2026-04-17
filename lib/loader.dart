@@ -62,7 +62,7 @@ class Loader {
     await audioHandler.loadPlayQueueState();
     await audioHandler.loadPlayState();
 
-    layersManager.pushLayer('songs');
+    await layersManager.pushLayer('songs');
 
     loadingLibraryNotifier.value = false;
   }

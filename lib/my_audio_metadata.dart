@@ -7,11 +7,11 @@ import 'package:particle_music/common_widgets/lyrics.dart';
 import 'package:particle_music/utils.dart';
 
 class MyAudioMetadata {
-  String? filePath;
-  String? iosPath;
+  final String id;
+
+  String? path;
   DateTime? modified;
-  // for navidrome
-  final String? id;
+
   final bool isNavidrome;
   final bool isWebdav;
 
@@ -35,21 +35,14 @@ class MyAudioMetadata {
 
   MyAudioMetadata(
     this._audioMetadata, {
-    this.filePath,
-    this.iosPath,
+    required this.id,
+    this.path,
     this.modified,
-    this.id,
     this.isNavidrome = false,
     this.isWebdav = false,
     this.playCount = 0,
     this.lastPlayed,
   });
-
-  String get fullFilePath => webdavCachePath != null
-      ? webdavCachePath!
-      : isWebdav || !Platform.isIOS
-      ? filePath!
-      : iosPath!;
 
   String? get format => _audioMetadata.format;
   String? get title => _audioMetadata.title;
@@ -89,11 +82,16 @@ class MyAudioMetadata {
   set pictureBytes(Uint8List? value) => _audioMetadata.pictureBytes = value;
 
   factory MyAudioMetadata.fromMap(Map<String, dynamic> map) {
-    final path = map['path'] as String;
-    bool isWebdav = path.startsWith('http://') | path.startsWith('https://');
+    final id = map['id'] as String;
+    String path = id;
+    bool isWebdav = id.startsWith('http://') | id.startsWith('https://');
+    if (!isWebdav && Platform.isIOS) {
+      path = revertIOSPath(path);
+    }
+
     return MyAudioMetadata(
-      filePath: path,
-      iosPath: isWebdav | !Platform.isIOS ? null : revertIOSPath(path),
+      id: id,
+      path: path,
       isWebdav: isWebdav,
       modified: DateTime.fromMillisecondsSinceEpoch(map['modified'] as int),
       AudioMetadata(
@@ -144,9 +142,9 @@ class MyAudioMetadata {
 
   Map<String, dynamic> toMap() {
     return {
+      'id': id,
       'format': format,
       'modified': modified?.millisecondsSinceEpoch,
-      'path': filePath!,
       'title': title,
       'artist': artist,
       'album': album,

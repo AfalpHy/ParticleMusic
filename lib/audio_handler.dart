@@ -56,9 +56,6 @@ class MyAudioHandler extends BaseAudioHandler {
 
   bool isLoading = false;
 
-  // for repeat
-  bool _seek2begin = false;
-
   MyAudioHandler() {
     // avoid reading .lrc files
     (_player.platform as NativePlayer).setProperty('sub-auto', 'no');
@@ -80,7 +77,6 @@ class MyAudioHandler extends BaseAudioHandler {
 
         if (playModeNotifier.value == 2) {
           // repeat
-          _seek2begin = true;
           await load();
         } else {
           await skipToNext(); // automatically go to next song
@@ -171,11 +167,11 @@ class MyAudioHandler extends BaseAudioHandler {
   }
 
   void initStateFiles() {
-    _playQueueState = File("${appSupportDir.path}/play_queue_state.txt");
+    _playQueueState = File("${appSupportDir.path}/play_queue_state.json");
     if (!(_playQueueState.existsSync())) {
       _savePlayQueueState();
     }
-    _playState = File("${appSupportDir.path}/play_state.txt");
+    _playState = File("${appSupportDir.path}/play_state.json");
     if (!(_playState.existsSync())) {
       savePlayState();
     }
@@ -184,18 +180,8 @@ class MyAudioHandler extends BaseAudioHandler {
   List<MyAudioMetadata> _restoreQueue(List<dynamic>? rawList) {
     final result = <MyAudioMetadata>[];
 
-    for (final item in rawList ?? []) {
-      if (item is! Map<String, dynamic>) {
-        continue;
-      }
-
-      final isNavidrome = item['isNavidrome'] as bool;
-      final content = item['content'] as String;
-
-      final song = isNavidrome
-          ? library.id2navidromeSong[content]
-          : library.filePath2Song[content];
-
+    for (final id in rawList ?? []) {
+      final song = library.id2Song[id];
       if (song != null) result.add(song);
     }
 
@@ -214,18 +200,8 @@ class MyAudioHandler extends BaseAudioHandler {
   void _savePlayQueueState() {
     _playQueueState.writeAsStringSync(
       jsonEncode({
-        'playQueueTmp': _playQueueTmp.map((e) {
-          return {
-            'isNavidrome': e.isNavidrome,
-            'content': e.isNavidrome ? e.id : e.filePath!,
-          };
-        }).toList(),
-        'playQueue': playQueue.map((e) {
-          return {
-            'isNavidrome': e.isNavidrome,
-            'content': e.isNavidrome ? e.id : e.filePath!,
-          };
-        }).toList(),
+        'playQueueTmp': _playQueueTmp.map((e) => e.id).toList(),
+        'playQueue': playQueue.map((e) => e.id).toList(),
       }),
     );
   }
@@ -448,13 +424,6 @@ class MyAudioHandler extends BaseAudioHandler {
       _playLastSyncTime = null;
     }
 
-    if (_seek2begin) {
-      await seek(Duration.zero);
-      _seek2begin = false;
-      _playLastSyncTime = DateTime.now();
-      _playedDuration = Duration.zero;
-      return;
-    }
     // save currentIndex
     savePlayState();
 
@@ -483,30 +452,35 @@ class MyAudioHandler extends BaseAudioHandler {
     try {
       if (currentSong.isNavidrome) {
         currentSong.navidromeUrl ??= navidromeClient.getStreamUrl(
-          currentSong.id!,
+          currentSong.id,
         );
         await _player.open(
           Media(currentSong.navidromeCachePath ?? currentSong.navidromeUrl!),
           play: isPlayingNotifier.value,
         );
-      } else {
-        if (currentSong.isWebdav && currentSong.webdavCachePath == null) {
+      } else if (currentSong.isWebdav) {
+        if (currentSong.webdavCachePath == null) {
           await _player.open(
             Media(
-              currentSong.filePath!,
+              currentSong.path!,
               httpHeaders: {'Authorization': getWebdavAuth()},
             ),
             play: isPlayingNotifier.value,
           );
         } else {
           await _player.open(
-            Media(currentSong.fullFilePath),
+            Media(currentSong.webdavCachePath!),
             play: isPlayingNotifier.value,
           );
         }
+      } else {
+        await _player.open(
+          Media(currentSong.path!),
+          play: isPlayingNotifier.value,
+        );
       }
     } catch (error) {
-      logger.output("[${currentSong.filePath}] $error");
+      logger.output("[${currentSong.title}] $error");
     }
     isLoading = false;
 
@@ -530,7 +504,7 @@ class MyAudioHandler extends BaseAudioHandler {
 
     mediaItem.add(
       MediaItem(
-        id: currentSong.isNavidrome ? currentSong.id! : currentSong.filePath!,
+        id: currentSong.id,
         title: getTitle(currentSong),
         artist: getArtist(currentSong),
         album: getAlbum(currentSong),

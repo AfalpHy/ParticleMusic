@@ -71,7 +71,7 @@ class LayersManager {
     ];
   }
 
-  void pushLayer(String label, {String? content}) {
+  Future<void> pushLayer(String label, {String? content}) async {
     sidebarHighlighLabel.value = label;
     sidebarHighlighLabelStack.add(label);
 
@@ -99,7 +99,7 @@ class LayersManager {
       layerStack.add(
         SingleFolderLayer(
           key: UniqueKey(),
-          folder: library.getFolderByPath(content),
+          folder: library.getFolderById(content),
         ),
       );
     } else if (label == 'songs') {
@@ -123,7 +123,7 @@ class LayersManager {
       layerStack.add(LicenseLayer(key: UniqueKey()));
     }
 
-    updateBackground();
+    await updateBackground();
     updateNotifier.value++;
   }
 

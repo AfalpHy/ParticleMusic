@@ -12,15 +12,15 @@ import 'package:particle_music/loader.dart';
 import 'package:particle_music/utils.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
-class ManageMusicFoldersDialog extends StatefulWidget {
-  const ManageMusicFoldersDialog({super.key});
+class ManageMusicFolders extends StatefulWidget {
+  const ManageMusicFolders({super.key});
 
   @override
-  State<StatefulWidget> createState() => _ManageMusicFoldersDialogState();
+  State<StatefulWidget> createState() => _ManageMusicFoldersState();
 }
 
-class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
-  late List<String> currentFolderList;
+class _ManageMusicFoldersState extends State<ManageMusicFolders> {
+  late List<String> currentFolderIdList;
   final updateNotifier = ValueNotifier(0);
   late ValueNotifier<bool> tmpRecursiveScanNotifier;
 
@@ -28,7 +28,7 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
   void initState() {
     super.initState();
 
-    currentFolderList = library.folderList.map((e) => e.path).toList();
+    currentFolderIdList = library.folderList.map((e) => e.id).toList();
     tmpRecursiveScanNotifier = ValueNotifier(recursiveScanNotifier.value);
   }
 
@@ -153,7 +153,7 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
 
                                 settingManager.saveSetting();
                                 if (await library.updateFolders(
-                                      currentFolderList,
+                                      currentFolderIdList,
                                     ) ||
                                     needReload) {
                                   if (context.mounted) {
@@ -210,13 +210,14 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
           recursiveScanNotifier.value = tmpRecursiveScanNotifier.value;
 
           settingManager.saveSetting();
-          if (await library.updateFolders(currentFolderList) || needReload) {
+          if (await library.updateFolders(currentFolderIdList) || needReload) {
             if (context.mounted) {
               Navigator.pop(context);
             }
             await Loader.reload();
           } else {
             if (context.mounted) {
+              showCenterMessage(context, 'Nothing is changed', duration: 2000);
               Navigator.pop(context);
             }
           }
@@ -269,53 +270,8 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
           child: ListTile(
             contentPadding: .fromLTRB(15, 0, 0, 0),
             dense: true,
-            onTap: () async {
-              String? result = await FilePicker.platform.getDirectoryPath();
-              if (result == null) {
-                return;
-              }
-
-              if (Platform.isIOS) {
-                if (!result.contains('File Provider Storage/') &&
-                    !result.contains(appDocs.path)) {
-                  if (context.mounted) {
-                    showCenterMessage(
-                      context,
-                      'Do not support this folder',
-                      duration: 2000,
-                    );
-                  }
-                  return;
-                }
-
-                if (isFileProviderStorePath(result) &&
-                    !await BookmarkService.active(result)) {
-                  if (context.mounted) {
-                    showCenterMessage(
-                      context,
-                      'Get permission failed',
-                      duration: 2000,
-                    );
-                  }
-                  return;
-                }
-                library.setIOSFileProviderStorageIfNeed(result);
-                result = convertIOSPath(result);
-              }
-
-              if (currentFolderList.contains(result)) {
-                if (context.mounted) {
-                  showCenterMessage(
-                    context,
-                    'The folder already exists',
-                    duration: 2000,
-                  );
-                }
-                return;
-              }
-
-              currentFolderList.add(result);
-              updateNotifier.value++;
+            onTap: () {
+              _addFolder(context);
             },
             title: Text(l10n.addFolder),
           ),
@@ -331,57 +287,8 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
           child: ListTile(
             contentPadding: .fromLTRB(15, 0, 0, 0),
             dense: true,
-            onTap: () async {
-              String? result = await FilePicker.platform.getDirectoryPath();
-              if (result == null) {
-                return;
-              }
-              if (Platform.isIOS) {
-                if (!result.contains('File Provider Storage/') &&
-                    !result.contains(appDocs.path)) {
-                  if (context.mounted) {
-                    showCenterMessage(
-                      context,
-                      'Do not support this folder',
-                      duration: 2000,
-                    );
-                  }
-                  return;
-                }
-                if (isFileProviderStorePath(result) &&
-                    !await BookmarkService.active(result)) {
-                  if (context.mounted) {
-                    showCenterMessage(
-                      context,
-                      'Get permission failed',
-                      duration: 2000,
-                    );
-                  }
-                  return;
-                }
-                library.setIOSFileProviderStorageIfNeed(result);
-              }
-
-              Directory root = Directory(result);
-
-              List<String> folderList = root
-                  .listSync(recursive: true)
-                  .whereType<Directory>()
-                  .map((d) => d.path)
-                  .toList();
-
-              folderList.insert(0, result);
-
-              for (String folder in folderList) {
-                if (Platform.isIOS) {
-                  folder = convertIOSPath(folder);
-                }
-                if (!currentFolderList.contains(folder)) {
-                  currentFolderList.add(folder);
-                }
-              }
-
-              updateNotifier.value++;
+            onTap: () {
+              _addFolders(context);
             },
             title: Text(l10n.addRecursiveFolder),
           ),
@@ -397,55 +304,8 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
           child: ListTile(
             contentPadding: .fromLTRB(15, 0, 0, 0),
             dense: true,
-            onTap: () async {
-              if (webdavClient == null) {
-                showCenterMessage(
-                  context,
-                  'There is no connected WebDAV.',
-                  duration: 2000,
-                );
-                return;
-              }
-              try {
-                await webdavClient!.ping();
-              } catch (e) {
-                if (!context.mounted) {
-                  return;
-                }
-                showCenterMessage(
-                  context,
-                  'Can not connect to WebDAV.',
-                  duration: 2000,
-                );
-                return;
-              }
-              if (!context.mounted) {
-                return;
-              }
-              final result = await showAnimationDialog(
-                context: context,
-
-                child: SizedBox(
-                  height: 350,
-                  width: 300,
-                  child: WebdavDirPicker(),
-                ),
-              );
-              if (result == null) {
-                return;
-              }
-              if (currentFolderList.contains(result)) {
-                if (context.mounted) {
-                  showCenterMessage(
-                    context,
-                    'The folder already exists',
-                    duration: 2000,
-                  );
-                }
-                return;
-              }
-              currentFolderList.add(result);
-              updateNotifier.value++;
+            onTap: () {
+              _addWebdavFolder(context);
             },
             title: Text(l10n.addWebDAVFolder),
           ),
@@ -461,58 +321,8 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
           child: ListTile(
             contentPadding: .fromLTRB(15, 0, 0, 0),
             dense: true,
-            onTap: () async {
-              if (webdavClient == null) {
-                showCenterMessage(
-                  context,
-                  'There is no connected WebDAV.',
-                  duration: 2000,
-                );
-                return;
-              }
-              try {
-                await webdavClient!.ping();
-              } catch (e) {
-                if (!context.mounted) {
-                  return;
-                }
-                showCenterMessage(
-                  context,
-                  'Can not connect to WebDAV.',
-                  duration: 2000,
-                );
-                return;
-              }
-              if (!context.mounted) {
-                return;
-              }
-              String? result = await showAnimationDialog(
-                context: context,
-
-                child: SizedBox(
-                  height: 350,
-                  width: 300,
-                  child: WebdavDirPicker(),
-                ),
-              );
-              if (result == null) {
-                return;
-              }
-              List<String> folderList = [result];
-              final subDirectories = await getWebdavSubDirectoriesFrom(
-                result.substring(7),
-              );
-              for (final dir in subDirectories) {
-                folderList.add('WebDAV:$dir');
-              }
-
-              for (final folder in folderList) {
-                if (currentFolderList.contains(folder)) {
-                  continue;
-                }
-                currentFolderList.add(folder);
-              }
-              updateNotifier.value++;
+            onTap: () {
+              _addWebdavFolders(context);
             },
             title: Text(l10n.addWebDAVRecursiveFolder),
           ),
@@ -530,16 +340,16 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
             return ListTile(
               dense: true,
               contentPadding: .fromLTRB(15, 0, 0, 0),
-              title: Text(currentFolderList[index]),
+              title: Text(currentFolderIdList[index]),
               trailing: IconButton(
                 onPressed: () {
-                  currentFolderList.removeAt(index);
+                  currentFolderIdList.removeAt(index);
                   updateNotifier.value++;
                 },
                 icon: Icon(Icons.clear_rounded),
               ),
             );
-          }, childCount: currentFolderList.length),
+          }, childCount: currentFolderIdList.length),
         );
       },
     );
@@ -554,19 +364,178 @@ class _ManageMusicFoldersDialogState extends State<ManageMusicFoldersDialog> {
             return ListTile(
               dense: true,
               contentPadding: .fromLTRB(20, 0, 0, 0),
-              title: Text(currentFolderList[index]),
+              title: Text(currentFolderIdList[index]),
               trailing: IconButton(
                 onPressed: () {
-                  currentFolderList.removeAt(index);
+                  currentFolderIdList.removeAt(index);
                   updateNotifier.value++;
                 },
                 icon: Icon(Icons.clear_rounded),
               ),
             );
           },
-          itemCount: currentFolderList.length,
+          itemCount: currentFolderIdList.length,
         );
       },
     );
+  }
+
+  Future<bool> _checkAndConfigureIOSPath(
+    BuildContext context,
+    String path,
+  ) async {
+    bool isOnMyiPhone = isFileProviderStorePath(path);
+    if (!isOnMyiPhone && !path.contains(appDocs.path)) {
+      if (context.mounted) {
+        showCenterMessage(
+          context,
+          'This folder is not supported yet.',
+          duration: 2000,
+        );
+      }
+      return false;
+    }
+
+    if (isOnMyiPhone && !await BookmarkService.active(path)) {
+      if (context.mounted) {
+        showCenterMessage(context, 'Get permission failed', duration: 2000);
+      }
+      return false;
+    }
+    if (isOnMyiPhone) {
+      library.setIOSFileProviderStorageIfNeed(path);
+    }
+    return true;
+  }
+
+  void _addFolder(BuildContext context) async {
+    String? result = await FilePicker.platform.getDirectoryPath();
+    if (result == null || !context.mounted) {
+      return;
+    }
+
+    String id = result;
+    if (Platform.isIOS) {
+      if (!await _checkAndConfigureIOSPath(context, result)) {
+        return;
+      }
+      id = convertIOSPath(result);
+    }
+
+    if (currentFolderIdList.contains(id)) {
+      if (context.mounted) {
+        showCenterMessage(context, 'The folder already exists', duration: 2000);
+      }
+      return;
+    }
+
+    currentFolderIdList.add(id);
+    updateNotifier.value++;
+  }
+
+  void _addFolders(BuildContext context) async {
+    String? result = await FilePicker.platform.getDirectoryPath();
+    if (result == null || !context.mounted) {
+      return;
+    }
+    if (Platform.isIOS && await _checkAndConfigureIOSPath(context, result)) {
+      return;
+    }
+
+    Directory root = Directory(result);
+
+    List<String> pathList = root
+        .listSync(recursive: true)
+        .whereType<Directory>()
+        .map((d) => d.path)
+        .toList();
+
+    pathList.insert(0, result);
+
+    for (String path in pathList) {
+      String id = path;
+      if (Platform.isIOS) {
+        id = convertIOSPath(path);
+      }
+      if (!currentFolderIdList.contains(id)) {
+        currentFolderIdList.add(id);
+      }
+    }
+
+    updateNotifier.value++;
+  }
+
+  Future<bool> _isWebdavValid(BuildContext context) async {
+    if (webdavClient == null) {
+      showCenterMessage(
+        context,
+        'There is no connected WebDAV',
+        duration: 2000,
+      );
+      return false;
+    }
+    try {
+      await webdavClient!.ping();
+    } catch (e) {
+      if (!context.mounted) {
+        return false;
+      }
+      showCenterMessage(context, 'Can not connect to WebDAV', duration: 2000);
+      return false;
+    }
+    return true;
+  }
+
+  void _addWebdavFolder(BuildContext context) async {
+    if (!await _isWebdavValid(context)) {
+      return;
+    }
+    if (!context.mounted) {
+      return;
+    }
+    final id = await showAnimationDialog(
+      context: context,
+      child: SizedBox(height: 350, width: 300, child: WebdavDirPicker()),
+    );
+    if (id == null) {
+      return;
+    }
+    if (currentFolderIdList.contains(id)) {
+      if (context.mounted) {
+        showCenterMessage(context, 'The folder already exists', duration: 2000);
+      }
+      return;
+    }
+    currentFolderIdList.add(id);
+    updateNotifier.value++;
+  }
+
+  void _addWebdavFolders(BuildContext context) async {
+    if (!await _isWebdavValid(context)) {
+      return;
+    }
+    if (!context.mounted) {
+      return;
+    }
+    String? root = await showAnimationDialog(
+      context: context,
+      child: SizedBox(height: 350, width: 300, child: WebdavDirPicker()),
+    );
+    if (root == null) {
+      return;
+    }
+    List<String> idList = [root];
+    final subDirectories = await getWebdavSubDirectoriesFrom(root.substring(7));
+    for (final dir in subDirectories) {
+      idList.add('WebDAV:$dir');
+    }
+
+    for (final id in idList) {
+      if (currentFolderIdList.contains(id)) {
+        continue;
+      }
+      currentFolderIdList.add(id);
+    }
+    updateNotifier.value++;
   }
 }

@@ -10,7 +10,7 @@ import 'package:particle_music/navidrome_client.dart';
 class SettingManager {
   late final File file;
   SettingManager() {
-    file = File("${appSupportDir.path}/setting.txt");
+    file = File("${appSupportDir.path}/setting.json");
     if (!(file.existsSync())) {
       saveSetting();
     }
