@@ -267,6 +267,7 @@ class MyAudioHandler extends BaseAudioHandler {
   Future<void> loadEqualizerState() async {
     final content = await _equalizerState.readAsString();
     gains = (jsonDecode(content) as List<dynamic>).cast();
+    applyEqualizer();
   }
 
   void saveEqualizerState() {
