@@ -65,6 +65,7 @@ class Loader {
 
     await audioHandler.loadPlayQueueState();
     await audioHandler.loadPlayState();
+    await audioHandler.loadEqualizerState();
 
     await layersManager.pushLayer('songs');
 

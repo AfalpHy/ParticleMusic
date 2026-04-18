@@ -392,6 +392,8 @@ class SongListTile extends StatelessWidget {
                               }
                             },
                           ),
+
+                        SizedBox(height: 50),
                       ],
                     ),
                   ),

@@ -6,6 +6,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/common_widgets/equalizer.dart';
 import 'package:particle_music/landscape_view/extensions/window_controller_extension.dart';
 import 'package:particle_music/common_widgets/lyrics.dart';
 import 'package:particle_music/layer/layers_manager.dart';
@@ -53,6 +54,7 @@ class MyAudioHandler extends BaseAudioHandler {
 
   late final File _playQueueState;
   late final File _playState;
+  late final File _equalizerState;
 
   bool isLoading = false;
 
@@ -175,6 +177,10 @@ class MyAudioHandler extends BaseAudioHandler {
     if (!(_playState.existsSync())) {
       savePlayState();
     }
+    _equalizerState = File("${appSupportDir.path}/equalizer_state.json");
+    if (!(_equalizerState.existsSync())) {
+      saveEqualizerState();
+    }
   }
 
   List<MyAudioMetadata> _restoreQueue(List<dynamic>? rawList) {
@@ -256,6 +262,15 @@ class MyAudioHandler extends BaseAudioHandler {
         'volume': volumeNotifier.value,
       }),
     );
+  }
+
+  Future<void> loadEqualizerState() async {
+    final content = await _equalizerState.readAsString();
+    gains = (jsonDecode(content) as List<dynamic>).cast();
+  }
+
+  void saveEqualizerState() {
+    _equalizerState.writeAsStringSync(jsonEncode(gains));
   }
 
   void saveAllStates() {
@@ -582,7 +597,15 @@ class MyAudioHandler extends BaseAudioHandler {
     _player.setVolume(volume * 100);
   }
 
-  void setAudioParams(String af) async {
+  void applyEqualizer() async {
+    final af = [
+      'aformat=sample_fmts=fltp',
+
+      ...List.generate(freqs.length, (i) {
+        return 'equalizer=f=${freqs[i]}:t=o:w=1:g=${gains[i]}';
+      }),
+    ].join(',');
     await (_player.platform as NativePlayer).setProperty('af', af);
+    saveEqualizerState();
   }
 }

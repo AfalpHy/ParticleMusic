@@ -94,6 +94,21 @@ dependency_overrides:
       url: https://github.com/AfalpHy/media-kit
       ref: main
       path: libs\windows\media_kit_libs_windows_audio\
+  media_kit_libs_android_audio:
+    git:
+      url: https://github.com/AfalpHy/media-kit
+      ref: main
+      path: libs\android\media_kit_libs_android_audio\
+  media_kit_libs_ios_audio:
+    git:
+      url: https://github.com/AfalpHy/media-kit
+      ref: main
+      path: libs\ios\media_kit_libs_ios_audio\
+  media_kit_libs_macos_audio:
+    git:
+      url: https://github.com/AfalpHy/media-kit
+      ref: main
+      path: libs\macos\media_kit_libs_macos_audio\
 
 dev_dependencies:
   flutter_test:
