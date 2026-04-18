@@ -544,13 +544,14 @@ packages:
     source: hosted
     version: "1.1.4"
   media_kit_libs_windows_audio:
-    dependency: transitive
+    dependency: "direct overridden"
     description:
-      name: media_kit_libs_windows_audio
-      sha256: c2fd558cc87b9d89a801141fcdffe02e338a3b21a41a18fbd63d5b221a1b8e53
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.9"
+      path: "libs/windows/media_kit_libs_windows_audio"
+      ref: main
+      resolved-ref: "6cd7d9476515a49d128dbc51ea0094cb6b908b64"
+      url: "https://github.com/AfalpHy/media-kit"
+    source: git
+    version: "1.0.10"
   menu_base:
     dependency: transitive
     description:

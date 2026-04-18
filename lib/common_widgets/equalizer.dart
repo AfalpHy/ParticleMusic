@@ -32,9 +32,13 @@ class _EqualizerWidgetState extends State<EqualizerWidget> {
   }
 
   void _applyEQ() {
-    final af = List.generate(freqs.length, (i) {
-      return 'equalizer=f=${freqs[i]}:t=o:w=0.5:g=${gains[i]}';
-    }).join(',');
+    final af = [
+      'aformat=sample_fmts=fltp',
+
+      ...List.generate(freqs.length, (i) {
+        return 'equalizer=f=${freqs[i]}:t=o:w=1:g=${gains[i]}';
+      }),
+    ].join(',');
 
     audioHandler.setAudioParams(af);
   }

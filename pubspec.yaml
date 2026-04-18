@@ -88,6 +88,13 @@ dependencies:
   webdav_client: ^1.2.2
   uuid: ^4.5.3
 
+dependency_overrides:
+  media_kit_libs_windows_audio:
+    git:
+      url: https://github.com/AfalpHy/media-kit
+      ref: main
+      path: libs\windows\media_kit_libs_windows_audio\
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
