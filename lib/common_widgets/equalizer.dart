@@ -18,11 +18,6 @@ class EqualizerWidget extends StatefulWidget {
 class _EqualizerWidgetState extends State<EqualizerWidget> {
   Timer? _debounce;
 
-  @override
-  void initState() {
-    super.initState();
-  }
-
   void _updateEQDebounced() {
     _debounce?.cancel();
     _debounce = Timer(
@@ -34,6 +29,7 @@ class _EqualizerWidgetState extends State<EqualizerWidget> {
   void _reset() {
     gains.setAll(0, List.filled(freqs.length, 0));
     audioHandler.applyEqualizer();
+    setState(() {});
   }
 
   @override
