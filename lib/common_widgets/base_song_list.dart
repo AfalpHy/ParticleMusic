@@ -106,7 +106,7 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
       album!.updateNotifier.addListener(updateSongList);
     } else if (folder != null) {
       songList = folder!.songList;
-      title = folder!.path;
+      title = folder!.id;
       sortTypeNotifier = folder!.sortTypeNotifier;
       folder!.updateNotifier.addListener(updateSongList);
       reorderable = true;
