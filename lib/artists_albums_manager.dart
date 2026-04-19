@@ -328,7 +328,7 @@ void showArtistEntries(BuildContext context, List<String> artists) {
         child: ListView.builder(
           itemCount: artists.length,
           itemExtent: 60,
-          itemBuilder: (_, index) {
+          itemBuilder: (context, index) {
             String name = artists[index];
             return Center(
               child: ListTile(
