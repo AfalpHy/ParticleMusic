@@ -1,5 +1,6 @@
-import 'package:flutter/widgets.dart';
+import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/utils.dart';
@@ -314,4 +315,41 @@ class Album extends ArtistAlbumBase {
     songList.sort((a, b) => _sort(a, b));
     navidromeSongList.sort((a, b) => _sort(a, b));
   }
+}
+
+void showArtistEntries(BuildContext context, List<String> artists) {
+  showAnimationDialog(
+    context: context,
+    child: SizedBox(
+      width: 300,
+      height: 350,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(10, 20, 10, 20),
+        child: ListView.builder(
+          itemCount: artists.length,
+          itemExtent: 60,
+          itemBuilder: (_, index) {
+            String name = artists[index];
+            return Center(
+              child: ListTile(
+                leading: CoverArtWidget(
+                  size: 50,
+                  borderRadius: 5,
+                  song: artistsAlbumsManager.name2Artist[name]!
+                      .getDisplaySong(),
+                ),
+                title: Text(name),
+                onTap: () async {
+                  Navigator.pop(context);
+                  await Future.delayed(Duration(milliseconds: 250));
+
+                  layersManager.pushLayer('artists', content: name);
+                },
+              ),
+            );
+          },
+        ),
+      ),
+    ),
+  );
 }

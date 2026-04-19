@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:particle_music/artists_albums_manager.dart';
 import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
@@ -825,35 +826,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                         getArtist(currentSongList[index]),
                       );
                       if (artists.length > 1) {
-                        showAnimationDialog(
-                          context: context,
-                          child: SizedBox(
-                            width: 300,
-                            height: 350,
-                            child: Padding(
-                              padding: const EdgeInsets.all(8.0),
-                              child: ListView.builder(
-                                itemCount: artists.length,
-                                itemBuilder: (_, index) {
-                                  return ListTile(
-                                    title: Text(artists[index]),
-                                    onTap: () async {
-                                      Navigator.pop(context);
-                                      await Future.delayed(
-                                        Duration(milliseconds: 300),
-                                      );
-
-                                      layersManager.pushLayer(
-                                        'artists',
-                                        content: artists[index],
-                                      );
-                                    },
-                                  );
-                                },
-                              ),
-                            ),
-                          ),
-                        );
+                        showArtistEntries(context, artists);
                       } else {
                         await Future.delayed(Duration(milliseconds: 250));
                         layersManager.pushLayer('artists', content: artists[0]);
