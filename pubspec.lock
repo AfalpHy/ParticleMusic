@@ -542,7 +542,7 @@ packages:
     description:
       path: "libs/macos/media_kit_libs_macos_audio"
       ref: main
-      resolved-ref: be95d2a09255cd0fd275af6cc2d7383f7754f8b8
+      resolved-ref: "61c559127f83fc6f717de3703f76a1396af3547a"
       url: "https://github.com/AfalpHy/media-kit"
     source: git
     version: "1.1.5"

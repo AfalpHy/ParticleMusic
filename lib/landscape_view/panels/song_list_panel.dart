@@ -633,7 +633,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
           ),
           previewBuilder: (context, child) {
             return Material(
-              color: selectedItemColor,
+              color: selectedItemColor.withAlpha(255),
               shape: SmoothRectangleBorder(
                 smoothness: 1,
                 borderRadius: .circular(5),
@@ -644,7 +644,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
           },
           liftBuilder: (context, child) {
             return Material(
-              color: selectedItemColor,
+              color: selectedItemColor.withAlpha(255),
               shape: SmoothRectangleBorder(
                 smoothness: 1,
                 borderRadius: .circular(5),
