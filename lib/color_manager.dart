@@ -89,7 +89,7 @@ class ColorManager {
       CustomColor('customButtonColor', lightModeButtonColor),
       CustomColor('customDividerColor', lightModeDividerColor),
       CustomColor('customSelectedItemColor', lightModeSelectedItemColor),
-      CustomColor('customMenuColor', lightModeMenuColor),
+      CustomColor('customMenuColor', lightModeMenuColor, type: 2),
       CustomColor('customSeekBarColor', lightModeSeekBarColor),
       CustomColor('customVolumeBarColor', lightModeVolumeBarColor, type: 2),
       CustomColor(
@@ -117,7 +117,11 @@ class ColorManager {
         lightModeLyricsPageSelectedItemColor,
         type: 2,
       ),
-      CustomColor('customLyricsPageMenuColor', lightModeLyricsPageMenuColor),
+      CustomColor(
+        'customLyricsPageMenuColor',
+        lightModeLyricsPageMenuColor,
+        type: 2,
+      ),
     ];
   }
 
