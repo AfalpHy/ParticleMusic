@@ -357,6 +357,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get selectedItemColor => 'Selected Item Color';
 
   @override
+  String get menuColor => 'Menu Color';
+
+  @override
   String get scrollbarColor => 'Scrollbar Color';
 
   @override
@@ -382,6 +385,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lyricsPageSelectedItemColor => 'Lyrics Page Selected Item Color';
+
+  @override
+  String get lyricsPageMenuColor => 'Lyrics Page Menu Color';
 
   @override
   String get reset => 'Reset';

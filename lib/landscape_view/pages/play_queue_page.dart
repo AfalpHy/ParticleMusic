@@ -222,6 +222,14 @@ class PlayQueuePageState extends State<PlayQueuePage> {
     final l10n = AppLocalizations.of(context);
 
     return ContextMenuWidget(
+      desktopMenuWidgetBuilder: CustomDesktopMenuWidgetBuilder(
+        backgroundBaseColor: colorManager.getSpecificBgBaseColor(),
+        backgroundColor: colorManager.getSpecificMenuColor(),
+        iconColor: colorManager.getSpecificIconColor(),
+        textColor: colorManager.getSpecificTextColor(),
+        selectedColor: colorManager.getSpecificSelectedItemColor(),
+        dividerColor: colorManager.getSpecificDividerColor(),
+      ),
       key: ValueKey(playQueue[index]),
       child: PlayQueueItem(
         index: index,

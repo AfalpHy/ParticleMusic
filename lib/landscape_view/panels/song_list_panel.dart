@@ -4,6 +4,7 @@ import 'dart:math';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common_widgets/playlist_widgets.dart';
@@ -121,7 +122,6 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                     return SizedBox(
                       key: ValueKey(currentSongList[index]),
                       child: songListItemWithContextMenu(
-                        context,
                         index,
                         currentSongList,
                         isSelectedList,
@@ -133,7 +133,6 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                     key: ValueKey(songList[index]),
                     index: index,
                     child: songListItemWithContextMenu(
-                      context,
                       index,
                       songList,
                       isSelectedList,
@@ -292,6 +291,16 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                         if (isLibrary && !isNavidrome || folder != null) ...[
                           SizedBox(width: 15),
                           ContextMenuWidget(
+                            desktopMenuWidgetBuilder:
+                                CustomDesktopMenuWidgetBuilder(
+                                  backgroundBaseColor: backgroundBaseColor,
+                                  backgroundColor: colorManager
+                                      .getSpecificMenuColor(),
+                                  iconColor: iconColor,
+                                  textColor: textColor,
+                                  selectedColor: selectedItemColor,
+                                  dividerColor: dividerColor,
+                                ),
                             allowTap: true,
                             previewBuilder: (context, child) {
                               return Material(
@@ -601,291 +610,306 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
   }
 
   Widget songListItemWithContextMenu(
-    BuildContext context,
     int index,
     List<MyAudioMetadata> currentSongList,
     List<ValueNotifier<bool>> isSelectedList,
   ) {
     final isSelected = isSelectedList[index];
-    final l10n = AppLocalizations.of(context);
 
-    return ContextMenuWidget(
-      previewBuilder: (context, child) {
-        return Material(
-          color: selectedItemColor.withAlpha(255),
-          shape: SmoothRectangleBorder(
-            smoothness: 1,
-            borderRadius: .circular(5),
+    return ValueListenableBuilder(
+      valueListenable: updateColorNotifier,
+      builder: (context, _, _) {
+        final l10n = AppLocalizations.of(context);
+        return ContextMenuWidget(
+          iconTheme: IconThemeData(color: iconColor),
+          desktopMenuWidgetBuilder: CustomDesktopMenuWidgetBuilder(
+            backgroundBaseColor: backgroundBaseColor,
+            backgroundColor: colorManager.getSpecificMenuColor(),
+            iconColor: iconColor,
+            textColor: textColor,
+            selectedColor: selectedItemColor,
+            dividerColor: dividerColor,
           ),
-          clipBehavior: .antiAlias,
-          child: child,
-        );
-      },
-      liftBuilder: (context, child) {
-        return Material(
-          color: selectedItemColor.withAlpha(255),
-          shape: SmoothRectangleBorder(
-            smoothness: 1,
-            borderRadius: .circular(5),
-          ),
-          clipBehavior: .antiAlias,
-          child: child,
-        );
-      },
-      child: SongListItem(
-        index: index,
-        isSelected: isSelected,
-        currentSongList: currentSongList,
-        isRanking: ranking != null,
-        isRecently: recently != null,
-        onTap: () async {
-          if (ctrlIsPressed) {
-            isSelected.value = !isSelected.value;
-            continuousSelectBeginIndex = index;
-          } else if (shiftIsPressed) {
-            int left = continuousSelectBeginIndex < index
-                ? continuousSelectBeginIndex
-                : index;
-            int right = continuousSelectBeginIndex > index
-                ? continuousSelectBeginIndex
-                : index;
+          previewBuilder: (context, child) {
+            return Material(
+              color: selectedItemColor,
+              shape: SmoothRectangleBorder(
+                smoothness: 1,
+                borderRadius: .circular(5),
+              ),
+              clipBehavior: .antiAlias,
+              child: child,
+            );
+          },
+          liftBuilder: (context, child) {
+            return Material(
+              color: selectedItemColor,
+              shape: SmoothRectangleBorder(
+                smoothness: 1,
+                borderRadius: .circular(5),
+              ),
+              clipBehavior: .antiAlias,
+              child: child,
+            );
+          },
+          child: SongListItem(
+            index: index,
+            isSelected: isSelected,
+            currentSongList: currentSongList,
+            isRanking: ranking != null,
+            isRecently: recently != null,
+            onTap: () async {
+              if (ctrlIsPressed) {
+                isSelected.value = !isSelected.value;
+                continuousSelectBeginIndex = index;
+              } else if (shiftIsPressed) {
+                int left = continuousSelectBeginIndex < index
+                    ? continuousSelectBeginIndex
+                    : index;
+                int right = continuousSelectBeginIndex > index
+                    ? continuousSelectBeginIndex
+                    : index;
 
-            for (int i = 0; i < isSelectedList.length; i++) {
-              if (i < left || i > right) {
-                isSelectedList[i].value = false;
+                for (int i = 0; i < isSelectedList.length; i++) {
+                  if (i < left || i > right) {
+                    isSelectedList[i].value = false;
+                  } else {
+                    isSelectedList[i].value = true;
+                  }
+                }
               } else {
-                isSelectedList[i].value = true;
+                // clear select
+                for (var tmp in isSelectedList) {
+                  tmp.value = false;
+                }
+                isSelected.value = true;
+                continuousSelectBeginIndex = index;
+              }
+              if (isMobile) {
+                audioHandler.currentIndex = index;
+                await audioHandler.setPlayQueue(currentSongList);
+                await audioHandler.load();
+                audioHandler.play();
+              }
+            },
+          ),
+          menuProvider: (_) async {
+            // select current and clear others if it's not selected
+            if (!isSelected.value) {
+              for (var tmp in isSelectedList) {
+                tmp.value = false;
+              }
+              isSelected.value = true;
+              continuousSelectBeginIndex = index;
+            }
+
+            int selectedCnt = 0;
+
+            for (int i = isSelectedList.length - 1; i >= 0; i--) {
+              if (isSelectedList[i].value) {
+                selectedCnt++;
               }
             }
-          } else {
-            // clear select
-            for (var tmp in isSelectedList) {
-              tmp.value = false;
-            }
-            isSelected.value = true;
-            continuousSelectBeginIndex = index;
-          }
-          if (isMobile) {
-            audioHandler.currentIndex = index;
-            await audioHandler.setPlayQueue(currentSongList);
-            await audioHandler.load();
-            audioHandler.play();
-          }
-        },
-      ),
-      menuProvider: (_) async {
-        // select current and clear others if it's not selected
-        if (!isSelected.value) {
-          for (var tmp in isSelectedList) {
-            tmp.value = false;
-          }
-          isSelected.value = true;
-          continuousSelectBeginIndex = index;
-        }
 
-        int selectedCnt = 0;
+            return Menu(
+              children: [
+                if (selectedCnt == 1 &&
+                    reorderable &&
+                    textController.text.isEmpty &&
+                    sortTypeNotifier.value == 0)
+                  MenuAction(
+                    title: l10n.move2Top,
+                    image: MenuImage.icon(Icons.vertical_align_top_rounded),
+                    callback: () async {
+                      final item = songList.removeAt(index);
+                      songList.insert(0, item);
 
-        for (int i = isSelectedList.length - 1; i >= 0; i--) {
-          if (isSelectedList[i].value) {
-            selectedCnt++;
-          }
-        }
+                      if (isLibrary) {
+                        library.update();
+                      } else if (folder != null) {
+                        folder!.update();
+                      } else {
+                        playlist!.update();
+                      }
+                    },
+                  ),
+                MenuAction(
+                  title: l10n.playNow,
+                  image: MenuImage.icon(Icons.play_arrow_rounded),
+                  callback: () async {
+                    MyAudioMetadata? tmp;
+                    for (int i = isSelectedList.length - 1; i >= 0; i--) {
+                      if (isSelectedList[i].value) {
+                        tmp = currentSongList[i];
+                        audioHandler.insert2Next(tmp);
+                      }
+                    }
 
-        return Menu(
-          children: [
-            if (selectedCnt == 1 &&
-                reorderable &&
-                textController.text.isEmpty &&
-                sortTypeNotifier.value == 0)
-              MenuAction(
-                title: l10n.move2Top,
-                image: MenuImage.icon(Icons.vertical_align_top_rounded),
-                callback: () async {
-                  final item = songList.removeAt(index);
-                  songList.insert(0, item);
+                    if (tmp != currentSongNotifier.value) {
+                      await audioHandler.skipToNext();
+                    }
+                    audioHandler.play();
+                    audioHandler.saveAllStates();
+                  },
+                ),
+                MenuAction(
+                  title: l10n.playNext,
+                  image: MenuImage.icon(Icons.navigate_next_rounded),
+                  callback: () async {
+                    bool needPlay = false;
+                    if (playQueue.isEmpty) {
+                      needPlay = true;
+                    }
+                    for (int i = isSelectedList.length - 1; i >= 0; i--) {
+                      if (isSelectedList[i].value) {
+                        audioHandler.insert2Next(currentSongList[i]);
+                      }
+                    }
 
-                  if (isLibrary) {
-                    library.update();
-                  } else if (folder != null) {
-                    folder!.update();
-                  } else {
-                    playlist!.update();
-                  }
-                },
-              ),
-            MenuAction(
-              title: l10n.playNow,
-              image: MenuImage.icon(Icons.play_arrow_rounded),
-              callback: () async {
-                MyAudioMetadata? tmp;
-                for (int i = isSelectedList.length - 1; i >= 0; i--) {
-                  if (isSelectedList[i].value) {
-                    tmp = currentSongList[i];
-                    audioHandler.insert2Next(tmp);
-                  }
-                }
+                    if (needPlay) {
+                      await audioHandler.skipToNext();
+                      audioHandler.play();
+                    }
+                    audioHandler.saveAllStates();
+                  },
+                ),
 
-                if (tmp != currentSongNotifier.value) {
-                  await audioHandler.skipToNext();
-                }
-                audioHandler.play();
-                audioHandler.saveAllStates();
-              },
-            ),
-            MenuAction(
-              title: l10n.playNext,
-              image: MenuImage.icon(Icons.navigate_next_rounded),
-              callback: () async {
-                bool needPlay = false;
-                if (playQueue.isEmpty) {
-                  needPlay = true;
-                }
-                for (int i = isSelectedList.length - 1; i >= 0; i--) {
-                  if (isSelectedList[i].value) {
-                    audioHandler.insert2Next(currentSongList[i]);
-                  }
-                }
+                MenuAction(
+                  title: l10n.add2Queue,
+                  image: MenuImage.icon(Icons.playlist_add_rounded),
+                  callback: () async {
+                    bool needPlay = false;
+                    if (playQueue.isEmpty) {
+                      needPlay = true;
+                    }
+                    for (int i = 0; i < isSelectedList.length; i++) {
+                      if (isSelectedList[i].value) {
+                        audioHandler.add2Last(currentSongList[i]);
+                      }
+                    }
 
-                if (needPlay) {
-                  await audioHandler.skipToNext();
-                  audioHandler.play();
-                }
-                audioHandler.saveAllStates();
-              },
-            ),
+                    if (needPlay) {
+                      await audioHandler.skipToNext();
+                      audioHandler.play();
+                    }
+                    audioHandler.saveAllStates();
+                  },
+                ),
 
-            MenuAction(
-              title: l10n.add2Queue,
-              image: MenuImage.icon(Icons.playlist_add_rounded),
-              callback: () async {
-                bool needPlay = false;
-                if (playQueue.isEmpty) {
-                  needPlay = true;
-                }
-                for (int i = 0; i < isSelectedList.length; i++) {
-                  if (isSelectedList[i].value) {
-                    audioHandler.add2Last(currentSongList[i]);
-                  }
-                }
-
-                if (needPlay) {
-                  await audioHandler.skipToNext();
-                  audioHandler.play();
-                }
-                audioHandler.saveAllStates();
-              },
-            ),
-
-            MenuAction(
-              title: l10n.add2Playlist,
-              image: MenuImage.icon(Icons.add_rounded),
-              callback: () {
-                final List<MyAudioMetadata> tmpSongList = [];
-                for (int i = isSelectedList.length - 1; i >= 0; i--) {
-                  if (isSelectedList[i].value) {
-                    tmpSongList.add(currentSongList[i]);
-                  }
-                }
-                if (isMobile) {
-                  showAddPlaylistSheet(context, tmpSongList);
-                } else {
-                  showAddPlaylistDialog(context, tmpSongList);
-                }
-              },
-            ),
-
-            MenuSeparator(),
-
-            if (selectedCnt == 1)
-              MenuAction(
-                title: l10n.go2Artist,
-                image: MenuImage.icon(Icons.people),
-                callback: () async {
-                  final artists = getArtists(getArtist(currentSongList[index]));
-                  if (artists.length > 1) {
-                    showAnimationDialog(
-                      context: context,
-                      child: SizedBox(
-                        width: 300,
-                        height: 350,
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: ListView.builder(
-                            itemCount: artists.length,
-                            itemBuilder: (_, index) {
-                              return ListTile(
-                                title: Text(artists[index]),
-                                onTap: () async {
-                                  Navigator.pop(context);
-                                  await Future.delayed(
-                                    Duration(milliseconds: 300),
-                                  );
-
-                                  layersManager.pushLayer(
-                                    'artists',
-                                    content: artists[index],
-                                  );
-                                },
-                              );
-                            },
-                          ),
-                        ),
-                      ),
-                    );
-                  } else {
-                    await Future.delayed(Duration(milliseconds: 250));
-                    layersManager.pushLayer('artists', content: artists[0]);
-                  }
-                },
-              ),
-
-            if (selectedCnt == 1)
-              MenuAction(
-                title: l10n.go2Album,
-                image: MenuImage.icon(Icons.album_rounded),
-                callback: () async {
-                  await Future.delayed(Duration(milliseconds: 250));
-                  layersManager.pushLayer(
-                    'albums',
-                    content: getAlbum(currentSongList[index]),
-                  );
-                },
-              ),
-
-            if (selectedCnt == 1)
-              MenuAction(
-                title: l10n.songInfo,
-                image: MenuImage.icon(Icons.info_outline_rounded),
-                callback: () {
-                  showSongInfoDialog(context, currentSongList[index]);
-                },
-              ),
-
-            if (selectedCnt == 1 && !isNavidrome)
-              MenuAction(
-                title: l10n.editMetadata,
-                image: MenuImage.icon(Icons.edit_rounded),
-                callback: () {
-                  showEditMetadataDialog(context, currentSongList[index]);
-                },
-              ),
-            if (playlist != null)
-              MenuAction(
-                title: l10n.delete,
-                image: MenuImage.icon(Icons.delete_rounded),
-                callback: () async {
-                  if (await showConfirmDialog(context, l10n.delete)) {
+                MenuAction(
+                  title: l10n.add2Playlist,
+                  image: MenuImage.icon(Icons.add_rounded),
+                  callback: () {
                     final List<MyAudioMetadata> tmpSongList = [];
                     for (int i = isSelectedList.length - 1; i >= 0; i--) {
                       if (isSelectedList[i].value) {
                         tmpSongList.add(currentSongList[i]);
                       }
                     }
-                    playlist!.remove(tmpSongList);
-                  }
-                },
-              ),
-          ],
+                    if (isMobile) {
+                      showAddPlaylistSheet(context, tmpSongList);
+                    } else {
+                      showAddPlaylistDialog(context, tmpSongList);
+                    }
+                  },
+                ),
+
+                MenuSeparator(),
+
+                if (selectedCnt == 1)
+                  MenuAction(
+                    title: l10n.go2Artist,
+                    image: MenuImage.icon(Icons.people),
+                    callback: () async {
+                      final artists = getArtists(
+                        getArtist(currentSongList[index]),
+                      );
+                      if (artists.length > 1) {
+                        showAnimationDialog(
+                          context: context,
+                          child: SizedBox(
+                            width: 300,
+                            height: 350,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8.0),
+                              child: ListView.builder(
+                                itemCount: artists.length,
+                                itemBuilder: (_, index) {
+                                  return ListTile(
+                                    title: Text(artists[index]),
+                                    onTap: () async {
+                                      Navigator.pop(context);
+                                      await Future.delayed(
+                                        Duration(milliseconds: 300),
+                                      );
+
+                                      layersManager.pushLayer(
+                                        'artists',
+                                        content: artists[index],
+                                      );
+                                    },
+                                  );
+                                },
+                              ),
+                            ),
+                          ),
+                        );
+                      } else {
+                        await Future.delayed(Duration(milliseconds: 250));
+                        layersManager.pushLayer('artists', content: artists[0]);
+                      }
+                    },
+                  ),
+
+                if (selectedCnt == 1)
+                  MenuAction(
+                    title: l10n.go2Album,
+                    image: MenuImage.icon(Icons.album_rounded),
+                    callback: () async {
+                      await Future.delayed(Duration(milliseconds: 250));
+                      layersManager.pushLayer(
+                        'albums',
+                        content: getAlbum(currentSongList[index]),
+                      );
+                    },
+                  ),
+
+                if (selectedCnt == 1)
+                  MenuAction(
+                    title: l10n.songInfo,
+                    image: MenuImage.icon(Icons.info_outline_rounded),
+                    callback: () {
+                      showSongInfoDialog(context, currentSongList[index]);
+                    },
+                  ),
+
+                if (selectedCnt == 1 && !isNavidrome)
+                  MenuAction(
+                    title: l10n.editMetadata,
+                    image: MenuImage.icon(Icons.edit_rounded),
+                    callback: () {
+                      showEditMetadataDialog(context, currentSongList[index]);
+                    },
+                  ),
+                if (playlist != null)
+                  MenuAction(
+                    title: l10n.delete,
+                    image: MenuImage.icon(Icons.delete_rounded),
+                    callback: () async {
+                      if (await showConfirmDialog(context, l10n.delete)) {
+                        final List<MyAudioMetadata> tmpSongList = [];
+                        for (int i = isSelectedList.length - 1; i >= 0; i--) {
+                          if (isSelectedList[i].value) {
+                            tmpSongList.add(currentSongList[i]);
+                          }
+                        }
+                        playlist!.remove(tmpSongList);
+                      }
+                    },
+                  ),
+              ],
+            );
+          },
         );
       },
     );

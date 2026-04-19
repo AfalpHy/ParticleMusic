@@ -357,6 +357,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get selectedItemColor => '被选中项颜色';
 
   @override
+  String get menuColor => '菜单颜色';
+
+  @override
   String get scrollbarColor => '滚动条颜色';
 
   @override
@@ -382,6 +385,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get lyricsPageSelectedItemColor => '歌词页面被选项颜色';
+
+  @override
+  String get lyricsPageMenuColor => '歌词页面菜单颜色';
 
   @override
   String get reset => '重置';

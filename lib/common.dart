@@ -121,6 +121,7 @@ late Color searchFieldColor;
 late Color buttonColor;
 late Color dividerColor;
 late Color selectedItemColor;
+late Color menuColor;
 late Color seekBarColor;
 late Color volumeBarColor;
 late Color lyricsPageBackgroundColor;
@@ -129,6 +130,7 @@ late Color lyricsPageHighlightTextColor;
 late Color lyricsPageDividerColor;
 late Color lyricsPageButtonColor;
 late Color lyricsPageSelectedItemColor;
+late Color lyricsPageMenuColor;
 
 // ===================================== Images =====================================
 

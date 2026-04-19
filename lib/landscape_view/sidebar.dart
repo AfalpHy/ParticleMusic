@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common_widgets/playlist_widgets.dart';
@@ -352,6 +353,14 @@ class Sidebar extends StatelessWidget {
       builder: (context, value, child) {
         final playlist = playlistsManager.getPlaylistByIndex(index);
         return ContextMenuWidget(
+          desktopMenuWidgetBuilder: CustomDesktopMenuWidgetBuilder(
+            backgroundBaseColor: backgroundBaseColor,
+            backgroundColor: colorManager.getSpecificMenuColor(),
+            iconColor: iconColor,
+            textColor: textColor,
+            selectedColor: selectedItemColor,
+            dividerColor: dividerColor,
+          ),
           previewBuilder: (context, child) {
             return Material(
               color: selectedItemColor.withAlpha(255),

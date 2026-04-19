@@ -770,6 +770,12 @@ abstract class AppLocalizations {
   /// **'Selected Item Color'**
   String get selectedItemColor;
 
+  /// No description provided for @menuColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Menu Color'**
+  String get menuColor;
+
   /// No description provided for @scrollbarColor.
   ///
   /// In en, this message translates to:
@@ -823,6 +829,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Lyrics Page Selected Item Color'**
   String get lyricsPageSelectedItemColor;
+
+  /// No description provided for @lyricsPageMenuColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics Page Menu Color'**
+  String get lyricsPageMenuColor;
 
   /// No description provided for @reset.
   ///

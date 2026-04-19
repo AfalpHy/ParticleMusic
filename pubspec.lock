@@ -925,7 +925,7 @@ packages:
     description:
       path: super_context_menu
       ref: main
-      resolved-ref: "151c5f10b28f69acb98e6fa5561fc3306b177023"
+      resolved-ref: "75a42a0547798b8610b6fd2f112d4672e61d65da"
       url: "https://github.com/AfalpHy/super_native_extensions"
     source: git
     version: "0.9.1"
