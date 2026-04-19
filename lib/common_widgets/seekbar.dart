@@ -28,8 +28,8 @@ class SeekBarState extends State<SeekBar> {
   @override
   Widget build(BuildContext context) {
     horizontalPadding = 0;
-    if (MediaQuery.of(context).orientation == .landscape &&
-        !widget.isMiniMode) {
+    if (MediaQuery.of(context).orientation == .landscape ||
+        !isMobile && !widget.isMiniMode) {
       horizontalPadding = 45;
     }
 
