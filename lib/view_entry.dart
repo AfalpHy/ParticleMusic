@@ -1,6 +1,7 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/landscape_view/landscape_view.dart';
@@ -91,8 +92,10 @@ class ViewEntry extends StatelessWidget {
     return OrientationBuilder(
       builder: (context, orientation) {
         if (isMobile && orientation == Orientation.portrait) {
+          SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
           return PortraitView();
         } else {
+          SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
           return LandscapeView();
         }
       },
