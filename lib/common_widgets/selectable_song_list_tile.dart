@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/my_audio_metadata.dart';
@@ -33,7 +34,7 @@ class SelectableSongListTile extends StatelessWidget {
           builder: (context, value, child) {
             return Checkbox(
               value: value,
-              activeColor: iconColor,
+              activeColor: iconColor.value,
               onChanged: (value) {
                 isSelected.value = value!;
                 selectedNumNotifier.value += value ? 1 : -1;
@@ -56,8 +57,8 @@ class SelectableSongListTile extends StatelessWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       color: song == currentSong
-                          ? highlightTextColor
-                          : textColor,
+                          ? highlightTextColor.value
+                          : textColor.value,
                       fontWeight: song == currentSong ? FontWeight.bold : null,
                     ),
                   );
@@ -85,7 +86,7 @@ class SelectableSongListTile extends StatelessWidget {
                     child: Text(
                       "${getArtist(song)} - ${getAlbum(song)}",
                       overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 12, color: textColor),
+                      style: TextStyle(fontSize: 12),
                     ),
                   ),
                 ],
@@ -105,7 +106,7 @@ class SelectableSongListTile extends StatelessWidget {
             child: Row(
               children: [
                 Spacer(),
-                ImageIcon(playOutlinedImage, size: 15, color: iconColor),
+                ImageIcon(playOutlinedImage, size: 15, color: iconColor.value),
                 Text(song.playCount.toString()),
               ],
             ),
@@ -123,7 +124,7 @@ class SelectableSongListTile extends StatelessWidget {
                     child: Row(
                       children: [
                         SizedBox(width: 10),
-                        ImageIcon(reorderImage, color: iconColor),
+                        ImageIcon(reorderImage, color: iconColor.value),
                       ],
                     ),
                   ),

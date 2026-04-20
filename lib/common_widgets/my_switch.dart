@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_switch/flutter_switch.dart';
-import 'package:particle_music/common.dart';
+import 'package:particle_music/color_manager.dart';
 
 class MySwitch extends StatelessWidget {
   final bool value;
@@ -13,13 +13,13 @@ class MySwitch extends StatelessWidget {
     return MouseRegion(
       cursor: SystemMouseCursors.click,
       child: ValueListenableBuilder(
-        valueListenable: updateColorNotifier,
+        valueListenable: switchColor.valueNotifier,
         builder: (_, _, _) {
           return FlutterSwitch(
             width: 45,
             height: 20,
             toggleSize: 15,
-            activeColor: switchColor,
+            activeColor: switchColor.value,
             inactiveColor: Colors.grey.shade300,
             value: value,
             onToggle: onToggle,

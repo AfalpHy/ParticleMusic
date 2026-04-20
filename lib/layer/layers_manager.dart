@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:particle_music/artists_albums_manager.dart';
+import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/layer/artists_albums_layer.dart';
@@ -63,7 +64,7 @@ class LayersManager {
                 ),
               ],
 
-              Material(color: pageBackgroundColor, child: layer),
+              Material(color: pageBackgroundColor.value, child: layer),
             ],
           ),
         );
@@ -124,7 +125,6 @@ class LayersManager {
     }
 
     await updateBackground();
-    updateNotifier.value++;
   }
 
   void popLayer() {
@@ -139,7 +139,6 @@ class LayersManager {
     sidebarHighlighLabel.value = sidebarHighlighLabelStack.last;
 
     updateBackground();
-    updateNotifier.value++;
   }
 
   void removePlaylistLayer(Playlist playlist) {
@@ -154,7 +153,6 @@ class LayersManager {
     sidebarHighlighLabel.value = sidebarHighlighLabelStack.last;
 
     updateBackground();
-    updateNotifier.value++;
   }
 
   void removeArtistLayer(Artist artist) {
@@ -169,7 +167,6 @@ class LayersManager {
     sidebarHighlighLabel.value = sidebarHighlighLabelStack.last;
 
     updateBackground();
-    updateNotifier.value++;
   }
 
   void removeAlbumLayer(Album album) {
@@ -184,7 +181,6 @@ class LayersManager {
     sidebarHighlighLabel.value = sidebarHighlighLabelStack.last;
 
     updateBackground();
-    updateNotifier.value++;
   }
 
   void clear() {
@@ -222,23 +218,14 @@ class LayersManager {
     if (isEmpty) {
       return;
     }
-    final tmpBackgroundSong = backgroundSong;
     backgroundSong = _getBackgroundSong(layerStack.last);
-    final tmpBgCoverArtColor = backgroundCoverArtColor;
     backgroundCoverArtColor = await computeCoverArtColor(backgroundSong);
-    if (tmpBackgroundSong == backgroundSong &&
-        tmpBgCoverArtColor == backgroundCoverArtColor) {
-      return;
-    }
     if (mainPageThemeNotifier.value == 0) {
-      backgroundBaseColor = backgroundCoverArtColor;
-      final tmpColor =
-          backgroundSong?.lowerLuminance ?? backgroundCoverArtColor;
-      searchFieldColor = tmpColor.withAlpha(75);
-      buttonColor = tmpColor.withAlpha(75);
-      dividerColor = tmpColor;
-      selectedItemColor = tmpColor.withAlpha(75);
-      updateColorNotifier.value++;
+      searchFieldColor.setColor();
+      buttonColor.setColor();
+      dividerColor.setColor();
+      selectedItemColor.setColor();
     }
+    updateNotifier.value++;
   }
 }

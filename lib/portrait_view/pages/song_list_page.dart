@@ -3,8 +3,10 @@ import 'dart:async';
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
+import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/my_auto_size_text.dart';
+import 'package:particle_music/common_widgets/my_divider.dart';
 import 'package:particle_music/common_widgets/selectable_song_list_page.dart';
 import 'package:particle_music/portrait_view/custom_appbar_leading.dart';
 import 'package:particle_music/portrait_view/my_search_field.dart';
@@ -57,18 +59,13 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
       backgroundColor: Colors.transparent,
       scrolledUnderElevation: 0,
       actions: [
-        ValueListenableBuilder(
-          valueListenable: updateColorNotifier,
-          builder: (context, value, child) {
-            return MySearchField(
-              key: ValueKey(getFirstSong(songList)),
-              hintText: AppLocalizations.of(context).searchSongs,
-              textController: textController,
-              isSearchNotifier: isSearchNotifier,
-              song: getFirstSong(songList),
-              useCurrentSong: false,
-            );
-          },
+        MySearchField(
+          key: ValueKey(getFirstSong(songList)),
+          hintText: AppLocalizations.of(context).searchSongs,
+          textController: textController,
+          isSearchNotifier: isSearchNotifier,
+          song: getFirstSong(songList),
+          useCurrentSong: false,
         ),
         moreButton(context),
       ],
@@ -132,7 +129,7 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
               ),
             ),
           ),
-          Divider(thickness: 0.5, height: 1, color: dividerColor),
+          MyDivider(thickness: 0.5, height: 1, color: dividerColor),
           ListTile(
             leading: ImageIcon(selectImage),
             title: Text(
@@ -236,7 +233,7 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
                       Column(
                         children: [
                           ListTile(title: Text(l10n.selectSortingType)),
-                          Divider(
+                          MyDivider(
                             thickness: 0.5,
                             height: 1,
                             color: dividerColor,

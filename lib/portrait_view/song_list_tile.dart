@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/artists_albums_manager.dart';
+import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/common_widgets/my_divider.dart';
 import 'package:particle_music/common_widgets/my_sheet.dart';
 import 'package:particle_music/common_widgets/playlist_widgets.dart';
 import 'package:particle_music/folder.dart';
@@ -48,13 +50,13 @@ class SongListTile extends StatelessWidget {
             valueListenable: currentSongNotifier,
             builder: (_, currentSong, _) {
               return ValueListenableBuilder(
-                valueListenable: updateColorNotifier,
+                valueListenable: highlightTextColor.valueNotifier,
                 builder: (context, value, child) {
                   return Text(
                     getTitle(song),
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      color: song == currentSong ? highlightTextColor : null,
+                      color: song == currentSong ? value : null,
                       fontWeight: song == currentSong ? FontWeight.bold : null,
                     ),
                   );
@@ -149,7 +151,7 @@ class SongListTile extends StatelessWidget {
                   ),
 
                   SizedBox(height: 5),
-                  Divider(color: dividerColor, thickness: 0.5, height: 1),
+                  MyDivider(color: dividerColor, thickness: 0.5, height: 1),
                   SizedBox(height: 5),
 
                   Expanded(

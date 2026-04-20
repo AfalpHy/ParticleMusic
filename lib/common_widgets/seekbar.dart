@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/full_width_track_shape.dart';
 import 'package:particle_music/utils.dart';
@@ -90,12 +91,12 @@ class SeekBarState extends State<SeekBar> {
                 height: widget.seekBarHeight,
                 child: SliderTheme(
                   data: SliderTheme.of(context).copyWith(
-                    thumbColor: widget.color ?? seekBarColor,
+                    thumbColor: widget.color ?? seekBarColor.value,
                     trackHeight: isDragging ? 4 : 2,
                     trackShape: const FullWidthTrackShape(),
                     thumbShape: RoundSliderThumbShape(enabledThumbRadius: 0),
                     overlayShape: SliderComponentShape.noOverlay,
-                    activeTrackColor: widget.color ?? seekBarColor,
+                    activeTrackColor: widget.color ?? seekBarColor.value,
                     inactiveTrackColor: Colors.black12,
                   ),
                   child: Padding(

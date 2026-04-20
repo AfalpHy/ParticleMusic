@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/buttons.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
@@ -12,18 +13,23 @@ class BottomControl extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Material(
-      color: bottomColor,
-      child: SizedBox(
-        height: 75,
-        child: Stack(
-          children: [
-            currentSongTile(),
-            playControls(context),
-            if (!isMobile) otherControls(),
-          ],
-        ),
-      ),
+    return ValueListenableBuilder(
+      valueListenable: bottomColor.valueNotifier,
+      builder: (context, value, child) {
+        return Material(
+          color: value,
+          child: SizedBox(
+            height: 75,
+            child: Stack(
+              children: [
+                currentSongTile(),
+                playControls(context),
+                if (!isMobile) otherControls(),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 
@@ -139,12 +145,22 @@ class BottomControl extends StatelessWidget {
           },
           icon: const ImageIcon(desktopLyricsImage, size: 25),
         ),
-        Speaker(color: iconColor),
+        ValueListenableBuilder(
+          valueListenable: iconColor.valueNotifier,
+          builder: (context, value, child) {
+            return Speaker(color: value);
+          },
+        ),
         Center(
           child: SizedBox(
             height: 20,
             width: 120,
-            child: VolumeBar(activeColor: volumeBarColor),
+            child: ValueListenableBuilder(
+              valueListenable: volumeBarColor.valueNotifier,
+              builder: (context, value, child) {
+                return VolumeBar(activeColor: value);
+              },
+            ),
           ),
         ),
         SizedBox(width: 30),

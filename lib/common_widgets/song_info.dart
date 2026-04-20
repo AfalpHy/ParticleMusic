@@ -1,8 +1,10 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
+import 'package:particle_music/common_widgets/my_divider.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/utils.dart';
@@ -151,7 +153,7 @@ class _SongInfo extends StatelessWidget {
   Widget paddingDivider(double verticalPadding) {
     return Padding(
       padding: .symmetric(vertical: verticalPadding),
-      child: Divider(thickness: 0.5, height: 1, color: dividerColor),
+      child: MyDivider(thickness: 0.5, height: 1, color: dividerColor),
     );
   }
 }

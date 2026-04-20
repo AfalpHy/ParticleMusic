@@ -1,278 +1,319 @@
+import 'dart:convert';
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/adaptive_contrast_color_generator.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 
-ColorManager colorManager = ColorManager();
+late ColorManager colorManager;
 
-final Color vividModePageBackgroundColor = Color.fromARGB(100, 245, 245, 245);
-final Color vividModeIconColor = Colors.black;
-final Color vividModeTextColor = Colors.grey.shade900;
-final Color vividModeHighlightTextColor = Colors.black;
-final Color vividModeSwitchColor = Colors.black87;
-final Color vividModePlayBarColor = Color.fromARGB(100, 245, 245, 245);
-final Color vividModePanelColor = Color.fromARGB(100, 245, 245, 245);
-final Color vividModeSidebarColor = Color.fromARGB(100, 238, 238, 238);
-final Color vividModeBottomColor = Color.fromARGB(100, 250, 250, 250);
-final Color vividModeSeekBarColor = Colors.black;
-final Color vividModeVolumeBarColor = Colors.black;
-final Color vividModeMenuColor = Colors.white54;
+AdaptiveContrastColorTextTheme adaptiveContrastColorTheme =
+    AdaptiveContrastColorGenerator.generate(currentCoverArtColor);
 
-final Color lightModePageBackgroundColor = Colors.grey.shade200;
-final Color lightModeIconColor = Colors.black;
-final Color lightModeTextColor = Colors.grey.shade900;
-final Color lightModeHighlightTextColor = Colors.black;
-final Color lightModeSwitchColor = Colors.black87;
-final Color lightModePlayBarColor = Colors.white70;
-final Color lightModePanelColor = Colors.grey.shade100;
-final Color lightModeSidebarColor = Colors.grey.shade200;
-final Color lightModeBottomColor = Colors.grey.shade50;
-final Color lightModeSearchFieldColor = Colors.white;
-final Color lightModeButtonColor = Colors.white70;
-final Color lightModeDividerColor = Colors.grey;
-final Color lightModeSelectedItemColor = Colors.white;
-final Color lightModeMenuColor = Colors.grey.shade50;
-final Color lightModeSeekBarColor = Colors.black;
-final Color lightModeVolumeBarColor = Colors.black;
-final Color lightModeLyricsPageBackgroundColor = Colors.grey.shade200;
-final Color lightModeLyricsPageForegroundColor = Colors.grey.shade900;
-final Color lightModeLyricsPageHighlightTextColor = Colors.black;
-final Color lightModeLyricsPageButtonColor = Colors.white70;
-final Color lightModeLyricsPageDividerColor = Colors.grey;
-final Color lightModeLyricsPageSelectedItemColor = Colors.white;
-final Color lightModeLyricsPageMenuColor = Colors.grey.shade50;
+final MyColor pageBackgroundColor = MyColor(
+  name: 'pageBackgroundColor',
+  vividModeValue: Color.fromARGB(100, 245, 245, 245),
+  lightModeValue: Colors.grey.shade200,
+  darkModeValue: Color.fromARGB(255, 50, 50, 50),
+  type: 1,
+);
 
-final Color darkModePageBackgroundColor = Color.fromARGB(255, 50, 50, 50);
-final Color darkModeIconColor = Colors.grey.shade400;
-final Color darkModeTextColor = Colors.grey.shade400;
-final Color darkModeHighlightTextColor = Color.fromARGB(255, 230, 230, 230);
-final Color darkModeSwitchColor = Color.fromARGB(221, 0, 0, 0);
-final Color darkModePlayerColor = Color.fromARGB(128, 30, 30, 30);
-final Color darkModePanelColor = Color.fromARGB(255, 50, 50, 50);
-final Color darkModeSidebarColor = Color.fromARGB(255, 55, 55, 55);
-final Color darkModeBottomColor = Color.fromARGB(255, 60, 60, 60);
-final Color darkModeSearchFieldColor = Colors.grey.shade700;
-final Color darkModeButtonColor = Colors.grey.shade700;
-final Color darkModeDividerColor = Colors.grey.shade700;
-final Color darkModeSelectedItemColor = Colors.grey.shade700;
-final Color darkModeMenuColor = Colors.grey.shade800;
-final Color darkModeSeekBarColor = Colors.grey.shade400;
-final Color darkModeVolumeBarColor = Colors.grey.shade400;
-final Color darkModeLyricsPageBackgroundColor = Color.fromARGB(255, 50, 50, 50);
-final Color darkModeLyricsPageForegroundColor = Colors.grey.shade300;
-final Color darkModeLyricsPageHighlightTextColor = Colors.grey.shade200;
-final Color darkModeLyricsPageButtonColor = Colors.grey.shade700;
-final Color darkModeLyricsPageDividerColor = Colors.grey.shade700;
-final Color darkModeLyricsPageSelectedItemColor = Colors.grey.shade700;
-final Color darkModeLyricsPageMenuColor = Colors.grey.shade800;
+final MyColor iconColor = MyColor(
+  name: 'iconColor',
+  vividModeValue: Colors.black,
+  lightModeValue: Colors.black,
+  darkModeValue: Colors.grey.shade400,
+);
+
+final MyColor textColor = MyColor(
+  name: 'textColor',
+  vividModeValue: Colors.grey.shade900,
+  lightModeValue: Colors.grey.shade900,
+  darkModeValue: Colors.grey.shade400,
+);
+
+final MyColor highlightTextColor = MyColor(
+  name: 'highlightTextColor',
+  vividModeValue: Colors.black,
+  lightModeValue: Colors.black,
+  darkModeValue: Color.fromARGB(255, 230, 230, 230),
+);
+
+final MyColor switchColor = MyColor(
+  name: 'switchColor',
+  vividModeValue: Colors.black87,
+  lightModeValue: Colors.black87,
+  darkModeValue: Color.fromARGB(221, 0, 0, 0),
+);
+
+final MyColor playBarColor = MyColor(
+  name: 'playBarColor',
+  vividModeValue: Color.fromARGB(100, 245, 245, 245),
+  lightModeValue: Colors.white70,
+  darkModeValue: Color.fromARGB(128, 30, 30, 30),
+  type: 1,
+);
+
+final MyColor panelColor = MyColor(
+  name: 'panelColor',
+  vividModeValue: Color.fromARGB(100, 245, 245, 245),
+  lightModeValue: Colors.grey.shade100,
+  darkModeValue: Color.fromARGB(255, 50, 50, 50),
+);
+
+final MyColor sidebarColor = MyColor(
+  name: 'sidebarColor',
+  vividModeValue: Color.fromARGB(100, 238, 238, 238),
+  lightModeValue: Colors.grey.shade200,
+  darkModeValue: Color.fromARGB(255, 55, 55, 55),
+);
+
+final MyColor bottomColor = MyColor(
+  name: 'bottomColor',
+  vividModeValue: Color.fromARGB(100, 250, 250, 250),
+  lightModeValue: Colors.grey.shade50,
+  darkModeValue: Color.fromARGB(255, 60, 60, 60),
+);
+
+final MyColor searchFieldColor = MyColor(
+  name: 'searchFieldColor',
+  getVividValue: () {
+    final tmpColor = backgroundSong?.lowerLuminance ?? backgroundCoverArtColor;
+    return tmpColor.withAlpha(75);
+  },
+  lightModeValue: Colors.white,
+  darkModeValue: Colors.grey.shade700,
+);
+
+final MyColor buttonColor = MyColor(
+  name: 'buttonColor',
+  getVividValue: () {
+    final tmpColor = backgroundSong?.lowerLuminance ?? backgroundCoverArtColor;
+    return tmpColor.withAlpha(75);
+  },
+  lightModeValue: Colors.white70,
+  darkModeValue: Colors.grey.shade700,
+);
+
+final MyColor dividerColor = MyColor(
+  name: 'dividerColor',
+  getVividValue: () {
+    return backgroundSong?.lowerLuminance ?? backgroundCoverArtColor;
+  },
+  lightModeValue: Colors.grey,
+  darkModeValue: Colors.grey.shade700,
+);
+
+final MyColor selectedItemColor = MyColor(
+  name: 'selectedItemColor',
+  getVividValue: () {
+    final tmpColor = backgroundSong?.lowerLuminance ?? backgroundCoverArtColor;
+    return tmpColor.withAlpha(75);
+  },
+  lightModeValue: Colors.white,
+  darkModeValue: Colors.grey.shade700,
+);
+
+final MyColor menuColor = MyColor(
+  name: 'menuColor',
+  vividModeValue: Colors.white54,
+  lightModeValue: Colors.grey.shade50,
+  darkModeValue: Colors.grey.shade800,
+  type: 2,
+);
+
+final MyColor seekBarColor = MyColor(
+  name: 'seekBarColor',
+  vividModeValue: Colors.black,
+  lightModeValue: Colors.black,
+  darkModeValue: Colors.grey.shade400,
+);
+
+final MyColor volumeBarColor = MyColor(
+  name: 'volumeBarColor',
+  vividModeValue: Colors.black,
+  lightModeValue: Colors.black,
+  darkModeValue: Colors.grey.shade400,
+  type: 2,
+);
+
+final MyColor lyricsPageBackgroundColor = MyColor(
+  name: 'lyricsPageBackgroundColor',
+  vividModeValue: Colors.transparent,
+  lightModeValue: Colors.grey.shade200,
+  darkModeValue: Color.fromARGB(255, 50, 50, 50),
+  pageType: 1,
+);
+
+final MyColor lyricsPageForegroundColor = MyColor(
+  name: 'lyricsPageForegroundColor',
+  getVividValue: () {
+    return adaptiveContrastColorTheme.regular;
+  },
+  lightModeValue: Colors.grey.shade900,
+  darkModeValue: Colors.grey.shade300,
+  pageType: 1,
+);
+
+final MyColor lyricsPageHighlightTextColor = MyColor(
+  name: 'lyricsPageHighlightTextColor',
+  getVividValue: () {
+    return adaptiveContrastColorTheme.accent;
+  },
+  lightModeValue: Colors.black,
+  darkModeValue: Colors.grey.shade200,
+  pageType: 1,
+);
+
+final MyColor lyricsPageButtonColor = MyColor(
+  name: 'lyricsPageButtonColor',
+  getVividValue: () {
+    return adaptiveContrastColorTheme.regular.withAlpha(50);
+  },
+  lightModeValue: Colors.white70,
+  darkModeValue: Colors.grey.shade700,
+  pageType: 1,
+);
+
+final MyColor lyricsPageDividerColor = MyColor(
+  name: 'lyricsPageDividerColor',
+  getVividValue: () {
+    return adaptiveContrastColorTheme.regular;
+  },
+  lightModeValue: Colors.grey,
+  darkModeValue: Colors.grey.shade700,
+  pageType: 1,
+);
+
+final MyColor lyricsPageSelectedItemColor = MyColor(
+  name: 'lyricsPageSelectedItemColor',
+  getVividValue: () {
+    return adaptiveContrastColorTheme.regular.withAlpha(50);
+  },
+  lightModeValue: Colors.white,
+  darkModeValue: Colors.grey.shade700,
+  type: 2,
+  pageType: 1,
+);
+
+final MyColor lyricsPageMenuColor = MyColor(
+  name: 'lyricsPageMenuColor',
+  vividModeValue: Colors.white10,
+  lightModeValue: Colors.grey.shade50,
+  darkModeValue: Colors.grey.shade800,
+  type: 2,
+  pageType: 1,
+);
 
 class ColorManager {
-  late List<CustomColor> customColors;
+  late final List<MyColor> myColors;
+  late final List<MyColor> myMainPageColors;
+  late final List<MyColor> myLyricsPageColors;
+  late File file;
 
   ColorManager() {
-    customColors = [
-      CustomColor(
-        'customPageBackgroundColor',
-        lightModePageBackgroundColor,
-        type: 1,
-      ),
-      CustomColor('customIconColor', lightModeIconColor),
-      CustomColor('customTextColor', lightModeTextColor),
-      CustomColor('customHighlightTextColor', lightModeHighlightTextColor),
-      CustomColor('customSwitchColor', lightModeSwitchColor),
-      CustomColor('customPlayBarColor', lightModePlayBarColor, type: 1),
-      CustomColor('customPanelColor', lightModePanelColor),
-      CustomColor('customSidebarColor', lightModeSidebarColor),
-      CustomColor('customBottomColor', lightModeBottomColor),
-      CustomColor('customSearchFieldColor', lightModeSearchFieldColor),
-      CustomColor('customButtonColor', lightModeButtonColor),
-      CustomColor('customDividerColor', lightModeDividerColor),
-      CustomColor('customSelectedItemColor', lightModeSelectedItemColor),
-      CustomColor('customMenuColor', lightModeMenuColor, type: 2),
-      CustomColor('customSeekBarColor', lightModeSeekBarColor),
-      CustomColor('customVolumeBarColor', lightModeVolumeBarColor, type: 2),
-      CustomColor(
-        'customLyricsPageBackgroundColor',
-        lightModeLyricsPageBackgroundColor,
-      ),
-      CustomColor(
-        'customLyricsPageForegroundColor',
-        lightModeLyricsPageForegroundColor,
-      ),
-      CustomColor(
-        'customLyricsPageHighlightTextColor',
-        lightModeLyricsPageHighlightTextColor,
-      ),
-      CustomColor(
-        'customLyricsPageButtonColor',
-        lightModeLyricsPageButtonColor,
-      ),
-      CustomColor(
-        'customLyricsPageDividerColor',
-        lightModeLyricsPageDividerColor,
-      ),
-      CustomColor(
-        'customLyricsPageSelectedItemColor',
-        lightModeLyricsPageSelectedItemColor,
-        type: 2,
-      ),
-      CustomColor(
-        'customLyricsPageMenuColor',
-        lightModeLyricsPageMenuColor,
-        type: 2,
-      ),
+    myColors = [
+      pageBackgroundColor,
+      iconColor,
+      textColor,
+      highlightTextColor,
+      switchColor,
+      playBarColor,
+      panelColor,
+      sidebarColor,
+      bottomColor,
+      searchFieldColor,
+      buttonColor,
+      dividerColor,
+      selectedItemColor,
+      menuColor,
+      seekBarColor,
+      volumeBarColor,
+      lyricsPageBackgroundColor,
+      lyricsPageForegroundColor,
+      lyricsPageHighlightTextColor,
+      lyricsPageDividerColor,
+      lyricsPageButtonColor,
+      lyricsPageSelectedItemColor,
+      lyricsPageMenuColor,
     ];
+
+    myMainPageColors = [
+      pageBackgroundColor,
+      iconColor,
+      textColor,
+      highlightTextColor,
+      switchColor,
+      playBarColor,
+      panelColor,
+      sidebarColor,
+      bottomColor,
+      searchFieldColor,
+      buttonColor,
+      dividerColor,
+      selectedItemColor,
+      menuColor,
+      seekBarColor,
+      volumeBarColor,
+    ];
+
+    myLyricsPageColors = [
+      lyricsPageBackgroundColor,
+      lyricsPageForegroundColor,
+      lyricsPageHighlightTextColor,
+      lyricsPageDividerColor,
+      lyricsPageButtonColor,
+      lyricsPageSelectedItemColor,
+      lyricsPageMenuColor,
+    ];
+
+    file = File("${appSupportDir.path}/custom_colors.json");
+    if (!(file.existsSync())) {
+      saveCustomColors();
+    }
   }
 
   Map<String, int> customColorsToMap() {
-    return {for (var c in customColors) c.name: c.value.toARGB32()};
+    return {for (var c in myColors) c.name: c.customValue.toARGB32()};
   }
 
-  void loadCustomColors(Map<String, dynamic> json) {
-    for (var c in customColors) {
-      if (json.containsKey(c.name)) {
-        c.value = Color(json[c.name]);
+  void loadCustomColors() {
+    final content = file.readAsStringSync();
+    final map = jsonDecode(content) as Map<String, dynamic>;
+    for (var c in myColors) {
+      if (map.containsKey(c.name)) {
+        c.customValue = Color(map[c.name]);
       }
     }
+    setColors();
+  }
+
+  void saveCustomColors() {
+    file.writeAsStringSync(jsonEncode(customColorsToMap()));
   }
 
   Color getCustomColorByName(String name) {
     late Color value;
-    for (final cc in customColors) {
+    for (final cc in myColors) {
       if (cc.name == name) {
-        value = cc.value;
+        value = cc.customValue;
+        break;
       }
     }
     return value;
   }
 
   void setMainPageColors() {
-    backgroundBaseColor = Colors.transparent;
-    if (mainPageThemeNotifier.value == 0) {
-      backgroundBaseColor = backgroundCoverArtColor;
-      pageBackgroundColor = vividModePageBackgroundColor;
-      iconColor = vividModeIconColor;
-      textColor = vividModeTextColor;
-      highlightTextColor = vividModeHighlightTextColor;
-      switchColor = vividModeSwitchColor;
-      playBarColor = vividModePlayBarColor;
-      panelColor = vividModePanelColor;
-      sidebarColor = vividModeSidebarColor;
-      bottomColor = vividModeBottomColor;
-      menuColor = vividModeMenuColor;
-      final tmpColor =
-          backgroundSong?.lowerLuminance ?? backgroundCoverArtColor;
-      searchFieldColor = tmpColor.withAlpha(75);
-      buttonColor = tmpColor.withAlpha(75);
-      dividerColor = tmpColor;
-      selectedItemColor = tmpColor.withAlpha(75);
-      seekBarColor = vividModeSeekBarColor;
-      volumeBarColor = vividModeVolumeBarColor;
-    } else if (mainPageThemeNotifier.value == 1) {
-      pageBackgroundColor = lightModePageBackgroundColor;
-      iconColor = lightModeIconColor;
-      textColor = lightModeTextColor;
-      highlightTextColor = lightModeHighlightTextColor;
-      switchColor = lightModeSwitchColor;
-      playBarColor = lightModePlayBarColor;
-      panelColor = lightModePanelColor;
-      sidebarColor = lightModeSidebarColor;
-      bottomColor = lightModeBottomColor;
-      searchFieldColor = lightModeSearchFieldColor;
-      buttonColor = lightModeButtonColor;
-      dividerColor = lightModeDividerColor;
-      selectedItemColor = lightModeSelectedItemColor;
-      menuColor = lightModeMenuColor;
-      seekBarColor = lightModeSeekBarColor;
-      volumeBarColor = lightModeVolumeBarColor;
-    } else if (mainPageThemeNotifier.value == 2) {
-      pageBackgroundColor = darkModePageBackgroundColor;
-      iconColor = darkModeIconColor;
-      textColor = darkModeTextColor;
-      highlightTextColor = darkModeHighlightTextColor;
-      switchColor = darkModeSwitchColor;
-      playBarColor = darkModePlayerColor;
-      panelColor = darkModePanelColor;
-      sidebarColor = darkModeSidebarColor;
-      bottomColor = darkModeBottomColor;
-      searchFieldColor = darkModeSearchFieldColor;
-      buttonColor = darkModeButtonColor;
-      dividerColor = darkModeDividerColor;
-      selectedItemColor = darkModeSelectedItemColor;
-      menuColor = darkModeMenuColor;
-      seekBarColor = darkModeSeekBarColor;
-      volumeBarColor = darkModeVolumeBarColor;
-    } else {
-      pageBackgroundColor = getCustomColorByName('customPageBackgroundColor');
-      iconColor = getCustomColorByName('customIconColor');
-      textColor = getCustomColorByName('customTextColor');
-      highlightTextColor = getCustomColorByName('customHighlightTextColor');
-      switchColor = getCustomColorByName('customSwitchColor');
-      playBarColor = getCustomColorByName('customPlayBarColor');
-      panelColor = getCustomColorByName('customPanelColor');
-      sidebarColor = getCustomColorByName('customSidebarColor');
-      bottomColor = getCustomColorByName('customBottomColor');
-      searchFieldColor = getCustomColorByName('customSearchFieldColor');
-      buttonColor = getCustomColorByName('customButtonColor');
-      dividerColor = getCustomColorByName('customDividerColor');
-      selectedItemColor = getCustomColorByName('customSelectedItemColor');
-      menuColor = getCustomColorByName('customMenuColor');
-      seekBarColor = getCustomColorByName('customSeekBarColor');
-      volumeBarColor = getCustomColorByName('customVolumeBarColor');
+    for (final color in myMainPageColors) {
+      color.setColor();
     }
   }
 
   void setLyricsPageColors() {
-    lyricsPageBackgroundBaseColor = Colors.transparent;
-    if (lyricsPageThemeNotifier.value == 0) {
-      lyricsPageBackgroundBaseColor = currentCoverArtColor;
-      lyricsPageBackgroundColor = Colors.transparent;
-      final adaptiveContrastColorTheme =
-          AdaptiveContrastColorGenerator.generate(currentCoverArtColor);
-      lyricsPageForegroundColor = adaptiveContrastColorTheme.regular;
-      lyricsPageHighlightTextColor = adaptiveContrastColorTheme.accent;
-      lyricsPageButtonColor = adaptiveContrastColorTheme.regular.withAlpha(50);
-      lyricsPageDividerColor = adaptiveContrastColorTheme.regular;
-      lyricsPageSelectedItemColor = adaptiveContrastColorTheme.regular
-          .withAlpha(50);
-      lyricsPageMenuColor = Colors.white10;
-    } else if (lyricsPageThemeNotifier.value == 1) {
-      lyricsPageBackgroundColor = lightModeLyricsPageBackgroundColor;
-      lyricsPageForegroundColor = lightModeLyricsPageForegroundColor;
-      lyricsPageHighlightTextColor = lightModeLyricsPageHighlightTextColor;
-      lyricsPageButtonColor = lightModeLyricsPageButtonColor;
-      lyricsPageDividerColor = lightModeLyricsPageDividerColor;
-      lyricsPageSelectedItemColor = lightModeLyricsPageSelectedItemColor;
-      lyricsPageMenuColor = lightModeLyricsPageMenuColor;
-    } else if (lyricsPageThemeNotifier.value == 2) {
-      lyricsPageBackgroundColor = darkModeLyricsPageBackgroundColor;
-      lyricsPageForegroundColor = darkModeLyricsPageForegroundColor;
-      lyricsPageHighlightTextColor = darkModeLyricsPageHighlightTextColor;
-      lyricsPageButtonColor = darkModeLyricsPageButtonColor;
-      lyricsPageDividerColor = darkModeLyricsPageDividerColor;
-      lyricsPageSelectedItemColor = darkModeLyricsPageSelectedItemColor;
-      lyricsPageMenuColor = darkModeLyricsPageMenuColor;
-    } else {
-      lyricsPageBackgroundColor = getCustomColorByName(
-        'customLyricsPageBackgroundColor',
-      );
-      lyricsPageForegroundColor = getCustomColorByName(
-        'customLyricsPageForegroundColor',
-      );
-      lyricsPageHighlightTextColor = getCustomColorByName(
-        'customLyricsPageHighlightTextColor',
-      );
-      lyricsPageButtonColor = getCustomColorByName(
-        'customLyricsPageButtonColor',
-      );
-      lyricsPageDividerColor = getCustomColorByName(
-        'customLyricsPageDividerColor',
-      );
-      lyricsPageSelectedItemColor = getCustomColorByName(
-        'customLyricsPageSelectedItemColor',
-      );
-      lyricsPageMenuColor = getCustomColorByName('customLyricsPageMenuColor');
+    for (final color in myLyricsPageColors) {
+      color.setColor();
     }
   }
 
@@ -283,29 +324,29 @@ class ColorManager {
 
   Map<String, String> getNameMap(AppLocalizations l10n) {
     return {
-      'customPageBackgroundColor': l10n.backgroundColor,
-      'customIconColor': l10n.iconColor,
-      'customTextColor': l10n.textColor,
-      'customHighlightTextColor': l10n.highlightTextColor,
-      'customSwitchColor': l10n.switchColor,
-      'customPlayBarColor': l10n.playBarColor,
-      'customPanelColor': l10n.panelColor,
-      'customSidebarColor': l10n.sidebarColor,
-      'customBottomColor': l10n.bottomColor,
-      'customSearchFieldColor': l10n.searchFieldColor,
-      'customButtonColor': l10n.buttonColor,
-      'customDividerColor': l10n.dividerColor,
-      'customSelectedItemColor': l10n.selectedItemColor,
-      'customMenuColor': l10n.menuColor,
-      'customSeekBarColor': l10n.seekBarColor,
-      'customVolumeBarColor': l10n.volumeBarColor,
-      'customLyricsPageBackgroundColor': l10n.lyricsPageBackgroundColor,
-      'customLyricsPageForegroundColor': l10n.lyricsPageForegroundColor,
-      'customLyricsPageHighlightTextColor': l10n.lyricsPageHighlightTextColor,
-      'customLyricsPageButtonColor': l10n.lyricsPageButtonColor,
-      'customLyricsPageDividerColor': l10n.lyricsPageDividerColor,
-      'customLyricsPageSelectedItemColor': l10n.lyricsPageSelectedItemColor,
-      'customLyricsPageMenuColor': l10n.lyricsPageMenuColor,
+      'pageBackgroundColor': l10n.backgroundColor,
+      'iconColor': l10n.iconColor,
+      'textColor': l10n.textColor,
+      'highlightTextColor': l10n.highlightTextColor,
+      'switchColor': l10n.switchColor,
+      'playBarColor': l10n.playBarColor,
+      'panelColor': l10n.panelColor,
+      'sidebarColor': l10n.sidebarColor,
+      'bottomColor': l10n.bottomColor,
+      'searchFieldColor': l10n.searchFieldColor,
+      'buttonColor': l10n.buttonColor,
+      'dividerColor': l10n.dividerColor,
+      'selectedItemColor': l10n.selectedItemColor,
+      'menuColor': l10n.menuColor,
+      'seekBarColor': l10n.seekBarColor,
+      'volumeBarColor': l10n.volumeBarColor,
+      'lyricsPageBackgroundColor': l10n.lyricsPageBackgroundColor,
+      'lyricsPageForegroundColor': l10n.lyricsPageForegroundColor,
+      'lyricsPageHighlightTextColor': l10n.lyricsPageHighlightTextColor,
+      'lyricsPageButtonColor': l10n.lyricsPageButtonColor,
+      'lyricsPageDividerColor': l10n.lyricsPageDividerColor,
+      'lyricsPageSelectedItemColor': l10n.lyricsPageSelectedItemColor,
+      'lyricsPageMenuColor': l10n.lyricsPageMenuColor,
     };
   }
 
@@ -315,8 +356,8 @@ class ColorManager {
               ? Colors.grey
               : song.coverArtColor
         : isMobile
-        ? pageBackgroundColor
-        : panelColor;
+        ? pageBackgroundColor.value
+        : panelColor.value;
   }
 
   Color? getSpecificMainPageSearchFieldColorForm(MyAudioMetadata? song) {
@@ -324,109 +365,149 @@ class ColorManager {
         ? song == null
               ? Colors.grey.withAlpha(75)
               : song.coverArtColor?.withAlpha(75)
-        : searchFieldColor;
+        : searchFieldColor.value;
   }
 
   Color getSpecificMainPageCoverArtBaseColor() {
     return mainPageThemeNotifier.value == 0
-        ? backgroundBaseColor
+        ? backgroundCoverArtColor
         : isMobile
-        ? pageBackgroundColor
-        : panelColor;
+        ? pageBackgroundColor.value
+        : panelColor.value;
   }
 
   Color getSpecificLyricsPageCoverArtBaseColor() {
     return lyricsPageThemeNotifier.value == 0
-        ? lyricsPageBackgroundBaseColor
-        : lyricsPageBackgroundColor;
+        ? currentCoverArtColor
+        : lyricsPageBackgroundColor.value;
   }
 
   Color getSpecificBgBaseColor() {
-    return miniModeNotifier.value
+    return miniModeNotifier.value || displayLyricsPageNotifier.value
         ? currentCoverArtColor
-        : displayLyricsPageNotifier.value
-        ? lyricsPageBackgroundBaseColor
-        : backgroundBaseColor;
+        : backgroundCoverArtColor;
   }
 
   Color getSpecificBgColor() {
     return miniModeNotifier.value
-        ? vividModePanelColor
+        ? Color.fromARGB(100, 245, 245, 245)
         : displayLyricsPageNotifier.value
-        ? lyricsPageBackgroundColor
+        ? lyricsPageBackgroundColor.value
         : isMobile
-        ? pageBackgroundColor
-        : panelColor;
+        ? pageBackgroundColor.value
+        : panelColor.value;
   }
 
   Color getSpecificTextColor() {
     return miniModeNotifier.value
         ? Colors.grey.shade50
         : displayLyricsPageNotifier.value
-        ? lyricsPageForegroundColor
-        : textColor;
+        ? lyricsPageForegroundColor.value
+        : textColor.value;
   }
 
   Color getSpecificHighlightTextColor() {
     return miniModeNotifier.value
         ? Colors.grey.shade50
         : displayLyricsPageNotifier.value
-        ? lyricsPageHighlightTextColor
-        : highlightTextColor;
+        ? lyricsPageHighlightTextColor.value
+        : highlightTextColor.value;
   }
 
   Color getSpecificIconColor() {
     return miniModeNotifier.value
         ? Colors.grey.shade50
         : displayLyricsPageNotifier.value
-        ? lyricsPageForegroundColor
-        : iconColor;
+        ? lyricsPageForegroundColor.value
+        : iconColor.value;
   }
 
   Color getSpecificButtonColor() {
     return miniModeNotifier.value
         ? currentCoverArtColor.withAlpha(75)
         : displayLyricsPageNotifier.value
-        ? lyricsPageButtonColor
-        : buttonColor;
+        ? lyricsPageButtonColor.value
+        : buttonColor.value;
   }
 
   Color getSpecificDividerColor() {
     return miniModeNotifier.value
         ? currentCoverArtColor
         : displayLyricsPageNotifier.value
-        ? lyricsPageDividerColor
-        : dividerColor;
+        ? lyricsPageDividerColor.value
+        : dividerColor.value;
   }
 
   Color getSpecificSelectedItemColor() {
     return miniModeNotifier.value
         ? Colors.grey.shade50.withAlpha(50)
         : displayLyricsPageNotifier.value
-        ? lyricsPageSelectedItemColor
-        : selectedItemColor;
+        ? lyricsPageSelectedItemColor.value
+        : selectedItemColor.value;
   }
 
   Color getSpecificMenuColor() {
     if (miniModeNotifier.value) {
       return Colors.white30;
     }
-    return displayLyricsPageNotifier.value ? lyricsPageMenuColor : menuColor;
+    return displayLyricsPageNotifier.value
+        ? lyricsPageMenuColor.value
+        : menuColor.value;
   }
 }
 
-class CustomColor {
+class MyColor {
   final String name;
-  Color defaultValue;
-  late Color value;
-  // 0 common, 1 mobile only, 2 desktop only
-  int type;
+  // fixed
+  final Color? vividModeValue;
+  // dynamic
+  final Color Function()? getVividValue;
+  final Color lightModeValue;
+  final Color darkModeValue;
+  late Color customValue;
 
-  CustomColor(this.name, this.defaultValue, {this.type = 0}) {
-    value = defaultValue;
+  // common: 0, mobile only: 1, desktop only: 2
+  final int type;
+
+  // main: 0, lyrics: 1, mini mode: 2
+  final int pageType;
+
+  ValueNotifier<Color> valueNotifier = ValueNotifier(Colors.white);
+
+  MyColor({
+    required this.name,
+    this.vividModeValue,
+    this.getVividValue,
+    required this.lightModeValue,
+    required this.darkModeValue,
+    this.type = 0,
+    this.pageType = 0,
+  }) {
+    customValue = lightModeValue;
   }
 
-  void reset() {
-    value = defaultValue;
+  void setColor() {
+    final mode = pageType == 0
+        ? mainPageThemeNotifier.value
+        : lyricsPageThemeNotifier.value;
+    switch (mode) {
+      case 0:
+        valueNotifier.value = vividModeValue ?? getVividValue!.call();
+        break;
+      case 1:
+        valueNotifier.value = lightModeValue;
+        break;
+      case 2:
+        valueNotifier.value = darkModeValue;
+        break;
+      default:
+        valueNotifier.value = customValue;
+    }
+  }
+
+  Color get value => valueNotifier.value;
+
+  void resetCustomValue() {
+    customValue = lightModeValue;
   }
 }

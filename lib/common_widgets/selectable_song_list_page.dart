@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/my_auto_size_text.dart';
+import 'package:particle_music/common_widgets/my_divider.dart';
 import 'package:particle_music/common_widgets/playlist_widgets.dart';
 import 'package:particle_music/folder.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
@@ -138,11 +140,11 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
               ),
             ),
           ),
-          Divider(thickness: 0.5, height: 1, color: dividerColor),
+          MyDivider(thickness: 0.5, height: 1, color: dividerColor),
 
           if (ranking == null && recently == null)
             ListTile(
-              leading: ImageIcon(sequenceImage, color: iconColor),
+              leading: ImageIcon(sequenceImage, color: iconColor.value),
               title: Text(
                 l10n.sortSongs,
                 style: TextStyle(fontWeight: FontWeight.bold),
@@ -203,7 +205,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                       Column(
                         children: [
                           ListTile(title: Text(l10n.selectSortingType)),
-                          Divider(
+                          MyDivider(
                             thickness: 0.5,
                             height: 1,
                             color: dividerColor,
@@ -231,12 +233,11 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
     final l10n = AppLocalizations.of(context);
 
     return Container(
-      color: backgroundBaseColor,
+      color: backgroundCoverArtColor,
       child: Scaffold(
-        backgroundColor: pageBackgroundColor,
+        backgroundColor: pageBackgroundColor.value,
         resizeToAvoidBottomInset: false,
         appBar: AppBar(
-          iconTheme: IconThemeData(color: iconColor),
           backgroundColor: Colors.transparent,
           scrolledUnderElevation: 0,
           actions: [
@@ -271,7 +272,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                               builder: (context, value, child) {
                                 return Checkbox(
                                   value: value,
-                                  activeColor: iconColor,
+                                  activeColor: iconColor.value,
                                   onChanged: (value) {
                                     for (var isSelected in isSelectedList) {
                                       isSelected.value = value!;
@@ -364,7 +365,9 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
           valueListenable: selectedNumNotifier,
           builder: (context, value, child) {
             final valid = value > 0;
-            final color = valid ? iconColor : iconColor.withAlpha(128);
+            final color = valid
+                ? iconColor.value
+                : iconColor.value.withAlpha(128);
             return SizedBox(
               height: 80,
               child: Row(

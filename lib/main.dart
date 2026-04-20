@@ -4,6 +4,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/landscape_view/desktop_lyrics.dart';
 import 'package:particle_music/landscape_view/extensions/window_controller_extension.dart';
@@ -75,95 +76,91 @@ Future<void> main() async {
   await Loader.init();
 
   runApp(
-    ValueListenableBuilder(
-      valueListenable: localeNotifier,
-      builder: (context, locale, child) {
-        return ValueListenableBuilder(
-          valueListenable: updateColorNotifier,
-          builder: (context, _, _) {
-            return MaterialApp(
-              locale: locale,
-              supportedLocales: AppLocalizations.supportedLocales,
-              localizationsDelegates: AppLocalizations.localizationsDelegates,
-              theme: ThemeData(
-                appBarTheme: AppBarTheme(
-                  titleTextStyle: TextStyle(color: textColor, fontSize: 24),
-                  iconTheme: IconThemeData(color: iconColor),
-                ),
-                textTheme: Platform.isWindows
-                    ? GoogleFonts.notoSerifScTextTheme().copyWith(
-                        bodyLarge: GoogleFonts.notoSerifSc(
-                          color: textColor,
-                          fontWeight: .w500,
-                        ),
-                        bodyMedium: GoogleFonts.notoSerifSc(
-                          color: textColor,
-                          fontWeight: .w500,
-                        ),
-                      )
-                    : TextTheme(
-                        bodyLarge: TextStyle(color: textColor),
-                        bodyMedium: TextStyle(color: textColor),
-                        displayLarge: TextStyle(
-                          color: textColor,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                iconTheme: IconThemeData(color: iconColor),
-                listTileTheme: ListTileThemeData(
-                  iconColor: iconColor,
-                  textColor: textColor,
-                ),
-
-                // adjust magnifier color
-                cupertinoOverrideTheme: Platform.isIOS
-                    ? CupertinoThemeData(primaryColor: textColor)
-                    : null,
-                pageTransitionsTheme: const PageTransitionsTheme(
-                  builders: {
-                    TargetPlatform.android: CustomPageTransitionBuilder(),
-                  },
-                ),
-
-                splashColor: isMobile ? null : Colors.transparent,
-                highlightColor: isMobile ? null : Colors.transparent,
-
-                iconButtonTheme: IconButtonThemeData(
-                  style: IconButton.styleFrom(
-                    enabledMouseCursor: SystemMouseCursors.click,
-                  ),
-                ),
-
-                textButtonTheme: TextButtonThemeData(
-                  style: TextButton.styleFrom(
-                    enabledMouseCursor: SystemMouseCursors.click,
-                  ),
-                ),
-
-                elevatedButtonTheme: ElevatedButtonThemeData(
-                  style: ElevatedButton.styleFrom(
-                    enabledMouseCursor: SystemMouseCursors.click,
-                    elevation: 1,
-                    backgroundColor: buttonColor,
-                    foregroundColor: textColor,
-                    shadowColor: Colors.black12,
-                    shape: SmoothRectangleBorder(
-                      smoothness: 1,
-                      borderRadius: BorderRadius.circular(10),
+    ListenableBuilder(
+      listenable: Listenable.merge([
+        localeNotifier,
+        iconColor.valueNotifier,
+        textColor.valueNotifier,
+      ]),
+      builder: (context, child) {
+        return MaterialApp(
+          locale: localeNotifier.value,
+          supportedLocales: AppLocalizations.supportedLocales,
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          title: 'Particle Music',
+          theme: ThemeData(
+            appBarTheme: AppBarTheme(
+              titleTextStyle: TextStyle(color: textColor.value, fontSize: 24),
+              iconTheme: IconThemeData(color: iconColor.value),
+            ),
+            textTheme: Platform.isWindows
+                ? GoogleFonts.notoSerifScTextTheme().copyWith(
+                    bodyLarge: GoogleFonts.notoSerifSc(
+                      color: textColor.value,
+                      fontWeight: .w500,
+                    ),
+                    bodyMedium: GoogleFonts.notoSerifSc(
+                      color: textColor.value,
+                      fontWeight: .w500,
+                    ),
+                  )
+                : TextTheme(
+                    bodyLarge: TextStyle(color: textColor.value),
+                    bodyMedium: TextStyle(color: textColor.value),
+                    displayLarge: TextStyle(
+                      color: textColor.value,
+                      fontWeight: FontWeight.bold,
                     ),
                   ),
-                ),
+            iconTheme: IconThemeData(color: iconColor.value),
+            listTileTheme: ListTileThemeData(
+              iconColor: iconColor.value,
+              textColor: textColor.value,
+            ),
 
-                textSelectionTheme: TextSelectionThemeData(
-                  selectionColor: textColor.withAlpha(50),
-                  cursorColor: textColor,
-                  selectionHandleColor: textColor,
+            // adjust magnifier color
+            cupertinoOverrideTheme: Platform.isIOS
+                ? CupertinoThemeData(primaryColor: textColor.value)
+                : null,
+            pageTransitionsTheme: const PageTransitionsTheme(
+              builders: {TargetPlatform.android: CustomPageTransitionBuilder()},
+            ),
+
+            splashColor: isMobile ? null : Colors.transparent,
+            highlightColor: isMobile ? null : Colors.transparent,
+
+            iconButtonTheme: IconButtonThemeData(
+              style: IconButton.styleFrom(
+                enabledMouseCursor: SystemMouseCursors.click,
+              ),
+            ),
+
+            textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(
+                enabledMouseCursor: SystemMouseCursors.click,
+              ),
+            ),
+
+            elevatedButtonTheme: ElevatedButtonThemeData(
+              style: ElevatedButton.styleFrom(
+                enabledMouseCursor: SystemMouseCursors.click,
+                elevation: 1,
+                foregroundColor: textColor.value,
+                shadowColor: Colors.black12,
+                shape: SmoothRectangleBorder(
+                  smoothness: 1,
+                  borderRadius: BorderRadius.circular(10),
                 ),
               ),
-              title: 'Particle Music',
-              home: child,
-            );
-          },
+            ),
+
+            textSelectionTheme: TextSelectionThemeData(
+              selectionColor: textColor.value.withAlpha(50),
+              cursorColor: textColor.value,
+              selectionHandleColor: textColor.value,
+            ),
+          ),
+          home: child,
         );
       },
       child: ValueListenableBuilder(
@@ -293,8 +290,8 @@ Widget _loadingPage(BuildContext context) {
 
   return Scaffold(
     backgroundColor: isMobile
-        ? pageBackgroundColor.withAlpha(255)
-        : panelColor.withAlpha(255),
+        ? pageBackgroundColor.value.withAlpha(255)
+        : panelColor.value.withAlpha(255),
     body: ValueListenableBuilder(
       valueListenable: loadingNavidromeNotifier,
       builder: (context, value, child) {
@@ -303,7 +300,7 @@ Widget _loadingPage(BuildContext context) {
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
-                CircularProgressIndicator(color: iconColor),
+                CircularProgressIndicator(color: iconColor.value),
                 SizedBox(height: 15),
                 Text(l10n.loadingNavidrome),
               ],
@@ -314,7 +311,7 @@ Widget _loadingPage(BuildContext context) {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              CircularProgressIndicator(color: iconColor),
+              CircularProgressIndicator(color: iconColor.value),
               SizedBox(height: 15),
               ValueListenableBuilder(
                 valueListenable: currentLoadingFolderNotifier,

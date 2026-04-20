@@ -6,6 +6,7 @@ import 'package:particle_music/common_widgets/buttons.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/my_auto_size_text.dart';
+import 'package:particle_music/common_widgets/my_divider.dart';
 import 'package:particle_music/common_widgets/playlist_widgets.dart';
 import 'package:particle_music/portrait_view/sleep_timer.dart';
 import 'package:particle_music/common_widgets/my_sheet.dart';
@@ -111,9 +112,9 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
             fit: StackFit.expand,
             children: [
               ValueListenableBuilder(
-                valueListenable: updateColorNotifier,
+                valueListenable: lyricsPageThemeNotifier,
                 builder: (context, value, child) {
-                  if (lyricsPageThemeNotifier.value != 0) {
+                  if (value != 0) {
                     return SizedBox.shrink();
                   }
                   return CoverArtWidget(
@@ -124,23 +125,26 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                 },
               ),
               ValueListenableBuilder(
-                valueListenable: updateColorNotifier,
+                valueListenable: lyricsPageThemeNotifier,
                 builder: (context, value, child) {
-                  if (lyricsPageThemeNotifier.value != 0) {
+                  if (value != 0) {
                     return SizedBox.shrink();
                   }
                   return ClipRect(
                     child: BackdropFilter(
                       filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
                       child: Container(
-                        color: lyricsPageBackgroundBaseColor.withAlpha(180),
+                        color: currentCoverArtColor.withAlpha(180),
                       ),
                     ),
                   );
                 },
               ),
-              Container(
-                color: lyricsPageBackgroundColor,
+              ValueListenableBuilder(
+                valueListenable: lyricsPageBackgroundColor.valueNotifier,
+                builder: (context, value, child) {
+                  return Container(color: value, child: child);
+                },
                 child: Column(
                   children: [
                     SizedBox(height: 60),
@@ -153,15 +157,22 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                               SizedBox(
                                 height: 30,
                                 child: Center(
-                                  child: MyAutoSizeText(
-                                    key: UniqueKey(),
-                                    getTitle(currentSong),
-                                    maxLines: 1,
-                                    textStyle: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 20,
-                                      color: lyricsPageHighlightTextColor,
-                                    ),
+                                  child: ValueListenableBuilder(
+                                    valueListenable:
+                                        lyricsPageHighlightTextColor
+                                            .valueNotifier,
+                                    builder: (context, value, child) {
+                                      return MyAutoSizeText(
+                                        key: UniqueKey(),
+                                        getTitle(currentSong),
+                                        maxLines: 1,
+                                        textStyle: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 20,
+                                          color: value,
+                                        ),
+                                      );
+                                    },
                                   ),
                                 ),
                               ),
@@ -169,14 +180,20 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                               SizedBox(
                                 height: 24,
                                 child: Center(
-                                  child: MyAutoSizeText(
-                                    key: UniqueKey(),
-                                    '${getArtist(currentSong)} - ${getAlbum(currentSong)}',
-                                    maxLines: 1,
-                                    textStyle: TextStyle(
-                                      fontSize: 14,
-                                      color: lyricsPageForegroundColor,
-                                    ),
+                                  child: ValueListenableBuilder(
+                                    valueListenable:
+                                        lyricsPageForegroundColor.valueNotifier,
+                                    builder: (context, value, child) {
+                                      return MyAutoSizeText(
+                                        key: UniqueKey(),
+                                        '${getArtist(currentSong)} - ${getAlbum(currentSong)}',
+                                        maxLines: 1,
+                                        textStyle: TextStyle(
+                                          fontSize: 14,
+                                          color: value,
+                                        ),
+                                      );
+                                    },
                                   ),
                                 ),
                               ),
@@ -212,17 +229,12 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
 
     return Column(
       children: [
-        ValueListenableBuilder(
-          valueListenable: updateColorNotifier,
-          builder: (context, value, child) {
-            return CoverArtWidget(
-              size: mobileWidth * 0.84,
-              borderRadius: mobileWidth * 0.04,
-              song: currentSong,
-              elevation: 15,
-              color: colorManager.getSpecificLyricsPageCoverArtBaseColor(),
-            );
-          },
+        CoverArtWidget(
+          size: mobileWidth * 0.84,
+          borderRadius: mobileWidth * 0.04,
+          song: currentSong,
+          elevation: 15,
+          color: colorManager.getSpecificLyricsPageCoverArtBaseColor(),
         ),
 
         const SizedBox(height: 30),
@@ -264,7 +276,7 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
             FavoriteButton(),
             Spacer(),
             IconButton(
-              color: lyricsPageForegroundColor,
+              color: lyricsPageForegroundColor.value,
               onPressed: () {
                 lyricsFontSizeOffset += 2;
                 lyricsFontSizeOffsetChangeNotifier.value++;
@@ -273,7 +285,7 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
               icon: Icon(Icons.text_increase_rounded),
             ),
             IconButton(
-              color: lyricsPageForegroundColor,
+              color: lyricsPageForegroundColor.value,
               onPressed: () {
                 if (lyricsFontSizeOffset < -2) {
                   return;
@@ -293,132 +305,145 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                   isScrollControlled: true,
                   builder: (context) {
                     return MySheet(
-                      Column(
-                        children: [
-                          SizedBox(height: 5),
+                      ValueListenableBuilder(
+                        valueListenable:
+                            lyricsPageForegroundColor.valueNotifier,
+                        builder: (context, value, child) {
+                          return Column(
+                            children: [
+                              SizedBox(height: 5),
 
-                          ListTile(
-                            leading: CoverArtWidget(
-                              size: 50,
-                              borderRadius: 5,
-                              song: currentSong,
-                            ),
-                            title: Text(
-                              getTitle(currentSong),
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: lyricsPageForegroundColor,
-                              ),
-                            ),
-                            subtitle: Text(
-                              "${getArtist(currentSong)} - ${getAlbum(currentSong)}",
-                              overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
-                                color: lyricsPageForegroundColor,
-                              ),
-                            ),
-                          ),
-
-                          SizedBox(height: 5),
-                          Divider(
-                            color: lyricsPageDividerColor,
-                            thickness: 0.5,
-                            height: 1,
-                          ),
-                          SizedBox(height: 5),
-
-                          Expanded(
-                            child: ListView(
-                              physics: const ClampingScrollPhysics(),
-                              children: [
-                                ListTile(
-                                  leading: Icon(
-                                    Icons.add_rounded,
-                                    color: lyricsPageForegroundColor,
-                                  ),
-                                  title: Text(
-                                    l10n.add2Playlist,
-                                    style: TextStyle(
-                                      fontWeight: FontWeight.bold,
-                                      color: lyricsPageForegroundColor,
-                                    ),
-                                  ),
-                                  visualDensity: const VisualDensity(
-                                    horizontal: 0,
-                                    vertical: -4,
-                                  ),
-                                  onTap: () {
-                                    Navigator.pop(context);
-
-                                    showAddPlaylistSheet(context, [
-                                      currentSong!,
-                                    ]);
-                                  },
+                              ListTile(
+                                leading: CoverArtWidget(
+                                  size: 50,
+                                  borderRadius: 5,
+                                  song: currentSong,
                                 ),
-                                sleepTimerListTile(context, l10n, false),
-                                pauseAfterCTListTile(context, l10n),
-                              ],
-                            ),
-                          ),
-                        ],
+                                title: Text(
+                                  getTitle(currentSong),
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(color: value),
+                                ),
+                                subtitle: Text(
+                                  "${getArtist(currentSong)} - ${getAlbum(currentSong)}",
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(color: value),
+                                ),
+                              ),
+
+                              SizedBox(height: 5),
+                              MyDivider(
+                                color: lyricsPageDividerColor,
+                                thickness: 0.5,
+                                height: 1,
+                              ),
+                              SizedBox(height: 5),
+
+                              Expanded(
+                                child: ListView(
+                                  physics: const ClampingScrollPhysics(),
+                                  children: [
+                                    ListTile(
+                                      leading: Icon(
+                                        Icons.add_rounded,
+                                        color: value,
+                                      ),
+                                      title: Text(
+                                        l10n.add2Playlist,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: value,
+                                        ),
+                                      ),
+                                      visualDensity: const VisualDensity(
+                                        horizontal: 0,
+                                        vertical: -4,
+                                      ),
+                                      onTap: () {
+                                        Navigator.pop(context);
+
+                                        showAddPlaylistSheet(context, [
+                                          currentSong!,
+                                        ]);
+                                      },
+                                    ),
+                                    sleepTimerListTile(context, l10n, false),
+                                    pauseAfterCTListTile(context, l10n),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          );
+                        },
                       ),
                     );
                   },
                 );
               },
-              icon: Icon(Icons.more_vert, color: lyricsPageForegroundColor),
+              icon: ValueListenableBuilder(
+                valueListenable: lyricsPageForegroundColor.valueNotifier,
+                builder: (context, value, child) {
+                  return Icon(Icons.more_vert, color: value);
+                },
+              ),
             ),
             SizedBox(width: 25),
           ],
         ),
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 30),
-          child: SeekBar(
-            color: lyricsPageForegroundColor,
-            widgetHeight: 60,
-            seekBarHeight: 40,
+          child: ValueListenableBuilder(
+            valueListenable: lyricsPageForegroundColor.valueNotifier,
+            builder: (context, value, child) {
+              return SeekBar(color: value, widgetHeight: 60, seekBarHeight: 40);
+            },
           ),
         ),
 
         // -------- Play Controls --------
-        Row(
-          children: [
-            SizedBox(width: 25),
+        ValueListenableBuilder(
+          valueListenable: lyricsPageForegroundColor.valueNotifier,
+          builder: (context, value, child) {
+            return Row(
+              children: [
+                SizedBox(width: 25),
 
-            playModeButton(32, iconColor: lyricsPageForegroundColor),
+                playModeButton(32, iconColor: value),
 
-            Spacer(),
+                Spacer(),
 
-            skip2PreviousButton(32, iconColor: lyricsPageForegroundColor),
+                skip2PreviousButton(32, iconColor: value),
 
-            Spacer(),
+                Spacer(),
 
-            playOrPauseButton(50, iconColor: lyricsPageForegroundColor),
+                playOrPauseButton(50, iconColor: value),
 
-            Spacer(),
+                Spacer(),
 
-            skip2NextButton(32, iconColor: lyricsPageForegroundColor),
+                skip2NextButton(32, iconColor: value),
 
-            Spacer(),
+                Spacer(),
 
-            IconButton(
-              color: lyricsPageForegroundColor,
+                IconButton(
+                  color: value,
 
-              icon: const ImageIcon(playQueueImage, size: 32),
+                  icon: const ImageIcon(playQueueImage, size: 32),
 
-              onPressed: () {
-                tryVibrate();
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  builder: (context) {
-                    return PlayQueueSheet();
+                  onPressed: () {
+                    tryVibrate();
+                    showModalBottomSheet(
+                      context: context,
+                      isScrollControlled: true,
+                      builder: (context) {
+                        return PlayQueueSheet();
+                      },
+                    );
                   },
-                );
-              },
-            ),
-            SizedBox(width: 25),
-          ],
+                ),
+                SizedBox(width: 25),
+              ],
+            );
+          },
         ),
 
         SizedBox(height: 40),
@@ -468,20 +493,25 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
         Column(
           children: [
             Spacer(),
-            IconButton(
-              color: lyricsPageForegroundColor,
-              icon: ValueListenableBuilder(
-                valueListenable: isPlayingNotifier,
-                builder: (_, isPlaying, _) {
-                  return Icon(
-                    isPlaying
-                        ? Icons.pause_circle_rounded
-                        : Icons.play_circle_rounded,
-                    size: 48,
-                  );
-                },
-              ),
-              onPressed: () => audioHandler.togglePlay(),
+            ValueListenableBuilder(
+              valueListenable: lyricsPageForegroundColor.valueNotifier,
+              builder: (context, value, child) {
+                return IconButton(
+                  color: value,
+                  icon: ValueListenableBuilder(
+                    valueListenable: isPlayingNotifier,
+                    builder: (_, isPlaying, _) {
+                      return Icon(
+                        isPlaying
+                            ? Icons.pause_circle_rounded
+                            : Icons.play_circle_rounded,
+                        size: 48,
+                      );
+                    },
+                  ),
+                  onPressed: () => audioHandler.togglePlay(),
+                );
+              },
             ),
             SizedBox(height: 30),
           ],
@@ -510,10 +540,15 @@ class FavoriteButton extends StatelessWidget {
                 tryVibrate();
                 toggleFavoriteState(currentSong);
               },
-              icon: Icon(
-                value ? Icons.favorite : Icons.favorite_outline,
-                color: value ? Colors.red : lyricsPageForegroundColor,
-                size: size,
+              icon: ValueListenableBuilder(
+                valueListenable: lyricsPageForegroundColor.valueNotifier,
+                builder: (context, color, child) {
+                  return Icon(
+                    value ? Icons.favorite : Icons.favorite_outline,
+                    color: value ? Colors.red : color,
+                    size: size,
+                  );
+                },
               ),
             );
           },

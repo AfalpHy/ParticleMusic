@@ -15,17 +15,22 @@ void displayTimedPauseSetting(BuildContext context) {
     isScrollControlled: true,
     useRootNavigator: true,
     builder: (context) {
-      return ValueListenableBuilder(
-        valueListenable: updateColorNotifier,
-        builder: (context, value, child) {
-          Duration currentDuration = Duration();
-          final l10n = AppLocalizations.of(context);
-          final specificTextColor = colorManager.getSpecificTextColor();
-          final specificButtonColor = colorManager.getSpecificButtonColor();
-          return MySheet(
-            height: 350,
-            Center(
-              child: Column(
+      Duration currentDuration = Duration();
+      final l10n = AppLocalizations.of(context);
+
+      return MySheet(
+        height: 350,
+        Center(
+          child: ListenableBuilder(
+            listenable: Listenable.merge([
+              buttonColor.valueNotifier,
+              lyricsPageForegroundColor.valueNotifier,
+              lyricsPageButtonColor.valueNotifier,
+            ]),
+            builder: (context, _) {
+              final specificTextColor = colorManager.getSpecificTextColor();
+              final specificButtonColor = colorManager.getSpecificButtonColor();
+              return Column(
                 children: [
                   Spacer(),
                   CupertinoTheme(
@@ -102,10 +107,10 @@ void displayTimedPauseSetting(BuildContext context) {
                   ),
                   Spacer(),
                 ],
-              ),
-            ),
-          );
-        },
+              );
+            },
+          ),
+        ),
       );
     },
   ).then((_) {
@@ -122,8 +127,8 @@ Widget sleepTimerListTile(
   double? iconSize,
 }) {
   return ValueListenableBuilder(
-    valueListenable: updateColorNotifier,
-    builder: (context, value, child) {
+    valueListenable: lyricsPageForegroundColor.valueNotifier,
+    builder: (context, _, child) {
       final specificTextColor = inSetting
           ? textColor
           : lyricsPageForegroundColor;
@@ -132,14 +137,14 @@ Widget sleepTimerListTile(
         leading: ImageIcon(
           timerImage,
           size: iconSize,
-          color: inSetting ? iconColor : lyricsPageForegroundColor,
+          color: inSetting ? iconColor.value : lyricsPageForegroundColor.value,
         ),
 
         title: Text(
           l10n.sleepTimer,
           style: TextStyle(
             fontWeight: inSetting ? null : FontWeight.bold,
-            color: specificTextColor,
+            color: specificTextColor.value,
           ),
         ),
         trailing: SizedBox(
@@ -162,7 +167,7 @@ Widget sleepTimerListTile(
                       return value > 0 || on
                           ? Text(
                               '$hours:$minutes:$secs',
-                              style: TextStyle(color: specificTextColor),
+                              style: TextStyle(color: specificTextColor.value),
                             )
                           : SizedBox();
                     },
@@ -199,47 +204,48 @@ Widget sleepTimerListTile(
 
 Widget pauseAfterCTListTile(BuildContext context, AppLocalizations l10n) {
   return ValueListenableBuilder(
-    valueListenable: updateColorNotifier,
+    valueListenable: displayLyricsPageNotifier,
     builder: (context, value, child) {
       return ValueListenableBuilder(
-        valueListenable: displayLyricsPageNotifier,
-        builder: (context, value, child) {
-          return ValueListenableBuilder(
-            valueListenable: timedPause,
-            builder: (_, value, _) {
-              return value
-                  ? ListTile(
-                      trailing: SizedBox(
-                        width: 200,
-                        child: Row(
-                          children: [
-                            Spacer(),
-                            Text(
+        valueListenable: timedPause,
+        builder: (_, value, _) {
+          return value
+              ? ListTile(
+                  trailing: SizedBox(
+                    width: 200,
+                    child: Row(
+                      children: [
+                        Spacer(),
+                        ValueListenableBuilder(
+                          valueListenable:
+                              lyricsPageForegroundColor.valueNotifier,
+                          builder: (context, value, child) {
+                            return Text(
                               l10n.pauseAfterCurrentTrack,
                               style: TextStyle(
                                 color: colorManager.getSpecificTextColor(),
                               ),
-                            ),
-                            SizedBox(width: 10),
-                            ValueListenableBuilder(
-                              valueListenable: pauseAfterCompleted,
-                              builder: (_, value, _) {
-                                return MySwitch(
-                                  value: value,
-                                  onToggle: (value) {
-                                    tryVibrate();
-                                    pauseAfterCompleted.value = value;
-                                  },
-                                );
-                              },
-                            ),
-                          ],
+                            );
+                          },
                         ),
-                      ),
-                    )
-                  : SizedBox();
-            },
-          );
+                        SizedBox(width: 10),
+                        ValueListenableBuilder(
+                          valueListenable: pauseAfterCompleted,
+                          builder: (_, value, _) {
+                            return MySwitch(
+                              value: value,
+                              onToggle: (value) {
+                                tryVibrate();
+                                pauseAfterCompleted.value = value;
+                              },
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                )
+              : SizedBox();
         },
       );
     },

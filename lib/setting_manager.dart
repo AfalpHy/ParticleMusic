@@ -3,7 +3,6 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:particle_music/artists_albums_manager.dart';
-import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/navidrome_client.dart';
 
@@ -46,10 +45,6 @@ class SettingManager {
     lyricsPageThemeNotifier.value =
         json['lyricsPageTheme'] as int? ?? lyricsPageThemeNotifier.value;
 
-    colorManager.loadCustomColors(json);
-
-    colorManager.setColors();
-
     lyricsFontSizeOffset =
         json['lyricsFontSizeOffset'] as double? ?? lyricsFontSizeOffset;
 
@@ -83,8 +78,6 @@ class SettingManager {
 
         'mainPageTheme': mainPageThemeNotifier.value,
         'lyricsPageTheme': lyricsPageThemeNotifier.value,
-
-        ...colorManager.customColorsToMap(),
 
         'lyricsFontSizeOffset': lyricsFontSizeOffset,
         'exitOnClose': exitOnCloseNotifier.value,

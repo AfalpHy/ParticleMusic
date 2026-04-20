@@ -10,6 +10,7 @@ import 'package:http/http.dart' as http;
 import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/equalizer.dart';
+import 'package:particle_music/common_widgets/my_divider.dart';
 import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/common_widgets/manage_music_folders.dart';
 import 'package:particle_music/loader.dart';
@@ -59,17 +60,12 @@ class SettingsList extends StatelessWidget {
 
         if (isLandscape)
           sliverBox(
-            ValueListenableBuilder(
-              valueListenable: updateColorNotifier,
-              builder: (context, value, child) {
-                return Divider(
-                  thickness: 0.5,
-                  height: 0.5,
-                  indent: 20,
-                  endIndent: 20,
-                  color: dividerColor,
-                );
-              },
+            MyDivider(
+              thickness: 0.5,
+              height: 0.5,
+              indent: 20,
+              endIndent: 20,
+              color: dividerColor,
             ),
           ),
 
@@ -233,77 +229,88 @@ class SettingsList extends StatelessWidget {
                   SizedBox(height: isMobile ? 10 : 20),
                   Builder(
                     builder: (context) {
-                      return Row(
-                        children: [
-                          Spacer(),
-                          ElevatedButton(
-                            onPressed: () async {
-                              if (!await showConfirmDialog(
-                                context,
-                                l10n.clear,
-                              )) {
-                                return;
-                              }
-                              username = '';
-                              password = '';
-                              baseUrl = '';
-                              settingManager.saveSetting();
-                              navidromeClient = NavidromeClient(
-                                username: username,
-                                password: password,
-                                baseUrl: baseUrl,
-                              );
-                              if (context.mounted) {
-                                Navigator.pop(context);
-                              }
-                              Loader.reload();
-                            },
-                            child: Text(l10n.clear),
-                          ),
-                          SizedBox(width: 20),
-                          ElevatedButton(
-                            onPressed: () async {
-                              final tmp = navidromeClient;
-                              try {
-                                navidromeClient = NavidromeClient(
-                                  username: usernameTmp.text,
-                                  password: passwordTmp.text,
-                                  baseUrl: baseUrlTmp.text,
-                                );
-                              } catch (e) {
-                                navidromeClient = tmp;
-                                showCenterMessage(
-                                  context,
-                                  e.toString(),
-                                  duration: 5000,
-                                );
-                                return;
-                              }
-                              if (await navidromeClient.ping()) {
-                                if (context.mounted) {
-                                  Navigator.pop(context);
-                                }
-                                username = usernameTmp.text;
-                                password = passwordTmp.text;
-                                baseUrl = baseUrlTmp.text;
-                                settingManager.saveSetting();
-
-                                await Loader.reload();
-                              } else {
-                                navidromeClient = tmp;
-                                if (context.mounted) {
-                                  showCenterMessage(
+                      return ValueListenableBuilder(
+                        valueListenable: buttonColor.valueNotifier,
+                        builder: (context, value, child) {
+                          return Row(
+                            children: [
+                              Spacer(),
+                              ElevatedButton(
+                                onPressed: () async {
+                                  if (!await showConfirmDialog(
                                     context,
-                                    "Failed to connect to Navidrome",
-                                    duration: 2000,
+                                    l10n.clear,
+                                  )) {
+                                    return;
+                                  }
+                                  username = '';
+                                  password = '';
+                                  baseUrl = '';
+                                  settingManager.saveSetting();
+                                  navidromeClient = NavidromeClient(
+                                    username: username,
+                                    password: password,
+                                    baseUrl: baseUrl,
                                   );
-                                }
-                              }
-                            },
-                            child: Text(l10n.confirm),
-                          ),
-                          Spacer(),
-                        ],
+                                  if (context.mounted) {
+                                    Navigator.pop(context);
+                                  }
+                                  Loader.reload();
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: value,
+                                ),
+                                child: Text(l10n.clear),
+                              ),
+                              SizedBox(width: 20),
+                              ElevatedButton(
+                                onPressed: () async {
+                                  final tmp = navidromeClient;
+                                  try {
+                                    navidromeClient = NavidromeClient(
+                                      username: usernameTmp.text,
+                                      password: passwordTmp.text,
+                                      baseUrl: baseUrlTmp.text,
+                                    );
+                                  } catch (e) {
+                                    navidromeClient = tmp;
+                                    showCenterMessage(
+                                      context,
+                                      e.toString(),
+                                      duration: 5000,
+                                    );
+                                    return;
+                                  }
+                                  if (await navidromeClient.ping()) {
+                                    if (context.mounted) {
+                                      Navigator.pop(context);
+                                    }
+                                    username = usernameTmp.text;
+                                    password = passwordTmp.text;
+                                    baseUrl = baseUrlTmp.text;
+                                    settingManager.saveSetting();
+
+                                    await Loader.reload();
+                                  } else {
+                                    navidromeClient = tmp;
+                                    if (context.mounted) {
+                                      showCenterMessage(
+                                        context,
+                                        "Failed to connect to Navidrome",
+                                        duration: 2000,
+                                      );
+                                    }
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: value,
+                                ),
+                                child: Text(l10n.confirm),
+                              ),
+                              Spacer(),
+                            ],
+                          );
+                        },
                       );
                     },
                   ),
@@ -358,69 +365,80 @@ class SettingsList extends StatelessWidget {
                   SizedBox(height: isMobile ? 10 : 20),
                   Builder(
                     builder: (context) {
-                      return Row(
-                        children: [
-                          Spacer(),
-                          ElevatedButton(
-                            onPressed: () async {
-                              if (!await showConfirmDialog(
-                                context,
-                                l10n.clear,
-                              )) {
-                                return;
-                              }
-                              webdavUsername = '';
-                              webdavPassword = '';
-                              webdavBaseUrl = '';
-                              settingManager.saveSetting();
-                              webdavClient = null;
-                              if (context.mounted) {
-                                Navigator.pop(context);
-                              }
-                              Loader.reload();
-                            },
-                            child: Text(l10n.clear),
-                          ),
-                          SizedBox(width: 20),
-                          ElevatedButton(
-                            onPressed: () async {
-                              try {
-                                await newClient(
-                                  baseUrlTmp.text,
-                                  user: usernameTmp.text,
-                                  password: passwordTmp.text,
-                                ).ping();
-                                webdavClient = newClient(
-                                  baseUrlTmp.text,
-                                  user: usernameTmp.text,
-                                  password: passwordTmp.text,
-                                );
-                                webdavUsername = usernameTmp.text;
-                                webdavPassword = passwordTmp.text;
-                                webdavBaseUrl = baseUrlTmp.text;
-                                if (context.mounted) {
-                                  Navigator.pop(context);
-                                  showCenterMessage(
+                      return ValueListenableBuilder(
+                        valueListenable: buttonColor.valueNotifier,
+                        builder: (context, value, child) {
+                          return Row(
+                            children: [
+                              Spacer(),
+                              ElevatedButton(
+                                onPressed: () async {
+                                  if (!await showConfirmDialog(
                                     context,
-                                    'Successfully connect to WebDAV',
-                                    duration: 2000,
-                                  );
-                                }
-                                settingManager.saveSetting();
-                              } catch (e) {
-                                if (context.mounted) {
-                                  showCenterMessage(
-                                    context,
-                                    'Can not connect to WebDAV',
-                                    duration: 2000,
-                                  );
-                                }
-                              }
-                            },
-                            child: Text(l10n.confirm),
-                          ),
-                          Spacer(),
-                        ],
+                                    l10n.clear,
+                                  )) {
+                                    return;
+                                  }
+                                  webdavUsername = '';
+                                  webdavPassword = '';
+                                  webdavBaseUrl = '';
+                                  settingManager.saveSetting();
+                                  webdavClient = null;
+                                  if (context.mounted) {
+                                    Navigator.pop(context);
+                                  }
+                                  Loader.reload();
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: value,
+                                ),
+                                child: Text(l10n.clear),
+                              ),
+                              SizedBox(width: 20),
+                              ElevatedButton(
+                                onPressed: () async {
+                                  try {
+                                    await newClient(
+                                      baseUrlTmp.text,
+                                      user: usernameTmp.text,
+                                      password: passwordTmp.text,
+                                    ).ping();
+                                    webdavClient = newClient(
+                                      baseUrlTmp.text,
+                                      user: usernameTmp.text,
+                                      password: passwordTmp.text,
+                                    );
+                                    webdavUsername = usernameTmp.text;
+                                    webdavPassword = passwordTmp.text;
+                                    webdavBaseUrl = baseUrlTmp.text;
+                                    if (context.mounted) {
+                                      Navigator.pop(context);
+                                      showCenterMessage(
+                                        context,
+                                        'Successfully connect to WebDAV',
+                                        duration: 2000,
+                                      );
+                                    }
+                                    settingManager.saveSetting();
+                                  } catch (e) {
+                                    if (context.mounted) {
+                                      showCenterMessage(
+                                        context,
+                                        'Can not connect to WebDAV',
+                                        duration: 2000,
+                                      );
+                                    }
+                                  }
+                                },
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: value,
+                                ),
+                                child: Text(l10n.confirm),
+                              ),
+                              Spacer(),
+                            ],
+                          );
+                        },
                       );
                     },
                   ),
@@ -538,13 +556,11 @@ class SettingsList extends StatelessWidget {
   void _updateMainPageTheme() {
     settingManager.saveSetting();
     colorManager.setMainPageColors();
-    updateColorNotifier.value++;
   }
 
   void _updateLyricsPageTheme() {
     settingManager.saveSetting();
     colorManager.setLyricsPageColors();
-    updateColorNotifier.value++;
   }
 
   Widget themeListTile(BuildContext context, AppLocalizations l10n) {
@@ -707,12 +723,13 @@ class SettingsList extends StatelessWidget {
     BuildContext context,
     String title,
     AppLocalizations l10n,
-    CustomColor customColor,
+    MyColor myColor,
   ) {
+    ValueNotifier changeNotifier = ValueNotifier(0);
     return ValueListenableBuilder(
-      valueListenable: updateColorNotifier,
+      valueListenable: changeNotifier,
       builder: (context, value, child) {
-        Color pikerColor = customColor.value;
+        Color pikerColor = myColor.customValue;
         return ListTile(
           title: Text(title),
           trailing: Padding(
@@ -770,29 +787,39 @@ class SettingsList extends StatelessWidget {
                             },
                           ),
                           SizedBox(height: 15),
-                          Row(
-                            children: [
-                              Spacer(),
-                              ElevatedButton(
-                                onPressed: () {
-                                  Navigator.pop(context);
-                                },
-
-                                child: Text(l10n.cancel),
-                              ),
-                              SizedBox(width: 20),
-                              ElevatedButton(
-                                onPressed: () {
-                                  customColor.value = colorNotifier.value;
-                                  colorManager.setColors();
-                                  updateColorNotifier.value++;
-                                  settingManager.saveSetting();
-                                  Navigator.pop(context);
-                                },
-                                child: Text(l10n.confirm),
-                              ),
-                              Spacer(),
-                            ],
+                          ValueListenableBuilder(
+                            valueListenable: buttonColor.valueNotifier,
+                            builder: (context, value, child) {
+                              return Row(
+                                children: [
+                                  Spacer(),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: value,
+                                    ),
+                                    child: Text(l10n.cancel),
+                                  ),
+                                  SizedBox(width: 20),
+                                  ElevatedButton(
+                                    onPressed: () {
+                                      Navigator.pop(context);
+                                      myColor.customValue = colorNotifier.value;
+                                      myColor.setColor();
+                                      changeNotifier.value++;
+                                      colorManager.saveCustomColors();
+                                    },
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: value,
+                                    ),
+                                    child: Text(l10n.confirm),
+                                  ),
+                                  Spacer(),
+                                ],
+                              );
+                            },
                           ),
                           Spacer(),
                         ],
@@ -830,26 +857,25 @@ class SettingsList extends StatelessWidget {
                   padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
                   child: ListView(
                     children: [
-                      for (final customColor in colorManager.customColors)
-                        if (customColor.type == 0 ||
-                            (customColor.type == 1 && isMobile) ||
-                            (customColor.type == 2 && !isMobile))
+                      for (final color in colorManager.myColors)
+                        if (color.type == 0 ||
+                            (color.type == 1 && isMobile) ||
+                            (color.type == 2 && !isMobile))
                           colorListTile(
                             context,
-                            nameMap[customColor.name]!,
+                            nameMap[color.name]!,
                             l10n,
-                            customColor,
+                            color,
                           ),
 
                       ListTile(
                         title: Text(l10n.reset),
                         onTap: () {
-                          for (final customColor in colorManager.customColors) {
-                            customColor.reset();
+                          for (final color in colorManager.myColors) {
+                            color.resetCustomValue();
                           }
                           colorManager.setColors();
-                          updateColorNotifier.value++;
-                          settingManager.saveSetting();
+                          colorManager.setColors();
                         },
                       ),
                     ],
@@ -1129,24 +1155,35 @@ class SettingsList extends StatelessWidget {
                           ),
                         ),
                         SizedBox(height: 20),
-                        Row(
-                          children: [
-                            Spacer(),
-                            ElevatedButton(
-                              onPressed: () => Navigator.pop(context),
-                              child: Text(l10n.cancel),
-                            ),
-                            SizedBox(width: 20),
-                            ElevatedButton(
-                              onPressed: () => launchUrl(
-                                Uri.parse(
-                                  "https://github.com/AfalpHy/ParticleMusic/releases/latest",
+                        ValueListenableBuilder(
+                          valueListenable: buttonColor.valueNotifier,
+                          builder: (context, value, child) {
+                            return Row(
+                              children: [
+                                Spacer(),
+                                ElevatedButton(
+                                  onPressed: () => Navigator.pop(context),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: value,
+                                  ),
+                                  child: Text(l10n.cancel),
                                 ),
-                              ),
-                              child: Text(l10n.go2Download),
-                            ),
-                            Spacer(),
-                          ],
+                                SizedBox(width: 20),
+                                ElevatedButton(
+                                  onPressed: () => launchUrl(
+                                    Uri.parse(
+                                      "https://github.com/AfalpHy/ParticleMusic/releases/latest",
+                                    ),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: value,
+                                  ),
+                                  child: Text(l10n.go2Download),
+                                ),
+                                Spacer(),
+                              ],
+                            );
+                          },
                         ),
                       ],
                     ),

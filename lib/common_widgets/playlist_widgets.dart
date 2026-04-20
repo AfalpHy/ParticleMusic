@@ -109,58 +109,67 @@ Future<bool> showCreatePlaylistSheet(BuildContext context) async {
     isScrollControlled: true,
     useRootNavigator: true,
     builder: (context) {
-      final specificTextcolor = colorManager.getSpecificTextColor();
-
       return MySheet(
         height: 500,
-        Column(
-          mainAxisAlignment: MainAxisAlignment.start, // center vertically
-          children: [
-            Padding(
-              padding: const EdgeInsets.fromLTRB(30, 30, 30, 0),
-              child: Theme(
-                data: Theme.of(context).copyWith(
-                  textSelectionTheme: TextSelectionThemeData(
-                    selectionColor: specificTextcolor.withAlpha(50),
-                    cursorColor: specificTextcolor,
-                    selectionHandleColor: specificTextcolor,
-                  ),
-                ),
-                child: SizedBox(
-                  height: 60,
-                  child: TextField(
-                    controller: controller,
-                    autofocus: true,
-                    style: TextStyle(color: specificTextcolor),
-                    decoration: InputDecoration(
-                      enabledBorder: OutlineInputBorder(
-                        borderSide: BorderSide(color: specificTextcolor),
+        ListenableBuilder(
+          listenable: Listenable.merge([
+            buttonColor.valueNotifier,
+            lyricsPageForegroundColor.valueNotifier,
+            lyricsPageButtonColor.valueNotifier,
+          ]),
+          builder: (context, _) {
+            final specificTextcolor = colorManager.getSpecificTextColor();
+
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.start, // center vertically
+              children: [
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(30, 30, 30, 0),
+                  child: Theme(
+                    data: Theme.of(context).copyWith(
+                      textSelectionTheme: TextSelectionThemeData(
+                        selectionColor: specificTextcolor.withAlpha(50),
+                        cursorColor: specificTextcolor,
+                        selectionHandleColor: specificTextcolor,
                       ),
-                      focusedBorder: OutlineInputBorder(
-                        borderSide: BorderSide(
-                          color: specificTextcolor,
-                          width: 1.5,
+                    ),
+                    child: SizedBox(
+                      height: 60,
+                      child: TextField(
+                        controller: controller,
+                        autofocus: true,
+                        style: TextStyle(color: specificTextcolor),
+                        decoration: InputDecoration(
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(color: specificTextcolor),
+                          ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: specificTextcolor,
+                              width: 1.5,
+                            ),
+                          ),
                         ),
                       ),
                     ),
                   ),
                 ),
-              ),
-            ),
 
-            const SizedBox(height: 10),
+                const SizedBox(height: 10),
 
-            ElevatedButton(
-              onPressed: () {
-                Navigator.pop(context, controller.text); // close with value
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: colorManager.getSpecificButtonColor(),
-                foregroundColor: specificTextcolor,
-              ),
-              child: Text(AppLocalizations.of(context).confirm),
-            ),
-          ],
+                ElevatedButton(
+                  onPressed: () {
+                    Navigator.pop(context, controller.text); // close with value
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: colorManager.getSpecificButtonColor(),
+                    foregroundColor: specificTextcolor,
+                  ),
+                  child: Text(AppLocalizations.of(context).confirm),
+                ),
+              ],
+            );
+          },
         ),
       );
     },
@@ -222,13 +231,21 @@ Future<bool> showCreatePlaylistDialog(BuildContext context) async {
             ),
             SizedBox(height: 30),
             Center(
-              child: ElevatedButton(
-                onPressed: () => Navigator.pop(context, controller.text),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: colorManager.getSpecificButtonColor(),
-                  foregroundColor: specificTextcolor,
-                ),
-                child: Text(l10n.confirm),
+              child: ListenableBuilder(
+                listenable: Listenable.merge([
+                  buttonColor.valueNotifier,
+                  lyricsPageButtonColor.valueNotifier,
+                ]),
+                builder: (context, _) {
+                  return ElevatedButton(
+                    onPressed: () => Navigator.pop(context, controller.text),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: colorManager.getSpecificButtonColor(),
+                      foregroundColor: specificTextcolor,
+                    ),
+                    child: Text(l10n.confirm),
+                  );
+                },
               ),
             ),
           ],
@@ -330,7 +347,7 @@ Widget reorderablePlaylistsView(BuildContext context) {
                   child: Row(
                     children: [
                       SizedBox(width: 10),
-                      ImageIcon(reorderImage, color: iconColor),
+                      ImageIcon(reorderImage, color: iconColor.value),
                     ],
                   ),
                 ),

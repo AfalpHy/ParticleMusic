@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
+import 'package:particle_music/common_widgets/my_divider.dart';
 import 'package:particle_music/common_widgets/playlist_widgets.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/layer/layers_manager.dart';
@@ -33,11 +34,14 @@ class Sidebar extends StatelessWidget {
         child: ValueListenableBuilder(
           valueListenable: sidebarHighlighLabel,
           builder: (context, highlightLabel, child) {
-            return Material(
-              color: highlightLabel == label
-                  ? selectedItemColor
-                  : Colors.transparent,
-              child: child,
+            return ValueListenableBuilder(
+              valueListenable: selectedItemColor.valueNotifier,
+              builder: (context, value, _) {
+                return Material(
+                  color: highlightLabel == label ? value : Colors.transparent,
+                  child: child,
+                );
+              },
             );
           },
           child: ListTile(
@@ -66,8 +70,11 @@ class Sidebar extends StatelessWidget {
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    return Material(
-      color: sidebarColor,
+    return ValueListenableBuilder(
+      valueListenable: sidebarColor.valueNotifier,
+      builder: (context, value, child) {
+        return Material(color: value, child: child);
+      },
       child: SizedBox(
         width: 220,
         child: Column(
@@ -81,13 +88,18 @@ class Sidebar extends StatelessWidget {
               child: SizedBox(
                 height: 75,
                 child: Center(
-                  child: Text(
-                    'Particle Music',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                      fontSize: 20,
-                      color: highlightTextColor,
-                    ),
+                  child: ValueListenableBuilder(
+                    valueListenable: highlightTextColor.valueNotifier,
+                    builder: (context, value, child) {
+                      return Text(
+                        'Particle Music',
+                        style: TextStyle(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 20,
+                          color: value,
+                        ),
+                      );
+                    },
                   ),
                 ),
               ),
@@ -157,7 +169,7 @@ class Sidebar extends StatelessWidget {
 
                     SliverToBoxAdapter(child: SizedBox(height: 10)),
                     SliverToBoxAdapter(
-                      child: Divider(
+                      child: MyDivider(
                         thickness: 0.5,
                         height: 1,
                         indent: 20,
@@ -194,7 +206,7 @@ class Sidebar extends StatelessWidget {
                     ),
                     SliverToBoxAdapter(child: SizedBox(height: 10)),
                     SliverToBoxAdapter(
-                      child: Divider(
+                      child: MyDivider(
                         thickness: 0.5,
                         height: 1,
                         indent: 20,
@@ -208,7 +220,7 @@ class Sidebar extends StatelessWidget {
                       child: ContextMenuWidget(
                         previewBuilder: (context, child) {
                           return Material(
-                            color: selectedItemColor.withAlpha(255),
+                            color: selectedItemColor.value.withAlpha(255),
                             shape: SmoothRectangleBorder(
                               smoothness: 1,
                               borderRadius: .circular(5),
@@ -219,7 +231,7 @@ class Sidebar extends StatelessWidget {
                         },
                         liftBuilder: (context, child) {
                           return Material(
-                            color: selectedItemColor.withAlpha(255),
+                            color: selectedItemColor.value.withAlpha(255),
                             shape: SmoothRectangleBorder(
                               smoothness: 1,
                               borderRadius: .circular(5),
@@ -353,35 +365,70 @@ class Sidebar extends StatelessWidget {
       valueListenable: playlistsManager.updateNotifier,
       builder: (context, value, child) {
         final playlist = playlistsManager.getPlaylistByIndex(index);
-        return ContextMenuWidget(
-          desktopMenuWidgetBuilder: CustomDesktopMenuWidgetBuilder(
-            backgroundBaseColor: backgroundBaseColor,
-            backgroundColor: colorManager.getSpecificMenuColor(),
-            iconColor: iconColor,
-            textColor: textColor,
-            selectedColor: selectedItemColor,
-            dividerColor: dividerColor,
-          ),
-          previewBuilder: (context, child) {
-            return Material(
-              color: selectedItemColor.withAlpha(255),
-              shape: SmoothRectangleBorder(
-                smoothness: 1,
-                borderRadius: .circular(5),
+        return ListenableBuilder(
+          listenable: Listenable.merge([
+            iconColor.valueNotifier,
+            textColor.valueNotifier,
+            selectedItemColor.valueNotifier,
+            dividerColor.valueNotifier,
+            menuColor.valueNotifier,
+          ]),
+          builder: (context, child) {
+            return ContextMenuWidget(
+              desktopMenuWidgetBuilder: CustomDesktopMenuWidgetBuilder(
+                backgroundBaseColor: backgroundCoverArtColor,
+                backgroundColor: colorManager.getSpecificMenuColor(),
+                iconColor: iconColor.value,
+                textColor: textColor.value,
+                selectedColor: selectedItemColor.value,
+                dividerColor: dividerColor.value,
               ),
-              clipBehavior: .antiAlias,
-              child: child,
-            );
-          },
-          liftBuilder: (context, child) {
-            return Material(
-              color: selectedItemColor.withAlpha(255),
-              shape: SmoothRectangleBorder(
-                smoothness: 1,
-                borderRadius: .circular(5),
-              ),
-              clipBehavior: .antiAlias,
-              child: child,
+              previewBuilder: (context, child) {
+                return Material(
+                  color: selectedItemColor.value.withAlpha(255),
+                  shape: SmoothRectangleBorder(
+                    smoothness: 1,
+                    borderRadius: .circular(5),
+                  ),
+                  clipBehavior: .antiAlias,
+                  child: child,
+                );
+              },
+              liftBuilder: (context, child) {
+                return Material(
+                  color: selectedItemColor.value.withAlpha(255),
+                  shape: SmoothRectangleBorder(
+                    smoothness: 1,
+                    borderRadius: .circular(5),
+                  ),
+                  clipBehavior: .antiAlias,
+                  child: child,
+                );
+              },
+              child: child!,
+              menuProvider: (_) {
+                return Menu(
+                  children: [
+                    MenuAction(
+                      title: index == 0 ? l10n.favorites : playlist.name,
+                      callback: () {},
+                    ),
+
+                    if (playlist.isNotFavorite) MenuSeparator(),
+                    if (playlist.isNotFavorite)
+                      MenuAction(
+                        title: l10n.delete,
+                        image: MenuImage.icon(Icons.delete),
+                        callback: () async {
+                          if (await showConfirmDialog(context, l10n.delete)) {
+                            layersManager.removePlaylistLayer(playlist);
+                            playlistsManager.deletePlaylist(playlist);
+                          }
+                        },
+                      ),
+                  ],
+                );
+              },
             );
           },
           child: sidebarItem(
@@ -411,29 +458,6 @@ class Sidebar extends StatelessWidget {
               layersManager.pushLayer('_${playlist.name}');
             },
           ),
-          menuProvider: (_) {
-            return Menu(
-              children: [
-                MenuAction(
-                  title: index == 0 ? l10n.favorites : playlist.name,
-                  callback: () {},
-                ),
-
-                if (playlist.isNotFavorite) MenuSeparator(),
-                if (playlist.isNotFavorite)
-                  MenuAction(
-                    title: l10n.delete,
-                    image: MenuImage.icon(Icons.delete),
-                    callback: () async {
-                      if (await showConfirmDialog(context, l10n.delete)) {
-                        layersManager.removePlaylistLayer(playlist);
-                        playlistsManager.deletePlaylist(playlist);
-                      }
-                    },
-                  ),
-              ],
-            );
-          },
         );
       },
     );

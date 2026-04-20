@@ -43,10 +43,7 @@ class _EqualizerWidgetState extends State<EqualizerWidget> {
       children: [
         Text(
           '${gains[i].toStringAsFixed(0)} dB',
-          style: TextStyle(
-            fontSize: 12,
-            color: colorManager.getSpecificTextColor(),
-          ),
+          style: TextStyle(fontSize: 12),
         ),
         SizedBox(height: 15),
         Expanded(
@@ -54,12 +51,12 @@ class _EqualizerWidgetState extends State<EqualizerWidget> {
             quarterTurns: -1,
             child: SliderTheme(
               data: SliderTheme.of(context).copyWith(
-                thumbColor: colorManager.getSpecificIconColor(),
+                thumbColor: iconColor.value,
                 trackHeight: 4,
                 trackShape: const FullWidthTrackShape(),
                 thumbShape: RoundSliderThumbShape(enabledThumbRadius: 10),
                 overlayShape: SliderComponentShape.noOverlay,
-                activeTrackColor: colorManager.getSpecificIconColor(),
+                activeTrackColor: iconColor.value,
                 inactiveTrackColor: Colors.black12,
               ),
               child: Slider(
@@ -77,13 +74,7 @@ class _EqualizerWidgetState extends State<EqualizerWidget> {
           ),
         ),
         const SizedBox(height: 15),
-        Text(
-          _formatFreq(freqs[i]),
-          style: TextStyle(
-            fontSize: 12,
-            color: colorManager.getSpecificTextColor(),
-          ),
-        ),
+        Text(_formatFreq(freqs[i]), style: TextStyle(fontSize: 12)),
       ],
     );
   }
@@ -110,13 +101,15 @@ class _EqualizerWidgetState extends State<EqualizerWidget> {
             ),
           ),
           SizedBox(height: 10),
-          ElevatedButton(
-            onPressed: () => _reset(),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: colorManager.getSpecificButtonColor(),
-              foregroundColor: colorManager.getSpecificTextColor(),
-            ),
-            child: Text(AppLocalizations.of(context).reset),
+          ValueListenableBuilder(
+            valueListenable: buttonColor.valueNotifier,
+            builder: (context, value, child) {
+              return ElevatedButton(
+                onPressed: () => _reset(),
+                style: ElevatedButton.styleFrom(backgroundColor: value),
+                child: Text(AppLocalizations.of(context).reset),
+              );
+            },
           ),
         ],
       ),

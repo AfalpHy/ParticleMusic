@@ -32,7 +32,6 @@ class MyLocation extends StatelessWidget {
               builder: (_, isScrolling, _) {
                 return isScrolling && index >= 0
                     ? IconButton(
-                        color: iconColor,
                         onPressed: () {
                           final position = scrollController.position;
                           final maxScrollExtent = position.maxScrollExtent;

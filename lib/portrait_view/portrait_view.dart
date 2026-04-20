@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/landscape_view/sidebar.dart';
 import 'package:particle_music/layer/layers_manager.dart';
@@ -93,7 +94,6 @@ class _PortraitViewState extends State<PortraitView>
               ListenableBuilder(
                 listenable: Listenable.merge([
                   rebuildNotifier,
-                  updateColorNotifier,
                   layersManager.updateNotifier,
                 ]),
                 builder: (context, _) {
@@ -106,17 +106,7 @@ class _PortraitViewState extends State<PortraitView>
                 },
               ),
 
-              Positioned(
-                left: 20,
-                right: 20,
-                bottom: 40,
-                child: ValueListenableBuilder(
-                  valueListenable: updateColorNotifier,
-                  builder: (context, value, child) {
-                    return PlayBar();
-                  },
-                ),
-              ),
+              Positioned(left: 20, right: 20, bottom: 40, child: PlayBar()),
             ],
           ),
         ),
@@ -127,16 +117,21 @@ class _PortraitViewState extends State<PortraitView>
 
   Widget myDrawer() {
     return ValueListenableBuilder(
-      valueListenable: updateColorNotifier,
-      builder: (_, value, child) {
+      valueListenable: layersManager.updateNotifier,
+      builder: (context, value, child) {
         return Drawer(
-          backgroundColor: backgroundBaseColor,
+          backgroundColor: backgroundCoverArtColor,
           width: 220,
           child: Column(
             children: [
-              Container(
-                color: sidebarColor,
-                height: MediaQuery.of(context).padding.top,
+              ValueListenableBuilder(
+                valueListenable: sidebarColor.valueNotifier,
+                builder: (context, value, child) {
+                  return Container(
+                    color: value,
+                    height: MediaQuery.of(context).padding.top,
+                  );
+                },
               ),
               Expanded(
                 child: Sidebar(

@@ -81,8 +81,6 @@ Timer? pauseTimer;
 
 final playlistsUseLargePictureNotifier = ValueNotifier(true);
 
-final updateColorNotifier = ValueNotifier(0);
-
 final ValueNotifier<Locale?> localeNotifier = ValueNotifier(null);
 
 final autoPlayOnStartupNotifier = ValueNotifier(false);
@@ -94,7 +92,6 @@ late SettingManager settingManager;
 String webdavUsername = '';
 String webdavPassword = '';
 String webdavBaseUrl = '';
-String webdavAuth = '';
 
 Client? webdavClient;
 // ===================================== Colors =====================================
@@ -104,33 +101,6 @@ final lyricsPageThemeNotifier = ValueNotifier(0);
 
 Color backgroundCoverArtColor = Colors.grey;
 Color currentCoverArtColor = Colors.grey;
-
-Color backgroundBaseColor = Colors.grey;
-Color lyricsPageBackgroundBaseColor = Colors.grey;
-
-late Color pageBackgroundColor;
-late Color iconColor;
-late Color textColor;
-late Color highlightTextColor;
-late Color switchColor;
-late Color playBarColor;
-late Color panelColor;
-late Color sidebarColor;
-late Color bottomColor;
-late Color searchFieldColor;
-late Color buttonColor;
-late Color dividerColor;
-late Color selectedItemColor;
-late Color menuColor;
-late Color seekBarColor;
-late Color volumeBarColor;
-late Color lyricsPageBackgroundColor;
-late Color lyricsPageForegroundColor;
-late Color lyricsPageHighlightTextColor;
-late Color lyricsPageDividerColor;
-late Color lyricsPageButtonColor;
-late Color lyricsPageSelectedItemColor;
-late Color lyricsPageMenuColor;
 
 // ===================================== Images =====================================
 

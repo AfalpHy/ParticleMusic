@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common_widgets/my_auto_size_text.dart';
 import 'package:particle_music/common_widgets/play_queue_sheet.dart';
+import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/utils.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
@@ -18,19 +20,28 @@ class PlayBar extends StatelessWidget {
 
         return SizedBox(
           height: 50,
-          child: Material(
-            shape: SmoothRectangleBorder(
-              smoothness: 1,
-              borderRadius: BorderRadius.circular(
-                25,
-              ), // rounded half-circle ends
-            ),
-            color: mainPageThemeNotifier.value != 0
-                ? Colors.transparent
-                : backgroundBaseColor.withAlpha(180),
-            clipBehavior: .antiAlias,
-            child: Container(
-              color: playBarColor,
+          child: ValueListenableBuilder(
+            valueListenable: layersManager.updateNotifier,
+            builder: (context, value, child) {
+              return Material(
+                shape: SmoothRectangleBorder(
+                  smoothness: 1,
+                  borderRadius: BorderRadius.circular(
+                    25,
+                  ), // rounded half-circle ends
+                ),
+                color: mainPageThemeNotifier.value != 0
+                    ? Colors.transparent
+                    : backgroundCoverArtColor.withAlpha(180),
+                clipBehavior: .antiAlias,
+                child: child,
+              );
+            },
+            child: ValueListenableBuilder(
+              valueListenable: playBarColor.valueNotifier,
+              builder: (context, value, child) {
+                return Container(color: value, child: child);
+              },
               child: InkWell(
                 onTap: () {
                   displayLyricsPageNotifier.value = true;
@@ -51,7 +62,7 @@ class PlayBar extends StatelessWidget {
                         "${getTitle(currentSong)} - ${getArtist(currentSong)}",
                         key: ValueKey(currentSong),
                         maxLines: 1,
-                        textStyle: TextStyle(fontSize: 16, color: textColor),
+                        textStyle: TextStyle(fontSize: 16),
                       ),
                     ),
 
@@ -66,7 +77,6 @@ class PlayBar extends StatelessWidget {
                               isPlaying
                                   ? pauseCircleImage
                                   : playCircleFillImage,
-                              color: iconColor,
                               size: 25,
                             );
                           },
@@ -81,11 +91,7 @@ class PlayBar extends StatelessWidget {
                     SizedBox(
                       width: 40,
                       child: IconButton(
-                        icon: Icon(
-                          Icons.playlist_play_rounded,
-                          color: iconColor,
-                          size: 30,
-                        ),
+                        icon: Icon(Icons.playlist_play_rounded, size: 30),
                         onPressed: () {
                           tryVibrate();
                           showModalBottomSheet(

@@ -5,6 +5,7 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
+import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/navidrome_client.dart';
@@ -447,8 +448,10 @@ class LyricLineWidget extends StatelessWidget {
                           style: TextStyle(
                             fontSize: fontSize,
                             color: isCurrent
-                                ? lyricsPageHighlightTextColor
-                                : lyricsPageForegroundColor.withAlpha(128),
+                                ? lyricsPageHighlightTextColor.value
+                                : lyricsPageForegroundColor.value.withAlpha(
+                                    128,
+                                  ),
                           ),
                         ),
                       for (final translate in line.translates)
@@ -457,7 +460,9 @@ class LyricLineWidget extends StatelessWidget {
 
                           style: TextStyle(
                             fontSize: fontSize - 6,
-                            color: lyricsPageForegroundColor.withAlpha(128),
+                            color: lyricsPageForegroundColor.value.withAlpha(
+                              128,
+                            ),
                           ),
                         ),
                     ],
@@ -570,7 +575,7 @@ class KaraokeTextState extends State<KaraokeText>
       fontWeight: isMobile ? FontWeight.bold : null,
       color: widget.isDesktopLyrics
           ? Colors.white
-          : lyricsPageHighlightTextColor,
+          : lyricsPageHighlightTextColor.value,
     );
 
     return WidgetSpan(
@@ -602,13 +607,13 @@ class KaraokeTextState extends State<KaraokeText>
                 colors: [
                   widget.isDesktopLyrics
                       ? Colors.white
-                      : lyricsPageHighlightTextColor,
+                      : lyricsPageHighlightTextColor.value,
                   widget.isDesktopLyrics
                       ? Colors.white
-                      : lyricsPageHighlightTextColor,
+                      : lyricsPageHighlightTextColor.value,
                   widget.isDesktopLyrics
                       ? Colors.white.withAlpha(128)
-                      : lyricsPageHighlightTextColor.withAlpha(128),
+                      : lyricsPageHighlightTextColor.value.withAlpha(128),
                 ],
                 stops: [0, p, p],
               ).createShader(Rect.fromLTWH(0, 0, bounds.width, bounds.height));

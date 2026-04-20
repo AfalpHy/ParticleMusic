@@ -3,7 +3,6 @@ import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/buttons.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
@@ -70,7 +69,7 @@ class _MiniViewState extends State<MiniView> {
                   height: height - width,
                   child: Stack(
                     children: [
-                      Container(color: vividModePanelColor),
+                      Container(color: Color.fromARGB(100, 245, 245, 245)),
 
                       ValueListenableBuilder(
                         valueListenable: _lyricsOrPlayQueueNotifier,

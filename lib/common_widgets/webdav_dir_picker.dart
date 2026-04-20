@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 
@@ -81,7 +82,9 @@ class _WebdavDirPickerState extends State<WebdavDirPicker> {
 
           Expanded(
             child: isLoading
-                ? Center(child: CircularProgressIndicator(color: iconColor))
+                ? Center(
+                    child: CircularProgressIndicator(color: iconColor.value),
+                  )
                 : ListView.builder(
                     itemCount: directories.length,
                     itemBuilder: (context, index) {
@@ -102,11 +105,17 @@ class _WebdavDirPickerState extends State<WebdavDirPicker> {
           Row(
             mainAxisAlignment: .end,
             children: [
-              ElevatedButton(
-                onPressed: () {
-                  Navigator.pop(context, "WebDAV:$currentPath");
+              ValueListenableBuilder(
+                valueListenable: buttonColor.valueNotifier,
+                builder: (context, value, child) {
+                  return ElevatedButton(
+                    onPressed: () {
+                      Navigator.pop(context, "WebDAV:$currentPath");
+                    },
+                    style: ElevatedButton.styleFrom(backgroundColor: value),
+                    child: Text(AppLocalizations.of(context).confirm),
+                  );
                 },
-                child: Text(AppLocalizations.of(context).confirm),
               ),
             ],
           ),

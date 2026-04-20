@@ -4,7 +4,9 @@ import 'dart:math';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
 import 'package:particle_music/bookmark_service.dart';
+import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/common_widgets/my_divider.dart';
 import 'package:particle_music/common_widgets/my_switch.dart';
 import 'package:particle_music/common_widgets/webdav_dir_picker.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
@@ -67,43 +69,38 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
       builder: (context, value, child) {
         return Padding(
           padding: const EdgeInsets.all(20),
-          child: ValueListenableBuilder(
-            valueListenable: updateColorNotifier,
-            builder: (context, value, child) {
-              return CustomScrollView(
-                slivers: [
-                  SliverToBoxAdapter(child: options(context)),
+          child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(child: options(context)),
 
-                  SliverToBoxAdapter(child: SizedBox(height: 10)),
+              SliverToBoxAdapter(child: SizedBox(height: 10)),
 
-                  SliverToBoxAdapter(
-                    child: Divider(
-                      thickness: 0.5,
-                      height: 1,
-                      color: dividerColor,
+              SliverToBoxAdapter(
+                child: MyDivider(
+                  thickness: 0.5,
+                  height: 1,
+                  color: dividerColor,
+                ),
+              ),
+
+              SliverToBoxAdapter(child: SizedBox(height: 10)),
+
+              folderListSliver(),
+
+              SliverFillRemaining(
+                hasScrollBody: false,
+                child: Column(
+                  children: [
+                    const Spacer(),
+
+                    Align(
+                      alignment: Alignment.centerRight,
+                      child: confirmButton(context),
                     ),
-                  ),
-
-                  SliverToBoxAdapter(child: SizedBox(height: 10)),
-
-                  folderListSliver(),
-
-                  SliverFillRemaining(
-                    hasScrollBody: false,
-                    child: Column(
-                      children: [
-                        const Spacer(),
-
-                        Align(
-                          alignment: Alignment.centerRight,
-                          child: confirmButton(context),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            },
+                  ],
+                ),
+              ),
+            ],
           ),
         );
       },
@@ -118,81 +115,74 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
       builder: (context, value, child) {
         return Padding(
           padding: const EdgeInsets.all(10),
-          child: ValueListenableBuilder(
-            valueListenable: updateColorNotifier,
-            builder: (context, value, child) {
-              return Row(
-                children: [
-                  SizedBox(
-                    width: 230,
-                    child: Column(
-                      children: [
-                        Spacer(),
-                        options(context),
-                        Material(
-                          color: Colors.transparent,
-                          shape: SmoothRectangleBorder(
-                            smoothness: 1,
-                            borderRadius: .all(.circular(10)),
-                          ),
-                          clipBehavior: .antiAlias,
-                          child: ListTile(
-                            contentPadding: .fromLTRB(15, 0, 0, 0),
-                            dense: true,
-                            title: Text(l10n.confirm),
-                            onTap: () async {
-                              if (await showConfirmDialog(
-                                context,
-                                l10n.confirm,
-                              )) {
-                                bool needReload =
-                                    tmpRecursiveScanNotifier.value !=
-                                    recursiveScanNotifier.value;
-                                recursiveScanNotifier.value =
-                                    tmpRecursiveScanNotifier.value;
+          child: Row(
+            children: [
+              SizedBox(
+                width: 230,
+                child: Column(
+                  children: [
+                    Spacer(),
+                    options(context),
+                    Material(
+                      color: Colors.transparent,
+                      shape: SmoothRectangleBorder(
+                        smoothness: 1,
+                        borderRadius: .all(.circular(10)),
+                      ),
+                      clipBehavior: .antiAlias,
+                      child: ListTile(
+                        contentPadding: .fromLTRB(15, 0, 0, 0),
+                        dense: true,
+                        title: Text(l10n.confirm),
+                        onTap: () async {
+                          if (await showConfirmDialog(context, l10n.confirm)) {
+                            bool needReload =
+                                tmpRecursiveScanNotifier.value !=
+                                recursiveScanNotifier.value;
+                            recursiveScanNotifier.value =
+                                tmpRecursiveScanNotifier.value;
 
-                                settingManager.saveSetting();
-                                if (await library.updateFolders(
-                                      currentFolderIdList,
-                                    ) ||
-                                    needReload) {
-                                  if (context.mounted) {
-                                    Navigator.pop(context);
-                                  }
-                                  await Loader.reload();
-                                } else {
-                                  if (context.mounted) {
-                                    Navigator.pop(context);
-                                  }
-                                }
+                            settingManager.saveSetting();
+                            if (await library.updateFolders(
+                                  currentFolderIdList,
+                                ) ||
+                                needReload) {
+                              if (context.mounted) {
+                                Navigator.pop(context);
                               }
-                            },
-                          ),
-                        ),
-                        Spacer(),
-                      ],
+                              await Loader.reload();
+                            } else {
+                              if (context.mounted) {
+                                Navigator.pop(context);
+                              }
+                            }
+                          }
+                        },
+                      ),
                     ),
-                  ),
-                  SizedBox(width: 10),
-                  VerticalDivider(
-                    thickness: 0.5,
-                    width: 1,
-                    color: dividerColor,
-                  ),
+                    Spacer(),
+                  ],
+                ),
+              ),
+              SizedBox(width: 10),
+              MyDivider(
+                thickness: 0.5,
+                width: 1,
+                color: dividerColor,
+                vertical: true,
+              ),
 
-                  Expanded(
-                    child: Column(
-                      children: [
-                        SizedBox(height: 10),
-                        Expanded(child: folderList()),
+              Expanded(
+                child: Column(
+                  children: [
+                    SizedBox(height: 10),
+                    Expanded(child: folderList()),
 
-                        SizedBox(height: 10),
-                      ],
-                    ),
-                  ),
-                ],
-              );
-            },
+                    SizedBox(height: 10),
+                  ],
+                ),
+              ),
+            ],
           ),
         );
       },
@@ -202,28 +192,39 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
   Widget confirmButton(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
-    return ElevatedButton(
-      onPressed: () async {
-        if (await showConfirmDialog(context, l10n.confirm)) {
-          bool needReload =
-              tmpRecursiveScanNotifier.value != recursiveScanNotifier.value;
-          recursiveScanNotifier.value = tmpRecursiveScanNotifier.value;
+    return ValueListenableBuilder(
+      valueListenable: buttonColor.valueNotifier,
+      builder: (context, value, child) {
+        return ElevatedButton(
+          onPressed: () async {
+            if (await showConfirmDialog(context, l10n.confirm)) {
+              bool needReload =
+                  tmpRecursiveScanNotifier.value != recursiveScanNotifier.value;
+              recursiveScanNotifier.value = tmpRecursiveScanNotifier.value;
 
-          settingManager.saveSetting();
-          if (await library.updateFolders(currentFolderIdList) || needReload) {
-            if (context.mounted) {
-              Navigator.pop(context);
+              settingManager.saveSetting();
+              if (await library.updateFolders(currentFolderIdList) ||
+                  needReload) {
+                if (context.mounted) {
+                  Navigator.pop(context);
+                }
+                await Loader.reload();
+              } else {
+                if (context.mounted) {
+                  showCenterMessage(
+                    context,
+                    'Nothing is changed',
+                    duration: 2000,
+                  );
+                  Navigator.pop(context);
+                }
+              }
             }
-            await Loader.reload();
-          } else {
-            if (context.mounted) {
-              showCenterMessage(context, 'Nothing is changed', duration: 2000);
-              Navigator.pop(context);
-            }
-          }
-        }
+          },
+          style: ElevatedButton.styleFrom(backgroundColor: value),
+          child: Text(l10n.confirm),
+        );
       },
-      child: Text(l10n.confirm),
     );
   }
 

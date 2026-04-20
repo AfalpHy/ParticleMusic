@@ -90,9 +90,9 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
             fit: StackFit.expand,
             children: [
               ValueListenableBuilder(
-                valueListenable: updateColorNotifier,
+                valueListenable: lyricsPageThemeNotifier,
                 builder: (context, value, child) {
-                  if (lyricsPageThemeNotifier.value != 0) {
+                  if (value != 0) {
                     return SizedBox.shrink();
                   }
                   return CoverArtWidget(
@@ -103,9 +103,9 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                 },
               ),
               ValueListenableBuilder(
-                valueListenable: updateColorNotifier,
+                valueListenable: lyricsPageThemeNotifier,
                 builder: (context, value, child) {
-                  if (lyricsPageThemeNotifier.value != 0) {
+                  if (value != 0) {
                     return SizedBox.shrink();
                   }
                   return ClipRect(
@@ -115,107 +115,123 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                         sigmaY: pageHight * 0.03,
                       ),
                       child: Container(
-                        color: lyricsPageBackgroundBaseColor.withAlpha(180),
+                        color: currentCoverArtColor.withAlpha(180),
                       ),
                     ),
                   );
                 },
               ),
-              Container(
-                color: lyricsPageBackgroundColor,
-                child: Row(
-                  children: [
-                    Spacer(),
-                    Column(
+              ValueListenableBuilder(
+                valueListenable: lyricsPageBackgroundColor.valueNotifier,
+                builder: (context, value, child) {
+                  return Container(
+                    color: value,
+                    child: Row(
                       children: [
-                        if (pageHight >= 600) SizedBox(height: 75),
                         Spacer(),
-                        ValueListenableBuilder(
-                          valueListenable: lyricsPageThemeNotifier,
-                          builder: (context, value, child) {
-                            return CoverArtWidget(
-                              size: coverArtSize,
-                              borderRadius: coverArtSize * 0.05,
-                              song: currentSong,
-                              elevation: 15,
-                              color: colorManager
-                                  .getSpecificLyricsPageCoverArtBaseColor(),
-                            );
-                          },
-                        ),
-                        if (pageHight >= 600) ...[
-                          message(coverArtSize, pageHight, currentSong),
-                          playControls(coverArtSize, pageHight, currentSong),
-                        ],
+                        Column(
+                          children: [
+                            if (pageHight >= 600) SizedBox(height: 75),
+                            Spacer(),
+                            ValueListenableBuilder(
+                              valueListenable: lyricsPageThemeNotifier,
+                              builder: (context, value, child) {
+                                return CoverArtWidget(
+                                  size: coverArtSize,
+                                  borderRadius: coverArtSize * 0.05,
+                                  song: currentSong,
+                                  elevation: 15,
+                                  color: colorManager
+                                      .getSpecificLyricsPageCoverArtBaseColor(),
+                                );
+                              },
+                            ),
+                            if (pageHight >= 600) ...[
+                              message(coverArtSize, pageHight, currentSong),
+                              playControls(
+                                coverArtSize,
+                                pageHight,
+                                currentSong,
+                              ),
+                            ],
 
-                        Spacer(),
+                            Spacer(),
+                          ],
+                        ),
+                        SizedBox(width: pageWidth * 0.05),
+                        SizedBox(
+                          width: pageWidth * 0.45,
+                          child: Column(
+                            children: [
+                              SizedBox(height: pageHight * 0.1),
+                              if (pageHight < 600)
+                                message(
+                                  pageWidth * 0.35,
+                                  pageHight,
+                                  currentSong,
+                                ),
+
+                              Expanded(
+                                child: ShaderMask(
+                                  shaderCallback: (rect) {
+                                    return LinearGradient(
+                                      begin: Alignment.topCenter,
+                                      end: Alignment.bottomCenter,
+                                      colors: [
+                                        Colors.transparent, // fade out at top
+                                        Colors.black, // fully visible
+                                        Colors.black, // fully visible
+                                        Colors
+                                            .transparent, // fade out at bottom
+                                      ],
+                                      stops: [
+                                        0.0,
+                                        0.05,
+                                        0.95,
+                                        1.0,
+                                      ], // adjust fade height
+                                    ).createShader(rect);
+                                  },
+                                  blendMode: BlendMode.dstIn,
+                                  // use key to force update
+                                  child: ScrollConfiguration(
+                                    behavior: ScrollConfiguration.of(
+                                      context,
+                                    ).copyWith(scrollbars: false),
+                                    child: currentSong == null
+                                        ? SizedBox()
+                                        : LyricsListView(
+                                            key: ValueKey(currentSong),
+                                            expanded: pageHight < 600
+                                                ? false
+                                                : true,
+                                            lyrics: currentSong
+                                                .parsedLyrics!
+                                                .lyrics,
+                                            isKaraoke: currentSong
+                                                .parsedLyrics!
+                                                .isKaraoke,
+                                          ),
+                                  ),
+                                ),
+                              ),
+
+                              if (pageHight < 600) ...[
+                                playControls(
+                                  pageWidth * 0.4,
+                                  pageHight,
+                                  currentSong,
+                                ),
+                                SizedBox(height: 20),
+                              ],
+                            ],
+                          ),
+                        ),
+                        SizedBox(width: pageWidth * 0.05),
                       ],
                     ),
-                    SizedBox(width: pageWidth * 0.05),
-                    SizedBox(
-                      width: pageWidth * 0.45,
-                      child: Column(
-                        children: [
-                          SizedBox(height: pageHight * 0.1),
-                          if (pageHight < 600)
-                            message(pageWidth * 0.35, pageHight, currentSong),
-
-                          Expanded(
-                            child: ShaderMask(
-                              shaderCallback: (rect) {
-                                return LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    Colors.transparent, // fade out at top
-                                    Colors.black, // fully visible
-                                    Colors.black, // fully visible
-                                    Colors.transparent, // fade out at bottom
-                                  ],
-                                  stops: [
-                                    0.0,
-                                    0.05,
-                                    0.95,
-                                    1.0,
-                                  ], // adjust fade height
-                                ).createShader(rect);
-                              },
-                              blendMode: BlendMode.dstIn,
-                              // use key to force update
-                              child: ScrollConfiguration(
-                                behavior: ScrollConfiguration.of(
-                                  context,
-                                ).copyWith(scrollbars: false),
-                                child: currentSong == null
-                                    ? SizedBox()
-                                    : LyricsListView(
-                                        key: ValueKey(currentSong),
-                                        expanded: pageHight < 600
-                                            ? false
-                                            : true,
-                                        lyrics:
-                                            currentSong.parsedLyrics!.lyrics,
-                                        isKaraoke:
-                                            currentSong.parsedLyrics!.isKaraoke,
-                                      ),
-                              ),
-                            ),
-                          ),
-
-                          if (pageHight < 600) ...[
-                            playControls(
-                              pageWidth * 0.4,
-                              pageHight,
-                              currentSong,
-                            ),
-                            SizedBox(height: 20),
-                          ],
-                        ],
-                      ),
-                    ),
-                    SizedBox(width: pageWidth * 0.05),
-                  ],
-                ),
+                  );
+                },
               ),
 
               Positioned(
@@ -226,7 +242,7 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                   builder: (context, value, child) {
                     List<Widget> children = [
                       IconButton(
-                        color: lyricsPageForegroundColor,
+                        color: lyricsPageForegroundColor.value,
                         onPressed: () {
                           lyricsFontSizeOffset += 2;
                           lyricsFontSizeOffsetChangeNotifier.value++;
@@ -235,7 +251,7 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                         icon: Icon(Icons.text_increase_rounded, size: 20),
                       ),
                       IconButton(
-                        color: lyricsPageForegroundColor,
+                        color: lyricsPageForegroundColor.value,
                         onPressed: () {
                           if (lyricsFontSizeOffset < -2) {
                             return;
@@ -285,15 +301,20 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
 
           height: 36,
           child: Center(
-            child: MyAutoSizeText(
-              key: UniqueKey(),
-              getTitle(currentSong),
-              maxLines: 1,
-              textStyle: TextStyle(
-                fontWeight: FontWeight.bold,
-                fontSize: 20,
-                color: lyricsPageHighlightTextColor,
-              ),
+            child: ValueListenableBuilder(
+              valueListenable: lyricsPageHighlightTextColor.valueNotifier,
+              builder: (context, value, child) {
+                return MyAutoSizeText(
+                  key: UniqueKey(),
+                  getTitle(currentSong),
+                  maxLines: 1,
+                  textStyle: TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 20,
+                    color: value,
+                  ),
+                );
+              },
             ),
           ),
         ),
@@ -303,14 +324,16 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
 
           height: 28,
           child: Center(
-            child: MyAutoSizeText(
-              key: UniqueKey(),
-              '${getArtist(currentSong)} - ${getAlbum(currentSong)}',
-              maxLines: 1,
-              textStyle: TextStyle(
-                fontSize: 14,
-                color: lyricsPageForegroundColor,
-              ),
+            child: ValueListenableBuilder(
+              valueListenable: lyricsPageForegroundColor.valueNotifier,
+              builder: (context, value, child) {
+                return MyAutoSizeText(
+                  key: UniqueKey(),
+                  '${getArtist(currentSong)} - ${getAlbum(currentSong)}',
+                  maxLines: 1,
+                  textStyle: TextStyle(fontSize: 14, color: value),
+                );
+              },
             ),
           ),
         ),
@@ -325,74 +348,72 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
     double pageHight,
     MyAudioMetadata? currentSong,
   ) {
-    return Column(
-      children: [
-        SizedBox(
-          width: width - 15,
-          child: SeekBar(
-            color: lyricsPageForegroundColor,
-            widgetHeight: 20,
-            seekBarHeight: 10,
-          ),
-        ),
-
-        SizedBox(
-          width: width,
-          child: Row(
-            children: [
-              playModeButton(25, iconColor: lyricsPageForegroundColor),
-              Spacer(),
-
-              skip2PreviousButton(25, iconColor: lyricsPageForegroundColor),
-
-              playOrPauseButton(35, iconColor: lyricsPageForegroundColor),
-
-              skip2NextButton(25, iconColor: lyricsPageForegroundColor),
-
-              Spacer(),
-              showPlayQueueButton(25, iconColor: lyricsPageForegroundColor),
-            ],
-          ),
-        ),
-        if (!isMobile)
-          SizedBox(
-            width: width,
-            child: Row(
-              children: [
-                Spacer(),
-
-                SizedBox(
-                  width: 40,
-                  child: Speaker(color: lyricsPageForegroundColor),
-                ),
-                SizedBox(
-                  height: 10,
-                  width: width * 0.5,
-                  child: VolumeBar(activeColor: lyricsPageForegroundColor),
-                ),
-                SizedBox(
-                  width: 40,
-                  child: IconButton(
-                    onPressed: () async {
-                      if (lyricsWindowVisible) {
-                        await lyricsWindowController!.hide();
-                      } else {
-                        await updateDesktopLyrics();
-                        await lyricsWindowController!.show();
-                      }
-                      lyricsWindowVisible = !lyricsWindowVisible;
-                    },
-                    icon: const ImageIcon(desktopLyricsImage, size: 25),
-
-                    color: lyricsPageForegroundColor,
-                  ),
-                ),
-                Spacer(),
-              ],
+    return ValueListenableBuilder(
+      valueListenable: lyricsPageForegroundColor.valueNotifier,
+      builder: (context, value, child) {
+        return Column(
+          children: [
+            SizedBox(
+              width: width - 15,
+              child: SeekBar(color: value, widgetHeight: 20, seekBarHeight: 10),
             ),
-          ),
-        SizedBox(height: pageHight * 0.02),
-      ],
+
+            SizedBox(
+              width: width,
+              child: Row(
+                children: [
+                  playModeButton(25, iconColor: value),
+                  Spacer(),
+
+                  skip2PreviousButton(25, iconColor: value),
+
+                  playOrPauseButton(35, iconColor: value),
+
+                  skip2NextButton(25, iconColor: value),
+
+                  Spacer(),
+                  showPlayQueueButton(25, iconColor: value),
+                ],
+              ),
+            ),
+            if (!isMobile)
+              SizedBox(
+                width: width,
+                child: Row(
+                  children: [
+                    Spacer(),
+
+                    SizedBox(width: 40, child: Speaker(color: value)),
+                    SizedBox(
+                      height: 10,
+                      width: width * 0.5,
+                      child: VolumeBar(activeColor: value),
+                    ),
+                    SizedBox(
+                      width: 40,
+                      child: IconButton(
+                        onPressed: () async {
+                          if (lyricsWindowVisible) {
+                            await lyricsWindowController!.hide();
+                          } else {
+                            await updateDesktopLyrics();
+                            await lyricsWindowController!.show();
+                          }
+                          lyricsWindowVisible = !lyricsWindowVisible;
+                        },
+                        icon: const ImageIcon(desktopLyricsImage, size: 25),
+
+                        color: value,
+                      ),
+                    ),
+                    Spacer(),
+                  ],
+                ),
+              ),
+            SizedBox(height: pageHight * 0.02),
+          ],
+        );
+      },
     );
   }
 }

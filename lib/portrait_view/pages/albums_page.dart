@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/artists_albums_manager.dart';
+import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/common_widgets/my_divider.dart';
 import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/portrait_view/custom_appbar_leading.dart';
 import 'package:particle_music/portrait_view/my_search_field.dart';
@@ -109,10 +111,10 @@ class _AlbumsPageState extends State<AlbumsPage> {
       Column(
         children: [
           ListTile(title: Text(l10n.settings)),
-          Divider(thickness: 0.5, height: 1, color: dividerColor),
+          MyDivider(thickness: 0.5, height: 1, color: dividerColor),
 
           ListTile(
-            leading: ImageIcon(pictureImage, color: iconColor),
+            leading: ImageIcon(pictureImage),
             title: Text(
               l10n.pictureSize,
               style: TextStyle(fontWeight: FontWeight.bold),
@@ -148,7 +150,7 @@ class _AlbumsPageState extends State<AlbumsPage> {
           ),
 
           ListTile(
-            leading: ImageIcon(sequenceImage, color: iconColor),
+            leading: ImageIcon(sequenceImage),
             title: Text(
               l10n.order,
               style: TextStyle(fontWeight: FontWeight.bold),

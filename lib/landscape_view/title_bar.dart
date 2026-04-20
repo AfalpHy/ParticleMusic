@@ -1,6 +1,7 @@
 import 'dart:io';
 
 import 'package:flutter/material.dart';
+import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/utils.dart';
@@ -65,9 +66,13 @@ class _TitleSearchFieldState extends State<TitleSearchField> {
       child: SizedBox(
         width: 260,
         height: 40,
-        child: ValueListenableBuilder(
-          valueListenable: updateColorNotifier,
-          builder: (_, _, _) {
+        child: ListenableBuilder(
+          listenable: Listenable.merge([
+            iconColor.valueNotifier,
+            textColor.valueNotifier,
+            searchFieldColor.valueNotifier,
+          ]),
+          builder: (context, _) {
             return TapRegion(
               onTapOutside: (_) {
                 FocusManager.instance.primaryFocus?.unfocus();
@@ -75,16 +80,16 @@ class _TitleSearchFieldState extends State<TitleSearchField> {
               child: TextField(
                 controller: textController,
                 focusNode: focusNode,
-                style: TextStyle(fontSize: 14, color: textColor),
+                style: TextStyle(fontSize: 14, color: textColor.value),
 
                 decoration: InputDecoration(
                   hint: Text(
                     hintText,
-                    style: TextStyle(fontSize: 14, color: textColor),
+                    style: TextStyle(fontSize: 14, color: textColor.value),
                   ),
 
                   contentPadding: EdgeInsets.all(0),
-                  prefixIcon: Icon(Icons.search, color: iconColor),
+                  prefixIcon: Icon(Icons.search, color: iconColor.value),
                   suffixIcon: ValueListenableBuilder(
                     valueListenable: displayCancelNotifier,
                     builder: (context, value, child) {
@@ -96,14 +101,14 @@ class _TitleSearchFieldState extends State<TitleSearchField> {
                               icon: Icon(
                                 Icons.close,
                                 size: 20,
-                                color: iconColor,
+                                color: iconColor.value,
                               ),
                             )
                           : SizedBox.shrink();
                     },
                   ),
                   filled: true,
-                  fillColor: searchFieldColor,
+                  fillColor: searchFieldColor.value,
                   hoverColor: Colors.transparent,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(10),
@@ -129,70 +134,75 @@ class TitleBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: updateColorNotifier,
-      builder: (_, _, _) {
-        return SizedBox(
-          height: 75,
-          child: Stack(
-            children: [
-              GestureDetector(
-                behavior: HitTestBehavior.translucent,
-                onPanStart: (details) {
-                  if (isMobile) {
-                    return;
-                  }
-                  windowManager.startDragging();
-                },
+    return SizedBox(
+      height: 75,
+      child: Stack(
+        children: [
+          GestureDetector(
+            behavior: HitTestBehavior.translucent,
+            onPanStart: (details) {
+              if (isMobile) {
+                return;
+              }
+              windowManager.startDragging();
+            },
 
-                onDoubleTap: () async {
-                  if (isMobile) {
-                    return;
-                  }
-                  if (isFullScreenNotifier.value) {
-                    return;
-                  }
-                  isMaximizedNotifier.value
-                      ? windowManager.unmaximize()
-                      : windowManager.maximize();
-                },
-                child: Container(),
-              ),
+            onDoubleTap: () async {
+              if (isMobile) {
+                return;
+              }
+              if (isFullScreenNotifier.value) {
+                return;
+              }
+              isMaximizedNotifier.value
+                  ? windowManager.unmaximize()
+                  : windowManager.maximize();
+            },
+            child: Container(),
+          ),
 
-              Center(
-                child: Row(
-                  children: [
-                    SizedBox(width: 30),
+          Center(
+            child: Row(
+              children: [
+                SizedBox(width: 30),
 
-                    if (isMainPage)
-                      IconButton(
-                        color: iconColor,
-                        onPressed: () {
-                          layersManager.popLayer();
-                        },
-                        icon: Icon(Icons.arrow_back_ios_rounded, size: 20),
-                      )
-                    else
-                      ValueListenableBuilder(
-                        valueListenable: isFullScreenNotifier,
-                        builder: (context, isFullScreen, child) {
-                          return isFullScreen
-                              ? SizedBox.shrink()
-                              : IconButton(
-                                  color: lyricsPageForegroundColor,
+                if (isMainPage)
+                  IconButton(
+                    onPressed: () {
+                      layersManager.popLayer();
+                    },
+                    icon: Icon(Icons.arrow_back_ios_rounded, size: 20),
+                  )
+                else
+                  ValueListenableBuilder(
+                    valueListenable: isFullScreenNotifier,
+                    builder: (context, isFullScreen, child) {
+                      return isFullScreen
+                          ? SizedBox.shrink()
+                          : ValueListenableBuilder(
+                              valueListenable:
+                                  lyricsPageForegroundColor.valueNotifier,
+                              builder: (context, value, child) {
+                                return IconButton(
+                                  color: value,
                                   onPressed: () {
                                     displayLyricsPageNotifier.value = false;
                                   },
                                   icon: ImageIcon(arrowDownImage),
                                 );
-                        },
-                      ),
-                    if (isMainPage) SizedBox(width: 10),
-                    if (isMainPage) SizedBox(child: searchField),
+                              },
+                            );
+                    },
+                  ),
+                if (isMainPage) SizedBox(width: 10),
+                if (isMainPage) SizedBox(child: searchField),
 
-                    if (!isMainPage && !isMobile)
-                      IconButton(
-                        color: lyricsPageForegroundColor,
+                if (!isMainPage && !isMobile)
+                  ValueListenableBuilder(
+                    valueListenable: lyricsPageForegroundColor.valueNotifier,
+                    builder: (context, value, child) {
+                      return IconButton(
+                        color: value,
                         onPressed: () async {
                           if (isFullScreenNotifier.value) {
                             await windowManager.setFullScreen(false);
@@ -222,29 +232,28 @@ class TitleBar extends StatelessWidget {
                             );
                           },
                         ),
-                      ),
+                      );
+                    },
+                  ),
 
-                    Spacer(),
+                Spacer(),
 
-                    if (isMainPage)
-                      IconButton(
-                        color: iconColor,
-                        onPressed: () {
-                          layersManager.pushLayer('settings');
-                        },
-                        icon: ImageIcon(settingImage),
-                      ),
+                if (isMainPage)
+                  IconButton(
+                    onPressed: () {
+                      layersManager.pushLayer('settings');
+                    },
+                    icon: ImageIcon(settingImage),
+                  ),
 
-                    if (!isMobile) windowControls(),
+                if (!isMobile) windowControls(),
 
-                    SizedBox(width: isMobile ? 10 : 30),
-                  ],
-                ),
-              ),
-            ],
+                SizedBox(width: isMobile ? 10 : 30),
+              ],
+            ),
           ),
-        );
-      },
+        ],
+      ),
     );
   }
 
@@ -252,69 +261,82 @@ class TitleBar extends StatelessWidget {
     return ValueListenableBuilder(
       valueListenable: isFullScreenNotifier,
       builder: (context, isFullScreen, child) {
-        return isFullScreen
-            ? SizedBox.shrink()
-            : Row(
-                children: [
-                  IconButton(
-                    color: isMainPage ? iconColor : lyricsPageForegroundColor,
-                    onPressed: () async {
-                      await windowManager.hide();
-                      miniModeNotifier.value = true;
+        if (isFullScreen) {
+          return SizedBox.shrink();
+        }
+        return ListenableBuilder(
+          listenable: Listenable.merge([
+            iconColor.valueNotifier,
+            lyricsPageForegroundColor.valueNotifier,
+          ]),
+          builder: (context, _) {
+            return Row(
+              children: [
+                IconButton(
+                  color: isMainPage
+                      ? iconColor.value
+                      : lyricsPageForegroundColor.value,
+                  onPressed: () async {
+                    await windowManager.hide();
+                    miniModeNotifier.value = true;
 
-                      await Future.delayed(Duration(milliseconds: 200));
+                    await Future.delayed(Duration(milliseconds: 200));
 
-                      if (Platform.isWindows) {
-                        await windowManager.setMinimumSize(
-                          Size(325 + 16, 150 + 9),
-                        );
-                        await windowManager.setMaximumSize(
-                          Size(600 + 16, 950 + 9),
-                        );
-                        await windowManager.setSize(Size(325 + 16, 325 + 9));
-                      } else {
-                        await windowManager.setMinimumSize(Size(325, 150));
-                        await windowManager.setMaximumSize(Size(600, 950));
-                        await windowManager.setSize(Size(325, 325));
-                      }
-                      await windowManager.show();
-                    },
-                    icon: ImageIcon(miniModeImage),
-                  ),
-                  IconButton(
-                    color: isMainPage ? iconColor : lyricsPageForegroundColor,
-                    onPressed: () {
-                      windowManager.minimize();
-                    },
-                    icon: ImageIcon(minimizeImage),
-                  ),
-                  ValueListenableBuilder(
-                    valueListenable: isMaximizedNotifier,
-                    builder: (context, value, child) {
-                      return IconButton(
-                        color: isMainPage
-                            ? iconColor
-                            : lyricsPageForegroundColor,
-                        onPressed: () async {
-                          isMaximizedNotifier.value
-                              ? windowManager.unmaximize()
-                              : windowManager.maximize();
-                        },
-                        icon: ImageIcon(
-                          value ? unmaximizeImage : maximizeImage,
-                        ),
+                    if (Platform.isWindows) {
+                      await windowManager.setMinimumSize(
+                        Size(325 + 16, 150 + 9),
                       );
-                    },
-                  ),
-                  IconButton(
-                    color: isMainPage ? iconColor : lyricsPageForegroundColor,
-                    onPressed: () {
-                      windowManager.close();
-                    },
-                    icon: ImageIcon(closeImage),
-                  ),
-                ],
-              );
+                      await windowManager.setMaximumSize(
+                        Size(600 + 16, 950 + 9),
+                      );
+                      await windowManager.setSize(Size(325 + 16, 325 + 9));
+                    } else {
+                      await windowManager.setMinimumSize(Size(325, 150));
+                      await windowManager.setMaximumSize(Size(600, 950));
+                      await windowManager.setSize(Size(325, 325));
+                    }
+                    await windowManager.show();
+                  },
+                  icon: ImageIcon(miniModeImage),
+                ),
+                IconButton(
+                  color: isMainPage
+                      ? iconColor.value
+                      : lyricsPageForegroundColor.value,
+                  onPressed: () {
+                    windowManager.minimize();
+                  },
+                  icon: ImageIcon(minimizeImage),
+                ),
+                ValueListenableBuilder(
+                  valueListenable: isMaximizedNotifier,
+                  builder: (context, value, child) {
+                    return IconButton(
+                      color: isMainPage
+                          ? iconColor.value
+                          : lyricsPageForegroundColor.value,
+                      onPressed: () async {
+                        isMaximizedNotifier.value
+                            ? windowManager.unmaximize()
+                            : windowManager.maximize();
+                      },
+                      icon: ImageIcon(value ? unmaximizeImage : maximizeImage),
+                    );
+                  },
+                ),
+                IconButton(
+                  color: isMainPage
+                      ? iconColor.value
+                      : lyricsPageForegroundColor.value,
+                  onPressed: () {
+                    windowManager.close();
+                  },
+                  icon: ImageIcon(closeImage),
+                ),
+              ],
+            );
+          },
+        );
       },
     );
   }

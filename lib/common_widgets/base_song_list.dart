@@ -161,36 +161,32 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
 
   Widget mainCover(double size) {
     return ValueListenableBuilder(
-      valueListenable: updateColorNotifier,
-      builder: (context, value, child) {
+      valueListenable: currentSongListNotifier,
+      builder: (_, _, _) {
+        if (songList.isEmpty) {
+          return CoverArtWidget(
+            size: size,
+            borderRadius: 10,
+            song: null,
+            elevation: 5,
+            color: colorManager.getSpecificMainPageCoverArtBaseColorForm(null),
+          );
+        }
+        final song = songList.first;
         return ValueListenableBuilder(
-          valueListenable: currentSongListNotifier,
+          valueListenable: song.updateNotifier,
           builder: (_, _, _) {
-            if (songList.isEmpty) {
-              return CoverArtWidget(
-                size: size,
-                borderRadius: 10,
-                song: null,
-                elevation: 5,
-                color: colorManager.getSpecificMainPageCoverArtBaseColorForm(
-                  null,
-                ),
-              );
-            }
-            final song = songList.first;
             return ValueListenableBuilder(
-              valueListenable: song.updateNotifier,
+              valueListenable: mainPageThemeNotifier,
               builder: (_, _, _) {
                 return CoverArtWidget(
                   size: size,
                   borderRadius: 10,
                   song: song,
                   elevation: 5,
-                  color: MediaQuery.of(context).orientation == .landscape
-                      ? colorManager.getSpecificMainPageCoverArtBaseColor()
-                      : colorManager.getSpecificMainPageCoverArtBaseColorForm(
-                          song,
-                        ), // keep stable color
+                  color: colorManager.getSpecificMainPageCoverArtBaseColorForm(
+                    song,
+                  ), // keep stable color
                 );
               },
             );

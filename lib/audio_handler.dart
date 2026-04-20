@@ -5,6 +5,7 @@ import 'package:audio_session/audio_session.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_overlay_window/flutter_overlay_window.dart';
 import 'package:media_kit/media_kit.dart';
+import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/equalizer.dart';
 import 'package:particle_music/landscape_view/extensions/window_controller_extension.dart';
@@ -448,18 +449,15 @@ class MyAudioHandler extends BaseAudioHandler {
     await setParsedLyrics(currentSong);
     currentCoverArtColor = await computeCoverArtColor(currentSong);
     if (lyricsPageThemeNotifier.value == 0) {
-      lyricsPageBackgroundBaseColor = currentCoverArtColor;
-      lyricsPageBackgroundColor = Colors.transparent;
-      final adaptiveContrastColorTheme =
-          AdaptiveContrastColorGenerator.generate(currentCoverArtColor);
-      lyricsPageForegroundColor = adaptiveContrastColorTheme.regular;
-      lyricsPageHighlightTextColor = adaptiveContrastColorTheme.accent;
-      lyricsPageButtonColor = adaptiveContrastColorTheme.regular.withAlpha(50);
-      lyricsPageDividerColor = adaptiveContrastColorTheme.regular;
-      lyricsPageSelectedItemColor = adaptiveContrastColorTheme.regular
-          .withAlpha(50);
-    } else {
-      lyricsPageBackgroundBaseColor = currentCoverArtColor;
+      lyricsPageBackgroundColor.setColor();
+      adaptiveContrastColorTheme = AdaptiveContrastColorGenerator.generate(
+        currentCoverArtColor,
+      );
+      lyricsPageForegroundColor.setColor();
+      lyricsPageHighlightTextColor.setColor();
+      lyricsPageButtonColor.setColor();
+      lyricsPageDividerColor.setColor();
+      lyricsPageSelectedItemColor.setColor();
     }
 
     currentSongNotifier.value = currentSong;

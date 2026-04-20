@@ -10,6 +10,7 @@ import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common_widgets/lyrics.dart';
+import 'package:particle_music/common_widgets/my_divider.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/utils.dart';
@@ -172,7 +173,7 @@ class _MetadataDialog extends StatelessWidget {
           ),
           SizedBox(height: 5),
 
-          Divider(thickness: 0.5, height: 1, color: dividerColor),
+          MyDivider(thickness: 0.5, height: 1, color: dividerColor),
           SizedBox(height: 5),
           Expanded(
             child: ListView(
@@ -250,25 +251,34 @@ class _MetadataDialog extends StatelessWidget {
                 ),
                 SizedBox(height: 15),
 
-                Row(
-                  children: [
-                    Spacer(),
-                    ElevatedButton(
-                      onPressed: () => Navigator.pop(context, false),
-                      child: Text(l10n.cancel),
-                    ),
-                    const SizedBox(width: 20),
-                    ElevatedButton(
-                      onPressed: () {
-                        _tryWriteMetadata(context, song);
-                      },
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.red,
-                      ),
-                      child: Text(l10n.confirm),
-                    ),
-                    Spacer(),
-                  ],
+                ValueListenableBuilder(
+                  valueListenable: buttonColor.valueNotifier,
+                  builder: (context, value, child) {
+                    return Row(
+                      children: [
+                        Spacer(),
+                        ElevatedButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: value,
+                          ),
+                          child: Text(l10n.cancel),
+                        ),
+                        const SizedBox(width: 20),
+                        ElevatedButton(
+                          onPressed: () {
+                            _tryWriteMetadata(context, song);
+                          },
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: value,
+                            foregroundColor: Colors.red,
+                          ),
+                          child: Text(l10n.confirm),
+                        ),
+                        Spacer(),
+                      ],
+                    );
+                  },
                 ),
               ],
             ),

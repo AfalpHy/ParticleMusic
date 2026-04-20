@@ -19,21 +19,26 @@ class LandscapeView extends StatelessWidget {
 
       children: [
         ValueListenableBuilder(
-          valueListenable: updateColorNotifier,
+          valueListenable: mainPageThemeNotifier,
           builder: (context, value, child) {
-            if (mainPageThemeNotifier.value != 0) {
+            if (value != 0) {
               return SizedBox.shrink();
             }
-            return CoverArtWidget(
-              song: backgroundSong,
-              color: colorManager.getSpecificBgBaseColor(),
+            return ValueListenableBuilder(
+              valueListenable: layersManager.updateNotifier,
+              builder: (context, value, child) {
+                return CoverArtWidget(
+                  song: backgroundSong,
+                  color: colorManager.getSpecificBgBaseColor(),
+                );
+              },
             );
           },
         ),
         ValueListenableBuilder(
-          valueListenable: updateColorNotifier,
+          valueListenable: mainPageThemeNotifier,
           builder: (context, value, child) {
-            if (mainPageThemeNotifier.value != 0) {
+            if (value != 0) {
               return SizedBox.shrink();
             }
             final pageWidth = MediaQuery.widthOf(context);
@@ -45,24 +50,31 @@ class LandscapeView extends StatelessWidget {
                   sigmaX: pageWidth * 0.03,
                   sigmaY: pageHight * 0.03,
                 ),
-                child: Container(color: backgroundBaseColor.withAlpha(180)),
+                child: ValueListenableBuilder(
+                  valueListenable: layersManager.updateNotifier,
+                  builder: (context, value, child) {
+                    return Container(
+                      color: backgroundCoverArtColor.withAlpha(180),
+                    );
+                  },
+                ),
               ),
             );
           },
         ),
-        ValueListenableBuilder(
-          valueListenable: updateColorNotifier,
-          builder: (context, value, child) {
-            return Column(
-              children: [
-                Expanded(
-                  child: Row(
-                    children: [
-                      Sidebar(),
+        Column(
+          children: [
+            Expanded(
+              child: Row(
+                children: [
+                  Sidebar(),
 
-                      Expanded(
-                        child: Material(
-                          color: panelColor,
+                  Expanded(
+                    child: ValueListenableBuilder(
+                      valueListenable: panelColor.valueNotifier,
+                      builder: (context, value, child) {
+                        return Material(
+                          color: value,
                           child: ValueListenableBuilder(
                             valueListenable: layersManager.updateNotifier,
                             builder: (context, value, child) {
@@ -72,15 +84,15 @@ class LandscapeView extends StatelessWidget {
                               );
                             },
                           ),
-                        ),
-                      ),
-                    ],
+                        );
+                      },
+                    ),
                   ),
-                ),
-                BottomControl(),
-              ],
-            );
-          },
+                ],
+              ),
+            ),
+            BottomControl(),
+          ],
         ),
 
         LandscapeLyricsPage(),

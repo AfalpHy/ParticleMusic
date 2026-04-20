@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/common_widgets/my_divider.dart';
 import 'package:particle_music/landscape_view/title_bar.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/common_widgets/my_switch.dart';
@@ -84,12 +86,12 @@ class _PlaylistsPanelState extends State<PlaylistsPanel> {
                       padding: const EdgeInsets.symmetric(horizontal: 30),
                       child: ListTile(
                         leading: ValueListenableBuilder(
-                          valueListenable: updateColorNotifier,
-                          builder: (_, _, _) {
+                          valueListenable: iconColor.valueNotifier,
+                          builder: (_, value, _) {
                             return ImageIcon(
                               playlistsImage,
                               size: 50,
-                              color: iconColor,
+                              color: value,
                             );
                           },
                         ),
@@ -136,17 +138,12 @@ class _PlaylistsPanelState extends State<PlaylistsPanel> {
                     ),
                   ),
                   SliverToBoxAdapter(
-                    child: ValueListenableBuilder(
-                      valueListenable: updateColorNotifier,
-                      builder: (context, value, child) {
-                        return Divider(
-                          thickness: 0.5,
-                          height: 0.5,
-                          indent: 30,
-                          endIndent: 30,
-                          color: dividerColor,
-                        );
-                      },
+                    child: MyDivider(
+                      thickness: 0.5,
+                      height: 0.5,
+                      indent: 30,
+                      endIndent: 30,
+                      color: dividerColor,
                     ),
                   ),
                   SliverToBoxAdapter(child: SizedBox(height: 15)),

@@ -16,6 +16,7 @@ import 'package:particle_music/landscape_view/extensions/window_controller_exten
 import 'package:particle_music/landscape_view/single_instance.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/common_widgets/lyrics.dart';
+import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/navidrome_client.dart';
 import 'package:path/path.dart';
@@ -69,40 +70,67 @@ Future<bool> showConfirmDialog(BuildContext context, String action) async {
           height: 180,
           child: Padding(
             padding: const EdgeInsets.all(20),
-            child: Column(
-              children: [
-                Align(
-                  alignment: .centerLeft,
-                  child: Text(
-                    action,
-                    style: TextStyle(fontSize: 25, fontWeight: .bold),
-                  ),
-                ),
-                SizedBox(height: 15),
-                Align(
-                  alignment: .centerLeft,
-                  child: Text(l10n.continueMsg, style: TextStyle(fontSize: 14)),
-                ),
-                SizedBox(height: 20),
-
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+            child: ListenableBuilder(
+              listenable: Listenable.merge([
+                buttonColor.valueNotifier,
+                lyricsPageForegroundColor.valueNotifier,
+                lyricsPageButtonColor.valueNotifier,
+              ]),
+              builder: (context, _) {
+                return Column(
                   children: [
-                    ElevatedButton(
-                      onPressed: () => Navigator.pop(context, false),
-                      child: Text(l10n.cancel),
-                    ),
-                    const SizedBox(width: 20),
-                    ElevatedButton(
-                      onPressed: () => Navigator.pop(context, true),
-                      style: ElevatedButton.styleFrom(
-                        foregroundColor: Colors.red,
+                    Align(
+                      alignment: .centerLeft,
+                      child: Text(
+                        action,
+                        style: TextStyle(
+                          fontSize: 25,
+                          fontWeight: .bold,
+                          color: colorManager.getSpecificTextColor(),
+                        ),
                       ),
-                      child: Text(l10n.confirm),
+                    ),
+                    SizedBox(height: 15),
+                    Align(
+                      alignment: .centerLeft,
+                      child: Text(
+                        l10n.continueMsg,
+                        style: TextStyle(
+                          fontSize: 14,
+                          color: colorManager.getSpecificTextColor(),
+                        ),
+                      ),
+                    ),
+                    SizedBox(height: 20),
+
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        ElevatedButton(
+                          onPressed: () => Navigator.pop(context, false),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: colorManager
+                                .getSpecificButtonColor(),
+                            foregroundColor: colorManager
+                                .getSpecificTextColor(),
+                          ),
+                          child: Text(l10n.cancel),
+                        ),
+                        const SizedBox(width: 20),
+                        ElevatedButton(
+                          onPressed: () => Navigator.pop(context, true),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: colorManager
+                                .getSpecificButtonColor(),
+                            foregroundColor: Colors.red,
+                          ),
+                          child: Text(l10n.confirm),
+                        ),
+                      ],
                     ),
                   ],
-                ),
-              ],
+                );
+              },
             ),
           ),
         );
@@ -135,10 +163,10 @@ Widget adaptiveTextField(
         decoration: InputDecoration(
           visualDensity: .new(vertical: -3),
           enabledBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: textColor),
+            borderSide: BorderSide(color: textColor.value),
           ),
           focusedBorder: OutlineInputBorder(
-            borderSide: BorderSide(color: textColor, width: 1.5),
+            borderSide: BorderSide(color: textColor.value, width: 1.5),
           ),
           isDense: true,
         ),
@@ -262,25 +290,35 @@ Future<T?> showAnimationDialog<T>({
                           ),
                       child: FadeTransition(
                         opacity: animation,
-                        child: Material(
-                          key: childKey,
-                          shape: SmoothRectangleBorder(
-                            smoothness: 1,
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                          color: colorManager.getSpecificBgBaseColor(),
-                          clipBehavior: Clip.antiAliasWithSaveLayer,
-                          child: Container(
-                            color: colorManager.getSpecificBgColor(),
-                            child: MediaQuery.removePadding(
-                              context: context,
-                              removeLeft: true,
-                              removeRight: true,
-                              removeTop: true,
-                              removeBottom: true,
-                              child: child,
-                            ),
-                          ),
+                        child: ListenableBuilder(
+                          listenable: Listenable.merge([
+                            layersManager.updateNotifier,
+                            currentSongNotifier,
+                            pageBackgroundColor.valueNotifier,
+                            panelColor.valueNotifier,
+                          ]),
+                          builder: (context, _) {
+                            return Material(
+                              key: childKey,
+                              shape: SmoothRectangleBorder(
+                                smoothness: 1,
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              color: colorManager.getSpecificBgBaseColor(),
+                              clipBehavior: Clip.antiAliasWithSaveLayer,
+                              child: Container(
+                                color: colorManager.getSpecificBgColor(),
+                                child: MediaQuery.removePadding(
+                                  context: context,
+                                  removeLeft: true,
+                                  removeRight: true,
+                                  removeTop: true,
+                                  removeBottom: true,
+                                  child: child,
+                                ),
+                              ),
+                            );
+                          },
                         ),
                       ),
                     ),

@@ -3,6 +3,7 @@ import 'dart:io';
 
 import 'package:particle_music/artists_albums_manager.dart';
 import 'package:particle_music/bookmark_service.dart';
+import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/library.dart';
@@ -26,6 +27,9 @@ class Loader {
 
     settingManager = SettingManager();
     await settingManager.loadSetting();
+
+    colorManager = ColorManager();
+    colorManager.loadCustomColors();
 
     navidromeClient = NavidromeClient(
       username: username,
