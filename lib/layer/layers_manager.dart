@@ -90,7 +90,7 @@ class LayersManager {
           return PlaylistsLayer(key: GlobalKey());
         } else if (label == 'settings') {
           return SettingsLayer(key: GlobalKey());
-        } else if (label == 'licencse') {
+        } else if (label == 'license') {
           return LicenseLayer(key: GlobalKey());
         }
         return SinglePlaylistLayer(
@@ -132,7 +132,7 @@ class LayersManager {
       currentPage = getPage(currentLayer!);
     }
 
-    updateNotifier.value++;
+    switchNotifier.value++;
   }
 
   void removePlaylistLayer(Playlist playlist) {

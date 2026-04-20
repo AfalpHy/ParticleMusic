@@ -110,7 +110,7 @@ class _PortraitViewState extends State<PortraitView>
               ListenableBuilder(
                 listenable: Listenable.merge([
                   rebuildNotifier,
-                  layersManager.updateNotifier,
+                  layersManager.switchNotifier,
                 ]),
                 builder: (context, _) {
                   return Stack(
