@@ -71,7 +71,7 @@ class Loader {
     await audioHandler.loadPlayState();
     await audioHandler.loadEqualizerState();
 
-    await layersManager.pushLayer('songs');
+    await layersManager.switchLayer('songs');
 
     loadingLibraryNotifier.value = false;
   }

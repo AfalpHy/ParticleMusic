@@ -78,9 +78,17 @@ class LandscapeView extends StatelessWidget {
                           child: ValueListenableBuilder(
                             valueListenable: layersManager.updateNotifier,
                             builder: (context, value, child) {
-                              return IndexedStack(
-                                index: layersManager.layerStack.length - 1,
-                                children: layersManager.layerStack,
+                              return Stack(
+                                children: layersManager.layerMap.values.map((
+                                  layer,
+                                ) {
+                                  return Visibility(
+                                    visible:
+                                        layer == layersManager.currentLayer,
+                                    maintainState: true,
+                                    child: layer,
+                                  );
+                                }).toList(),
                               );
                             },
                           ),

@@ -108,7 +108,10 @@ class FoldersPanel extends StatelessWidget {
                         ],
                       ),
                       onTap: () {
-                        layersManager.pushLayer('folders', content: folder.id);
+                        layersManager.switchLayer(
+                          'folders',
+                          content: folder.id,
+                        );
                       },
                     ),
                   );

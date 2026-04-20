@@ -201,7 +201,7 @@ class _ArtistsAlbumsPanelState extends State<ArtistsAlbumsPanel> {
                             );
                           },
                         ),
-                        SizedBox(width: 10),
+                        SizedBox(width: 5),
                       ],
                     ),
                   ],
@@ -270,7 +270,7 @@ class _ArtistsAlbumsPanelState extends State<ArtistsAlbumsPanel> {
                                 },
                               ),
                               onTap: () {
-                                layersManager.pushLayer(
+                                layersManager.switchLayer(
                                   isArtist ? 'artists' : 'albums',
                                   content: list[index].name,
                                 );

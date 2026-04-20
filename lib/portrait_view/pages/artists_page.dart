@@ -305,7 +305,7 @@ class _ArtistsPageState extends State<ArtistsPage> {
               AppLocalizations.of(context).songCount(artist.getTotalCount()),
             ),
             onTap: () {
-              layersManager.pushLayer('artists', content: artist.name);
+              layersManager.switchLayer('artists', content: artist.name);
             },
           ),
         );
@@ -352,7 +352,7 @@ class _ArtistsPageState extends State<ArtistsPage> {
                     },
                   ),
                   onTap: () {
-                    layersManager.pushLayer('artists', content: artist.name);
+                    layersManager.switchLayer('artists', content: artist.name);
                   },
                 ),
                 SizedBox(height: 5),

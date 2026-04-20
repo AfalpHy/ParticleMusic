@@ -81,7 +81,7 @@ class SettingsList extends StatelessWidget {
               ),
               title: Text(l10n.openSourceLicense),
               onTap: () {
-                layersManager.pushLayer('licenses');
+                layersManager.switchLayer('licenses');
               },
             ),
           ),

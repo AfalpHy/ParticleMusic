@@ -1,4 +1,3 @@
-import 'dart:io';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -25,167 +24,132 @@ import 'package:particle_music/utils.dart';
 final layersManager = LayersManager();
 
 class LayersManager {
-  final List<Widget> layerStack = [];
-  final List<String> sidebarHighlighLabelStack = [];
+  final Map<String, Widget> layerMap = {};
+  final Map<Widget, Widget> pageMap = {};
+
+  Widget? currentLayer;
+  Widget? preLayer;
+
+  Widget? currentPage;
+  Widget? prePage;
 
   final updateNotifier = ValueNotifier(0);
+  final switchNotifier = ValueNotifier(0);
 
-  bool get isEmpty => layerStack.isEmpty;
+  Widget getPage(Widget layer) {
+    return pageMap.putIfAbsent(layer, () {
+      final currentBgSong = _getBackgroundSong(layer);
+      return Stack(
+        key: GlobalKey(),
+        fit: StackFit.expand,
 
-  List<Page> buildPages() {
-    return [
-      // ensure Navigator can pop
-      if (Platform.isAndroid) const MaterialPage(child: SizedBox.shrink()),
-      ...layerStack.map((layer) {
-        final currentBgSong = _getBackgroundSong(layer);
-        return MaterialPage(
-          key: ValueKey(layer),
-          child: Stack(
-            fit: StackFit.expand,
+        children: [
+          if (mainPageThemeNotifier.value == 0) ...[
+            CoverArtWidget(
+              song: currentBgSong,
+              color: currentBgSong == null
+                  ? Colors.grey
+                  : currentBgSong.coverArtColor,
+            ),
 
-            children: [
-              if (mainPageThemeNotifier.value == 0) ...[
-                CoverArtWidget(
-                  song: currentBgSong,
+            ClipRect(
+              child: BackdropFilter(
+                filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                child: Container(
                   color: currentBgSong == null
-                      ? Colors.grey
-                      : currentBgSong.coverArtColor,
+                      ? Colors.grey.withAlpha(180)
+                      : currentBgSong.coverArtColor?.withAlpha(180),
                 ),
+              ),
+            ),
+          ],
 
-                ClipRect(
-                  child: BackdropFilter(
-                    filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-                    child: Container(
-                      color: currentBgSong == null
-                          ? Colors.grey.withAlpha(180)
-                          : currentBgSong.coverArtColor?.withAlpha(180),
-                    ),
-                  ),
-                ),
-              ],
-
-              Material(color: pageBackgroundColor.value, child: layer),
-            ],
-          ),
-        );
-      }),
-    ];
+          Material(color: pageBackgroundColor.value, child: layer),
+        ],
+      );
+    });
   }
 
-  Future<void> pushLayer(String label, {String? content}) async {
-    sidebarHighlighLabel.value = label;
-    sidebarHighlighLabelStack.add(label);
-
-    if (label == 'artists' && content == null) {
-      layerStack.add(ArtistsAlbumsLayer(key: UniqueKey(), isArtist: true));
-    } else if (label == 'albums' && content == null) {
-      layerStack.add(ArtistsAlbumsLayer(key: UniqueKey(), isArtist: false));
-    } else if (label == 'artists' && content != null) {
-      layerStack.add(
-        SingleArtistLayer(
-          key: UniqueKey(),
-          artist: artistsAlbumsManager.name2Artist[content]!,
-        ),
-      );
-    } else if (label == 'albums' && content != null) {
-      layerStack.add(
-        SingleAlbumLayer(
-          key: UniqueKey(),
-          album: artistsAlbumsManager.name2Album[content]!,
-        ),
-      );
-    } else if (label == 'folders' && content == null) {
-      layerStack.add(FoldersLayer(key: UniqueKey()));
-    } else if (label == 'folders' && content != null) {
-      layerStack.add(
-        SingleFolderLayer(
-          key: UniqueKey(),
-          folder: library.getFolderById(content),
-        ),
-      );
-    } else if (label == 'songs') {
-      layerStack.add(SongsLayer(key: UniqueKey()));
-    } else if (label == 'ranking') {
-      layerStack.add(RankingLayer(key: UniqueKey()));
-    } else if (label == 'recently') {
-      layerStack.add(RecentlyLayer(key: UniqueKey()));
-    } else if (label == 'playlists') {
-      layerStack.add(PlaylistsLayer(key: UniqueKey()));
-    } else if (label[0] == '_') {
-      layerStack.add(
-        SinglePlaylistLayer(
-          key: UniqueKey(),
+  Widget getLayer(String label, {String? content}) {
+    final keyValue = label + (content ?? '');
+    return layerMap.putIfAbsent(keyValue, () {
+      if (content == null) {
+        if (label == 'artists') {
+          return ArtistsAlbumsLayer(key: GlobalKey(), isArtist: true);
+        } else if (label == 'albums') {
+          return ArtistsAlbumsLayer(key: GlobalKey(), isArtist: false);
+        } else if (label == 'folders') {
+          return FoldersLayer(key: GlobalKey());
+        } else if (label == 'songs') {
+          return SongsLayer(key: GlobalKey());
+        } else if (label == 'ranking') {
+          return RankingLayer(key: GlobalKey());
+        } else if (label == 'recently') {
+          return RecentlyLayer(key: GlobalKey());
+        } else if (label == 'playlists') {
+          return PlaylistsLayer(key: GlobalKey());
+        } else if (label == 'settings') {
+          return SettingsLayer(key: GlobalKey());
+        } else if (label == 'licencse') {
+          return LicenseLayer(key: GlobalKey());
+        }
+        return SinglePlaylistLayer(
+          key: GlobalKey(),
           playlist: playlistsManager.getPlaylistByName(label.substring(1))!,
-        ),
+        );
+      }
+      if (label == 'artists') {
+        return SingleArtistLayer(
+          key: GlobalKey(),
+          artist: artistsAlbumsManager.name2Artist[content]!,
+        );
+      } else if (label == 'albums') {
+        return SingleAlbumLayer(
+          key: GlobalKey(),
+          album: artistsAlbumsManager.name2Album[content]!,
+        );
+      }
+      return SingleFolderLayer(
+        key: GlobalKey(),
+        folder: library.getFolderById(content),
       );
-    } else if (label == 'settings') {
-      layerStack.add(SettingsLayer(key: UniqueKey()));
-    } else if (label == 'licenses') {
-      layerStack.add(LicenseLayer(key: UniqueKey()));
-    }
-
-    await updateBackground();
+    });
   }
 
-  void popLayer() {
-    if (layerStack.length == 1) {
+  Future<void> switchLayer(String label, {String? content}) async {
+    sidebarHighlighLabel.value = label;
+
+    Widget layer = getLayer(label, content: content);
+    if (layer == currentLayer) {
       return;
     }
 
-    layerStack.removeLast();
+    preLayer = currentLayer;
+    currentLayer = layer;
+    await updateBackground();
+    if (isMobile) {
+      prePage = currentPage;
+      currentPage = getPage(currentLayer!);
+    }
 
-    sidebarHighlighLabelStack.removeLast();
-
-    sidebarHighlighLabel.value = sidebarHighlighLabelStack.last;
-
-    updateBackground();
+    updateNotifier.value++;
   }
 
   void removePlaylistLayer(Playlist playlist) {
-    for (int i = layerStack.length - 1; i > 0; i--) {
-      Widget tmp = layerStack[i];
-      if (tmp is SinglePlaylistLayer && tmp.playlist == playlist) {
-        layerStack.removeAt(i);
-        sidebarHighlighLabelStack.removeAt(i);
-      }
-    }
-
-    sidebarHighlighLabel.value = sidebarHighlighLabelStack.last;
-
     updateBackground();
   }
 
   void removeArtistLayer(Artist artist) {
-    for (int i = layerStack.length - 1; i > 0; i--) {
-      Widget tmp = layerStack[i];
-      if (tmp is SingleArtistLayer && tmp.artist == artist) {
-        layerStack.removeAt(i);
-        sidebarHighlighLabelStack.removeAt(i);
-      }
-    }
-
-    sidebarHighlighLabel.value = sidebarHighlighLabelStack.last;
-
     updateBackground();
   }
 
   void removeAlbumLayer(Album album) {
-    for (int i = layerStack.length - 1; i > 0; i--) {
-      Widget tmp = layerStack[i];
-      if (tmp is SingleAlbumLayer && tmp.album == album) {
-        layerStack.removeAt(i);
-        sidebarHighlighLabelStack.removeAt(i);
-      }
-    }
-
-    sidebarHighlighLabel.value = sidebarHighlighLabelStack.last;
-
     updateBackground();
   }
 
   void clear() {
-    layerStack.clear();
-    sidebarHighlighLabelStack.clear();
+    layerMap.clear();
+    pageMap.clear();
   }
 
   MyAudioMetadata? _getBackgroundSong(Widget layer) {
@@ -215,10 +179,10 @@ class LayersManager {
   }
 
   Future<void> updateBackground() async {
-    if (isEmpty) {
+    if (currentLayer == null) {
       return;
     }
-    backgroundSong = _getBackgroundSong(layerStack.last);
+    backgroundSong = _getBackgroundSong(currentLayer!);
     backgroundCoverArtColor = await computeCoverArtColor(backgroundSong);
     if (mainPageThemeNotifier.value == 0) {
       searchFieldColor.setColor();

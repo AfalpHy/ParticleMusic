@@ -190,7 +190,7 @@ class _PlaylistsPanelState extends State<PlaylistsPanel> {
                                                 },
                                               ),
                                         onTap: () {
-                                          layersManager.pushLayer(
+                                          layersManager.switchLayer(
                                             '_${playlist.name}',
                                           );
                                         },
