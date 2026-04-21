@@ -519,14 +519,14 @@ Future<Uint8List?> loadPictureBytesSafe(MyAudioMetadata? song) async {
     return null;
   }
 
-  return pictureLoadScheduler.load(song.id, () => _loadPictureBytes(song));
-}
-
-Future<Uint8List?> _loadPictureBytes(MyAudioMetadata song) async {
   if (song.pictureLoaded) {
     return song.pictureBytes;
   }
 
+  return pictureLoadScheduler.load(song.id, () => _loadPictureBytes(song));
+}
+
+Future<Uint8List?> _loadPictureBytes(MyAudioMetadata song) async {
   try {
     late Uint8List? result;
     if (song.isNavidrome) {
