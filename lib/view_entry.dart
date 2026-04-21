@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
@@ -28,14 +29,14 @@ class _ViewEntryState extends State<ViewEntry> with WidgetsBindingObserver {
   @override
   void initState() {
     super.initState();
-    if (isMobile) {
+    if (Platform.isAndroid) {
       WidgetsBinding.instance.addObserver(this);
     }
   }
 
   @override
   void dispose() {
-    if (isMobile) {
+    if (Platform.isAndroid) {
       WidgetsBinding.instance.removeObserver(this);
     }
     super.dispose();
@@ -43,7 +44,7 @@ class _ViewEntryState extends State<ViewEntry> with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (isMobile && state == AppLifecycleState.resumed) {
+    if (Platform.isAndroid && state == AppLifecycleState.resumed) {
       systemCanPop = false;
       _exitTimer?.cancel();
       // rebuild PopScope to allow it to handle pop
@@ -53,7 +54,7 @@ class _ViewEntryState extends State<ViewEntry> with WidgetsBindingObserver {
 
   @override
   Widget build(BuildContext context) {
-    if (isMobile) {
+    if (Platform.isAndroid) {
       return PopScope(
         key: UniqueKey(),
         canPop: false,

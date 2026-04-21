@@ -21,8 +21,13 @@ class _PortraitViewState extends State<PortraitView>
   late Animation<Offset> _pushSlideAnimation;
   late Animation<Offset> _popSlideAnimation;
 
+  bool drag = true;
+  final dragDxNotifier = ValueNotifier(0.0);
+
+  double slideBeginDx = 0.0;
   void slideBegin() {
-    _controller.forward(from: 0.0);
+    _controller.forward(from: slideBeginDx);
+    slideBeginDx = 0;
   }
 
   @override
@@ -31,7 +36,7 @@ class _PortraitViewState extends State<PortraitView>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 250),
     );
 
     _pushSlideAnimation =
@@ -99,7 +104,66 @@ class _PortraitViewState extends State<PortraitView>
                             ),
                           ),
 
-                      SlideTransition(position: slideAnimation, child: topPage),
+                      Stack(
+                        children: [
+                          ValueListenableBuilder(
+                            valueListenable: dragDxNotifier,
+                            builder: (context, value, child) {
+                              if (!drag) {
+                                return SlideTransition(
+                                  position: slideAnimation,
+                                  child: topPage,
+                                );
+                              }
+                              return AnimatedContainer(
+                                duration: const Duration(milliseconds: 250),
+                                curve: Curves.easeOutCubic,
+                                transform: Matrix4.translationValues(
+                                  value,
+                                  0,
+                                  0,
+                                ),
+                                child: SlideTransition(
+                                  position: slideAnimation,
+                                  child: topPage,
+                                ),
+                              );
+                            },
+                          ),
+                          if (Platform.isIOS &&
+                              layersManager.layerHistory.length > 1)
+                            Positioned(
+                              left: 0,
+                              top: 0,
+                              bottom: 0,
+                              child: GestureDetector(
+                                onHorizontalDragUpdate: (details) {
+                                  dragDxNotifier.value += details.delta.dx;
+                                  if (dragDxNotifier.value < 0) {
+                                    dragDxNotifier.value = 0;
+                                  }
+                                  drag = true;
+                                },
+                                onHorizontalDragEnd: (details) {
+                                  if (dragDxNotifier.value * 2 >
+                                          MediaQuery.widthOf(context) ||
+                                      (details.primaryVelocity ?? 0) > 500) {
+                                    slideBeginDx =
+                                        dragDxNotifier.value /
+                                        MediaQuery.widthOf(context);
+                                    drag = false;
+                                    layersManager.popLayer();
+                                  }
+                                  dragDxNotifier.value = 0;
+                                },
+                                child: Container(
+                                  color: Colors.transparent,
+                                  width: 20,
+                                ),
+                              ),
+                            ),
+                        ],
+                      ),
                     ],
                   );
                 },
