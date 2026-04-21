@@ -14,7 +14,7 @@ import 'package:particle_music/playlists.dart';
 import 'package:particle_music/setting_manager.dart';
 import 'package:webdav_client/webdav_client.dart';
 
-const String versionNumber = '2.1.0';
+const String versionNumber = '2.1.1';
 
 // ===================================== App =====================================
 
