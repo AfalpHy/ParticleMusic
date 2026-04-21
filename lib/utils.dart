@@ -738,7 +738,7 @@ Future<void> downloadFile(
       await file.create(recursive: true);
       await file.writeAsBytes(response.bodyBytes);
     } else {
-      logger.output('download failed');
+      logger.output('$url download failed');
     }
   } catch (e) {
     logger.output(e.toString());
