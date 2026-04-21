@@ -547,4 +547,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get clearCache => '清除缓存';
+
+  @override
+  String get tapAgain => '再按一次退出';
 }

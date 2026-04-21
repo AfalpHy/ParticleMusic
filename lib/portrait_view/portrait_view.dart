@@ -1,15 +1,12 @@
-import 'dart:async';
 import 'dart:io';
 
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/landscape_view/sidebar.dart';
 import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/portrait_view/pages/portrait_lyrics_page.dart';
 import 'package:particle_music/portrait_view/play_bar.dart';
-import 'package:particle_music/utils.dart';
 
 class PortraitView extends StatefulWidget {
   const PortraitView({super.key});
@@ -19,11 +16,7 @@ class PortraitView extends StatefulWidget {
 }
 
 class _PortraitViewState extends State<PortraitView>
-    with WidgetsBindingObserver, SingleTickerProviderStateMixin {
-  bool systemCanPop = false;
-  Timer? _exitTimer;
-  final rebuildNotifier = ValueNotifier(0);
-
+    with SingleTickerProviderStateMixin {
   late AnimationController _controller;
   late Animation<Offset> _slideAnimation;
 
@@ -34,7 +27,6 @@ class _PortraitViewState extends State<PortraitView>
   @override
   void initState() {
     super.initState();
-    WidgetsBinding.instance.addObserver(this);
 
     _controller = AnimationController(
       vsync: this,
@@ -55,48 +47,12 @@ class _PortraitViewState extends State<PortraitView>
 
   @override
   void dispose() {
-    WidgetsBinding.instance.removeObserver(this);
     layersManager.switchNotifier.removeListener(slideBegin);
     super.dispose();
   }
 
   @override
-  void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (state == AppLifecycleState.resumed) {
-      // rebuild Navigator to allow it to handle pop
-    }
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return PopScope(
-      canPop: false,
-      onPopInvokedWithResult: (bool didPop, dynamic result) {
-        if (didPop) return;
-        if (displayLyricsPageNotifier.value) {
-          displayLyricsPageNotifier.value = false;
-          return;
-        }
-        if (!systemCanPop) {
-          systemCanPop = true;
-          showCenterMessage(
-            context,
-            'Press back again to exit',
-            duration: 1500,
-          );
-          _exitTimer?.cancel();
-          _exitTimer = Timer(const Duration(seconds: 2), () {
-            systemCanPop = false;
-          });
-        } else {
-          SystemNavigator.pop();
-        }
-      },
-      child: content(),
-    );
-  }
-
-  Widget content() {
     return Stack(
       children: [
         Scaffold(
@@ -107,12 +63,9 @@ class _PortraitViewState extends State<PortraitView>
           endDrawer: Platform.isIOS ? myDrawer() : null,
           body: Stack(
             children: [
-              ListenableBuilder(
-                listenable: Listenable.merge([
-                  rebuildNotifier,
-                  layersManager.switchNotifier,
-                ]),
-                builder: (context, _) {
+              ValueListenableBuilder(
+                valueListenable: layersManager.switchNotifier,
+                builder: (context, _, _) {
                   return Stack(
                     children: [
                       ...layersManager.pageMap.values

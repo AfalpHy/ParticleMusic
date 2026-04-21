@@ -1153,6 +1153,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Clear Cache'**
   String get clearCache;
+
+  /// No description provided for @tapAgain.
+  ///
+  /// In en, this message translates to:
+  /// **'Tap Again to Exit'**
+  String get tapAgain;
 }
 
 class _AppLocalizationsDelegate

@@ -547,4 +547,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get clearCache => 'Clear Cache';
+
+  @override
+  String get tapAgain => 'Tap Again to Exit';
 }

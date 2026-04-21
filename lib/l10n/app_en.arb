@@ -216,5 +216,6 @@
   "modifiedTimeAscending": "Modified Time Ascending",
   "modifiedTimedescending": "Modified Time Descending",
   "cannotBeUndone": "Cannot be Undone",
-  "clearCache": "Clear Cache"
+  "clearCache": "Clear Cache",
+  "tapAgain": "Tap Again to Exit"
 }

@@ -30,7 +30,8 @@ class SettingsList extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
-    bool isLandscape = MediaQuery.of(context).orientation == .landscape;
+    bool isLandscape =
+        !isMobile || MediaQuery.of(context).orientation == .landscape;
     return CustomScrollView(
       slivers: [
         if (isLandscape)

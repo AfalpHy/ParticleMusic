@@ -1,20 +1,87 @@
+import 'dart:async';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/landscape_view/landscape_view.dart';
 import 'package:particle_music/landscape_view/pages/play_queue_page.dart';
 import 'package:particle_music/mini_view/mini_view.dart';
 import 'package:particle_music/portrait_view/portrait_view.dart';
+import 'package:particle_music/utils.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
-class ViewEntry extends StatelessWidget {
+class ViewEntry extends StatefulWidget {
   const ViewEntry({super.key});
 
   @override
+  State<StatefulWidget> createState() => _ViewEntryState();
+}
+
+class _ViewEntryState extends State<ViewEntry> with WidgetsBindingObserver {
+  bool systemCanPop = false;
+  Timer? _exitTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    if (isMobile) {
+      WidgetsBinding.instance.addObserver(this);
+    }
+  }
+
+  @override
+  void dispose() {
+    if (isMobile) {
+      WidgetsBinding.instance.removeObserver(this);
+    }
+    super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    if (isMobile && state == AppLifecycleState.resumed) {
+      // rebuild PopScope to allow it to handle pop
+      setState(() {});
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
+    if (isMobile) {
+      return PopScope(
+        key: UniqueKey(),
+        canPop: false,
+        onPopInvokedWithResult: (bool didPop, dynamic result) {
+          if (didPop) return;
+          if (displayLyricsPageNotifier.value) {
+            displayLyricsPageNotifier.value = false;
+            return;
+          }
+          if (!systemCanPop) {
+            systemCanPop = true;
+            showCenterMessage(
+              context,
+              AppLocalizations.of(context).tapAgain,
+              duration: 1500,
+            );
+            _exitTimer?.cancel();
+            _exitTimer = Timer(const Duration(seconds: 2), () {
+              systemCanPop = false;
+            });
+          } else {
+            SystemNavigator.pop();
+          }
+        },
+        child: content(),
+      );
+    }
+    return content();
+  }
+
+  Widget content() {
     return ValueListenableBuilder(
       valueListenable: miniModeNotifier,
       builder: (context, miniMode, child) {
