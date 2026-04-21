@@ -67,7 +67,7 @@ class PlaylistsPage extends StatelessWidget {
                   },
                 ),
                 onTap: () {
-                  layersManager.switchLayer('_${playlist.name}');
+                  layersManager.pushLayer('_${playlist.name}');
                 },
               );
             },

@@ -166,7 +166,14 @@ class TitleBar extends StatelessWidget {
               children: [
                 SizedBox(width: 30),
 
-                if (!isMainPage)
+                if (isMainPage)
+                  IconButton(
+                    onPressed: () {
+                      layersManager.popLayer();
+                    },
+                    icon: Icon(Icons.arrow_back_ios_rounded, size: 20),
+                  )
+                else
                   ValueListenableBuilder(
                     valueListenable: isFullScreenNotifier,
                     builder: (context, isFullScreen, child) {
@@ -234,7 +241,7 @@ class TitleBar extends StatelessWidget {
                 if (isMainPage)
                   IconButton(
                     onPressed: () {
-                      layersManager.switchLayer('settings');
+                      layersManager.pushLayer('settings');
                     },
                     icon: ImageIcon(settingImage),
                   ),

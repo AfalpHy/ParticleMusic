@@ -8,6 +8,7 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/landscape_view/landscape_view.dart';
 import 'package:particle_music/landscape_view/pages/play_queue_page.dart';
+import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/mini_view/mini_view.dart';
 import 'package:particle_music/portrait_view/portrait_view.dart';
 import 'package:particle_music/utils.dart';
@@ -43,6 +44,8 @@ class _ViewEntryState extends State<ViewEntry> with WidgetsBindingObserver {
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
     if (isMobile && state == AppLifecycleState.resumed) {
+      systemCanPop = false;
+      _exitTimer?.cancel();
       // rebuild PopScope to allow it to handle pop
       setState(() {});
     }
@@ -58,6 +61,10 @@ class _ViewEntryState extends State<ViewEntry> with WidgetsBindingObserver {
           if (didPop) return;
           if (displayLyricsPageNotifier.value) {
             displayLyricsPageNotifier.value = false;
+            return;
+          }
+          if (layersManager.layerHistory.length > 1) {
+            layersManager.popLayer();
             return;
           }
           if (!systemCanPop) {

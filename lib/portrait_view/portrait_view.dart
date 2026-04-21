@@ -18,7 +18,8 @@ class PortraitView extends StatefulWidget {
 class _PortraitViewState extends State<PortraitView>
     with SingleTickerProviderStateMixin {
   late AnimationController _controller;
-  late Animation<Offset> _slideAnimation;
+  late Animation<Offset> _pushSlideAnimation;
+  late Animation<Offset> _popSlideAnimation;
 
   void slideBegin() {
     _controller.forward(from: 0.0);
@@ -33,10 +34,18 @@ class _PortraitViewState extends State<PortraitView>
       duration: const Duration(milliseconds: 300),
     );
 
-    _slideAnimation =
+    _pushSlideAnimation =
         Tween<Offset>(
           begin: Offset(Platform.isIOS ? 1.0 : -1.0, 0.0),
           end: Offset.zero,
+        ).animate(
+          CurvedAnimation(parent: _controller, curve: Curves.easeInOutCubic),
+        );
+
+    _popSlideAnimation =
+        Tween<Offset>(
+          begin: Offset.zero,
+          end: Offset(Platform.isIOS ? 1.0 : -1.0, 0.0),
         ).animate(
           CurvedAnimation(parent: _controller, curve: Curves.easeInOutCubic),
         );
@@ -66,22 +75,31 @@ class _PortraitViewState extends State<PortraitView>
               ValueListenableBuilder(
                 valueListenable: layersManager.switchNotifier,
                 builder: (context, _, _) {
+                  final slideAnimation = layersManager.isPush
+                      ? _pushSlideAnimation
+                      : _popSlideAnimation;
+
+                  final bottomPage = layersManager.isPush
+                      ? layersManager.helperPage
+                      : layersManager.currentPage;
+
+                  final topPage = layersManager.isPush
+                      ? layersManager.currentPage
+                      : layersManager.helperPage;
+
                   return Stack(
                     children: [
                       ...layersManager.pageMap.values
-                          .where((page) => page != layersManager.currentPage)
+                          .where((page) => page != topPage)
                           .map(
                             (page) => Visibility(
-                              visible: page == layersManager.prePage,
+                              visible: page == bottomPage,
                               maintainState: true,
                               child: page,
                             ),
                           ),
 
-                      SlideTransition(
-                        position: _slideAnimation,
-                        child: layersManager.currentPage!,
-                      ),
+                      SlideTransition(position: slideAnimation, child: topPage),
                     ],
                   );
                 },

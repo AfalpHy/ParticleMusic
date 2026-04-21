@@ -270,7 +270,7 @@ class _ArtistsAlbumsPanelState extends State<ArtistsAlbumsPanel> {
                                 },
                               ),
                               onTap: () {
-                                layersManager.switchLayer(
+                                layersManager.pushLayer(
                                   isArtist ? 'artists' : 'albums',
                                   content: list[index].name,
                                 );

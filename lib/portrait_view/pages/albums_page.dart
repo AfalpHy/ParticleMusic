@@ -268,7 +268,7 @@ class _AlbumsPageState extends State<AlbumsPage> {
                     },
                   ),
                   onTap: () {
-                    layersManager.switchLayer('albums', content: album.name);
+                    layersManager.pushLayer('albums', content: album.name);
                   },
                 ),
                 SizedBox(height: 5),

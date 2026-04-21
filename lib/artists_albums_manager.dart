@@ -343,7 +343,7 @@ void showArtistEntries(BuildContext context, List<String> artists) {
                   Navigator.pop(context);
                   await Future.delayed(Duration(milliseconds: 250));
 
-                  layersManager.switchLayer('artists', content: name);
+                  layersManager.pushLayer('artists', content: name);
                 },
               ),
             );

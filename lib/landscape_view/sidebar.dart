@@ -123,7 +123,7 @@ class Sidebar extends StatelessWidget {
                         content: l10n.artists,
 
                         onTap: () {
-                          layersManager.switchLayer('artists');
+                          layersManager.pushLayer('artists');
                         },
                       ),
                     ),
@@ -136,7 +136,7 @@ class Sidebar extends StatelessWidget {
                         content: l10n.albums,
 
                         onTap: () {
-                          layersManager.switchLayer('albums');
+                          layersManager.pushLayer('albums');
                         },
                       ),
                     ),
@@ -149,7 +149,7 @@ class Sidebar extends StatelessWidget {
                         content: l10n.folders,
 
                         onTap: () {
-                          layersManager.switchLayer('folders');
+                          layersManager.pushLayer('folders');
                         },
                       ),
                     ),
@@ -162,7 +162,7 @@ class Sidebar extends StatelessWidget {
                         content: l10n.songs,
 
                         onTap: () {
-                          layersManager.switchLayer('songs');
+                          layersManager.pushLayer('songs');
                         },
                       ),
                     ),
@@ -187,7 +187,7 @@ class Sidebar extends StatelessWidget {
                         content: l10n.ranking,
 
                         onTap: () {
-                          layersManager.switchLayer('ranking');
+                          layersManager.pushLayer('ranking');
                         },
                       ),
                     ),
@@ -200,7 +200,7 @@ class Sidebar extends StatelessWidget {
                         content: l10n.recently,
 
                         onTap: () {
-                          layersManager.switchLayer('recently');
+                          layersManager.pushLayer('recently');
                         },
                       ),
                     ),
@@ -258,7 +258,7 @@ class Sidebar extends StatelessWidget {
                           ),
 
                           onTap: () {
-                            layersManager.switchLayer('playlists');
+                            layersManager.pushLayer('playlists');
                           },
                         ),
                         menuProvider: (_) {
@@ -348,7 +348,7 @@ class Sidebar extends StatelessWidget {
                 leading: ImageIcon(settingImage, size: 30),
                 content: l10n.settings,
                 onTap: () {
-                  layersManager.switchLayer('settings');
+                  layersManager.pushLayer('settings');
                 },
               ),
               SizedBox(height: 40),
@@ -455,7 +455,7 @@ class Sidebar extends StatelessWidget {
             content: index == 0 ? l10n.favorites : playlist.name,
 
             onTap: () {
-              layersManager.switchLayer('_${playlist.name}');
+              layersManager.pushLayer('_${playlist.name}');
             },
           ),
         );

@@ -285,7 +285,7 @@ class SongListTile extends StatelessWidget {
                               showArtistEntries(context, artists);
                             } else {
                               await Future.delayed(Duration(milliseconds: 250));
-                              layersManager.switchLayer(
+                              layersManager.pushLayer(
                                 'artists',
                                 content: artists[0],
                               );
@@ -306,7 +306,7 @@ class SongListTile extends StatelessWidget {
                           onTap: () async {
                             Navigator.pop(context);
                             await Future.delayed(Duration(milliseconds: 250));
-                            layersManager.switchLayer(
+                            layersManager.pushLayer(
                               'albums',
                               content: getAlbum(song),
                             );

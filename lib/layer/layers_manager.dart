@@ -23,36 +23,38 @@ import 'package:particle_music/utils.dart';
 
 final layersManager = LayersManager();
 
-class LayerHelper {
+class LayerInfo {
   MyAudioMetadata? backgroundSong;
   Color backgroundCoverArtColor;
   final changeNotifier = ValueNotifier(0);
-  LayerHelper(this.backgroundSong, this.backgroundCoverArtColor);
+  LayerInfo(this.backgroundSong, this.backgroundCoverArtColor);
 }
 
 class LayersManager {
   final Map<String, Widget> layerMap = {};
-  final Map<Widget, LayerHelper> layerHelperMap = {};
+  final Map<Widget, LayerInfo> layerInfoMap = {};
   final Map<Widget, Widget> pageMap = {};
+  final List<Widget> layerHistory = [];
 
   Widget? currentLayer;
-  Widget? preLayer;
+  Widget? helperLayer;
 
   Widget? currentPage;
-  Widget? prePage;
+  Widget? helperPage;
 
   final backgroundChangeNotifier = ValueNotifier(0);
   final switchNotifier = ValueNotifier(0);
+  late bool isPush;
 
   Widget getPage(Widget layer) {
     return pageMap.putIfAbsent(layer, () {
-      final layerHelper = layerHelperMap[layer]!;
+      final layerInfo = layerInfoMap[layer]!;
       return Stack(
         key: GlobalKey(),
 
         children: [
           ValueListenableBuilder(
-            valueListenable: layerHelper.changeNotifier,
+            valueListenable: layerInfo.changeNotifier,
             builder: (context, value, child) {
               return ValueListenableBuilder(
                 valueListenable: mainPageThemeNotifier,
@@ -64,16 +66,17 @@ class LayersManager {
                     fit: StackFit.expand,
                     children: [
                       CoverArtWidget(
-                        song: layerHelper.backgroundSong,
-                        color: layerHelper.backgroundCoverArtColor,
+                        song: layerInfo.backgroundSong,
+                        color: layerInfo.backgroundCoverArtColor,
                       ),
 
                       ClipRect(
                         child: BackdropFilter(
                           filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
                           child: Container(
-                            color: layerHelper.backgroundCoverArtColor
-                                .withAlpha(180),
+                            color: layerInfo.backgroundCoverArtColor.withAlpha(
+                              180,
+                            ),
                           ),
                         ),
                       ),
@@ -141,7 +144,7 @@ class LayersManager {
     });
   }
 
-  Future<void> switchLayer(String label, {String? content}) async {
+  Future<void> pushLayer(String label, {String? content}) async {
     sidebarHighlighLabel.value = label;
 
     Widget layer = getLayer(label, content: content);
@@ -149,14 +152,34 @@ class LayersManager {
       return;
     }
 
-    preLayer = currentLayer;
+    isPush = true;
+
+    helperLayer = currentLayer;
     currentLayer = layer;
     await updateBackground();
     if (isMobile) {
-      prePage = currentPage;
+      helperPage = currentPage;
       currentPage = getPage(currentLayer!);
     }
 
+    layerHistory.add(currentLayer!);
+    switchNotifier.value++;
+  }
+
+  void popLayer() async {
+    if (layerHistory.length == 1) {
+      return;
+    }
+    isPush = false;
+
+    layerHistory.removeLast();
+    helperLayer = currentLayer;
+    currentLayer = layerHistory.last;
+    await updateBackground();
+    if (isMobile) {
+      helperPage = currentPage;
+      currentPage = pageMap[currentLayer];
+    }
     switchNotifier.value++;
   }
 
@@ -166,7 +189,7 @@ class LayersManager {
       pageMap.remove(layer);
     }
     if (layer == currentLayer) {
-      switchLayer('playlists');
+      pushLayer('playlists');
     }
   }
 
@@ -176,7 +199,7 @@ class LayersManager {
       pageMap.remove(layer);
     }
     if (layer == currentLayer) {
-      switchLayer('artists');
+      pushLayer('artists');
     }
   }
 
@@ -186,7 +209,7 @@ class LayersManager {
       pageMap.remove(layer);
     }
     if (layer == currentLayer) {
-      switchLayer('albums');
+      pushLayer('albums');
     }
   }
 
@@ -229,15 +252,15 @@ class LayersManager {
     backgroundSong = _getBackgroundSong(currentLayer!);
     backgroundCoverArtColor = await computeCoverArtColor(backgroundSong);
 
-    final layerHelper = layerHelperMap.putIfAbsent(
+    final layerInfo = layerInfoMap.putIfAbsent(
       currentLayer!,
-      () => LayerHelper(backgroundSong, backgroundCoverArtColor),
+      () => LayerInfo(backgroundSong, backgroundCoverArtColor),
     );
-    if (layerHelper.backgroundSong != backgroundSong ||
-        layerHelper.backgroundCoverArtColor != backgroundCoverArtColor) {
-      layerHelper.backgroundSong = backgroundSong;
-      layerHelper.backgroundCoverArtColor = backgroundCoverArtColor;
-      layerHelper.changeNotifier.value++;
+    if (layerInfo.backgroundSong != backgroundSong ||
+        layerInfo.backgroundCoverArtColor != backgroundCoverArtColor) {
+      layerInfo.backgroundSong = backgroundSong;
+      layerInfo.backgroundCoverArtColor = backgroundCoverArtColor;
+      layerInfo.changeNotifier.value++;
     }
 
     if (mainPageThemeNotifier.value == 0) {

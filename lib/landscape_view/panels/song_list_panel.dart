@@ -733,7 +733,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
                   showArtistEntries(context, artists);
                 } else {
                   await Future.delayed(Duration(milliseconds: 250));
-                  layersManager.switchLayer('artists', content: artists[0]);
+                  layersManager.pushLayer('artists', content: artists[0]);
                 }
               },
             ),
@@ -744,7 +744,7 @@ class _SongListPanel extends BaseSongListState<SongListPanel> {
               image: MenuImage.icon(Icons.album_rounded),
               callback: () async {
                 await Future.delayed(Duration(milliseconds: 250));
-                layersManager.switchLayer(
+                layersManager.pushLayer(
                   'albums',
                   content: getAlbum(currentSongList[index]),
                 );
