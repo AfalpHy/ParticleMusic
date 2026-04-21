@@ -59,13 +59,18 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
       backgroundColor: Colors.transparent,
       scrolledUnderElevation: 0,
       actions: [
-        MySearchField(
-          key: ValueKey(getFirstSong(songList)),
-          hintText: AppLocalizations.of(context).searchSongs,
-          textController: textController,
-          isSearchNotifier: isSearchNotifier,
-          song: getFirstSong(songList),
-          useCurrentSong: false,
+        ValueListenableBuilder(
+          valueListenable: currentSongListNotifier,
+          builder: (context, value, child) {
+            return MySearchField(
+              key: ValueKey(getFirstSong(songList)),
+              hintText: AppLocalizations.of(context).searchSongs,
+              textController: textController,
+              isSearchNotifier: isSearchNotifier,
+              song: getFirstSong(songList),
+              useCurrentSong: false,
+            );
+          },
         ),
         moreButton(context),
       ],

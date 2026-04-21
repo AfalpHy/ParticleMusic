@@ -292,7 +292,7 @@ Future<T?> showAnimationDialog<T>({
                         opacity: animation,
                         child: ListenableBuilder(
                           listenable: Listenable.merge([
-                            layersManager.updateNotifier,
+                            layersManager.backgroundChangeNotifier,
                             currentSongNotifier,
                             pageBackgroundColor.valueNotifier,
                             panelColor.valueNotifier,

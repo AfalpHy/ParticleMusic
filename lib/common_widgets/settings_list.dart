@@ -555,12 +555,12 @@ class SettingsList extends StatelessWidget {
 
   void _updateMainPageTheme() {
     settingManager.saveSetting();
-    colorManager.setMainPageColors();
+    colorManager.updateMainPageColors();
   }
 
   void _updateLyricsPageTheme() {
     settingManager.saveSetting();
-    colorManager.setLyricsPageColors();
+    colorManager.updateLyricsPageColors();
   }
 
   Widget themeListTile(BuildContext context, AppLocalizations l10n) {
@@ -807,7 +807,7 @@ class SettingsList extends StatelessWidget {
                                     onPressed: () {
                                       Navigator.pop(context);
                                       myColor.customValue = colorNotifier.value;
-                                      myColor.setColor();
+                                      myColor.updateColor();
                                       changeNotifier.value++;
                                       colorManager.saveCustomColors();
                                     },
@@ -837,6 +837,7 @@ class SettingsList extends StatelessWidget {
 
   Widget paletteListTile(BuildContext context, AppLocalizations l10n) {
     final nameMap = colorManager.getNameMap(l10n);
+    final resetNotifier = ValueNotifier(0);
     return ListTile(
       leading: ImageIcon(paletteImage, size: iconSize),
       title: Text(l10n.palette),
@@ -855,30 +856,35 @@ class SettingsList extends StatelessWidget {
                 width: isPhone ? 300 : 400,
                 child: Padding(
                   padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
-                  child: ListView(
-                    children: [
-                      for (final color in colorManager.myColors)
-                        if (color.type == 0 ||
-                            (color.type == 1 && isMobile) ||
-                            (color.type == 2 && !isMobile))
-                          colorListTile(
-                            context,
-                            nameMap[color.name]!,
-                            l10n,
-                            color,
-                          ),
+                  child: ValueListenableBuilder(
+                    valueListenable: resetNotifier,
+                    builder: (context, value, child) {
+                      return ListView(
+                        children: [
+                          for (final color in colorManager.myColors)
+                            if (color.type == 0 ||
+                                (color.type == 1 && isMobile) ||
+                                (color.type == 2 && !isMobile))
+                              colorListTile(
+                                context,
+                                nameMap[color.name]!,
+                                l10n,
+                                color,
+                              ),
 
-                      ListTile(
-                        title: Text(l10n.reset),
-                        onTap: () {
-                          for (final color in colorManager.myColors) {
-                            color.resetCustomValue();
-                          }
-                          colorManager.setColors();
-                          colorManager.setColors();
-                        },
-                      ),
-                    ],
+                          ListTile(
+                            title: Text(l10n.reset),
+                            onTap: () {
+                              for (final color in colorManager.myColors) {
+                                color.resetCustomValue();
+                              }
+                              colorManager.updateColors();
+                              resetNotifier.value++;
+                            },
+                          ),
+                        ],
+                      );
+                    },
                   ),
                 ),
               );

@@ -126,25 +126,25 @@ Widget sleepTimerListTile(
   bool inSetting, {
   double? iconSize,
 }) {
-  return ValueListenableBuilder(
-    valueListenable: lyricsPageForegroundColor.valueNotifier,
-    builder: (context, _, child) {
+  return ListenableBuilder(
+    listenable: Listenable.merge([lyricsPageForegroundColor.valueNotifier]),
+    builder: (context, _) {
       final specificTextColor = inSetting
-          ? textColor
-          : lyricsPageForegroundColor;
+          ? null
+          : lyricsPageForegroundColor.value;
 
       return ListTile(
         leading: ImageIcon(
           timerImage,
           size: iconSize,
-          color: inSetting ? iconColor.value : lyricsPageForegroundColor.value,
+          color: inSetting ? null : lyricsPageForegroundColor.value,
         ),
 
         title: Text(
           l10n.sleepTimer,
           style: TextStyle(
             fontWeight: inSetting ? null : FontWeight.bold,
-            color: specificTextColor.value,
+            color: specificTextColor,
           ),
         ),
         trailing: SizedBox(
@@ -167,7 +167,7 @@ Widget sleepTimerListTile(
                       return value > 0 || on
                           ? Text(
                               '$hours:$minutes:$secs',
-                              style: TextStyle(color: specificTextColor.value),
+                              style: TextStyle(color: specificTextColor),
                             )
                           : SizedBox();
                     },

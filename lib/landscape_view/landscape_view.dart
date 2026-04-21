@@ -25,7 +25,7 @@ class LandscapeView extends StatelessWidget {
               return SizedBox.shrink();
             }
             return ValueListenableBuilder(
-              valueListenable: layersManager.updateNotifier,
+              valueListenable: layersManager.backgroundChangeNotifier,
               builder: (context, value, child) {
                 return CoverArtWidget(
                   song: backgroundSong,
@@ -51,7 +51,7 @@ class LandscapeView extends StatelessWidget {
                   sigmaY: pageHight * 0.03,
                 ),
                 child: ValueListenableBuilder(
-                  valueListenable: layersManager.updateNotifier,
+                  valueListenable: layersManager.backgroundChangeNotifier,
                   builder: (context, value, child) {
                     return Container(
                       color: backgroundCoverArtColor.withAlpha(180),
@@ -73,27 +73,24 @@ class LandscapeView extends StatelessWidget {
                     child: ValueListenableBuilder(
                       valueListenable: panelColor.valueNotifier,
                       builder: (context, value, child) {
-                        return Material(
-                          color: value,
-                          child: ValueListenableBuilder(
-                            valueListenable: layersManager.updateNotifier,
-                            builder: (context, value, child) {
-                              return Stack(
-                                children: layersManager.layerMap.values.map((
-                                  layer,
-                                ) {
-                                  return Visibility(
-                                    visible:
-                                        layer == layersManager.currentLayer,
-                                    maintainState: true,
-                                    child: layer,
-                                  );
-                                }).toList(),
-                              );
-                            },
-                          ),
-                        );
+                        return Material(color: value, child: child);
                       },
+                      child: ValueListenableBuilder(
+                        valueListenable: layersManager.switchNotifier,
+                        builder: (context, value, child) {
+                          return Stack(
+                            children: layersManager.layerMap.values.map((
+                              layer,
+                            ) {
+                              return Visibility(
+                                visible: layer == layersManager.currentLayer,
+                                maintainState: true,
+                                child: layer,
+                              );
+                            }).toList(),
+                          );
+                        },
+                      ),
                     ),
                   ),
                 ],

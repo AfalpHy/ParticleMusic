@@ -115,7 +115,7 @@ Future<void> _tryWriteMetadata(
       await computeCoverArtColor(song);
       if (song == currentSongNotifier.value) {
         currentCoverArtColor = song.coverArtColor!;
-        colorManager.setLyricsPageColors();
+        colorManager.updateLyricsPageColors();
       }
       artistsAlbumsManager.updateArtistAlbum(song, originArtist, originAlbum);
 

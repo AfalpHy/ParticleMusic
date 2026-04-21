@@ -23,8 +23,16 @@ import 'package:particle_music/utils.dart';
 
 final layersManager = LayersManager();
 
+class LayerHelper {
+  MyAudioMetadata? backgroundSong;
+  Color backgroundCoverArtColor;
+  final changeNotifier = ValueNotifier(0);
+  LayerHelper(this.backgroundSong, this.backgroundCoverArtColor);
+}
+
 class LayersManager {
   final Map<String, Widget> layerMap = {};
+  final Map<Widget, LayerHelper> layerHelperMap = {};
   final Map<Widget, Widget> pageMap = {};
 
   Widget? currentLayer;
@@ -33,38 +41,55 @@ class LayersManager {
   Widget? currentPage;
   Widget? prePage;
 
-  final updateNotifier = ValueNotifier(0);
+  final backgroundChangeNotifier = ValueNotifier(0);
   final switchNotifier = ValueNotifier(0);
 
   Widget getPage(Widget layer) {
     return pageMap.putIfAbsent(layer, () {
-      final currentBgSong = _getBackgroundSong(layer);
+      final layerHelper = layerHelperMap[layer]!;
       return Stack(
         key: GlobalKey(),
-        fit: StackFit.expand,
 
         children: [
-          if (mainPageThemeNotifier.value == 0) ...[
-            CoverArtWidget(
-              song: currentBgSong,
-              color: currentBgSong == null
-                  ? Colors.grey
-                  : currentBgSong.coverArtColor,
-            ),
+          ValueListenableBuilder(
+            valueListenable: layerHelper.changeNotifier,
+            builder: (context, value, child) {
+              return ValueListenableBuilder(
+                valueListenable: mainPageThemeNotifier,
+                builder: (context, value, child) {
+                  if (value != 0) {
+                    return SizedBox();
+                  }
+                  return Stack(
+                    fit: StackFit.expand,
+                    children: [
+                      CoverArtWidget(
+                        song: layerHelper.backgroundSong,
+                        color: layerHelper.backgroundCoverArtColor,
+                      ),
 
-            ClipRect(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
-                child: Container(
-                  color: currentBgSong == null
-                      ? Colors.grey.withAlpha(180)
-                      : currentBgSong.coverArtColor?.withAlpha(180),
-                ),
-              ),
-            ),
-          ],
+                      ClipRect(
+                        child: BackdropFilter(
+                          filter: ImageFilter.blur(sigmaX: 30, sigmaY: 30),
+                          child: Container(
+                            color: layerHelper.backgroundCoverArtColor
+                                .withAlpha(180),
+                          ),
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
 
-          Material(color: pageBackgroundColor.value, child: layer),
+          ValueListenableBuilder(
+            valueListenable: pageBackgroundColor.valueNotifier,
+            builder: (context, value, child) {
+              return Material(color: value, child: layer);
+            },
+          ),
         ],
       );
     });
@@ -136,15 +161,33 @@ class LayersManager {
   }
 
   void removePlaylistLayer(Playlist playlist) {
-    updateBackground();
+    final layer = layerMap.remove('_${playlist.name}');
+    if (isMobile) {
+      pageMap.remove(layer);
+    }
+    if (layer == currentLayer) {
+      switchLayer('playlists');
+    }
   }
 
   void removeArtistLayer(Artist artist) {
-    updateBackground();
+    final layer = layerMap.remove('artists${artist.name}');
+    if (isMobile) {
+      pageMap.remove(layer);
+    }
+    if (layer == currentLayer) {
+      switchLayer('artists');
+    }
   }
 
   void removeAlbumLayer(Album album) {
-    updateBackground();
+    final layer = layerMap.remove('albums${album.name}');
+    if (isMobile) {
+      pageMap.remove(layer);
+    }
+    if (layer == currentLayer) {
+      switchLayer('albums');
+    }
   }
 
   void clear() {
@@ -182,14 +225,27 @@ class LayersManager {
     if (currentLayer == null) {
       return;
     }
+
     backgroundSong = _getBackgroundSong(currentLayer!);
     backgroundCoverArtColor = await computeCoverArtColor(backgroundSong);
-    if (mainPageThemeNotifier.value == 0) {
-      searchFieldColor.setColor();
-      buttonColor.setColor();
-      dividerColor.setColor();
-      selectedItemColor.setColor();
+
+    final layerHelper = layerHelperMap.putIfAbsent(
+      currentLayer!,
+      () => LayerHelper(backgroundSong, backgroundCoverArtColor),
+    );
+    if (layerHelper.backgroundSong != backgroundSong ||
+        layerHelper.backgroundCoverArtColor != backgroundCoverArtColor) {
+      layerHelper.backgroundSong = backgroundSong;
+      layerHelper.backgroundCoverArtColor = backgroundCoverArtColor;
+      layerHelper.changeNotifier.value++;
     }
-    updateNotifier.value++;
+
+    if (mainPageThemeNotifier.value == 0) {
+      searchFieldColor.updateColor();
+      buttonColor.updateColor();
+      dividerColor.updateColor();
+      selectedItemColor.updateColor();
+      backgroundChangeNotifier.value++;
+    }
   }
 }

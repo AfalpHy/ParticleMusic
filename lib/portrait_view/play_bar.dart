@@ -21,7 +21,7 @@ class PlayBar extends StatelessWidget {
         return SizedBox(
           height: 50,
           child: ValueListenableBuilder(
-            valueListenable: layersManager.updateNotifier,
+            valueListenable: layersManager.backgroundChangeNotifier,
             builder: (context, value, child) {
               return Material(
                 shape: SmoothRectangleBorder(

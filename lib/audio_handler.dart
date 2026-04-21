@@ -449,15 +449,15 @@ class MyAudioHandler extends BaseAudioHandler {
     await setParsedLyrics(currentSong);
     currentCoverArtColor = await computeCoverArtColor(currentSong);
     if (lyricsPageThemeNotifier.value == 0) {
-      lyricsPageBackgroundColor.setColor();
+      lyricsPageBackgroundColor.updateColor();
       adaptiveContrastColorTheme = AdaptiveContrastColorGenerator.generate(
         currentCoverArtColor,
       );
-      lyricsPageForegroundColor.setColor();
-      lyricsPageHighlightTextColor.setColor();
-      lyricsPageButtonColor.setColor();
-      lyricsPageDividerColor.setColor();
-      lyricsPageSelectedItemColor.setColor();
+      lyricsPageForegroundColor.updateColor();
+      lyricsPageHighlightTextColor.updateColor();
+      lyricsPageButtonColor.updateColor();
+      lyricsPageDividerColor.updateColor();
+      lyricsPageSelectedItemColor.updateColor();
     }
 
     currentSongNotifier.value = currentSong;

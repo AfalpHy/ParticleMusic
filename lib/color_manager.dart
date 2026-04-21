@@ -287,7 +287,7 @@ class ColorManager {
         c.customValue = Color(map[c.name]);
       }
     }
-    setColors();
+    updateColors();
   }
 
   void saveCustomColors() {
@@ -305,21 +305,21 @@ class ColorManager {
     return value;
   }
 
-  void setMainPageColors() {
+  void updateMainPageColors() {
     for (final color in myMainPageColors) {
-      color.setColor();
+      color.updateColor();
     }
   }
 
-  void setLyricsPageColors() {
+  void updateLyricsPageColors() {
     for (final color in myLyricsPageColors) {
-      color.setColor();
+      color.updateColor();
     }
   }
 
-  void setColors() {
-    setMainPageColors();
-    setLyricsPageColors();
+  void updateColors() {
+    updateMainPageColors();
+    updateLyricsPageColors();
   }
 
   Map<String, String> getNameMap(AppLocalizations l10n) {
@@ -486,7 +486,7 @@ class MyColor {
     customValue = lightModeValue;
   }
 
-  void setColor() {
+  void updateColor() {
     final mode = pageType == 0
         ? mainPageThemeNotifier.value
         : lyricsPageThemeNotifier.value;

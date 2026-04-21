@@ -145,7 +145,7 @@ class _PortraitViewState extends State<PortraitView>
 
   Widget myDrawer() {
     return ValueListenableBuilder(
-      valueListenable: layersManager.updateNotifier,
+      valueListenable: layersManager.backgroundChangeNotifier,
       builder: (context, value, child) {
         return Drawer(
           backgroundColor: backgroundCoverArtColor,

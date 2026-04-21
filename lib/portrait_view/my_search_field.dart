@@ -30,6 +30,7 @@ class MySearchField extends StatefulWidget {
 
 class _MySearchFieldState extends State<MySearchField> {
   bool isInside = true;
+  final focusNode = FocusNode();
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<bool>(
@@ -39,6 +40,9 @@ class _MySearchFieldState extends State<MySearchField> {
           return IconButton(
             onPressed: () {
               widget.isSearchNotifier.value = true;
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                focusNode.requestFocus();
+              });
             },
             icon: const Icon(Icons.search),
           );
@@ -54,46 +58,53 @@ class _MySearchFieldState extends State<MySearchField> {
                     return;
                   }
                   isInside = false;
-                  FocusManager.instance.primaryFocus?.unfocus();
+                  focusNode.unfocus();
                 },
                 onTapInside: (_) {
                   isInside = true;
                 },
-                child: TextField(
-                  autofocus: true,
-                  controller: widget.textController,
-                  decoration: InputDecoration(
-                    hint: Text(
-                      widget.hintText,
-                      style: TextStyle(color: textColor.value),
-                    ),
-                    prefixIcon: Icon(Icons.search),
-                    suffixIcon: IconButton(
-                      onPressed: () {
-                        widget.isSearchNotifier.value = false;
-                        widget.textController.clear();
-                        FocusScope.of(context).unfocus();
+                child: ListenableBuilder(
+                  listenable: Listenable.merge([
+                    widget.useCurrentSong ? currentSongNotifier : null,
+                  ]),
+                  builder: (context, _) {
+                    return TextField(
+                      focusNode: focusNode,
+                      controller: widget.textController,
+                      decoration: InputDecoration(
+                        hint: Text(
+                          widget.hintText,
+                          style: TextStyle(color: textColor.value),
+                        ),
+                        prefixIcon: Icon(Icons.search),
+                        suffixIcon: IconButton(
+                          onPressed: () {
+                            widget.isSearchNotifier.value = false;
+                            widget.textController.clear();
+                            FocusScope.of(context).unfocus();
+                            widget.onSearchTextChanged?.call();
+                          },
+                          icon: const Icon(Icons.clear),
+                          padding: EdgeInsets.zero,
+                        ),
+                        filled: true,
+                        fillColor: colorManager
+                            .getSpecificMainPageSearchFieldColorForm(
+                              widget.useCurrentSong
+                                  ? currentSongNotifier.value
+                                  : widget.song,
+                            ),
+                        contentPadding: EdgeInsets.zero,
+                        isDense: true,
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(15),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                      onChanged: (value) {
                         widget.onSearchTextChanged?.call();
                       },
-                      icon: const Icon(Icons.clear),
-                      padding: EdgeInsets.zero,
-                    ),
-                    filled: true,
-                    fillColor: colorManager
-                        .getSpecificMainPageSearchFieldColorForm(
-                          widget.useCurrentSong
-                              ? currentSongNotifier.value
-                              : widget.song,
-                        ),
-                    contentPadding: EdgeInsets.zero,
-                    isDense: true,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(15),
-                      borderSide: BorderSide.none,
-                    ),
-                  ),
-                  onChanged: (value) {
-                    widget.onSearchTextChanged?.call();
+                    );
                   },
                 ),
               ),
