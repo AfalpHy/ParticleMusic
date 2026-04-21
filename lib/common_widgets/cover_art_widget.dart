@@ -45,7 +45,7 @@ class CoverArtWidget extends StatelessWidget {
         return musicNote();
       }
       return FutureBuilder(
-        future: loadPictureBytes(song),
+        future: loadPictureBytesSafe(song),
         builder: (context, asyncSnapshot) {
           if (asyncSnapshot.connectionState == ConnectionState.waiting) {
             return SizedBox(width: size, height: size);

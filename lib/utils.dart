@@ -19,6 +19,7 @@ import 'package:particle_music/common_widgets/lyrics.dart';
 import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/navidrome_client.dart';
+import 'package:particle_music/picture_load_scheduler.dart';
 import 'package:path/path.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 import 'package:window_manager/window_manager.dart';
@@ -513,11 +514,15 @@ void tryVibrate() {
   }
 }
 
-Future<Uint8List?> loadPictureBytes(MyAudioMetadata? song) async {
+Future<Uint8List?> loadPictureBytesSafe(MyAudioMetadata? song) async {
   if (song == null) {
     return null;
   }
 
+  return pictureLoadScheduler.load(song.id, () => _loadPictureBytes(song));
+}
+
+Future<Uint8List?> _loadPictureBytes(MyAudioMetadata song) async {
   if (song.pictureLoaded) {
     return song.pictureBytes;
   }
@@ -559,7 +564,7 @@ Future<Color> computeCoverArtColor(MyAudioMetadata? song) async {
   if (song?.coverArtColor != null) {
     return song!.coverArtColor!;
   }
-  final bytes = await loadPictureBytes(song);
+  final bytes = await loadPictureBytesSafe(song);
   if (bytes == null) {
     song?.coverArtColor = Colors.grey;
     return Colors.grey;
