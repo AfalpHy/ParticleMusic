@@ -34,23 +34,54 @@ class LocalNavidromePage extends StatelessWidget {
     return ValueListenableBuilder(
       valueListenable: displayNavidromeNotifier,
       builder: (context, value, child) {
-        return SongListPage(
-          key: ValueKey(value),
-          playlist: playlist,
-          artist: artist,
-          album: album,
-          ranking: ranking,
-          recently: recently,
-          isNavidrome: value,
+        return Stack(
+          children: [
+            if (localSongList.isNotEmpty || navidromeSongList.isEmpty)
+              Visibility(
+                visible: !value,
+                maintainState: true,
+                child: SongListPage(
+                  playlist: playlist,
+                  artist: artist,
+                  album: album,
+                  ranking: ranking,
+                  recently: recently,
+                  isNavidrome: false,
 
-          switchCallBack:
-              localSongList.isNotEmpty && navidromeSongList.isNotEmpty
-              ? () {
-                  displayNavidromeNotifier.value =
-                      !displayNavidromeNotifier.value;
-                  layersManager.updateBackground();
-                }
-              : null,
+                  switchCallBack:
+                      localSongList.isNotEmpty && navidromeSongList.isNotEmpty
+                      ? () {
+                          displayNavidromeNotifier.value =
+                              !displayNavidromeNotifier.value;
+                          layersManager.updateBackground();
+                        }
+                      : null,
+                ),
+              ),
+
+            if (navidromeSongList.isNotEmpty)
+              Visibility(
+                visible: value,
+                maintainState: true,
+                child: SongListPage(
+                  playlist: playlist,
+                  artist: artist,
+                  album: album,
+                  ranking: ranking,
+                  recently: recently,
+                  isNavidrome: true,
+
+                  switchCallBack:
+                      localSongList.isNotEmpty && navidromeSongList.isNotEmpty
+                      ? () {
+                          displayNavidromeNotifier.value =
+                              !displayNavidromeNotifier.value;
+                          layersManager.updateBackground();
+                        }
+                      : null,
+                ),
+              ),
+          ],
         );
       },
     );
