@@ -30,6 +30,8 @@ class LayerInfo {
   LayerInfo(this.backgroundSong, this.backgroundCoverArtColor);
 }
 
+enum SwitchType { push, pop, afterPop }
+
 class LayersManager {
   final Map<String, Widget> layerMap = {};
   final Map<Widget, LayerInfo> layerInfoMap = {};
@@ -46,7 +48,7 @@ class LayersManager {
 
   final backgroundChangeNotifier = ValueNotifier(0);
   final switchNotifier = ValueNotifier(0);
-  late bool isPush;
+  late SwitchType switchType;
 
   Widget getPage(Widget layer) {
     return pageMap.putIfAbsent(layer, () {
@@ -152,7 +154,7 @@ class LayersManager {
       return;
     }
 
-    isPush = true;
+    switchType = .push;
 
     helperLayer = currentLayer;
     currentLayer = layer;
@@ -173,7 +175,7 @@ class LayersManager {
     if (layerHistory.length == 1) {
       return;
     }
-    isPush = false;
+    switchType = .pop;
 
     layerHistory.removeLast();
     labelHistory.removeLast();
@@ -185,6 +187,19 @@ class LayersManager {
       currentPage = pageMap[currentLayer];
     }
     sidebarHighlighLabel.value = labelHistory.last;
+    switchNotifier.value++;
+  }
+
+  void afterPopLayer() {
+    switchType = .afterPop;
+
+    if (layerHistory.length >= 2) {
+      helperLayer = layerHistory[layerHistory.length - 2];
+      helperPage = pageMap[helperLayer];
+    } else {
+      helperLayer = null;
+      helperPage = null;
+    }
     switchNotifier.value++;
   }
 

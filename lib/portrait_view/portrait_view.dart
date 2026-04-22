@@ -23,8 +23,27 @@ class _PortraitViewState extends State<PortraitView>
   late Animation<Offset> _pushSlideAnimation;
   late Animation<Offset> _popSlideAnimation;
 
+  final dragDxNotifier = ValueNotifier(0.0);
+  final dragNotifier = ValueNotifier(false);
+
+  double slideBeginDx = 0.0;
   void slideBegin() {
-    _controller.forward(from: 0.0);
+    _controller.forward(from: slideBeginDx);
+    slideBeginDx = 0;
+    dragNotifier.value = false;
+  }
+
+  void statusListener(AnimationStatus status) {
+    if (status != .completed) {
+      return;
+    }
+
+    if (layersManager.switchType == .pop) {
+      layersManager.afterPopLayer();
+    } else {
+      dragNotifier.value = true;
+      dragDxNotifier.value = 0;
+    }
   }
 
   @override
@@ -35,6 +54,8 @@ class _PortraitViewState extends State<PortraitView>
       vsync: this,
       duration: const Duration(milliseconds: 250),
     );
+
+    _controller.addStatusListener(statusListener);
 
     _pushSlideAnimation =
         Tween<Offset>(
@@ -58,6 +79,7 @@ class _PortraitViewState extends State<PortraitView>
 
   @override
   void dispose() {
+    _controller.removeStatusListener(statusListener);
     layersManager.switchNotifier.removeListener(slideBegin);
     super.dispose();
   }
@@ -78,17 +100,19 @@ class _PortraitViewState extends State<PortraitView>
               ValueListenableBuilder(
                 valueListenable: layersManager.switchNotifier,
                 builder: (context, _, _) {
-                  final slideAnimation = layersManager.isPush
+                  final slideAnimation = layersManager.switchType == .push
                       ? _pushSlideAnimation
-                      : _popSlideAnimation;
+                      : layersManager.switchType == .pop
+                      ? _popSlideAnimation
+                      : null;
 
-                  final bottomPage = layersManager.isPush
-                      ? layersManager.helperPage
-                      : layersManager.currentPage;
-
-                  final topPage = layersManager.isPush
+                  final bottomPage = layersManager.switchType == .pop
                       ? layersManager.currentPage
                       : layersManager.helperPage;
+
+                  final topPage = layersManager.switchType == .pop
+                      ? layersManager.helperPage
+                      : layersManager.currentPage;
 
                   return Stack(
                     children: [
@@ -101,7 +125,72 @@ class _PortraitViewState extends State<PortraitView>
                               child: page,
                             ),
                           ),
-                      SlideTransition(position: slideAnimation, child: topPage),
+
+                      ValueListenableBuilder(
+                        valueListenable: dragNotifier,
+                        builder: (context, value, child) {
+                          if (value) {
+                            return ValueListenableBuilder(
+                              valueListenable: dragDxNotifier,
+                              builder: (context, value, child) {
+                                return AnimatedContainer(
+                                  duration: const Duration(milliseconds: 250),
+                                  curve: Curves.easeOutCubic,
+                                  transform: .translationValues(value, 0, 0),
+                                  child: topPage,
+                                );
+                              },
+                            );
+                          }
+                          if (slideAnimation == null) {
+                            return topPage!;
+                          } else {
+                            return SlideTransition(
+                              position: slideAnimation,
+                              child: topPage,
+                            );
+                          }
+                        },
+                      ),
+
+                      if (Platform.isIOS &&
+                          layersManager.layerHistory.length > 1)
+                        Positioned(
+                          left: 0,
+                          top: 0,
+                          bottom: 0,
+                          child: GestureDetector(
+                            onHorizontalDragUpdate: (details) {
+                              if (dragNotifier.value == false) {
+                                return;
+                              }
+                              dragDxNotifier.value += details.delta.dx;
+                              if (dragDxNotifier.value < 0) {
+                                dragDxNotifier.value = 0;
+                              }
+                            },
+                            onHorizontalDragEnd: (details) {
+                              if (dragNotifier.value == false) {
+                                return;
+                              }
+                              if (dragDxNotifier.value /
+                                      MediaQuery.widthOf(context) <
+                                  0.5) {
+                                dragDxNotifier.value = 0;
+                              } else {
+                                slideBeginDx =
+                                    dragDxNotifier.value /
+                                    MediaQuery.widthOf(context);
+                                layersManager.popLayer();
+                              }
+                            },
+
+                            child: Container(
+                              color: Colors.transparent,
+                              width: 20,
+                            ),
+                          ),
+                        ),
                     ],
                   );
                 },
