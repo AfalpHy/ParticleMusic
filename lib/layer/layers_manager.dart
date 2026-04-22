@@ -234,8 +234,14 @@ class LayersManager {
   }
 
   void clear() {
+    layerHistory.clear();
+    labelHistory.clear();
     layerMap.clear();
     pageMap.clear();
+    currentLayer = null;
+    helperLayer = null;
+    currentPage = null;
+    helperPage = null;
   }
 
   MyAudioMetadata? _getBackgroundSong(Widget layer) {
