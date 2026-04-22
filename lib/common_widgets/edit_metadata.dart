@@ -301,7 +301,7 @@ class _MetadataDialog extends StatelessWidget {
               cursor: SystemMouseCursors.click,
               child: GestureDetector(
                 onTap: () async {
-                  final result = await FilePicker.platform.pickFiles(
+                  final result = await FilePicker.pickFiles(
                     type: FileType.image,
                     allowMultiple: false,
                   );

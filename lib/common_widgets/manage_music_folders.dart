@@ -410,7 +410,7 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
   }
 
   void _addFolder(BuildContext context) async {
-    String? result = await FilePicker.platform.getDirectoryPath();
+    String? result = await FilePicker.getDirectoryPath();
     if (result == null || !context.mounted) {
       return;
     }
@@ -435,7 +435,7 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
   }
 
   void _addFolders(BuildContext context) async {
-    String? result = await FilePicker.platform.getDirectoryPath();
+    String? result = await FilePicker.getDirectoryPath();
     if (result == null || !context.mounted) {
       return;
     }

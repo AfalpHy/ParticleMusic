@@ -239,10 +239,10 @@ packages:
     dependency: "direct main"
     description:
       name: file_picker
-      sha256: "57d9a1dd5063f85fa3107fb42d1faffda52fdc948cefd5fe5ea85267a5fc7343"
+      sha256: f13a03000d942e476bc1ff0a736d2e9de711d2f89a95cd4c1d88f861c3348387
       url: "https://pub.dev"
     source: hosted
-    version: "10.3.10"
+    version: "11.0.2"
   fixnum:
     dependency: transitive
     description:
@@ -347,10 +347,10 @@ packages:
     dependency: transitive
     description:
       name: hooks
-      sha256: e79ed1e8e1929bc6ecb6ec85f0cb519c887aa5b423705ded0d0f2d9226def388
+      sha256: "025f060e86d2d4c3c47b56e33caf7f93bf9283340f26d23424ebcfccf34f621e"
       url: "https://pub.dev"
     source: hosted
-    version: "1.0.2"
+    version: "1.0.3"
   http:
     dependency: "direct main"
     description:
@@ -407,6 +407,22 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "0.7.0"
+  jni:
+    dependency: transitive
+    description:
+      name: jni
+      sha256: c2230682d5bc2362c1c9e8d3c7f406d9cbba23ab3f2e203a025dd47e0fb2e68f
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.0"
+  jni_flutter:
+    dependency: transitive
+    description:
+      name: jni_flutter
+      sha256: "8b59e590786050b1cd866677dddaf76b1ade5e7bc751abe04b86e84d379d3ba6"
+      url: "https://pub.dev"
+    source: hosted
+    version: "1.0.1"
   js:
     dependency: transitive
     description:
@@ -508,7 +524,7 @@ packages:
     description:
       path: "libs/android/media_kit_libs_android_audio"
       ref: main
-      resolved-ref: e23117d1c7c6829eccadc2b75033e3152221a1fa
+      resolved-ref: "61c559127f83fc6f717de3703f76a1396af3547a"
       url: "https://github.com/AfalpHy/media-kit"
     source: git
     version: "1.3.9"
@@ -525,7 +541,7 @@ packages:
     description:
       path: "libs/ios/media_kit_libs_ios_audio"
       ref: main
-      resolved-ref: be95d2a09255cd0fd275af6cc2d7383f7754f8b8
+      resolved-ref: "61c559127f83fc6f717de3703f76a1396af3547a"
       url: "https://github.com/AfalpHy/media-kit"
     source: git
     version: "1.1.4"
@@ -551,7 +567,7 @@ packages:
     description:
       path: "libs/windows/media_kit_libs_windows_audio"
       ref: main
-      resolved-ref: "6cd7d9476515a49d128dbc51ea0094cb6b908b64"
+      resolved-ref: "61c559127f83fc6f717de3703f76a1396af3547a"
       url: "https://github.com/AfalpHy/media-kit"
     source: git
     version: "1.0.10"
@@ -603,6 +619,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "9.3.0"
+  package_config:
+    dependency: transitive
+    description:
+      name: package_config
+      sha256: f096c55ebb7deb7e384101542bfba8c52696c1b56fca2eb62827989ef2353bbc
+      url: "https://pub.dev"
+    source: hosted
+    version: "2.2.0"
   path:
     dependency: "direct main"
     description:
@@ -623,10 +647,10 @@ packages:
     dependency: transitive
     description:
       name: path_provider_android
-      sha256: "149441ca6e4f38193b2e004c0ca6376a3d11f51fa5a77552d8bd4d2b0c0912ba"
+      sha256: "69cbd515a62b94d32a7944f086b2f82b4ac40a1d45bebfc00813a430ab2dabcd"
       url: "https://pub.dev"
     source: hosted
-    version: "2.2.23"
+    version: "2.3.1"
   path_provider_foundation:
     dependency: transitive
     description:
@@ -763,6 +787,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.0"
+  record_use:
+    dependency: transitive
+    description:
+      name: record_use
+      sha256: "2551bd8eecfe95d14ae75f6021ad0248be5c27f138c2ec12fcb52b500b3ba1ed"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.6.0"
   rxdart:
     dependency: transitive
     description:
@@ -941,10 +973,10 @@ packages:
     dependency: transitive
     description:
       name: synchronized
-      sha256: c254ade258ec8282947a0acbbc90b9575b4f19673533ee46f2f6e9b3aeefd7c0
+      sha256: "63896c27e81b28f8cb4e69ead0d3e8f03f1d1e5fc531a3e579cabed6a2c7c9e5"
       url: "https://pub.dev"
     source: hosted
-    version: "3.4.0"
+    version: "3.4.0+1"
   term_glyph:
     dependency: transitive
     description:
@@ -1086,10 +1118,10 @@ packages:
     dependency: transitive
     description:
       name: vm_service
-      sha256: "45caa6c5917fa127b5dbcfbd1fa60b14e583afdc08bfc96dda38886ca252eb60"
+      sha256: "046d3928e16fa4dc46e8350415661755ab759d9fc97fc21b5ab295f71e4f0499"
       url: "https://pub.dev"
     source: hosted
-    version: "15.0.2"
+    version: "15.1.0"
   web:
     dependency: transitive
     description:

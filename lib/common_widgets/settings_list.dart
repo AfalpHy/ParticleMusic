@@ -1222,7 +1222,7 @@ class SettingsList extends StatelessWidget {
 
       title: Text(l10n.exportLog),
       onTap: () async {
-        String? result = await FilePicker.platform.getDirectoryPath();
+        String? result = await FilePicker.getDirectoryPath();
         if (result == null) {
           return;
         }
