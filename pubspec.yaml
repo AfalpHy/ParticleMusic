@@ -23,7 +23,7 @@ environment:
   # Specify a fixed version to ensure consistent behavior.
   # If you want to use a newer version, add ^ before the version number,
   # or directly set the version you want.
-  flutter: 3.41.6
+  flutter: 3.41.7
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions

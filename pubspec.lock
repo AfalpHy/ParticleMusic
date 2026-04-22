@@ -524,7 +524,7 @@ packages:
     description:
       path: "libs/android/media_kit_libs_android_audio"
       ref: main
-      resolved-ref: "61c559127f83fc6f717de3703f76a1396af3547a"
+      resolved-ref: "5695a0bff0e78f4dd7021cdfd320942b93666667"
       url: "https://github.com/AfalpHy/media-kit"
     source: git
     version: "1.3.9"
@@ -541,7 +541,7 @@ packages:
     description:
       path: "libs/ios/media_kit_libs_ios_audio"
       ref: main
-      resolved-ref: "61c559127f83fc6f717de3703f76a1396af3547a"
+      resolved-ref: "5695a0bff0e78f4dd7021cdfd320942b93666667"
       url: "https://github.com/AfalpHy/media-kit"
     source: git
     version: "1.1.4"
@@ -558,7 +558,7 @@ packages:
     description:
       path: "libs/macos/media_kit_libs_macos_audio"
       ref: main
-      resolved-ref: "61c559127f83fc6f717de3703f76a1396af3547a"
+      resolved-ref: "5695a0bff0e78f4dd7021cdfd320942b93666667"
       url: "https://github.com/AfalpHy/media-kit"
     source: git
     version: "1.1.5"
@@ -567,7 +567,7 @@ packages:
     description:
       path: "libs/windows/media_kit_libs_windows_audio"
       ref: main
-      resolved-ref: "61c559127f83fc6f717de3703f76a1396af3547a"
+      resolved-ref: "5695a0bff0e78f4dd7021cdfd320942b93666667"
       url: "https://github.com/AfalpHy/media-kit"
     source: git
     version: "1.0.10"
@@ -892,10 +892,10 @@ packages:
     dependency: transitive
     description:
       name: sqflite
-      sha256: e2297b1da52f127bc7a3da11439985d9b536f75070f3325e62ada69a5c585d03
+      sha256: "564cfed0746fe53140c23b70b308e045c3b31f17778f2f326ccb7d804ea0250a"
       url: "https://pub.dev"
     source: hosted
-    version: "2.4.2"
+    version: "2.4.2+1"
   sqflite_android:
     dependency: transitive
     description:
@@ -908,10 +908,10 @@ packages:
     dependency: transitive
     description:
       name: sqflite_common
-      sha256: "6ef422a4525ecc601db6c0a2233ff448c731307906e92cabc9ba292afaae16a6"
+      sha256: "5e8377564d95166761a968ed96104e0569b6b6cc611faac92a36ab8a169112c3"
       url: "https://pub.dev"
     source: hosted
-    version: "2.5.6"
+    version: "2.5.6+1"
   sqflite_darwin:
     dependency: transitive
     description:
@@ -1189,4 +1189,4 @@ packages:
     version: "3.1.3"
 sdks:
   dart: ">=3.11.0 <4.0.0"
-  flutter: "3.41.6"
+  flutter: "3.41.7"
