@@ -8,6 +8,8 @@ import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/portrait_view/pages/portrait_lyrics_page.dart';
 import 'package:particle_music/portrait_view/play_bar.dart';
 
+final GlobalKey<ScaffoldState> portraitKey = GlobalKey();
+
 class PortraitView extends StatefulWidget {
   const PortraitView({super.key});
 
@@ -65,6 +67,7 @@ class _PortraitViewState extends State<PortraitView>
     return Stack(
       children: [
         Scaffold(
+          key: portraitKey,
           extendBodyBehindAppBar: true,
           backgroundColor: Colors.transparent,
           resizeToAvoidBottomInset: false,
@@ -131,13 +134,7 @@ class _PortraitViewState extends State<PortraitView>
                   );
                 },
               ),
-              Expanded(
-                child: Sidebar(
-                  closeDrawer: () {
-                    Navigator.of(context).pop();
-                  },
-                ),
-              ),
+              Expanded(child: Sidebar()),
             ],
           ),
         );

@@ -8,6 +8,7 @@ import 'package:particle_music/common_widgets/my_divider.dart';
 import 'package:particle_music/common_widgets/playlist_widgets.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/layer/layers_manager.dart';
+import 'package:particle_music/portrait_view/portrait_view.dart';
 import 'package:particle_music/utils.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 import 'package:super_context_menu/super_context_menu.dart';
@@ -15,8 +16,7 @@ import 'package:window_manager/window_manager.dart';
 
 class Sidebar extends StatelessWidget {
   final ScrollController _scrollController = ScrollController();
-  final void Function()? closeDrawer;
-  Sidebar({super.key, this.closeDrawer});
+  Sidebar({super.key});
 
   Widget sidebarItem({
     required String label,
@@ -54,11 +54,11 @@ class Sidebar extends StatelessWidget {
             visualDensity: const VisualDensity(horizontal: 0, vertical: -3.65),
             trailing: trailing,
             onTap: () async {
-              if (closeDrawer != null) {
-                closeDrawer!.call();
+              if (portraitKey.currentState?.isDrawerOpen ?? false) {
+                Navigator.of(portraitKey.currentContext!).pop();
                 await Future.delayed(Duration(milliseconds: 250));
               }
-              onTap();
+              onTap.call();
             },
           ),
         ),

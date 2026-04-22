@@ -64,6 +64,12 @@ class _ViewEntryState extends State<ViewEntry> with WidgetsBindingObserver {
             displayLyricsPageNotifier.value = false;
             return;
           }
+
+          if (portraitKey.currentState?.isDrawerOpen ?? false) {
+            Navigator.of(portraitKey.currentContext!).pop();
+            return;
+          }
+
           if (layersManager.layerHistory.length > 1) {
             layersManager.popLayer();
             return;

@@ -34,7 +34,9 @@ class LayersManager {
   final Map<String, Widget> layerMap = {};
   final Map<Widget, LayerInfo> layerInfoMap = {};
   final Map<Widget, Widget> pageMap = {};
+
   final List<Widget> layerHistory = [];
+  final List<String> labelHistory = [];
 
   Widget? currentLayer;
   Widget? helperLayer;
@@ -145,8 +147,6 @@ class LayersManager {
   }
 
   Future<void> pushLayer(String label, {String? content}) async {
-    sidebarHighlighLabel.value = label;
-
     Widget layer = getLayer(label, content: content);
     if (layer == currentLayer) {
       return;
@@ -163,6 +163,9 @@ class LayersManager {
     }
 
     layerHistory.add(currentLayer!);
+    labelHistory.add(label);
+
+    sidebarHighlighLabel.value = label;
     switchNotifier.value++;
   }
 
@@ -173,6 +176,7 @@ class LayersManager {
     isPush = false;
 
     layerHistory.removeLast();
+    labelHistory.removeLast();
     helperLayer = currentLayer;
     currentLayer = layerHistory.last;
     await updateBackground();
@@ -180,6 +184,7 @@ class LayersManager {
       helperPage = currentPage;
       currentPage = pageMap[currentLayer];
     }
+    sidebarHighlighLabel.value = labelHistory.last;
     switchNotifier.value++;
   }
 
