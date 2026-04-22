@@ -174,14 +174,15 @@ class _PortraitViewState extends State<PortraitView>
                                 return;
                               }
                               if (dragDxNotifier.value /
-                                      MediaQuery.widthOf(context) <
-                                  0.5) {
-                                dragDxNotifier.value = 0;
-                              } else {
+                                          MediaQuery.widthOf(context) >
+                                      0.6 ||
+                                  (details.primaryVelocity ?? 0) > 300) {
                                 slideBeginDx =
                                     dragDxNotifier.value /
                                     MediaQuery.widthOf(context);
                                 layersManager.popLayer();
+                              } else {
+                                dragDxNotifier.value = 0;
                               }
                             },
 
