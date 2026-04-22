@@ -134,7 +134,13 @@ class _PortraitViewState extends State<PortraitView>
                   );
                 },
               ),
-              Expanded(child: Sidebar()),
+              Expanded(
+                child: Sidebar(
+                  closeDrawer: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ),
             ],
           ),
         );
