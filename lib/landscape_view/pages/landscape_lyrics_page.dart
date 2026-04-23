@@ -38,6 +38,7 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
           immersiveModeTimer?.cancel();
           immersiveModeTimer = null;
         } else if (!isMobile) {
+          immersiveModeTimer?.cancel();
           immersiveModeTimer = Timer(const Duration(milliseconds: 5000), () {
             immersiveModeNotifier.value = true;
             immersiveModeTimer = null;
