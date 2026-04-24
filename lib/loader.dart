@@ -177,7 +177,7 @@ class Loader {
             '${folderConfigDir.path}/${uuid.v4()}.json';
         tmp = File('${appSupportDir.path}/folder_song_file_path_list_$i.txt');
         if (tmp.existsSync()) {
-          tmp.renameSync(songIdListPath);
+          tmp.deleteSync();
         }
         folderMapList.add({
           'id': id,
