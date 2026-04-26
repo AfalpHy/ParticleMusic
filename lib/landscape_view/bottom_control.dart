@@ -20,11 +20,37 @@ class BottomControl extends StatelessWidget {
           color: value,
           child: SizedBox(
             height: 75,
-            child: Stack(
+            child: Row(
               children: [
-                currentSongTile(),
-                playControls(context),
-                if (!isMobile) otherControls(),
+                Expanded(flex: 2, child: currentSongTile()),
+
+                if (isMobile) ...[
+                  Expanded(flex: 2, child: bottomSeekBar()),
+                  Expanded(
+                    flex: 2,
+                    child: Row(
+                      mainAxisAlignment: .end,
+                      children: [...playControls(), SizedBox(width: 10)],
+                    ),
+                  ),
+                ] else ...[
+                  Expanded(
+                    flex: 3,
+                    child: Column(
+                      children: [
+                        Row(
+                          mainAxisAlignment: .center,
+                          children: playControls(),
+                        ),
+                        Transform.translate(
+                          offset: Offset(0, -6),
+                          child: bottomSeekBar(),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(flex: 2, child: otherControls()),
+                ],
               ],
             ),
           ),
@@ -34,99 +60,65 @@ class BottomControl extends StatelessWidget {
   }
 
   Widget currentSongTile() {
-    return Align(
-      alignment: Alignment.centerLeft,
-      child: SizedBox(
-        width: 300,
-        child: ValueListenableBuilder(
-          valueListenable: currentSongNotifier,
-          builder: (context, currentSong, _) {
-            return Theme(
-              data: Theme.of(context).copyWith(
-                highlightColor: Colors.transparent,
-                splashColor: Colors.transparent,
-                hoverColor: Colors.transparent,
-              ),
-              child: ListTile(
-                leading: CoverArtWidget(
-                  size: 50,
-                  borderRadius: 5,
-                  song: currentSong,
-                ),
-                title: Text(
-                  getTitle(currentSong),
-                  overflow: TextOverflow.ellipsis,
-                ),
-                subtitle: currentSong != null
-                    ? Text(
-                        "${getArtist(currentSong)} - ${getAlbum(currentSong)}",
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(fontSize: 13),
-                      )
-                    : null,
-                onTap: () {
-                  if (playQueue.isEmpty) {
-                    return;
-                  }
-                  displayLyricsPageNotifier.value = true;
-                },
-              ),
-            );
-          },
-        ),
+    return ValueListenableBuilder(
+      valueListenable: currentSongNotifier,
+      builder: (context, currentSong, _) {
+        return Theme(
+          data: Theme.of(context).copyWith(
+            highlightColor: Colors.transparent,
+            splashColor: Colors.transparent,
+            hoverColor: Colors.transparent,
+          ),
+          child: ListTile(
+            leading: CoverArtWidget(
+              size: 50,
+              borderRadius: 5,
+              song: currentSong,
+            ),
+            title: Text(getTitle(currentSong), overflow: TextOverflow.ellipsis),
+            subtitle: currentSong != null
+                ? Text(
+                    "${getArtist(currentSong)} - ${getAlbum(currentSong)}",
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(fontSize: 13),
+                  )
+                : null,
+            onTap: () {
+              if (playQueue.isEmpty) {
+                return;
+              }
+              displayLyricsPageNotifier.value = true;
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget bottomSeekBar() {
+    return SizedBox(
+      width: isMobile ? 300 : 400,
+      child: ValueListenableBuilder(
+        valueListenable: currentSongNotifier,
+        builder: (_, _, _) {
+          return SeekBar(widgetHeight: 20, seekBarHeight: 10);
+        },
       ),
     );
   }
 
-  Widget playControls(BuildContext context) {
-    return Stack(
-      children: [
-        Positioned(
-          top: 0,
-          bottom: isMobile ? 0 : null,
-          left: 0,
-          right: 0,
-          child: Row(
-            children: [
-              Spacer(),
-              playModeButton(25),
+  List<Widget> playControls() {
+    return [
+      playModeButton(25),
 
-              skip2PreviousButton(25),
+      skip2PreviousButton(25),
 
-              playOrPauseButton(35),
+      playOrPauseButton(35),
 
-              skip2NextButton(25),
+      skip2NextButton(25),
 
-              showPlayQueueButton(25),
-
-              isMobile ? SizedBox(width: 10) : Spacer(),
-            ],
-          ),
-        ),
-        Positioned(
-          top: isMobile ? 0 : 35,
-          bottom: 0,
-          left: 0,
-          right: 0,
-          child: Row(
-            children: [
-              Spacer(),
-              SizedBox(
-                width: isMobile ? 300 : 400,
-                child: ValueListenableBuilder(
-                  valueListenable: currentSongNotifier,
-                  builder: (_, _, _) {
-                    return SeekBar(widgetHeight: 20, seekBarHeight: 10);
-                  },
-                ),
-              ),
-
-              Spacer(),
-            ],
-          ),
-        ),
-      ],
-    );
+      showPlayQueueButton(25),
+    ];
   }
 
   Widget otherControls() {
