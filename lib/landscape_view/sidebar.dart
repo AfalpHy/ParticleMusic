@@ -361,105 +361,104 @@ class Sidebar extends StatelessWidget {
 
   Widget playlistItem(BuildContext context, int index) {
     final l10n = AppLocalizations.of(context);
-    return ValueListenableBuilder(
-      valueListenable: playlistsManager.updateNotifier,
-      builder: (context, value, child) {
-        final playlist = playlistsManager.getPlaylistByIndex(index);
-        return ListenableBuilder(
-          listenable: Listenable.merge([
-            iconColor.valueNotifier,
-            textColor.valueNotifier,
-            selectedItemColor.valueNotifier,
-            dividerColor.valueNotifier,
-            menuColor.valueNotifier,
-          ]),
-          builder: (context, child) {
-            return ContextMenuWidget(
-              desktopMenuWidgetBuilder: CustomDesktopMenuWidgetBuilder(
-                backgroundBaseColor: backgroundCoverArtColor,
-                backgroundColor: colorManager.getSpecificMenuColor(),
-                iconColor: iconColor.value,
-                textColor: textColor.value,
-                selectedColor: selectedItemColor.value,
-                dividerColor: dividerColor.value,
-              ),
-              previewBuilder: (context, child) {
-                return Material(
-                  color: selectedItemColor.value.withAlpha(255),
-                  shape: SmoothRectangleBorder(
-                    smoothness: 1,
-                    borderRadius: .circular(5),
-                  ),
-                  clipBehavior: .antiAlias,
-                  child: child,
-                );
-              },
-              liftBuilder: (context, child) {
-                return Material(
-                  color: selectedItemColor.value.withAlpha(255),
-                  shape: SmoothRectangleBorder(
-                    smoothness: 1,
-                    borderRadius: .circular(5),
-                  ),
-                  clipBehavior: .antiAlias,
-                  child: child,
-                );
-              },
-              child: child!,
-              menuProvider: (_) {
-                return Menu(
-                  children: [
-                    MenuAction(
-                      title: index == 0 ? l10n.favorites : playlist.name,
-                      callback: () {},
-                    ),
+    final playlist = playlistsManager.getPlaylistByIndex(index);
 
-                    if (playlist.isNotFavorite) MenuSeparator(),
-                    if (playlist.isNotFavorite)
-                      MenuAction(
-                        title: l10n.delete,
-                        image: MenuImage.icon(Icons.delete),
-                        callback: () async {
-                          if (await showConfirmDialog(context, l10n.delete)) {
-                            layersManager.removePlaylistLayer(playlist);
-                            playlistsManager.deletePlaylist(playlist);
-                          }
-                        },
-                      ),
-                  ],
+    return ListenableBuilder(
+      listenable: Listenable.merge([
+        iconColor.valueNotifier,
+        textColor.valueNotifier,
+        selectedItemColor.valueNotifier,
+        dividerColor.valueNotifier,
+        menuColor.valueNotifier,
+      ]),
+      builder: (context, child) {
+        return ContextMenuWidget(
+          desktopMenuWidgetBuilder: CustomDesktopMenuWidgetBuilder(
+            backgroundBaseColor: backgroundCoverArtColor,
+            backgroundColor: colorManager.getSpecificMenuColor(),
+            iconColor: iconColor.value,
+            textColor: textColor.value,
+            selectedColor: selectedItemColor.value,
+            dividerColor: dividerColor.value,
+          ),
+          previewBuilder: (context, child) {
+            return Material(
+              color: selectedItemColor.value.withAlpha(255),
+              shape: SmoothRectangleBorder(
+                smoothness: 1,
+                borderRadius: .circular(5),
+              ),
+              clipBehavior: .antiAlias,
+              child: child,
+            );
+          },
+          liftBuilder: (context, child) {
+            return Material(
+              color: selectedItemColor.value.withAlpha(255),
+              shape: SmoothRectangleBorder(
+                smoothness: 1,
+                borderRadius: .circular(5),
+              ),
+              clipBehavior: .antiAlias,
+              child: child,
+            );
+          },
+          child: child!,
+          menuProvider: (_) {
+            return Menu(
+              children: [
+                MenuAction(
+                  title: index == 0 ? l10n.favorites : playlist.name,
+                  callback: () {},
+                ),
+
+                if (playlist.isNotFavorite) MenuSeparator(),
+                if (playlist.isNotFavorite)
+                  MenuAction(
+                    title: l10n.delete,
+                    image: MenuImage.icon(Icons.delete),
+                    callback: () async {
+                      if (await showConfirmDialog(context, l10n.delete)) {
+                        layersManager.removePlaylistLayer(playlist);
+                        playlistsManager.deletePlaylist(playlist);
+                      }
+                    },
+                  ),
+              ],
+            );
+          },
+        );
+      },
+      child: sidebarItem(
+        label: '_${playlist.name}',
+        leading: ListenableBuilder(
+          listenable: Listenable.merge([
+            playlist.updateNotifier,
+            playlist.displayNavidromeNotifier,
+          ]),
+          builder: (_, _) {
+            final displaySong = playlist.getDisplaySong();
+            if (displaySong == null) {
+              return CoverArtWidget(size: 30, borderRadius: 3, song: null);
+            }
+            return ValueListenableBuilder(
+              valueListenable: displaySong.updateNotifier,
+              builder: (_, _, _) {
+                return CoverArtWidget(
+                  size: 30,
+                  borderRadius: 3,
+                  song: displaySong,
                 );
               },
             );
           },
-          child: sidebarItem(
-            label: '_${playlist.name}',
-            leading: ValueListenableBuilder(
-              valueListenable: playlist.updateNotifier,
-              builder: (_, _, _) {
-                final displaySong = playlist.getDisplaySong();
-                if (displaySong == null) {
-                  return CoverArtWidget(size: 30, borderRadius: 3, song: null);
-                }
-                return ValueListenableBuilder(
-                  valueListenable: displaySong.updateNotifier,
-                  builder: (_, _, _) {
-                    return CoverArtWidget(
-                      size: 30,
-                      borderRadius: 3,
-                      song: displaySong,
-                    );
-                  },
-                );
-              },
-            ),
-            content: index == 0 ? l10n.favorites : playlist.name,
+        ),
+        content: index == 0 ? l10n.favorites : playlist.name,
 
-            onTap: () {
-              layersManager.pushLayer('_${playlist.name}');
-            },
-          ),
-        );
-      },
+        onTap: () {
+          layersManager.pushLayer('_${playlist.name}');
+        },
+      ),
     );
   }
 }
