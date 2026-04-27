@@ -557,6 +557,8 @@ class MyAudioHandler extends BaseAudioHandler {
   Future<void> seek(Duration position) async {
     updatePlaybackState(postion: position);
     await _player.seek(position);
+    // ensure position is updated
+    await Future.delayed(Duration(milliseconds: 50));
     updateLyricsNotifier.value++;
   }
 

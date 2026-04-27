@@ -415,10 +415,8 @@ class LyricLineWidget extends StatelessWidget {
                 builder: (context, currentIndex, child) {
                   final isCurrent = currentIndex == index;
 
-                  double fontSize = 14 + lyricsFontSizeOffset;
-                  if (isCurrent) {
-                    fontSize += 4;
-                  }
+                  double fontSize = 18 + lyricsFontSizeOffset;
+
                   if (expanded) {
                     fontSize += 4;
                   }
@@ -447,6 +445,7 @@ class LyricLineWidget extends StatelessWidget {
 
                           style: TextStyle(
                             fontSize: fontSize,
+                            fontWeight: .bold,
                             color: isCurrent
                                 ? lyricsPageHighlightTextColor.value
                                 : lyricsPageForegroundColor.value.withAlpha(
@@ -459,7 +458,8 @@ class LyricLineWidget extends StatelessWidget {
                           translate,
 
                           style: TextStyle(
-                            fontSize: fontSize - 6,
+                            fontSize: fontSize - 8,
+                            fontWeight: .bold,
                             color: lyricsPageForegroundColor.value.withAlpha(
                               128,
                             ),
@@ -504,7 +504,18 @@ class KaraokeTextState extends State<KaraokeText>
   Duration displayPosition = Duration.zero;
   DateTime lastSyncTime = DateTime.now();
 
-  late final VoidCallback _playStateListener;
+  void _playStateListener() {
+    if (isPlayingNotifier.value) {
+      lastSyncTime = DateTime.now();
+      if (!ticker.isActive) {
+        ticker.start();
+      }
+    } else {
+      if (ticker.isActive) {
+        ticker.stop();
+      }
+    }
+  }
 
   @override
   void initState() {
@@ -513,25 +524,12 @@ class KaraokeTextState extends State<KaraokeText>
     displayPosition = widget.position;
     ticker = createTicker((_) {
       final now = DateTime.now();
-      final elapsed = now.difference(lastSyncTime);
-      lastSyncTime = now;
 
-      displayPosition += elapsed;
-      setState(() {});
+      setState(() {
+        displayPosition += now.difference(lastSyncTime);
+        lastSyncTime = now;
+      });
     });
-
-    _playStateListener = () {
-      if (isPlayingNotifier.value) {
-        lastSyncTime = DateTime.now();
-        if (!ticker.isActive) {
-          ticker.start();
-        }
-      } else {
-        if (ticker.isActive) {
-          ticker.stop();
-        }
-      }
-    };
 
     isPlayingNotifier.addListener(_playStateListener);
 
@@ -572,7 +570,7 @@ class KaraokeTextState extends State<KaraokeText>
 
     final style = TextStyle(
       fontSize: widget.fontSize,
-      fontWeight: isMobile ? FontWeight.bold : null,
+      fontWeight: FontWeight.bold,
       color: widget.isDesktopLyrics
           ? Colors.white
           : lyricsPageHighlightTextColor.value,
@@ -609,13 +607,10 @@ class KaraokeTextState extends State<KaraokeText>
                       ? Colors.white
                       : lyricsPageHighlightTextColor.value,
                   widget.isDesktopLyrics
-                      ? Colors.white
-                      : lyricsPageHighlightTextColor.value,
-                  widget.isDesktopLyrics
                       ? Colors.white.withAlpha(128)
                       : lyricsPageHighlightTextColor.value.withAlpha(128),
                 ],
-                stops: [0, p, p],
+                stops: [p, p],
               ).createShader(Rect.fromLTWH(0, 0, bounds.width, bounds.height));
             },
             child: Text(token.text, style: style),
