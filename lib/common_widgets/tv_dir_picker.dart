@@ -1,18 +1,19 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:particle_music/color_manager.dart';
-import 'package:particle_music/common.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 
-class WebdavDirPicker extends StatefulWidget {
-  const WebdavDirPicker({super.key});
+class TvDirPicker extends StatefulWidget {
+  const TvDirPicker({super.key});
 
   @override
-  State<StatefulWidget> createState() => _WebdavDirPickerState();
+  State<StatefulWidget> createState() => _TvDirPickerState();
 }
 
-class _WebdavDirPickerState extends State<WebdavDirPicker> {
-  String root = '/';
-  String currentPath = '/';
+class _TvDirPickerState extends State<TvDirPicker> {
+  final String root = '/storage/emulated/0';
+  String currentPath = '/storage/emulated/0';
   List<String> directories = [];
   bool isLoading = false;
   @override
@@ -22,17 +23,12 @@ class _WebdavDirPickerState extends State<WebdavDirPicker> {
   }
 
   Future<List<String>> listDirectories(String path) async {
-    try {
-      await webdavClient!.ping();
-    } catch (e) {
-      return [];
-    }
-
-    final files = await webdavClient!.readDir(path);
+    Directory top = Directory(path);
     // Keep only directories
-    final directories = files
-        .where((f) => f.isDir!)
-        .map((f) => f.path!.substring(0, f.path!.length - 1))
+    final directories = await top
+        .list()
+        .where((f) => f is Directory)
+        .map((f) => f.path)
         .toList();
     return directories;
   }
@@ -67,19 +63,13 @@ class _WebdavDirPickerState extends State<WebdavDirPicker> {
                     0,
                     currentPath.length - last.length - 1,
                   );
-                  if (currentPath.isEmpty) {
-                    currentPath = root;
-                  }
                   loadDirectories(currentPath);
                 },
                 icon: Icon(Icons.arrow_back_ios_rounded),
               ),
-              Transform.translate(
-                offset: Offset(0, isMobile ? 0 : -1.5),
-                child: Text(
-                  currentPath == root ? root : currentPath.split('/').last,
-                  style: .new(fontWeight: .bold, fontSize: 18),
-                ),
+              Text(
+                currentPath == root ? root : currentPath.split('/').last,
+                style: .new(fontWeight: .bold, fontSize: 18),
               ),
             ],
           ),
@@ -115,7 +105,7 @@ class _WebdavDirPickerState extends State<WebdavDirPicker> {
                 builder: (context, value, child) {
                   return ElevatedButton(
                     onPressed: () {
-                      Navigator.pop(context, "WebDAV:$currentPath");
+                      Navigator.pop(context, currentPath);
                     },
                     style: ElevatedButton.styleFrom(backgroundColor: value),
                     child: Text(AppLocalizations.of(context).confirm),

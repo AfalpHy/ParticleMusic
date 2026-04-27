@@ -8,6 +8,7 @@ import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/my_divider.dart';
 import 'package:particle_music/common_widgets/my_switch.dart';
+import 'package:particle_music/common_widgets/tv_dir_picker.dart';
 import 'package:particle_music/common_widgets/webdav_dir_picker.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/loader.dart';
@@ -410,7 +411,16 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
   }
 
   void _addFolder(BuildContext context) async {
-    String? result = await FilePicker.getDirectoryPath();
+    String? result;
+    if (isTV) {
+      result = await showAnimationDialog(
+        context: context,
+        child: SizedBox(height: 350, width: 300, child: TvDirPicker()),
+      );
+    } else {
+      result = await FilePicker.getDirectoryPath();
+    }
+
     if (result == null || !context.mounted) {
       return;
     }
@@ -435,7 +445,16 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
   }
 
   void _addFolders(BuildContext context) async {
-    String? result = await FilePicker.getDirectoryPath();
+    String? result;
+    if (isTV) {
+      result = await showAnimationDialog(
+        context: context,
+        child: SizedBox(height: 350, width: 300, child: TvDirPicker()),
+      );
+    } else {
+      result = await FilePicker.getDirectoryPath();
+    }
+
     if (result == null || !context.mounted) {
       return;
     }
