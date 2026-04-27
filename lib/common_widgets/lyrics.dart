@@ -415,10 +415,10 @@ class LyricLineWidget extends StatelessWidget {
                 builder: (context, currentIndex, child) {
                   final isCurrent = currentIndex == index;
 
-                  double fontSize = 18 + lyricsFontSizeOffset;
+                  double fontSize = 16 + lyricsFontSizeOffset;
 
                   if (expanded) {
-                    fontSize += 4;
+                    fontSize += isMobile ? 16 : 8;
                   }
 
                   fontSize += fontSizeOffset;
@@ -442,7 +442,7 @@ class LyricLineWidget extends StatelessWidget {
                       else
                         Text(
                           line.text,
-
+                          textAlign: expanded ? .start : .center,
                           style: TextStyle(
                             fontSize: fontSize,
                             fontWeight: .bold,
@@ -456,7 +456,7 @@ class LyricLineWidget extends StatelessWidget {
                       for (final translate in line.translates)
                         Text(
                           translate,
-
+                          textAlign: expanded ? .start : .center,
                           style: TextStyle(
                             fontSize: fontSize - 8,
                             fontWeight: .bold,
