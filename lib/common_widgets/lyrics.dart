@@ -380,14 +380,14 @@ class LyricLineWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    double paddingHeight = 10;
+    double paddingHeight = 15;
     double fontSizeOffset = 0;
     if (!isMobile) {
       final pageHeight = MediaQuery.heightOf(context);
       final pageWidth = MediaQuery.widthOf(context);
       paddingHeight += (pageHeight - 700) * 0.025;
       fontSizeOffset = min(
-        (pageHeight - 700) * 0.05,
+        (pageHeight - 700) * 0.075,
         (pageWidth - 1050) * 0.025,
       ).clamp(0, double.maxFinite);
     }
