@@ -26,7 +26,7 @@ late Directory playlistConfigDir;
 late Directory cacheConfigDir;
 
 final isMobile = Platform.isAndroid || Platform.isIOS;
-final isTV = true;
+final isTV = false;
 
 // ===================================== Library =====================================
 

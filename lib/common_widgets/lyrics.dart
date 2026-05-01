@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'dart:math';
 
+import 'package:charset/charset.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
@@ -100,21 +101,27 @@ Future<void> setParsedLyrics(MyAudioMetadata song) async {
       String path = song.path!;
       path = "${path.substring(0, path.lastIndexOf('.'))}.lrc";
 
+      late File lrcFile;
       if (song.isWebdav) {
-        final file = File('${tmpDir.path}/particle_music_lyric');
+        lrcFile = File('${tmpDir.path}/particle_music_lyric');
         await downloadFile(
           path,
-          file.path,
+          lrcFile.path,
           headers: {'Authorization': getWebdavAuth()},
         );
-
-        if (file.existsSync()) {
-          lines = await file.readAsLines(); // read file line by line
-        }
       } else {
-        final file = File(path);
-        if (file.existsSync()) {
-          lines = await file.readAsLines(); // read file line by line
+        lrcFile = File(path);
+      }
+      if (lrcFile.existsSync()) {
+        try {
+          lines = await lrcFile.readAsLines();
+        } catch (e) {
+          logger.output(e.toString());
+          try {
+            lines = await lrcFile.readAsLines(encoding: gbk);
+          } catch (e) {
+            logger.output(e.toString());
+          }
         }
       }
     } else {
