@@ -244,14 +244,14 @@ class LyricsListViewState extends State<LyricsListView>
         if (jump) {
           itemScrollController.jumpTo(
             index: current + 1,
-            alignment: widget.expanded ? 0.35 : 0.4,
+            alignment: widget.expanded ? 0.25 : 0.3,
           );
         } else {
           itemScrollController.scrollTo(
             index: current + 1,
             duration: Duration(milliseconds: 300), // smooth animation
             curve: Curves.fastOutSlowIn,
-            alignment: widget.expanded ? 0.35 : 0.4,
+            alignment: widget.expanded ? 0.25 : 0.3,
           );
         }
       }
@@ -313,7 +313,7 @@ class LyricsListViewState extends State<LyricsListView>
       if (itemScrollController.isAttached) {
         itemScrollController.jumpTo(
           index: currentIndexNotifier.value + 1,
-          alignment: widget.expanded ? 0.35 : 0.4,
+          alignment: widget.expanded ? 0.25 : 0.3,
         );
       }
     });
@@ -343,8 +343,8 @@ class LyricsListViewState extends State<LyricsListView>
               if (index == 0) {
                 return SizedBox(
                   height: widget.expanded
-                      ? parentHeight * 0.35
-                      : parentHeight * 0.4,
+                      ? parentHeight * 0.25
+                      : parentHeight * 0.3,
                 );
               } else if (index == lyrics.length + 1) {
                 return SizedBox(
