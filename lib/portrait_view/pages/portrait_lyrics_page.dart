@@ -46,10 +46,10 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
     super.initState();
     if (displayLyricsPageNotifier.value) {
       dragOffset = 0;
-      render = false;
+      render = true;
     } else {
       dragOffset = 1;
-      render = true;
+      render = false;
     }
     displayLyricsPageNotifier.addListener(closeOrDisplay);
   }
