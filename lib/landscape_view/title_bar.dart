@@ -177,7 +177,7 @@ class TitleBar extends StatelessWidget {
                   ValueListenableBuilder(
                     valueListenable: isFullScreenNotifier,
                     builder: (context, isFullScreen, child) {
-                      return isFullScreen
+                      return isFullScreen | isMobile
                           ? SizedBox.shrink()
                           : ValueListenableBuilder(
                               valueListenable:

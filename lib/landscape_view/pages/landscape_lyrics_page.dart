@@ -24,60 +24,104 @@ class LandscapeLyricsPage extends StatefulWidget {
 }
 
 class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
+  late double dragOffset;
+  late bool render;
+
+  int _animationDuration = 0;
+  Timer? disableRenderTimer;
+
+  void closeOrDisplay() {
+    if (displayLyricsPageNotifier.value) {
+      _display();
+    } else {
+      _close();
+    }
+  }
+
   @override
   void initState() {
     super.initState();
+    if (displayLyricsPageNotifier.value) {
+      dragOffset = 0;
+      render = false;
+    } else {
+      dragOffset = 1;
+      render = true;
+    }
+    displayLyricsPageNotifier.addListener(closeOrDisplay);
+  }
+
+  @override
+  void dispose() {
+    displayLyricsPageNotifier.removeListener(closeOrDisplay);
+    super.dispose();
+  }
+
+  void _display() {
+    setState(() {
+      _animationDuration = 250;
+      dragOffset = 0.0;
+      disableRenderTimer?.cancel();
+      render = true;
+      if (!isMobile) {
+        immersiveModeTimer = Timer(const Duration(milliseconds: 5000), () {
+          immersiveModeNotifier.value = true;
+        });
+      }
+    });
+  }
+
+  void _close() {
+    setState(() {
+      immersiveModeTimer?.cancel();
+      _animationDuration = 250;
+      dragOffset = 1.0;
+      disableRenderTimer = Timer(
+        Duration(milliseconds: _animationDuration),
+        () {
+          setState(() {
+            render = false;
+          });
+        },
+      );
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: displayLyricsPageNotifier,
-      builder: (context, display, child) {
-        if (!display) {
-          immersiveModeTimer?.cancel();
-          immersiveModeTimer = null;
-        } else if (!isMobile) {
-          immersiveModeTimer?.cancel();
-          immersiveModeTimer = Timer(const Duration(milliseconds: 5000), () {
-            immersiveModeNotifier.value = true;
-            immersiveModeTimer = null;
-          });
-        }
-        return IgnorePointer(
-          ignoring: !display,
-          child: ValueListenableBuilder(
-            valueListenable: immersiveModeNotifier,
-            builder: (context, value, child) {
-              return MouseRegion(
-                cursor: value ? SystemMouseCursors.none : MouseCursor.defer,
-                onHover: (event) {
-                  immersiveModeNotifier.value = false;
-                  immersiveModeTimer?.cancel();
-                  immersiveModeTimer = Timer(
-                    const Duration(milliseconds: 5000),
-                    () {
-                      immersiveModeNotifier.value = true;
-                      immersiveModeTimer = null;
-                    },
-                  );
+    final screenHeight = MediaQuery.of(context).size.height;
+    return AnimatedContainer(
+      duration: Duration(milliseconds: _animationDuration),
+      curve: Curves.linear,
+
+      transform: Matrix4.translationValues(0, dragOffset * screenHeight, 0),
+      child: ValueListenableBuilder(
+        valueListenable: immersiveModeNotifier,
+        builder: (context, value, child) {
+          return MouseRegion(
+            cursor: value ? SystemMouseCursors.none : MouseCursor.defer,
+            onHover: (event) {
+              immersiveModeNotifier.value = false;
+              immersiveModeTimer?.cancel();
+              immersiveModeTimer = Timer(
+                const Duration(milliseconds: 5000),
+                () {
+                  immersiveModeNotifier.value = true;
                 },
-                child: child,
               );
             },
-            child: AnimatedSlide(
-              offset: display ? Offset.zero : const Offset(0, 1),
-              duration: const Duration(milliseconds: 300),
-              curve: Curves.linear,
-              child: content(),
-            ),
-          ),
-        );
-      },
+            child: child,
+          );
+        },
+        child: content(),
+      ),
     );
   }
 
   Widget content() {
+    if (!render) {
+      return SizedBox.shrink();
+    }
     return ValueListenableBuilder(
       valueListenable: currentSongNotifier,
       builder: (context, currentSong, child) {
@@ -137,13 +181,41 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                             ValueListenableBuilder(
                               valueListenable: lyricsPageThemeNotifier,
                               builder: (context, value, child) {
-                                return CoverArtWidget(
-                                  size: coverArtSize,
-                                  borderRadius: coverArtSize * 0.05,
-                                  song: currentSong,
-                                  elevation: 15,
-                                  color: colorManager
-                                      .getSpecificLyricsPageCoverArtBaseColor(),
+                                return GestureDetector(
+                                  onVerticalDragUpdate: (details) {
+                                    if (!isMobile) {
+                                      return;
+                                    }
+                                    setState(() {
+                                      _animationDuration = 0;
+                                      dragOffset +=
+                                          details.delta.dy /
+                                          MediaQuery.of(context).size.height;
+                                      dragOffset = dragOffset.clamp(0.0, 1.0);
+                                    });
+                                  },
+
+                                  onVerticalDragEnd: (details) {
+                                    if (!isMobile) {
+                                      return;
+                                    }
+                                    double velocity =
+                                        details.primaryVelocity ?? 0;
+
+                                    if (dragOffset > 0.4 || velocity > 500) {
+                                      displayLyricsPageNotifier.value = false;
+                                    } else {
+                                      _display();
+                                    }
+                                  },
+                                  child: CoverArtWidget(
+                                    size: coverArtSize,
+                                    borderRadius: coverArtSize * 0.05,
+                                    song: currentSong,
+                                    elevation: 15,
+                                    color: colorManager
+                                        .getSpecificLyricsPageCoverArtBaseColor(),
+                                  ),
                                 );
                               },
                             ),
