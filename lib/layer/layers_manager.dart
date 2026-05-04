@@ -208,6 +208,8 @@ class LayersManager {
     if (isMobile) {
       pageMap.remove(layer);
     }
+    layerHistory.removeWhere((item) => item == layer);
+    labelHistory.removeWhere((item) => item == '_${playlist.name}');
     if (layer == currentLayer) {
       pushLayer('playlists');
     }
@@ -218,6 +220,8 @@ class LayersManager {
     if (isMobile) {
       pageMap.remove(layer);
     }
+    layerHistory.removeWhere((item) => item == layer);
+    labelHistory.removeWhere((item) => item == 'albums${artist.name}');
     if (layer == currentLayer) {
       pushLayer('artists');
     }
@@ -228,6 +232,8 @@ class LayersManager {
     if (isMobile) {
       pageMap.remove(layer);
     }
+    layerHistory.removeWhere((item) => item == layer);
+    labelHistory.removeWhere((item) => item == 'albums${album.name}');
     if (layer == currentLayer) {
       pushLayer('albums');
     }
