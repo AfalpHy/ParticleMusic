@@ -418,6 +418,10 @@ class Sidebar extends StatelessWidget {
                     image: MenuImage.icon(Icons.delete),
                     callback: () async {
                       if (await showConfirmDialog(context, l10n.delete)) {
+                        if (closeDrawer != null) {
+                          closeDrawer!.call();
+                          await Future.delayed(Duration(milliseconds: 250));
+                        }
                         layersManager.removePlaylistLayer(playlist);
                         playlistsManager.deletePlaylist(playlist);
                       }

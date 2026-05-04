@@ -8,6 +8,7 @@ import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/my_auto_size_text.dart';
 import 'package:particle_music/common_widgets/my_divider.dart';
 import 'package:particle_music/common_widgets/selectable_song_list_page.dart';
+import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/portrait_view/custom_appbar_leading.dart';
 import 'package:particle_music/portrait_view/my_search_field.dart';
 import 'package:particle_music/common_widgets/my_sheet.dart';
@@ -280,9 +281,10 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
               visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
               onTap: () async {
                 if (await showConfirmDialog(context, l10n.delete)) {
+                  layersManager.removePlaylistLayer(playlist!);
                   playlistsManager.deletePlaylist(playlist!);
                   if (context.mounted) {
-                    Navigator.pop(context, true);
+                    Navigator.pop(context);
                   }
                 }
               },

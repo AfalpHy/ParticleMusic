@@ -171,7 +171,7 @@ class LayersManager {
     switchNotifier.value++;
   }
 
-  void popLayer() async {
+  Future<void> popLayer() async {
     if (layerHistory.length == 1) {
       return;
     }
@@ -203,40 +203,50 @@ class LayersManager {
     switchNotifier.value++;
   }
 
-  void removePlaylistLayer(Playlist playlist) {
+  void removePlaylistLayer(Playlist playlist) async {
     final layer = layerMap.remove('_${playlist.name}');
+    if (layer == currentLayer) {
+      await popLayer();
+    }
+
+    // ensure pop complete
+    await Future.delayed(Duration(milliseconds: 500));
+
     if (isMobile) {
       pageMap.remove(layer);
     }
     layerHistory.removeWhere((item) => item == layer);
     labelHistory.removeWhere((item) => item == '_${playlist.name}');
-    if (layer == currentLayer) {
-      pushLayer('playlists');
-    }
   }
 
-  void removeArtistLayer(Artist artist) {
+  void removeArtistLayer(Artist artist) async {
     final layer = layerMap.remove('artists${artist.name}');
+    if (layer == currentLayer) {
+      await popLayer();
+    }
+
+    await Future.delayed(Duration(milliseconds: 500));
+
     if (isMobile) {
       pageMap.remove(layer);
     }
     layerHistory.removeWhere((item) => item == layer);
     labelHistory.removeWhere((item) => item == 'albums${artist.name}');
-    if (layer == currentLayer) {
-      pushLayer('artists');
-    }
   }
 
-  void removeAlbumLayer(Album album) {
+  void removeAlbumLayer(Album album) async {
     final layer = layerMap.remove('albums${album.name}');
+    if (layer == currentLayer) {
+      await popLayer();
+    }
+
+    await Future.delayed(Duration(milliseconds: 500));
+
     if (isMobile) {
       pageMap.remove(layer);
     }
     layerHistory.removeWhere((item) => item == layer);
     labelHistory.removeWhere((item) => item == 'albums${album.name}');
-    if (layer == currentLayer) {
-      pushLayer('albums');
-    }
   }
 
   void clear() {
