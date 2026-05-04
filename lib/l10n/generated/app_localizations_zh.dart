@@ -550,4 +550,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get tapAgain => '再按一次退出';
+
+  @override
+  String get close => '关闭';
 }

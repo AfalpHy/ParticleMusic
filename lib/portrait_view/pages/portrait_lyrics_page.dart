@@ -289,6 +289,14 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
           children: [
             SizedBox(width: 25),
             FavoriteButton(),
+            IconButton(
+              color: lyricsPageForegroundColor.value,
+              onPressed: () {
+                displayTimedPauseSetting(context);
+              },
+              icon: ImageIcon(timerImage, size: 25),
+            ),
+            remainTimesText(textColor: lyricsPageForegroundColor.value),
             Spacer(),
             IconButton(
               color: lyricsPageForegroundColor.value,
@@ -382,8 +390,6 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                                         ]);
                                       },
                                     ),
-                                    sleepTimerListTile(context, l10n, false),
-                                    pauseAfterCTListTile(context, l10n),
                                   ],
                                 ),
                               ),

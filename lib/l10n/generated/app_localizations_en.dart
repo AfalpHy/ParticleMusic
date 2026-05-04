@@ -550,4 +550,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get tapAgain => 'Tap Again to Exit';
+
+  @override
+  String get close => 'Close';
 }

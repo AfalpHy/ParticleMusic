@@ -74,9 +74,9 @@ Timer? immersiveModeTimer;
 
 ValueNotifier<bool> vibrationOnNoitifier = ValueNotifier(true);
 
-ValueNotifier<bool> timedPause = ValueNotifier(false);
-ValueNotifier<int> remainTimes = ValueNotifier(0);
-ValueNotifier<bool> pauseAfterCompleted = ValueNotifier(false);
+ValueNotifier<bool> sleepTimerOnNotifier = ValueNotifier(false);
+ValueNotifier<int> remainTimesNotifier = ValueNotifier(0);
+ValueNotifier<bool> pauseAfterCompletedNotifier = ValueNotifier(false);
 bool needPause = false;
 Timer? pauseTimer;
 

@@ -27,7 +27,10 @@ class MySwitch extends StatelessWidget {
         ValueListenableBuilder(
           valueListenable: valueNotifier,
           builder: (context, value, child) {
-            return Text(value ? trueText! : falseText!);
+            return Text(
+              value ? trueText! : falseText!,
+              style: TextStyle(color: colorManager.getSpecificTextColor()),
+            );
           },
         ),
         SizedBox(width: 10),

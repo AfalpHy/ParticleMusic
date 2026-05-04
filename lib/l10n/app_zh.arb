@@ -175,5 +175,6 @@
   "modifiedTimedescending": "修改时间降序",
   "cannotBeUndone": "不可撤销",
   "clearCache": "清除缓存",
-  "tapAgain": "再按一次退出"
+  "tapAgain": "再按一次退出",
+  "close": "关闭"
 }

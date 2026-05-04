@@ -50,7 +50,7 @@ class SettingsList extends StatelessWidget {
                   subtitle: Text(
                     l10n.settingCount(
                       isTV
-                          ? 14
+                          ? 13
                           : Platform.isAndroid
                           ? 16
                           : Platform.isIOS
@@ -110,17 +110,12 @@ class SettingsList extends StatelessWidget {
         if (isMobile && !isTV)
           sliverBox(paddingIfNeed(isLandscape, vibrationListTile(l10n))),
 
-        if (isMobile)
+        if (isMobile && !isTV)
           sliverBox(
             paddingIfNeed(
               isLandscape,
-              sleepTimerListTile(context, l10n, true, iconSize: iconSize),
+              sleepTimerListTile(context, l10n, iconSize: iconSize),
             ),
-          ),
-
-        if (isMobile)
-          sliverBox(
-            paddingIfNeed(isLandscape, pauseAfterCTListTile(context, l10n)),
           ),
 
         sliverBox(paddingIfNeed(isLandscape, themeListTile(context, l10n))),
