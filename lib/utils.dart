@@ -149,10 +149,11 @@ Widget adaptiveTextField(
   bool expand = false,
   bool onlyNumber = false,
   bool compact = true,
+  bool autoFocus = false,
 }) {
   FocusNode wrapNode = FocusNode();
   FocusNode textFieldNode = FocusNode();
-  final canRequestNotifier = ValueNotifier(false);
+  final canRequestNotifier = ValueNotifier(autoFocus);
   textFieldNode.addListener(() {
     isTyping = textFieldNode.hasFocus;
   });
@@ -208,6 +209,7 @@ Widget adaptiveTextField(
                 ),
                 child: TextField(
                   focusNode: textFieldNode,
+                  autofocus: autoFocus,
                   canRequestFocus: isTV ? value : true,
                   keyboardType: onlyNumber ? .number : null,
                   minLines: expand ? 3 : 1,

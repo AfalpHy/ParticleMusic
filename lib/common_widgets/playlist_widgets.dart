@@ -119,7 +119,13 @@ Future<bool> showCreatePlaylistDialog(BuildContext context) async {
               ),
             ),
             SizedBox(height: 20),
-            adaptiveTextField(context, null, controller, compact: false),
+            adaptiveTextField(
+              context,
+              null,
+              controller,
+              compact: false,
+              autoFocus: true,
+            ),
             SizedBox(height: 30),
             Center(
               child: ListenableBuilder(
