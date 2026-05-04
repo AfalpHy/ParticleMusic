@@ -10,6 +10,7 @@ import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/utils.dart';
 import 'package:path/path.dart';
 import 'package:uuid/uuid.dart';
+import 'package:pool/pool.dart';
 
 final Set<String> _loftySupportedExts = {
   '.mp2',
@@ -223,18 +224,19 @@ class Folder {
 
         for (final dir in dirList) {
           final filelist = await webdavClient!.readDir(dir);
-          for (final f in filelist) {
-            if (f.isDir!) {
-              continue;
-            }
-            final ext = extension(f.path!).toLowerCase();
-            if (!_loftySupportedExts.contains(ext)) {
-              continue;
-            }
-            final id = webdavBaseUrl + f.path!;
+          final pool = Pool(4);
 
-            await _processSong(id, id, f.mTime!);
-          }
+          final tasks = filelist
+              .where((f) {
+                if (f.isDir!) return false;
+                final ext = extension(f.path!).toLowerCase();
+                return _loftySupportedExts.contains(ext);
+              })
+              .map((f) {
+                final id = webdavBaseUrl + f.path!;
+                return pool.withResource(() => _processSong(id, id, f.mTime!));
+              });
+          await Future.wait(tasks);
         }
       } catch (e) {
         // If it fails, keep the original data.

@@ -88,6 +88,7 @@ dependencies:
   webdav_client: ^1.2.2
   uuid: ^4.5.3
   charset: ^2.0.1
+  pool: ^1.5.2
 
 dependency_overrides:
   media_kit_libs_windows_audio:
