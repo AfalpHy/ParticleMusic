@@ -175,23 +175,17 @@ Widget sleepTimerListTile(
                 },
               ),
               SizedBox(width: 10),
-              ValueListenableBuilder(
-                valueListenable: timedPause,
-                builder: (context, value, child) {
-                  return MySwitch(
-                    value: value,
-                    onToggle: (value) async {
-                      tryVibrate();
-                      timedPause.value = value;
-                      if (value) {
-                        displayTimedPauseSetting(context);
-                      } else {
-                        pauseTimer?.cancel();
-                        pauseTimer = null;
-                        remainTimes.value = 0;
-                      }
-                    },
-                  );
+              MySwitch(
+                valueNotifier: timedPause,
+                onToggleCallBack: () {
+                  tryVibrate();
+                  if (timedPause.value) {
+                    displayTimedPauseSetting(context);
+                  } else {
+                    pauseTimer?.cancel();
+                    pauseTimer = null;
+                    remainTimes.value = 0;
+                  }
                 },
               ),
             ],
@@ -229,18 +223,7 @@ Widget pauseAfterCTListTile(BuildContext context, AppLocalizations l10n) {
                           },
                         ),
                         SizedBox(width: 10),
-                        ValueListenableBuilder(
-                          valueListenable: pauseAfterCompleted,
-                          builder: (_, value, _) {
-                            return MySwitch(
-                              value: value,
-                              onToggle: (value) {
-                                tryVibrate();
-                                pauseAfterCompleted.value = value;
-                              },
-                            );
-                          },
-                        ),
+                        MySwitch(valueNotifier: pauseAfterCompleted),
                       ],
                     ),
                   ),

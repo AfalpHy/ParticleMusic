@@ -30,20 +30,22 @@ class FoldersPanel extends StatelessWidget {
         SliverToBoxAdapter(
           child: Padding(
             padding: const EdgeInsets.symmetric(horizontal: 30),
-            child: ListTile(
-              leading: ValueListenableBuilder(
-                valueListenable: iconColor.valueNotifier,
-                builder: (_, value, _) {
-                  return ImageIcon(folderImage, size: 50, color: value);
-                },
-              ),
-              title: Text(
-                l10n.folders,
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-              ),
-              subtitle: Text(
-                l10n.folderCount(library.folderList.length),
-                style: TextStyle(fontSize: 12),
+            child: Focus(
+              child: ListTile(
+                leading: ValueListenableBuilder(
+                  valueListenable: iconColor.valueNotifier,
+                  builder: (_, value, _) {
+                    return ImageIcon(folderImage, size: 50, color: value);
+                  },
+                ),
+                title: Text(
+                  l10n.folders,
+                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+                ),
+                subtitle: Text(
+                  l10n.folderCount(library.folderList.length),
+                  style: TextStyle(fontSize: 12),
+                ),
               ),
             ),
           ),

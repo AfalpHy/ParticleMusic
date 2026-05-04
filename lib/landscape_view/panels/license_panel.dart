@@ -60,13 +60,7 @@ class _LicensePanelState extends State<LicensePanel> {
 
     return Column(
       children: [
-        TitleBar(
-          searchField: TitleSearchField(
-            key: ValueKey(l10n.searchLicenses),
-            hintText: l10n.searchLicenses,
-            textController: textController,
-          ),
-        ),
+        TitleBar(hintText: l10n.searchLicenses, textController: textController),
         Expanded(child: _content()),
       ],
     );

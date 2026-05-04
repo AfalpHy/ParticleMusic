@@ -361,6 +361,35 @@ class MyAudioHandler extends BaseAudioHandler {
     currentIndex = 0;
   }
 
+  void changePlayMode(int newPlayMode) {
+    if (newPlayMode == playModeNotifier.value) {
+      return;
+    }
+
+    switch (newPlayMode) {
+      case 0:
+        if (_playQueueTmp.isNotEmpty) {
+          playQueue = List.from(_playQueueTmp);
+          _playQueueTmp = [];
+          currentIndex = playQueue.indexOf(currentSongNotifier.value!);
+          _savePlayQueueState();
+        }
+        break;
+      case 1:
+        if (_playQueueTmp.isEmpty) {
+          shuffle();
+          _savePlayQueueState();
+        }
+        break;
+      default:
+        break;
+    }
+
+    playModeNotifier.value = newPlayMode;
+
+    savePlayState();
+  }
+
   void switchPlayMode() {
     int playMode = playModeNotifier.value;
     playMode += 1;

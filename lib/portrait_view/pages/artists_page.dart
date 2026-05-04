@@ -128,29 +128,23 @@ class _ArtistsPageState extends State<ArtistsPage> {
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-            trailing: ValueListenableBuilder(
-              valueListenable: artistsAlbumsManager.artistsIsListViewNotifier,
-              builder: (context, value, child) {
-                return SizedBox(
-                  width: 100,
-                  child: Row(
-                    children: [
-                      Spacer(),
-                      Text(value ? l10n.list : l10n.grid),
-                      SizedBox(width: 10),
-                      MySwitch(
-                        value: value,
-                        onToggle: (value) async {
-                          tryVibrate();
-                          artistsAlbumsManager.artistsIsListViewNotifier.value =
-                              value;
-                          settingManager.saveSetting();
-                        },
-                      ),
-                    ],
+            trailing: SizedBox(
+              width: 100,
+              child: Row(
+                children: [
+                  Spacer(),
+
+                  MySwitch(
+                    trueText: l10n.list,
+                    falseText: l10n.grid,
+                    valueNotifier:
+                        artistsAlbumsManager.artistsIsListViewNotifier,
+                    onToggleCallBack: () {
+                      settingManager.saveSetting();
+                    },
                   ),
-                );
-              },
+                ],
+              ),
             ),
           ),
 
@@ -166,33 +160,23 @@ class _ArtistsPageState extends State<ArtistsPage> {
                   l10n.pictureSize,
                   style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-                trailing: ValueListenableBuilder(
-                  valueListenable:
-                      artistsAlbumsManager.artistsUseLargePictureNotifier,
-                  builder: (context, useLargePicture, child) {
-                    return SizedBox(
-                      width: 100,
+                trailing: SizedBox(
+                  width: 100,
 
-                      child: Row(
-                        children: [
-                          Spacer(),
-                          Text(useLargePicture ? l10n.large : l10n.small),
-                          SizedBox(width: 10),
-                          MySwitch(
-                            value: useLargePicture,
-                            onToggle: (value) async {
-                              tryVibrate();
-                              artistsAlbumsManager
-                                      .artistsUseLargePictureNotifier
-                                      .value =
-                                  value;
-                              settingManager.saveSetting();
-                            },
-                          ),
-                        ],
+                  child: Row(
+                    children: [
+                      Spacer(),
+                      MySwitch(
+                        trueText: l10n.large,
+                        falseText: l10n.small,
+                        valueNotifier:
+                            artistsAlbumsManager.artistsUseLargePictureNotifier,
+                        onToggleCallBack: () {
+                          settingManager.saveSetting();
+                        },
                       ),
-                    );
-                  },
+                    ],
+                  ),
                 ),
               );
             },
@@ -205,31 +189,23 @@ class _ArtistsPageState extends State<ArtistsPage> {
               style: TextStyle(fontWeight: FontWeight.bold),
             ),
             visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-            trailing: ValueListenableBuilder(
-              valueListenable: artistsAlbumsManager.artistsRandomizeNotifier,
-              builder: (context, value, child) {
-                return SizedBox(
-                  width: 120,
+            trailing: SizedBox(
+              width: 120,
 
-                  child: Row(
-                    children: [
-                      Spacer(),
-                      Text(value ? l10n.randomize : l10n.normal),
-                      SizedBox(width: 10),
-                      MySwitch(
-                        value: value,
-                        onToggle: (value) async {
-                          tryVibrate();
-                          artistsAlbumsManager.artistsRandomizeNotifier.value =
-                              value;
-
-                          updateCurrentArtistList();
-                        },
-                      ),
-                    ],
+              child: Row(
+                children: [
+                  Spacer(),
+                  MySwitch(
+                    trueText: l10n.randomize,
+                    falseText: l10n.normal,
+                    valueNotifier:
+                        artistsAlbumsManager.artistsRandomizeNotifier,
+                    onToggleCallBack: () {
+                      updateCurrentArtistList();
+                    },
                   ),
-                );
-              },
+                ],
+              ),
             ),
           ),
 
@@ -241,35 +217,25 @@ class _ArtistsPageState extends State<ArtistsPage> {
               }
               return ListTile(
                 visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-                trailing: ValueListenableBuilder(
-                  valueListenable:
-                      artistsAlbumsManager.artistsIsAscendingNotifier,
-                  builder: (context, value, child) {
-                    return SizedBox(
-                      width: 120,
+                trailing: SizedBox(
+                  width: 120,
 
-                      child: Row(
-                        children: [
-                          Spacer(),
-                          Text(value ? l10n.ascending : l10n.descending),
-                          SizedBox(width: 10),
-                          MySwitch(
-                            value: value,
-                            onToggle: (value) async {
-                              tryVibrate();
-                              artistsAlbumsManager
-                                      .artistsIsAscendingNotifier
-                                      .value =
-                                  value;
-                              settingManager.saveSetting();
-                              artistsAlbumsManager.sortArtists();
-                              updateCurrentArtistList();
-                            },
-                          ),
-                        ],
+                  child: Row(
+                    children: [
+                      Spacer(),
+                      MySwitch(
+                        trueText: l10n.ascending,
+                        falseText: l10n.descending,
+                        valueNotifier:
+                            artistsAlbumsManager.artistsIsAscendingNotifier,
+                        onToggleCallBack: () {
+                          settingManager.saveSetting();
+                          artistsAlbumsManager.sortArtists();
+                          updateCurrentArtistList();
+                        },
                       ),
-                    );
-                  },
+                    ],
+                  ),
                 ),
               );
             },

@@ -48,11 +48,8 @@ class _PlaylistsPanelState extends State<PlaylistsPanel> {
     return Column(
       children: [
         TitleBar(
-          searchField: TitleSearchField(
-            key: ValueKey(l10n.searchPlaylists),
-            hintText: l10n.searchPlaylists,
-            textController: textController,
-          ),
+          hintText: l10n.searchPlaylists,
+          textController: textController,
         ),
         Expanded(child: contentWidget(context)),
       ],
@@ -63,95 +60,95 @@ class _PlaylistsPanelState extends State<PlaylistsPanel> {
     final panelWidth = (MediaQuery.widthOf(context) - 300);
     final l10n = AppLocalizations.of(context);
 
-    return ValueListenableBuilder(
-      valueListenable: playlistsUseLargePictureNotifier,
-      builder: (context, value, child) {
-        int crossAxisCount;
-        double coverArtWidth;
-        if (value) {
-          crossAxisCount = (panelWidth / 240).toInt();
-          coverArtWidth = panelWidth / crossAxisCount - 45;
-        } else {
-          crossAxisCount = (panelWidth / 120).toInt();
-          coverArtWidth = panelWidth / crossAxisCount - 35;
-        }
-
-        return Column(
-          children: [
-            Expanded(
-              child: CustomScrollView(
-                slivers: [
-                  SliverToBoxAdapter(
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 30),
-                      child: ListTile(
-                        leading: ValueListenableBuilder(
-                          valueListenable: iconColor.valueNotifier,
-                          builder: (_, value, _) {
-                            return ImageIcon(
-                              playlistsImage,
-                              size: 50,
-                              color: value,
-                            );
-                          },
+    return Column(
+      children: [
+        Expanded(
+          child: CustomScrollView(
+            slivers: [
+              SliverToBoxAdapter(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 30),
+                  child: Focus(
+                    child: ListTile(
+                      leading: ValueListenableBuilder(
+                        valueListenable: iconColor.valueNotifier,
+                        builder: (_, value, _) {
+                          return ImageIcon(
+                            playlistsImage,
+                            size: 50,
+                            color: value,
+                          );
+                        },
+                      ),
+                      title: Text(
+                        l10n.playlists,
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
                         ),
-                        title: Text(
-                          l10n.playlists,
-                          style: TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                        subtitle: ValueListenableBuilder(
-                          valueListenable: playlistsNotifier,
-                          builder: (context, playlists, child) {
-                            return Text(
-                              l10n.playlistCount(playlists.length),
-                              style: TextStyle(fontSize: 12),
-                            );
-                          },
-                        ),
-                        trailing: SizedBox(
-                          width: 120,
-                          child: Column(
-                            children: [
-                              SizedBox(height: 20),
-                              Row(
-                                children: [
-                                  Spacer(),
-                                  Text(value ? l10n.large : l10n.small),
-                                  SizedBox(width: 10),
-                                  MySwitch(
-                                    value: value,
-                                    onToggle: (value) async {
-                                      playlistsUseLargePictureNotifier.value =
-                                          value;
-                                    },
-                                  ),
-                                  SizedBox(width: 10),
-                                ],
-                              ),
-                            ],
-                          ),
+                      ),
+                      subtitle: ValueListenableBuilder(
+                        valueListenable: playlistsNotifier,
+                        builder: (context, playlists, child) {
+                          return Text(
+                            l10n.playlistCount(playlists.length),
+                            style: TextStyle(fontSize: 12),
+                          );
+                        },
+                      ),
+                      trailing: SizedBox(
+                        width: 120,
+                        child: Column(
+                          children: [
+                            SizedBox(height: 20),
+                            Row(
+                              children: [
+                                Spacer(),
+                                MySwitch(
+                                  trueText: l10n.large,
+                                  falseText: l10n.small,
+                                  valueNotifier:
+                                      playlistsUseLargePictureNotifier,
+                                ),
+                                SizedBox(width: 10),
+                              ],
+                            ),
+                          ],
                         ),
                       ),
                     ),
                   ),
-                  SliverToBoxAdapter(
-                    child: MyDivider(
-                      thickness: 0.5,
-                      height: 0.5,
-                      indent: 30,
-                      endIndent: 30,
-                      color: dividerColor,
-                    ),
-                  ),
-                  SliverToBoxAdapter(child: SizedBox(height: 15)),
+                ),
+              ),
+              SliverToBoxAdapter(
+                child: MyDivider(
+                  thickness: 0.5,
+                  height: 0.5,
+                  indent: 30,
+                  endIndent: 30,
+                  color: dividerColor,
+                ),
+              ),
+              SliverToBoxAdapter(child: SizedBox(height: 15)),
 
-                  SliverPadding(
-                    padding: const EdgeInsets.symmetric(horizontal: 40),
+              SliverPadding(
+                padding: const EdgeInsets.symmetric(horizontal: 40),
 
-                    sliver: ValueListenableBuilder(
+                sliver: ValueListenableBuilder(
+                  valueListenable: playlistsUseLargePictureNotifier,
+                  builder: (context, value, child) {
+                    int crossAxisCount;
+                    double coverArtWidth;
+                    if (value) {
+                      crossAxisCount = (panelWidth / (isTV ? 150 : 240))
+                          .toInt();
+                      coverArtWidth = panelWidth / crossAxisCount - 45;
+                    } else {
+                      crossAxisCount = (panelWidth / (isTV ? 100 : 120))
+                          .toInt();
+                      coverArtWidth = panelWidth / crossAxisCount - 35;
+                    }
+                    return ValueListenableBuilder(
                       valueListenable: playlistsNotifier,
                       builder: (context, playlists, child) {
                         return SliverGrid.builder(
@@ -167,64 +164,85 @@ class _PlaylistsPanelState extends State<PlaylistsPanel> {
                               valueListenable: playlist.updateNotifier,
                               builder: (context, value, child) {
                                 final displaySong = playlist.getDisplaySong();
-                                return Column(
-                                  children: [
-                                    MouseRegion(
-                                      cursor: SystemMouseCursors.click,
-                                      child: GestureDetector(
-                                        child: displaySong == null
-                                            ? CoverArtWidget(
-                                                size: coverArtWidth,
-                                                borderRadius: 10,
-                                                song: null,
-                                              )
-                                            : ValueListenableBuilder(
-                                                valueListenable:
-                                                    displaySong.updateNotifier,
-                                                builder: (_, _, _) {
-                                                  return CoverArtWidget(
+                                FocusNode focusNode = FocusNode();
+
+                                return StatefulBuilder(
+                                  builder: (context, setState) {
+                                    return AnimatedScale(
+                                      duration: Duration(milliseconds: 250),
+                                      curve: Curves.easeOutCubic,
+                                      scale: focusNode.hasFocus ? 1.1 : 1.0,
+                                      child: Column(
+                                        children: [
+                                          InkWell(
+                                            focusNode: focusNode,
+                                            onFocusChange: (value) {
+                                              setState(() {});
+                                            },
+                                            mouseCursor:
+                                                SystemMouseCursors.click,
+                                            focusColor: Colors.transparent,
+                                            splashColor: Colors.transparent,
+                                            hoverColor: Colors.transparent,
+                                            highlightColor: Colors.transparent,
+
+                                            child: displaySong == null
+                                                ? CoverArtWidget(
                                                     size: coverArtWidth,
                                                     borderRadius: 10,
-                                                    song: displaySong,
-                                                  );
-                                                },
-                                              ),
-                                        onTap: () {
-                                          layersManager.pushLayer(
-                                            '_${playlist.name}',
-                                          );
-                                        },
-                                      ),
-                                    ),
-                                    SizedBox(
-                                      width: coverArtWidth - 5,
-                                      child: Center(
-                                        child: Text(
-                                          playlist ==
-                                                  playlistsManager.playlists[0]
-                                              ? l10n.favorites
-                                              : playlist.name,
-                                          style: TextStyle(
-                                            overflow: TextOverflow.ellipsis,
+                                                    song: null,
+                                                  )
+                                                : ValueListenableBuilder(
+                                                    valueListenable: displaySong
+                                                        .updateNotifier,
+                                                    builder: (_, _, _) {
+                                                      return CoverArtWidget(
+                                                        size: coverArtWidth,
+                                                        borderRadius: 10,
+                                                        song: displaySong,
+                                                      );
+                                                    },
+                                                  ),
+                                            onTap: () {
+                                              layersManager.pushLayer(
+                                                '_${playlist.name}',
+                                              );
+                                            },
                                           ),
-                                        ),
+                                          SizedBox(
+                                            width: coverArtWidth - 5,
+                                            child: Center(
+                                              child: Text(
+                                                playlist ==
+                                                        playlistsManager
+                                                            .playlists[0]
+                                                    ? l10n.favorites
+                                                    : playlist.name,
+                                                style: TextStyle(
+                                                  overflow:
+                                                      TextOverflow.ellipsis,
+                                                ),
+                                              ),
+                                            ),
+                                          ),
+                                        ],
                                       ),
-                                    ),
-                                  ],
+                                    );
+                                  },
                                 );
                               },
                             );
                           },
                         );
                       },
-                    ),
-                  ),
-                ],
+                    );
+                  },
+                ),
               ),
-            ),
-          ],
-        );
-      },
+            ],
+          ),
+        ),
+      ],
     );
   }
 }

@@ -103,11 +103,13 @@ class SeekBarState extends State<SeekBar> {
                     padding: EdgeInsets.symmetric(
                       horizontal: horizontalPadding,
                     ),
-                    child: Slider(
-                      min: 0.0,
-                      max: durationMs,
-                      value: sliderValue.clamp(0.0, durationMs),
-                      onChanged: (value) {},
+                    child: ExcludeFocus(
+                      child: Slider(
+                        min: 0.0,
+                        max: durationMs,
+                        value: sliderValue.clamp(0.0, durationMs),
+                        onChanged: (value) {},
+                      ),
                     ),
                   ),
                 ),

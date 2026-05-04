@@ -3,10 +3,14 @@ import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/buttons.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
+import 'package:particle_music/landscape_view/pages/landscape_lyrics_page.dart';
 import 'package:particle_music/landscape_view/speaker.dart';
 import 'package:particle_music/landscape_view/volume_bar.dart';
 import 'package:particle_music/common_widgets/seekbar.dart';
 import 'package:particle_music/utils.dart';
+import 'package:smooth_corner/smooth_corner.dart';
+
+FocusNode currentSongTileNode = FocusNode();
 
 class BottomControl extends StatelessWidget {
   const BottomControl({super.key});
@@ -24,7 +28,7 @@ class BottomControl extends StatelessWidget {
               children: [
                 Expanded(flex: 2, child: currentSongTile()),
 
-                if (isMobile) ...[
+                if (isMobile && !isTV) ...[
                   Expanded(flex: 2, child: bottomSeekBar()),
                   Expanded(
                     flex: 2,
@@ -49,7 +53,10 @@ class BottomControl extends StatelessWidget {
                       ],
                     ),
                   ),
-                  Expanded(flex: 2, child: otherControls()),
+                  Expanded(
+                    flex: 2,
+                    child: isTV ? SizedBox.shrink() : otherControls(),
+                  ),
                 ],
               ],
             ),
@@ -69,26 +76,41 @@ class BottomControl extends StatelessWidget {
             splashColor: Colors.transparent,
             hoverColor: Colors.transparent,
           ),
-          child: ListTile(
-            leading: CoverArtWidget(
-              size: 50,
-              borderRadius: 5,
-              song: currentSong,
+          child: Material(
+            color: Colors.transparent,
+            shape: SmoothRectangleBorder(
+              smoothness: 1,
+              borderRadius: .all(.circular(10)),
             ),
-            title: Text(getTitle(currentSong), overflow: TextOverflow.ellipsis),
-            subtitle: currentSong != null
-                ? Text(
-                    "${getArtist(currentSong)} - ${getAlbum(currentSong)}",
-                    overflow: TextOverflow.ellipsis,
-                    style: TextStyle(fontSize: 13),
-                  )
-                : null,
-            onTap: () {
-              if (playQueue.isEmpty) {
-                return;
-              }
-              displayLyricsPageNotifier.value = true;
-            },
+            clipBehavior: .antiAlias,
+            child: ListTile(
+              focusNode: currentSongTileNode,
+              leading: CoverArtWidget(
+                size: 50,
+                borderRadius: 5,
+                song: currentSong,
+              ),
+              title: Text(
+                getTitle(currentSong),
+                overflow: TextOverflow.ellipsis,
+              ),
+              subtitle: currentSong != null
+                  ? Text(
+                      "${getArtist(currentSong)} - ${getAlbum(currentSong)}",
+                      overflow: TextOverflow.ellipsis,
+                      style: TextStyle(fontSize: 13),
+                    )
+                  : null,
+              onTap: () {
+                if (playQueue.isEmpty) {
+                  return;
+                }
+                displayLyricsPageNotifier.value = true;
+                WidgetsBinding.instance.addPostFrameCallback((_) {
+                  playControlScopeNode.requestFocus();
+                });
+              },
+            ),
           ),
         );
       },
@@ -97,7 +119,11 @@ class BottomControl extends StatelessWidget {
 
   Widget bottomSeekBar() {
     return SizedBox(
-      width: isMobile ? 300 : 400,
+      width: isTV
+          ? .infinity
+          : isMobile
+          ? 300
+          : 400,
       child: ValueListenableBuilder(
         valueListenable: currentSongNotifier,
         builder: (_, _, _) {
@@ -111,11 +137,15 @@ class BottomControl extends StatelessWidget {
     return [
       playModeButton(25),
 
+      if (isTV) rewindButton(25),
+
       skip2PreviousButton(25),
 
       playOrPauseButton(35),
 
       skip2NextButton(25),
+
+      if (isTV) forwardButton(25),
 
       showPlayQueueButton(25),
     ];

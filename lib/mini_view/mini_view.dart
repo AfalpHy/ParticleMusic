@@ -396,7 +396,11 @@ class _MiniViewState extends State<MiniView> {
       child: Row(
         children: [
           Spacer(),
-          playModeButton(25, iconColor: Colors.grey.shade50),
+          playModeButton(
+            25,
+            textColor: Colors.grey.shade50,
+            iconColor: Colors.grey.shade50,
+          ),
 
           Spacer(),
 

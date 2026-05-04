@@ -114,6 +114,10 @@ flutter run
 flutter run --release
 # build
 flutter build apk
+# split abi
+flutter build apk --split-per-abi
+# build TV
+flutter build apk --dart-define=TV=true
 ```
 ## Screenshots
 

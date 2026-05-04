@@ -17,40 +17,36 @@ class MyLocation extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return ValueListenableBuilder(
-      valueListenable: currentSongNotifier,
-      builder: (_, currentSong, _) {
-        if (currentSong == null) {
+    return ListenableBuilder(
+      listenable: Listenable.merge([
+        currentSongNotifier,
+        currentSongListNotifier,
+        listIsScrollingNotifier,
+      ]),
+      builder: (_, _) {
+        if (currentSongNotifier.value == null ||
+            !listIsScrollingNotifier.value) {
           return SizedBox.shrink();
         }
-        return ValueListenableBuilder(
-          valueListenable: currentSongListNotifier,
-          builder: (_, currentSongList, _) {
-            final index = currentSongList.indexOf(currentSong);
-            return ValueListenableBuilder(
-              valueListenable: listIsScrollingNotifier,
-              builder: (_, isScrolling, _) {
-                return isScrolling && index >= 0
-                    ? IconButton(
-                        onPressed: () {
-                          final position = scrollController.position;
-                          final maxScrollExtent = position.maxScrollExtent;
-                          final minScrollExtent = position.minScrollExtent;
-                          scrollController.animateTo(
-                            (60 * index + offset).clamp(
-                              minScrollExtent,
-                              maxScrollExtent,
-                            ),
-                            duration: Duration(milliseconds: 300),
-                            curve: Curves.linear,
-                          );
-                        },
-                        icon: ImageIcon(location),
-                      )
-                    : SizedBox.shrink();
-              },
+        final index = currentSongListNotifier.value.indexOf(
+          currentSongNotifier.value!,
+        );
+        if (index == -1) {
+          return SizedBox.shrink();
+        }
+
+        return IconButton(
+          onPressed: () {
+            final position = scrollController.position;
+            final maxScrollExtent = position.maxScrollExtent;
+            final minScrollExtent = position.minScrollExtent;
+            scrollController.animateTo(
+              (60 * index + offset).clamp(minScrollExtent, maxScrollExtent),
+              duration: Duration(milliseconds: 300),
+              curve: Curves.linear,
             );
           },
+          icon: ImageIcon(location),
         );
       },
     );

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/common_widgets/buttons.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common_widgets/playlist_widgets.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
@@ -36,14 +37,21 @@ class PlayQueuePageState extends State<PlayQueuePage> {
     );
   }
 
+  void updateQueue() {
+    jumpToCurrentSong();
+    setState(() {});
+  }
+
   @override
   void initState() {
     super.initState();
     isMiniMode = miniModeNotifier.value;
+    playModeNotifier.addListener(updateQueue);
   }
 
   @override
   void dispose() {
+    playModeNotifier.removeListener(updateQueue);
     super.dispose();
   }
 
@@ -134,50 +142,11 @@ class PlayQueuePageState extends State<PlayQueuePage> {
           },
           icon: ImageIcon(reverseImage),
         ),
-        ValueListenableBuilder(
-          valueListenable: playModeNotifier,
-          builder: (_, playMode, _) {
-            return IconButton(
-              color: specificIconColor,
-              icon: ImageIcon(
-                playMode == 0
-                    ? loopImage
-                    : playMode == 1
-                    ? shuffleImage
-                    : repeatImage,
-              ),
-              onPressed: () {
-                if (playModeNotifier.value != 2) {
-                  audioHandler.switchPlayMode();
-                  switch (playModeNotifier.value) {
-                    case 0:
-                      showCenterMessage(context, l10n.loop);
-                      break;
-                    default:
-                      showCenterMessage(context, l10n.shuffle);
-                      break;
-                  }
-                  jumpToCurrentSong();
 
-                  setState(() {});
-                }
-              },
-              onLongPress: () {
-                audioHandler.toggleRepeat();
-                switch (playModeNotifier.value) {
-                  case 0:
-                    showCenterMessage(context, l10n.loop);
-                    break;
-                  case 1:
-                    showCenterMessage(context, l10n.shuffle);
-                    break;
-                  default:
-                    showCenterMessage(context, l10n.repeat);
-                    break;
-                }
-              },
-            );
-          },
+        playModeButton(
+          null,
+          textColor: specificTextColor,
+          iconColor: specificIconColor,
         ),
 
         IconButton(

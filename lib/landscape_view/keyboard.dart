@@ -1,7 +1,8 @@
 import 'package:flutter/services.dart';
 import 'package:particle_music/common.dart';
-import 'package:particle_music/landscape_view/title_bar.dart';
 import 'package:window_manager/window_manager.dart';
+
+bool isTyping = false;
 
 void keyboardInit() {
   HardwareKeyboard.instance.addHandler((event) {

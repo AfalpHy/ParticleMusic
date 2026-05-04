@@ -461,7 +461,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                               tmpSongList.add(currentSongListNotifier.value[i]);
                             }
                           }
-                          showAddPlaylistSheet(context, tmpSongList);
+                          showAddPlaylistDialog(context, tmpSongList);
                         }
                       },
                       child: Column(

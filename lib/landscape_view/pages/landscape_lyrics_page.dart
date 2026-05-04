@@ -3,6 +3,7 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/buttons.dart';
@@ -15,6 +16,10 @@ import 'package:particle_music/common_widgets/lyrics.dart';
 import 'package:particle_music/common_widgets/seekbar.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/utils.dart';
+
+FocusScopeNode playControlScopeNode = FocusScopeNode();
+FocusScopeNode lyricsScopeNode = FocusScopeNode();
+FocusScopeNode fontSizeScopeNode = FocusScopeNode();
 
 class LandscapeLyricsPage extends StatefulWidget {
   const LandscapeLyricsPage({super.key});
@@ -273,17 +278,37 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                                     ).copyWith(scrollbars: false),
                                     child: currentSong == null
                                         ? SizedBox()
-                                        : LyricsListView(
-                                            key: ValueKey(currentSong),
-                                            expanded: pageHight < 600
-                                                ? false
-                                                : true,
-                                            lyrics: currentSong
-                                                .parsedLyrics!
-                                                .lyrics,
-                                            isKaraoke: currentSong
-                                                .parsedLyrics!
-                                                .isKaraoke,
+                                        : FocusScope(
+                                            node: lyricsScopeNode,
+                                            onKeyEvent: (node, event) {
+                                              if (event is! KeyDownEvent) {
+                                                return .ignored;
+                                              }
+                                              if (event.logicalKey ==
+                                                  .arrowLeft) {
+                                                playControlScopeNode
+                                                    .requestFocus();
+                                                return .handled;
+                                              } else if (event.logicalKey ==
+                                                  .arrowRight) {
+                                                fontSizeScopeNode
+                                                    .requestFocus();
+                                                return .handled;
+                                              }
+                                              return .ignored;
+                                            },
+                                            child: LyricsListView(
+                                              key: ValueKey(currentSong),
+                                              expanded: pageHight < 600
+                                                  ? false
+                                                  : true,
+                                              lyrics: currentSong
+                                                  .parsedLyrics!
+                                                  .lyrics,
+                                              isKaraoke: currentSong
+                                                  .parsedLyrics!
+                                                  .isKaraoke,
+                                            ),
                                           ),
                                   ),
                                 ),
@@ -339,25 +364,47 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                     return Offstage(
                       offstage: value,
                       child: pageHight <= 600
-                          ? Column(children: children)
-                          : Row(children: children),
+                          ? FocusScope(
+                              node: fontSizeScopeNode,
+                              onKeyEvent: (node, event) {
+                                if (event is KeyDownEvent &&
+                                    event.logicalKey == .arrowLeft) {
+                                  lyricsScopeNode.requestFocus();
+                                  return .handled;
+                                }
+                                return .ignored;
+                              },
+                              child: Column(children: children),
+                            )
+                          : FocusScope(
+                              node: fontSizeScopeNode,
+                              onKeyEvent: (node, event) {
+                                if (event.logicalKey == .arrowUp) {
+                                  lyricsScopeNode.requestFocus();
+                                  return .handled;
+                                }
+                                return .ignored;
+                              },
+                              child: Row(children: children),
+                            ),
                     );
                   },
                 ),
               ),
 
-              Positioned(
-                left: 0,
-                right: 0,
-                top: 0,
-                child: ValueListenableBuilder<bool>(
-                  valueListenable: immersiveModeNotifier,
-                  builder: (context, value, child) {
-                    return Offstage(offstage: value, child: child);
-                  },
-                  child: TitleBar(isMainPage: false),
+              if (!isMobile)
+                Positioned(
+                  left: 0,
+                  right: 0,
+                  top: 0,
+                  child: ValueListenableBuilder<bool>(
+                    valueListenable: immersiveModeNotifier,
+                    builder: (context, value, child) {
+                      return Offstage(offstage: value, child: child);
+                    },
+                    child: TitleBar(isMainPage: false),
+                  ),
                 ),
-              ),
             ],
           ),
         );
@@ -433,20 +480,34 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
 
             SizedBox(
               width: width,
-              child: Row(
-                children: [
-                  playModeButton(25, iconColor: value),
-                  Spacer(),
+              child: FocusScope(
+                node: playControlScopeNode,
+                onKeyEvent: (node, event) {
+                  if (event is KeyDownEvent && event.logicalKey == .arrowUp) {
+                    lyricsScopeNode.requestFocus();
+                    return .handled;
+                  }
+                  return .ignored;
+                },
+                child: Row(
+                  children: [
+                    playModeButton(25, textColor: value, iconColor: value),
+                    Spacer(),
 
-                  skip2PreviousButton(25, iconColor: value),
+                    if (isTV) rewindButton(25, iconColor: value),
 
-                  playOrPauseButton(35, iconColor: value),
+                    skip2PreviousButton(25, iconColor: value),
 
-                  skip2NextButton(25, iconColor: value),
+                    playOrPauseButton(35, iconColor: value),
 
-                  Spacer(),
-                  showPlayQueueButton(25, iconColor: value),
-                ],
+                    skip2NextButton(25, iconColor: value),
+
+                    if (isTV) forwardButton(25, iconColor: value),
+
+                    Spacer(),
+                    showPlayQueueButton(25, iconColor: value),
+                  ],
+                ),
               ),
             ),
             if (!isMobile)

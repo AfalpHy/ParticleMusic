@@ -11,6 +11,7 @@ import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/equalizer.dart';
 import 'package:particle_music/common_widgets/my_divider.dart';
+import 'package:particle_music/common_widgets/tv_dir_picker.dart';
 import 'package:particle_music/layer/layers_manager.dart';
 import 'package:particle_music/common_widgets/manage_music_folders.dart';
 import 'package:particle_music/loader.dart';
@@ -39,21 +40,25 @@ class SettingsList extends StatelessWidget {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
 
-              child: ListTile(
-                leading: ImageIcon(settingImage, size: 50),
-                title: Text(
-                  l10n.settings,
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
-                ),
-                subtitle: Text(
-                  l10n.settingCount(
-                    Platform.isAndroid
-                        ? 16
-                        : Platform.isIOS
-                        ? 14
-                        : 13,
+              child: Focus(
+                child: ListTile(
+                  leading: ImageIcon(settingImage, size: 50),
+                  title: Text(
+                    l10n.settings,
+                    style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                   ),
-                  style: TextStyle(fontSize: 12),
+                  subtitle: Text(
+                    l10n.settingCount(
+                      isTV
+                          ? 14
+                          : Platform.isAndroid
+                          ? 16
+                          : Platform.isIOS
+                          ? 14
+                          : 13,
+                    ),
+                    style: TextStyle(fontSize: 12),
+                  ),
                 ),
               ),
             ),
@@ -102,7 +107,7 @@ class SettingsList extends StatelessWidget {
 
         sliverBox(paddingIfNeed(isLandscape, languageListTile(context, l10n))),
 
-        if (isMobile)
+        if (isMobile && !isTV)
           sliverBox(paddingIfNeed(isLandscape, vibrationListTile(l10n))),
 
         if (isMobile)
@@ -130,7 +135,7 @@ class SettingsList extends StatelessWidget {
             paddingForLandscape(exitOnClose(l10n)),
           ), // always landscape style
 
-        if (Platform.isAndroid)
+        if (Platform.isAndroid && !isTV)
           sliverBox(paddingIfNeed(isLandscape, desktopLyricsOnAndroid(l10n))),
 
         if (Platform.isAndroid)
@@ -535,21 +540,14 @@ class SettingsList extends StatelessWidget {
     return ListTile(
       leading: ImageIcon(vibrationImage, size: iconSize),
       title: Text(l10n.vibration),
-      trailing: ValueListenableBuilder(
-        valueListenable: vibrationOnNoitifier,
-        builder: (context, value, child) {
-          return SizedBox(
-            width: 50,
-            child: MySwitch(
-              value: value,
-              onToggle: (value) {
-                tryVibrate();
-                vibrationOnNoitifier.value = value;
-                settingManager.saveSetting();
-              },
-            ),
-          );
-        },
+      trailing: SizedBox(
+        width: 50,
+        child: MySwitch(
+          valueNotifier: vibrationOnNoitifier,
+          onToggleCallBack: () {
+            settingManager.saveSetting();
+          },
+        ),
       ),
     );
   }
@@ -936,16 +934,10 @@ class SettingsList extends StatelessWidget {
       title: Text(l10n.autoPlayOnStartup),
       trailing: SizedBox(
         width: 50,
-        child: ValueListenableBuilder(
-          valueListenable: autoPlayOnStartupNotifier,
-          builder: (context, value, child) {
-            return MySwitch(
-              value: value,
-              onToggle: (value) async {
-                autoPlayOnStartupNotifier.value = value;
-                settingManager.saveSetting();
-              },
-            );
+        child: MySwitch(
+          valueNotifier: autoPlayOnStartupNotifier,
+          onToggleCallBack: () {
+            settingManager.saveSetting();
           },
         ),
       ),
@@ -962,12 +954,11 @@ class SettingsList extends StatelessWidget {
           return SizedBox(
             width: 50,
             child: MySwitch(
-              value: value,
-              onToggle: (value) async {
-                tryVibrate();
+              valueNotifier: showDesktopLrcOnAndroidNotifier,
+              onToggleCallBack: () async {
+                final value = showDesktopLrcOnAndroidNotifier.value;
                 lockDesktopLrcOnAndroidNotifier.value = false;
                 if (!value) {
-                  showDesktopLrcOnAndroidNotifier.value = value;
                   await FlutterOverlayWindow.closeOverlay();
                   return;
                 }
@@ -977,7 +968,6 @@ class SettingsList extends StatelessWidget {
                     return;
                   }
                 }
-                showDesktopLrcOnAndroidNotifier.value = value;
                 final vertical = verticalDesktopLrcNotifier.value;
                 await FlutterOverlayWindow.showOverlay(
                   enableDrag: true,
@@ -1018,10 +1008,8 @@ class SettingsList extends StatelessWidget {
                     Text(value ? l10n.unlock : l10n.lock),
                     SizedBox(width: 10),
                     MySwitch(
-                      value: value,
-                      onToggle: (value) async {
-                        tryVibrate();
-                        lockDesktopLrcOnAndroidNotifier.value = value;
+                      valueNotifier: lockDesktopLrcOnAndroidNotifier,
+                      onToggleCallBack: () async {
                         final position =
                             await FlutterOverlayWindow.getOverlayPosition();
 
@@ -1058,24 +1046,18 @@ class SettingsList extends StatelessWidget {
       title: Text(l10n.closeAction),
       trailing: SizedBox(
         width: 150,
-        child: ValueListenableBuilder(
-          valueListenable: exitOnCloseNotifier,
-          builder: (context, value, child) {
-            return Row(
-              children: [
-                Spacer(),
-                Text(value ? l10n.exit : l10n.hide),
-                SizedBox(width: 10),
-                MySwitch(
-                  value: value,
-                  onToggle: (value) async {
-                    exitOnCloseNotifier.value = value;
-                    settingManager.saveSetting();
-                  },
-                ),
-              ],
-            );
-          },
+        child: Row(
+          children: [
+            Spacer(),
+            MySwitch(
+              trueText: l10n.exit,
+              falseText: l10n.hide,
+              valueNotifier: exitOnCloseNotifier,
+              onToggleCallBack: () {
+                settingManager.saveSetting();
+              },
+            ),
+          ],
         ),
       ),
     );
@@ -1222,7 +1204,15 @@ class SettingsList extends StatelessWidget {
 
       title: Text(l10n.exportLog),
       onTap: () async {
-        String? result = await FilePicker.getDirectoryPath();
+        String? result;
+        if (isTV) {
+          result = await showAnimationDialog(
+            context: context,
+            child: SizedBox(height: 350, width: 300, child: TvDirPicker()),
+          );
+        } else {
+          result = await FilePicker.getDirectoryPath();
+        }
         if (result == null) {
           return;
         }

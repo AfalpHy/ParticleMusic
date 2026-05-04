@@ -28,39 +28,41 @@ class Sidebar extends StatelessWidget {
   }) {
     return Padding(
       padding: EdgeInsets.symmetric(horizontal: 10),
-      child: SmoothClipRRect(
-        smoothness: 1,
-        borderRadius: BorderRadius.circular(10),
-        child: ValueListenableBuilder(
-          valueListenable: sidebarHighlighLabel,
-          builder: (context, highlightLabel, child) {
-            return ValueListenableBuilder(
-              valueListenable: selectedItemColor.valueNotifier,
-              builder: (context, value, _) {
-                return Material(
-                  color: highlightLabel == label ? value : Colors.transparent,
-                  child: child,
-                );
-              },
-            );
-          },
-          child: ListTile(
-            leading: leading,
-            title: Text(
-              content,
-              style: TextStyle(fontSize: 15, overflow: TextOverflow.ellipsis),
-            ),
-            contentPadding: contentPadding,
-            visualDensity: const VisualDensity(horizontal: 0, vertical: -3.65),
-            trailing: trailing,
-            onTap: () async {
-              if (closeDrawer != null) {
-                closeDrawer!.call();
-                await Future.delayed(Duration(milliseconds: 250));
-              }
-              onTap();
+      child: ValueListenableBuilder(
+        valueListenable: sidebarHighlighLabel,
+        builder: (context, highlightLabel, child) {
+          return ValueListenableBuilder(
+            valueListenable: selectedItemColor.valueNotifier,
+            builder: (context, value, _) {
+              return Material(
+                color: highlightLabel == label ? value : Colors.transparent,
+                shape: SmoothRectangleBorder(
+                  smoothness: 1,
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                clipBehavior: .antiAlias,
+                child: child,
+              );
             },
+          );
+        },
+        child: ListTile(
+          autofocus: isTV && label == 'songs' ? true : false,
+          leading: leading,
+          title: Text(
+            content,
+            style: TextStyle(fontSize: 15, overflow: TextOverflow.ellipsis),
           ),
+          contentPadding: contentPadding,
+          visualDensity: const VisualDensity(horizontal: 0, vertical: -3.65),
+          trailing: trailing,
+          onTap: () async {
+            if (closeDrawer != null) {
+              closeDrawer!.call();
+              await Future.delayed(Duration(milliseconds: 250));
+            }
+            onTap();
+          },
         ),
       ),
     );
@@ -248,11 +250,7 @@ class Sidebar extends StatelessWidget {
 
                           trailing: IconButton(
                             onPressed: () {
-                              if (isMobile) {
-                                showCreatePlaylistSheet(context);
-                              } else {
-                                showCreatePlaylistDialog(context);
-                              }
+                              showCreatePlaylistDialog(context);
                             },
                             icon: ImageIcon(addImage, size: 20),
                           ),

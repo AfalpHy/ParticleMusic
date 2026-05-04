@@ -26,6 +26,8 @@ class _ArtistsAlbumsPanelState extends State<ArtistsAlbumsPanel> {
 
   final textController = TextEditingController();
 
+  final ScrollController scrollController = ScrollController();
+
   late ValueNotifier<bool> randomizeNotifier;
   late ValueNotifier<bool> isAscendingNotifier;
   late ValueNotifier<bool> useLargePictureNotifier;
@@ -76,11 +78,15 @@ class _ArtistsAlbumsPanelState extends State<ArtistsAlbumsPanel> {
     return Column(
       children: [
         TitleBar(
-          searchField: TitleSearchField(
-            key: ValueKey(isArtist ? l10n.searchArtists : l10n.searchAlbums),
-            hintText: isArtist ? l10n.searchArtists : l10n.searchAlbums,
-            textController: textController,
-          ),
+          hintText: isArtist ? l10n.searchArtists : l10n.searchAlbums,
+          textController: textController,
+          scrollToTop: () {
+            scrollController.animateTo(
+              0,
+              duration: Duration(milliseconds: 250),
+              curve: Curves.linear,
+            );
+          },
         ),
         Expanded(child: contentWidget(context)),
       ],
@@ -92,6 +98,7 @@ class _ArtistsAlbumsPanelState extends State<ArtistsAlbumsPanel> {
     final l10n = AppLocalizations.of(context);
 
     return CustomScrollView(
+      controller: scrollController,
       slivers: [
         SliverToBoxAdapter(
           child: Padding(
@@ -132,73 +139,45 @@ class _ArtistsAlbumsPanelState extends State<ArtistsAlbumsPanel> {
                         ValueListenableBuilder(
                           valueListenable: randomizeNotifier,
                           builder: (context, value, child) {
-                            return Row(
-                              children: [
-                                if (!value) ...[
-                                  ValueListenableBuilder(
-                                    valueListenable: isAscendingNotifier,
-                                    builder: (context, value, child) {
-                                      return Text(
-                                        value
-                                            ? l10n.ascending
-                                            : l10n.descending,
-                                      );
-                                    },
-                                  ),
-                                  SizedBox(width: 10),
-                                  ValueListenableBuilder(
-                                    valueListenable: isAscendingNotifier,
-                                    builder: (context, value, child) {
-                                      return MySwitch(
-                                        value: value,
-                                        onToggle: (value) async {
-                                          isAscendingNotifier.value = value;
-                                          settingManager.saveSetting();
-                                          if (isArtist) {
-                                            artistsAlbumsManager.sortArtists();
-                                          } else {
-                                            artistsAlbumsManager.sortAlbums();
-                                          }
-                                          updateCurrentList();
-                                        },
-                                      );
-                                    },
-                                  ),
-                                  SizedBox(width: 10),
-                                ],
-                                Text(value ? l10n.randomize : l10n.normal),
-                                SizedBox(width: 10),
-                                MySwitch(
-                                  value: value,
-                                  onToggle: (value) async {
-                                    randomizeNotifier.value = value;
-
-                                    updateCurrentList();
-                                  },
-                                ),
-                              ],
-                            );
-                          },
-                        ),
-
-                        SizedBox(width: 10),
-                        ValueListenableBuilder(
-                          valueListenable: useLargePictureNotifier,
-                          builder: (context, value, child) {
-                            return Text(value ? l10n.large : l10n.small);
-                          },
-                        ),
-                        SizedBox(width: 10),
-                        ValueListenableBuilder(
-                          valueListenable: useLargePictureNotifier,
-                          builder: (context, value, child) {
+                            if (value) {
+                              return SizedBox.shrink();
+                            }
                             return MySwitch(
-                              value: value,
-                              onToggle: (value) async {
-                                useLargePictureNotifier.value = value;
+                              trueText: l10n.ascending,
+                              falseText: l10n.descending,
+                              valueNotifier: isAscendingNotifier,
+                              onToggleCallBack: () {
                                 settingManager.saveSetting();
+                                if (isArtist) {
+                                  artistsAlbumsManager.sortArtists();
+                                } else {
+                                  artistsAlbumsManager.sortAlbums();
+                                }
+                                updateCurrentList();
                               },
                             );
+                          },
+                        ),
+
+                        SizedBox(width: 10),
+
+                        MySwitch(
+                          trueText: l10n.randomize,
+                          falseText: l10n.normal,
+                          valueNotifier: randomizeNotifier,
+                          onToggleCallBack: () {
+                            updateCurrentList();
+                          },
+                        ),
+
+                        SizedBox(width: 10),
+
+                        MySwitch(
+                          trueText: l10n.large,
+                          falseText: l10n.small,
+                          valueNotifier: useLargePictureNotifier,
+                          onToggleCallBack: () {
+                            settingManager.saveSetting();
                           },
                         ),
                         SizedBox(width: 5),
@@ -230,10 +209,10 @@ class _ArtistsAlbumsPanelState extends State<ArtistsAlbumsPanel> {
               int crossAxisCount;
               double coverArtWidth;
               if (value) {
-                crossAxisCount = (panelWidth / 240).toInt();
+                crossAxisCount = (panelWidth / (isTV ? 150 : 240)).toInt();
                 coverArtWidth = panelWidth / crossAxisCount - 45;
               } else {
-                crossAxisCount = (panelWidth / 120).toInt();
+                crossAxisCount = (panelWidth / (isTV ? 100 : 120)).toInt();
                 coverArtWidth = panelWidth / crossAxisCount - 35;
               }
               return ValueListenableBuilder(
@@ -246,49 +225,67 @@ class _ArtistsAlbumsPanelState extends State<ArtistsAlbumsPanel> {
                     ),
                     itemCount: list.length,
                     itemBuilder: (context, index) {
-                      return Column(
-                        children: [
-                          MouseRegion(
-                            cursor: SystemMouseCursors.click,
-                            child: GestureDetector(
-                              child: ValueListenableBuilder(
-                                valueListenable:
-                                    list[index].displayNavidromeNotifier,
-                                builder: (context, value, child) {
-                                  final displaySong = list[index]
-                                      .getDisplaySong();
-                                  return ValueListenableBuilder(
-                                    valueListenable: displaySong.updateNotifier,
-                                    builder: (_, _, _) {
-                                      return CoverArtWidget(
-                                        size: coverArtWidth,
-                                        borderRadius: 10,
-                                        song: displaySong,
+                      FocusNode focusNode = FocusNode();
+                      return StatefulBuilder(
+                        builder: (context, setState) {
+                          return AnimatedScale(
+                            duration: Duration(milliseconds: 250),
+                            curve: Curves.easeOutCubic,
+                            scale: focusNode.hasFocus ? 1.1 : 1.0,
+                            child: Column(
+                              children: [
+                                InkWell(
+                                  focusNode: focusNode,
+                                  onFocusChange: (value) {
+                                    setState(() {});
+                                  },
+                                  mouseCursor: SystemMouseCursors.click,
+                                  focusColor: Colors.transparent,
+                                  splashColor: Colors.transparent,
+                                  hoverColor: Colors.transparent,
+                                  highlightColor: Colors.transparent,
+
+                                  child: ValueListenableBuilder(
+                                    valueListenable:
+                                        list[index].displayNavidromeNotifier,
+                                    builder: (context, value, child) {
+                                      final displaySong = list[index]
+                                          .getDisplaySong();
+                                      return ValueListenableBuilder(
+                                        valueListenable:
+                                            displaySong.updateNotifier,
+                                        builder: (_, _, _) {
+                                          return CoverArtWidget(
+                                            size: coverArtWidth,
+                                            borderRadius: coverArtWidth / 10,
+                                            song: displaySong,
+                                          );
+                                        },
                                       );
                                     },
-                                  );
-                                },
-                              ),
-                              onTap: () {
-                                layersManager.pushLayer(
-                                  isArtist ? 'artists' : 'albums',
-                                  content: list[index].name,
-                                );
-                              },
-                            ),
-                          ),
-                          SizedBox(
-                            width: coverArtWidth - 5,
-                            child: Center(
-                              child: Text(
-                                list[index].name,
-                                style: TextStyle(
-                                  overflow: TextOverflow.ellipsis,
+                                  ),
+                                  onTap: () {
+                                    layersManager.pushLayer(
+                                      isArtist ? 'artists' : 'albums',
+                                      content: list[index].name,
+                                    );
+                                  },
                                 ),
-                              ),
+                                SizedBox(
+                                  width: coverArtWidth - 5,
+                                  child: Center(
+                                    child: Text(
+                                      list[index].name,
+                                      style: TextStyle(
+                                        overflow: TextOverflow.ellipsis,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
                             ),
-                          ),
-                        ],
+                          );
+                        },
                       );
                     },
                   );

@@ -377,7 +377,7 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                                       onTap: () {
                                         Navigator.pop(context);
 
-                                        showAddPlaylistSheet(context, [
+                                        showAddPlaylistDialog(context, [
                                           currentSong!,
                                         ]);
                                       },

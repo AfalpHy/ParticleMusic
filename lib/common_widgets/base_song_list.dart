@@ -18,8 +18,6 @@ abstract class BaseSongListWidget extends StatefulWidget {
   final String? ranking;
   final String? recently;
 
-  final TextEditingController? textController;
-
   final bool isNavidrome;
 
   final Function()? switchCallBack;
@@ -32,7 +30,6 @@ abstract class BaseSongListWidget extends StatefulWidget {
     this.folder,
     this.ranking,
     this.recently,
-    this.textController,
     this.isNavidrome = false,
     this.switchCallBack,
   });
@@ -62,7 +59,7 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
 
   final listIsScrollingNotifier = ValueNotifier(false);
   final scrollController = ScrollController();
-  late final TextEditingController textController;
+  final TextEditingController textController = TextEditingController();
 
   ValueNotifier<int> sortTypeNotifier = ValueNotifier(0);
 
@@ -83,8 +80,6 @@ abstract class BaseSongListState<T extends BaseSongListWidget>
     folder = widget.folder;
     ranking = widget.ranking;
     recently = widget.recently;
-
-    textController = widget.textController ?? TextEditingController();
 
     isNavidrome = widget.isNavidrome;
 

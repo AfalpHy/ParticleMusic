@@ -245,19 +245,9 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
             title: Text(l10n.recursiveScan),
             contentPadding: .fromLTRB(15, 0, 0, 0),
             dense: true,
-            trailing: ValueListenableBuilder(
-              valueListenable: tmpRecursiveScanNotifier,
-              builder: (context, value, child) {
-                return SizedBox(
-                  width: 50,
-                  child: MySwitch(
-                    value: value,
-                    onToggle: (v) {
-                      tmpRecursiveScanNotifier.value = v;
-                    },
-                  ),
-                );
-              },
+            trailing: SizedBox(
+              width: 70,
+              child: MySwitch(valueNotifier: tmpRecursiveScanNotifier),
             ),
           ),
         ),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:particle_music/landscape_view/panels/local_navidrome_panel.dart';
+import 'package:particle_music/common_widgets/local_navidrome_base.dart';
 import 'package:particle_music/playlists.dart';
 
 class SinglePlaylistPanel extends StatelessWidget {
@@ -9,11 +9,12 @@ class SinglePlaylistPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return LocalNavidromePanel(
+    return LocalNavidromeBase(
       displayNavidromeNotifier: playlist.displayNavidromeNotifier,
       localSongList: playlist.songList,
       navidromeSongList: playlist.navidromeSongList,
       playlist: playlist,
+      isPanel: true,
     );
   }
 }

@@ -1,10 +1,11 @@
+import 'dart:math';
+
 import 'package:flutter/material.dart';
 import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
 import 'package:particle_music/playlists.dart';
-import 'package:particle_music/common_widgets/my_sheet.dart';
 import 'package:particle_music/my_audio_metadata.dart';
 import 'package:particle_music/utils.dart';
 import 'package:smooth_corner/smooth_corner.dart';
@@ -49,14 +50,8 @@ class _Add2PlaylistPanelState extends State<Add2PlaylistPanel> {
             style: TextStyle(fontSize: 14, color: specificTextColor),
           ),
           onTap: () async {
-            if (isMobile) {
-              if (await showCreatePlaylistSheet(context)) {
-                setState(() {});
-              }
-            } else {
-              if (await showCreatePlaylistDialog(context)) {
-                setState(() {});
-              }
+            if (await showCreatePlaylistDialog(context)) {
+              setState(() {});
             }
           },
         ),
@@ -102,85 +97,6 @@ class _Add2PlaylistPanelState extends State<Add2PlaylistPanel> {
   }
 }
 
-Future<bool> showCreatePlaylistSheet(BuildContext context) async {
-  final controller = TextEditingController();
-  final name = await showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    useRootNavigator: true,
-    builder: (context) {
-      return MySheet(
-        height: 500,
-        ListenableBuilder(
-          listenable: Listenable.merge([
-            buttonColor.valueNotifier,
-            lyricsPageForegroundColor.valueNotifier,
-            lyricsPageButtonColor.valueNotifier,
-          ]),
-          builder: (context, _) {
-            final specificTextcolor = colorManager.getSpecificTextColor();
-
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.start, // center vertically
-              children: [
-                Padding(
-                  padding: const EdgeInsets.fromLTRB(30, 30, 30, 0),
-                  child: Theme(
-                    data: Theme.of(context).copyWith(
-                      textSelectionTheme: TextSelectionThemeData(
-                        selectionColor: specificTextcolor.withAlpha(50),
-                        cursorColor: specificTextcolor,
-                        selectionHandleColor: specificTextcolor,
-                      ),
-                    ),
-                    child: SizedBox(
-                      height: 60,
-                      child: TextField(
-                        controller: controller,
-                        autofocus: true,
-                        style: TextStyle(color: specificTextcolor),
-                        decoration: InputDecoration(
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(color: specificTextcolor),
-                          ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                              color: specificTextcolor,
-                              width: 1.5,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-
-                const SizedBox(height: 10),
-
-                ElevatedButton(
-                  onPressed: () {
-                    Navigator.pop(context, controller.text); // close with value
-                  },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: colorManager.getSpecificButtonColor(),
-                    foregroundColor: specificTextcolor,
-                  ),
-                  child: Text(AppLocalizations.of(context).confirm),
-                ),
-              ],
-            );
-          },
-        ),
-      );
-    },
-  );
-  if (name != null && name != '') {
-    playlistsManager.createPlaylist(name);
-    return true;
-  }
-  return false;
-}
-
 Future<bool> showCreatePlaylistDialog(BuildContext context) async {
   final l10n = AppLocalizations.of(context);
 
@@ -191,7 +107,7 @@ Future<bool> showCreatePlaylistDialog(BuildContext context) async {
     context: context,
     child: SizedBox(
       width: 300,
-      height: 200,
+      height: isMobile ? 220 : 200,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(30, 20, 30, 20),
         child: Column(
@@ -203,32 +119,7 @@ Future<bool> showCreatePlaylistDialog(BuildContext context) async {
               ),
             ),
             SizedBox(height: 20),
-            Theme(
-              data: Theme.of(context).copyWith(
-                textSelectionTheme: TextSelectionThemeData(
-                  selectionColor: specificTextcolor.withAlpha(50),
-                  cursorColor: specificTextcolor,
-                  selectionHandleColor: specificTextcolor,
-                ),
-              ),
-              child: TextField(
-                controller: controller,
-                autofocus: true,
-                style: TextStyle(fontSize: 12, color: specificTextcolor),
-                decoration: InputDecoration(
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: specificTextcolor),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: specificTextcolor,
-                      width: 1.5,
-                    ),
-                  ),
-                  isDense: true,
-                ),
-              ),
-            ),
+            adaptiveTextField(context, null, controller, compact: false),
             SizedBox(height: 30),
             Center(
               child: ListenableBuilder(
@@ -261,40 +152,27 @@ Future<bool> showCreatePlaylistDialog(BuildContext context) async {
   return false;
 }
 
-void showAddPlaylistSheet(
-  BuildContext context,
-  List<MyAudioMetadata> songList,
-) {
-  showModalBottomSheet(
-    context: context,
-    isScrollControlled: true,
-    builder: (_) {
-      return MySheet(
-        Column(
-          children: [
-            SizedBox(height: 5),
-            Expanded(child: Add2PlaylistPanel(songList: songList)),
-          ],
-        ),
-      );
-    },
-  );
-}
-
 void showAddPlaylistDialog(
   BuildContext context,
   List<MyAudioMetadata> songList,
 ) async {
   await showAnimationDialog(
     context: context,
-    child: SizedBox(
-      height: MediaQuery.heightOf(context) * 0.7,
-      width: 400,
+    child: OrientationBuilder(
+      builder: (context, orientation) {
+        final size = MediaQuery.of(context).size;
+        final shortSide = size.shortestSide;
 
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
-        child: Add2PlaylistPanel(songList: songList),
-      ),
+        bool isPhone = shortSide < 600;
+        return SizedBox(
+          height: max(350, size.height * 0.7),
+          width: isPhone ? 300 : 400,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(10, 10, 10, 0),
+            child: Add2PlaylistPanel(songList: songList),
+          ),
+        );
+      },
     ),
   );
 }

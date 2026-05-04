@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:particle_music/color_manager.dart';
 import 'package:particle_music/common.dart';
+import 'package:particle_music/common_widgets/buttons.dart';
 import 'package:particle_music/common_widgets/cover_art_widget.dart';
 import 'package:particle_music/common_widgets/my_sheet.dart';
 import 'package:particle_music/l10n/generated/app_localizations.dart';
@@ -28,12 +30,24 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
     );
   }
 
+  void updateQueue() {
+    jumpToCurrentSong();
+    setState(() {});
+  }
+
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       jumpToCurrentSong();
     });
+    playModeNotifier.addListener(updateQueue);
+  }
+
+  @override
+  void dispose() {
+    playModeNotifier.removeListener(updateQueue);
+    super.dispose();
   }
 
   @override
@@ -71,59 +85,21 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                 Spacer(),
 
                 IconButton(
+                  autofocus: isTV ? true : false,
                   color: specificIconColor,
                   onPressed: () {
                     audioHandler.reversePlayQueue();
-                    jumpToCurrentSong();
-                    setState(() {});
+                    updateQueue();
                   },
                   icon: ImageIcon(reverseImage),
                 ),
 
-                IconButton(
-                  color: specificIconColor,
-                  icon: ValueListenableBuilder(
-                    valueListenable: playModeNotifier,
-                    builder: (context, value, child) {
-                      return ImageIcon(
-                        value == 0
-                            ? loopImage
-                            : value == 1
-                            ? shuffleImage
-                            : repeatImage,
-                      );
-                    },
-                  ),
-                  onPressed: () {
-                    if (playModeNotifier.value != 2) {
-                      audioHandler.switchPlayMode();
-                      switch (playModeNotifier.value) {
-                        case 0:
-                          showCenterMessage(context, l10n.loop);
-                          break;
-                        default:
-                          showCenterMessage(context, l10n.shuffle);
-                          break;
-                      }
-                      jumpToCurrentSong();
-                      setState(() {});
-                    }
-                  },
-                  onLongPress: () {
-                    audioHandler.toggleRepeat();
-                    switch (playModeNotifier.value) {
-                      case 0:
-                        showCenterMessage(context, l10n.loop);
-                        break;
-                      case 1:
-                        showCenterMessage(context, l10n.shuffle);
-                        break;
-                      default:
-                        showCenterMessage(context, l10n.repeat);
-                        break;
-                    }
-                  },
+                playModeButton(
+                  null,
+                  textColor: specificTextColor,
+                  iconColor: specificIconColor,
                 ),
+
                 IconButton(
                   color: specificIconColor,
                   onPressed: () {
@@ -196,72 +172,88 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
               itemCount: playQueue.length,
               itemBuilder: (_, index) {
                 final song = playQueue[index];
+                final removeNode = FocusNode();
 
                 return MediaQuery.removePadding(
                   key: ValueKey(song),
                   context: context,
                   removeLeft: true, // for mobile
                   removeRight: true,
-                  child: ListTile(
-                    contentPadding: EdgeInsets.fromLTRB(15, 0, 0, 0),
-                    leading: CoverArtWidget(
-                      size: 40,
-                      borderRadius: 4,
-                      song: song,
-                    ),
-                    title: ValueListenableBuilder(
-                      valueListenable: currentSongNotifier,
-                      builder: (_, currentSong, _) {
-                        return Text(
-                          getTitle(song),
-                          overflow: TextOverflow.ellipsis,
-                          style: TextStyle(
-                            fontWeight: song == currentSong
-                                ? FontWeight.bold
-                                : null,
-                            color: song == currentSong
-                                ? specificHighlightText
-                                : specificTextColor,
-                          ),
-                        );
-                      },
-                    ),
-                    subtitle: Text(
-                      "${getArtist(song)} - ${getAlbum(song)}",
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(fontSize: 12, color: specificTextColor),
-                    ),
-                    visualDensity: VisualDensity(vertical: -4),
-                    onTap: () async {
-                      audioHandler.currentIndex = index;
-                      await audioHandler.load();
-                      audioHandler.play();
+                  child: Focus(
+                    canRequestFocus: false,
+                    onKeyEvent: (node, event) {
+                      if (event is KeyDownEvent &&
+                          event.logicalKey == .arrowRight) {
+                        removeNode.requestFocus();
+                        return .handled;
+                      }
+                      return .ignored;
                     },
-
-                    trailing: IconButton(
-                      color: specificIconColor,
-
-                      onPressed: () async {
-                        audioHandler.delete(index);
-                        setState(() {});
-                        if (index < audioHandler.currentIndex) {
-                          audioHandler.currentIndex -= 1;
-                        } else if (index == audioHandler.currentIndex) {
-                          if (playQueue.isEmpty) {
-                            while (Navigator.canPop(context)) {
-                              Navigator.pop(context);
-                            }
-                            await audioHandler.clear();
-                          } else {
-                            if (index == playQueue.length) {
-                              audioHandler.currentIndex = 0;
-                            }
-                            await audioHandler.load();
-                          }
-                        }
-                        audioHandler.saveAllStates();
+                    child: ListTile(
+                      contentPadding: EdgeInsets.fromLTRB(15, 0, 0, 0),
+                      leading: CoverArtWidget(
+                        size: 40,
+                        borderRadius: 4,
+                        song: song,
+                      ),
+                      title: ValueListenableBuilder(
+                        valueListenable: currentSongNotifier,
+                        builder: (_, currentSong, _) {
+                          return Text(
+                            getTitle(song),
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontWeight: song == currentSong
+                                  ? FontWeight.bold
+                                  : null,
+                              color: song == currentSong
+                                  ? specificHighlightText
+                                  : specificTextColor,
+                            ),
+                          );
+                        },
+                      ),
+                      subtitle: Text(
+                        "${getArtist(song)} - ${getAlbum(song)}",
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: specificTextColor,
+                        ),
+                      ),
+                      visualDensity: VisualDensity(vertical: -4),
+                      onTap: () async {
+                        audioHandler.currentIndex = index;
+                        await audioHandler.load();
+                        audioHandler.play();
                       },
-                      icon: Icon(Icons.clear_rounded, size: 20),
+
+                      trailing: IconButton(
+                        focusNode: removeNode,
+                        color: specificIconColor,
+
+                        onPressed: () async {
+                          audioHandler.delete(index);
+                          setState(() {});
+                          if (index < audioHandler.currentIndex) {
+                            audioHandler.currentIndex -= 1;
+                          } else if (index == audioHandler.currentIndex) {
+                            if (playQueue.isEmpty) {
+                              while (Navigator.canPop(context)) {
+                                Navigator.pop(context);
+                              }
+                              await audioHandler.clear();
+                            } else {
+                              if (index == playQueue.length) {
+                                audioHandler.currentIndex = 0;
+                              }
+                              await audioHandler.load();
+                            }
+                          }
+                          audioHandler.saveAllStates();
+                        },
+                        icon: Icon(Icons.clear_rounded, size: 20),
+                      ),
                     ),
                   ),
                 );

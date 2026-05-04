@@ -264,7 +264,7 @@ class SongListTile extends StatelessWidget {
                           onTap: () {
                             Navigator.pop(context);
 
-                            showAddPlaylistSheet(context, [song]);
+                            showAddPlaylistDialog(context, [song]);
                           },
                         ),
 

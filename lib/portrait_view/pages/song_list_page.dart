@@ -317,6 +317,29 @@ class _SongListPageState extends BaseSongListState<SongListPage> {
         ),
         Positioned(
           right: 30,
+          bottom: 180,
+          child: ValueListenableBuilder(
+            valueListenable: listIsScrollingNotifier,
+            builder: (context, value, child) {
+              if (!value) {
+                return SizedBox.shrink();
+              }
+              return IconButton(
+                onPressed: () {
+                  scrollController.animateTo(
+                    0,
+                    duration: Duration(milliseconds: 250),
+                    curve: Curves.linear,
+                  );
+                },
+                icon: ImageIcon(topArrowImage),
+              );
+            },
+          ),
+        ),
+
+        Positioned(
+          right: 30,
           bottom: 120,
           child: MyLocation(
             scrollController: scrollController,

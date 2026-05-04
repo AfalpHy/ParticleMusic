@@ -18,15 +18,15 @@ const String versionNumber = '2.1.2';
 
 // ===================================== App =====================================
 
-late Directory appDocs;
-late Directory appSupportDir;
-late Directory tmpDir;
-late Directory folderConfigDir;
-late Directory playlistConfigDir;
-late Directory cacheConfigDir;
+late final Directory appDocs;
+late final Directory appSupportDir;
+late final Directory tmpDir;
+late final Directory folderConfigDir;
+late final Directory playlistConfigDir;
+late final Directory cacheConfigDir;
 
 final isMobile = Platform.isAndroid || Platform.isIOS;
-final isTV = false;
+const isTV = bool.fromEnvironment('TV', defaultValue: false);
 
 // ===================================== Library =====================================
 
@@ -121,6 +121,7 @@ const AssetImage desktopLyricsImage = AssetImage(
 const AssetImage equalizerImage = AssetImage('assets/images/equalizer.png');
 const AssetImage exportLogImage = AssetImage('assets/images/export_log.png');
 const AssetImage folderImage = AssetImage('assets/images/folder.png');
+const AssetImage forwardImage = AssetImage('assets/images/forward.png');
 const AssetImage fullscreenExitImage = AssetImage(
   'assets/images/fullscreen_exit.png',
 );
@@ -167,6 +168,7 @@ const AssetImage reloadImage = AssetImage('assets/images/reload.png');
 const AssetImage reorderImage = AssetImage('assets/images/reorder.png');
 const AssetImage repeatImage = AssetImage('assets/images/repeat.png');
 const AssetImage reverseImage = AssetImage('assets/images/reverse.png');
+const AssetImage rewindImage = AssetImage('assets/images/rewind.png');
 const AssetImage selectImage = AssetImage('assets/images/select.png');
 const AssetImage sequenceImage = AssetImage('assets/images/sequence.png');
 const AssetImage settingImage = AssetImage('assets/images/setting.png');
@@ -176,6 +178,7 @@ const AssetImage speakerOffImage = AssetImage('assets/images/speaker_off.png');
 const AssetImage speakerImage = AssetImage('assets/images/speaker.png');
 const AssetImage themeImage = AssetImage('assets/images/theme.png');
 const AssetImage timerImage = AssetImage('assets/images/timer.png');
+const AssetImage topArrowImage = AssetImage('assets/images/top_arrow.png');
 const AssetImage unmaximizeImage = AssetImage('assets/images/unmaximize.png');
 const AssetImage vibrationImage = AssetImage('assets/images/vibration.png');
 
