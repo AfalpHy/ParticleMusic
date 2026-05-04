@@ -260,44 +260,45 @@ class Sidebar extends StatelessWidget {
                           },
                         ),
                         menuProvider: (_) {
+                          if (!isMobile) {
+                            return null;
+                          }
                           return Menu(
                             children: [
-                              if (isMobile)
-                                MenuAction(
-                                  title: l10n.reorder,
-                                  callback: () async {
-                                    showAnimationDialog(
-                                      context: context,
+                              MenuAction(
+                                title: l10n.reorder,
+                                callback: () async {
+                                  showAnimationDialog(
+                                    context: context,
 
-                                      child: OrientationBuilder(
-                                        builder: (context, orientation) {
-                                          final size = MediaQuery.of(
-                                            context,
-                                          ).size;
-                                          final shortSide = size.shortestSide;
+                                    child: OrientationBuilder(
+                                      builder: (context, orientation) {
+                                        final size = MediaQuery.of(
+                                          context,
+                                        ).size;
+                                        final shortSide = size.shortestSide;
 
-                                          bool isPhone = shortSide < 600;
-                                          return SizedBox(
-                                            height: max(350, size.height * 0.7),
-                                            width: isPhone ? 300 : 400,
-                                            child: Padding(
-                                              padding:
-                                                  const EdgeInsets.fromLTRB(
-                                                    10,
-                                                    10,
-                                                    10,
-                                                    0,
-                                                  ),
-                                              child: reorderablePlaylistsView(
-                                                context,
-                                              ),
+                                        bool isPhone = shortSide < 600;
+                                        return SizedBox(
+                                          height: max(350, size.height * 0.7),
+                                          width: isPhone ? 300 : 400,
+                                          child: Padding(
+                                            padding: const EdgeInsets.fromLTRB(
+                                              10,
+                                              10,
+                                              10,
+                                              0,
                                             ),
-                                          );
-                                        },
-                                      ),
-                                    );
-                                  },
-                                ),
+                                            child: reorderablePlaylistsView(
+                                              context,
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                                  );
+                                },
+                              ),
                             ],
                           );
                         },
