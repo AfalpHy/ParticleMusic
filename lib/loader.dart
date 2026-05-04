@@ -77,8 +77,6 @@ class Loader {
   }
 
   static Future<void> reload() async {
-    await audioHandler.clearForReload();
-
     library.clear();
 
     playlistsManager.clear();
@@ -87,6 +85,9 @@ class Loader {
 
     history.clear();
     layersManager.clear();
+
+    await audioHandler.clearForReload();
+
     await load();
   }
 
