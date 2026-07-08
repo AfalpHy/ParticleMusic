@@ -7,9 +7,9 @@ import 'package:sylvakru/base/audio_handler.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/services/usb_audio_service.dart';
 
-/// 独占模式下按安卓物理音量键时弹出的右侧竖向毛玻璃音量条：整条可点/拖调节，百分比
-/// 直接显示在条内（双色随填充自适应，任何主题都可读），静止约 2 秒后自动隐藏。系统音量
-/// 条已被 MainActivity 拦截，改由本条反馈与操作。叠在 MaterialApp 之上（需 Stack 父级），
+/// 独占模式下按安卓物理音量键时弹出的右侧竖向毛玻璃音量条：整条可点/拖调节，
+/// 顶部显示百分比，中间细轨道显示当前音量，静止约 2 秒后自动隐藏。系统音量条
+/// 已被 MainActivity 拦截，改由本条反馈与操作。叠在 MaterialApp 之上（需 Stack 父级），
 /// 只在收到物理音量键事件时显示。DSD 独占不会触发（1-bit 码流无法软件调音量）。
 class UsbExclusiveVolumeOverlay extends StatefulWidget {
   const UsbExclusiveVolumeOverlay({super.key});
@@ -74,7 +74,7 @@ class _UsbExclusiveVolumeOverlayState extends State<UsbExclusiveVolumeOverlay> {
                 alignment: Alignment.centerRight,
                 child: Padding(
                   padding: const EdgeInsets.only(right: 12),
-                  child: SizedBox(width: 50, height: height, child: _bar()),
+                  child: SizedBox(width: 58, height: height, child: _bar()),
                 ),
               ),
             ),
@@ -95,10 +95,9 @@ class _UsbExclusiveVolumeOverlayState extends State<UsbExclusiveVolumeOverlay> {
             final clamped = volume.clamp(0.0, 1.0);
             final percent = (clamped * 100).round();
             final dark = theme == ThemeType.dark;
-            // 未填充区（面板底色）上的数字取 textColor；填充区（accent）上的数字取
-            // 面板色反白，两者均随主题联动，避免任一音量下看不清。
-            final onGroove = textColor.value;
-            final onFill = panelColor.value.withAlpha(255);
+            final foreground = textColor.value;
+            final trackColor = foreground.withAlpha(dark ? 42 : 24);
+            final labelColor = foreground.withAlpha(dark ? 36 : 18);
             return ClipRRect(
               borderRadius: BorderRadius.circular(25),
               child: BackdropFilter(
@@ -116,7 +115,14 @@ class _UsbExclusiveVolumeOverlayState extends State<UsbExclusiveVolumeOverlay> {
                       ),
                     ],
                   ),
-                  child: _track(accent, clamped, percent, onGroove, onFill),
+                  child: _track(
+                    accent,
+                    clamped,
+                    percent,
+                    foreground,
+                    trackColor,
+                    labelColor,
+                  ),
                 ),
               ),
             );
@@ -131,8 +137,9 @@ class _UsbExclusiveVolumeOverlayState extends State<UsbExclusiveVolumeOverlay> {
     Color accent,
     double value,
     int percent,
-    Color onGroove,
-    Color onFill,
+    Color foreground,
+    Color trackColor,
+    Color labelColor,
   ) {
     const style = TextStyle(
       fontSize: 12.5,
@@ -142,10 +149,16 @@ class _UsbExclusiveVolumeOverlayState extends State<UsbExclusiveVolumeOverlay> {
     final label = '$percent%';
     return LayoutBuilder(
       builder: (context, constraints) {
-        final trackHeight = constraints.maxHeight;
+        const trackTop = 62.0;
+        const trackBottomPadding = 18.0;
+        final trackBottom = constraints.maxHeight - trackBottomPadding;
+        final trackHeight = trackBottom - trackTop;
         void updateFromDy(double dy) {
           if (trackHeight <= 0) return;
-          _applyVolume((1 - dy / trackHeight).clamp(0.0, 1.0));
+          final localDy = dy.clamp(trackTop, trackBottom);
+          _applyVolume(
+            (1 - (localDy - trackTop) / trackHeight).clamp(0.0, 1.0),
+          );
         }
 
         return GestureDetector(
@@ -160,19 +173,57 @@ class _UsbExclusiveVolumeOverlayState extends State<UsbExclusiveVolumeOverlay> {
           child: Stack(
             fit: StackFit.expand,
             children: [
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: FractionallySizedBox(
-                  heightFactor: value,
-                  widthFactor: 1,
-                  child: DecoratedBox(decoration: BoxDecoration(color: accent)),
+              Positioned(
+                top: 15,
+                left: 0,
+                right: 0,
+                child: Center(
+                  child: DecoratedBox(
+                    decoration: BoxDecoration(
+                      color: labelColor,
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 7,
+                        vertical: 5,
+                      ),
+                      child: Text(
+                        label,
+                        style: style.copyWith(color: foreground),
+                      ),
+                    ),
+                  ),
                 ),
               ),
-              Center(child: Text(label, style: style.copyWith(color: onGroove))),
-              ClipRect(
-                clipper: _BottomFractionClipper(value),
+              Positioned(
+                top: trackTop,
+                bottom: trackBottomPadding,
+                left: 0,
+                right: 0,
                 child: Center(
-                  child: Text(label, style: style.copyWith(color: onFill)),
+                  child: SizedBox(
+                    width: 14,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: trackColor,
+                        borderRadius: BorderRadius.circular(99),
+                      ),
+                      child: Align(
+                        alignment: Alignment.bottomCenter,
+                        child: FractionallySizedBox(
+                          heightFactor: value,
+                          widthFactor: 1,
+                          child: DecoratedBox(
+                            decoration: BoxDecoration(
+                              color: accent,
+                              borderRadius: BorderRadius.circular(99),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ),
               ),
             ],
@@ -180,22 +231,5 @@ class _UsbExclusiveVolumeOverlayState extends State<UsbExclusiveVolumeOverlay> {
         );
       },
     );
-  }
-}
-
-// 裁出底部 fraction 高度的区域，用于让填充区内的数字换成反白色。
-class _BottomFractionClipper extends CustomClipper<Rect> {
-  const _BottomFractionClipper(this.fraction);
-
-  final double fraction;
-
-  @override
-  Rect getClip(Size size) {
-    return Rect.fromLTRB(0, size.height * (1 - fraction), size.width, size.height);
-  }
-
-  @override
-  bool shouldReclip(_BottomFractionClipper oldClipper) {
-    return oldClipper.fraction != fraction;
   }
 }
