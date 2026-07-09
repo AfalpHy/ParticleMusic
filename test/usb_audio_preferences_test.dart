@@ -107,6 +107,15 @@ void main() {
     expect(preferredUsbExclusiveBitDepth(), 32);
   });
 
+  test('maps exclusive digital volume with finer low end', () {
+    expect(usbExclusiveDigitalVolumeGain(-1), 0);
+    expect(usbExclusiveDigitalVolumeGain(0), 0);
+    expect(usbExclusiveDigitalVolumeGain(0.01), closeTo(0.001, 0.000001));
+    expect(usbExclusiveDigitalVolumeGain(0.5), closeTo(0.353553, 0.000001));
+    expect(usbExclusiveDigitalVolumeGain(1), 1);
+    expect(usbExclusiveDigitalVolumeGain(2), 1);
+  });
+
   test('ignores unsupported fixed sample rate', () {
     usbAudioPreferences.load({
       'usbFixedSampleRateEnabled': true,

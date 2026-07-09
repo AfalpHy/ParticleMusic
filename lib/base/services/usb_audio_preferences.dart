@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 
 final usbAudioPreferences = UsbAudioPreferences();
@@ -16,6 +18,14 @@ int? preferredUsbExclusiveBitDepth() {
     UsbBitDepthMode.pcm24 => 24,
     UsbBitDepthMode.pcm32 => 32,
   };
+}
+
+double usbExclusiveDigitalVolumeGain(double volume) {
+  final safeVolume = volume.clamp(0.0, 1.0).toDouble();
+  if (safeVolume <= 0) {
+    return 0;
+  }
+  return math.pow(safeVolume, 1.5).toDouble();
 }
 
 /// 独占数字音量是否生效：除“原始数字电平”外都启用。
