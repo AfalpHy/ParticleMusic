@@ -19,13 +19,19 @@ class UsbExclusiveVolumeOverlay extends StatefulWidget {
       _UsbExclusiveVolumeOverlayState();
 }
 
-class _UsbExclusiveVolumeOverlayState extends State<UsbExclusiveVolumeOverlay> {
+class _UsbExclusiveVolumeOverlayState extends State<UsbExclusiveVolumeOverlay>
+    with SingleTickerProviderStateMixin {
   bool _visible = false;
   Timer? _hideTimer;
+  late final AnimationController _lavaController;
 
   @override
   void initState() {
     super.initState();
+    _lavaController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 2400),
+    );
     usbExclusiveVolumeKeyNotifier.addListener(_show);
   }
 
@@ -33,6 +39,7 @@ class _UsbExclusiveVolumeOverlayState extends State<UsbExclusiveVolumeOverlay> {
   void dispose() {
     usbExclusiveVolumeKeyNotifier.removeListener(_show);
     _hideTimer?.cancel();
+    _lavaController.dispose();
     super.dispose();
   }
 
@@ -40,8 +47,14 @@ class _UsbExclusiveVolumeOverlayState extends State<UsbExclusiveVolumeOverlay> {
   void _show() {
     _hideTimer?.cancel();
     _hideTimer = Timer(const Duration(seconds: 2), () {
-      if (mounted) setState(() => _visible = false);
+      if (mounted) {
+        _lavaController.stop();
+        setState(() => _visible = false);
+      }
     });
+    if (!_lavaController.isAnimating) {
+      _lavaController.repeat();
+    }
     if (!_visible) {
       setState(() => _visible = true);
     }
@@ -56,8 +69,8 @@ class _UsbExclusiveVolumeOverlayState extends State<UsbExclusiveVolumeOverlay> {
   @override
   Widget build(BuildContext context) {
     final media = MediaQuery.of(context);
-    // 固定尺寸避免被松约束撑爆：右侧窄竖条，高度取屏高四成并封顶。
-    final height = (media.size.height * 0.4).clamp(280.0, 420.0);
+    // 固定尺寸避免被松约束撑爆：右侧短竖条，高度取屏高约三成并封顶。
+    final height = (media.size.height * 0.28).clamp(220.0, 320.0);
     return Positioned.fill(
       child: IgnorePointer(
         ignoring: !_visible,
@@ -91,13 +104,14 @@ class _UsbExclusiveVolumeOverlayState extends State<UsbExclusiveVolumeOverlay> {
         return ValueListenableBuilder<double>(
           valueListenable: volumeNotifier,
           builder: (context, volume, _) {
-            final accent = iconColor.value; // 填充色，走作者单色范式
             final clamped = volume.clamp(0.0, 1.0);
             final percent = (clamped * 100).round();
             final dark = theme == ThemeType.dark;
             final foreground = textColor.value;
-            final trackColor = foreground.withAlpha(dark ? 42 : 24);
-            final labelColor = foreground.withAlpha(dark ? 36 : 18);
+            final pageColor = colorManager.getSpecificBgBaseColor();
+            final trackColor = panelColor.value.withAlpha(dark ? 190 : 235);
+            final borderColor = foreground.withAlpha(dark ? 55 : 30);
+            final lavaColors = _lavaColors(pageColor);
             return ClipRRect(
               borderRadius: BorderRadius.circular(25),
               child: BackdropFilter(
@@ -116,12 +130,12 @@ class _UsbExclusiveVolumeOverlayState extends State<UsbExclusiveVolumeOverlay> {
                     ],
                   ),
                   child: _track(
-                    accent,
                     clamped,
                     percent,
                     foreground,
                     trackColor,
-                    labelColor,
+                    borderColor,
+                    lavaColors,
                   ),
                 ),
               ),
@@ -134,23 +148,25 @@ class _UsbExclusiveVolumeOverlayState extends State<UsbExclusiveVolumeOverlay> {
 
   // 整条即触控区：按点击/拖动纵向落点直接换算音量并下发，避免旋转 Slider 手势失灵。
   Widget _track(
-    Color accent,
     double value,
     int percent,
     Color foreground,
     Color trackColor,
-    Color labelColor,
+    Color borderColor,
+    List<Color> lavaColors,
   ) {
     const style = TextStyle(
-      fontSize: 12.5,
+      fontSize: 12,
       fontWeight: FontWeight.w700,
       decoration: TextDecoration.none,
     );
     final label = '$percent%';
     return LayoutBuilder(
       builder: (context, constraints) {
-        const trackTop = 62.0;
-        const trackBottomPadding = 18.0;
+        const trackTop = 12.0;
+        const trackBottomPadding = 12.0;
+        const trackWidth = 34.0;
+        const thumbSize = 43.0;
         final trackBottom = constraints.maxHeight - trackBottomPadding;
         final trackHeight = trackBottom - trackTop;
         void updateFromDy(double dy) {
@@ -174,52 +190,101 @@ class _UsbExclusiveVolumeOverlayState extends State<UsbExclusiveVolumeOverlay> {
             fit: StackFit.expand,
             children: [
               Positioned(
-                top: 15,
-                left: 0,
-                right: 0,
-                child: Center(
-                  child: DecoratedBox(
-                    decoration: BoxDecoration(
-                      color: labelColor,
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 7,
-                        vertical: 5,
-                      ),
-                      child: Text(
-                        label,
-                        style: style.copyWith(color: foreground),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
                 top: trackTop,
                 bottom: trackBottomPadding,
                 left: 0,
                 right: 0,
                 child: Center(
                   child: SizedBox(
-                    width: 14,
+                    width: trackWidth,
                     child: DecoratedBox(
                       decoration: BoxDecoration(
                         color: trackColor,
                         borderRadius: BorderRadius.circular(99),
-                      ),
-                      child: Align(
-                        alignment: Alignment.bottomCenter,
-                        child: FractionallySizedBox(
-                          heightFactor: value,
-                          widthFactor: 1,
-                          child: DecoratedBox(
-                            decoration: BoxDecoration(
-                              color: accent,
-                              borderRadius: BorderRadius.circular(99),
-                            ),
+                        border: Border.all(color: borderColor),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withAlpha(35),
+                            blurRadius: 12,
+                            offset: const Offset(0, 4),
                           ),
+                          BoxShadow(
+                            color: panelColor.value.withAlpha(150),
+                            blurRadius: 5,
+                            offset: const Offset(-1, -1),
+                          ),
+                        ],
+                      ),
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(99),
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            Align(
+                              alignment: Alignment.bottomCenter,
+                              child: FractionallySizedBox(
+                                heightFactor: value,
+                                widthFactor: 1,
+                                child: AnimatedBuilder(
+                                  animation: _lavaController,
+                                  builder: (context, _) {
+                                    return CustomPaint(
+                                      painter: _LavaPainter(
+                                        progress: _lavaController.value,
+                                        colors: lavaColors,
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                            CustomPaint(
+                              painter: _VolumeDotsPainter(
+                                color: panelColor.value.withAlpha(190),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+              Positioned(
+                bottom:
+                    trackBottomPadding +
+                    (trackHeight * value - thumbSize / 2).clamp(
+                      0.0,
+                      trackHeight - thumbSize,
+                    ),
+                left: (constraints.maxWidth - thumbSize) / 2,
+                child: Center(
+                  child: SizedBox(
+                    width: thumbSize,
+                    height: thumbSize,
+                    child: DecoratedBox(
+                      decoration: BoxDecoration(
+                        color: panelColor.value.withAlpha(245),
+                        shape: BoxShape.circle,
+                        border: Border.all(
+                          color: panelColor.value.withAlpha(180),
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: lavaColors.first.withAlpha(75),
+                            blurRadius: 10,
+                          ),
+                          BoxShadow(
+                            color: Colors.black.withAlpha(28),
+                            blurRadius: 8,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: Text(
+                          label,
+                          style: style.copyWith(color: foreground),
                         ),
                       ),
                     ),
@@ -231,5 +296,69 @@ class _UsbExclusiveVolumeOverlayState extends State<UsbExclusiveVolumeOverlay> {
         );
       },
     );
+  }
+
+  List<Color> _lavaColors(Color pageColor) {
+    final hsl = HSLColor.fromColor(pageColor.withAlpha(255));
+    final hue = hsl.saturation < 0.08 ? 38.0 : hsl.hue;
+    final saturation = (hsl.saturation + 0.35).clamp(0.55, 0.95).toDouble();
+    return [
+      HSLColor.fromAHSL(1, hue, saturation, 0.72).toColor(),
+      HSLColor.fromAHSL(1, (hue + 14) % 360, saturation, 0.58).toColor(),
+      HSLColor.fromAHSL(1, (hue + 28) % 360, saturation, 0.42).toColor(),
+    ];
+  }
+}
+
+class _LavaPainter extends CustomPainter {
+  const _LavaPainter({required this.progress, required this.colors});
+
+  final double progress;
+  final List<Color> colors;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final rect = Offset.zero & size;
+    final paint = Paint()
+      ..shader = LinearGradient(
+        begin: Alignment.bottomCenter,
+        end: Alignment.topCenter,
+        colors: colors,
+      ).createShader(rect);
+    canvas.drawRect(rect, paint);
+
+    for (var i = 0; i < 5; i++) {
+      final phase = (progress + i * 0.19) % 1;
+      final x = size.width * (0.22 + 0.56 * ((i * 37) % 10) / 10);
+      final y = size.height * (1 - phase);
+      final radius = 3.0 + i % 3;
+      final glow = Paint()..color = colors.first.withAlpha(70 - i * 8);
+      canvas.drawCircle(Offset(x, y), radius, glow);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_LavaPainter oldDelegate) {
+    return progress != oldDelegate.progress || colors != oldDelegate.colors;
+  }
+}
+
+class _VolumeDotsPainter extends CustomPainter {
+  const _VolumeDotsPainter({required this.color});
+
+  final Color color;
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()..color = color;
+    final centerX = size.width / 2;
+    for (var y = 12.0; y < size.height - 8; y += 11) {
+      canvas.drawCircle(Offset(centerX, y), 1.1, paint);
+    }
+  }
+
+  @override
+  bool shouldRepaint(_VolumeDotsPainter oldDelegate) {
+    return color != oldDelegate.color;
   }
 }
