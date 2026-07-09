@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui';
 
 import 'package:flutter/material.dart';
 import 'package:sylvakru/base/app.dart';
@@ -8,7 +7,7 @@ import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/services/usb_audio_service.dart';
 
 /// 独占模式下按安卓物理音量键时弹出的右侧竖向毛玻璃音量条：整条可点/拖调节，
-/// 顶部显示百分比，中间细轨道显示当前音量，静止约 2 秒后自动隐藏。系统音量条
+/// 数字显示在条内，中间细轨道显示当前音量，静止约 2 秒后自动隐藏。系统音量条
 /// 已被 MainActivity 拦截，改由本条反馈与操作。叠在 MaterialApp 之上（需 Stack 父级），
 /// 只在收到物理音量键事件时显示。DSD 独占不会触发（1-bit 码流无法软件调音量）。
 class UsbExclusiveVolumeOverlay extends StatefulWidget {
@@ -109,36 +108,17 @@ class _UsbExclusiveVolumeOverlayState extends State<UsbExclusiveVolumeOverlay>
             final dark = theme == ThemeType.dark;
             final foreground = textColor.value;
             final pageColor = colorManager.getSpecificBgBaseColor();
-            final trackColor = panelColor.value.withAlpha(dark ? 190 : 235);
+            final trackColor = _trackColor(pageColor, dark);
             final borderColor = foreground.withAlpha(dark ? 55 : 30);
+            final labelColor = panelColor.value.withAlpha(245);
             final lavaColors = _lavaColors(pageColor);
-            return ClipRRect(
-              borderRadius: BorderRadius.circular(25),
-              child: BackdropFilter(
-                filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
-                child: DecoratedBox(
-                  decoration: BoxDecoration(
-                    color: panelColor.value.withAlpha(dark ? 205 : 235),
-                    borderRadius: BorderRadius.circular(25),
-                    border: Border.all(color: textColor.value.withAlpha(20)),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withAlpha(dark ? 70 : 26),
-                        blurRadius: 18,
-                        offset: const Offset(0, 6),
-                      ),
-                    ],
-                  ),
-                  child: _track(
-                    clamped,
-                    percent,
-                    foreground,
-                    trackColor,
-                    borderColor,
-                    lavaColors,
-                  ),
-                ),
-              ),
+            return _track(
+              clamped,
+              percent,
+              labelColor,
+              trackColor,
+              borderColor,
+              lavaColors,
             );
           },
         );
@@ -150,13 +130,13 @@ class _UsbExclusiveVolumeOverlayState extends State<UsbExclusiveVolumeOverlay>
   Widget _track(
     double value,
     int percent,
-    Color foreground,
+    Color labelColor,
     Color trackColor,
     Color borderColor,
     List<Color> lavaColors,
   ) {
     const style = TextStyle(
-      fontSize: 12,
+      fontSize: 11,
       fontWeight: FontWeight.w700,
       decoration: TextDecoration.none,
     );
@@ -166,9 +146,12 @@ class _UsbExclusiveVolumeOverlayState extends State<UsbExclusiveVolumeOverlay>
         const trackTop = 12.0;
         const trackBottomPadding = 12.0;
         const trackWidth = 34.0;
-        const thumbSize = 43.0;
         final trackBottom = constraints.maxHeight - trackBottomPadding;
         final trackHeight = trackBottom - trackTop;
+        final labelBottom = (trackHeight * value - 17).clamp(
+          5.0,
+          trackHeight - 22,
+        );
         void updateFromDy(double dy) {
           if (trackHeight <= 0) return;
           final localDy = dy.clamp(trackTop, trackBottom);
@@ -243,48 +226,26 @@ class _UsbExclusiveVolumeOverlayState extends State<UsbExclusiveVolumeOverlay>
                                 color: panelColor.value.withAlpha(190),
                               ),
                             ),
+                            Positioned(
+                              left: 0,
+                              right: 0,
+                              bottom: labelBottom,
+                              child: Center(
+                                child: Text(
+                                  label,
+                                  style: style.copyWith(
+                                    color: labelColor,
+                                    shadows: [
+                                      Shadow(
+                                        color: Colors.black.withAlpha(70),
+                                        blurRadius: 4,
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ),
                           ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              Positioned(
-                bottom:
-                    trackBottomPadding +
-                    (trackHeight * value - thumbSize / 2).clamp(
-                      0.0,
-                      trackHeight - thumbSize,
-                    ),
-                left: (constraints.maxWidth - thumbSize) / 2,
-                child: Center(
-                  child: SizedBox(
-                    width: thumbSize,
-                    height: thumbSize,
-                    child: DecoratedBox(
-                      decoration: BoxDecoration(
-                        color: panelColor.value.withAlpha(245),
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: panelColor.value.withAlpha(180),
-                        ),
-                        boxShadow: [
-                          BoxShadow(
-                            color: lavaColors.first.withAlpha(75),
-                            blurRadius: 10,
-                          ),
-                          BoxShadow(
-                            color: Colors.black.withAlpha(28),
-                            blurRadius: 8,
-                            offset: const Offset(0, 3),
-                          ),
-                        ],
-                      ),
-                      child: Center(
-                        child: Text(
-                          label,
-                          style: style.copyWith(color: foreground),
                         ),
                       ),
                     ),
@@ -307,6 +268,15 @@ class _UsbExclusiveVolumeOverlayState extends State<UsbExclusiveVolumeOverlay>
       HSLColor.fromAHSL(1, (hue + 14) % 360, saturation, 0.58).toColor(),
       HSLColor.fromAHSL(1, (hue + 28) % 360, saturation, 0.42).toColor(),
     ];
+  }
+
+  Color _trackColor(Color pageColor, bool dark) {
+    final hsl = HSLColor.fromColor(pageColor.withAlpha(255));
+    return hsl
+        .withSaturation((hsl.saturation + 0.12).clamp(0.18, 0.65).toDouble())
+        .withLightness(dark ? 0.22 : 0.36)
+        .toColor()
+        .withAlpha(dark ? 115 : 95);
   }
 }
 
