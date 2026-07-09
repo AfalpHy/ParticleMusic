@@ -674,34 +674,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get outputFormat => 'Output format';
 
   @override
-  String get bitDepthCompat => 'Bit-depth fallback';
-
-  @override
-  String get bitDepthCompatDesc =>
-      'Automatically fall back when the device doesn\'t support the source bit depth.';
-
-  @override
-  String get sampleRateCompat => 'Sample-rate fallback';
-
-  @override
-  String get sampleRateCompatDesc =>
-      'Automatically fall back when the device doesn\'t support the source sample rate.';
-
-  @override
-  String get channelCompat => 'Channel fallback';
-
-  @override
-  String get channelCompatDesc =>
-      'Fall back to an available channel layout when the source channels aren\'t supported.';
-
-  @override
-  String get tpdfDither => 'TPDF dither';
-
-  @override
-  String get tpdfDitherDesc =>
-      'Add very-low-level noise when converting high bit depth to 16-bit to reduce quantization distortion.';
-
-  @override
   String get pcmBitDepth => 'PCM bit depth';
 
   @override
@@ -778,16 +750,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get compatibility => 'Compatibility';
-
-  @override
-  String get delayUsbLink => 'Delay establishing the USB output link';
-
-  @override
-  String get delayUsbLinkDesc =>
-      'Establish the exclusive session only when playback starts; useful for DACs that freeze or misbehave.';
-
-  @override
-  String get usbBusSpeed => 'USB bus speed';
 
   @override
   String get releaseUsbBandwidth => 'Release USB bandwidth after playback';

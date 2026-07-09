@@ -665,30 +665,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get outputFormat => '输出格式';
 
   @override
-  String get bitDepthCompat => '位深兼容';
-
-  @override
-  String get bitDepthCompatDesc => '设备不支持源位深时自动回退。';
-
-  @override
-  String get sampleRateCompat => '采样率兼容';
-
-  @override
-  String get sampleRateCompatDesc => '设备不支持源采样率时自动回退。';
-
-  @override
-  String get channelCompat => '声道兼容';
-
-  @override
-  String get channelCompatDesc => '设备不支持源声道时自动回退到可用声道。';
-
-  @override
-  String get tpdfDither => 'TPDF 抖动';
-
-  @override
-  String get tpdfDitherDesc => '高位深转 16-bit 时加入极低电平随机噪声，降低量化失真。';
-
-  @override
   String get pcmBitDepth => 'PCM 位深';
 
   @override
@@ -761,15 +737,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get compatibility => '兼容性';
-
-  @override
-  String get delayUsbLink => '延迟建立 USB 输出链路';
-
-  @override
-  String get delayUsbLinkDesc => '播放开始时再建立独占会话，适合部分 DAC 卡死或控制界面异常的使用场景。';
-
-  @override
-  String get usbBusSpeed => 'USB 总线速度';
 
   @override
   String get releaseUsbBandwidth => '播放后释放 USB 带宽';

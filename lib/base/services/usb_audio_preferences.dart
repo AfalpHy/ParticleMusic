@@ -41,8 +41,6 @@ enum UsbDsdMode { pcm, dop, native }
 /// DAC 硬件音量与自动暂未接入 UAC Feature Unit，当前回退为数字音量处理。
 enum UsbVolumeControlMode { auto, dac, digital, raw }
 
-enum UsbBusSpeedMode { auto, full, high, superSpeed }
-
 enum UsbBitDepthMode { auto, pcm16, pcm24, pcm32 }
 
 class UsbAudioPreferences {
@@ -58,18 +56,12 @@ class UsbAudioPreferences {
   final performanceModeNotifier = ValueNotifier(true);
   final volumeControlModeNotifier = ValueNotifier(UsbVolumeControlMode.auto);
   final dsdGainCompensationNotifier = ValueNotifier(0);
-  final busSpeedModeNotifier = ValueNotifier(UsbBusSpeedMode.auto);
   final bitDepthModeNotifier = ValueNotifier(UsbBitDepthMode.auto);
   final releaseUsbBandwidthAfterPlaybackNotifier = ValueNotifier(false);
   final keepAliveInBackgroundNotifier = ValueNotifier(true);
-  final bitDepthCompatNotifier = ValueNotifier(true);
-  final sampleRateCompatNotifier = ValueNotifier(true);
-  final channelCompatNotifier = ValueNotifier(true);
-  final tpdfDitherNotifier = ValueNotifier(false);
   final foregroundBufferMsNotifier = ValueNotifier(200);
   final backgroundBufferMsNotifier = ValueNotifier(1500);
   final volumeSmoothHandoffNotifier = ValueNotifier(true);
-  final delayedUsbLinkNotifier = ValueNotifier(false);
 
   void load(Map<String, dynamic> json) {
     fixedSampleRateEnabledNotifier.value =
@@ -98,11 +90,6 @@ class UsbAudioPreferences {
     );
     dsdGainCompensationNotifier.value =
         json['usbDsdGainCompensation'] as int? ?? 0;
-    busSpeedModeNotifier.value = _enumByName(
-      UsbBusSpeedMode.values,
-      json['usbBusSpeedMode'] as String?,
-      UsbBusSpeedMode.auto,
-    );
     bitDepthModeNotifier.value = _enumByName(
       UsbBitDepthMode.values,
       json['usbBitDepthMode'] as String?,
@@ -112,11 +99,6 @@ class UsbAudioPreferences {
         json['usbReleaseBandwidthAfterPlayback'] as bool? ?? false;
     keepAliveInBackgroundNotifier.value =
         json['usbKeepAliveInBackground'] as bool? ?? true;
-    bitDepthCompatNotifier.value = json['usbBitDepthCompat'] as bool? ?? true;
-    sampleRateCompatNotifier.value =
-        json['usbSampleRateCompat'] as bool? ?? true;
-    channelCompatNotifier.value = json['usbChannelCompat'] as bool? ?? true;
-    tpdfDitherNotifier.value = json['usbTpdfDither'] as bool? ?? false;
     foregroundBufferMsNotifier.value = _validBufferMs(
       json['usbForegroundBufferMs'] as int?,
       200,
@@ -127,7 +109,6 @@ class UsbAudioPreferences {
     );
     volumeSmoothHandoffNotifier.value =
         json['usbVolumeSmoothHandoff'] as bool? ?? true;
-    delayedUsbLinkNotifier.value = json['usbDelayedUsbLink'] as bool? ?? false;
   }
 
   Map<String, Object?> toMap() {
@@ -142,19 +123,13 @@ class UsbAudioPreferences {
       'usbPerformanceMode': performanceModeNotifier.value,
       'usbVolumeControlMode': volumeControlModeNotifier.value.name,
       'usbDsdGainCompensation': dsdGainCompensationNotifier.value,
-      'usbBusSpeedMode': busSpeedModeNotifier.value.name,
       'usbBitDepthMode': bitDepthModeNotifier.value.name,
       'usbReleaseBandwidthAfterPlayback':
           releaseUsbBandwidthAfterPlaybackNotifier.value,
       'usbKeepAliveInBackground': keepAliveInBackgroundNotifier.value,
-      'usbBitDepthCompat': bitDepthCompatNotifier.value,
-      'usbSampleRateCompat': sampleRateCompatNotifier.value,
-      'usbChannelCompat': channelCompatNotifier.value,
-      'usbTpdfDither': tpdfDitherNotifier.value,
       'usbForegroundBufferMs': foregroundBufferMsNotifier.value,
       'usbBackgroundBufferMs': backgroundBufferMsNotifier.value,
       'usbVolumeSmoothHandoff': volumeSmoothHandoffNotifier.value,
-      'usbDelayedUsbLink': delayedUsbLinkNotifier.value,
     };
   }
 
