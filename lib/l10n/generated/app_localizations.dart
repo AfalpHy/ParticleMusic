@@ -1382,54 +1382,6 @@ abstract class AppLocalizations {
   /// **'Output format'**
   String get outputFormat;
 
-  /// No description provided for @bitDepthCompat.
-  ///
-  /// In en, this message translates to:
-  /// **'Bit-depth fallback'**
-  String get bitDepthCompat;
-
-  /// No description provided for @bitDepthCompatDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Automatically fall back when the device doesn\'t support the source bit depth.'**
-  String get bitDepthCompatDesc;
-
-  /// No description provided for @sampleRateCompat.
-  ///
-  /// In en, this message translates to:
-  /// **'Sample-rate fallback'**
-  String get sampleRateCompat;
-
-  /// No description provided for @sampleRateCompatDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Automatically fall back when the device doesn\'t support the source sample rate.'**
-  String get sampleRateCompatDesc;
-
-  /// No description provided for @channelCompat.
-  ///
-  /// In en, this message translates to:
-  /// **'Channel fallback'**
-  String get channelCompat;
-
-  /// No description provided for @channelCompatDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Fall back to an available channel layout when the source channels aren\'t supported.'**
-  String get channelCompatDesc;
-
-  /// No description provided for @tpdfDither.
-  ///
-  /// In en, this message translates to:
-  /// **'TPDF dither'**
-  String get tpdfDither;
-
-  /// No description provided for @tpdfDitherDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Add very-low-level noise when converting high bit depth to 16-bit to reduce quantization distortion.'**
-  String get tpdfDitherDesc;
-
   /// No description provided for @pcmBitDepth.
   ///
   /// In en, this message translates to:
@@ -1573,24 +1525,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Compatibility'**
   String get compatibility;
-
-  /// No description provided for @delayUsbLink.
-  ///
-  /// In en, this message translates to:
-  /// **'Delay establishing the USB output link'**
-  String get delayUsbLink;
-
-  /// No description provided for @delayUsbLinkDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Establish the exclusive session only when playback starts; useful for DACs that freeze or misbehave.'**
-  String get delayUsbLinkDesc;
-
-  /// No description provided for @usbBusSpeed.
-  ///
-  /// In en, this message translates to:
-  /// **'USB bus speed'**
-  String get usbBusSpeed;
 
   /// No description provided for @releaseUsbBandwidth.
   ///

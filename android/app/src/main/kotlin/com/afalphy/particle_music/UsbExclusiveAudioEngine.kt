@@ -116,6 +116,13 @@ class UsbExclusiveAudioEngine(
     @Volatile private var pcmVolumeGainQ16 = UNITY_GAIN_Q16
     @Volatile private var volumeControlEnabled = false
 
+    private val diagnosticsLock = Any()
+    private var sessionSequence = 0L
+    private var sessionStartedAtMs = 0L
+    private var sessionFeedbackIgnoredCount = 0L
+    private val sessionSubmittedBytes = AtomicLong()
+    @Volatile private var latestSessionDiagnostics: Map<String, Any?> = emptyMap()
+
     fun capabilities(usbManager: UsbManager, device: UsbDevice?): Map<String, Any?> {
         if (!NATIVE_USB_EXCLUSIVE_STREAMING_ENABLED) {
             return capability(
@@ -149,6 +156,81 @@ class UsbExclusiveAudioEngine(
                 "USB Audio device was found, but no isochronous OUT endpoint was exposed."
             },
         )
+    }
+
+    private fun beginSessionDiagnostics(
+        reused: Boolean,
+        device: UsbDevice,
+        sourceFormat: String?,
+        dsdMode: String?,
+        sampleRate: Int?,
+        channels: Int,
+        bitDepth: Int?,
+        streaming: Boolean,
+    ) {
+        val input = mapOf(
+            "sourceFormat" to sourceFormat,
+            "mode" to dsdMode,
+            "sampleRate" to sampleRate,
+            "channels" to channels,
+            "bitDepth" to bitDepth,
+            "streaming" to streaming,
+            "targetBufferMs" to targetBufferMs,
+        )
+        synchronized(diagnosticsLock) {
+            if (!reused || latestSessionDiagnostics.isEmpty()) {
+                sessionSequence += 1
+                sessionStartedAtMs = SystemClock.elapsedRealtime()
+                sessionSubmittedBytes.set(0)
+                sessionFeedbackIgnoredCount = 0
+                latestSessionDiagnostics = mapOf(
+                    "id" to "usb-${System.currentTimeMillis()}-$sessionSequence",
+                    "startedAtMs" to System.currentTimeMillis(),
+                    "reused" to false,
+                    "input" to input,
+                    "outputSelections" to emptyList<Map<String, Any?>>(),
+                )
+            } else {
+                latestSessionDiagnostics = latestSessionDiagnostics + mapOf(
+                    "reused" to true,
+                    "input" to input,
+                    "updatedAtMs" to System.currentTimeMillis(),
+                )
+            }
+        }
+    }
+
+    private fun addOutputSelectionDiagnostics(selection: Map<String, Any?>) {
+        synchronized(diagnosticsLock) {
+            if (latestSessionDiagnostics.isEmpty()) {
+                return
+            }
+            val attempts = (latestSessionDiagnostics["outputSelections"] as? List<*>)
+                ?.filterIsInstance<Map<String, Any?>>()
+                ?.toMutableList()
+                ?: mutableListOf()
+            attempts += selection
+            latestSessionDiagnostics = latestSessionDiagnostics + mapOf(
+                "outputSelections" to attempts,
+                "updatedAtMs" to System.currentTimeMillis(),
+            )
+        }
+    }
+
+    private fun updateSessionDiagnostics(section: String, value: Any?) {
+        synchronized(diagnosticsLock) {
+            if (latestSessionDiagnostics.isEmpty()) {
+                return
+            }
+            latestSessionDiagnostics = latestSessionDiagnostics + mapOf(
+                section to value,
+                "updatedAtMs" to System.currentTimeMillis(),
+            )
+        }
+    }
+
+    private fun sessionDiagnosticsSnapshot(): Map<String, Any?> = synchronized(diagnosticsLock) {
+        latestSessionDiagnostics
     }
 
     fun start(
@@ -312,6 +394,16 @@ class UsbExclusiveAudioEngine(
             (dsdReader == null || nativeDsd || sessionTarget!!.usbBytesPerSample >= 3)
         val target: OutputTarget
         if (reuseSession) {
+            beginSessionDiagnostics(
+                reused = true,
+                device = device,
+                sourceFormat = sourceFormat,
+                dsdMode = wantDsdKind,
+                sampleRate = requestedSampleRate,
+                channels = requestedChannels,
+                bitDepth = requestedBitDepth,
+                streaming = streaming,
+            )
             target = sessionTarget!!
             mainHandler.removeCallbacks(deferredCloseRunnable)
             stopDopIdleFiller()
@@ -325,6 +417,16 @@ class UsbExclusiveAudioEngine(
             )
         } else {
             hardCloseSession("device or stream parameters changed")
+            beginSessionDiagnostics(
+                reused = false,
+                device = device,
+                sourceFormat = sourceFormat,
+                dsdMode = wantDsdKind,
+                sampleRate = requestedSampleRate,
+                channels = requestedChannels,
+                bitDepth = requestedBitDepth,
+                streaming = streaming,
+            )
             val openedConnection = usbManager.openDevice(device)
                 ?: run {
                     dsdReader?.close()
@@ -364,6 +466,7 @@ class UsbExclusiveAudioEngine(
                     channels = requestedChannels,
                     bitDepth = requestedBitDepth,
                     requireRawData = streamingFormats.values.any { it.isRawData },
+                    reportSelection = true,
                 )
                 // 选中的 alt 必须与字节排列同宽：native 数据不允许任何位深转换（会破坏 DSD 流）
                 if (resolvedTarget == null ||
@@ -397,6 +500,7 @@ class UsbExclusiveAudioEngine(
                     sampleRate = requestedSampleRate,
                     channels = requestedChannels,
                     bitDepth = requestedBitDepth,
+                    reportSelection = true,
                 )
             }
             if (resolvedTarget == null) {
@@ -664,6 +768,7 @@ class UsbExclusiveAudioEngine(
             return
         }
         UsbDiagnostics.i(tag, "close exclusive USB session: $reason")
+        updateSessionDiagnostics("closed", mapOf("reason" to reason, "atMs" to System.currentTimeMillis()))
         mainHandler.removeCallbacks(deferredCloseRunnable)
         stopDopIdleFiller()
         sessionDsd = null
@@ -719,6 +824,49 @@ class UsbExclusiveAudioEngine(
                 "pendingUrbs" to pendingUrbs,
                 "underrunCount" to (nativeIsoErrors + zeroBufferUnderruns),
                 "updatedAtMs" to nowMs,
+            ),
+        )
+        if (active && sessionStartedAtMs > 0) {
+            val elapsedMs = (nowMs - sessionStartedAtMs).coerceAtLeast(0L)
+            val submittedBytes = sessionSubmittedBytes.get()
+            updateSessionDiagnostics(
+                "transport",
+                mapOf(
+                    "submittedBytes" to submittedBytes,
+                    "averageBytesPerSecond" to if (elapsedMs > 0) {
+                        submittedBytes * 1000L / elapsedMs
+                    } else {
+                        0L
+                    },
+                    "bufferLevelMs" to bufferLevelMs,
+                    "minimumBufferLevelMs" to minimumBufferLevelMs,
+                    "pendingUrbs" to pendingUrbs,
+                    "isoPacketCount" to totalIsoPackets,
+                    "underrunCount" to (nativeIsoErrors + zeroBufferUnderruns),
+                ),
+            )
+        }
+    }
+
+    private fun recordFeedbackDiagnostics(
+        target: OutputTarget,
+        actualQ16: Int,
+        nominalQ16: Int,
+        ignored: Boolean,
+    ) {
+        if (ignored) {
+            sessionFeedbackIgnoredCount += 1
+        }
+        val actualFrames = actualQ16.toDouble() / 65536.0
+        val nominalFrames = nominalQ16.toDouble() / 65536.0
+        updateSessionDiagnostics(
+            "feedback",
+            mapOf(
+                "endpoint" to target.feedbackEndpointLabel,
+                "actualFrames" to actualFrames,
+                "nominalFrames" to nominalFrames,
+                "deviationRatio" to if (nominalFrames > 0) actualFrames / nominalFrames else null,
+                "ignoredCount" to sessionFeedbackIgnoredCount,
             ),
         )
     }
@@ -1472,6 +1620,9 @@ class UsbExclusiveAudioEngine(
             feedbackFramesPerPacketQ16 = target.feedbackEndpoint?.let {
                 { UsbExclusiveNative.feedbackFramesPerPacketQ16() }
             },
+            reportFeedback = { actualQ16, nominalQ16, ignored ->
+                recordFeedbackDiagnostics(target, actualQ16, nominalQ16, ignored)
+            },
             volumeGainQ16 = if (applyDigitalVolume) {
                 { pcmVolumeGainQ16 }
             } else {
@@ -1482,6 +1633,7 @@ class UsbExclusiveAudioEngine(
             if (error != null) {
                 throw IllegalStateException(error)
             }
+            sessionSubmittedBytes.addAndGet(data.size.toLong())
             emitTransportTelemetry(target.packetsPerSecond)
         }
     }
@@ -1512,7 +1664,7 @@ class UsbExclusiveAudioEngine(
         } == true
         try {
             if (clockSourceId != null) {
-                readUac2ClockSampleRate(
+                val beforeReadBack = readUac2ClockSampleRate(
                     connection,
                     clockSourceId,
                     controlInterfaceNumber,
@@ -1544,6 +1696,19 @@ class UsbExclusiveAudioEngine(
                 }
                 if (quirk.clockSkipGetCurValidation) {
                     // quirk：个别设备 GET_CUR 返回垃圾但 SET_CUR 实际生效
+                    updateSessionDiagnostics(
+                        "clock",
+                        mapOf(
+                            "protocol" to "uac2",
+                            "sampleRate" to sampleRate,
+                            "clockSourceId" to clockSourceId,
+                            "controlInterface" to controlInterfaceNumber,
+                            "beforeReadBack" to beforeReadBack,
+                            "setCurResult" to result,
+                            "setCurDelayMs" to quirk.clockSetCurDelayMs,
+                            "skipGetCurValidation" to true,
+                        ),
+                    )
                     return null
                 }
                 val readBack = readUac2ClockSampleRate(
@@ -1551,6 +1716,20 @@ class UsbExclusiveAudioEngine(
                     clockSourceId,
                     controlInterfaceNumber,
                     "after",
+                )
+                updateSessionDiagnostics(
+                    "clock",
+                    mapOf(
+                        "protocol" to "uac2",
+                        "sampleRate" to sampleRate,
+                        "clockSourceId" to clockSourceId,
+                        "controlInterface" to controlInterfaceNumber,
+                        "beforeReadBack" to beforeReadBack,
+                        "setCurResult" to result,
+                        "setCurDelayMs" to quirk.clockSetCurDelayMs,
+                        "skipGetCurValidation" to false,
+                        "readBack" to readBack,
+                    ),
                 )
                 if (readBack != null && readBack > 0 && readBack != sampleRate) {
                     UsbDiagnostics.w(
@@ -1586,13 +1765,33 @@ class UsbExclusiveAudioEngine(
             if (quirk.clockSetCurDelayMs > 0) {
                 Thread.sleep(quirk.clockSetCurDelayMs.toLong())
             }
+            updateSessionDiagnostics(
+                "clock",
+                mapOf(
+                    "protocol" to "uac1",
+                    "sampleRate" to sampleRate,
+                    "controlInterface" to controlInterfaceNumber,
+                    "endpoint" to "0x${target.endpoint.address.toString(16)}",
+                    "setCurResult" to result,
+                    "setCurDelayMs" to quirk.clockSetCurDelayMs,
+                ),
+            )
             return null
         } catch (error: RuntimeException) {
             UsbDiagnostics.w(tag, "USB audio clock configuration failed.", error)
+            updateSessionDiagnostics(
+                "clock",
+                mapOf(
+                    "sampleRate" to sampleRate,
+                    "error" to (error.message ?: error.javaClass.simpleName),
+                ),
+            )
             return null
         } finally {
-            if (claimedControl && controlInterface != null) {
-                runCatching { connection.releaseInterface(controlInterface) }
+            controlInterface?.let { usbInterface ->
+                if (claimedControl) {
+                    runCatching { connection.releaseInterface(usbInterface) }
+                }
             }
         }
     }
@@ -1709,14 +1908,20 @@ class UsbExclusiveAudioEngine(
      * 只在有权限时临时打开设备读取描述符，读完即关，不影响正在进行的独占播放。
      */
     fun collectDiagnostics(usbManager: UsbManager, device: UsbDevice?): Map<String, Any?> {
+        val session = sessionDiagnosticsSnapshot()
         if (device == null) {
-            return mapOf("available" to false, "message" to "未检测到 USB 音频设备。")
+            return mapOf(
+                "available" to false,
+                "message" to "未检测到 USB 音频设备。",
+                "session" to session,
+            )
         }
         if (!usbManager.hasPermission(device)) {
             return mapOf(
                 "available" to false,
                 "permissionGranted" to false,
                 "message" to "未授权，无法读取描述符。",
+                "session" to session,
             )
         }
 
@@ -1725,6 +1930,7 @@ class UsbExclusiveAudioEngine(
                 "available" to false,
                 "permissionGranted" to true,
                 "message" to "无法打开 USB 设备读取描述符。",
+                "session" to session,
             )
 
         return try {
@@ -1753,6 +1959,12 @@ class UsbExclusiveAudioEngine(
                         "format=${candidate.formatInfo}"
                 },
                 "clockSourceId" to clockSourceId,
+                "session" to session,
+                "hardwareVolume" to collectHardwareVolumeDiagnostics(
+                    connection,
+                    device,
+                    descriptors,
+                ),
                 // quirk 匹配结果：命中哪条 / 未命中用默认值，以及各字段生效值
                 "quirkMatch" to (UsbDacQuirks.matchDescription(
                     context,
@@ -1773,11 +1985,245 @@ class UsbExclusiveAudioEngine(
                 "available" to false,
                 "permissionGranted" to true,
                 "message" to "读取描述符失败：${error.message}",
+                "session" to session,
             )
         } finally {
             connection.close()
         }
     }
+
+    private data class HardwareVolumeFeature(
+        val protocol: String,
+        val controlInterface: Int,
+        val unitId: Int,
+        val channel: Int,
+        val writeState: String,
+    ) {
+        fun description(): String =
+            "interface=$controlInterface/unit=$unitId/channel=$channel/volume=$writeState/protocol=$protocol"
+    }
+
+    private fun collectHardwareVolumeDiagnostics(
+        connection: UsbDeviceConnection,
+        device: UsbDevice,
+        descriptors: ByteArray?,
+    ): Map<String, Any?> {
+        val features = parseHardwareVolumeFeatures(descriptors)
+        val quirk = UsbDacQuirks.forDevice(context, device.vendorId, device.productId)
+        val quirkOverride = buildMap<String, Any> {
+            quirk.hardwareVolumeFeatureUnitId?.let { put("featureUnitId", it) }
+            quirk.hardwareVolumeControlInterface?.let { put("controlInterface", it) }
+            if (quirk.hardwareVolumeChannels.isNotEmpty()) {
+                put("channels", quirk.hardwareVolumeChannels)
+            }
+        }
+        if (features.isEmpty()) {
+            return mapOf(
+                "available" to false,
+                "featureUnits" to emptyList<String>(),
+                "quirkOverride" to quirkOverride,
+            )
+        }
+
+        val controlInterface = findAudioControlInterface(device)
+        val claimed = controlInterface?.let {
+            runCatching { connection.claimInterface(it, true) }.getOrDefault(false)
+        } == true
+        val probes = try {
+            features
+                .groupBy { Triple(it.protocol, it.controlInterface, it.unitId) }
+                .values
+                .map { group ->
+                    val feature = group.firstOrNull { it.channel == 0 } ?: group.first()
+                    readHardwareVolumeProbe(connection, feature)
+                }
+        } finally {
+            controlInterface?.let { usbInterface ->
+                if (claimed) {
+                    runCatching { connection.releaseInterface(usbInterface) }
+                }
+            }
+        }
+        return mapOf(
+            "available" to true,
+            "featureUnits" to features.map { it.description() },
+            "probes" to probes,
+            "quirkOverride" to quirkOverride,
+        )
+    }
+
+    private fun parseHardwareVolumeFeatures(descriptors: ByteArray?): List<HardwareVolumeFeature> {
+        if (descriptors == null) {
+            return emptyList()
+        }
+        val features = mutableListOf<HardwareVolumeFeature>()
+        var offset = 0
+        var interfaceNumber = -1
+        var interfaceClass = -1
+        var interfaceSubclass = -1
+        var interfaceProtocol = -1
+        while (offset + 1 < descriptors.size) {
+            val length = descriptors[offset].toInt() and 0xff
+            val descriptorType = descriptors[offset + 1].toInt() and 0xff
+            if (length < 2 || offset + length > descriptors.size) {
+                break
+            }
+            if (descriptorType == 0x04 && length >= 9) {
+                interfaceNumber = descriptors[offset + 2].toInt() and 0xff
+                interfaceClass = descriptors[offset + 5].toInt() and 0xff
+                interfaceSubclass = descriptors[offset + 6].toInt() and 0xff
+                interfaceProtocol = descriptors[offset + 7].toInt() and 0xff
+            } else if (
+                descriptorType == 0x24 &&
+                interfaceClass == UsbConstants.USB_CLASS_AUDIO &&
+                interfaceSubclass == 1 &&
+                length >= 7 &&
+                (descriptors[offset + 2].toInt() and 0xff) == 0x06
+            ) {
+                if (interfaceProtocol == 0x20) {
+                    val controlCount = (length - 6) / 4
+                    for (channel in 0 until controlCount) {
+                        val controlOffset = offset + 5 + channel * 4
+                        val controls = (descriptors[controlOffset].toInt() and 0xff) or
+                            ((descriptors[controlOffset + 1].toInt() and 0xff) shl 8) or
+                            ((descriptors[controlOffset + 2].toInt() and 0xff) shl 16) or
+                            ((descriptors[controlOffset + 3].toInt() and 0xff) shl 24)
+                        val volumeControl = (controls ushr 2) and 0x03
+                        val writeState = when (volumeControl) {
+                            0x01 -> "read-only"
+                            0x03 -> "read-write"
+                            else -> null
+                        } ?: continue
+                        features += HardwareVolumeFeature(
+                            protocol = "uac2",
+                            controlInterface = interfaceNumber,
+                            unitId = descriptors[offset + 3].toInt() and 0xff,
+                            channel = channel,
+                            writeState = writeState,
+                        )
+                    }
+                } else {
+                    val controlSize = descriptors[offset + 5].toInt() and 0xff
+                    if (controlSize in 1..4) {
+                        val controlCount = (length - 7) / controlSize
+                        for (channel in 0 until controlCount) {
+                            var controls = 0
+                            for (byteIndex in 0 until controlSize) {
+                                controls = controls or (
+                                    (descriptors[offset + 6 + channel * controlSize + byteIndex].toInt() and 0xff) shl
+                                        (byteIndex * 8)
+                                    )
+                            }
+                            if (controls and 0x02 == 0) {
+                                continue
+                            }
+                            features += HardwareVolumeFeature(
+                                protocol = "uac1",
+                                controlInterface = interfaceNumber,
+                                unitId = descriptors[offset + 3].toInt() and 0xff,
+                                channel = channel,
+                                writeState = "available",
+                            )
+                        }
+                    }
+                }
+            }
+            offset += length
+        }
+        return features
+    }
+
+    private fun readHardwareVolumeProbe(
+        connection: UsbDeviceConnection,
+        feature: HardwareVolumeFeature,
+    ): Map<String, Any?> {
+        val requestType = UsbConstants.USB_DIR_IN or UsbConstants.USB_TYPE_CLASS or USB_RECIP_INTERFACE
+        val value = (0x02 shl 8) or feature.channel
+        val index = (feature.unitId shl 8) or feature.controlInterface
+        val current = ByteArray(2)
+        val currentResult = connection.controlTransfer(
+            requestType,
+            if (feature.protocol == "uac2") 0x01 else 0x81,
+            value,
+            index,
+            current,
+            current.size,
+            300,
+        )
+        return buildMap {
+            put("protocol", feature.protocol)
+            put("controlInterface", feature.controlInterface)
+            put("featureUnitId", feature.unitId)
+            put("channel", feature.channel)
+            put("writeState", feature.writeState)
+            put("currentResult", currentResult)
+            if (currentResult == current.size) {
+                put("currentQ8_8Db", readSignedQ8_8(current, 0))
+            }
+            if (feature.protocol == "uac2") {
+                put("range", readUac2VolumeRange(connection, requestType, value, index))
+            } else {
+                put("range", readUac1VolumeRange(connection, requestType, value, index))
+            }
+        }
+    }
+
+    private fun readUac2VolumeRange(
+        connection: UsbDeviceConnection,
+        requestType: Int,
+        value: Int,
+        index: Int,
+    ): Map<String, Any?> {
+        val header = ByteArray(2)
+        val headerResult = connection.controlTransfer(requestType, 0x02, value, index, header, header.size, 300)
+        if (headerResult != header.size) {
+            return mapOf("result" to headerResult)
+        }
+        val count = (header[0].toInt() and 0xff) or ((header[1].toInt() and 0xff) shl 8)
+        if (count !in 1..16) {
+            return mapOf("result" to headerResult, "subrangeCount" to count)
+        }
+        val data = ByteArray(2 + count * 6)
+        val result = connection.controlTransfer(requestType, 0x02, value, index, data, data.size, 300)
+        if (result != data.size) {
+            return mapOf("result" to result, "subrangeCount" to count)
+        }
+        return mapOf(
+            "result" to result,
+            "subranges" to (0 until count).map { subrange ->
+                val offset = 2 + subrange * 6
+                mapOf(
+                    "minQ8_8Db" to readSignedQ8_8(data, offset),
+                    "maxQ8_8Db" to readSignedQ8_8(data, offset + 2),
+                    "stepQ8_8Db" to readSignedQ8_8(data, offset + 4),
+                )
+            },
+        )
+    }
+
+    private fun readUac1VolumeRange(
+        connection: UsbDeviceConnection,
+        requestType: Int,
+        value: Int,
+        index: Int,
+    ): Map<String, Any?> {
+        fun readAttribute(request: Int): Int? {
+            val data = ByteArray(2)
+            return if (connection.controlTransfer(requestType, request, value, index, data, data.size, 300) == data.size) {
+                readSignedQ8_8(data, 0)
+            } else {
+                null
+            }
+        }
+        return mapOf(
+            "minQ8_8Db" to readAttribute(0x82),
+            "maxQ8_8Db" to readAttribute(0x83),
+            "stepQ8_8Db" to readAttribute(0x84),
+        )
+    }
+
+    private fun readSignedQ8_8(data: ByteArray, offset: Int): Int =
+        ((data[offset].toInt() and 0xff) or ((data[offset + 1].toInt() and 0xff) shl 8)).toShort().toInt()
 
     private fun hexDump(bytes: ByteArray): String {
         val builder = StringBuilder(bytes.size * 3)
@@ -1802,6 +2248,7 @@ class UsbExclusiveAudioEngine(
         channels: Int = 2,
         bitDepth: Int? = null,
         requireRawData: Boolean = false,
+        reportSelection: Boolean = false,
     ): OutputTarget? {
         // native DSD 要求 RAW_DATA alt（bmFormats D31）；quirk 驱动的设备描述符
         // 可能不声明，此时调用方传 false、靠 bitDepth 匹配 subslot
@@ -1809,13 +2256,32 @@ class UsbExclusiveAudioEngine(
             .filter { !requireRawData || it.isRawData }
 
         if (candidates.isEmpty()) {
+            recordOutputSelection(
+                reportSelection,
+                candidates,
+                null,
+                sampleRate,
+                channels,
+                bitDepth,
+                requireRawData,
+            )
             return null
         }
 
         if (sampleRate == null) {
-            return candidates.minWith(compareBy<OutputTarget> {
+            val selected = candidates.minWith(compareBy<OutputTarget> {
                 it.endpoint.maxPacketSize
             }.thenBy { it.alternateSetting })
+            recordOutputSelection(
+                reportSelection,
+                candidates,
+                selected,
+                null,
+                channels,
+                bitDepth,
+                requireRawData,
+            )
+            return selected
         }
 
         val sortedCandidates = candidates.sortedWith(compareBy<OutputTarget> {
@@ -1885,7 +2351,57 @@ class UsbExclusiveAudioEngine(
                         "required=$required/format=${candidate.formatInfo}"
                 }}",
         )
+        recordOutputSelection(
+            reportSelection,
+            sortedCandidates,
+            selected,
+            sampleRate,
+            channels,
+            bitDepth,
+            requireRawData,
+        )
         return selected
+    }
+
+    private fun recordOutputSelection(
+        enabled: Boolean,
+        candidates: List<OutputTarget>,
+        selected: OutputTarget?,
+        sampleRate: Int?,
+        channels: Int,
+        bitDepth: Int?,
+        requireRawData: Boolean,
+    ) {
+        if (!enabled) {
+            return
+        }
+        fun targetMap(target: OutputTarget): Map<String, Any?> {
+            val required = sampleRate?.let {
+                requiredIsoPacketBytes(it, target.packetsPerSecond, channels, target.usbBytesPerSample)
+            }
+            return mapOf(
+                "interface" to target.usbInterface.id,
+                "alt" to target.alternateSetting,
+                "maxPacketSize" to target.endpoint.maxPacketSize,
+                "packetsPerSecond" to target.packetsPerSecond,
+                "usbBytes" to target.usbBytesPerSample,
+                "bitDepth" to target.usbBitResolution,
+                "raw" to target.isRawData,
+                "requiredPacketBytes" to required,
+                "fits" to (required == null || target.endpoint.maxPacketSize >= required),
+                "feedback" to target.feedbackEndpointLabel,
+            )
+        }
+        addOutputSelectionDiagnostics(
+            mapOf(
+                "sampleRate" to sampleRate,
+                "channels" to channels,
+                "bitDepth" to bitDepth,
+                "requireRawData" to requireRawData,
+                "candidates" to candidates.map(::targetMap),
+                "selected" to selected?.let(::targetMap),
+            ),
+        )
     }
 
     private fun findFeedbackEndpoint(usbInterface: UsbInterface): UsbEndpoint? {
@@ -2329,6 +2845,7 @@ class UsbExclusiveAudioEngine(
         private val usbBitResolution: Int,
         private val feedbackOutputPacketDivisor: Int,
         private val feedbackFramesPerPacketQ16: (() -> Int)? = null,
+        private val reportFeedback: ((Int, Int, Boolean) -> Unit)? = null,
         private val volumeGainQ16: (() -> Int)? = null,
         private val writePackets: (ByteArray, IntArray, Int) -> Unit,
     ) {
@@ -2434,20 +2951,24 @@ class UsbExclusiveAudioEngine(
                 val minFeedbackQ16 = nominalFramesQ16 - (nominalFramesQ16 / 8)
                 val maxFeedbackQ16 = nominalFramesQ16 + (nominalFramesQ16 / 2)
                 if (outputFeedbackQ16 in minFeedbackQ16..maxFeedbackQ16) {
+                    reportFeedback?.invoke(outputFeedbackQ16, nominalFramesQ16, false)
                     feedbackRemainderQ16 += outputFeedbackQ16.toLong()
                     val frames = (feedbackRemainderQ16 ushr 16).toInt()
                     feedbackRemainderQ16 = feedbackRemainderQ16 and 0xffff
                     if (frames > 0) {
                         return maxOf(bytesPerFrame, frames * bytesPerFrame)
                     }
-                } else if (feedbackRejectLogCount < 8) {
-                    ++feedbackRejectLogCount
-                    UsbDiagnostics.w(
-                        "UsbExclusiveAudioEngine",
-                        "USB feedback ignored outputFrames=${q16ToFrames(outputFeedbackQ16)}, " +
-                            "nominalFrames=${q16ToFrames(nominalFramesQ16)}, " +
-                            "sampleRate=$sampleRate, packetsPerSecond=$packetsPerSecond",
-                    )
+                } else {
+                    reportFeedback?.invoke(outputFeedbackQ16, nominalFramesQ16, true)
+                    if (feedbackRejectLogCount < 8) {
+                        ++feedbackRejectLogCount
+                        UsbDiagnostics.w(
+                            "UsbExclusiveAudioEngine",
+                            "USB feedback ignored outputFrames=${q16ToFrames(outputFeedbackQ16)}, " +
+                                "nominalFrames=${q16ToFrames(nominalFramesQ16)}, " +
+                                "sampleRate=$sampleRate, packetsPerSecond=$packetsPerSecond",
+                        )
+                    }
                 }
             }
 

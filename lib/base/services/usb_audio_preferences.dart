@@ -1,3 +1,5 @@
+import 'dart:math' as math;
+
 import 'package:flutter/foundation.dart';
 
 final usbAudioPreferences = UsbAudioPreferences();
@@ -18,6 +20,14 @@ int? preferredUsbExclusiveBitDepth() {
   };
 }
 
+double usbExclusiveDigitalVolumeGain(double volume) {
+  final safeVolume = volume.clamp(0.0, 1.0).toDouble();
+  if (safeVolume <= 0) {
+    return 0;
+  }
+  return math.pow(safeVolume, 1.5).toDouble();
+}
+
 /// 独占数字音量是否生效：除“原始数字电平”外都启用。
 /// DAC 硬件音量与自动尚未接入 UAC Feature Unit，暂按数字音量处理。
 bool usbExclusiveDigitalVolumeEnabled() {
@@ -30,8 +40,6 @@ enum UsbDsdMode { pcm, dop, native }
 /// 独占音量控制方式：自动/DAC 硬件音量/数字音量/原始数字电平。
 /// DAC 硬件音量与自动暂未接入 UAC Feature Unit，当前回退为数字音量处理。
 enum UsbVolumeControlMode { auto, dac, digital, raw }
-
-enum UsbBusSpeedMode { auto, full, high, superSpeed }
 
 enum UsbBitDepthMode { auto, pcm16, pcm24, pcm32 }
 
@@ -48,18 +56,12 @@ class UsbAudioPreferences {
   final performanceModeNotifier = ValueNotifier(true);
   final volumeControlModeNotifier = ValueNotifier(UsbVolumeControlMode.auto);
   final dsdGainCompensationNotifier = ValueNotifier(0);
-  final busSpeedModeNotifier = ValueNotifier(UsbBusSpeedMode.auto);
   final bitDepthModeNotifier = ValueNotifier(UsbBitDepthMode.auto);
   final releaseUsbBandwidthAfterPlaybackNotifier = ValueNotifier(false);
   final keepAliveInBackgroundNotifier = ValueNotifier(true);
-  final bitDepthCompatNotifier = ValueNotifier(true);
-  final sampleRateCompatNotifier = ValueNotifier(true);
-  final channelCompatNotifier = ValueNotifier(true);
-  final tpdfDitherNotifier = ValueNotifier(false);
   final foregroundBufferMsNotifier = ValueNotifier(200);
   final backgroundBufferMsNotifier = ValueNotifier(1500);
   final volumeSmoothHandoffNotifier = ValueNotifier(true);
-  final delayedUsbLinkNotifier = ValueNotifier(false);
 
   void load(Map<String, dynamic> json) {
     fixedSampleRateEnabledNotifier.value =
@@ -88,11 +90,6 @@ class UsbAudioPreferences {
     );
     dsdGainCompensationNotifier.value =
         json['usbDsdGainCompensation'] as int? ?? 0;
-    busSpeedModeNotifier.value = _enumByName(
-      UsbBusSpeedMode.values,
-      json['usbBusSpeedMode'] as String?,
-      UsbBusSpeedMode.auto,
-    );
     bitDepthModeNotifier.value = _enumByName(
       UsbBitDepthMode.values,
       json['usbBitDepthMode'] as String?,
@@ -102,11 +99,6 @@ class UsbAudioPreferences {
         json['usbReleaseBandwidthAfterPlayback'] as bool? ?? false;
     keepAliveInBackgroundNotifier.value =
         json['usbKeepAliveInBackground'] as bool? ?? true;
-    bitDepthCompatNotifier.value = json['usbBitDepthCompat'] as bool? ?? true;
-    sampleRateCompatNotifier.value =
-        json['usbSampleRateCompat'] as bool? ?? true;
-    channelCompatNotifier.value = json['usbChannelCompat'] as bool? ?? true;
-    tpdfDitherNotifier.value = json['usbTpdfDither'] as bool? ?? false;
     foregroundBufferMsNotifier.value = _validBufferMs(
       json['usbForegroundBufferMs'] as int?,
       200,
@@ -117,7 +109,6 @@ class UsbAudioPreferences {
     );
     volumeSmoothHandoffNotifier.value =
         json['usbVolumeSmoothHandoff'] as bool? ?? true;
-    delayedUsbLinkNotifier.value = json['usbDelayedUsbLink'] as bool? ?? false;
   }
 
   Map<String, Object?> toMap() {
@@ -132,19 +123,13 @@ class UsbAudioPreferences {
       'usbPerformanceMode': performanceModeNotifier.value,
       'usbVolumeControlMode': volumeControlModeNotifier.value.name,
       'usbDsdGainCompensation': dsdGainCompensationNotifier.value,
-      'usbBusSpeedMode': busSpeedModeNotifier.value.name,
       'usbBitDepthMode': bitDepthModeNotifier.value.name,
       'usbReleaseBandwidthAfterPlayback':
           releaseUsbBandwidthAfterPlaybackNotifier.value,
       'usbKeepAliveInBackground': keepAliveInBackgroundNotifier.value,
-      'usbBitDepthCompat': bitDepthCompatNotifier.value,
-      'usbSampleRateCompat': sampleRateCompatNotifier.value,
-      'usbChannelCompat': channelCompatNotifier.value,
-      'usbTpdfDither': tpdfDitherNotifier.value,
       'usbForegroundBufferMs': foregroundBufferMsNotifier.value,
       'usbBackgroundBufferMs': backgroundBufferMsNotifier.value,
       'usbVolumeSmoothHandoff': volumeSmoothHandoffNotifier.value,
-      'usbDelayedUsbLink': delayedUsbLinkNotifier.value,
     };
   }
 

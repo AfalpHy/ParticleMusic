@@ -711,8 +711,13 @@ class MainActivity : AudioServiceActivity() {
             if (bitPerfect) {
                 val supported = audioManager.getSupportedMixerAttributes(device)
                     .filter { it.mixerBehavior == AudioMixerAttributes.MIXER_BEHAVIOR_BIT_PERFECT }
-                val chosen = supported.firstOrNull { it.format.sampleRate == sampleRate }
-                    ?: supported.maxByOrNull { it.format.sampleRate }
+                val chosenRate = chooseBitPerfectMixerSampleRate(
+                    requestedSampleRate,
+                    supported.map { it.format.sampleRate },
+                )
+                val chosen = chosenRate?.let { rate ->
+                    supported.firstOrNull { it.format.sampleRate == rate }
+                }
                 if (chosen != null) {
                     UsbDiagnostics.i(
                         tag,
@@ -734,7 +739,7 @@ class MainActivity : AudioServiceActivity() {
                 }
                 UsbDiagnostics.i(
                     tag,
-                    "applyPreferredOutputApi34: device has no bit-perfect mixer attributes, using default behavior.",
+                    "applyPreferredOutputApi34: device has no matching bit-perfect mixer attributes, using default behavior.",
                 )
             }
             UsbDiagnostics.i(tag, "applyPreferredOutputApi34: requesting sampleRate=$sampleRate, encoding=$encoding.")

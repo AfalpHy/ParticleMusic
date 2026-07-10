@@ -88,4 +88,44 @@ class UsbDacQuirksTest {
         assertEquals(1, entries.size)
         assertEquals("0x0001:0x0002", entries[0].first)
     }
+
+    @Test
+    fun parsesVendorCatalogWithHardwareVolumeOverride() {
+        val entries = UsbDacQuirks.parseEntries(
+            """
+                {
+                  "version": 2,
+                  "vendors": [
+                    {
+                      "match": { "vid": "0x20b1", "label": "XMOS" },
+                      "devices": [
+                        {
+                          "match": { "pid": "0x0002", "label": "XU208 DAC" },
+                          "hardwareVolume": {
+                            "featureUnitId": 7,
+                            "controlInterface": 0,
+                            "channels": [0, 1, 2]
+                          }
+                        },
+                        {
+                          "match": { "pid": "*" },
+                          "clock": { "setCurDelayMs": 40 }
+                        }
+                      ]
+                    }
+                  ]
+                }
+            """.trimIndent(),
+        )
+
+        val exact = UsbDacQuirks.matchQuirk(entries, 0x20b1, 0x0002)
+        assertEquals("XU208 DAC", exact?.label)
+        assertEquals(7, exact?.hardwareVolumeFeatureUnitId)
+        assertEquals(0, exact?.hardwareVolumeControlInterface)
+        assertEquals(listOf(0, 1, 2), exact?.hardwareVolumeChannels)
+
+        val vendor = UsbDacQuirks.matchQuirk(entries, 0x20b1, 0x9999)
+        assertEquals("XMOS", vendor?.label)
+        assertEquals(40, vendor?.clockSetCurDelayMs)
+    }
 }

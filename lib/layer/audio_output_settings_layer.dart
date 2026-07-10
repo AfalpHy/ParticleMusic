@@ -171,26 +171,6 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
             _settingsCard(
               children: [
                 _formatSummaryTile(status),
-                _switchTile(
-                  title: _l10n.bitDepthCompat,
-                  subtitle: _l10n.bitDepthCompatDesc,
-                  notifier: prefs.bitDepthCompatNotifier,
-                ),
-                _switchTile(
-                  title: _l10n.sampleRateCompat,
-                  subtitle: _l10n.sampleRateCompatDesc,
-                  notifier: prefs.sampleRateCompatNotifier,
-                ),
-                _switchTile(
-                  title: _l10n.channelCompat,
-                  subtitle: _l10n.channelCompatDesc,
-                  notifier: prefs.channelCompatNotifier,
-                ),
-                _switchTile(
-                  title: _l10n.tpdfDither,
-                  subtitle: _l10n.tpdfDitherDesc,
-                  notifier: prefs.tpdfDitherNotifier,
-                ),
                 _navTile(
                   title: _l10n.fixedSampleRateOutput,
                   value: prefs.fixedSampleRateEnabledNotifier.value
@@ -313,17 +293,6 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
             _sectionTitle(_l10n.compatibility),
             _settingsCard(
               children: [
-                _switchTile(
-                  title: _l10n.delayUsbLink,
-                  subtitle: _l10n.delayUsbLinkDesc,
-                  notifier: prefs.delayedUsbLinkNotifier,
-                ),
-                _choiceTile<UsbBusSpeedMode>(
-                  title: _l10n.usbBusSpeed,
-                  notifier: prefs.busSpeedModeNotifier,
-                  values: UsbBusSpeedMode.values,
-                  label: _busSpeedLabel,
-                ),
                 _switchTile(
                   title: _l10n.releaseUsbBandwidth,
                   subtitle: _l10n.releaseUsbBandwidthDesc,
@@ -1621,15 +1590,6 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
       UsbVolumeControlMode.dac => _l10n.volumeControlDac,
       UsbVolumeControlMode.digital => _l10n.volumeControlDigital,
       UsbVolumeControlMode.raw => _l10n.volumeControlRaw,
-    };
-  }
-
-  String _busSpeedLabel(UsbBusSpeedMode mode) {
-    return switch (mode) {
-      UsbBusSpeedMode.auto => _l10n.usbAuto,
-      UsbBusSpeedMode.full => 'Full',
-      UsbBusSpeedMode.high => 'High',
-      UsbBusSpeedMode.superSpeed => 'Super',
     };
   }
 

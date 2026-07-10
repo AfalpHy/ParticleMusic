@@ -53,6 +53,8 @@
 | App parse result → Output candidates | `alt/max/feedback/usbBytes/bits/raw` | `raw=true` 的候选就是 native alt；`max`(maxPacket) 决定该 alt 能跑的最高速率；`feedback=none` 表示同步/自适应端点（无异步反馈） |
 | App parse result → Quirk | Match / Effective / Load errors | 当前命中的 quirk 条目与生效值；Load errors 非空说明导入的 JSON 有问题 |
 | UAC2 clock source id | clockSourceId | null 时走 UAC1 端点式 SET_CUR |
+| Exclusive session | input / outputSelections / clock / feedback / transport | 最近一次独占会话的真实请求、alt 候选与选择、时钟读写、反馈和提交统计；远程适配优先看这一节 |
+| Hardware volume probe | featureUnits / probes / quirkOverride | 未来硬件音量适配所需的 Feature Unit、声道、当前值和范围；本版本只读，不会写入 DAC 音量 |
 | 运行状态快照 | format/sampleRate/bitDepth/message | `message` 里有回退原因（如 native 降级 DoP 的原因） |
 | Telemetry | bufferLevelMs/underrunCount/pendingUrbs | underrun 持续增长 = 供数或时钟问题 |
 
@@ -90,18 +92,31 @@ adb logcat -d --pid=$(adb shell pidof <包名>) | grep -E "UsbExclusive|Sylvakru
 
 ## 4. quirk 字段全表（症状 → 字段）
 
-quirk JSON 结构（`match.vid/pid` 十六进制字符串，`pid` 可为 `"*"` 匹配整个厂商；所有配置字段可缺省）：
+内置目录按厂商分组保存；`match.vid/pid` 为十六进制字符串，设备 `pid` 可为 `"*"` 表示该厂商默认规则。手动导入仍兼容旧版平铺 `devices` JSON。
 
 ```json
 {
-  "version": 1,
-  "devices": [
+  "version": 2,
+  "vendors": [
     {
-      "match": { "vid": "0x262a", "pid": "0x9302", "label": "设备名（可选）" },
-      "dop":  { "supported": true, "maxDsd": 256 },
-      "nativeDsd": { "format": "u32le", "maxDsd": 512 },
-      "clock": { "setCurDelayMs": 50, "skipGetCurValidation": true },
-      "flags": []
+      "match": { "vid": "0x262a", "label": "厂商名" },
+      "devices": [
+        {
+          "match": { "pid": "0x9302", "label": "设备名（可选）" },
+          "dop": { "supported": true, "maxDsd": 256 },
+          "nativeDsd": { "format": "u32le", "maxDsd": 512 },
+          "clock": { "setCurDelayMs": 50, "skipGetCurValidation": true },
+          "hardwareVolume": {
+            "featureUnitId": 7,
+            "controlInterface": 0,
+            "channels": [0, 1, 2]
+          }
+        },
+        {
+          "match": { "pid": "*" },
+          "clock": { "setCurDelayMs": 30 }
+        }
+      ]
     }
   ]
 }
@@ -116,6 +131,9 @@ quirk JSON 结构（`match.vid/pid` 十六进制字符串，`pid` 可为 `"*"` �
 | `nativeDsd.maxDsd` | native 高倍率失败，限制上限 |
 | `clock.setCurDelayMs` | 起播头几百毫秒爆音/变调后恢复——DAC SET_CUR 后需要时间锁定，加 30–100ms |
 | `clock.skipGetCurValidation` | 明明能正常播却被判"DAC 未接受采样率"回退——GET_CUR 返回垃圾值（非零且≠请求值）的设备 |
+| `hardwareVolume.featureUnitId` | 描述符漏报或实现异常时指定硬件音量 Feature Unit；当前只用于探测与报告 |
+| `hardwareVolume.controlInterface` | 指定 Feature Unit 所在的 AudioControl 接口号 |
+| `hardwareVolume.channels` | 指定主声道 `0` 与需要同步的逻辑声道；写入功能启用前必须在真机验证 |
 
 导入方式：设置 → USB 输出设置 → 支持 → 导入 quirk 配置 → 粘贴 JSON → 重连设备。override 与内置表同 vid:pid 时 override 优先，便于反复试验。验证通过的条目应回传开发者合入内置表。
 
@@ -147,7 +165,7 @@ quirk JSON 结构（`match.vid/pid` 十六进制字符串，`pid` 可为 `"*"` �
 6. **连续切歌 10 次 + 反复 seek**：指示灯全程不变色、无咔嗒；
 7. **拔插设备**：正确回退系统输出、重插能恢复独占。
 
-全部通过后：生成诊断报告存档 + 把验证过的 quirk 条目（若有）回传合入 `assets/usb_dac_quirks.json`。
+全部通过后：生成诊断报告存档 + 把验证过的 quirk 条目（若有）回传合入 `assets/usb_dac_quirks.json`。远程设备先导入单条 override 验证，再合入对应厂商目录发包；不要根据厂商名直接推送未知规则。
 
 ---
 
