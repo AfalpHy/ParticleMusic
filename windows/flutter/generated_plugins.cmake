@@ -4,6 +4,7 @@
 
 list(APPEND FLUTTER_PLUGIN_LIST
   audio_service_win
+  desktop_multi_window
   flutter_secure_storage_windows
   media_kit_libs_windows_audio
   permission_handler_windows

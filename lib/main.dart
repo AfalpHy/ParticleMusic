@@ -1,11 +1,14 @@
 import 'dart:io';
+import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:sylvakru/base/extensions/window_controller_extension.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/services/logger.dart';
+import 'package:sylvakru/landscape_view/desktop_lyrics.dart';
 import 'package:sylvakru/base/services/keyboard.dart';
 import 'package:sylvakru/base/services/my_tray_listener.dart';
 import 'package:sylvakru/base/services/my_window_listener.dart';
@@ -34,13 +37,29 @@ Future<void> main() async {
   if (isMobile) {
     screenRadius = await ScreenCornerRadius.get();
   } else {
+    await windowManager.ensureInitialized();
+
+    // desktop_multi_window re-runs this whole main() for every window it
+    // creates, in a separate engine/isolate that shares no Dart state with
+    // this one. The 'desktop_lyrics' argument (set in initDesktopLyrics())
+    // is the only way this invocation knows whether it's the main window
+    // or the floating lyrics window - it must be checked before any of the
+    // main-window-only setup below (single-instance lock, tray icon, etc.)
+    // runs, or the lyrics window would end up doing it too.
+    final windowController = await WindowController.fromCurrentEngine();
+    if (windowController.arguments == 'desktop_lyrics') {
+      await _setupDesktopLyricsWindow(windowController);
+      runApp(DesktopLyrics());
+      return;
+    }
+
     if (kReleaseMode) {
       await SingleInstance.start();
     }
 
     keyboardInit();
 
-    await _setupMainWindow();
+    await _setupMainWindow(windowController);
     await _setupTray();
   }
 
@@ -149,10 +168,14 @@ Future<void> main() async {
   );
 
   logger.output('App start');
+  if (!isMobile) {
+    await initDesktopLyrics();
+  }
 }
 
-Future<void> _setupMainWindow() async {
+Future<void> _setupMainWindow(WindowController windowController) async {
   myWindowListener = MyWindowListener();
+  await windowController.mainCustomInitialize();
   WindowOptions windowOptions = WindowOptions(
     size: mainSize,
     center: true,
@@ -160,7 +183,6 @@ Future<void> _setupMainWindow() async {
     titleBarStyle: TitleBarStyle.hidden,
     windowButtonVisibility: false,
   );
-  await windowManager.ensureInitialized();
   await windowManager.waitUntilReadyToShow(windowOptions, () async {
     await windowManager.setPreventClose(true);
     await windowManager.show();
@@ -192,6 +214,27 @@ Future<void> _setupMainWindow() async {
   windowManager.addListener(myWindowListener);
 }
 
+Future<void> _setupDesktopLyricsWindow(
+  WindowController windowController,
+) async {
+  await windowController.desktopLyricsCustomInitialize();
+  WindowOptions windowOptions = WindowOptions(
+    title: "Desktop Lyrics",
+    size: Platform.isLinux ? Size(1000, 250) : Size(1000, 200),
+    center: true,
+    backgroundColor: Colors.transparent,
+    titleBarStyle: TitleBarStyle.hidden,
+    // Keeping it in the taskbar/dock list on macOS is intentional: hiding
+    // it there (as done on Windows/Linux) hides the Dock icon too, since
+    // this is a second top-level window of the same app.
+    skipTaskbar: Platform.isMacOS ? false : true,
+    alwaysOnTop: true,
+  );
+  await windowManager.waitUntilReadyToShow(windowOptions, () async {
+    await windowManager.setAsFrameless();
+  });
+}
+
 Future<void> _setTrayMemu(Locale locale) async {
   late AppLocalizations l10n;
   try {
@@ -208,6 +251,9 @@ Future<void> _setTrayMemu(Locale locale) async {
         MenuItem(key: 'skipToPrevious', label: l10n.skip2Previous),
         MenuItem(key: 'togglePlay', label: l10n.playOrPause),
         MenuItem(key: 'skipToNext', label: l10n.skip2Next),
+
+        MenuItem.separator(),
+        MenuItem(key: 'unlock', label: l10n.unlockDeskLrc),
 
         MenuItem.separator(),
         MenuItem(key: 'exit', label: l10n.exit),

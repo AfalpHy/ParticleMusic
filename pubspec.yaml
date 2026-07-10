@@ -74,6 +74,10 @@ dependencies:
       url: https://github.com/AfalpHy/tray_manager.git
       ref: main
       path: packages/tray_manager
+  # Powers the floating desktop lyrics window: it spawns a second native
+  # window with its own Flutter engine, so state must cross via platform
+  # channels instead of shared Dart globals (see window_controller_extension.dart).
+  desktop_multi_window: ^0.3.0
   lpinyin: ^2.0.3
   flex_color_picker: ^3.8.0
   google_fonts: ^8.0.2

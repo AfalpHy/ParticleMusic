@@ -6,11 +6,12 @@ import 'package:flutter/material.dart';
 import 'package:sylvakru/base/audio_handler.dart';
 import 'package:sylvakru/base/asset_images.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
-import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/services/my_window_listener.dart';
+import 'package:sylvakru/base/services/lyric.dart';
 import 'package:sylvakru/base/widgets/buttons.dart';
 import 'package:sylvakru/base/widgets/cover_art_widget.dart';
 import 'package:sylvakru/base/widgets/seekbar.dart';
+import 'package:sylvakru/landscape_view/desktop_lyrics.dart';
 import 'package:sylvakru/landscape_view/pages/play_queue_page.dart';
 import 'package:sylvakru/landscape_view/speaker.dart';
 import 'package:sylvakru/landscape_view/volume_bar.dart';
@@ -533,7 +534,18 @@ class _MiniViewState extends State<MiniView> {
 
               IconButton(
                 onPressed: () async {
-                  showCenterMessage(context, 'Desktop lyrics has been removed');
+                  // null if initDesktopLyrics() failed at startup (e.g. no
+                  // multi-window support in this environment) - fail silently
+                  // rather than crashing the button's tap handler.
+                  final controller = lyricsWindowController;
+                  if (controller == null) return;
+                  if (lyricsWindowVisible) {
+                    await controller.hide();
+                  } else {
+                    await updateDesktopLyrics();
+                    await controller.show();
+                  }
+                  lyricsWindowVisible = !lyricsWindowVisible;
                 },
                 icon: const ImageIcon(desktopLyricsImage, size: 25),
 

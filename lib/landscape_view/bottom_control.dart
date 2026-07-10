@@ -3,10 +3,11 @@ import 'package:sylvakru/base/audio_handler.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/asset_images.dart';
-import 'package:sylvakru/base/services/interaction.dart';
+import 'package:sylvakru/base/services/lyric.dart';
 import 'package:sylvakru/base/widgets/buttons.dart';
 import 'package:sylvakru/base/widgets/cover_art_widget.dart';
 import 'package:sylvakru/base/utils/dynamic_lyrics_page_route.dart';
+import 'package:sylvakru/landscape_view/desktop_lyrics.dart';
 import 'package:sylvakru/landscape_view/speaker.dart';
 import 'package:sylvakru/landscape_view/volume_bar.dart';
 import 'package:sylvakru/base/widgets/seekbar.dart';
@@ -55,7 +56,7 @@ class BottomControl extends StatelessWidget {
                       ],
                     ),
                   ),
-                  Expanded(flex: 2, child: otherControls(context)),
+                  Expanded(flex: 2, child: otherControls()),
                 ],
               ],
             ),
@@ -162,13 +163,21 @@ class BottomControl extends StatelessWidget {
     ];
   }
 
-  Widget otherControls(BuildContext context) {
+  Widget otherControls() {
     return Row(
       children: [
         Spacer(),
         IconButton(
-          onPressed: () {
-            showCenterMessage(context, 'Desktop lyrics has been removed');
+          onPressed: () async {
+            final controller = lyricsWindowController;
+            if (controller == null) return;
+            if (lyricsWindowVisible) {
+              await controller.hide();
+            } else {
+              await updateDesktopLyrics();
+              await controller.show();
+            }
+            lyricsWindowVisible = !lyricsWindowVisible;
           },
           icon: const ImageIcon(desktopLyricsImage, size: 25),
         ),

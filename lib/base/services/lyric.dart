@@ -3,6 +3,7 @@ import 'dart:ui';
 
 import 'package:charset/charset.dart';
 import 'package:sylvakru/base/app.dart';
+import 'package:sylvakru/base/audio_handler.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
 import 'package:sylvakru/base/services/subsonic_client.dart';
 import 'package:sylvakru/base/services/webdav_client.dart';
@@ -10,6 +11,8 @@ import 'package:sylvakru/base/services/logger.dart';
 import 'package:sylvakru/base/services/navidrome_client.dart';
 import 'package:sylvakru/l10n/generated/app_localizations.dart';
 import 'package:sylvakru/l10n/generated/app_localizations_en.dart';
+import 'package:sylvakru/landscape_view/desktop_lyrics.dart';
+import 'package:sylvakru/base/extensions/window_controller_extension.dart';
 
 class LyricToken {
   final Duration start;
@@ -201,4 +204,31 @@ Future<void> setParsedLyrics(MyAudioMetadata song) async {
       result.lines.last.tokens.last.end = song.duration;
     }
   }
+}
+
+/// Pushes the current lyric line to the desktop lyrics window, if it's
+/// running. No-op (and never throws) when the window hasn't been created,
+/// e.g. on mobile or if [initDesktopLyrics] failed.
+Future<void> updateDesktopLyrics() async {
+  await lyricsWindowController?.updateLyric(
+    audioHandler.getPosition(),
+    currentLyricLine,
+    currentLyricLineIsKaraoke,
+  );
+}
+
+/// Handles the 'update_lyric' message received on the desktop lyrics
+/// window's side of the channel; mirrors [LyricLine.toMap] in reverse.
+void getDesktopLyricFromMap(dynamic data) {
+  final raw = data as Map;
+  final map = Map<String, dynamic>.from(raw);
+
+  desktopLyricsCurrentPosition = Duration(microseconds: map['position'] as int);
+  final lyricLineMap = map['lyric_line'] as Map?;
+  currentLyricLine = lyricLineMap != null
+      ? LyricLine.fromMap(lyricLineMap)
+      : null;
+
+  currentLyricLineIsKaraoke = map['isKaraoke'] as bool;
+  updateDesktopLyricsNotifier.value++;
 }
