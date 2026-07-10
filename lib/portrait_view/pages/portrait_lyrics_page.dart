@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
@@ -39,6 +40,8 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
 
   int _animationDuration = 0;
 
+  Timer? concealRouteTimer;
+
   final enableAllNotifier = ValueNotifier(Platform.isAndroid ? false : true);
 
   @override
@@ -54,10 +57,11 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
+    final screenHeight = MediaQuery.heightOf(context);
 
     return GestureDetector(
       onVerticalDragStart: (_) {
+        concealRouteTimer?.cancel();
         final route = ModalRoute.of(context);
         if (route is DynamicLyricsPageRoute) {
           route.revealRoutesBelow();
@@ -80,6 +84,12 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
         } else {
           _animationDuration = 250;
           dragOffsetNotifier.value = 0.0;
+          concealRouteTimer = Timer(Duration(milliseconds: 250), () {
+            final route = ModalRoute.of(context);
+            if (route is DynamicLyricsPageRoute) {
+              route.concealRoutesBelow();
+            }
+          });
         }
       },
 
@@ -89,14 +99,6 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
           return AnimatedContainer(
             duration: Duration(milliseconds: _animationDuration),
             curve: Curves.easeOutCubic,
-            onEnd: () {
-              if (value == 0.0) {
-                final route = ModalRoute.of(context);
-                if (route is DynamicLyricsPageRoute) {
-                  route.concealRoutesBelow();
-                }
-              }
-            },
             transform: Matrix4.translationValues(0, value, 0),
             child: child,
           );
@@ -166,6 +168,7 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                                 fontWeight: FontWeight.bold,
                                 fontSize: 20,
                                 color: lyricsPageHighlightTextColor.value,
+                                overflow: .ellipsis,
                               );
                               if (!value) {
                                 return Text(data, style: textStyle);
@@ -197,6 +200,7 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                               final textStyle = TextStyle(
                                 fontSize: 14,
                                 color: lyricsPageForegroundColor.value,
+                                overflow: .ellipsis,
                               );
                               if (!value) {
                                 return Text(data, style: textStyle);

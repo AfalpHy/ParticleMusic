@@ -7,6 +7,7 @@ import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/services/emby_client.dart';
 import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/services/navidrome_client.dart';
+import 'package:sylvakru/base/services/subsonic_client.dart';
 import 'package:sylvakru/base/services/webdav_client.dart';
 import 'package:sylvakru/base/utils/source_type.dart';
 import 'package:sylvakru/base/widgets/custom_text_field.dart';
@@ -32,6 +33,10 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
       baseUrlTmp.text = webdavClient?.baseUrl ?? '';
       usernameTmp.text = webdavClient?.username ?? '';
       passwordTmp.text = webdavClient?.password ?? '';
+    } else if (widget.sourceType == .subsonic) {
+      baseUrlTmp.text = subsonicClient?.baseUrl ?? '';
+      usernameTmp.text = subsonicClient?.username ?? '';
+      passwordTmp.text = subsonicClient?.password ?? '';
     } else if (widget.sourceType == .navidrome) {
       baseUrlTmp.text = navidromeClient?.baseUrl ?? '';
       usernameTmp.text = navidromeClient?.username ?? '';
@@ -115,6 +120,8 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
                 if (widget.sourceType == .webdav) {
                   await library.updateFolders([], false);
                   webdavClient = null;
+                } else if (widget.sourceType == .subsonic) {
+                  subsonicClient = null;
                 } else if (widget.sourceType == .navidrome) {
                   navidromeClient = null;
                 } else {
@@ -151,6 +158,20 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
                       showCenterMessage(context, 'Can not connect to WebDAV');
                     }
                     webdavClient = tmp;
+                    return;
+                  }
+                } else if (widget.sourceType == .subsonic) {
+                  final tmp = subsonicClient;
+                  subsonicClient = SubsonicClient(
+                    baseUrl: baseUrlTmp.text,
+                    username: usernameTmp.text,
+                    password: passwordTmp.text,
+                  );
+                  if (!await subsonicClient!.ping()) {
+                    if (context.mounted) {
+                      showCenterMessage(context, 'Can not connect to Subsonic');
+                    }
+                    subsonicClient = tmp;
                     return;
                   }
                 } else if (widget.sourceType == .navidrome) {

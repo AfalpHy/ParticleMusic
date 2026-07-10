@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:screen_corner_radius/screen_corner_radius.dart';
 
-const String versionNumber = '3.4.1';
+const String versionNumber = '3.4.6';
 
 late final Directory appDocsDir;
 late final Directory appSupportDir;
@@ -20,7 +20,7 @@ final lyricsPageThemeNotifier = ValueNotifier(ThemeType.vivid);
 
 final ValueNotifier<Locale?> localeNotifier = ValueNotifier(null);
 
-enum SourceType { local, webdav, navidrome, emby }
+enum SourceType { local, webdav, subsonic, navidrome, emby }
 
 final ValueNotifier<String?> fontFamilyNotifier = ValueNotifier(null);
 

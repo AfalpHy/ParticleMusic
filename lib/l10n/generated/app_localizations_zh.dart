@@ -395,6 +395,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get connect2Navidrome => '连接到Navidrome';
 
   @override
+  String get connect2Subsonic => '连接到Subsonic';
+
+  @override
   String get connect2WebDAV => '连接到WebDAV';
 
   @override
@@ -988,4 +991,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get connectedNotConfirmed => '已连接 USB DAC，但未确认支持独占';
+
+  @override
+  String get noLyrics => '暂无歌词';
+
+  @override
+  String get lyricsParseFailed => '歌词解析失败';
 }

@@ -79,6 +79,7 @@ const AssetImage shuffleImage = AssetImage('assets/images/shuffle.png');
 const AssetImage songsImage = AssetImage('assets/images/songs.png');
 const AssetImage speakerOffImage = AssetImage('assets/images/speaker_off.png');
 const AssetImage speakerImage = AssetImage('assets/images/speaker.png');
+const AssetImage subsonicImage = AssetImage('assets/images/subsonic.png');
 const AssetImage themeImage = AssetImage('assets/images/theme.png');
 const AssetImage timerImage = AssetImage('assets/images/timer.png');
 const AssetImage topArrowImage = AssetImage('assets/images/top_arrow.png');

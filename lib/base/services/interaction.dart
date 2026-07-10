@@ -519,10 +519,28 @@ class NativeMenu {
 
   static final Map<IconData, Uint8List> _iconMap = {};
 
-  static Future<Uint8List> _iconToPng(IconData icon, {double size = 18}) async {
-    if (_iconMap[icon] != null) {
-      return _iconMap[icon]!;
-    }
+  static Future<void> init() async {
+    await _channel.invokeMethod('initNativeMenu');
+  }
+
+  static Future<void> initIcons() async {
+    await _iconToPng(Icons.vertical_align_top_rounded);
+    await _iconToPng(Icons.play_arrow_rounded);
+    await _iconToPng(Icons.navigate_next_rounded);
+    await _iconToPng(Icons.playlist_add_rounded);
+    await _iconToPng(Icons.add_rounded);
+    await _iconToPng(Icons.people);
+    await _iconToPng(Icons.album_rounded);
+    await _iconToPng(Icons.info_outline_rounded);
+    await _iconToPng(Icons.edit_rounded);
+    await _iconToPng(Icons.delete_rounded);
+    await _iconToPng(Icons.navigate_next_rounded);
+    await _iconToPng(Icons.close_rounded);
+    await _iconToPng(Icons.reorder_rounded);
+    await _iconToPng(Icons.delete);
+  }
+
+  static Future<void> _iconToPng(IconData icon) async {
     final recorder = ui.PictureRecorder();
     final canvas = Canvas(recorder);
 
@@ -533,7 +551,7 @@ class NativeMenu {
         style: TextStyle(
           fontFamily: icon.fontFamily,
           package: icon.fontPackage,
-          fontSize: size,
+          fontSize: Platform.isMacOS ? 18 : 24,
           color: Colors.black,
         ),
       ),
@@ -551,21 +569,16 @@ class NativeMenu {
 
     final result = data!.buffer.asUint8List();
     _iconMap[icon] = result;
-    return result;
   }
 
   static Future<void> show(List<MenuItem> items) async {
-    final menuData = await Future.wait(
-      items.map((item) async {
-        return {
-          'text': item.text,
-          'isDivider': item.isDivider,
-          'iconBytes': item.iconData != null
-              ? await _iconToPng(item.iconData!)
-              : null,
-        };
-      }),
-    );
+    final menuData = items.map((item) {
+      return {
+        'text': item.text,
+        'isDivider': item.isDivider,
+        'iconBytes': item.iconData != null ? _iconMap[item.iconData] : null,
+      };
+    }).toList();
 
     _channel.setMethodCallHandler((call) async {
       if (call.method == "onMenuItemSelected") {
@@ -582,17 +595,13 @@ class NativeMenu {
     Offset position,
     Size size,
   ) async {
-    final menuData = await Future.wait(
-      items.map((item) async {
-        return {
-          'text': item.text,
-          'isDivider': item.isDivider,
-          'iconBytes': item.iconData != null
-              ? await _iconToPng(item.iconData!, size: 24)
-              : null,
-        };
-      }),
-    );
+    final menuData = items.map((item) {
+      return {
+        'text': item.text,
+        'isDivider': item.isDivider,
+        'iconBytes': item.iconData != null ? _iconMap[item.iconData] : null,
+      };
+    }).toList();
 
     _channel.setMethodCallHandler((call) async {
       if (call.method == "onMenuItemSelected") {

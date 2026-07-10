@@ -9,6 +9,8 @@ String getSourceTypeName(AppLocalizations l10n, SourceType sourceType) {
       return l10n.local;
     case .webdav:
       return 'WebDAV';
+    case .subsonic:
+      return 'Subsonic';
     case .navidrome:
       return 'Navidrome';
     default:
@@ -22,10 +24,12 @@ int getSourceTypeBitMask(SourceType sourceType) {
       return 1;
     case .webdav:
       return 2;
-    case .navidrome:
+    case .subsonic:
       return 4;
-    default:
+    case .navidrome:
       return 8;
+    default:
+      return 16;
   }
 }
 
@@ -35,6 +39,8 @@ AssetImage getSourceTypeImage(SourceType sourceType) {
       return localImage;
     case .webdav:
       return webdavImage;
+    case .subsonic:
+      return subsonicImage;
     case .navidrome:
       return navidromeImage;
     default:

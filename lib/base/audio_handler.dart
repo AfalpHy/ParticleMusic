@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:sylvakru/base/services/emby_client.dart';
 import 'package:sylvakru/base/services/metadata_service.dart';
+import 'package:sylvakru/base/services/subsonic_client.dart';
 import 'package:sylvakru/base/services/super_lyric.dart';
 import 'package:sylvakru/base/services/webdav_client.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
@@ -304,15 +305,18 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     String? resource;
     bool needHeader = false;
     switch (currentSong.sourceType) {
-      case .webdav:
+        case .webdav:
         final tmpPath = await convertToRealPathIfNeed(currentSong.path!);
         if (tmpPath == null) {
           needHeader = true;
         } else {
           resource = tmpPath;
-        }
-        break;
-      case .navidrome:
+          }
+          break;
+        case .subsonic:
+          currentSong.path ??= subsonicClient!.getStreamUrl(currentSong.id);
+          break;
+        case .navidrome:
         currentSong.path ??= navidromeClient!.getStreamUrl(currentSong.id);
         break;
       case .emby:

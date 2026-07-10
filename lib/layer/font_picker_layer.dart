@@ -86,7 +86,6 @@ class _FontPickerLayerState extends State<FontPickerLayer> {
     final fileResult = await FilePicker.pickFiles(
       type: .custom,
       allowedExtensions: ['ttf', 'otf', 'ttc'],
-      allowMultiple: true,
     );
     if (fileResult != null) {
       if (context.mounted) {

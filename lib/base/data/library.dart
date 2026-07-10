@@ -13,7 +13,9 @@ import 'package:sylvakru/base/extensions/metadata_extension.dart';
 import 'package:sylvakru/base/services/dsd_metadata.dart';
 import 'package:sylvakru/base/services/emby_client.dart';
 import 'package:sylvakru/base/services/logger.dart';
+import 'package:sylvakru/base/services/open_sonic_client.dart';
 import 'package:sylvakru/base/services/song_list_service.dart';
+import 'package:sylvakru/base/services/subsonic_client.dart';
 import 'package:sylvakru/base/services/webdav_client.dart';
 import 'package:sylvakru/base/utils/path.dart';
 import 'package:sylvakru/base/data/folder.dart';
@@ -28,11 +30,13 @@ final library = Library();
 class Library {
   late File _localSongIdListFile;
   late File _webdavSongIdListFile;
+  late File _subsonicSongIdListFile;
   late File _navidromeSongIdListFile;
   late File _embySongIdListFile;
 
   late MetadataDB _localMetadataDB;
   late MetadataDB _webdavMetadataDB;
+  late MetadataDB _subsonicMetadataDB;
   late MetadataDB _navidromeMetadataDB;
   late MetadataDB _embyMetadataDB;
 
@@ -63,6 +67,11 @@ class Library {
     );
     initFile(_webdavSongIdListFile, true);
 
+    _subsonicSongIdListFile = File(
+      "${appSupportDir.path}/subsonic/song_id_list.json",
+    );
+    initFile(_subsonicSongIdListFile, true);
+
     _navidromeSongIdListFile = File(
       "${appSupportDir.path}/navidrome/song_id_list.json",
     );
@@ -74,6 +83,7 @@ class Library {
     driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
     _localMetadataDB = MetadataDB(openMetadataDB('local/metadata.db'));
     _webdavMetadataDB = MetadataDB(openMetadataDB('webdav/metadata.db'));
+    _subsonicMetadataDB = MetadataDB(openMetadataDB('subsonic/metadata.db'));
     _navidromeMetadataDB = MetadataDB(openMetadataDB('navidrome/metadata.db'));
     _embyMetadataDB = MetadataDB(openMetadataDB('emby/metadata.db'));
 
@@ -247,16 +257,14 @@ class Library {
     return null;
   }
 
-  Future<Map<String, MyAudioMetadata>> _loadSongMap(MetadataDB db) async {
-    final rows = await db.select(db.metadataItems).get();
-    return {for (final row in rows) row.id: row.toMetadata()};
-  }
-
   Future<void> _prepare() async {
-    id2Song.addAll(await _loadSongMap(_localMetadataDB));
-    id2Song.addAll(await _loadSongMap(_webdavMetadataDB));
-    id2Song.addAll(await _loadSongMap(_navidromeMetadataDB));
-    id2Song.addAll(await _loadSongMap(_embyMetadataDB));
+    for (final sourceType in SourceType.values) {
+      final db = _getMetadataDB(sourceType);
+      final rows = await db.select(db.metadataItems).get();
+      for (final row in rows) {
+        id2Song.putIfAbsent(row.id, () => row.toMetadata());
+      }
+    }
   }
 
   Future<void> _loadLocal() async {
@@ -271,6 +279,13 @@ class Library {
       await folder.load();
     }
     await loadSongList(_webdavSongIdListFile, songListManager.webdavSongList);
+  }
+
+  Future<void> _loadSubsonic() async {
+    await loadSongList(
+      _subsonicSongIdListFile,
+      songListManager.subsonicSongList,
+    );
   }
 
   Future<void> _loadNavidrome() async {
@@ -288,6 +303,7 @@ class Library {
     await _prepare();
     await _loadLocal();
     await _loadWebdav();
+    await _loadSubsonic();
     await _loadNavidrome();
     await _loadEmby();
 
@@ -312,8 +328,6 @@ class Library {
     cacheSizeNotifier.value += total / (1024 * 1024);
   }
 
-  // 进行中的缓存下载，按目标路径去重：同一首歌并发触发时合并成一次下载，
-  // 避免两个写入方同时写同一文件损坏缓存
   final Map<String, Future<void>> _cacheDownloads = {};
   final Map<String, CancelToken> _cacheDownloadCancelTokens = {};
 
@@ -330,12 +344,10 @@ class Library {
       return inFlight;
     }
     final cancelToken = CancelToken();
-    final download = _downloadCache(song, savePath, cancelToken).whenComplete(
-      () {
-        _cacheDownloads.remove(savePath);
-        _cacheDownloadCancelTokens.remove(savePath);
-      },
-    );
+    final download = _downloadCache(song, savePath, cancelToken).whenComplete(() {
+      _cacheDownloads.remove(savePath);
+      _cacheDownloadCancelTokens.remove(savePath);
+    });
     _cacheDownloads[savePath] = download;
     _cacheDownloadCancelTokens[savePath] = cancelToken;
     return download;
@@ -343,10 +355,9 @@ class Library {
 
   void cancelCacheDownload(MyAudioMetadata song) {
     final savePath = song.cachePath;
-    if (savePath == null) {
-      return;
+    if (savePath != null) {
+      _cacheDownloadCancelTokens[savePath]?.cancel();
     }
-    _cacheDownloadCancelTokens[savePath]?.cancel();
   }
 
   Future<void> _downloadCache(
@@ -354,10 +365,8 @@ class Library {
     String savePath,
     CancelToken cancelToken,
   ) async {
-    // 先下到临时文件再改名：下载中断留下的半截文件不会被当成完整缓存
     final partPath = '$savePath.part';
     final stale = File(partPath);
-    // 清掉上次中断的残留，避免流式独占把旧数据当成新下载的起播水位
     if (await stale.exists()) {
       await stale.delete();
     }
@@ -368,10 +377,17 @@ class Library {
           localPath: partPath,
           cancelToken: cancelToken,
         ),
-        .navidrome => await navidromeClient!.downloadSong(
-          songId: song.id,
-          savePath: partPath,
-          cancelToken: cancelToken,
+        .subsonic => await _downloadOpenSubsonic(
+          subsonicClient!,
+          song.id,
+          partPath,
+          cancelToken,
+        ),
+        .navidrome => await _downloadOpenSubsonic(
+          navidromeClient!,
+          song.id,
+          partPath,
+          cancelToken,
         ),
         .emby => await embyClient!.downloadSong(
           itemId: song.id,
@@ -380,20 +396,28 @@ class Library {
         ),
         .local => false,
       };
-      final tmp = File(partPath);
-      if (completed && await tmp.exists()) {
-        await tmp.rename(savePath);
+      final part = File(partPath);
+      if (completed && await part.exists()) {
+        await part.rename(savePath);
         song.cacheExist = true;
-        cacheSizeNotifier.value +=
-            await File(savePath).length() / (1024 * 1024);
+        cacheSizeNotifier.value += await File(savePath).length() / (1024 * 1024);
         return;
       }
-      if (cancelToken.isCancelled) {
-        return;
+      if (!cancelToken.isCancelled) {
+        logger.output('cache download retry:${song.title}');
+        await Future.delayed(const Duration(seconds: 1));
       }
-      logger.output('cache download retry:${song.title}');
-      await Future.delayed(const Duration(seconds: 1));
     }
+  }
+
+  Future<bool> _downloadOpenSubsonic(
+    OpenSubsonicClient client,
+    String songId,
+    String savePath,
+    CancelToken cancelToken,
+  ) async {
+    await client.downloadSong(songId: songId, savePath: savePath);
+    return !cancelToken.isCancelled && await File(savePath).exists();
   }
 
   Future<void> clearCache(SourceType sourceType) async {
@@ -436,6 +460,8 @@ class Library {
         return _localSongIdListFile;
       case .webdav:
         return _webdavSongIdListFile;
+      case .subsonic:
+        return _subsonicSongIdListFile;
       case .navidrome:
         return _navidromeSongIdListFile;
       default:
@@ -449,6 +475,8 @@ class Library {
         return _localMetadataDB;
       case .webdav:
         return _webdavMetadataDB;
+      case .subsonic:
+        return _subsonicMetadataDB;
       case .navidrome:
         return _navidromeMetadataDB;
       default:
@@ -554,8 +582,6 @@ class Library {
       try {
         final ext = extension(realPath).toLowerCase();
         if (ext == '.dsf' || ext == '.dff') {
-          // lofty 不支持 DSD 容器，走手工头部解析；
-          // WebDAV 远程文件按 Range 只拉头部字节解析，不整首下载
           tmp = isWebdav && realPath == path
               ? await readRemoteDsdMetadata(path, headers: headers)
               : await readDsdMetadata(realPath);
@@ -691,12 +717,31 @@ class Library {
 
         await pool.close();
         break;
+      case .subsonic:
+        id2Song.removeWhere((id, song) => song.sourceType == sourceType);
+        if (subsonicClient != null) {
+          await for (final batch in subsonicClient!.getSongs()) {
+            for (final map in batch) {
+              MyAudioMetadata song = MyAudioMetadata.fromOpenSonicMap(
+                map,
+                .subsonic,
+              );
+              songListManager.subsonicSongList.add(song);
+              id2Song[song.id] = song;
+            }
+            _syncNotify(sourceType);
+          }
+        }
+        break;
       case .navidrome:
         id2Song.removeWhere((id, song) => song.sourceType == sourceType);
         if (navidromeClient != null) {
           await for (final batch in navidromeClient!.getSongs()) {
             for (final map in batch) {
-              MyAudioMetadata song = MyAudioMetadata.fromNavidromeMap(map);
+              MyAudioMetadata song = MyAudioMetadata.fromOpenSonicMap(
+                map,
+                .navidrome,
+              );
               songListManager.navidromeSongList.add(song);
               id2Song[song.id] = song;
             }

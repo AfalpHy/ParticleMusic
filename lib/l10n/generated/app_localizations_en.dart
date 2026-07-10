@@ -395,6 +395,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get connect2Navidrome => 'Connect to Navidrome';
 
   @override
+  String get connect2Subsonic => 'Connect to Subsonic';
+
+  @override
   String get connect2WebDAV => 'Connect to WebDAV';
 
   @override
@@ -1012,4 +1015,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get connectedNotConfirmed =>
       'USB DAC connected but exclusive support unconfirmed';
+
+  @override
+  String get noLyrics => 'There are no lyrics';
+
+  @override
+  String get lyricsParseFailed => 'Lyrics parsing failed';
 }

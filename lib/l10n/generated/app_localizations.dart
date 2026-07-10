@@ -842,6 +842,12 @@ abstract class AppLocalizations {
   /// **'Connect to Navidrome'**
   String get connect2Navidrome;
 
+  /// No description provided for @connect2Subsonic.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to Subsonic'**
+  String get connect2Subsonic;
+
   /// No description provided for @connect2WebDAV.
   ///
   /// In en, this message translates to:
@@ -1999,6 +2005,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'USB DAC connected but exclusive support unconfirmed'**
   String get connectedNotConfirmed;
+
+  /// No description provided for @noLyrics.
+  ///
+  /// In en, this message translates to:
+  /// **'There are no lyrics'**
+  String get noLyrics;
+
+  /// No description provided for @lyricsParseFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics parsing failed'**
+  String get lyricsParseFailed;
 }
 
 class _AppLocalizationsDelegate

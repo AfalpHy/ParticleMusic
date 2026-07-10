@@ -46,7 +46,7 @@ class SwitchableSongList extends StatelessWidget {
       context: context,
       child: SizedBox(
         width: 300,
-        height: isMobile ? 240 : 220,
+        height: isMobile ? 280 : 260,
         child: Padding(
           padding: const EdgeInsets.all(10),
           child: Builder(

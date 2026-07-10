@@ -5,17 +5,20 @@ import 'package:sylvakru/base/my_audio_metadata.dart';
 class SongListManager {
   List<MyAudioMetadata> localSongList = [];
   List<MyAudioMetadata> webdavSongList = [];
+  List<MyAudioMetadata> subsonicSongList = [];
   List<MyAudioMetadata> navidromeSongList = [];
   List<MyAudioMetadata> embySongList = [];
 
   ValueNotifier<int> localSortTypeNotifier = ValueNotifier(0);
   ValueNotifier<int> webdavSortTypeNotifier = ValueNotifier(0);
+  ValueNotifier<int> subsonicSortTypeNotifier = ValueNotifier(0);
   ValueNotifier<int> navidromeSortTypeNotifier = ValueNotifier(0);
   ValueNotifier<int> embySortTypeNotifier = ValueNotifier(0);
 
   ValueNotifier<int> localChangeNotifier = ValueNotifier(0);
-  ValueNotifier<int> webdavChangeNotifier = ValueNotifier(0);
   ValueNotifier<int> navidromeChangeNotifier = ValueNotifier(0);
+  ValueNotifier<int> subsonicChangeNotifier = ValueNotifier(0);
+  ValueNotifier<int> webdavChangeNotifier = ValueNotifier(0);
   ValueNotifier<int> embyChangeNotifier = ValueNotifier(0);
 
   final sourceTypeNotifier = ValueNotifier(SourceType.local);
@@ -25,6 +28,7 @@ class SongListManager {
   SongListManager() {
     localChangeNotifier.addListener(_notify);
     webdavChangeNotifier.addListener(_notify);
+    subsonicChangeNotifier.addListener(_notify);
     navidromeChangeNotifier.addListener(_notify);
     embyChangeNotifier.addListener(_notify);
 
@@ -45,6 +49,8 @@ class SongListManager {
       sourceTypeNotifier.value = .local;
     } else if (webdavSongList.isNotEmpty) {
       sourceTypeNotifier.value = .webdav;
+    } else if (subsonicSongList.isNotEmpty) {
+      sourceTypeNotifier.value = .subsonic;
     } else if (navidromeSongList.isNotEmpty) {
       sourceTypeNotifier.value = .navidrome;
     } else if (embySongList.isNotEmpty) {
@@ -60,6 +66,8 @@ class SongListManager {
         return localSongList;
       case .webdav:
         return webdavSongList;
+      case .subsonic:
+        return subsonicSongList;
       case .navidrome:
         return navidromeSongList;
       default:
@@ -73,6 +81,8 @@ class SongListManager {
         return localSongList;
       case .webdav:
         return webdavSongList;
+      case .subsonic:
+        return subsonicSongList;
       case .navidrome:
         return navidromeSongList;
       default:
@@ -86,6 +96,8 @@ class SongListManager {
         return localSortTypeNotifier;
       case .webdav:
         return webdavSortTypeNotifier;
+      case .subsonic:
+        return subsonicSortTypeNotifier;
       case .navidrome:
         return navidromeSortTypeNotifier;
       default:
@@ -99,6 +111,9 @@ class SongListManager {
         return localSortTypeNotifier;
       case .webdav:
         return webdavSortTypeNotifier;
+      case .subsonic:
+        return subsonicSortTypeNotifier;
+
       case .navidrome:
         return navidromeSortTypeNotifier;
       default:
@@ -112,6 +127,8 @@ class SongListManager {
         return localChangeNotifier;
       case .webdav:
         return webdavChangeNotifier;
+      case .subsonic:
+        return subsonicChangeNotifier;
       case .navidrome:
         return navidromeChangeNotifier;
       default:
@@ -125,6 +142,8 @@ class SongListManager {
         return localChangeNotifier;
       case .webdav:
         return webdavChangeNotifier;
+      case .subsonic:
+        return subsonicChangeNotifier;
       case .navidrome:
         return navidromeChangeNotifier;
       default:
@@ -135,6 +154,7 @@ class SongListManager {
   bool get isEmpty {
     return localSongList.isEmpty &&
         webdavSongList.isEmpty &&
+        subsonicSongList.isEmpty &&
         navidromeSongList.isEmpty &&
         embySongList.isEmpty;
   }
@@ -142,6 +162,7 @@ class SongListManager {
   int get totalCount {
     return localSongList.length +
         webdavSongList.length +
+        subsonicSongList.length +
         navidromeSongList.length +
         embySongList.length;
   }
@@ -152,6 +173,9 @@ class SongListManager {
       cnt++;
     }
     if (webdavSongList.isNotEmpty) {
+      cnt++;
+    }
+    if (subsonicSongList.isNotEmpty) {
       cnt++;
     }
     if (navidromeSongList.isNotEmpty) {
@@ -171,6 +195,7 @@ class SongListManager {
   void clear() {
     localSongList.clear();
     webdavSongList.clear();
+    subsonicSongList.clear();
     navidromeSongList.clear();
     embySongList.clear();
   }

@@ -1,5 +1,5 @@
 "CFBundleDisplayName" = "森露";
 "NSLocalNetworkUsageDescription" = "我们需要访问您的本地网络，以便发现并连接到您的 Navidrome、WebDAV 或 Emby 媒体服务器。";
-"NSCameraUsageDescription" = "用于在需要时选择或拍摄图片。";
 "NSPhotoLibraryUsageDescription" = "用于选择图片作为专辑封面。";
-"NSLocationWhenInUseUsageDescription" = "用于在应用功能需要时访问位置信息。";
+"NSLocationWhenInUseUsageDescription" = "本应用不会收集或使用您的位置信息。";
+"NSLocationAlwaysAndWhenInUseUsageDescription" = "本应用不会收集或使用您的位置信息。";

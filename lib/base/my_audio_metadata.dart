@@ -110,7 +110,10 @@ class MyAudioMetadata {
   set lyrics(String? value) => _audioMetadata.lyrics = value;
   set duration(Duration? value) => _audioMetadata.duration = value;
 
-  factory MyAudioMetadata.fromNavidromeMap(Map<String, dynamic> song) {
+  factory MyAudioMetadata.fromOpenSonicMap(
+    Map<String, dynamic> song,
+    SourceType sourceType,
+  ) {
     return MyAudioMetadata(
       AudioMetadata(
         // suffix 是真实文件扩展名（flac/dsf/…）；contentType 对 DSD 是
@@ -132,7 +135,7 @@ class MyAudioMetadata {
             ? Duration(seconds: song['duration'])
             : null,
       ),
-      sourceType: .navidrome,
+      sourceType: sourceType,
       id: song['id'],
       playCount: song['playCount'] as int? ?? 0,
       lastPlayed: song['played'] != null

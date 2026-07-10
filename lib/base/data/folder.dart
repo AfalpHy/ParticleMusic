@@ -20,6 +20,7 @@ final Set<String> _loftySupportedExts = {
   '.mp3',
   '.flac',
   '.m4a',
+  '.m4b',
   '.m4r',
   '.mp4',
   '.aac',

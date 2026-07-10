@@ -123,6 +123,7 @@
   "local": "本地",
   "switch_": "切换",
   "connect2Navidrome": "连接到Navidrome",
+  "connect2Subsonic": "连接到Subsonic",
   "connect2WebDAV": "连接到WebDAV",
   "connect2Emby": "连接到Emby",
   "connect2Server": "连接到服务器",
@@ -316,5 +317,7 @@
   "systemNoExclusive": "当前系统不支持 USB 独占请求",
   "requestedExclusive": "已请求 USB 独占输出",
   "canEnableExclusive": "可启用 USB 独占输出",
-  "connectedNotConfirmed": "已连接 USB DAC，但未确认支持独占"
+  "connectedNotConfirmed": "已连接 USB DAC，但未确认支持独占",
+  "noLyrics": "暂无歌词",
+  "lyricsParseFailed": "歌词解析失败"
 }

@@ -172,6 +172,7 @@
   "local": "Local",
   "switch_": "Switch",
   "connect2Navidrome": "Connect to Navidrome",
+  "connect2Subsonic": "Connect to Subsonic",
   "connect2WebDAV": "Connect to WebDAV",
   "connect2Emby": "Connect to Emby",
   "connect2Server": "Connect to Server",
@@ -395,5 +396,7 @@
   "systemNoExclusive": "This system doesn't support USB exclusive requests",
   "requestedExclusive": "USB exclusive output requested",
   "canEnableExclusive": "USB exclusive output available",
-  "connectedNotConfirmed": "USB DAC connected but exclusive support unconfirmed"
+  "connectedNotConfirmed": "USB DAC connected but exclusive support unconfirmed",
+  "noLyrics": "There are no lyrics",
+  "lyricsParseFailed": "Lyrics parsing failed"
 }

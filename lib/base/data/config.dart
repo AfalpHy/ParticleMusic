@@ -5,6 +5,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/services/emby_client.dart';
 import 'package:sylvakru/base/services/navidrome_client.dart';
+import 'package:sylvakru/base/services/subsonic_client.dart';
 import 'package:sylvakru/base/services/webdav_client.dart';
 
 final config = Config();
@@ -45,6 +46,21 @@ class Config {
       webdavClient = WebDavClient(
         baseUrl: webdavMap['baseUrl'],
         username: webdavMap['username'],
+        password: securePassword,
+      );
+    }
+
+    final subsonicMap = map['subsonic'] as Map<String, dynamic>?;
+    if (subsonicMap != null) {
+      String? securePassword = await _secureStorage.read(
+        key: 'subsonic_password',
+      );
+      securePassword ??= subsonicMap['password'];
+      securePassword ??= '';
+
+      subsonicClient = SubsonicClient(
+        baseUrl: subsonicMap['baseUrl'],
+        username: subsonicMap['username'],
         password: securePassword,
       );
     }
@@ -94,6 +110,12 @@ class Config {
         value: webdavClient!.password,
       );
     }
+    if (subsonicClient != null) {
+      await _secureStorage.write(
+        key: 'subsonic_password',
+        value: subsonicClient!.password,
+      );
+    }
     if (navidromeClient != null) {
       await _secureStorage.write(
         key: 'navidrome_password',
@@ -113,6 +135,12 @@ class Config {
           'webdav': {
             'baseUrl': webdavClient!.baseUrl,
             'username': webdavClient!.username,
+          },
+
+        if (subsonicClient != null)
+          'subsonic': {
+            'baseUrl': subsonicClient!.baseUrl,
+            'username': subsonicClient!.username,
           },
 
         if (navidromeClient != null)

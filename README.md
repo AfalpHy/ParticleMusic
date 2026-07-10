@@ -1,81 +1,194 @@
-## USB 独占播放功能介绍
+<div align="center">
+  <img src="./app_icons/icon.png" width="160" alt="Sylvakru Icon"/>
 
-本分支基于原版 [AfalpHy/sylvakru](https://github.com/AfalpHy/sylvakru/tree/main) 进行二次开发，新增了一整套 **USB 独占直驱播放** 能力：绕开安卓混音器，将音频以位完美（bit-perfect）方式直接推送至外接 USB DAC，并围绕该功能补充了 DSD、云端流式播放、独占音量、状态显示与 DAC 适配诊断等配套能力。
+  <br />
 
-## 致谢
+  # Sylvakru (森露)
 
-感谢原作者 [AfalpHy](https://github.com/AfalpHy) 创建并开源 sylvakru 项目，本分支的开发建立在原项目基础之上。
+  _“A private music oasis in the digital world.”_
+
+</div>
+
+Sylvakru is a cross-platform music player for local libraries and self-hosted media services, supporting Android, iOS, Windows, Linux, and macOS.
+
+Currently supports:
+- Local music libraries
+- WebDAV
+- Navidrome
+- Emby
+
+> Formerly known as Particle Music.
+
+> [!IMPORTANT]
+> **The iOS version is now available on the Apple App Store!**
+
+## USB Exclusive Mode(Android)
+
+Special thanks to [huya688zdx](https://github.com/huya688zdx) for making USB Exclusive Mode possible.
+
+If you need USB Exclusive Mode, download the dedicated build from the [usb-exclusive-beta](https://github.com/AfalpHy/sylvakru/releases#release-usb-exclusive-beta).
 
 
-> 说明：独占播放需要外接支持 UAC 的 USB DAC；未接 DAC 时自动走系统共享输出，功能与原版一致。
+## Supported Formats
 
----
+| File Format | Metadata Format(s)           |
+|-------------|------------------------------|
+| AAC (ADTS)  | `ID3v2`, `ID3v1`             |
+| Ape         | `APE`, `ID3v2`\*, `ID3v1`    |
+| AIFF        | `ID3v2`, `Text Chunks`       |
+| FLAC        | `Vorbis Comments`, `ID3v2`\* |
+| MP3         | `ID3v2`, `ID3v1`, `APE`      |
+| MP4         | `iTunes-style ilst`          |
+| MPC         | `APE`, `ID3v2`\*, `ID3v1`\*  |
+| Opus        | `Vorbis Comments`            |
+| Ogg Vorbis  | `Vorbis Comments`            |
+| Speex       | `Vorbis Comments`            |
+| WAV         | `ID3v2`, `RIFF INFO`         |
+| WavPack     | `APE`, `ID3v1`               |
 
-## 功能总览
+\* The tag will be **read only**, due to lack of official support
+
+## Audio Processing
+
+- [audio_tags_lofty](https://github.com/AfalpHy/audio_tags_lofty.git) — for reading and writing audio tags (based on lofty)
+- [media_kit](https://github.com/media-kit/media-kit.git) — for audio playback (based on mpv/FFmpeg)
 
 
-| 功能              | 一句话说明                                          |
-| ----------------- | --------------------------------------------------- |
-| USB 独占直驱      | 位完美直推 DAC，采样率跟随音源并校验 DAC 时钟       |
-| 状态胶囊          | 播放页实时显示 采样率 / 位深 / 输出通道，一键进设置 |
-| DSD 播放          | 支持 DoP / Native / 转 PCM 三种输出策略             |
-| 固定采样率 / 位深 | 可锁定输出格式，适配挑剔的 DAC                      |
-| 云端歌曲流式独占  | 边下边独占直驱，不断流、不爆音                      |
-| 独占音量控制      | 数字音量 + 物理音量键接管 + 悬浮音量条              |
-| 格式扩展          | 独占支持系统可解码的有损格式（m4a/mp3/ogg 等）      |
-| DAC 适配          | quirk 体系 + 一键诊断报告，方便适配与反馈           |
+## Run & Build
+Install Flutter by following the [official Flutter installation guide](https://docs.flutter.dev/install/manual).
+### Ubuntu/Debian
+``` shell
+# Flutter dependencies:
+sudo apt install clang lld cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libsecret-1-dev
 
----
+# audio lib
+sudo apt install libmpv-dev
 
-## 1. USB 独占直驱播放
+git clone https://github.com/AfalpHy/sylvakru.git
+cd sylvakru
+# check the development environment
+flutter doctor -v
+# run in debug mode
+flutter run
+# run in release mode
+flutter run --release
+# build
+flutter build linux
+# if you want to generate a .deb package
+flutter build linux && ./generate_deb.sh
 
-开启独占后，App 直接接管 USB DAC，音频以原始采样率、位深位完美送出，不经过安卓系统重采样与混音。输出采样率自动跟随当前曲目，并会校验 DAC 的实际时钟；若 DAC 不支持该采样率或时钟不匹配，会自动回退到系统共享输出，避免出现杂音或无声。
+# if you want to generate a .rpm package
+sudo apt install rpm
+flutter build linux && ./generate_rpm.sh
+```
 
-![1783258940951](images/USB_EXCLUSIVE_FEATURES/1783258940951.png)![1783171122033]images/USB_EXCLUSIVE_FEATURES/1783171122033.png)
+### Windows
+Install [Visual Studio](https://visualstudio.microsoft.com/).
+```shell
+git clone https://github.com/AfalpHy/sylvakru.git
+cd sylvakru
+# check the development environment
+flutter doctor -v
+# run in debug mode
+flutter run
+# run in release mode
+flutter run --release
+# build
+flutter build windows
+```
 
-## 2. 状态胶囊与音频输出设置入口
+### macOS & iOS
+Install Xcode and the Xcode Command Line Tools by following the [official Apple Developer download page](https://developer.apple.com/download/all/).
 
-播放页底部新增一个 **状态胶囊**，实时显示当前的 `采样率 | 位深 | 输出通道`（如 `96 kHz | 24 bits | USB`）：
+```shell
+git clone https://github.com/AfalpHy/sylvakru.git
+cd sylvakru
 
-- 左侧圆点用颜色表示独占链路的实时状态；
-- 点击右侧图标可直接进入「音频输出设置」页；
-- 拔出 DAC 时会自动回退并更新显示。
+# install CocoaPods
+sudo gem install cocoapods
+# or
+brew install cocoapods
 
-![1783259069761](images/USB_EXCLUSIVE_FEATURES/1783259069761.png)
+# check the development environment
+flutter doctor -v
+# run in debug mode
+flutter run
+# run in release mode
+flutter run --release
+# build
+flutter build macos
 
----
+# build an unsigned ipa
+flutter build ios --release --no-codesign && \
+mkdir -p Payload && \
+cp -r build/ios/iphoneos/Runner.app Payload/ && \
+zip -r sylvakru.ipa Payload && \
+rm -rf Payload
+```
 
-## 3. DSD 播放（DoP / Native / 转 PCM）
+### Android
+Install [Android Studio](https://developer.android.com/studio) and Android SDK Command-line Tools
+```shell
+git clone https://github.com/AfalpHy/sylvakru.git
+cd sylvakru
+# accept the SDK licenses
+flutter doctor --android-licenses
+# check the development environment
+flutter doctor -v
+# run in debug mode
+flutter run
+# run in release mode
+flutter run --release
+# build
+flutter build apk
+# split abi
+flutter build apk --split-per-abi
+```
+## Screenshots
 
-支持 `.dsf` / `.dff` 的 DSD 文件进库、识别与播放，并提供三种输出策略：
+### On iOS
+<div>
+    <img src="./screenshots/mobile0.png" width="270" height="540" />
+    <img src="./screenshots/mobile1.png" width="270" height="540" />
+    <img src="./screenshots/mobile2.png" width="270" height="540" />
+</div>
 
-- **PCM**：由解码器转为 PCM，走系统输出，兼容性最好；
-- **DoP**：以 PCM 帧封装 DSD，设备支持时使用；
-- **Native**：设备声明 RAW_DATA 或 quirk 指定字节排列时直发 DSD，否则自动回退 DoP。
+<div>
+    <img src="./screenshots/mobile3.png" width="270" height="540" />
+    <img src="./screenshots/mobile4.png" width="270" height="540" />
+    <img src="./screenshots/mobile5.png" width="270" height="540" />
+</div>
 
-![1783259754777](images/USB_EXCLUSIVE_FEATURES/1783259754777.png)![1783171415754])
+<div>
+    <img src="./screenshots/mobile6.png" width="270" height="540" />
+    <img src="./screenshots/mobile7.png" width="270" height="540" />
+    <img src="./screenshots/mobile8.png" width="270" height="540" />
+</div>
 
-## 4. 云端歌曲流式独占
+<div>
+    <img src="./screenshots/mobile9.png" width="270" height="540" />
+    <img src="./screenshots/mobile10.png" width="270" height="540" />
+    <img src="./screenshots/mobile11.png" width="270" height="540" />
+</div>
 
-云端歌曲无需等待整曲下载完成即可进入独占直驱：**边下载边独占播放**，并会预取队列中的下一首。做了流式优先与缓存并发保护，切歌 / seek 到未下载区不会误判结束而跳歌，也不会掉出独占产生断流。
+<div>
+    <img src="./screenshots/mobile12.png" width="270" height="540" />
+    <img src="./screenshots/mobile13.png" width="270" height="540" />
+    <img src="./screenshots/mobile14.png" width="270" height="540" />
+</div>
 
-![1783260776549](images/USB_EXCLUSIVE_FEATURES/1783260776549.png)!
+<div>
+    <img src="./screenshots/mobile15.png" width="270" height="540" />
+    <img src="./screenshots/mobile16.png" width="270" height="540" />
+</div>
 
-## 5. DAC 适配 quirk 与诊断报告
+### On Windows
 
-- **quirk 体系**：内置常见 DAC 的适配配置，并支持本地 `override` 导入，针对个别设备做字节排列 / 时钟等微调；
-- **一键诊断报告**：可复制 / 导出当前 DAC 的适配诊断信息（端点、格式描述符、时钟源、quirk 命中情况等），便于排查与反馈。
-
-![1783261036952](images/USB_EXCLUSIVE_FEATURES/1783261036952.png)!
-
----
-
-## 遇到问题 / 反馈
-
-如果你在使用 USB 独占时遇到问题（无声、杂音、无法进入独占、DSD 不识别等），欢迎反馈帮助适配：
-
-1. 在「音频输出设置」页底部 **生成诊断报告** 并复制 / 导出；
-2. 尽量附上 DAC 型号、出问题的曲目格式（如 DSD64 / 96kHz FLAC 等）与现象描述；
-3. 把上述信息发到邮箱：**2513114864qq@gmail.com**
-
-诊断报告里包含设备端点与格式描述符等技术信息，对定位问题非常关键，请尽量随邮件一并附上。
+![](./screenshots/desktop0.png)
+![](./screenshots/desktop1.png)
+![](./screenshots/desktop2.png)
+![](./screenshots/desktop3.png)
+![](./screenshots/desktop4.png)
+![](./screenshots/desktop5.png)
+![](./screenshots/desktop6.png)
+![](./screenshots/desktop7.png)
