@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:desktop_multi_window/desktop_multi_window.dart';
 import 'package:flutter/material.dart';
-import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/audio_handler.dart';
 
 import 'package:sylvakru/base/asset_images.dart';
@@ -24,8 +23,70 @@ bool lyricsWindowVisible = false;
 Duration desktopLyricsCurrentPosition = Duration.zero;
 
 LyricLine? currentLyricLine;
+LyricLine? nextLyricLine;
 bool currentLyricLineIsKaraoke = false;
 final updateDesktopLyricsNotifier = ValueNotifier(0);
+
+enum DesktopLyricsLineMode { single, double }
+
+// Style is edited from the main window's settings UI but rendered in the
+// lyrics window's own isolate/engine, which shares no memory with the main
+// one - these notifiers only hold the locally-applicable value in whichever
+// isolate they're read in, and are kept in sync across that boundary via
+// desktopLyricsStyleToMap()/applyDesktopLyricsStyleFromMap() over the
+// platform channel (see WindowControllerExtension.updateStyle).
+final desktopLyricsLineModeNotifier = ValueNotifier(
+  DesktopLyricsLineMode.single,
+);
+final desktopLyricsFontSizeNotifier = ValueNotifier(30.0);
+final desktopLyricsFontFamilyNotifier = ValueNotifier<String?>(null);
+final desktopLyricsColorNotifier = ValueNotifier<Color>(
+  const Color(0x80FFFFFF),
+);
+final desktopLyricsSungColorNotifier = ValueNotifier<Color>(
+  const Color(0xFFFFFFFF),
+);
+final desktopLyricsOutlineColorNotifier = ValueNotifier<Color>(
+  const Color(0x8A000000),
+);
+final desktopLyricsNextLineColorNotifier = ValueNotifier<Color>(
+  const Color(0x80FFFFFF),
+);
+
+Map<String, dynamic> desktopLyricsStyleToMap() {
+  return {
+    'lineMode': desktopLyricsLineModeNotifier.value.name,
+    'fontSize': desktopLyricsFontSizeNotifier.value,
+    'fontFamily': desktopLyricsFontFamilyNotifier.value,
+    'color': desktopLyricsColorNotifier.value.toARGB32(),
+    'sungColor': desktopLyricsSungColorNotifier.value.toARGB32(),
+    'outlineColor': desktopLyricsOutlineColorNotifier.value.toARGB32(),
+    'nextLineColor': desktopLyricsNextLineColorNotifier.value.toARGB32(),
+  };
+}
+
+void applyDesktopLyricsStyleFromMap(dynamic data) {
+  final raw = data as Map;
+  final map = Map<String, dynamic>.from(raw);
+
+  desktopLyricsLineModeNotifier.value = DesktopLyricsLineMode.values.firstWhere(
+    (e) => e.name == map['lineMode'],
+    orElse: () => DesktopLyricsLineMode.single,
+  );
+  desktopLyricsFontSizeNotifier.value = (map['fontSize'] as num).toDouble();
+  desktopLyricsFontFamilyNotifier.value = map['fontFamily'] as String?;
+  desktopLyricsColorNotifier.value = Color(map['color'] as int);
+  desktopLyricsSungColorNotifier.value = Color(map['sungColor'] as int);
+  desktopLyricsOutlineColorNotifier.value = Color(map['outlineColor'] as int);
+  desktopLyricsNextLineColorNotifier.value = Color(map['nextLineColor'] as int);
+}
+
+/// Pushes the current style config to the lyrics window, if it's running.
+/// Call this whenever a style setting changes, and once before showing the
+/// window in case it missed earlier updates while hidden.
+Future<void> pushDesktopLyricsStyle() async {
+  await lyricsWindowController?.updateStyle(desktopLyricsStyleToMap());
+}
 
 Future<void> initDesktopLyrics() async {
   try {
@@ -101,22 +162,39 @@ class DesktopLyrics extends StatelessWidget {
   }
 
   Widget content() {
-    return ValueListenableBuilder(
-      valueListenable: updateDesktopLyricsNotifier,
-      builder: (context, value, child) {
+    return AnimatedBuilder(
+      animation: Listenable.merge([
+        updateDesktopLyricsNotifier,
+        desktopLyricsLineModeNotifier,
+        desktopLyricsFontSizeNotifier,
+        desktopLyricsFontFamilyNotifier,
+        desktopLyricsColorNotifier,
+        desktopLyricsSungColorNotifier,
+        desktopLyricsOutlineColorNotifier,
+        desktopLyricsNextLineColorNotifier,
+      ]),
+      builder: (context, child) {
+        final fontSize = desktopLyricsFontSizeNotifier.value;
+        final fontFamily = desktopLyricsFontFamilyNotifier.value;
+        final color = desktopLyricsColorNotifier.value;
+        final sungColor = desktopLyricsSungColorNotifier.value;
+        final outlineColor = desktopLyricsOutlineColorNotifier.value;
+        final nextLineColor = desktopLyricsNextLineColorNotifier.value;
+        final isDoubleLine =
+            desktopLyricsLineModeNotifier.value == DesktopLyricsLineMode.double;
+
+        List<Shadow> shadows(Color shadowColor) => [
+          Shadow(offset: Offset(0, 1), blurRadius: 1, color: shadowColor),
+        ];
+
         if (currentLyricLine == null) {
           return Text(
             'Sylvakru',
             style: TextStyle(
-              fontSize: isMobile ? 20 : 30,
-              color: Colors.white,
-              shadows: [
-                Shadow(
-                  offset: Offset(0, 1),
-                  blurRadius: 1,
-                  color: Colors.black87,
-                ),
-              ],
+              fontSize: fontSize,
+              fontFamily: fontFamily,
+              color: sungColor,
+              shadows: shadows(outlineColor),
             ),
           );
         }
@@ -132,42 +210,47 @@ class DesktopLyrics extends StatelessWidget {
                     key: UniqueKey(),
                     line: currentLyricLine!,
                     position: desktopLyricsCurrentPosition,
-                    fontSize: isMobile ? 20 : 30,
+                    fontSize: fontSize,
                     expanded: false,
                     isDesktopLyrics: true,
+                    fontFamily: fontFamily,
+                    unsungColor: color,
+                    sungColor: sungColor,
+                    outlineColor: outlineColor,
                   );
                 },
               )
             else
               Text(
                 currentLyricLine!.text,
-
                 style: TextStyle(
-                  fontSize: isMobile ? 20 : 30,
-                  color: Colors.white,
-                  shadows: [
-                    Shadow(
-                      offset: Offset(0, 1),
-                      blurRadius: 1,
-                      color: Colors.black87,
-                    ),
-                  ],
+                  fontSize: fontSize,
+                  fontFamily: fontFamily,
+                  color: sungColor,
+                  shadows: shadows(outlineColor),
                 ),
               ),
             for (final translate in currentLyricLine!.translates)
               Text(
                 translate,
-
                 style: TextStyle(
-                  fontSize: isMobile ? 14 : 24,
-                  color: Colors.white.withAlpha(128),
-                  shadows: [
-                    Shadow(
-                      offset: Offset(0, 1),
-                      blurRadius: 1,
-                      color: Colors.black87,
-                    ),
-                  ],
+                  fontSize: fontSize - 6,
+                  fontFamily: fontFamily,
+                  color: color,
+                  shadows: shadows(outlineColor),
+                ),
+              ),
+            if (isDoubleLine && nextLyricLine != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 4),
+                child: Text(
+                  nextLyricLine!.text,
+                  style: TextStyle(
+                    fontSize: fontSize - 6,
+                    fontFamily: fontFamily,
+                    color: nextLineColor,
+                    shadows: shadows(outlineColor),
+                  ),
                 ),
               ),
           ],

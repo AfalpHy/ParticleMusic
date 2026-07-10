@@ -609,4 +609,31 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get lyricsParseFailed => '歌词解析失败';
+
+  @override
+  String get desktopLyricsStyle => '桌面歌词样式';
+
+  @override
+  String get lineMode => '显示行数';
+
+  @override
+  String get singleLine => '单行';
+
+  @override
+  String get doubleLine => '双行（含下一句）';
+
+  @override
+  String get fontSize => '字号';
+
+  @override
+  String get lyricColor => '歌词颜色';
+
+  @override
+  String get sungLyricColor => '已唱歌词颜色';
+
+  @override
+  String get outlineColor => '描边颜色';
+
+  @override
+  String get nextLineColor => '下一句颜色';
 }

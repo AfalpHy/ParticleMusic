@@ -243,5 +243,14 @@
   "connectingToAppStore": "Connecting to the App Store...",
   "checkingPurchase": "Checking purchase history...",
   "noLyrics": "There are no lyrics",
-  "lyricsParseFailed": "Lyrics parsing failed"
+  "lyricsParseFailed": "Lyrics parsing failed",
+  "desktopLyricsStyle": "Desktop Lyrics Style",
+  "lineMode": "Line Mode",
+  "singleLine": "Single Line",
+  "doubleLine": "Double Line (with next line)",
+  "fontSize": "Font Size",
+  "lyricColor": "Lyric Color",
+  "sungLyricColor": "Sung Lyric Color",
+  "outlineColor": "Outline Color",
+  "nextLineColor": "Next Line Color"
 }

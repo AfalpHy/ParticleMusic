@@ -174,6 +174,7 @@ class BottomControl extends StatelessWidget {
             if (lyricsWindowVisible) {
               await controller.hide();
             } else {
+              await pushDesktopLyricsStyle();
               await updateDesktopLyrics();
               await controller.show();
             }

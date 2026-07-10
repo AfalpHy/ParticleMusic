@@ -16,6 +16,7 @@ import 'package:sylvakru/base/services/webdav_client.dart';
 import 'package:sylvakru/base/utils/media_query.dart';
 import 'package:sylvakru/base/utils/source_type.dart';
 import 'package:sylvakru/base/widgets/connect_client_widget.dart';
+import 'package:sylvakru/base/widgets/desktop_lyrics_style_panel.dart';
 import 'package:sylvakru/base/widgets/equalizer.dart';
 import 'package:sylvakru/base/widgets/my_divider.dart';
 import 'package:sylvakru/base/data/setting.dart';
@@ -117,6 +118,14 @@ class SettingsList extends StatelessWidget {
           ),
 
         sliverBox(paddingIfNeed(isLandscape, equalizerListTile(context, l10n))),
+
+        if (!isMobile)
+          sliverBox(
+            paddingIfNeed(
+              isLandscape,
+              desktopLyricsStyleListTile(context, l10n),
+            ),
+          ),
 
         sliverBox(paddingIfNeed(isLandscape, autoPlayOnStartupListTile(l10n))),
 
@@ -721,6 +730,29 @@ class SettingsList extends StatelessWidget {
           return Icon(Icons.lock);
         },
       ),
+    );
+  }
+
+  Widget desktopLyricsStyleListTile(
+    BuildContext context,
+    AppLocalizations l10n,
+  ) {
+    return ListTile(
+      leading: ImageIcon(desktopLyricsImage, size: iconSize),
+      title: Text(l10n.desktopLyricsStyle),
+      onTap: () {
+        showAnimationDialog(
+          context: context,
+          child: SizedBox(
+            width: 320,
+            height: 480,
+            child: Padding(
+              padding: const EdgeInsets.all(15.0),
+              child: const DesktopLyricsStylePanel(),
+            ),
+          ),
+        );
+      },
     );
   }
 

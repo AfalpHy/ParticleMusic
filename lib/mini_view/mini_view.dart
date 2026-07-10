@@ -542,6 +542,7 @@ class _MiniViewState extends State<MiniView> {
                   if (lyricsWindowVisible) {
                     await controller.hide();
                   } else {
+                    await pushDesktopLyricsStyle();
                     await updateDesktopLyrics();
                     await controller.show();
                   }

@@ -1273,6 +1273,60 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Lyrics parsing failed'**
   String get lyricsParseFailed;
+
+  /// No description provided for @desktopLyricsStyle.
+  ///
+  /// In en, this message translates to:
+  /// **'Desktop Lyrics Style'**
+  String get desktopLyricsStyle;
+
+  /// No description provided for @lineMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Line Mode'**
+  String get lineMode;
+
+  /// No description provided for @singleLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Single Line'**
+  String get singleLine;
+
+  /// No description provided for @doubleLine.
+  ///
+  /// In en, this message translates to:
+  /// **'Double Line (with next line)'**
+  String get doubleLine;
+
+  /// No description provided for @fontSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Font Size'**
+  String get fontSize;
+
+  /// No description provided for @lyricColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Lyric Color'**
+  String get lyricColor;
+
+  /// No description provided for @sungLyricColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Sung Lyric Color'**
+  String get sungLyricColor;
+
+  /// No description provided for @outlineColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Outline Color'**
+  String get outlineColor;
+
+  /// No description provided for @nextLineColor.
+  ///
+  /// In en, this message translates to:
+  /// **'Next Line Color'**
+  String get nextLineColor;
 }
 
 class _AppLocalizationsDelegate

@@ -616,4 +616,31 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get lyricsParseFailed => 'Lyrics parsing failed';
+
+  @override
+  String get desktopLyricsStyle => 'Desktop Lyrics Style';
+
+  @override
+  String get lineMode => 'Line Mode';
+
+  @override
+  String get singleLine => 'Single Line';
+
+  @override
+  String get doubleLine => 'Double Line (with next line)';
+
+  @override
+  String get fontSize => 'Font Size';
+
+  @override
+  String get lyricColor => 'Lyric Color';
+
+  @override
+  String get sungLyricColor => 'Sung Lyric Color';
+
+  @override
+  String get outlineColor => 'Outline Color';
+
+  @override
+  String get nextLineColor => 'Next Line Color';
 }

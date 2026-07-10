@@ -117,6 +117,15 @@ dependency_overrides:
       url: https://github.com/AfalpHy/media-kit
       ref: main
       path: libs\macos\media_kit_libs_macos_audio\
+  # Upstream doesn't give secondary windows any way to opt into a
+  # transparent background on Linux (see multi_window_manager.cc), which
+  # made the desktop lyrics window render as opaque black. Patched to
+  # request an RGBA visual and transparent FlView background.
+  desktop_multi_window:
+    git:
+      url: https://github.com/lpifx/flutter-plugins
+      ref: main
+      path: packages/desktop_multi_window
 
 dev_dependencies:
   flutter_test:

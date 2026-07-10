@@ -164,6 +164,7 @@ class MyAudioHandler extends BaseAudioHandler {
     final tmpLyricLine = currentLyricLine;
 
     currentLyricLine = lines[current];
+    nextLyricLine = current + 1 < lines.length ? lines[current + 1] : null;
     currentLyricLineIsKaraoke = parsedLyrics.isKaraoke;
 
     if (lyricsWindowVisible && currentLyricLine != tmpLyricLine) {
@@ -459,6 +460,7 @@ class MyAudioHandler extends BaseAudioHandler {
     playQueue = [];
     _playQueueTmp = [];
     currentLyricLine = null;
+    nextLyricLine = null;
     if (!isMobile) {
       await updateDesktopLyrics();
     }
@@ -500,6 +502,7 @@ class MyAudioHandler extends BaseAudioHandler {
         } else {
           await stop();
           currentLyricLine = null;
+          nextLyricLine = null;
           if (!isMobile) {
             await updateDesktopLyrics();
           }

@@ -194,5 +194,14 @@
   "connectingToAppStore": "正在连接 App Store...",
   "checkingPurchase": "正在检查购买记录...",
   "noLyrics": "暂无歌词",
-  "lyricsParseFailed": "歌词解析失败"
+  "lyricsParseFailed": "歌词解析失败",
+  "desktopLyricsStyle": "桌面歌词样式",
+  "lineMode": "显示行数",
+  "singleLine": "单行",
+  "doubleLine": "双行（含下一句）",
+  "fontSize": "字号",
+  "lyricColor": "歌词颜色",
+  "sungLyricColor": "已唱歌词颜色",
+  "outlineColor": "描边颜色",
+  "nextLineColor": "下一句颜色"
 }

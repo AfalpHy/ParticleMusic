@@ -9,6 +9,7 @@ import 'package:sylvakru/base/widgets/lyric_list_view.dart';
 import 'package:sylvakru/base/data/artist_album.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/widgets/manage_music_folders.dart';
+import 'package:sylvakru/landscape_view/desktop_lyrics.dart';
 
 final exitOnCloseNotifier = ValueNotifier(false);
 
@@ -70,6 +71,12 @@ class Setting {
         json['exitOnClose'] as bool? ?? exitOnCloseNotifier.value;
 
     recursiveScanNotifier.value = json['recursiveScan'] as bool? ?? false;
+
+    final desktopLyricsStyle =
+        json['desktopLyricsStyle'] as Map<String, dynamic>?;
+    if (desktopLyricsStyle != null) {
+      applyDesktopLyricsStyleFromMap(desktopLyricsStyle);
+    }
   }
 
   void save() {
@@ -94,6 +101,8 @@ class Setting {
         'exitOnClose': exitOnCloseNotifier.value,
 
         'recursiveScan': recursiveScanNotifier.value,
+
+        'desktopLyricsStyle': desktopLyricsStyleToMap(),
       }),
     );
   }

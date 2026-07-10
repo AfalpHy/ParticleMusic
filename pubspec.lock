@@ -269,11 +269,12 @@ packages:
   desktop_multi_window:
     dependency: "direct main"
     description:
-      name: desktop_multi_window
-      sha256: "60ba38725b8887b60e44d15afdcf0c3813568b5da2ccaf1e7f6fd09a380a6e24"
-      url: "https://pub.flutter-io.cn"
-    source: hosted
-    version: "0.3.0"
+      path: "packages/desktop_multi_window"
+      ref: main
+      resolved-ref: "4118d4c0ff41f6bacd1d9b7c0ad09baa9fd2bf49"
+      url: "https://github.com/lpifx/flutter-plugins"
+    source: git
+    version: "0.3.1"
   dio:
     dependency: "direct main"
     description:

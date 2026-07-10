@@ -213,6 +213,7 @@ Future<void> updateDesktopLyrics() async {
   await lyricsWindowController?.updateLyric(
     audioHandler.getPosition(),
     currentLyricLine,
+    nextLyricLine,
     currentLyricLineIsKaraoke,
   );
 }
@@ -227,6 +228,11 @@ void getDesktopLyricFromMap(dynamic data) {
   final lyricLineMap = map['lyric_line'] as Map?;
   currentLyricLine = lyricLineMap != null
       ? LyricLine.fromMap(lyricLineMap)
+      : null;
+
+  final nextLyricLineMap = map['next_lyric_line'] as Map?;
+  nextLyricLine = nextLyricLineMap != null
+      ? LyricLine.fromMap(nextLyricLineMap)
       : null;
 
   currentLyricLineIsKaraoke = map['isKaraoke'] as bool;

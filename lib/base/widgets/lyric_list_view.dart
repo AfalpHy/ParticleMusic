@@ -319,6 +319,10 @@ class KaraokeText extends StatefulWidget {
   final double fontSize;
   final bool expanded;
   final bool isDesktopLyrics;
+  final String? fontFamily;
+  final Color? sungColor;
+  final Color? unsungColor;
+  final Color? outlineColor;
 
   const KaraokeText({
     super.key,
@@ -327,6 +331,10 @@ class KaraokeText extends StatefulWidget {
     required this.fontSize,
     required this.expanded,
     this.isDesktopLyrics = false,
+    this.fontFamily,
+    this.sungColor,
+    this.unsungColor,
+    this.outlineColor,
   });
 
   @override
@@ -340,7 +348,8 @@ class KaraokeTextState extends State<KaraokeText>
   Duration displayPosition = Duration.zero;
   DateTime lastSyncTime = DateTime.now();
 
-  late Color textColor;
+  late Color sungColor;
+  late Color unsungColor;
 
   void _playStateListener() {
     if (isPlayingNotifier.value) {
@@ -375,11 +384,14 @@ class KaraokeTextState extends State<KaraokeText>
       ticker.start();
     }
 
-    textColor = widget.isDesktopLyrics
-        ? Colors.white
-        : miniModeNotifier.value
-        ? miniViewHighlightTextColor.value
-        : lyricsPageHighlightTextColor.value;
+    sungColor =
+        widget.sungColor ??
+        (widget.isDesktopLyrics
+            ? Colors.white
+            : miniModeNotifier.value
+            ? miniViewHighlightTextColor.value
+            : lyricsPageHighlightTextColor.value);
+    unsungColor = widget.unsungColor ?? sungColor.withAlpha(128);
   }
 
   @override
@@ -414,8 +426,9 @@ class KaraokeTextState extends State<KaraokeText>
 
     final style = TextStyle(
       fontSize: widget.fontSize,
+      fontFamily: widget.fontFamily,
       fontWeight: FontWeight.bold,
-      color: textColor,
+      color: sungColor,
     );
 
     return WidgetSpan(
@@ -427,13 +440,16 @@ class KaraokeTextState extends State<KaraokeText>
             token.text,
             style: TextStyle(
               fontSize: widget.fontSize,
+              fontFamily: widget.fontFamily,
               color: Colors.transparent,
               shadows: widget.isDesktopLyrics
                   ? [
                       Shadow(
                         offset: Offset(2, 2),
                         blurRadius: isMobile ? 5 : 1,
-                        color: isMobile ? Colors.black87 : Colors.black54,
+                        color:
+                            widget.outlineColor ??
+                            (isMobile ? Colors.black87 : Colors.black54),
                       ),
                     ]
                   : null,
@@ -444,7 +460,7 @@ class KaraokeTextState extends State<KaraokeText>
             shaderCallback: (bounds) {
               final p = progress.clamp(0.0, 1.0);
               return LinearGradient(
-                colors: [textColor, textColor.withAlpha(128)],
+                colors: [sungColor, unsungColor],
                 stops: [p, p],
               ).createShader(Rect.fromLTWH(0, 0, bounds.width, bounds.height));
             },

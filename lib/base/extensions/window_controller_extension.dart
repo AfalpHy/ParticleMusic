@@ -22,6 +22,9 @@ extension WindowControllerExtension on WindowController {
         case 'update_lyric':
           getDesktopLyricFromMap(call.arguments);
           break;
+        case 'update_style':
+          applyDesktopLyricsStyleFromMap(call.arguments);
+          break;
         case 'set_playing':
           isPlayingNotifier.value = call.arguments as bool;
           break;
@@ -62,14 +65,19 @@ extension WindowControllerExtension on WindowController {
   Future<void> updateLyric(
     Duration postion,
     LyricLine? lyricline,
+    LyricLine? nextLyricline,
     bool isKaraoke,
   ) => _safeInvoke('update_lyric', {
     'position': postion.inMicroseconds,
     'lyric_line': lyricline?.toMap(),
+    'next_lyric_line': nextLyricline?.toMap(),
     'isKaraoke': isKaraoke,
   });
 
   Future<void> sendPlaying(bool playing) => _safeInvoke('set_playing', playing);
+
+  Future<void> updateStyle(Map<String, dynamic> style) =>
+      _safeInvoke('update_style', style);
 
   Future<void> hideDesktopLyrics() => _safeInvoke('hide_desktop_lyrics');
 
