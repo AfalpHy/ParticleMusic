@@ -934,7 +934,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
       return format;
     }
 
-    final path = (song.cachePath ?? song.path ?? '').toLowerCase();
+    final path = (song.path ?? song.cachePath ?? '').toLowerCase();
     if (path.endsWith('.flac')) return 'flac';
     if (path.endsWith('.wav') || path.endsWith('.wave')) return 'wav';
     if (path.endsWith('.dsf')) return 'dsf';
@@ -982,7 +982,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
       'flac', 'wav', 'wave', 'dsf', 'dff',
       'mp3', 'm4a', 'm4b', 'mp4', 'aac', 'ogg', 'oga', 'opus',
     };
-    final ext = (song.cachePath ?? '').toLowerCase().split('.').last;
+    final ext = _normalizedExclusiveFormat(song)?.toLowerCase();
     if (!streamableExts.contains(ext)) {
       // 独占无法流式的格式，没必要等水位
       return null;
@@ -993,9 +993,8 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     final bytesPerSecond =
         ((song.bitrate ?? 0) > 0 ? song.bitrate! : 2000) * 1000 ~/ 8;
     final startBytes = bytesPerSecond * 10;
-    final deadline = DateTime.now().add(Duration(seconds: 4));
     var lastSize = -1;
-    while (DateTime.now().isBefore(deadline)) {
+    while (true) {
       if (generation != null && generation != _loadGeneration) {
         return null;
       }
@@ -1020,9 +1019,6 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
       lastSize = size;
       await Future.delayed(Duration(milliseconds: 200));
     }
-    logger.output("usb exclusive skipped:below streaming watermark -> shared");
-    debugPrint("usb exclusive skipped:below streaming watermark -> shared");
-    return null;
   }
 
   int? _preferredExclusiveBitDepth() {
