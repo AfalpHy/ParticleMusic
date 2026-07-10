@@ -688,17 +688,20 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
 
   Future<void> load() async {
     final generation = ++_loadGeneration;
-    if (currentSongNotifier.value != null) {
+    final previousSong = currentSongNotifier.value;
+    final previousNext = previousSong == null
+        ? null
+        : playQueue[(playQueue.indexOf(previousSong) + 1) % playQueue.length];
+    if (previousSong != null) {
       if (_playLastSyncTime != null) {
         _playedDuration += DateTime.now().difference(_playLastSyncTime!);
       }
-      if (currentSongNotifier.value!.duration != null) {
+      if (previousSong.duration != null) {
         double times =
-            _playedDuration.inSeconds /
-            currentSongNotifier.value!.duration!.inSeconds;
+            _playedDuration.inSeconds / previousSong.duration!.inSeconds;
         if (times > 0.5) {
-          library.tryAddCache(currentSongNotifier.value!);
-          history.addSongTimes(currentSongNotifier.value!, times.round());
+          library.tryAddCache(previousSong);
+          history.addSongTimes(previousSong, times.round());
         }
       }
     }
@@ -723,6 +726,12 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
       await _stopExclusiveIntentionally();
       _usbExclusiveActive = false;
       _usbExclusivePosition = Duration.zero;
+      if (previousSong != null && previousSong != currentSong) {
+        library.cancelCacheDownload(previousSong);
+      }
+      if (previousNext != null && previousNext != currentSong) {
+        library.cancelCacheDownload(previousNext);
+      }
 
       final openedExclusive = await _tryOpenUsbExclusive(
         currentSong,
@@ -780,13 +789,22 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     }
     final current = playQueue[currentIndex];
     final next = playQueue[(currentIndex + 1) % playQueue.length];
+    final generation = _loadGeneration;
     if (next.sourceType == .local || next.cacheExist) {
       return;
     }
     unawaited(() async {
       try {
         await library.tryAddCache(current);
+        if (generation != _loadGeneration ||
+            currentSongNotifier.value != current) {
+          return;
+        }
         await library.tryAddCache(next);
+        if (generation != _loadGeneration ||
+            currentSongNotifier.value != current) {
+          return;
+        }
         logger.output("prefetched next song cache:${next.title}");
       } catch (error) {
         logger.output("prefetch next cache failed:$error");

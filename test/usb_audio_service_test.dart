@@ -276,6 +276,7 @@ void main() {
         'targetBufferMs': 320,
         'startPaused': false,
         'streaming': false,
+        'totalBytes': null,
       });
       expect(state.active, isTrue);
       expect(state.playing, isTrue);

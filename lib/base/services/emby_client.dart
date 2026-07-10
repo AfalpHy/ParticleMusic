@@ -208,12 +208,16 @@ class EmbyClient {
   Future<bool> downloadSong({
     required String itemId,
     required String savePath,
+    CancelToken? cancelToken,
   }) async {
     return _boolRequest(
       () => dio.download(
         '/Items/$itemId/Download',
         savePath,
         queryParameters: {'api_key': accessToken},
+        cancelToken: cancelToken,
+        deleteOnError: false,
+        options: Options(receiveTimeout: Duration.zero),
       ),
     );
   }

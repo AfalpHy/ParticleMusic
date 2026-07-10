@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 
 import 'package:audio_tags_lofty/audio_tags_lofty.dart';
+import 'package:dio/dio.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -314,6 +315,7 @@ class Library {
   // 进行中的缓存下载，按目标路径去重：同一首歌并发触发时合并成一次下载，
   // 避免两个写入方同时写同一文件损坏缓存
   final Map<String, Future<void>> _cacheDownloads = {};
+  final Map<String, CancelToken> _cacheDownloadCancelTokens = {};
 
   Future<void> tryAddCache(MyAudioMetadata song) {
     if (song.sourceType == .local || song.cacheExist) {
@@ -322,16 +324,36 @@ class Library {
     final savePath = song.cachePath!;
     final inFlight = _cacheDownloads[savePath];
     if (inFlight != null) {
+      if (_cacheDownloadCancelTokens[savePath]?.isCancelled == true) {
+        return inFlight.whenComplete(() => tryAddCache(song));
+      }
       return inFlight;
     }
-    final download = _downloadCache(song, savePath).whenComplete(() {
-      _cacheDownloads.remove(savePath);
-    });
+    final cancelToken = CancelToken();
+    final download = _downloadCache(song, savePath, cancelToken).whenComplete(
+      () {
+        _cacheDownloads.remove(savePath);
+        _cacheDownloadCancelTokens.remove(savePath);
+      },
+    );
     _cacheDownloads[savePath] = download;
+    _cacheDownloadCancelTokens[savePath] = cancelToken;
     return download;
   }
 
-  Future<void> _downloadCache(MyAudioMetadata song, String savePath) async {
+  void cancelCacheDownload(MyAudioMetadata song) {
+    final savePath = song.cachePath;
+    if (savePath == null) {
+      return;
+    }
+    _cacheDownloadCancelTokens[savePath]?.cancel();
+  }
+
+  Future<void> _downloadCache(
+    MyAudioMetadata song,
+    String savePath,
+    CancelToken cancelToken,
+  ) async {
     // 先下到临时文件再改名：下载中断留下的半截文件不会被当成完整缓存
     final partPath = '$savePath.part';
     final stale = File(partPath);
@@ -339,23 +361,44 @@ class Library {
     if (await stale.exists()) {
       await stale.delete();
     }
-    if (song.sourceType == .webdav) {
-      await webdavClient!.download(remotePath: song.path!, localPath: partPath);
-    } else if (song.sourceType == .navidrome) {
-      await navidromeClient!.downloadSong(songId: song.id, savePath: partPath);
-    } else if (song.sourceType == .emby) {
-      await embyClient!.downloadSong(itemId: song.id, savePath: partPath);
-    }
-    final tmp = File(partPath);
-    if (await tmp.exists()) {
-      await tmp.rename(savePath);
-      song.cacheExist = true;
-      cacheSizeNotifier.value += await File(savePath).length() / (1024 * 1024);
+    while (!cancelToken.isCancelled) {
+      final completed = switch (song.sourceType) {
+        .webdav => await webdavClient!.download(
+          remotePath: song.path!,
+          localPath: partPath,
+          cancelToken: cancelToken,
+        ),
+        .navidrome => await navidromeClient!.downloadSong(
+          songId: song.id,
+          savePath: partPath,
+          cancelToken: cancelToken,
+        ),
+        .emby => await embyClient!.downloadSong(
+          itemId: song.id,
+          savePath: partPath,
+          cancelToken: cancelToken,
+        ),
+        .local => false,
+      };
+      final tmp = File(partPath);
+      if (completed && await tmp.exists()) {
+        await tmp.rename(savePath);
+        song.cacheExist = true;
+        cacheSizeNotifier.value +=
+            await File(savePath).length() / (1024 * 1024);
+        return;
+      }
+      if (cancelToken.isCancelled) {
+        return;
+      }
+      logger.output('cache download retry:${song.title}');
+      await Future.delayed(const Duration(seconds: 1));
     }
   }
 
   Future<void> clearCache(SourceType sourceType) async {
     for (final song in songListManager.getSongList2(sourceType)) {
+      cancelCacheDownload(song);
       song.cacheExist = false;
     }
 

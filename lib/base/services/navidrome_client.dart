@@ -358,10 +358,11 @@ class NavidromeClient {
     );
   }
 
-  Future<void> downloadSong({
+  Future<bool> downloadSong({
     required String songId,
     required String savePath,
     ProgressCallback? onProgress,
+    CancelToken? cancelToken,
   }) async {
     try {
       final uri = Uri.parse(baseUrl)
@@ -372,11 +373,20 @@ class NavidromeClient {
         uri.toString(),
         savePath,
         onReceiveProgress: onProgress,
+        cancelToken: cancelToken,
+        deleteOnError: false,
+        options: Options(receiveTimeout: Duration.zero),
       );
+      return true;
     } on DioException catch (e) {
+      if (CancelToken.isCancel(e)) {
+        return false;
+      }
       logger.output('Download failed: ${e.message}');
+      return false;
     } catch (e) {
       logger.output('Download failed: $e');
+      return false;
     }
   }
 }
