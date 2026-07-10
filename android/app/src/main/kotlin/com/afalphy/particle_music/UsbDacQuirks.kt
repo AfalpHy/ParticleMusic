@@ -22,6 +22,10 @@ data class DacQuirk(
     val clockSetCurDelayMs: Int = 0,
     // 个别设备 GET_CUR 返回垃圾但 SET_CUR 实际生效
     val clockSkipGetCurValidation: Boolean = false,
+    // 硬件音量 Feature Unit 覆盖仅供探测和后续适配使用，当前不参与写入。
+    val hardwareVolumeFeatureUnitId: Int? = null,
+    val hardwareVolumeControlInterface: Int? = null,
+    val hardwareVolumeChannels: List<Int> = emptyList(),
     val flags: List<String> = emptyList(),
 )
 
@@ -185,12 +189,38 @@ object UsbDacQuirks {
 
     fun parseEntries(json: String): List<Pair<String, DacQuirk>> {
         val root = JSONObject(json)
-        val devices = root.optJSONArray("devices") ?: return emptyList()
         val result = mutableListOf<Pair<String, DacQuirk>>()
+        appendEntries(result, root.optJSONArray("devices"))
+        val vendors = root.optJSONArray("vendors")
+        if (vendors != null) {
+            for (index in 0 until vendors.length()) {
+                val vendor = vendors.optJSONObject(index) ?: continue
+                val match = vendor.optJSONObject("match") ?: continue
+                val vid = normalizeId(match.optString("vid")) ?: continue
+                appendEntries(
+                    result,
+                    vendor.optJSONArray("devices"),
+                    vendorVid = vid,
+                    vendorLabel = match.optString("label").takeIf { it.isNotEmpty() },
+                )
+            }
+        }
+        return result
+    }
+
+    private fun appendEntries(
+        result: MutableList<Pair<String, DacQuirk>>,
+        devices: JSONArray?,
+        vendorVid: String? = null,
+        vendorLabel: String? = null,
+    ) {
+        if (devices == null) {
+            return
+        }
         for (index in 0 until devices.length()) {
             val device = devices.optJSONObject(index) ?: continue
             val match = device.optJSONObject("match") ?: continue
-            val vid = normalizeId(match.optString("vid")) ?: continue
+            val vid = vendorVid ?: normalizeId(match.optString("vid")) ?: continue
             val rawPid = match.optString("pid")
             val pid = if (rawPid == "*" || rawPid.isEmpty()) {
                 "*"
@@ -200,9 +230,10 @@ object UsbDacQuirks {
             val dop = device.optJSONObject("dop")
             val nativeDsd = device.optJSONObject("nativeDsd")
             val clock = device.optJSONObject("clock")
+            val hardwareVolume = device.optJSONObject("hardwareVolume")
             val flagsArray = device.optJSONArray("flags")
             result += "$vid:$pid" to DacQuirk(
-                label = match.optString("label").takeIf { it.isNotEmpty() },
+                label = match.optString("label").takeIf { it.isNotEmpty() } ?: vendorLabel,
                 dopSupported = if (dop?.has("supported") == true) {
                     dop.optBoolean("supported")
                 } else {
@@ -213,6 +244,19 @@ object UsbDacQuirks {
                 nativeDsdMaxDsd = nativeDsd?.optInt("maxDsd", 0)?.takeIf { it > 0 },
                 clockSetCurDelayMs = clock?.optInt("setCurDelayMs", 0) ?: 0,
                 clockSkipGetCurValidation = clock?.optBoolean("skipGetCurValidation") == true,
+                hardwareVolumeFeatureUnitId = hardwareVolume
+                    ?.optInt("featureUnitId", 0)
+                    ?.takeIf { it in 1..255 },
+                hardwareVolumeControlInterface = hardwareVolume
+                    ?.optInt("controlInterface", -1)
+                    ?.takeIf { it >= 0 },
+                hardwareVolumeChannels = buildList {
+                    val channels = hardwareVolume?.optJSONArray("channels") ?: return@buildList
+                    for (channelIndex in 0 until channels.length()) {
+                        val channel = channels.optInt(channelIndex, -1)
+                        if (channel >= 0) add(channel)
+                    }
+                },
                 flags = buildList {
                     if (flagsArray != null) {
                         for (flagIndex in 0 until flagsArray.length()) {
@@ -222,7 +266,6 @@ object UsbDacQuirks {
                 },
             )
         }
-        return result
     }
 
     fun matchQuirk(

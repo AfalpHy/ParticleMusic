@@ -766,7 +766,7 @@ String buildUsbDiagnosticsReport(
   bool platformSupported = true,
 }) {
   final buffer = StringBuffer();
-  buffer.writeln('Sylvakru USB Diagnostics Report v1');
+  buffer.writeln('Sylvakru USB Diagnostics Report v2');
 
   final error = native['error'];
   if (error != null) {
@@ -788,7 +788,9 @@ String buildUsbDiagnosticsReport(
       '- Device: ${'${native['manufacturer'] ?? 'unknown'} ${native['model'] ?? ''}'.trim()}',
     );
   }
-  buffer.writeln('- Generated at: ${_formatTimestamp(native['generatedAtMs'])}');
+  buffer.writeln(
+    '- Generated at: ${_formatTimestamp(native['generatedAtMs'])}',
+  );
 
   // 2. USB device identity
   buffer.writeln();
@@ -839,9 +841,13 @@ String buildUsbDiagnosticsReport(
   buffer.writeln('## App parse result');
   buffer.writeln('### AS formats');
   _writeListSection(buffer, diagnostics['streamingFormats']);
-  buffer.writeln('### Output candidates (alt/maxPacket/attr/feedback/bits/format)');
+  buffer.writeln(
+    '### Output candidates (alt/maxPacket/attr/feedback/bits/format)',
+  );
   _writeListSection(buffer, diagnostics['outputCandidates']);
-  buffer.writeln('- UAC2 clock source id: ${diagnostics['clockSourceId'] ?? 'unknown'}');
+  buffer.writeln(
+    '- UAC2 clock source id: ${diagnostics['clockSourceId'] ?? 'unknown'}',
+  );
   buffer.writeln('- Last probe: ${native['lastProbe'] ?? 'none'}');
   buffer.writeln('### Quirk');
   buffer.writeln('- Match: ${diagnostics['quirkMatch'] ?? 'unknown'}');
@@ -851,7 +857,17 @@ String buildUsbDiagnosticsReport(
     buffer.writeln('- Load errors: $quirkErrors');
   }
 
-  // 5. System-side capability
+  // 5. Exclusive session snapshot
+  buffer.writeln();
+  buffer.writeln('## Exclusive session');
+  _writeDiagnosticsSnapshot(buffer, diagnostics['session']);
+
+  // 6. Hardware volume probe
+  buffer.writeln();
+  buffer.writeln('## Hardware volume probe');
+  _writeDiagnosticsSnapshot(buffer, diagnostics['hardwareVolume']);
+
+  // 7. System-side capability
   buffer.writeln();
   buffer.writeln('## System-side capability');
   final status = (native['systemStatus'] as Map?)?.cast<String, Object?>();
@@ -864,14 +880,14 @@ String buildUsbDiagnosticsReport(
     buffer.writeln('- No USB audio output device.');
   }
 
-  // 6. Preferences snapshot
+  // 8. Preferences snapshot
   buffer.writeln();
   buffer.writeln('## Preferences snapshot');
   usbAudioPreferences.toMap().forEach((key, value) {
     buffer.writeln('- $key: $value');
   });
 
-  // 7. Runtime state snapshot
+  // 9. Runtime state snapshot
   buffer.writeln();
   buffer.writeln('## Runtime state snapshot');
   final state = usbExclusivePlaybackStateNotifier.value;
@@ -891,7 +907,7 @@ String buildUsbDiagnosticsReport(
     'underrun=${telemetry.underrunCount}',
   );
 
-  // 8. Recent logs
+  // 10. Recent logs
   buffer.writeln();
   buffer.writeln('## Recent logs (Kotlin/native)');
   _writeLogLines(buffer, native['logs']);
@@ -923,6 +939,26 @@ void _writeListSection(StringBuffer buffer, Object? value) {
     }
   } else {
     buffer.writeln('- none');
+  }
+}
+
+void _writeDiagnosticsSnapshot(StringBuffer buffer, Object? value) {
+  if (value is! Map || value.isEmpty) {
+    buffer.writeln('- none');
+    return;
+  }
+  for (final entry in value.entries) {
+    final key = entry.key.toString();
+    final item = entry.value;
+    if (item is Map) {
+      buffer.writeln('### $key');
+      _writeDiagnosticsSnapshot(buffer, item);
+    } else if (item is List) {
+      buffer.writeln('### $key');
+      _writeListSection(buffer, item);
+    } else {
+      buffer.writeln('- $key=$item');
+    }
   }
 }
 

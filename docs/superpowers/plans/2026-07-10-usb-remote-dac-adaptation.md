@@ -13,8 +13,8 @@
 ### Task 1: 厂商分组 quirk 目录
 
 **Files:**
-- Modify: `android/app/src/test/kotlin/com/afalphy/sylvakru/UsbDacQuirksTest.kt`
-- Modify: `android/app/src/main/kotlin/com/afalphy/sylvakru/UsbDacQuirks.kt`
+- Modify: `android/app/src/test/kotlin/com/afalphy/particle_music/UsbDacQuirksTest.kt`
+- Modify: `android/app/src/main/kotlin/com/afalphy/particle_music/UsbDacQuirks.kt`
 - Modify: `android/app/src/main/assets/usb_dac_quirks.json`
 
 - [ ] **Step 1: 写入失败的 JVM 测试**
@@ -46,7 +46,7 @@ Expected: 所有 `UsbDacQuirksTest` 通过。
 **Files:**
 - Modify: `test/usb_audio_service_test.dart`
 - Modify: `lib/base/services/usb_audio_service.dart`
-- Modify: `android/app/src/main/kotlin/com/afalphy/sylvakru/UsbExclusiveAudioEngine.kt`
+- Modify: `android/app/src/main/kotlin/com/afalphy/particle_music/UsbExclusiveAudioEngine.kt`
 
 - [ ] **Step 1: 写入失败的 Dart 报告测试**
 

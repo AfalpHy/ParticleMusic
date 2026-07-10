@@ -366,69 +366,111 @@ void main() {
     expect(telemetry.updatedAtMs, 123456);
   });
 
-  test('getDiagnosticsReport assembles native data into a text report', () async {
-    final service = UsbAudioService(channel: channel, isAndroid: true);
+  test(
+    'getDiagnosticsReport assembles native data into a text report',
+    () async {
+      final service = UsbAudioService(channel: channel, isAndroid: true);
 
-    messenger.setMockMethodCallHandler(channel, (call) async {
-      if (call.method == 'getUsbDiagnosticsReport') {
-        return {
-          'generatedAtMs': 1751414400000,
-          'androidSdk': 34,
-          'androidRelease': '14',
-          'manufacturer': 'Pixel',
-          'model': 'Test',
-          'permissionGranted': true,
-          'device': {
-            'vendorIdHex': '0x2972',
-            'productIdHex': '0x0047',
-            'manufacturerName': 'FiiO',
-            'productName': 'FiiO KA13',
-            'deviceClass': 0,
-            'deviceSubclass': 0,
-            'interfaceCount': 4,
-            'audioInterfaceCount': 2,
-            'serialTail': '****9F2A',
-          },
-          'diagnostics': {
-            'available': true,
-            'rawDescriptorLength': 32,
-            'rawDescriptorsHex': '0000: 12 01 00 02',
-            'streamingFormats': ['StreamingFormatInfo(alt=1)'],
-            'outputCandidates': ['alt=1/max=294/bits=32'],
-            'clockSourceId': 41,
-          },
-          'lastProbe': {'message': 'ok'},
-          'systemStatus': {
-            'devices': [
-              {'id': 10, 'name': 'FiiO KA13'},
-            ],
-          },
-          'nativeLogcat': ['01-01 00:00:00.000 I native line'],
-          'logs': ['00:00:00.000 I/UsbExclusiveAudioEngine: open ok'],
-        };
-      }
-      throw PlatformException(code: 'unexpected_method');
-    });
+      messenger.setMockMethodCallHandler(channel, (call) async {
+        if (call.method == 'getUsbDiagnosticsReport') {
+          return {
+            'generatedAtMs': 1751414400000,
+            'androidSdk': 34,
+            'androidRelease': '14',
+            'manufacturer': 'Pixel',
+            'model': 'Test',
+            'permissionGranted': true,
+            'device': {
+              'vendorIdHex': '0x2972',
+              'productIdHex': '0x0047',
+              'manufacturerName': 'FiiO',
+              'productName': 'FiiO KA13',
+              'deviceClass': 0,
+              'deviceSubclass': 0,
+              'interfaceCount': 4,
+              'audioInterfaceCount': 2,
+              'serialTail': '****9F2A',
+            },
+            'diagnostics': {
+              'available': true,
+              'rawDescriptorLength': 32,
+              'rawDescriptorsHex': '0000: 12 01 00 02',
+              'streamingFormats': ['StreamingFormatInfo(alt=1)'],
+              'outputCandidates': ['alt=1/max=294/bits=32'],
+              'clockSourceId': 41,
+              'session': {
+                'id': 'usb-session-42',
+                'input': {
+                  'sourceFormat': 'dsf',
+                  'mode': 'native',
+                  'sampleRate': 176400,
+                  'channels': 2,
+                  'bitDepth': 32,
+                },
+                'outputSelections': [
+                  {'sampleRate': 176400, 'selected': 'alt=2/max=768/bits=32'},
+                ],
+                'clock': {
+                  'protocol': 'uac2',
+                  'setCurResult': 4,
+                  'readBack': 176400,
+                },
+                'feedback': {
+                  'actualFrames': 22.05,
+                  'nominalFrames': 22.05,
+                  'ignoredCount': 0,
+                },
+                'transport': {
+                  'submittedBytes': 1411200,
+                  'pendingUrbs': 7,
+                  'underrunCount': 0,
+                },
+              },
+              'hardwareVolume': {
+                'protocol': 'uac2',
+                'controlInterface': 0,
+                'featureUnits': ['unit=7/channel=0/volume=read-write'],
+              },
+            },
+            'lastProbe': {'message': 'ok'},
+            'systemStatus': {
+              'devices': [
+                {'id': 10, 'name': 'FiiO KA13'},
+              ],
+            },
+            'nativeLogcat': ['01-01 00:00:00.000 I native line'],
+            'logs': ['00:00:00.000 I/UsbExclusiveAudioEngine: open ok'],
+          };
+        }
+        throw PlatformException(code: 'unexpected_method');
+      });
 
-    final report = await service.getDiagnosticsReport();
+      final report = await service.getDiagnosticsReport();
 
-    expect(report, startsWith('Sylvakru USB Diagnostics Report v1'));
-    expect(report, contains('App version'));
-    expect(report, contains('0x2972 / 0x0047'));
-    expect(report, contains('****9F2A'));
-    expect(report, contains('## Raw descriptors (hex dump)'));
-    expect(report, contains('0000: 12 01 00 02'));
-    expect(report, contains('alt=1/max=294/bits=32'));
-    expect(report, contains('UAC2 clock source id: 41'));
-    expect(report, contains('## Preferences snapshot'));
-    expect(report, contains('open ok'));
-    expect(report, contains('native line'));
-  });
+      expect(report, startsWith('Sylvakru USB Diagnostics Report v2'));
+      expect(report, contains('App version'));
+      expect(report, contains('0x2972 / 0x0047'));
+      expect(report, contains('****9F2A'));
+      expect(report, contains('## Raw descriptors (hex dump)'));
+      expect(report, contains('0000: 12 01 00 02'));
+      expect(report, contains('alt=1/max=294/bits=32'));
+      expect(report, contains('UAC2 clock source id: 41'));
+      expect(report, contains('## Preferences snapshot'));
+      expect(report, contains('## Exclusive session'));
+      expect(report, contains('usb-session-42'));
+      expect(report, contains('alt=2/max=768/bits=32'));
+      expect(report, contains('submittedBytes=1411200'));
+      expect(report, contains('## Hardware volume probe'));
+      expect(report, contains('unit=7/channel=0/volume=read-write'));
+      expect(report, contains('open ok'));
+      expect(report, contains('native line'));
+    },
+  );
 
   test('buildUsbDiagnosticsReport handles missing device data', () {
     final report = buildUsbDiagnosticsReport(const {}, platformSupported: true);
 
-    expect(report, startsWith('Sylvakru USB Diagnostics Report v1'));
+    expect(report, startsWith('Sylvakru USB Diagnostics Report v2'));
     expect(report, contains('No USB audio device detected.'));
     expect(report, contains('Descriptors unavailable.'));
   });
