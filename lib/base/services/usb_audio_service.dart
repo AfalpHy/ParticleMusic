@@ -512,6 +512,7 @@ class UsbTransportTelemetry {
   final int isoPacketCount;
   final int pendingUrbs;
   final int underrunCount;
+  final int? lastUnderrunAtMs;
   final int updatedAtMs;
 
   const UsbTransportTelemetry({
@@ -522,6 +523,7 @@ class UsbTransportTelemetry {
     required this.isoPacketCount,
     required this.pendingUrbs,
     required this.underrunCount,
+    required this.lastUnderrunAtMs,
     required this.updatedAtMs,
   });
 
@@ -534,6 +536,7 @@ class UsbTransportTelemetry {
       isoPacketCount: 0,
       pendingUrbs: 0,
       underrunCount: 0,
+      lastUnderrunAtMs: null,
       updatedAtMs: 0,
     );
   }
@@ -549,10 +552,28 @@ class UsbTransportTelemetry {
       isoPacketCount: _asInt(map['isoPacketCount']) ?? 0,
       pendingUrbs: _asInt(map['pendingUrbs']) ?? 0,
       underrunCount: _asInt(map['underrunCount']) ?? 0,
+      lastUnderrunAtMs: _asInt(map['lastUnderrunAtMs']),
       updatedAtMs: _asInt(map['updatedAtMs']) ?? 0,
     );
   }
+
+  UsbTransportHealth health({required bool playing, required int targetMs}) {
+    if (!active) return UsbTransportHealth.idle;
+    if (!playing) return UsbTransportHealth.paused;
+    if (lastUnderrunAtMs != null &&
+        updatedAtMs >= lastUnderrunAtMs! &&
+        updatedAtMs - lastUnderrunAtMs! <= 1500) {
+      return UsbTransportHealth.underrun;
+    }
+
+    final lowWatermark = (targetMs * 0.35).round().clamp(20, 250);
+    return bufferLevel.inMilliseconds < lowWatermark
+        ? UsbTransportHealth.low
+        : UsbTransportHealth.stable;
+  }
 }
+
+enum UsbTransportHealth { idle, paused, stable, low, underrun }
 
 @immutable
 class UsbExclusiveProbeResult {
@@ -629,6 +650,10 @@ class UsbAudioStatus {
   final String? outputDeviceName;
   final int? outputSampleRate;
   final String? outputEncoding;
+  final String? manufacturerName;
+  final String? productName;
+  final int? vendorId;
+  final int? productId;
   final String? message;
   final List<UsbAudioDevice> devices;
 
@@ -643,6 +668,10 @@ class UsbAudioStatus {
     required this.outputDeviceName,
     required this.outputSampleRate,
     required this.outputEncoding,
+    required this.manufacturerName,
+    required this.productName,
+    required this.vendorId,
+    required this.productId,
     required this.message,
     required this.devices,
   });
@@ -659,6 +688,10 @@ class UsbAudioStatus {
       outputDeviceName: null,
       outputSampleRate: null,
       outputEncoding: null,
+      manufacturerName: null,
+      productName: null,
+      vendorId: null,
+      productId: null,
       message: message,
       devices: const [],
     );
@@ -687,6 +720,10 @@ class UsbAudioStatus {
       outputDeviceName: map['outputDeviceName'] as String?,
       outputSampleRate: _asInt(map['outputSampleRate']),
       outputEncoding: map['outputEncoding'] as String?,
+      manufacturerName: map['manufacturerName'] as String?,
+      productName: map['productName'] as String?,
+      vendorId: _asInt(map['vendorId']),
+      productId: _asInt(map['productId']),
       message: map['message'] as String?,
       devices: devices,
     );

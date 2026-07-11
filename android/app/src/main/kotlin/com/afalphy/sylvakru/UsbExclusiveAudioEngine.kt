@@ -171,6 +171,8 @@ class UsbExclusiveAudioEngine(
     private var lastTelemetryEmitMs = 0L
     private var lastTelemetryBufferMs: Long? = null
     private var zeroBufferUnderruns = 0L
+    private var lastTelemetryUnderrunCount = 0L
+    private var lastUnderrunAtMs: Long? = null
     private var activePacketsPerSecond = 0
 
     // 热切换：切歌时设备与端点参数（时钟/声道/位深）不变就保留已打开的 USB
@@ -471,6 +473,8 @@ class UsbExclusiveAudioEngine(
         lastTelemetryEmitMs = 0L
         lastTelemetryBufferMs = null
         zeroBufferUnderruns = 0L
+        lastTelemetryUnderrunCount = 0L
+        lastUnderrunAtMs = null
         activePacketsPerSecond = 0
         val requestedChannels = dsdReader?.channels ?: 2
         val wantDsdKind = when {
@@ -1198,6 +1202,11 @@ class UsbExclusiveAudioEngine(
         if (active && bufferLevelMs > 0) {
             minimumBufferLevelMs = minimumBufferLevelMs?.let { minOf(it, bufferLevelMs) } ?: bufferLevelMs
         }
+        val underrunCount = nativeIsoErrors + zeroBufferUnderruns
+        if (underrunCount > lastTelemetryUnderrunCount) {
+            lastUnderrunAtMs = nowMs
+        }
+        lastTelemetryUnderrunCount = underrunCount
 
         emitTelemetry(
             mapOf(
@@ -1207,7 +1216,8 @@ class UsbExclusiveAudioEngine(
                 "targetBufferMs" to targetBufferMs,
                 "isoPacketCount" to totalIsoPackets,
                 "pendingUrbs" to pendingUrbs,
-                "underrunCount" to (nativeIsoErrors + zeroBufferUnderruns),
+                "underrunCount" to underrunCount,
+                "lastUnderrunAtMs" to lastUnderrunAtMs,
                 "updatedAtMs" to nowMs,
             ),
         )
@@ -1227,7 +1237,8 @@ class UsbExclusiveAudioEngine(
                     "minimumBufferLevelMs" to minimumBufferLevelMs,
                     "pendingUrbs" to pendingUrbs,
                     "isoPacketCount" to totalIsoPackets,
-                    "underrunCount" to (nativeIsoErrors + zeroBufferUnderruns),
+                    "underrunCount" to underrunCount,
+                    "lastUnderrunAtMs" to lastUnderrunAtMs,
                 ),
             )
         }
@@ -1258,6 +1269,8 @@ class UsbExclusiveAudioEngine(
 
     private fun emitInactiveTelemetry() {
         lastTelemetryBufferMs = null
+        lastTelemetryUnderrunCount = 0L
+        lastUnderrunAtMs = null
         emitTelemetry(
             mapOf(
                 "active" to false,
@@ -1267,6 +1280,7 @@ class UsbExclusiveAudioEngine(
                 "isoPacketCount" to 0,
                 "pendingUrbs" to 0,
                 "underrunCount" to 0,
+                "lastUnderrunAtMs" to null,
                 "updatedAtMs" to SystemClock.elapsedRealtime(),
             ),
         )

@@ -32,6 +32,10 @@ void main() {
             'outputDeviceName': 'USB DAC',
             'outputSampleRate': 96000,
             'outputEncoding': 'pcm_24bit_packed',
+            'manufacturerName': 'iBasso',
+            'productName': 'DC04U',
+            'vendorId': 0x0661,
+            'productId': 0x0883,
             'message': 'USB audio device detected',
             'devices': [
               {
@@ -62,6 +66,10 @@ void main() {
       expect(status.outputDeviceName, 'USB DAC');
       expect(status.outputSampleRate, 96000);
       expect(status.outputEncoding, 'pcm_24bit_packed');
+      expect(status.manufacturerName, 'iBasso');
+      expect(status.productName, 'DC04U');
+      expect(status.vendorId, 0x0661);
+      expect(status.productId, 0x0883);
       expect(status.devices, hasLength(1));
       expect(status.devices.single.name, 'USB DAC');
       expect(status.devices.single.sampleRates, [44100, 48000, 96000]);
@@ -291,9 +299,47 @@ void main() {
       expect(state.sampleRate, 44100);
       expect(state.bitDepth, 24);
       expect(state.format, 'flac');
+      expect(state.hardwareVolumeActive, isTrue);
+      expect(state.digitalVolumeActive, isFalse);
       expect(usbExclusivePlaybackStateNotifier.value, state);
     },
   );
+
+  test(
+    'transport health reflects current level instead of latched history',
+    () {
+      final telemetry = UsbTransportTelemetry.fromMap({
+        'active': true,
+        'bufferLevelMs': 196,
+        'minimumBufferLevelMs': 0,
+        'targetBufferMs': 200,
+        'underrunCount': 1,
+        'lastUnderrunAtMs': 1000,
+        'updatedAtMs': 4000,
+      });
+
+      expect(
+        telemetry.health(playing: true, targetMs: 200),
+        UsbTransportHealth.stable,
+      );
+    },
+  );
+
+  test('transport health reports only a recent underrun', () {
+    final telemetry = UsbTransportTelemetry.fromMap({
+      'active': true,
+      'bufferLevelMs': 196,
+      'targetBufferMs': 200,
+      'underrunCount': 1,
+      'lastUnderrunAtMs': 3000,
+      'updatedAtMs': 4000,
+    });
+
+    expect(
+      telemetry.health(playing: true, targetMs: 200),
+      UsbTransportHealth.underrun,
+    );
+  });
 
   test('setExclusiveTargetBufferMs updates native exclusive buffer', () async {
     final service = UsbAudioService(channel: channel, isAndroid: true);

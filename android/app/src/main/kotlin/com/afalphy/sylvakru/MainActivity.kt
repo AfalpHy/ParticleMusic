@@ -613,6 +613,8 @@ class MainActivity : AudioServiceActivity() {
         message: String? = null,
     ): Map<String, Any?> {
         val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        val usbManager = getSystemService(Context.USB_SERVICE) as UsbManager
+        val usbDevice = findUsbAudioDevice(usbManager)
         val devices = getUsbAudioDevices(audioManager)
         val activeDevice = getActiveUsbAudioDevice(audioManager, devices)
         val outputDevice = activeDevice ?: getActiveOutputDevice(audioManager)
@@ -641,6 +643,10 @@ class MainActivity : AudioServiceActivity() {
             "outputDeviceName" to outputDevice?.productName?.toString(),
             "outputSampleRate" to outputSampleRate(outputDevice),
             "outputEncoding" to outputEncoding(outputDevice),
+            "manufacturerName" to usbDevice?.manufacturerName,
+            "productName" to usbDevice?.productName,
+            "vendorId" to usbDevice?.vendorId,
+            "productId" to usbDevice?.productId,
             "message" to (message ?: defaultStatusMessage(devices)),
             "devices" to devices.map { it.toMap(audioManager) },
         )

@@ -30,51 +30,23 @@ final audioOutputVisibleNotifier = ValueNotifier(true);
 
 enum AudioOutputSettingsPageKind { overview, fixedSampleRate, dsdMode }
 
-enum _TransportHealth { idle, paused, stable, low, underrun }
-
-_TransportHealth _transportHealth({
-  required bool active,
-  required bool playing,
-  required int levelMs,
-  required int? minimumMs,
-  required int targetMs,
-  required int underrunCount,
-}) {
-  if (!active) {
-    return _TransportHealth.idle;
-  }
-  if (!playing) {
-    return _TransportHealth.paused;
-  }
-  if (underrunCount > 0) {
-    return _TransportHealth.underrun;
-  }
-
-  final lowWatermark = (targetMs * 0.35).round().clamp(20, 250);
-  if (levelMs < lowWatermark ||
-      (minimumMs != null && minimumMs < lowWatermark)) {
-    return _TransportHealth.low;
-  }
-  return _TransportHealth.stable;
-}
-
-String _transportHealthLabel(_TransportHealth health, AppLocalizations l10n) {
+String _transportHealthLabel(UsbTransportHealth health, AppLocalizations l10n) {
   return switch (health) {
-    _TransportHealth.idle => l10n.transportIdle,
-    _TransportHealth.paused => l10n.transportPaused,
-    _TransportHealth.stable => l10n.transportStable,
-    _TransportHealth.low => l10n.transportLow,
-    _TransportHealth.underrun => l10n.transportUnderrun,
+    UsbTransportHealth.idle => l10n.transportIdle,
+    UsbTransportHealth.paused => l10n.transportPaused,
+    UsbTransportHealth.stable => l10n.transportStable,
+    UsbTransportHealth.low => l10n.transportLow,
+    UsbTransportHealth.underrun => l10n.transportUnderrun,
   };
 }
 
-Color _transportHealthAccent(_TransportHealth health) {
+Color _transportHealthAccent(UsbTransportHealth health) {
   return switch (health) {
-    _TransportHealth.stable => const Color(0xFF50D890),
-    _TransportHealth.low => const Color(0xFFFFB454),
-    _TransportHealth.underrun => const Color(0xFFFF6B6B),
-    _TransportHealth.idle ||
-    _TransportHealth.paused => highlightTextColor.value,
+    UsbTransportHealth.stable => const Color(0xFF50D890),
+    UsbTransportHealth.low => const Color(0xFFFFB454),
+    UsbTransportHealth.underrun => const Color(0xFFFF6B6B),
+    UsbTransportHealth.idle ||
+    UsbTransportHealth.paused => highlightTextColor.value,
   };
 }
 
@@ -345,13 +317,31 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
           accent.withAlpha(mainPageThemeNotifier.value == .dark ? 34 : 20),
           menuColor.value,
         );
-        final title = supported ? device?.name ?? 'USB DAC' : _l10n.unrecognizedUsbDevice;
+        final manufacturer = status.manufacturerName?.trim();
+        final product = status.productName?.trim();
+        final title = supported
+            ? manufacturer?.isNotEmpty == true
+                  ? manufacturer!
+                  : device?.name ?? 'USB DAC'
+            : _l10n.unrecognizedUsbDevice;
+        final subtitle =
+            supported && product?.isNotEmpty == true && product != title
+            ? product
+            : null;
         final statusLabel = supported ? _l10n.connected : _l10n.notConnected;
         final linkLabel = supported
             ? (exclusive.active ? _l10n.exclusivePlayback : _l10n.running)
             : _l10n.awaitingConnection;
-        final formatLabel = 'PCM ${formatOutputSampleRate(status, _l10n)}'
-            .replaceAll(_l10n.unknown, _l10n.systemDefault);
+        final dsdMode = exclusive.format?.contains('(Native)') == true
+            ? 'Native'
+            : 'DoP';
+        final formatLabel =
+            '${exclusive.active && exclusive.bitDepth == 1 ? dsdMode : 'PCM'} '
+                    '${formatOutputSampleRate(status, _l10n)}'
+                .replaceAll(_l10n.unknown, _l10n.systemDefault);
+        final depthLabel = exclusive.active && exclusive.bitDepth != null
+            ? '${exclusive.bitDepth}-bit'
+            : _compactDepthLabel(status);
 
         return DecoratedBox(
           decoration: BoxDecoration(
@@ -369,7 +359,7 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
                     Icon(Icons.usb_rounded, color: foreground.withAlpha(170)),
                     const SizedBox(width: 10),
                     Text(
-                      'USB EXCLUSIVE',
+                      _l10n.usbExclusiveLabel,
                       style: TextStyle(
                         color: foreground.withAlpha(150),
                         fontSize: 13,
@@ -423,6 +413,20 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
                     fontWeight: FontWeight.w900,
                   ),
                 ),
+                if (subtitle != null) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    subtitle,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: TextStyle(
+                      color: foreground.withAlpha(165),
+                      fontSize: 17,
+                      height: 1.05,
+                      fontWeight: FontWeight.w400,
+                    ),
+                  ),
+                ],
                 const SizedBox(height: 22),
                 Row(
                   children: [
@@ -436,7 +440,7 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
                     ),
                     const SizedBox(width: 8),
                     Text(
-                      'OUTPUT LINK',
+                      _l10n.outputLinkLabel,
                       style: TextStyle(
                         color: foreground.withAlpha(135),
                         fontSize: 12,
@@ -457,14 +461,19 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
                 const SizedBox(height: 22),
                 Row(
                   children: [
-                    Expanded(child: _metricColumn('FORMAT', formatLabel)),
-                    const SizedBox(width: 12),
                     Expanded(
-                      child: _metricColumn('DEPTH', _compactDepthLabel(status)),
+                      child: _metricColumn(_l10n.formatLabel, formatLabel),
                     ),
                     const SizedBox(width: 12),
                     Expanded(
-                      child: _metricColumn('USB ID', _usbIdLabel(device)),
+                      child: _metricColumn(_l10n.depthLabel, depthLabel),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: _metricColumn(
+                        _l10n.usbIdLabel,
+                        _usbIdLabel(status),
+                      ),
                     ),
                   ],
                 ),
@@ -498,13 +507,9 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
                 final minimumMs = telemetry.minimumBufferLevel?.inMilliseconds;
                 final clampedLevel = levelMs.clamp(0, targetMs);
                 final progress = targetMs <= 0 ? 0.0 : clampedLevel / targetMs;
-                final health = _transportHealth(
-                  active: active,
+                final health = telemetry.health(
                   playing: exclusive.playing,
-                  levelMs: levelMs,
-                  minimumMs: minimumMs,
                   targetMs: targetMs,
-                  underrunCount: telemetry.underrunCount,
                 );
                 final accent = _transportHealthAccent(health);
                 final foreground = textColor.value;
@@ -583,17 +588,6 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
                                     fontSize: 15,
                                     fontWeight: FontWeight.w700,
                                   ),
-                                ),
-                              ),
-                            ),
-                            Padding(
-                              padding: const EdgeInsets.only(bottom: 3),
-                              child: Text(
-                                'ISO ${telemetry.active ? telemetry.isoPacketCount : 0}',
-                                style: TextStyle(
-                                  color: foreground.withAlpha(175),
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w800,
                                 ),
                               ),
                             ),
@@ -704,15 +698,26 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
               ),
           ],
         ),
-        const SizedBox(height: 18),
-        _sectionTitle('DSD to PCM'),
-        _settingsCard(
-          children: [
-            _dsdPcmRateTile('DSD64', prefs.dsd64PcmRateNotifier),
-            _dsdPcmRateTile('DSD128', prefs.dsd128PcmRateNotifier),
-            _dsdPcmRateTile('DSD256', prefs.dsd256PcmRateNotifier),
-            _dsdPcmRateTile('DSD512', prefs.dsd512PcmRateNotifier),
-          ],
+        ValueListenableBuilder<UsbDsdMode>(
+          valueListenable: prefs.dsdModeNotifier,
+          builder: (context, mode, _) {
+            if (mode != UsbDsdMode.pcm) return const SizedBox.shrink();
+            return Column(
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                const SizedBox(height: 18),
+                _sectionTitle(_l10n.dsdToPcmRates),
+                _settingsCard(
+                  children: [
+                    _dsdPcmRateTile('DSD64', prefs.dsd64PcmRateNotifier),
+                    _dsdPcmRateTile('DSD128', prefs.dsd128PcmRateNotifier),
+                    _dsdPcmRateTile('DSD256', prefs.dsd256PcmRateNotifier),
+                    _dsdPcmRateTile('DSD512', prefs.dsd512PcmRateNotifier),
+                  ],
+                ),
+              ],
+            );
+          },
         ),
       ],
     );
@@ -1198,14 +1203,17 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
           ),
         ),
         const SizedBox(height: 6),
-        Text(
-          value,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-          style: TextStyle(
-            color: textColor.value.withAlpha(215),
-            fontSize: 15,
-            fontWeight: FontWeight.w800,
+        FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(
+            value,
+            maxLines: 1,
+            style: TextStyle(
+              color: textColor.value.withAlpha(215),
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+            ),
           ),
         ),
       ],
@@ -1561,11 +1569,12 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
     return _bitDepthLabel(status, _l10n).replaceAll(' bits', '-bit');
   }
 
-  String _usbIdLabel(UsbAudioDevice? device) {
-    if (device == null) return _l10n.awaitingConnection;
-    final address = device.address;
-    if (address != null && address.isNotEmpty) return '$address · ${device.id}';
-    return '${device.type} · ${device.id}';
+  String _usbIdLabel(UsbAudioStatus status) {
+    final vendorId = status.vendorId;
+    final productId = status.productId;
+    if (vendorId == null || productId == null) return _l10n.unknown;
+    return '${vendorId.toRadixString(16).padLeft(4, '0')}:'
+        '${productId.toRadixString(16).padLeft(4, '0')}';
   }
 
   String _dsdModeLabel(UsbDsdMode mode) {
