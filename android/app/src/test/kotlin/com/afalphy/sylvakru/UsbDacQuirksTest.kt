@@ -106,7 +106,14 @@ class UsbDacQuirksTest {
                             "dsdSupported": false,
                             "featureUnitId": 7,
                             "controlInterface": 0,
-                            "channels": [0, 1, 2]
+                            "channels": [0, 1, 2],
+                            "recipient": "device",
+                            "range": {
+                              "minDb": -63,
+                              "maxDb": 0,
+                              "stepDb": 1,
+                              "muteDb": -112
+                            }
                           }
                         },
                         {
@@ -125,6 +132,11 @@ class UsbDacQuirksTest {
         assertEquals(7, exact?.hardwareVolumeFeatureUnitId)
         assertEquals(0, exact?.hardwareVolumeControlInterface)
         assertEquals(listOf(0, 1, 2), exact?.hardwareVolumeChannels)
+        assertEquals("device", exact?.hardwareVolumeRecipient)
+        assertEquals(-63 * 256, exact?.hardwareVolumeMinQ8_8)
+        assertEquals(0, exact?.hardwareVolumeMaxQ8_8)
+        assertEquals(256, exact?.hardwareVolumeStepQ8_8)
+        assertEquals(-112 * 256, exact?.hardwareVolumeMuteQ8_8)
         assertEquals(false, exact?.hardwareVolumeEnabled)
         assertEquals(false, exact?.hardwareVolumeDsdSupported)
 

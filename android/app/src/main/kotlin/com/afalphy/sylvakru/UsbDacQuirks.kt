@@ -2,6 +2,7 @@ package com.afalphy.sylvakru
 
 import android.content.Context
 import java.io.File
+import kotlin.math.roundToInt
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -26,6 +27,11 @@ data class DacQuirk(
     val hardwareVolumeFeatureUnitId: Int? = null,
     val hardwareVolumeControlInterface: Int? = null,
     val hardwareVolumeChannels: List<Int> = emptyList(),
+    val hardwareVolumeRecipient: String = "interface",
+    val hardwareVolumeMinQ8_8: Int? = null,
+    val hardwareVolumeMaxQ8_8: Int? = null,
+    val hardwareVolumeStepQ8_8: Int? = null,
+    val hardwareVolumeMuteQ8_8: Int? = null,
     val hardwareVolumeEnabled: Boolean? = null,
     val hardwareVolumeDsdSupported: Boolean? = null,
     val flags: List<String> = emptyList(),
@@ -233,6 +239,7 @@ object UsbDacQuirks {
             val nativeDsd = device.optJSONObject("nativeDsd")
             val clock = device.optJSONObject("clock")
             val hardwareVolume = device.optJSONObject("hardwareVolume")
+            val hardwareVolumeRange = hardwareVolume?.optJSONObject("range")
             val flagsArray = device.optJSONArray("flags")
             result += "$vid:$pid" to DacQuirk(
                 label = match.optString("label").takeIf { it.isNotEmpty() } ?: vendorLabel,
@@ -259,6 +266,14 @@ object UsbDacQuirks {
                         if (channel >= 0) add(channel)
                     }
                 },
+                hardwareVolumeRecipient = hardwareVolume
+                    ?.optString("recipient")
+                    ?.takeIf { it == "device" || it == "interface" }
+                    ?: "interface",
+                hardwareVolumeMinQ8_8 = hardwareVolumeRange.q8_8("minDb"),
+                hardwareVolumeMaxQ8_8 = hardwareVolumeRange.q8_8("maxDb"),
+                hardwareVolumeStepQ8_8 = hardwareVolumeRange.q8_8("stepDb"),
+                hardwareVolumeMuteQ8_8 = hardwareVolumeRange.q8_8("muteDb"),
                 hardwareVolumeEnabled = if (hardwareVolume?.has("enabled") == true) {
                     hardwareVolume.optBoolean("enabled")
                 } else {
@@ -303,5 +318,11 @@ object UsbDacQuirks {
         val parsed = raw.trim().removePrefix("0x").removePrefix("0X").toIntOrNull(16)
             ?: return null
         return hex(parsed)
+    }
+
+    private fun JSONObject?.q8_8(key: String): Int? {
+        if (this?.has(key) != true) return null
+        val value = optDouble(key, Double.NaN)
+        return value.takeIf { it.isFinite() }?.let { (it * 256.0).roundToInt() }
     }
 }

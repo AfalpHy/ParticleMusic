@@ -76,17 +76,43 @@ internal data class HardwareVolumeFeature(
     val sourceId: Int,
     val channel: Int,
     val writable: Boolean,
+    val recipient: String = "interface",
 ) {
     fun description(): String =
         "interface=$controlInterface/unit=$unitId/source=$sourceId/channel=$channel/" +
-            "volume=${if (writable) "read-write" else "read-only"}/protocol=$protocol"
+            "volume=${if (writable) "read-write" else "read-only"}/protocol=$protocol/" +
+            "recipient=$recipient"
 }
 
 internal data class HardwareVolumeRange(
     val minQ8_8: Int,
     val maxQ8_8: Int,
     val stepQ8_8: Int,
+    val muteQ8_8: Int = Short.MIN_VALUE.toInt(),
 )
+
+internal fun hardwareVolumeRequestType(direction: Int, recipient: String): Int =
+    direction or UsbConstants.USB_TYPE_CLASS or
+        if (recipient == "device") 0 else USB_RECIP_INTERFACE
+
+internal fun hardwareVolumeRangeOverride(quirk: DacQuirk): HardwareVolumeRange? {
+    val min = quirk.hardwareVolumeMinQ8_8 ?: return null
+    val max = quirk.hardwareVolumeMaxQ8_8 ?: return null
+    val step = quirk.hardwareVolumeStepQ8_8 ?: return null
+    return HardwareVolumeRange(
+        minQ8_8 = min,
+        maxQ8_8 = max,
+        stepQ8_8 = step,
+        muteQ8_8 = quirk.hardwareVolumeMuteQ8_8 ?: Short.MIN_VALUE.toInt(),
+    ).takeIf { min <= max && step > 0 }
+}
+
+internal fun uniformHardwareVolumeRange(
+    ranges: List<HardwareVolumeRange>,
+    expectedCount: Int,
+): HardwareVolumeRange? = ranges.firstOrNull()?.takeIf {
+    ranges.size == expectedCount && ranges.all { range -> range == it }
+}
 
 internal fun selectHardwareVolumeFeatures(
     features: List<HardwareVolumeFeature>,
@@ -133,7 +159,7 @@ internal fun selectHardwareVolumeFeatures(
 
 internal fun hardwareVolumeQ8_8(gainQ16: Int, range: HardwareVolumeRange): Int {
     if (gainQ16 <= 0) {
-        return Short.MIN_VALUE.toInt()
+        return range.muteQ8_8
     }
     val gain = gainQ16.coerceAtMost(UNITY_GAIN_Q16).toDouble() / UNITY_GAIN_Q16
     val raw = (20.0 * log10(gain) * 256.0).roundToInt()
@@ -885,6 +911,7 @@ class UsbExclusiveAudioEngine(
                             "minQ8_8Db" to it.minQ8_8,
                             "maxQ8_8Db" to it.maxQ8_8,
                             "stepQ8_8Db" to it.stepQ8_8,
+                            "muteQ8_8Db" to it.muteQ8_8,
                         )
                     },
                     "fallbackReason" to fallbackReason,
@@ -927,6 +954,7 @@ class UsbExclusiveAudioEngine(
                     sourceId = target.formatInfo?.terminalLink ?: -1,
                     channel = channel,
                     writable = true,
+                    recipient = quirk.hardwareVolumeRecipient,
                 )
             }
         }
@@ -949,13 +977,22 @@ class UsbExclusiveAudioEngine(
             return null
         }
         return try {
-            val ranges = selected.mapNotNull { readHardwareVolumeRangeValue(connection, it) }
-            if (ranges.size != selected.size || ranges.distinct().size != 1) {
+            val overrideRange = hardwareVolumeRangeOverride(quirk)
+            val ranges = selected.mapNotNull {
+                overrideRange ?: readHardwareVolumeRangeValue(connection, it)
+            }
+            val range = uniformHardwareVolumeRange(ranges, selected.size)
+            if (range == null) {
+                null
+            } else if (
+                overrideRange != null &&
+                selected.any { readHardwareVolumeCurrent(connection, it) == null }
+            ) {
                 null
             } else {
                 HardwareVolumeControl(
                     features = selected,
-                    range = ranges.single(),
+                    range = range,
                     source = if (quirkUnitId != null && quirkInterface != null) "quirk" else "descriptor",
                 )
             }
@@ -1004,7 +1041,9 @@ class UsbExclusiveAudioEngine(
             }
             UsbDiagnostics.i(
                 tag,
-                "hardware volume SET_CUR targetQ8_8=$targetQ8_8, channels=${control.features.map { it.channel }}",
+                "hardware volume SET_CUR targetQ8_8=$targetQ8_8, " +
+                    "channels=${control.features.map { it.channel }}, " +
+                    "recipient=${control.features.first().recipient}, source=${control.source}",
             )
             null
         } finally {
@@ -1028,7 +1067,7 @@ class UsbExclusiveAudioEngine(
     ): Int? {
         val data = ByteArray(2)
         val result = connection.controlTransfer(
-            UsbConstants.USB_DIR_IN or UsbConstants.USB_TYPE_CLASS or USB_RECIP_INTERFACE,
+            hardwareVolumeRequestType(UsbConstants.USB_DIR_IN, feature.recipient),
             if (feature.protocol == "uac2") 0x01 else 0x81,
             (0x02 shl 8) or feature.channel,
             (feature.unitId shl 8) or feature.controlInterface,
@@ -1046,7 +1085,7 @@ class UsbExclusiveAudioEngine(
     ): Boolean {
         val data = byteArrayOf(valueQ8_8.toByte(), (valueQ8_8 shr 8).toByte())
         return connection.controlTransfer(
-            UsbConstants.USB_DIR_OUT or UsbConstants.USB_TYPE_CLASS or USB_RECIP_INTERFACE,
+            hardwareVolumeRequestType(UsbConstants.USB_DIR_OUT, feature.recipient),
             0x01,
             (0x02 shl 8) or feature.channel,
             (feature.unitId shl 8) or feature.controlInterface,
@@ -2411,6 +2450,18 @@ class UsbExclusiveAudioEngine(
             if (quirk.hardwareVolumeChannels.isNotEmpty()) {
                 put("channels", quirk.hardwareVolumeChannels)
             }
+            put("recipient", quirk.hardwareVolumeRecipient)
+            hardwareVolumeRangeOverride(quirk)?.let {
+                put(
+                    "range",
+                    mapOf(
+                        "minQ8_8Db" to it.minQ8_8,
+                        "maxQ8_8Db" to it.maxQ8_8,
+                        "stepQ8_8Db" to it.stepQ8_8,
+                        "muteQ8_8Db" to it.muteQ8_8,
+                    ),
+                )
+            }
             quirk.hardwareVolumeEnabled?.let { put("enabled", it) }
             quirk.hardwareVolumeDsdSupported?.let { put("dsdSupported", it) }
         }
@@ -2436,6 +2487,7 @@ class UsbExclusiveAudioEngine(
                     sourceId = -1,
                     channel = channel,
                     writable = true,
+                    recipient = quirk.hardwareVolumeRecipient,
                 )
             }
         }
@@ -2447,6 +2499,7 @@ class UsbExclusiveAudioEngine(
             )
         }
 
+        val overrideRange = hardwareVolumeRangeOverride(quirk)
         val probes = features
             .groupBy { Triple(it.protocol, it.controlInterface, it.unitId) }
             .values
@@ -2468,7 +2521,7 @@ class UsbExclusiveAudioEngine(
                 } else {
                     try {
                         group.sortedBy { it.channel }.map {
-                            readHardwareVolumeProbe(connection, it)
+                            readHardwareVolumeProbe(connection, it, overrideRange)
                         }
                     } finally {
                         runCatching { connection.releaseInterface(controlInterface!!) }
@@ -2601,7 +2654,7 @@ class UsbExclusiveAudioEngine(
         connection: UsbDeviceConnection,
         feature: HardwareVolumeFeature,
     ): HardwareVolumeRange? {
-        val requestType = UsbConstants.USB_DIR_IN or UsbConstants.USB_TYPE_CLASS or USB_RECIP_INTERFACE
+        val requestType = hardwareVolumeRequestType(UsbConstants.USB_DIR_IN, feature.recipient)
         val value = (0x02 shl 8) or feature.channel
         val index = (feature.unitId shl 8) or feature.controlInterface
         val range = if (feature.protocol == "uac2") {
@@ -2649,8 +2702,9 @@ class UsbExclusiveAudioEngine(
     private fun readHardwareVolumeProbe(
         connection: UsbDeviceConnection,
         feature: HardwareVolumeFeature,
+        overrideRange: HardwareVolumeRange? = null,
     ): Map<String, Any?> {
-        val requestType = UsbConstants.USB_DIR_IN or UsbConstants.USB_TYPE_CLASS or USB_RECIP_INTERFACE
+        val requestType = hardwareVolumeRequestType(UsbConstants.USB_DIR_IN, feature.recipient)
         val value = (0x02 shl 8) or feature.channel
         val index = (feature.unitId shl 8) or feature.controlInterface
         val current = ByteArray(2)
@@ -2668,12 +2722,24 @@ class UsbExclusiveAudioEngine(
             put("controlInterface", feature.controlInterface)
             put("featureUnitId", feature.unitId)
             put("channel", feature.channel)
+            put("recipient", feature.recipient)
             put("writeState", if (feature.writable) "read-write" else "read-only")
             put("currentResult", currentResult)
             if (currentResult == current.size) {
                 put("currentQ8_8Db", readSignedQ8_8(current, 0))
             }
-            if (feature.protocol == "uac2") {
+            if (overrideRange != null) {
+                put(
+                    "range",
+                    mapOf(
+                        "source" to "quirk",
+                        "minQ8_8Db" to overrideRange.minQ8_8,
+                        "maxQ8_8Db" to overrideRange.maxQ8_8,
+                        "stepQ8_8Db" to overrideRange.stepQ8_8,
+                        "muteQ8_8Db" to overrideRange.muteQ8_8,
+                    ),
+                )
+            } else if (feature.protocol == "uac2") {
                 put("range", readUac2VolumeRange(connection, requestType, value, index))
             } else {
                 put("range", readUac1VolumeRange(connection, requestType, value, index))

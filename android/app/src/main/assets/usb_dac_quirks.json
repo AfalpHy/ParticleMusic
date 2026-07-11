@@ -1,4 +1,26 @@
 {
   "version": 2,
-  "vendors": []
+  "vendors": [
+    {
+      "match": { "vid": "0x262a", "label": "iBasso / SAVITECH" },
+      "devices": [
+        {
+          "match": { "pid": "0x1a0b", "label": "iBasso Macaron" },
+          "hardwareVolume": {
+            "enabled": true,
+            "featureUnitId": 10,
+            "controlInterface": 1,
+            "channels": [1, 2],
+            "recipient": "device",
+            "range": {
+              "minDb": -63,
+              "maxDb": 0,
+              "stepDb": 1,
+              "muteDb": -112
+            }
+          }
+        }
+      ]
+    }
+  ]
 }

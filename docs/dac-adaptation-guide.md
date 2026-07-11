@@ -111,7 +111,14 @@ adb logcat -d --pid=$(adb shell pidof <包名>) | grep -E "UsbExclusive|Sylvakru
             "dsdSupported": true,
             "featureUnitId": 7,
             "controlInterface": 0,
-            "channels": [0, 1, 2]
+            "channels": [0, 1, 2],
+            "recipient": "interface",
+            "range": {
+              "minDb": -63,
+              "maxDb": 0,
+              "stepDb": 1,
+              "muteDb": -112
+            }
           }
         },
         {
@@ -138,8 +145,63 @@ adb logcat -d --pid=$(adb shell pidof <包名>) | grep -E "UsbExclusive|Sylvakru
 | `hardwareVolume.featureUnitId` | 描述符漏报、候选不唯一或实现异常时指定硬件音量 Feature Unit |
 | `hardwareVolume.controlInterface` | 指定 Feature Unit 所在的 AudioControl 接口号 |
 | `hardwareVolume.channels` | 指定主声道 `0` 或需要同步的逻辑声道；多声道会逐个 SET/GET，任一失败自动回滚 |
+| `hardwareVolume.recipient` | 默认 `interface`（标准 UAC，requestType `0x21/0xA1`）；隐藏厂商实体若使用设备接收者则填 `device`（`0x20/0xA0`） |
+| `hardwareVolume.range.minDb/maxDb/stepDb` | 描述符不公开 Feature Unit、GET_RANGE 不可用时，提供厂商已验证的固定 Q8.8 dB 范围；三项必须同时存在 |
+| `hardwareVolume.range.muteDb` | 厂商静音值；缺省沿用标准 `0x8000`，不得把普通最小音量猜成静音 |
 
 导入方式：设置 → USB 输出设置 → 支持 → 导入 quirk 配置 → 粘贴 JSON → 重连设备。override 与内置表同 vid:pid 时 override 优先，便于反复试验。验证通过的条目应回传开发者合入内置表。
+
+### 4.1 硬件音量厂商适配流程
+
+先判断控制属于哪一类，不能看到“音量可调”就假设存在标准 Feature Unit：
+
+1. **标准 UAC**：原始描述符 AC 接口里有 `CS_INTERFACE / FEATURE_UNIT (subtype 0x06)`，报告 `featureUnits` 能列出唯一播放候选，`GET_CUR + GET_RANGE` 成功。优先完全自动探测；只有候选不唯一时才用 `featureUnitId/controlInterface/channels`。
+2. **隐藏 UAC 实体**：描述符没有 Feature Unit，但厂商软件仍调用 `UsbDeviceConnection.controlTransfer`，`wValue=0x02cc`、`wIndex=0xUUII`，数据为两字节 Q8.8 dB。此类用 `featureUnitId/controlInterface/channels + recipient + range` 描述，不在引擎里写 VID/PID 特判。
+3. **HID / bulk / I²C 私有协议**：厂商软件使用 `request=SET_REPORT(0x09)`、`bulkTransfer` 或自定义长报文。当前 quirk 字段不能表达，必须先新增经过测试的通用协议类型；禁止把报文硬塞进 UAC 音量字段。
+
+#### 证据获取顺序
+
+按“只读优先、一次只验证一个变量”执行：
+
+1. 诊断报告取 VID/PID、产品名、原始描述符、`Hardware volume probe` 和 `hardwareVolume.fallbackReason`。
+2. 查系统能力：Windows `IAudioEndpointVolume.QueryHardwareSupport=0` 只表示系统未识别标准硬件音量，**不能排除隐藏厂商控制**。
+3. 有厂商 Android 软件时，静态搜索：`UsbDeviceConnection`、`controlTransfer`、`bulkTransfer`、`SET_CUR`、`GET_CUR`、`SET_REPORT`、`vendorId/productId/productName`。记录全部七元组：`requestType/request/value/index/length/timeout/data`。
+4. root 真机先做 GET：找到 `/dev/bus/usb/BBB/DDD`，只读厂商 `GET_CUR`；再用标准 recipient 做对照。返回长度必须等于数据长度，数据语义必须稳定。
+5. 用户明确同意后才做“读当前值 → 原样写回 → 立即读回”。这一步证明写通路，不改变响度。真正改变音量必须低音量、逐级测试，并保存左右声道原值用于失败回滚。
+6. 先导入单台精确 VID/PID override；PCM 验证通过后再验证 DoP/Native DSD。不同产品名走不同厂商控制类时，不得直接写 VID 通配规则。
+
+#### controlTransfer 解码速查
+
+- `requestType`: bit7 为方向（IN=`0x80`），bit6..5 为类型（CLASS=`0x20`），bit4..0 为接收者（DEVICE=`0`、INTERFACE=`1`）。因此类设备常见 `0x20/0xA0` 或标准 `0x21/0xA1`。
+- UAC 音量 `wValue = 0x02cc`：高字节 `0x02` 是 VOLUME_CONTROL，低字节 `cc` 是声道号。
+- `wIndex = 0xUUII`：高字节 `UU` 是 Feature Unit ID，低字节 `II` 是控制接口号。
+- 两字节小端有符号 Q8.8：`-6 dB = 0xFA00`，传输字节为 `00 FA`。
+- 多声道设备要先读完全部原值，再依次写入；任一 SET/GET 失败立即按相反顺序回滚，避免左右失衡。
+
+#### Macaron 已验证实例
+
+`iBasso Macaron (262a:1a0b, bcdDevice 0x0060)` 的描述符没有 Feature Unit。iBasso UAC 1.8.6 使用隐藏实体：
+
+```json
+{
+  "version": 1,
+  "devices": [
+    {
+      "match": { "vid": "0x262a", "pid": "0x1a0b", "label": "iBasso Macaron" },
+      "hardwareVolume": {
+        "enabled": true,
+        "featureUnitId": 10,
+        "controlInterface": 1,
+        "channels": [1, 2],
+        "recipient": "device",
+        "range": { "minDb": -63, "maxDb": 0, "stepDb": 1, "muteDb": -112 }
+      }
+    }
+  ]
+}
+```
+
+实测 `0xA0 GET_CUR` 和 `0x20 SET_CUR` 对左右声道均返回 2；标准 `0xA1` 在系统驱动占用时返回 `EBUSY`。厂商软件还对 DC03/04/06/07、DC-Elite、DC-Nunchaku 等产品名分派不同控制类，因此本条只能精确匹配 Macaron，不能扩成整个 `0x262a:*`。
 
 ## 5. 症状排查表（含本项目真机实录）
 
@@ -154,6 +216,7 @@ adb logcat -d --pid=$(adb shell pidof <包名>) | grep -E "UsbExclusive|Sylvakru
 | 明明能播却总回退"DAC 未接受采样率" | GET_CUR 返回垃圾 | 日志 GET_CUR after 的值 | `clock.skipGetCurValidation: true`（注意 GET_CUR=0 已内置豁免，不需要 quirk） |
 | 高速率(352.8k+/DSD256+)失败，低速率正常 | 带宽/maxPacket 或设备上限 | Output candidates 的 max 值 vs 需求 | `dop.maxDsd`/`nativeDsd.maxDsd`；full-speed 设备连 DoP64 都不够属正常拒绝 |
 | 周期性轻微"pa pa"声（音乐正常） | 待定类别。二分：暂停（纯 0x69 流）仍有→传输/时钟层；暂停消失→数据重排层；DoP 是否同样有→定位到 native 特有还是共性 | 按左列二分 + 反馈日志 | 按二分结果进一步排查 |
+| 选择 DAC 硬件音量但无效 | 无标准 Feature Unit、recipient/Unit/声道不符，或设备只提供 HID 音量键输入 | 报告 `featureUnits/probes/fallbackReason`；厂商 APK 静态搜索；root GET_CUR 对照 | 按 §4.1 建精确 quirk；HID/bulk 协议需要代码扩展，不得猜 UAC 参数 |
 | 扫描不到 DSD 文件 | 分区存储：.dsf/.dff 无 MIME 注册，MediaStore 不可见（实录） | 文件管理器可见但 App 列不出 | 已内置扫描前请求所有文件访问权限；确认用户授了权 |
 | WebDAV/流媒体 DSD 不识别 | 远程头部解析失败 | — | 已内置 Range 拉头部解析；确认服务端支持 Range |
 
@@ -168,6 +231,7 @@ adb logcat -d --pid=$(adb shell pidof <包名>) | grep -E "UsbExclusive|Sylvakru
 5. **Native**（若描述符 raw=true 或 quirk 已配）：同 3 的验收标准，另加：与 DoP 对比听感应一致；
 6. **连续切歌 10 次 + 反复 seek**：指示灯全程不变色、无咔嗒；
 7. **拔插设备**：正确回退系统输出、重插能恢复独占。
+8. **硬件音量（若启用）**：从低响度开始，左右声道同步；0/25/50/100% 写入与读回一致；切换数字/原始模式能恢复 0 dB；DoP/Native 无码流修改且 DAC 模拟响度确实变化。
 
 全部通过后：生成诊断报告存档 + 把验证过的 quirk 条目（若有）回传合入 `assets/usb_dac_quirks.json`。远程设备先导入单条 override 验证，再合入对应厂商目录发包；不要根据厂商名直接推送未知规则。
 
@@ -200,6 +264,8 @@ adb logcat -d --pid=$(adb shell pidof <包名>) | grep -E "UsbExclusive|Sylvakru
 - `No unique writable playback Feature Unit passed probing`：先看 `Hardware volume probe`。只有一个正确播放 Feature Unit 时，用报告里的 `controlInterface`、`featureUnitId` 和声道生成单字段 `hardwareVolume` quirk。
 - `Failed to claim/read/set` 或 `readback mismatch`：不要猜声道；先用低音量重试并回传新报告。确认设备硬件音量不可写时输出 `hardwareVolume.enabled:false`。
 - PCM 可调但 DoP/Native DSD 实际音量不变：输出 `hardwareVolume.dsdSupported:false`，不得在 DSD 数据路径增加软件增益。
+- 描述符没有 Feature Unit，但厂商 App 可调：按 §4.1 搜厂商 APK。若是两字节 Q8.8 UAC 隐藏实体，必须取得 `recipient/unit/interface/channels/range/mute` 全套证据；缺一项就先请求日志或只读探测，不输出猜测 quirk。
+- 日志 `hardware volume SET_CUR ... recipient=device, source=quirk` 且读回匹配，但实际响度不变：协议可能只控制软件端点或 DSD 路径旁路；PCM/DSD 分开验证，必要时分别设置 `enabled:false` 或 `dsdSupported:false`。
 - 验证顺序固定为 PCM 低音量 → 物理键/拖动 → 暂停切歌 → DoP/Native；通过后把同一条 VID/PID 配置合入内置统一表。
 
 **步骤 3 —— 声音异常诊断**（需要 logcat）：
@@ -225,5 +291,11 @@ adb logcat -d --pid=$(adb shell pidof <包名>) | grep -E "UsbExclusive|Sylvakru
 硬件音量候选不唯一或描述符漏报时：
 
 ```json
-{"version":1,"devices":[{"match":{"vid":"0x____","pid":"0x____","label":"____"},"hardwareVolume":{"enabled":true,"featureUnitId":7,"controlInterface":0,"channels":[0]}}]}
+{"version":1,"devices":[{"match":{"vid":"0x____","pid":"0x____","label":"____"},"hardwareVolume":{"enabled":true,"featureUnitId":7,"controlInterface":0,"channels":[0],"recipient":"interface"}}]}
+```
+
+隐藏 Feature Unit 且 RANGE 不可读时（数值必须来自厂商实现或真机证据）：
+
+```json
+{"version":1,"devices":[{"match":{"vid":"0x____","pid":"0x____","label":"____"},"hardwareVolume":{"enabled":true,"featureUnitId":10,"controlInterface":1,"channels":[1,2],"recipient":"device","range":{"minDb":-63,"maxDb":0,"stepDb":1,"muteDb":-112}}}]}
 ```

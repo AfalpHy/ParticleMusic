@@ -66,10 +66,19 @@ class UsbHardwareVolumeTest {
             minQ8_8 = -60 * 256,
             maxQ8_8 = 0,
             stepQ8_8 = 256,
+            muteQ8_8 = -112 * 256,
         )
 
         assertEquals(-6 * 256, hardwareVolumeQ8_8(32768, range))
-        assertEquals(Short.MIN_VALUE.toInt(), hardwareVolumeQ8_8(0, range))
+        assertEquals(-112 * 256, hardwareVolumeQ8_8(0, range))
+    }
+
+    @Test
+    fun buildsClassRequestTypeForConfiguredRecipient() {
+        assertEquals(0xa0, hardwareVolumeRequestType(0x80, "device"))
+        assertEquals(0x20, hardwareVolumeRequestType(0x00, "device"))
+        assertEquals(0xa1, hardwareVolumeRequestType(0x80, "interface"))
+        assertEquals(0x21, hardwareVolumeRequestType(0x00, "interface"))
     }
 
     @Test
@@ -77,5 +86,13 @@ class UsbHardwareVolumeTest {
         assertEquals(true, hardwareVolumeReadbackMatches(-1536, -1280, 256))
         assertEquals(false, hardwareVolumeReadbackMatches(-1536, -1024, 256))
         assertEquals(true, hardwareVolumeReadbackMatches(Short.MIN_VALUE.toInt(), Short.MIN_VALUE.toInt(), 256))
+    }
+
+    @Test
+    fun acceptsSameRangeFromTwoChannels() {
+        val range = HardwareVolumeRange(-63 * 256, 0, 256, -112 * 256)
+
+        assertEquals(range, uniformHardwareVolumeRange(listOf(range, range), 2))
+        assertNull(uniformHardwareVolumeRange(listOf(range), 2))
     }
 }
