@@ -1463,7 +1463,7 @@ abstract class AppLocalizations {
   /// No description provided for @backgroundBufferDesc.
   ///
   /// In en, this message translates to:
-  /// **'Raise the background buffer first if playback stutters while a large app runs in the background; higher is more stable but track switches and pause may respond a little slower.'**
+  /// **'The USB buffer absorbs short scheduling jitter up to 1000 ms; cloud playback uses a separate download watermark for network fluctuations.'**
   String get backgroundBufferDesc;
 
   /// No description provided for @volumeSection.

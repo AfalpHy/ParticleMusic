@@ -209,9 +209,9 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
                 _bufferSlider(
                   title: _l10n.backgroundBuffer,
                   notifier: prefs.backgroundBufferMsNotifier,
-                  min: 500,
-                  max: 5000,
-                  divisions: 18,
+                  min: 50,
+                  max: 1000,
+                  divisions: 19,
                   onChanged: (value) =>
                       _applyExclusiveBufferIfActive(backgroundBufferMs: value),
                 ),

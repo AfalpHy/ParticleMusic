@@ -226,7 +226,7 @@
   "transportBuffer": "传输缓冲",
   "foregroundBuffer": "前台缓冲区",
   "backgroundBuffer": "后台缓冲区",
-  "backgroundBufferDesc": "后台打开大型 App 出现卡顿时优先提高后台缓冲；数值越大越稳定，切歌与暂停响应可能稍慢。",
+  "backgroundBufferDesc": "USB 缓冲用于吸收短时调度抖动，上限 1000 ms；云端播放另外使用下载水位抵抗网络波动。",
   "volumeSection": "音量",
   "volumeControl": "音量控制",
   "volumeControlDac": "DAC 硬件音量",

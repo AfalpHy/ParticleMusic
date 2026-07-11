@@ -717,7 +717,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get backgroundBufferDesc =>
-      'Raise the background buffer first if playback stutters while a large app runs in the background; higher is more stable but track switches and pause may respond a little slower.';
+      'The USB buffer absorbs short scheduling jitter up to 1000 ms; cloud playback uses a separate download watermark for network fluctuations.';
 
   @override
   String get volumeSection => 'Volume';

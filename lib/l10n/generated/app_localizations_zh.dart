@@ -706,7 +706,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get backgroundBufferDesc =>
-      '后台打开大型 App 出现卡顿时优先提高后台缓冲；数值越大越稳定，切歌与暂停响应可能稍慢。';
+      'USB 缓冲用于吸收短时调度抖动，上限 1000 ms；云端播放另外使用下载水位抵抗网络波动。';
 
   @override
   String get volumeSection => '音量';

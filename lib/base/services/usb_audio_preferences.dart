@@ -52,7 +52,7 @@ class UsbAudioPreferences {
   final releaseUsbBandwidthAfterPlaybackNotifier = ValueNotifier(false);
   final keepAliveInBackgroundNotifier = ValueNotifier(true);
   final foregroundBufferMsNotifier = ValueNotifier(200);
-  final backgroundBufferMsNotifier = ValueNotifier(1500);
+  final backgroundBufferMsNotifier = ValueNotifier(1000);
   final volumeSmoothHandoffNotifier = ValueNotifier(true);
 
   void load(Map<String, dynamic> json) {
@@ -97,7 +97,7 @@ class UsbAudioPreferences {
     );
     backgroundBufferMsNotifier.value = _validBufferMs(
       json['usbBackgroundBufferMs'] as int?,
-      1500,
+      1000,
     );
     volumeSmoothHandoffNotifier.value =
         json['usbVolumeSmoothHandoff'] as bool? ?? true;
@@ -161,6 +161,6 @@ class UsbAudioPreferences {
 
   int _validBufferMs(int? value, int fallback) {
     if (value == null) return fallback;
-    return value.clamp(50, 5000);
+    return value.clamp(50, 1000);
   }
 }

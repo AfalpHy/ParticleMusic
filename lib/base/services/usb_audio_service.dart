@@ -163,7 +163,7 @@ class UsbAudioService {
     }
 
     await _channel.invokeMethod<void>('setExclusiveTargetBufferMs', {
-      'targetBufferMs': targetBufferMs.clamp(50, 5000),
+      'targetBufferMs': targetBufferMs.clamp(50, 1000),
     });
   }
 

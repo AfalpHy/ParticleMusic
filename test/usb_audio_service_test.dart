@@ -355,7 +355,7 @@ void main() {
 
     await service.setExclusiveTargetBufferMs(2400);
 
-    expect(receivedArguments, {'targetBufferMs': 2400});
+    expect(receivedArguments, {'targetBufferMs': 1000});
   });
 
   test('setExclusiveVolume sends gain and control mode', () async {

@@ -39,11 +39,12 @@ void main() {
     );
     expect(usbAudioPreferences.keepAliveInBackgroundNotifier.value, isFalse);
     expect(usbAudioPreferences.foregroundBufferMsNotifier.value, 320);
-    expect(usbAudioPreferences.backgroundBufferMsNotifier.value, 2400);
+    expect(usbAudioPreferences.backgroundBufferMsNotifier.value, 1000);
     expect(usbAudioPreferences.volumeSmoothHandoffNotifier.value, isFalse);
     final map = usbAudioPreferences.toMap();
     expect(map['usbDsdMode'], 'native');
     expect(map['usbForegroundBufferMs'], 320);
+    expect(map['usbBackgroundBufferMs'], 1000);
     expect(map, isNot(contains('usbBusSpeedMode')));
     expect(map, isNot(contains('usbBitDepthCompat')));
     expect(map, isNot(contains('usbSampleRateCompat')));
@@ -56,7 +57,7 @@ void main() {
     usbAudioPreferences.load(const {});
 
     expect(usbAudioPreferences.foregroundBufferMsNotifier.value, 200);
-    expect(usbAudioPreferences.backgroundBufferMsNotifier.value, 1500);
+    expect(usbAudioPreferences.backgroundBufferMsNotifier.value, 1000);
     expect(usbAudioPreferences.volumeSmoothHandoffNotifier.value, isTrue);
     expect(
       usbAudioPreferences.volumeControlModeNotifier.value,
@@ -72,10 +73,20 @@ void main() {
     });
 
     expect(preferredUsbExclusiveTargetBufferMs(background: false), 320);
-    expect(preferredUsbExclusiveTargetBufferMs(background: true), 2400);
+    expect(preferredUsbExclusiveTargetBufferMs(background: true), 1000);
 
     usbAudioPreferences.keepAliveInBackgroundNotifier.value = false;
     expect(preferredUsbExclusiveTargetBufferMs(background: true), 320);
+  });
+
+  test('clamps foreground and background USB buffers to real limit', () {
+    usbAudioPreferences.load({
+      'usbForegroundBufferMs': 1400,
+      'usbBackgroundBufferMs': 5000,
+    });
+
+    expect(usbAudioPreferences.foregroundBufferMsNotifier.value, 1000);
+    expect(usbAudioPreferences.backgroundBufferMsNotifier.value, 1000);
   });
 
   test('selects exclusive PCM bit depth from user preference', () {

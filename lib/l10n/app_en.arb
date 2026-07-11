@@ -275,7 +275,7 @@
   "transportBuffer": "Transport buffer",
   "foregroundBuffer": "Foreground buffer",
   "backgroundBuffer": "Background buffer",
-  "backgroundBufferDesc": "Raise the background buffer first if playback stutters while a large app runs in the background; higher is more stable but track switches and pause may respond a little slower.",
+  "backgroundBufferDesc": "The USB buffer absorbs short scheduling jitter up to 1000 ms; cloud playback uses a separate download watermark for network fluctuations.",
   "volumeSection": "Volume",
   "volumeControl": "Volume control",
   "volumeControlDac": "DAC hardware volume",
