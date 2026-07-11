@@ -78,8 +78,8 @@ class MainActivity : AudioServiceActivity() {
                 }
                 "setExclusiveVolume" -> {
                     val gainQ16 = call.argument<Number>("gainQ16")?.toInt() ?: 65536
-                    val enabled = call.argument<Boolean>("enabled") ?: false
-                    usbExclusiveAudioEngine.setVolume(gainQ16, enabled)
+                    val mode = call.argument<String>("mode") ?: "auto"
+                    usbExclusiveAudioEngine.setVolume(gainQ16, mode)
                     result.success(null)
                 }
                 "seekExclusivePlayback" -> {
@@ -112,8 +112,8 @@ class MainActivity : AudioServiceActivity() {
         ensureSuperLyricPublisherRegistered()
     }
 
-    // 独占播放且启用软件音量时，接管安卓物理音量键：把方向上报给 Dart 调节独占数字
-    // 音量，并吞掉按键，避免系统去改对独占输出无效的 STREAM_MUSIC。其余情况交回系统。
+    // 独占播放且硬件/数字音量实际可用时接管安卓物理音量键，把方向上报给 Dart，
+    // 并吞掉按键，避免系统去改对独占输出无效的 STREAM_MUSIC。其余情况交回系统。
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         val keyCode = event.keyCode
         val isVolumeKey =

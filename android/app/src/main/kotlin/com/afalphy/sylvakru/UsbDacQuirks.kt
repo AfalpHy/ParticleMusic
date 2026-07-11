@@ -26,6 +26,8 @@ data class DacQuirk(
     val hardwareVolumeFeatureUnitId: Int? = null,
     val hardwareVolumeControlInterface: Int? = null,
     val hardwareVolumeChannels: List<Int> = emptyList(),
+    val hardwareVolumeEnabled: Boolean? = null,
+    val hardwareVolumeDsdSupported: Boolean? = null,
     val flags: List<String> = emptyList(),
 )
 
@@ -256,6 +258,16 @@ object UsbDacQuirks {
                         val channel = channels.optInt(channelIndex, -1)
                         if (channel >= 0) add(channel)
                     }
+                },
+                hardwareVolumeEnabled = if (hardwareVolume?.has("enabled") == true) {
+                    hardwareVolume.optBoolean("enabled")
+                } else {
+                    null
+                },
+                hardwareVolumeDsdSupported = if (hardwareVolume?.has("dsdSupported") == true) {
+                    hardwareVolume.optBoolean("dsdSupported")
+                } else {
+                    null
                 },
                 flags = buildList {
                     if (flagsArray != null) {

@@ -724,7 +724,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get volumeControlRaw => '原始数字电平';
 
   @override
-  String get volumeControlDacFallbackHint => 'DAC 硬件音量暂未适配，当前回退为数字音量。';
+  String get volumeControlDacFallbackHint => 'DAC 硬件音量不可用时自动回退为数字音量。';
 
   @override
   String get dsdGainCompensation => 'DSD 增益补偿';
@@ -791,6 +791,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get refreshUsbStatus => '刷新 USB 状态';
 
   @override
+  String get usbExclusiveLabel => 'USB EXCLUSIVE';
+
+  @override
+  String get outputLinkLabel => 'OUTPUT LINK';
+
+  @override
+  String get formatLabel => 'FORMAT';
+
+  @override
+  String get depthLabel => 'DEPTH';
+
+  @override
+  String get usbIdLabel => 'USB ID';
+
+  @override
   String get transportStatus => '传输状态';
 
   @override
@@ -826,6 +841,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get dsdToPcmDesc => '以 PCM 帧封装 DSD，设备支持时使用';
+
+  @override
+  String get dsdToPcmRates => 'DSD 转 PCM 采样率';
 
   @override
   String get dsdNativeDesc => '设备声明 RAW_DATA 或 quirk 指定字节排列时直发 DSD，否则自动回退 DoP';

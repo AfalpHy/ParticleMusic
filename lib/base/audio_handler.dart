@@ -893,6 +893,8 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
         sampleRate: exclusiveSampleRate,
         bitDepth: isDsd ? null : _preferredExclusiveBitDepth(),
         dsdMode: isDsd ? usbAudioPreferences.dsdModeNotifier.value.name : null,
+        volumeGain: usbExclusiveDigitalVolumeGain(volumeNotifier.value),
+        volumeMode: usbAudioPreferences.volumeControlModeNotifier.value.name,
         targetBufferMs: _exclusiveTargetBufferMsForLifecycle(
           WidgetsBinding.instance.lifecycleState,
         ),
@@ -1316,17 +1318,15 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     return math.log(volume * 9 + 1) / math.log(10);
   }
 
-  // 把当前音量下发给 USB 独占引擎：原始数字电平旁路（位完美直通），其余模式施加数字增益。
-  // 非独占时为空操作，DSD/DoP 会话由引擎侧强制旁路。
+  // 把当前音量与控制模式下发给 USB 独占引擎，由原生层选择硬件音量或安全回退。
   void _applyUsbExclusiveVolume(double digitalGain) {
     if (!_usbExclusiveActive) {
       return;
     }
-    final enabled = usbExclusiveDigitalVolumeEnabled();
     unawaited(
       usbAudioService.setExclusiveVolume(
-        gain: enabled ? digitalGain : 1.0,
-        enabled: enabled,
+        gain: digitalGain,
+        mode: usbAudioPreferences.volumeControlModeNotifier.value.name,
       ),
     );
   }

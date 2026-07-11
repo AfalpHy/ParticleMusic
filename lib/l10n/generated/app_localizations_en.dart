@@ -736,7 +736,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get volumeControlDacFallbackHint =>
-      'DAC hardware volume isn\'t available yet; it currently falls back to digital volume.';
+      'Falls back to digital volume when DAC hardware volume is unavailable.';
 
   @override
   String get dsdGainCompensation => 'DSD gain compensation';
@@ -807,6 +807,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get refreshUsbStatus => 'Refresh USB status';
 
   @override
+  String get usbExclusiveLabel => 'USB EXCLUSIVE';
+
+  @override
+  String get outputLinkLabel => 'OUTPUT LINK';
+
+  @override
+  String get formatLabel => 'FORMAT';
+
+  @override
+  String get depthLabel => 'DEPTH';
+
+  @override
+  String get usbIdLabel => 'USB ID';
+
+  @override
   String get transportStatus => 'Transport status';
 
   @override
@@ -845,6 +860,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get dsdToPcmDesc =>
       'Wrap DSD in PCM frames; used when the device supports it';
+
+  @override
+  String get dsdToPcmRates => 'DSD to PCM sample rates';
 
   @override
   String get dsdNativeDesc =>

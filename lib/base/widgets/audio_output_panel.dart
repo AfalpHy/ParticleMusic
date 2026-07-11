@@ -843,7 +843,7 @@ Color _outputDotColor(UsbAudioStatus status, UsbExclusivePlaybackState exclusive
 bool _exclusiveBitPerfect(UsbExclusivePlaybackState exclusive) {
   if (!exclusive.active) return false;
   if (exclusive.bitDepth == 1) return true;
-  return !usbExclusiveDigitalVolumeEnabled();
+  return !exclusive.digitalVolumeActive;
 }
 
 class _InfoRow {

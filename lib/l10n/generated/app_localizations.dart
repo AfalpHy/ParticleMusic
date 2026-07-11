@@ -1499,7 +1499,7 @@ abstract class AppLocalizations {
   /// No description provided for @volumeControlDacFallbackHint.
   ///
   /// In en, this message translates to:
-  /// **'DAC hardware volume isn\'t available yet; it currently falls back to digital volume.'**
+  /// **'Falls back to digital volume when DAC hardware volume is unavailable.'**
   String get volumeControlDacFallbackHint;
 
   /// No description provided for @dsdGainCompensation.
@@ -1628,6 +1628,36 @@ abstract class AppLocalizations {
   /// **'Refresh USB status'**
   String get refreshUsbStatus;
 
+  /// No description provided for @usbExclusiveLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'USB EXCLUSIVE'**
+  String get usbExclusiveLabel;
+
+  /// No description provided for @outputLinkLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'OUTPUT LINK'**
+  String get outputLinkLabel;
+
+  /// No description provided for @formatLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'FORMAT'**
+  String get formatLabel;
+
+  /// No description provided for @depthLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'DEPTH'**
+  String get depthLabel;
+
+  /// No description provided for @usbIdLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'USB ID'**
+  String get usbIdLabel;
+
   /// No description provided for @transportStatus.
   ///
   /// In en, this message translates to:
@@ -1693,6 +1723,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Wrap DSD in PCM frames; used when the device supports it'**
   String get dsdToPcmDesc;
+
+  /// No description provided for @dsdToPcmRates.
+  ///
+  /// In en, this message translates to:
+  /// **'DSD to PCM sample rates'**
+  String get dsdToPcmRates;
 
   /// No description provided for @dsdNativeDesc.
   ///

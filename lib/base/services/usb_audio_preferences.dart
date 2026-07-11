@@ -28,17 +28,9 @@ double usbExclusiveDigitalVolumeGain(double volume) {
   return math.pow(safeVolume, 1.5).toDouble();
 }
 
-/// 独占数字音量是否生效：除“原始数字电平”外都启用。
-/// DAC 硬件音量与自动尚未接入 UAC Feature Unit，暂按数字音量处理。
-bool usbExclusiveDigitalVolumeEnabled() {
-  return usbAudioPreferences.volumeControlModeNotifier.value !=
-      UsbVolumeControlMode.raw;
-}
-
 enum UsbDsdMode { pcm, dop, native }
 
 /// 独占音量控制方式：自动/DAC 硬件音量/数字音量/原始数字电平。
-/// DAC 硬件音量与自动暂未接入 UAC Feature Unit，当前回退为数字音量处理。
 enum UsbVolumeControlMode { auto, dac, digital, raw }
 
 enum UsbBitDepthMode { auto, pcm16, pcm24, pcm32 }

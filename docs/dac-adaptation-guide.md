@@ -54,7 +54,7 @@
 | App parse result → Quirk | Match / Effective / Load errors | 当前命中的 quirk 条目与生效值；Load errors 非空说明导入的 JSON 有问题 |
 | UAC2 clock source id | clockSourceId | null 时走 UAC1 端点式 SET_CUR |
 | Exclusive session | input / outputSelections / clock / feedback / transport | 最近一次独占会话的真实请求、alt 候选与选择、时钟读写、反馈和提交统计；远程适配优先看这一节 |
-| Hardware volume probe | featureUnits / probes / quirkOverride | 未来硬件音量适配所需的 Feature Unit、声道、当前值和范围；本版本只读，不会写入 DAC 音量 |
+| Hardware volume probe | featureUnits / probes / quirkOverride | Feature Unit、声道、可写状态、当前值和范围；会话节的 `hardwareVolume` 记录实际选择、SET/GET 与回退原因 |
 | 运行状态快照 | format/sampleRate/bitDepth/message | `message` 里有回退原因（如 native 降级 DoP 的原因） |
 | Telemetry | bufferLevelMs/underrunCount/pendingUrbs | underrun 持续增长 = 供数或时钟问题 |
 
@@ -107,6 +107,8 @@ adb logcat -d --pid=$(adb shell pidof <包名>) | grep -E "UsbExclusive|Sylvakru
           "nativeDsd": { "format": "u32le", "maxDsd": 512 },
           "clock": { "setCurDelayMs": 50, "skipGetCurValidation": true },
           "hardwareVolume": {
+            "enabled": true,
+            "dsdSupported": true,
             "featureUnitId": 7,
             "controlInterface": 0,
             "channels": [0, 1, 2]
@@ -131,9 +133,11 @@ adb logcat -d --pid=$(adb shell pidof <包名>) | grep -E "UsbExclusive|Sylvakru
 | `nativeDsd.maxDsd` | native 高倍率失败，限制上限 |
 | `clock.setCurDelayMs` | 起播头几百毫秒爆音/变调后恢复——DAC SET_CUR 后需要时间锁定，加 30–100ms |
 | `clock.skipGetCurValidation` | 明明能正常播却被判"DAC 未接受采样率"回退——GET_CUR 返回垃圾值（非零且≠请求值）的设备 |
-| `hardwareVolume.featureUnitId` | 描述符漏报或实现异常时指定硬件音量 Feature Unit；当前只用于探测与报告 |
+| `hardwareVolume.enabled` | Feature Unit 声明异常、写入不安全或硬件音量实际无效时设 `false`，强制回退 |
+| `hardwareVolume.dsdSupported` | PCM 硬件音量正常但 DoP/Native DSD 不响应时设 `false`；确认 DSD 可调时可设 `true` 留档 |
+| `hardwareVolume.featureUnitId` | 描述符漏报、候选不唯一或实现异常时指定硬件音量 Feature Unit |
 | `hardwareVolume.controlInterface` | 指定 Feature Unit 所在的 AudioControl 接口号 |
-| `hardwareVolume.channels` | 指定主声道 `0` 与需要同步的逻辑声道；写入功能启用前必须在真机验证 |
+| `hardwareVolume.channels` | 指定主声道 `0` 或需要同步的逻辑声道；多声道会逐个 SET/GET，任一失败自动回滚 |
 
 导入方式：设置 → USB 输出设置 → 支持 → 导入 quirk 配置 → 粘贴 JSON → 重连设备。override 与内置表同 vid:pid 时 override 优先，便于反复试验。验证通过的条目应回传开发者合入内置表。
 
@@ -191,6 +195,13 @@ adb logcat -d --pid=$(adb shell pidof <包名>) | grep -E "UsbExclusive|Sylvakru
 | `no fitting alt for native DSD` | 对照 Output candidates：有无 subslot 与格式同宽且 maxPacket 够的 alt；无则限 maxDsd 或改用 DoP |
 | `DAC 未接受采样率…读回 X Hz` | X 是垃圾值 → `clock.skipGetCurValidation:true`；X 是别的合法率 → 设备真不支持该率，检查源/固定采样率设置 |
 
+硬件音量回退看 `Exclusive session → hardwareVolume`：
+
+- `No unique writable playback Feature Unit passed probing`：先看 `Hardware volume probe`。只有一个正确播放 Feature Unit 时，用报告里的 `controlInterface`、`featureUnitId` 和声道生成单字段 `hardwareVolume` quirk。
+- `Failed to claim/read/set` 或 `readback mismatch`：不要猜声道；先用低音量重试并回传新报告。确认设备硬件音量不可写时输出 `hardwareVolume.enabled:false`。
+- PCM 可调但 DoP/Native DSD 实际音量不变：输出 `hardwareVolume.dsdSupported:false`，不得在 DSD 数据路径增加软件增益。
+- 验证顺序固定为 PCM 低音量 → 物理键/拖动 → 暂停切歌 → DoP/Native；通过后把同一条 VID/PID 配置合入内置统一表。
+
 **步骤 3 —— 声音异常诊断**（需要 logcat）：
 1. 取 `USB feedback actual … approxFrames=F` 与名义值 `N = 请求采样率 ÷ packetsPerSecond`（都在日志里）。
    - `F ≈ N`（±5%）→ 时钟正常，进 3.2；
@@ -203,10 +214,16 @@ adb logcat -d --pid=$(adb shell pidof <包名>) | grep -E "UsbExclusive|Sylvakru
 
 **步骤 4 —— 输出**。quirk 修改输出完整可粘贴 JSON（含 version/devices 包裹、match 指纹、label 写设备名），并附一句"导入后重新连接设备生效；如无效把新的诊断报告+日志发回"。代码问题则给出文件+函数名+违反的铁律编号。
 
-**禁止事项**：不要建议在 DoP/native 路径加任何音量/DSP/重采样（铁律 2）；不要建议 seek/切歌时 flush（铁律 1）；不要把 GET_CUR=0 当失败（已内置豁免）；不要一次改多个 quirk 字段（无法归因）。
+**禁止事项**：不要建议在 DoP/native 数据路径加软件音量/DSP/重采样（Feature Unit 硬件音量不修改码流）；不要建议 seek/切歌时 flush（铁律 1）；不要把 GET_CUR=0 当失败（已内置豁免）；不要一次改多个 quirk 字段（无法归因）。
 
 ### quirk 试验模板（按需删改）
 
 ```json
 {"version":1,"devices":[{"match":{"vid":"0x____","pid":"0x____","label":"____"},"dop":{"supported":true,"maxDsd":256},"nativeDsd":{"format":"u32le","maxDsd":256},"clock":{"setCurDelayMs":0,"skipGetCurValidation":false}}]}
+```
+
+硬件音量候选不唯一或描述符漏报时：
+
+```json
+{"version":1,"devices":[{"match":{"vid":"0x____","pid":"0x____","label":"____"},"hardwareVolume":{"enabled":true,"featureUnitId":7,"controlInterface":0,"channels":[0]}}]}
 ```

@@ -248,6 +248,8 @@ void main() {
             'sampleRate': 44100,
             'bitDepth': 24,
             'format': 'flac',
+            'hardwareVolumeActive': true,
+            'digitalVolumeActive': false,
             'message': 'USB exclusive playback started.',
           };
         }
@@ -261,6 +263,8 @@ void main() {
           sourceFormat: 'flac',
           sampleRate: 44100,
           bitDepth: 24,
+          volumeGain: 0.5,
+          volumeMode: 'auto',
           targetBufferMs: 320,
           startPaused: false,
         ),
@@ -273,6 +277,8 @@ void main() {
         'sampleRate': 44100,
         'bitDepth': 24,
         'dsdMode': null,
+        'volumeGainQ16': 32768,
+        'volumeMode': 'auto',
         'targetBufferMs': 320,
         'startPaused': false,
         'streaming': false,
@@ -304,6 +310,23 @@ void main() {
     await service.setExclusiveTargetBufferMs(2400);
 
     expect(receivedArguments, {'targetBufferMs': 2400});
+  });
+
+  test('setExclusiveVolume sends gain and control mode', () async {
+    final service = UsbAudioService(channel: channel, isAndroid: true);
+    Object? receivedArguments;
+
+    messenger.setMockMethodCallHandler(channel, (call) async {
+      if (call.method == 'setExclusiveVolume') {
+        receivedArguments = call.arguments;
+        return null;
+      }
+      throw PlatformException(code: 'unexpected_method');
+    });
+
+    await service.setExclusiveVolume(gain: 0.5, mode: 'dac');
+
+    expect(receivedArguments, {'gainQ16': 32768, 'mode': 'dac'});
   });
 
   test('native exclusive state event updates playback notifier', () async {

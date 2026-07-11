@@ -24,6 +24,8 @@ import java.nio.ByteBuffer
 import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
+import kotlin.math.log10
+import kotlin.math.roundToInt
 
 object UsbExclusiveNative {
     init {
@@ -67,6 +69,90 @@ private const val USB_RECIP_ENDPOINT = 0x02
 // 数字音量线性增益的 Q16.16 定点满刻度（1.0），低于此值即衰减，等于此值为位完美直通。
 private const val UNITY_GAIN_Q16 = 65536
 
+internal data class HardwareVolumeFeature(
+    val protocol: String,
+    val controlInterface: Int,
+    val unitId: Int,
+    val sourceId: Int,
+    val channel: Int,
+    val writable: Boolean,
+) {
+    fun description(): String =
+        "interface=$controlInterface/unit=$unitId/source=$sourceId/channel=$channel/" +
+            "volume=${if (writable) "read-write" else "read-only"}/protocol=$protocol"
+}
+
+internal data class HardwareVolumeRange(
+    val minQ8_8: Int,
+    val maxQ8_8: Int,
+    val stepQ8_8: Int,
+)
+
+internal fun selectHardwareVolumeFeatures(
+    features: List<HardwareVolumeFeature>,
+    terminalLink: Int?,
+    outputTerminalSources: Set<Int>,
+    quirk: DacQuirk,
+): List<HardwareVolumeFeature>? {
+    if (quirk.hardwareVolumeEnabled == false) {
+        return null
+    }
+    val featureUnitId = quirk.hardwareVolumeFeatureUnitId
+    val controlInterface = quirk.hardwareVolumeControlInterface
+    if (featureUnitId != null && controlInterface != null) {
+        val matching = features.filter {
+            it.unitId == featureUnitId && it.controlInterface == controlInterface
+        }
+        val channels = quirk.hardwareVolumeChannels
+        val selected = if (channels.isEmpty()) {
+            matching.firstOrNull { it.channel == 0 }?.let(::listOf)
+                ?: matching.sortedBy { it.channel }
+        } else {
+            channels.mapNotNull { channel -> matching.firstOrNull { it.channel == channel } }
+        }
+        return selected.takeIf {
+            it.isNotEmpty() && (channels.isEmpty() || it.size == channels.size)
+        }
+    }
+
+    val linkedTerminal = terminalLink ?: return null
+    val candidates = features
+        .filter {
+            it.writable &&
+                it.sourceId == linkedTerminal &&
+                it.unitId in outputTerminalSources
+        }
+        .groupBy { Triple(it.protocol, it.controlInterface, it.unitId) }
+    if (candidates.size != 1) {
+        return null
+    }
+    val group = candidates.values.single()
+    return group.firstOrNull { it.channel == 0 }?.let(::listOf)
+        ?: group.sortedBy { it.channel }
+}
+
+internal fun hardwareVolumeQ8_8(gainQ16: Int, range: HardwareVolumeRange): Int {
+    if (gainQ16 <= 0) {
+        return Short.MIN_VALUE.toInt()
+    }
+    val gain = gainQ16.coerceAtMost(UNITY_GAIN_Q16).toDouble() / UNITY_GAIN_Q16
+    val raw = (20.0 * log10(gain) * 256.0).roundToInt()
+        .coerceIn(range.minQ8_8, range.maxQ8_8)
+    if (range.stepQ8_8 <= 0) {
+        return raw
+    }
+    val steps = ((raw - range.minQ8_8).toDouble() / range.stepQ8_8).roundToInt()
+    return (range.minQ8_8 + steps * range.stepQ8_8)
+        .coerceIn(range.minQ8_8, range.maxQ8_8)
+}
+
+internal fun hardwareVolumeReadbackMatches(targetQ8_8: Int, actualQ8_8: Int, stepQ8_8: Int): Boolean {
+    if (targetQ8_8 == Short.MIN_VALUE.toInt()) {
+        return actualQ8_8 == targetQ8_8
+    }
+    return kotlin.math.abs(actualQ8_8 - targetQ8_8) <= stepQ8_8.coerceAtLeast(1)
+}
+
 class UsbExclusiveAudioEngine(
     private val context: Context,
     private val emitState: (Map<String, Any?>) -> Unit,
@@ -98,6 +184,7 @@ class UsbExclusiveAudioEngine(
     private var sessionChannels: Int? = null
     private var sessionBitDepth: Int? = null
     private var sessionTarget: OutputTarget? = null
+    private var sessionDevice: UsbDevice? = null
     @Volatile private var sessionBroken = false
 
     // DSD 编码相位/帧对齐跨曲目/跨空窗延续：编码器（DoP 或 native）与打包器提升到
@@ -115,6 +202,11 @@ class UsbExclusiveAudioEngine(
     // 恒为满刻度直通；DSD/DoP 打包器不读此值，始终位完美。
     @Volatile private var pcmVolumeGainQ16 = UNITY_GAIN_Q16
     @Volatile private var volumeControlEnabled = false
+    @Volatile private var volumeMode = "auto"
+    @Volatile private var requestedVolumeGainQ16 = UNITY_GAIN_Q16
+    @Volatile private var hardwareVolumeActive = false
+    private val volumeLock = Any()
+    private var hardwareVolumeControl: HardwareVolumeControl? = null
 
     private val diagnosticsLock = Any()
     private var sessionSequence = 0L
@@ -287,6 +379,12 @@ class UsbExclusiveAudioEngine(
 
         // 该设备的 quirk 生效值（vid:pid 精确 → vid:* 厂商 → 默认）
         val quirk = UsbDacQuirks.forDevice(context, device.vendorId, device.productId)
+        volumeMode = (arguments["volumeMode"] as? String)
+            ?.lowercase(Locale.ROOT)
+            ?.takeIf { it == "auto" || it == "dac" || it == "digital" || it == "raw" }
+            ?: "auto"
+        requestedVolumeGainQ16 = ((arguments["volumeGainQ16"] as? Number)?.toInt() ?: UNITY_GAIN_Q16)
+            .coerceIn(0, UNITY_GAIN_Q16)
 
         // DSD 输出模式：dop / native；pcm 模式在 Dart 侧直接走共享路径，不会到这里
         val dsdMode = (arguments["dsdMode"] as? String)?.lowercase(Locale.ROOT)
@@ -571,6 +669,7 @@ class UsbExclusiveAudioEngine(
             sessionChannels = requestedChannels
             sessionBitDepth = requestedBitDepth
             sessionTarget = resolvedTarget
+            sessionDevice = device
             sessionDsdKind = when {
                 dsdReader == null -> null
                 nativeDsd -> "native"
@@ -579,6 +678,8 @@ class UsbExclusiveAudioEngine(
             sessionNativeFormat = if (nativeDsd) nativeFormat else null
             target = resolvedTarget
         }
+        sessionDevice = device
+        applyVolumeControl(device, target, dsdReader != null, quirk)
         sessionBroken = false
         workerEndedAtEof = false
         paused.set(arguments["startPaused"] == true)
@@ -596,6 +697,8 @@ class UsbExclusiveAudioEngine(
             "durationMs" to reader?.durationMs,
             "sampleRate" to (reader?.sampleRate ?: arguments["sampleRate"]),
             "bitDepth" to if (reader != null) 1 else arguments["bitDepth"],
+            "hardwareVolumeActive" to hardwareVolumeActive,
+            "digitalVolumeActive" to volumeControlEnabled,
             "format" to if (reader != null) {
                 "${reader.formatName}($dsdSuffix)"
             } else {
@@ -657,20 +760,297 @@ class UsbExclusiveAudioEngine(
         )
     }
 
-    // 设置独占数字音量。enabled=false（原始数字电平）时旁路为满刻度直通；否则按传入
-    // 的 Q16.16 线性增益衰减 PCM。DSD/DoP 会话不受影响。切歌不复位，音量在会话内保持。
-    fun setVolume(gainQ16: Int, enabled: Boolean) {
-        volumeControlEnabled = enabled
-        pcmVolumeGainQ16 = if (enabled) gainQ16.coerceIn(0, UNITY_GAIN_Q16) else UNITY_GAIN_Q16
-        UsbDiagnostics.i(tag, "set exclusive volume gainQ16=$pcmVolumeGainQ16, enabled=$enabled")
+    fun setVolume(gainQ16: Int, mode: String) {
+        requestedVolumeGainQ16 = gainQ16.coerceIn(0, UNITY_GAIN_Q16)
+        volumeMode = mode.lowercase(Locale.ROOT)
+            .takeIf { it == "auto" || it == "dac" || it == "digital" || it == "raw" }
+            ?: "auto"
+        val device = sessionDevice
+        val target = sessionTarget
+        if (device != null && target != null && connection != null) {
+            applyVolumeControl(
+                device,
+                target,
+                sessionDsdKind != null,
+                UsbDacQuirks.forDevice(context, device.vendorId, device.productId),
+            )
+        } else {
+            hardwareVolumeActive = false
+            volumeControlEnabled = volumeMode != "raw"
+            pcmVolumeGainQ16 = if (volumeControlEnabled) requestedVolumeGainQ16 else UNITY_GAIN_Q16
+        }
+        UsbDiagnostics.i(
+            tag,
+            "set exclusive volume gainQ16=$requestedVolumeGainQ16, mode=$volumeMode, " +
+                "hardware=$hardwareVolumeActive, digital=$volumeControlEnabled",
+        )
+        if (currentState["active"] == true) {
+            updateState(
+                currentState + mapOf(
+                    "hardwareVolumeActive" to hardwareVolumeActive,
+                    "digitalVolumeActive" to volumeControlEnabled,
+                ),
+            )
+        }
     }
 
-    // 是否应由本软件接管安卓物理音量键：独占播放中、非原始数字电平模式，且非 DSD。
-    // DSD（DoP/原生，bitDepth=1）是位流无法软件调音量，交回系统避免弹出无效音量条。
     fun isVolumeControlEngaged(): Boolean =
         currentState["active"] == true &&
-            volumeControlEnabled &&
-            currentState["bitDepth"] != 1
+            (hardwareVolumeActive || (volumeControlEnabled && currentState["bitDepth"] != 1))
+
+    private fun applyVolumeControl(
+        device: UsbDevice,
+        target: OutputTarget,
+        isDsd: Boolean,
+        quirk: DacQuirk,
+    ) {
+        synchronized(volumeLock) {
+            val wasHardwareActive = hardwareVolumeActive
+            hardwareVolumeActive = false
+            val wantsHardware = volumeMode == "auto" || volumeMode == "dac"
+            var fallbackReason: String? = null
+            if (wantsHardware && quirk.hardwareVolumeEnabled != false) {
+                if (isDsd && quirk.hardwareVolumeDsdSupported == false) {
+                    fallbackReason = "DSD hardware volume is disabled by quirk."
+                } else {
+                    val activeConnection = connection
+                    val control = if (activeConnection == null) {
+                        null
+                    } else {
+                        hardwareVolumeControl ?: resolveHardwareVolumeControl(
+                            activeConnection,
+                            device,
+                            target,
+                            quirk,
+                        )?.also { hardwareVolumeControl = it }
+                    }
+                    if (control == null) {
+                        fallbackReason = "No unique writable playback Feature Unit passed probing."
+                    } else if (activeConnection != null) {
+                        fallbackReason = writeHardwareVolume(
+                            activeConnection,
+                            device,
+                            control,
+                            requestedVolumeGainQ16,
+                        )
+                        hardwareVolumeActive = fallbackReason == null
+                        if (!hardwareVolumeActive && wasHardwareActive) {
+                            val restoreError = writeHardwareVolume(
+                                activeConnection,
+                                device,
+                                control,
+                                UNITY_GAIN_Q16,
+                            )
+                            hardwareVolumeActive = restoreError != null
+                            if (restoreError != null) {
+                                fallbackReason =
+                                    "${fallbackReason ?: "Hardware volume write failed."} " +
+                                    "Failed to restore hardware volume: $restoreError"
+                            }
+                        }
+                    }
+                }
+            } else if (wasHardwareActive) {
+                val activeConnection = connection
+                val control = hardwareVolumeControl
+                val restoreError = if (activeConnection != null && control != null) {
+                    writeHardwareVolume(activeConnection, device, control, UNITY_GAIN_Q16)
+                } else {
+                    "Active hardware volume control is unavailable."
+                }
+                hardwareVolumeActive = restoreError != null
+                fallbackReason = restoreError?.let { "Failed to restore hardware volume: $it" }
+            } else {
+                hardwareVolumeActive = false
+            }
+
+            volumeControlEnabled = !hardwareVolumeActive && !isDsd && volumeMode != "raw"
+            pcmVolumeGainQ16 = if (volumeControlEnabled) requestedVolumeGainQ16 else UNITY_GAIN_Q16
+            updateSessionDiagnostics(
+                "hardwareVolume",
+                mapOf(
+                    "mode" to volumeMode,
+                    "active" to hardwareVolumeActive,
+                    "digitalFallback" to volumeControlEnabled,
+                    "isDsd" to isDsd,
+                    "gainQ16" to requestedVolumeGainQ16,
+                    "source" to hardwareVolumeControl?.source,
+                    "features" to hardwareVolumeControl?.features?.map { it.description() },
+                    "range" to hardwareVolumeControl?.range?.let {
+                        mapOf(
+                            "minQ8_8Db" to it.minQ8_8,
+                            "maxQ8_8Db" to it.maxQ8_8,
+                            "stepQ8_8Db" to it.stepQ8_8,
+                        )
+                    },
+                    "fallbackReason" to fallbackReason,
+                ),
+            )
+        }
+    }
+
+    private fun resolveHardwareVolumeControl(
+        connection: UsbDeviceConnection,
+        device: UsbDevice,
+        target: OutputTarget,
+        quirk: DacQuirk,
+    ): HardwareVolumeControl? {
+        val descriptors = connection.rawDescriptors
+        val parsed = parseHardwareVolumeFeatures(descriptors).toMutableList()
+        val quirkUnitId = quirk.hardwareVolumeFeatureUnitId
+        val quirkInterface = quirk.hardwareVolumeControlInterface
+        if (quirkUnitId != null && quirkInterface != null) {
+            val protocol = if (
+                findAudioControlInterface(device, quirkInterface)?.interfaceProtocol == 0x20
+            ) {
+                "uac2"
+            } else {
+                "uac1"
+            }
+            val matching = parsed.filter {
+                it.unitId == quirkUnitId && it.controlInterface == quirkInterface
+            }
+            val channels = quirk.hardwareVolumeChannels.ifEmpty {
+                if (matching.isEmpty()) listOf(0) else emptyList()
+            }
+            parsed += channels.filter { channel ->
+                matching.none { it.channel == channel }
+            }.map { channel ->
+                HardwareVolumeFeature(
+                    protocol = protocol,
+                    controlInterface = quirkInterface,
+                    unitId = quirkUnitId,
+                    sourceId = target.formatInfo?.terminalLink ?: -1,
+                    channel = channel,
+                    writable = true,
+                )
+            }
+        }
+        val selected = selectHardwareVolumeFeatures(
+            features = parsed,
+            terminalLink = target.formatInfo?.terminalLink,
+            outputTerminalSources = parseOutputTerminalSources(descriptors),
+            quirk = quirk,
+        ) ?: return null
+        if (
+            quirkUnitId == null &&
+            parsed.map { it.controlInterface }.distinct().size != 1
+        ) {
+            return null
+        }
+        val controlInterface = findAudioControlInterface(device, selected.first().controlInterface)
+            ?: return null
+        val claimed = runCatching { connection.claimInterface(controlInterface, true) }.getOrDefault(false)
+        if (!claimed) {
+            return null
+        }
+        return try {
+            val ranges = selected.mapNotNull { readHardwareVolumeRangeValue(connection, it) }
+            if (ranges.size != selected.size || ranges.distinct().size != 1) {
+                null
+            } else {
+                HardwareVolumeControl(
+                    features = selected,
+                    range = ranges.single(),
+                    source = if (quirkUnitId != null && quirkInterface != null) "quirk" else "descriptor",
+                )
+            }
+        } finally {
+            runCatching { connection.releaseInterface(controlInterface) }
+        }
+    }
+
+    private fun writeHardwareVolume(
+        connection: UsbDeviceConnection,
+        device: UsbDevice,
+        control: HardwareVolumeControl,
+        gainQ16: Int,
+    ): String? {
+        val controlInterface = findAudioControlInterface(device, control.features.first().controlInterface)
+            ?: return "AudioControl interface is unavailable."
+        val claimed = runCatching { connection.claimInterface(controlInterface, true) }.getOrDefault(false)
+        if (!claimed) {
+            return "Failed to claim the AudioControl interface."
+        }
+        val previous = mutableMapOf<HardwareVolumeFeature, Int>()
+        val written = mutableListOf<HardwareVolumeFeature>()
+        val targetQ8_8 = hardwareVolumeQ8_8(gainQ16, control.range)
+        return try {
+            for (feature in control.features) {
+                val current = readHardwareVolumeCurrent(connection, feature)
+                if (current == null) {
+                    return "Failed to read hardware volume channel ${feature.channel}."
+                }
+                previous[feature] = current
+            }
+            for (feature in control.features) {
+                if (!writeHardwareVolumeValue(connection, feature, targetQ8_8)) {
+                    rollbackHardwareVolume(connection, written, previous)
+                    return "Failed to set hardware volume channel ${feature.channel}."
+                }
+                written += feature
+                val readBack = readHardwareVolumeCurrent(connection, feature)
+                if (
+                    readBack == null ||
+                    !hardwareVolumeReadbackMatches(targetQ8_8, readBack, control.range.stepQ8_8)
+                ) {
+                    rollbackHardwareVolume(connection, written, previous)
+                    return "Hardware volume readback mismatch on channel ${feature.channel}."
+                }
+            }
+            UsbDiagnostics.i(
+                tag,
+                "hardware volume SET_CUR targetQ8_8=$targetQ8_8, channels=${control.features.map { it.channel }}",
+            )
+            null
+        } finally {
+            runCatching { connection.releaseInterface(controlInterface) }
+        }
+    }
+
+    private fun rollbackHardwareVolume(
+        connection: UsbDeviceConnection,
+        written: List<HardwareVolumeFeature>,
+        previous: Map<HardwareVolumeFeature, Int>,
+    ) {
+        written.asReversed().forEach { feature ->
+            previous[feature]?.let { writeHardwareVolumeValue(connection, feature, it) }
+        }
+    }
+
+    private fun readHardwareVolumeCurrent(
+        connection: UsbDeviceConnection,
+        feature: HardwareVolumeFeature,
+    ): Int? {
+        val data = ByteArray(2)
+        val result = connection.controlTransfer(
+            UsbConstants.USB_DIR_IN or UsbConstants.USB_TYPE_CLASS or USB_RECIP_INTERFACE,
+            if (feature.protocol == "uac2") 0x01 else 0x81,
+            (0x02 shl 8) or feature.channel,
+            (feature.unitId shl 8) or feature.controlInterface,
+            data,
+            data.size,
+            300,
+        )
+        return if (result == data.size) readSignedQ8_8(data, 0) else null
+    }
+
+    private fun writeHardwareVolumeValue(
+        connection: UsbDeviceConnection,
+        feature: HardwareVolumeFeature,
+        valueQ8_8: Int,
+    ): Boolean {
+        val data = byteArrayOf(valueQ8_8.toByte(), (valueQ8_8 shr 8).toByte())
+        return connection.controlTransfer(
+            UsbConstants.USB_DIR_OUT or UsbConstants.USB_TYPE_CLASS or USB_RECIP_INTERFACE,
+            0x01,
+            (0x02 shl 8) or feature.channel,
+            (feature.unitId shl 8) or feature.controlInterface,
+            data,
+            data.size,
+            300,
+        ) == data.size
+    }
 
     fun setTargetBufferMs(value: Int): Map<String, Any?> {
         targetBufferMs = value.coerceIn(50, 5000)
@@ -777,12 +1157,17 @@ class UsbExclusiveAudioEngine(
         sessionNativeFormat = null
         sessionTarget = null
         sessionDeviceId = null
+        sessionDevice = null
         sessionSampleRate = null
         sessionChannels = null
         sessionBitDepth = null
-        UsbExclusiveNative.close()
-        connection?.close()
-        connection = null
+        synchronized(volumeLock) {
+            hardwareVolumeActive = false
+            hardwareVolumeControl = null
+            UsbExclusiveNative.close()
+            connection?.close()
+            connection = null
+        }
         activePacketsPerSecond = 0
     }
 
@@ -1834,12 +2219,13 @@ class UsbExclusiveAudioEngine(
             (byte.toInt() and 0xff).toString(16).padStart(2, '0')
         }
 
-    private fun findAudioControlInterface(device: UsbDevice): UsbInterface? {
+    private fun findAudioControlInterface(device: UsbDevice, interfaceNumber: Int? = null): UsbInterface? {
         for (index in 0 until device.interfaceCount) {
             val usbInterface = device.getInterface(index)
             if (
                 usbInterface.interfaceClass == UsbConstants.USB_CLASS_AUDIO &&
-                usbInterface.interfaceSubclass == 1
+                usbInterface.interfaceSubclass == 1 &&
+                (interfaceNumber == null || usbInterface.id == interfaceNumber)
             ) {
                 return usbInterface
             }
@@ -1992,29 +2378,51 @@ class UsbExclusiveAudioEngine(
         }
     }
 
-    private data class HardwareVolumeFeature(
-        val protocol: String,
-        val controlInterface: Int,
-        val unitId: Int,
-        val channel: Int,
-        val writeState: String,
-    ) {
-        fun description(): String =
-            "interface=$controlInterface/unit=$unitId/channel=$channel/volume=$writeState/protocol=$protocol"
-    }
+    private data class HardwareVolumeControl(
+        val features: List<HardwareVolumeFeature>,
+        val range: HardwareVolumeRange,
+        val source: String,
+    )
 
     private fun collectHardwareVolumeDiagnostics(
         connection: UsbDeviceConnection,
         device: UsbDevice,
         descriptors: ByteArray?,
     ): Map<String, Any?> {
-        val features = parseHardwareVolumeFeatures(descriptors)
+        val features = parseHardwareVolumeFeatures(descriptors).toMutableList()
         val quirk = UsbDacQuirks.forDevice(context, device.vendorId, device.productId)
         val quirkOverride = buildMap<String, Any> {
             quirk.hardwareVolumeFeatureUnitId?.let { put("featureUnitId", it) }
             quirk.hardwareVolumeControlInterface?.let { put("controlInterface", it) }
             if (quirk.hardwareVolumeChannels.isNotEmpty()) {
                 put("channels", quirk.hardwareVolumeChannels)
+            }
+            quirk.hardwareVolumeEnabled?.let { put("enabled", it) }
+            quirk.hardwareVolumeDsdSupported?.let { put("dsdSupported", it) }
+        }
+        val quirkUnitId = quirk.hardwareVolumeFeatureUnitId
+        val quirkInterface = quirk.hardwareVolumeControlInterface
+        if (
+            quirkUnitId != null &&
+            quirkInterface != null &&
+            features.none { it.unitId == quirkUnitId && it.controlInterface == quirkInterface }
+        ) {
+            val protocol = if (
+                findAudioControlInterface(device, quirkInterface)?.interfaceProtocol == 0x20
+            ) {
+                "uac2"
+            } else {
+                "uac1"
+            }
+            features += quirk.hardwareVolumeChannels.ifEmpty { listOf(0) }.map { channel ->
+                HardwareVolumeFeature(
+                    protocol = protocol,
+                    controlInterface = quirkInterface,
+                    unitId = quirkUnitId,
+                    sourceId = -1,
+                    channel = channel,
+                    writable = true,
+                )
             }
         }
         if (features.isEmpty()) {
@@ -2025,25 +2433,34 @@ class UsbExclusiveAudioEngine(
             )
         }
 
-        val controlInterface = findAudioControlInterface(device)
-        val claimed = controlInterface?.let {
-            runCatching { connection.claimInterface(it, true) }.getOrDefault(false)
-        } == true
-        val probes = try {
-            features
-                .groupBy { Triple(it.protocol, it.controlInterface, it.unitId) }
-                .values
-                .map { group ->
-                    val feature = group.firstOrNull { it.channel == 0 } ?: group.first()
-                    readHardwareVolumeProbe(connection, feature)
-                }
-        } finally {
-            controlInterface?.let { usbInterface ->
-                if (claimed) {
-                    runCatching { connection.releaseInterface(usbInterface) }
+        val probes = features
+            .groupBy { Triple(it.protocol, it.controlInterface, it.unitId) }
+            .values
+            .flatMap { group ->
+                val feature = group.first()
+                val controlInterface = findAudioControlInterface(device, feature.controlInterface)
+                val claimed = controlInterface?.let {
+                    runCatching { connection.claimInterface(it, true) }.getOrDefault(false)
+                } == true
+                if (!claimed) {
+                    listOf(
+                        mapOf(
+                            "protocol" to feature.protocol,
+                            "controlInterface" to feature.controlInterface,
+                            "featureUnitId" to feature.unitId,
+                            "error" to "Failed to claim AudioControl interface.",
+                        ),
+                    )
+                } else {
+                    try {
+                        group.sortedBy { it.channel }.map {
+                            readHardwareVolumeProbe(connection, it)
+                        }
+                    } finally {
+                        runCatching { connection.releaseInterface(controlInterface!!) }
+                    }
                 }
             }
-        }
         return mapOf(
             "available" to true,
             "featureUnits" to features.map { it.description() },
@@ -2089,17 +2506,18 @@ class UsbExclusiveAudioEngine(
                             ((descriptors[controlOffset + 2].toInt() and 0xff) shl 16) or
                             ((descriptors[controlOffset + 3].toInt() and 0xff) shl 24)
                         val volumeControl = (controls ushr 2) and 0x03
-                        val writeState = when (volumeControl) {
-                            0x01 -> "read-only"
-                            0x03 -> "read-write"
+                        val writable = when (volumeControl) {
+                            0x01 -> false
+                            0x03 -> true
                             else -> null
                         } ?: continue
                         features += HardwareVolumeFeature(
                             protocol = "uac2",
                             controlInterface = interfaceNumber,
                             unitId = descriptors[offset + 3].toInt() and 0xff,
+                            sourceId = descriptors[offset + 4].toInt() and 0xff,
                             channel = channel,
-                            writeState = writeState,
+                            writable = writable,
                         )
                     }
                 } else {
@@ -2121,8 +2539,9 @@ class UsbExclusiveAudioEngine(
                                 protocol = "uac1",
                                 controlInterface = interfaceNumber,
                                 unitId = descriptors[offset + 3].toInt() and 0xff,
+                                sourceId = descriptors[offset + 4].toInt() and 0xff,
                                 channel = channel,
-                                writeState = "available",
+                                writable = true,
                             )
                         }
                     }
@@ -2131,6 +2550,86 @@ class UsbExclusiveAudioEngine(
             offset += length
         }
         return features
+    }
+
+    private fun parseOutputTerminalSources(descriptors: ByteArray?): Set<Int> {
+        if (descriptors == null) {
+            return emptySet()
+        }
+        val sources = mutableSetOf<Int>()
+        var offset = 0
+        var interfaceClass = -1
+        var interfaceSubclass = -1
+        while (offset + 1 < descriptors.size) {
+            val length = descriptors[offset].toInt() and 0xff
+            val descriptorType = descriptors[offset + 1].toInt() and 0xff
+            if (length < 2 || offset + length > descriptors.size) {
+                break
+            }
+            if (descriptorType == 0x04 && length >= 9) {
+                interfaceClass = descriptors[offset + 5].toInt() and 0xff
+                interfaceSubclass = descriptors[offset + 6].toInt() and 0xff
+            } else if (
+                descriptorType == 0x24 &&
+                interfaceClass == UsbConstants.USB_CLASS_AUDIO &&
+                interfaceSubclass == 1 &&
+                length >= 8 &&
+                (descriptors[offset + 2].toInt() and 0xff) == 0x03
+            ) {
+                sources += descriptors[offset + 7].toInt() and 0xff
+            }
+            offset += length
+        }
+        return sources
+    }
+
+    private fun readHardwareVolumeRangeValue(
+        connection: UsbDeviceConnection,
+        feature: HardwareVolumeFeature,
+    ): HardwareVolumeRange? {
+        val requestType = UsbConstants.USB_DIR_IN or UsbConstants.USB_TYPE_CLASS or USB_RECIP_INTERFACE
+        val value = (0x02 shl 8) or feature.channel
+        val index = (feature.unitId shl 8) or feature.controlInterface
+        val range = if (feature.protocol == "uac2") {
+            val header = ByteArray(2)
+            if (connection.controlTransfer(requestType, 0x02, value, index, header, header.size, 300) != 2) {
+                return null
+            }
+            val count = (header[0].toInt() and 0xff) or ((header[1].toInt() and 0xff) shl 8)
+            if (count != 1) {
+                return null
+            }
+            val data = ByteArray(8)
+            if (connection.controlTransfer(requestType, 0x02, value, index, data, data.size, 300) != data.size) {
+                return null
+            }
+            HardwareVolumeRange(
+                minQ8_8 = readSignedQ8_8(data, 2),
+                maxQ8_8 = readSignedQ8_8(data, 4),
+                stepQ8_8 = readSignedQ8_8(data, 6),
+            )
+        } else {
+            fun readAttribute(request: Int): Int? {
+                val data = ByteArray(2)
+                return if (
+                    connection.controlTransfer(requestType, request, value, index, data, data.size, 300) == data.size
+                ) {
+                    readSignedQ8_8(data, 0)
+                } else {
+                    null
+                }
+            }
+            HardwareVolumeRange(
+                minQ8_8 = readAttribute(0x82) ?: return null,
+                maxQ8_8 = readAttribute(0x83) ?: return null,
+                stepQ8_8 = readAttribute(0x84) ?: return null,
+            )
+        }
+        return range.takeIf {
+            it.minQ8_8 != Short.MIN_VALUE.toInt() &&
+                it.minQ8_8 <= it.maxQ8_8 &&
+                it.stepQ8_8 > 0
+        }
     }
 
     private fun readHardwareVolumeProbe(
@@ -2155,7 +2654,7 @@ class UsbExclusiveAudioEngine(
             put("controlInterface", feature.controlInterface)
             put("featureUnitId", feature.unitId)
             put("channel", feature.channel)
-            put("writeState", feature.writeState)
+            put("writeState", if (feature.writable) "read-write" else "read-only")
             put("currentResult", currentResult)
             if (currentResult == current.size) {
                 put("currentQ8_8Db", readSignedQ8_8(current, 0))

@@ -9,7 +9,7 @@ import 'package:sylvakru/base/services/usb_audio_service.dart';
 /// 独占模式下按安卓物理音量键时弹出的右侧竖向毛玻璃音量条：整条可点/拖调节，
 /// 数字显示在条内，中间细轨道显示当前音量，静止约 2 秒后自动隐藏。系统音量条
 /// 已被 MainActivity 拦截，改由本条反馈与操作。叠在 MaterialApp 之上（需 Stack 父级），
-/// 只在收到物理音量键事件时显示。DSD 独占不会触发（1-bit 码流无法软件调音量）。
+/// 只在收到物理音量键事件时显示。DSD 仅在 DAC 硬件音量验证可用时触发。
 class UsbExclusiveVolumeOverlay extends StatefulWidget {
   const UsbExclusiveVolumeOverlay({super.key});
 

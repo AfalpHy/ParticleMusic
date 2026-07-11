@@ -167,11 +167,10 @@ class UsbAudioService {
     });
   }
 
-  /// 设置独占数字音量。gain 为 0..1 的线性幅度，enabled=false 时旁路（原始数字电平，
-  /// 位完美直通）。DSD/DoP 会话由引擎侧强制旁路，不受此值影响。
+  /// 设置独占音量。原生层按 mode 选择 DAC 硬件音量、PCM 数字音量或原始电平。
   Future<void> setExclusiveVolume({
     required double gain,
-    required bool enabled,
+    required String mode,
   }) async {
     if (!_isAndroid) {
       return;
@@ -179,7 +178,7 @@ class UsbAudioService {
 
     await _channel.invokeMethod<void>('setExclusiveVolume', {
       'gainQ16': (gain.clamp(0.0, 1.0) * 65536).round(),
-      'enabled': enabled,
+      'mode': mode,
     });
   }
 
@@ -400,6 +399,8 @@ class UsbExclusivePlaybackRequest {
 
   /// DSD 文件的输出模式（UsbDsdMode.name：dop/native），非 DSD 为 null
   final String? dsdMode;
+  final double volumeGain;
+  final String volumeMode;
   final int? targetBufferMs;
   final bool startPaused;
 
@@ -417,6 +418,8 @@ class UsbExclusivePlaybackRequest {
     required this.sampleRate,
     required this.bitDepth,
     this.dsdMode,
+    required this.volumeGain,
+    required this.volumeMode,
     required this.targetBufferMs,
     required this.startPaused,
     this.streaming = false,
@@ -431,6 +434,8 @@ class UsbExclusivePlaybackRequest {
       'sampleRate': sampleRate,
       'bitDepth': bitDepth,
       'dsdMode': dsdMode,
+      'volumeGainQ16': (volumeGain.clamp(0.0, 1.0) * 65536).round(),
+      'volumeMode': volumeMode,
       'targetBufferMs': targetBufferMs,
       'startPaused': startPaused,
       'streaming': streaming,
@@ -448,6 +453,8 @@ class UsbExclusivePlaybackState {
   final int? sampleRate;
   final int? bitDepth;
   final String? format;
+  final bool hardwareVolumeActive;
+  final bool digitalVolumeActive;
   final String? message;
 
   const UsbExclusivePlaybackState({
@@ -458,6 +465,8 @@ class UsbExclusivePlaybackState {
     required this.sampleRate,
     required this.bitDepth,
     required this.format,
+    required this.hardwareVolumeActive,
+    required this.digitalVolumeActive,
     required this.message,
   });
 
@@ -470,6 +479,8 @@ class UsbExclusivePlaybackState {
       sampleRate: null,
       bitDepth: null,
       format: null,
+      hardwareVolumeActive: false,
+      digitalVolumeActive: false,
       message: message,
     );
   }
@@ -485,6 +496,8 @@ class UsbExclusivePlaybackState {
       sampleRate: _asInt(map['sampleRate']),
       bitDepth: _asInt(map['bitDepth']),
       format: map['format'] as String?,
+      hardwareVolumeActive: map['hardwareVolumeActive'] == true,
+      digitalVolumeActive: map['digitalVolumeActive'] == true,
       message: map['message'] as String?,
     );
   }
