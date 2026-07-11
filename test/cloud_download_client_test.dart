@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sylvakru/base/app.dart' as app;
 import 'package:sylvakru/base/data/library.dart' deferred as library_data;
@@ -26,6 +27,24 @@ Future<ServerSocket> _startSlowDownloadServer() async {
     await Future<void>.delayed(const Duration(seconds: 2));
     socket.add([2, 3]);
     await socket.close();
+  });
+  return server;
+}
+
+Future<ServerSocket> _startDroppedDownloadServer() async {
+  final server = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
+  server.listen((socket) async {
+    socket.add(
+      ascii.encode(
+            'HTTP/1.1 200 OK\r\n'
+            'Content-Length: 4\r\n'
+            'Connection: close\r\n'
+            '\r\n',
+          ) +
+          [1, 2],
+    );
+    await socket.flush();
+    socket.destroy();
   });
   return server;
 }
@@ -146,6 +165,124 @@ void main() {
     expect(await File('${directory.path}/song.part').readAsBytes(), [1, 2, 3]);
   });
 
+  test('Navidrome keeps a part file when download is interrupted', () async {
+    final server = await _startDroppedDownloadServer();
+    final directory = await Directory.systemTemp.createTemp(
+      'sylvakru_cache_test',
+    );
+    addTearDown(() async {
+      await server.close();
+      await directory.delete(recursive: true);
+    });
+    final partPath = '${directory.path}/song.part';
+    final client = NavidromeClient(
+      baseUrl: 'http://${server.address.address}:${server.port}',
+      username: 'user',
+      password: 'password',
+    );
+
+    final completed = await client.downloadSong(
+      songId: 'song-id',
+      savePath: partPath,
+    );
+
+    expect(completed, isFalse);
+    expect(File(partPath).existsSync(), isTrue);
+  });
+
+  test('WebDAV keeps a part file when download is interrupted', () async {
+    final server = await _startDroppedDownloadServer();
+    final directory = await Directory.systemTemp.createTemp(
+      'sylvakru_cache_test',
+    );
+    addTearDown(() async {
+      await server.close();
+      await directory.delete(recursive: true);
+    });
+    final partPath = '${directory.path}/song.part';
+    final client = WebDavClient(
+      baseUrl: 'http://${server.address.address}:${server.port}/library',
+      username: 'user',
+      password: 'password',
+    );
+
+    final completed = await client.download(
+      remotePath: '/song.flac',
+      localPath: partPath,
+    );
+
+    expect(completed, isFalse);
+    expect(File(partPath).existsSync(), isTrue);
+  });
+
+  test('Emby keeps a part file when download is interrupted', () async {
+    final server = await _startDroppedDownloadServer();
+    final directory = await Directory.systemTemp.createTemp(
+      'sylvakru_cache_test',
+    );
+    addTearDown(() async {
+      await server.close();
+      await directory.delete(recursive: true);
+    });
+    final partPath = '${directory.path}/song.part';
+    final client = EmbyClient(
+      baseUrl: 'http://${server.address.address}:${server.port}',
+      username: 'user',
+      password: 'password',
+    );
+
+    final completed = await client.downloadSong(
+      itemId: 'song-id',
+      savePath: partPath,
+    );
+
+    expect(completed, isFalse);
+    expect(File(partPath).existsSync(), isTrue);
+  });
+
+  test('Navidrome cancellation keeps the part file', () async {
+    final server = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
+    final directory = await Directory.systemTemp.createTemp(
+      'sylvakru_cache_test',
+    );
+    addTearDown(() async {
+      await server.close();
+      await directory.delete(recursive: true);
+    });
+    server.listen((socket) async {
+      socket.add(
+        ascii.encode(
+              'HTTP/1.1 200 OK\r\n'
+              'Content-Length: 4\r\n'
+              'Connection: close\r\n'
+              '\r\n',
+            ) +
+            [1],
+      );
+      await socket.flush();
+      await Future<void>.delayed(const Duration(seconds: 2));
+      await socket.close();
+    });
+    final partPath = '${directory.path}/song.part';
+    final cancelToken = CancelToken();
+    final client = NavidromeClient(
+      baseUrl: 'http://${server.address.address}:${server.port}',
+      username: 'user',
+      password: 'password',
+    );
+
+    final download = client.downloadSong(
+      songId: 'song-id',
+      savePath: partPath,
+      cancelToken: cancelToken,
+    );
+    await Future<void>.delayed(const Duration(milliseconds: 100));
+    cancelToken.cancel();
+
+    expect(await download, isFalse);
+    expect(File(partPath).existsSync(), isTrue);
+  });
+
   test('incomplete cloud download remains a part file', () async {
     final server = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
     addTearDown(() async {
@@ -171,11 +308,11 @@ void main() {
       username: 'user',
       password: 'password',
     );
-    final song = MyAudioMetadata.fromNavidromeMap({
+    final song = MyAudioMetadata.fromOpenSonicMap({
       'id': 'song-id',
       'title': 'Song',
       'suffix': 'flac',
-    });
+    }, app.SourceType.navidrome);
 
     final library = library_data.Library();
     final download = library.tryAddCache(song);
@@ -219,11 +356,11 @@ void main() {
         username: 'user',
         password: 'password',
       );
-      final song = MyAudioMetadata.fromNavidromeMap({
+      final song = MyAudioMetadata.fromOpenSonicMap({
         'id': 'retry-song-id',
         'title': 'Retry Song',
         'suffix': 'flac',
-      });
+      }, app.SourceType.navidrome);
 
       await library_data.Library().tryAddCache(song);
 

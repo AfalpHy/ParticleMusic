@@ -151,15 +151,17 @@ class SubsonicClient extends OpenSubsonicClient {
   }
 
   @override
-  Future<void> downloadSong({
+  Future<bool> downloadSong({
     required String songId,
     required String savePath,
     ProgressCallback? onProgress,
+    CancelToken? cancelToken,
   }) async {
     return super.downloadSong(
       songId: convertToServerId(songId),
       savePath: savePath,
       onProgress: onProgress,
+      cancelToken: cancelToken,
     );
   }
 }

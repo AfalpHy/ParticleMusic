@@ -344,10 +344,12 @@ class Library {
       return inFlight;
     }
     final cancelToken = CancelToken();
-    final download = _downloadCache(song, savePath, cancelToken).whenComplete(() {
-      _cacheDownloads.remove(savePath);
-      _cacheDownloadCancelTokens.remove(savePath);
-    });
+    final download = _downloadCache(song, savePath, cancelToken).whenComplete(
+      () {
+        _cacheDownloads.remove(savePath);
+        _cacheDownloadCancelTokens.remove(savePath);
+      },
+    );
     _cacheDownloads[savePath] = download;
     _cacheDownloadCancelTokens[savePath] = cancelToken;
     return download;
@@ -400,7 +402,8 @@ class Library {
       if (completed && await part.exists()) {
         await part.rename(savePath);
         song.cacheExist = true;
-        cacheSizeNotifier.value += await File(savePath).length() / (1024 * 1024);
+        cacheSizeNotifier.value +=
+            await File(savePath).length() / (1024 * 1024);
         return;
       }
       if (!cancelToken.isCancelled) {
@@ -416,8 +419,11 @@ class Library {
     String savePath,
     CancelToken cancelToken,
   ) async {
-    await client.downloadSong(songId: songId, savePath: savePath);
-    return !cancelToken.isCancelled && await File(savePath).exists();
+    return client.downloadSong(
+      songId: songId,
+      savePath: savePath,
+      cancelToken: cancelToken,
+    );
   }
 
   Future<void> clearCache(SourceType sourceType) async {

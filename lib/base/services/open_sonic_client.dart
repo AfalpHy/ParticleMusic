@@ -333,10 +333,11 @@ abstract class OpenSubsonicClient {
     );
   }
 
-  Future<void> downloadSong({
+  Future<bool> downloadSong({
     required String songId,
     required String savePath,
     ProgressCallback? onProgress,
+    CancelToken? cancelToken,
   }) async {
     try {
       final uri = Uri.parse(baseUrl)
@@ -347,11 +348,19 @@ abstract class OpenSubsonicClient {
         uri.toString(),
         savePath,
         onReceiveProgress: onProgress,
+        cancelToken: cancelToken,
+        deleteOnError: false,
+        options: Options(receiveTimeout: Duration.zero),
       );
+      return true;
     } on DioException catch (e) {
-      logger.output('[$runtimeType] Download failed: ${e.message}');
+      if (!CancelToken.isCancel(e)) {
+        logger.output('[$runtimeType] Download failed: ${e.message}');
+      }
+      return false;
     } catch (e) {
       logger.output('[$runtimeType] Download failed: $e');
+      return false;
     }
   }
 }
