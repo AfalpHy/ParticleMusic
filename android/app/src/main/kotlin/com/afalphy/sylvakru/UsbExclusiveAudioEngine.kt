@@ -15,6 +15,7 @@ import android.media.MediaFormat
 import android.os.Build
 import android.os.Handler
 import android.os.Looper
+import android.os.Process
 import android.os.SystemClock
 import java.io.ByteArrayOutputStream
 import java.io.File
@@ -68,6 +69,8 @@ private const val USB_RECIP_ENDPOINT = 0x02
 
 // 数字音量线性增益的 Q16.16 定点满刻度（1.0），低于此值即衰减，等于此值为位完美直通。
 private const val UNITY_GAIN_Q16 = 65536
+
+internal fun shouldFlushOutputOnStop(dsdKind: String?): Boolean = dsdKind == null
 
 internal data class HardwareVolumeFeature(
     val protocol: String,
@@ -200,6 +203,7 @@ class UsbExclusiveAudioEngine(
     @Volatile private var currentState = inactiveState()
     private var targetBufferMs = 200
     private var minimumBufferLevelMs: Long? = null
+    @Volatile private var playbackId: String? = null
     private var lastTelemetryEmitMs = 0L
     private var lastTelemetryBufferMs: Long? = null
     private var zeroBufferUnderruns = 0L
@@ -369,6 +373,7 @@ class UsbExclusiveAudioEngine(
         if (connection != null) {
             // 下面任一校验失败提前返回时，兜底延迟关闭残留会话
             scheduleDeferredClose()
+        playbackId = arguments["playbackId"] as? String
         }
 
         if (!NATIVE_USB_EXCLUSIVE_STREAMING_ENABLED) {
@@ -496,7 +501,7 @@ class UsbExclusiveAudioEngine(
             nativeDsd -> nativeDsdBytesPerSample(nativeFormat)?.let { it * 8 }
             else -> null
         }
-        targetBufferMs = ((arguments["targetBufferMs"] as? Number)?.toInt() ?: 200).coerceIn(50, 5000)
+        targetBufferMs = ((arguments["targetBufferMs"] as? Number)?.toInt() ?: 200).coerceIn(50, 1000)
         if (streaming) {
             // 流式播放用更深的 USB 水位吸收下载抖动
             targetBufferMs = maxOf(targetBufferMs, 1000)
@@ -730,6 +735,7 @@ class UsbExclusiveAudioEngine(
             "active" to true,
             "playing" to !paused.get(),
             "positionMs" to 0,
+            "playbackId" to playbackId,
             "durationMs" to reader?.durationMs,
             "sampleRate" to (reader?.sampleRate ?: arguments["sampleRate"]),
             "bitDepth" to if (reader != null) 1 else arguments["bitDepth"],
@@ -755,6 +761,8 @@ class UsbExclusiveAudioEngine(
             if (reader != null) {
                 dsdDecodeAndWrite(reader, target, if (streaming) file else null, workerNativeFormat)
             } else {
+            runCatching { Process.setThreadPriority(Process.THREAD_PRIORITY_AUDIO) }
+                .onFailure { UsbDiagnostics.w(tag, "Failed to set USB audio thread priority: ${it.message}") }
                 decodeAndWrite(file, target, streaming, streamTotalBytes)
             }
         }, "SylvakruUsbExclusive")
@@ -1171,7 +1179,7 @@ class UsbExclusiveAudioEngine(
     }
 
     fun setTargetBufferMs(value: Int): Map<String, Any?> {
-        targetBufferMs = value.coerceIn(50, 5000)
+        targetBufferMs = value.coerceIn(50, 1000)
         applyNativeTargetBuffer(activePacketsPerSecond)
         if (activePacketsPerSecond > 0) {
             emitTransportTelemetry(activePacketsPerSecond, force = true)
@@ -1182,13 +1190,20 @@ class UsbExclusiveAudioEngine(
     fun stop(): Map<String, Any?> {
         val keepSession = stopWorkerKeepingSession()
         if (keepSession && connection != null) {
-            // 停止/切歌一律不 flush：丢在途 URB 会瞬断 ISO 流（DSD 掉锁、PCM 小音爆）。
-            // 旧缓冲（约一个水位）放完，DSD 交给静音填充线程接续、PCM 自然收尾，
-            // 由延迟关闭兜底。切歌场景旧尾放完后由下一首 start 无缝续上。
+            // PCM 停止/切歌立即丢弃旧曲在途 URB，避免界面已经切歌但 DAC 仍播放旧缓冲。
+            // DSD 不能 flush，否则 DAC 会掉出 DSD 模式，继续用静音填充跨过空窗。
+            if (shouldFlushOutputOnStop(sessionDsdKind)) {
+                UsbExclusiveNative.flushOutput()?.let { error ->
+                    UsbDiagnostics.w(tag, "Failed to flush stopped PCM output: $error")
+                    hardCloseSession("PCM output flush failed")
+                }
+            }
             // 空窗期持续垫 DoP/native 静音直到下一首接管或延迟关闭（自然播完时
             // 写线程退出前已启动，重复调用无副作用；PCM 无编码器时为空操作）
-            startDopIdleFiller()
-            scheduleDeferredClose()
+            if (connection != null) {
+                startDopIdleFiller()
+                scheduleDeferredClose()
+            }
         }
         return updateState(inactiveState("USB exclusive playback stopped."))
     }
@@ -3430,6 +3445,7 @@ class UsbExclusiveAudioEngine(
             0x80000000.toInt() -> 24
             else -> 16
         }
+            "playbackId" to playbackId,
     }
 
     private data class OutputTarget(

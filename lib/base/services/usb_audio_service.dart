@@ -29,6 +29,7 @@ class UsbAudioService {
 
   final MethodChannel _channel;
   final bool _isAndroid;
+  String? _currentPlaybackId;
 
   UsbAudioService({MethodChannel channel = _defaultChannel, bool? isAndroid})
     : _channel = channel,
@@ -146,6 +147,7 @@ class UsbAudioService {
   Future<UsbExclusivePlaybackState> startExclusivePlayback(
     UsbExclusivePlaybackRequest request,
   ) {
+    _currentPlaybackId = request.playbackId;
     return _invokeExclusiveState('startExclusivePlayback', request.toMap());
   }
 
@@ -259,6 +261,7 @@ class UsbAudioService {
   ]) async {
     if (!_isAndroid) {
       final state = UsbExclusivePlaybackState.inactive(
+        playbackId: _currentPlaybackId,
         message: 'USB exclusive playback is only available on Android.',
       );
       usbExclusivePlaybackStateNotifier.value = state;
@@ -271,11 +274,14 @@ class UsbAudioService {
         arguments,
       );
       final state = UsbExclusivePlaybackState.fromMap(result ?? const {});
-      usbExclusivePlaybackStateNotifier.value = state;
+      _publishExclusiveState(state);
       return state;
     } on PlatformException catch (error) {
-      final state = UsbExclusivePlaybackState.inactive(message: error.message);
-      usbExclusivePlaybackStateNotifier.value = state;
+      final state = UsbExclusivePlaybackState.inactive(
+        playbackId: _currentPlaybackId,
+        message: error.message,
+      );
+      _publishExclusiveState(state);
       return state;
     }
   }
@@ -296,7 +302,7 @@ class UsbAudioService {
       final state = UsbExclusivePlaybackState.fromMap(
         (call.arguments as Map?)?.cast<String, Object?>() ?? const {},
       );
-      usbExclusivePlaybackStateNotifier.value = state;
+      _publishExclusiveState(state);
       return null;
     }
 
@@ -321,6 +327,16 @@ class UsbAudioService {
       code: 'unimplemented',
       message: 'Unknown USB audio callback: ${call.method}',
     );
+  }
+
+  void _publishExclusiveState(UsbExclusivePlaybackState state) {
+    final playbackId = state.playbackId;
+    if (playbackId != null &&
+        _currentPlaybackId != null &&
+        playbackId != _currentPlaybackId) {
+      return;
+    }
+    usbExclusivePlaybackStateNotifier.value = state;
   }
 }
 
@@ -391,6 +407,7 @@ class UsbExclusiveCapability {
 
 @immutable
 class UsbExclusivePlaybackRequest {
+  final String playbackId;
   final String filePath;
   final String? title;
   final String? sourceFormat;
@@ -412,6 +429,7 @@ class UsbExclusivePlaybackRequest {
   final int? totalBytes;
 
   const UsbExclusivePlaybackRequest({
+    required this.playbackId,
     required this.filePath,
     required this.title,
     required this.sourceFormat,
@@ -428,6 +446,7 @@ class UsbExclusivePlaybackRequest {
 
   Map<String, Object?> toMap() {
     return {
+      'playbackId': playbackId,
       'filePath': filePath,
       'title': title,
       'sourceFormat': sourceFormat,
@@ -446,6 +465,7 @@ class UsbExclusivePlaybackRequest {
 
 @immutable
 class UsbExclusivePlaybackState {
+  final String? playbackId;
   final bool active;
   final bool playing;
   final Duration position;
@@ -458,6 +478,7 @@ class UsbExclusivePlaybackState {
   final String? message;
 
   const UsbExclusivePlaybackState({
+    required this.playbackId,
     required this.active,
     required this.playing,
     required this.position,
@@ -470,8 +491,12 @@ class UsbExclusivePlaybackState {
     required this.message,
   });
 
-  factory UsbExclusivePlaybackState.inactive({String? message}) {
+  factory UsbExclusivePlaybackState.inactive({
+    String? playbackId,
+    String? message,
+  }) {
     return UsbExclusivePlaybackState(
+      playbackId: playbackId,
       active: false,
       playing: false,
       position: Duration.zero,
@@ -487,6 +512,7 @@ class UsbExclusivePlaybackState {
 
   factory UsbExclusivePlaybackState.fromMap(Map<String, Object?> map) {
     return UsbExclusivePlaybackState(
+      playbackId: map['playbackId'] as String?,
       active: map['active'] == true,
       playing: map['playing'] == true,
       position: Duration(milliseconds: _asInt(map['positionMs']) ?? 0),

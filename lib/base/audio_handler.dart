@@ -886,6 +886,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     }
 
     final state = await usbAudioService.startExclusivePlayback(
+        playbackId: 'load-${generation ?? _loadGeneration}',
       UsbExclusivePlaybackRequest(
         filePath: filePath,
         title: getTitle(song),

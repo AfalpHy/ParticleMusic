@@ -403,6 +403,13 @@ class UsbDsdTest {
         assertNull(nativeDsdBytesPerSample("dop"))
     }
 
+    @Test
+    fun flushesOnlyPcmOutputWhenPlaybackStops() {
+        assertEquals(true, shouldFlushOutputOnStop(null))
+        assertEquals(false, shouldFlushOutputOnStop("dop"))
+        assertEquals(false, shouldFlushOutputOnStop("native"))
+    }
+
     // ---- 工具 ----
 
     private fun readAll(reader: DsdFileReader): ByteArray {

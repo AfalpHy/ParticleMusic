@@ -249,6 +249,7 @@ void main() {
         if (call.method == 'startExclusivePlayback') {
           receivedArguments = call.arguments;
           return {
+            'playbackId': 'load-7',
             'active': true,
             'playing': true,
             'positionMs': 0,
@@ -266,6 +267,7 @@ void main() {
 
       final state = await service.startExclusivePlayback(
         const UsbExclusivePlaybackRequest(
+          playbackId: 'load-7',
           filePath: '/music/test.flac',
           title: 'Test',
           sourceFormat: 'flac',
@@ -279,6 +281,7 @@ void main() {
       );
 
       expect(receivedArguments, {
+        'playbackId': 'load-7',
         'filePath': '/music/test.flac',
         'title': 'Test',
         'sourceFormat': 'flac',
@@ -293,6 +296,7 @@ void main() {
         'totalBytes': null,
       });
       expect(state.active, isTrue);
+      expect(state.playbackId, 'load-7');
       expect(state.playing, isTrue);
       expect(state.position, Duration.zero);
       expect(state.duration, const Duration(minutes: 3));
@@ -402,6 +406,56 @@ void main() {
     expect(state.duration, const Duration(minutes: 4));
     expect(state.sampleRate, 48000);
     expect(state.bitDepth, 24);
+  });
+
+  test('ignores an exclusive callback from an older playback', () async {
+    final service = UsbAudioService(channel: channel, isAndroid: true);
+    messenger.setMockMethodCallHandler(channel, (call) async {
+      if (call.method == 'startExclusivePlayback') {
+        return {
+          'playbackId': 'load-8',
+          'active': true,
+          'playing': true,
+          'positionMs': 1000,
+        };
+      }
+      throw PlatformException(code: 'unexpected_method');
+    });
+    await service.startExclusivePlayback(
+      const UsbExclusivePlaybackRequest(
+        playbackId: 'load-8',
+        filePath: '/music/current.flac',
+        title: 'Current',
+        sourceFormat: 'flac',
+        sampleRate: 48000,
+        bitDepth: 24,
+        volumeGain: 1,
+        volumeMode: 'raw',
+        targetBufferMs: 200,
+        startPaused: false,
+      ),
+    );
+
+    await messenger.handlePlatformMessage(
+      channel.name,
+      const StandardMethodCodec().encodeMethodCall(
+        MethodCall('onUsbExclusiveStateChanged', {
+          'playbackId': 'load-7',
+          'active': false,
+          'playing': false,
+          'positionMs': 0,
+          'message': 'USB exclusive playback completed.',
+        }),
+      ),
+      (_) {},
+    );
+
+    expect(usbExclusivePlaybackStateNotifier.value.playbackId, 'load-8');
+    expect(usbExclusivePlaybackStateNotifier.value.active, isTrue);
+    expect(
+      usbExclusivePlaybackStateNotifier.value.position,
+      const Duration(seconds: 1),
+    );
   });
 
   test('native transport telemetry event updates transport notifier', () async {
