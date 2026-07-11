@@ -127,7 +127,7 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                     value > 0 ? screenRadius?.topLeft ?? 0 : 0,
                   ),
                 ),
-                clipBehavior: .antiAlias,
+                clipBehavior: value > 0 ? .antiAliasWithSaveLayer : .none,
                 child: child,
               );
             },
