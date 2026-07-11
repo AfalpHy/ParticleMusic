@@ -95,6 +95,12 @@ internal fun hardwareVolumeRequestType(direction: Int, recipient: String): Int =
     direction or UsbConstants.USB_TYPE_CLASS or
         if (recipient == "device") 0 else USB_RECIP_INTERFACE
 
+internal fun hardwareVolumeRequiresInterfaceClaim(recipient: String): Boolean =
+    recipient != "device"
+
+internal fun hardwareVolumeRequiresDedicatedConnection(recipient: String): Boolean =
+    recipient == "device"
+
 internal fun hardwareVolumeRangeOverride(quirk: DacQuirk): HardwareVolumeRange? {
     val min = quirk.hardwareVolumeMinQ8_8 ?: return null
     val max = quirk.hardwareVolumeMaxQ8_8 ?: return null
@@ -896,6 +902,13 @@ class UsbExclusiveAudioEngine(
 
             volumeControlEnabled = !hardwareVolumeActive && !isDsd && volumeMode != "raw"
             pcmVolumeGainQ16 = if (volumeControlEnabled) requestedVolumeGainQ16 else UNITY_GAIN_Q16
+            if (fallbackReason != null) {
+                UsbDiagnostics.w(
+                    tag,
+                    "hardware volume fallback: $fallbackReason, mode=$volumeMode, " +
+                        "source=${hardwareVolumeControl?.source}",
+                )
+            }
             updateSessionDiagnostics(
                 "hardwareVolume",
                 mapOf(
@@ -963,31 +976,69 @@ class UsbExclusiveAudioEngine(
             terminalLink = target.formatInfo?.terminalLink,
             outputTerminalSources = parseOutputTerminalSources(descriptors),
             quirk = quirk,
-        ) ?: return null
+        ) ?: run {
+            UsbDiagnostics.w(tag, "hardware volume resolve failed: no unique feature selected.")
+            return null
+        }
         if (
             quirkUnitId == null &&
             parsed.map { it.controlInterface }.distinct().size != 1
         ) {
+            UsbDiagnostics.w(tag, "hardware volume resolve failed: ambiguous control interfaces.")
             return null
         }
         val controlInterface = findAudioControlInterface(device, selected.first().controlInterface)
-            ?: return null
-        val claimed = runCatching { connection.claimInterface(controlInterface, true) }.getOrDefault(false)
-        if (!claimed) {
+            ?: run {
+                UsbDiagnostics.w(
+                    tag,
+                    "hardware volume resolve failed: control interface " +
+                        "${selected.first().controlInterface} is unavailable.",
+                )
+                return null
+            }
+        val dedicatedConnection = hardwareVolumeRequiresDedicatedConnection(selected.first().recipient)
+        val transferConnection = if (dedicatedConnection) {
+            context.getSystemService(UsbManager::class.java).openDevice(device)
+        } else {
+            connection
+        } ?: run {
+            UsbDiagnostics.w(tag, "hardware volume resolve failed: dedicated connection is unavailable.")
+            return null
+        }
+        val requiresClaim = hardwareVolumeRequiresInterfaceClaim(selected.first().recipient)
+        val claimResult = if (requiresClaim) {
+            runCatching { transferConnection.claimInterface(controlInterface, true) }
+        } else {
+            Result.success(true)
+        }
+        if (!claimResult.getOrDefault(false)) {
+            UsbDiagnostics.w(
+                tag,
+                "hardware volume resolve failed: claim interface ${controlInterface.id} failed" +
+                    (claimResult.exceptionOrNull()?.let { ": ${it.message}" } ?: "."),
+            )
+            if (dedicatedConnection) {
+                runCatching { transferConnection.close() }
+            }
             return null
         }
         return try {
             val overrideRange = hardwareVolumeRangeOverride(quirk)
             val ranges = selected.mapNotNull {
-                overrideRange ?: readHardwareVolumeRangeValue(connection, it)
+                overrideRange ?: readHardwareVolumeRangeValue(transferConnection, it)
             }
             val range = uniformHardwareVolumeRange(ranges, selected.size)
             if (range == null) {
                 null
             } else if (
                 overrideRange != null &&
-                selected.any { readHardwareVolumeCurrent(connection, it) == null }
+                selected.any { readHardwareVolumeCurrent(transferConnection, it) == null }
             ) {
+                UsbDiagnostics.w(
+                    tag,
+                    "hardware volume resolve failed: GET_CUR verification failed for " +
+                        "${selected.map { it.description() }}.",
+                )
                 null
             } else {
                 HardwareVolumeControl(
@@ -997,7 +1048,12 @@ class UsbExclusiveAudioEngine(
                 )
             }
         } finally {
-            runCatching { connection.releaseInterface(controlInterface) }
+            if (requiresClaim) {
+                runCatching { transferConnection.releaseInterface(controlInterface) }
+            }
+            if (dedicatedConnection) {
+                runCatching { transferConnection.close() }
+            }
         }
     }
 
@@ -1009,8 +1065,21 @@ class UsbExclusiveAudioEngine(
     ): String? {
         val controlInterface = findAudioControlInterface(device, control.features.first().controlInterface)
             ?: return "AudioControl interface is unavailable."
-        val claimed = runCatching { connection.claimInterface(controlInterface, true) }.getOrDefault(false)
+        val dedicatedConnection = hardwareVolumeRequiresDedicatedConnection(
+            control.features.first().recipient,
+        )
+        val transferConnection = if (dedicatedConnection) {
+            context.getSystemService(UsbManager::class.java).openDevice(device)
+        } else {
+            connection
+        } ?: return "Dedicated hardware volume connection is unavailable."
+        val requiresClaim = hardwareVolumeRequiresInterfaceClaim(control.features.first().recipient)
+        val claimed = !requiresClaim ||
+            runCatching { transferConnection.claimInterface(controlInterface, true) }.getOrDefault(false)
         if (!claimed) {
+            if (dedicatedConnection) {
+                runCatching { transferConnection.close() }
+            }
             return "Failed to claim the AudioControl interface."
         }
         val previous = mutableMapOf<HardwareVolumeFeature, Int>()
@@ -1018,25 +1087,26 @@ class UsbExclusiveAudioEngine(
         val targetQ8_8 = hardwareVolumeQ8_8(gainQ16, control.range)
         return try {
             for (feature in control.features) {
-                val current = readHardwareVolumeCurrent(connection, feature)
+                val current = readHardwareVolumeCurrent(transferConnection, feature)
                 if (current == null) {
                     return "Failed to read hardware volume channel ${feature.channel}."
                 }
                 previous[feature] = current
             }
             for (feature in control.features) {
-                if (!writeHardwareVolumeValue(connection, feature, targetQ8_8)) {
-                    rollbackHardwareVolume(connection, written, previous)
+                if (!writeHardwareVolumeValue(transferConnection, feature, targetQ8_8)) {
+                    rollbackHardwareVolume(transferConnection, written, previous)
                     return "Failed to set hardware volume channel ${feature.channel}."
                 }
                 written += feature
-                val readBack = readHardwareVolumeCurrent(connection, feature)
+                val readBack = readHardwareVolumeCurrent(transferConnection, feature)
                 if (
                     readBack == null ||
                     !hardwareVolumeReadbackMatches(targetQ8_8, readBack, control.range.stepQ8_8)
                 ) {
-                    rollbackHardwareVolume(connection, written, previous)
-                    return "Hardware volume readback mismatch on channel ${feature.channel}."
+                    rollbackHardwareVolume(transferConnection, written, previous)
+                    return "Hardware volume readback mismatch on channel ${feature.channel}: " +
+                        "targetQ8_8=$targetQ8_8, actualQ8_8=${readBack ?: "unavailable"}."
                 }
             }
             UsbDiagnostics.i(
@@ -1047,7 +1117,12 @@ class UsbExclusiveAudioEngine(
             )
             null
         } finally {
-            runCatching { connection.releaseInterface(controlInterface) }
+            if (requiresClaim) {
+                runCatching { transferConnection.releaseInterface(controlInterface) }
+            }
+            if (dedicatedConnection) {
+                runCatching { transferConnection.close() }
+            }
         }
     }
 
@@ -2506,7 +2581,8 @@ class UsbExclusiveAudioEngine(
             .flatMap { group ->
                 val feature = group.first()
                 val controlInterface = findAudioControlInterface(device, feature.controlInterface)
-                val claimed = controlInterface?.let {
+                val requiresClaim = hardwareVolumeRequiresInterfaceClaim(feature.recipient)
+                val claimed = !requiresClaim || controlInterface?.let {
                     runCatching { connection.claimInterface(it, true) }.getOrDefault(false)
                 } == true
                 if (!claimed) {
@@ -2524,7 +2600,9 @@ class UsbExclusiveAudioEngine(
                             readHardwareVolumeProbe(connection, it, overrideRange)
                         }
                     } finally {
-                        runCatching { connection.releaseInterface(controlInterface!!) }
+                        if (requiresClaim) {
+                            runCatching { connection.releaseInterface(controlInterface!!) }
+                        }
                     }
                 }
             }

@@ -173,6 +173,7 @@ adb logcat -d --pid=$(adb shell pidof <包名>) | grep -E "UsbExclusive|Sylvakru
 #### controlTransfer 解码速查
 
 - `requestType`: bit7 为方向（IN=`0x80`），bit6..5 为类型（CLASS=`0x20`），bit4..0 为接收者（DEVICE=`0`、INTERFACE=`1`）。因此类设备常见 `0x20/0xA0` 或标准 `0x21/0xA1`。
+- `recipient=device` 的隐藏实体要继续核对厂商连接方式。若厂商每次控制都 `UsbManager.openDevice()` 后直接传输、不 claim 接口，则必须使用独立控制连接；复用正在等时传输的流连接可能出现 SET 返回成功但 GET 始终读到 `0 dB` 的假镜像值。
 - UAC 音量 `wValue = 0x02cc`：高字节 `0x02` 是 VOLUME_CONTROL，低字节 `cc` 是声道号。
 - `wIndex = 0xUUII`：高字节 `UU` 是 Feature Unit ID，低字节 `II` 是控制接口号。
 - 两字节小端有符号 Q8.8：`-6 dB = 0xFA00`，传输字节为 `00 FA`。
@@ -202,6 +203,8 @@ adb logcat -d --pid=$(adb shell pidof <包名>) | grep -E "UsbExclusive|Sylvakru
 ```
 
 实测 `0xA0 GET_CUR` 和 `0x20 SET_CUR` 对左右声道均返回 2；标准 `0xA1` 在系统驱动占用时返回 `EBUSY`。厂商软件还对 DC03/04/06/07、DC-Elite、DC-Nunchaku 等产品名分派不同控制类，因此本条只能精确匹配 Macaron，不能扩成整个 `0x262a:*`。
+
+Macaron 真机进一步确认：硬件音量控制必须使用独立 `openDevice()` 连接，不能复用正在传输 PCM/DSD 的等时流连接。流连接上的 SET 会返回 2，但读回固定为 `0 dB`；独立连接可正确写入、读回 `-1 dB`，日志应为 `recipient=device, source=quirk, hardware=true, digital=false`。
 
 ## 5. 症状排查表（含本项目真机实录）
 

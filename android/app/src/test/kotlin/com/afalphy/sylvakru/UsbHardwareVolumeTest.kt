@@ -82,6 +82,18 @@ class UsbHardwareVolumeTest {
     }
 
     @Test
+    fun claimsInterfaceOnlyForInterfaceRecipient() {
+        assertEquals(false, hardwareVolumeRequiresInterfaceClaim("device"))
+        assertEquals(true, hardwareVolumeRequiresInterfaceClaim("interface"))
+    }
+
+    @Test
+    fun usesDedicatedConnectionOnlyForDeviceRecipient() {
+        assertEquals(true, hardwareVolumeRequiresDedicatedConnection("device"))
+        assertEquals(false, hardwareVolumeRequiresDedicatedConnection("interface"))
+    }
+
+    @Test
     fun acceptsDeviceRoundingWithinOneVolumeStep() {
         assertEquals(true, hardwareVolumeReadbackMatches(-1536, -1280, 256))
         assertEquals(false, hardwareVolumeReadbackMatches(-1536, -1024, 256))
