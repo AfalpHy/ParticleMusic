@@ -49,6 +49,15 @@ Future<ServerSocket> _startDroppedDownloadServer() async {
   return server;
 }
 
+class _TestNavidromeClient extends NavidromeClient {
+  _TestNavidromeClient({required super.baseUrl})
+    : super(username: 'user', password: 'password');
+
+  void setReceiveTimeout(Duration timeout) {
+    dio.options.receiveTimeout = timeout;
+  }
+}
+
 void main() {
   late Directory appSupportDirectory;
 
@@ -76,12 +85,10 @@ void main() {
         await directory.delete(recursive: true);
       });
 
-      final client = NavidromeClient(
+      final client = _TestNavidromeClient(
         baseUrl: 'http://${server.address.address}:${server.port}',
-        username: 'user',
-        password: 'password',
       );
-      client.dio.options.receiveTimeout = const Duration(seconds: 1);
+      client.setReceiveTimeout(const Duration(seconds: 1));
 
       final completed = await client.downloadSong(
         songId: 'song-id',

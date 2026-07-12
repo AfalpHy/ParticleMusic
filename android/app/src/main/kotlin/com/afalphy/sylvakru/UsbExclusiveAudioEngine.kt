@@ -70,7 +70,7 @@ private const val USB_RECIP_ENDPOINT = 0x02
 // 数字音量线性增益的 Q16.16 定点满刻度（1.0），低于此值即衰减，等于此值为位完美直通。
 private const val UNITY_GAIN_Q16 = 65536
 
-internal fun shouldFlushOutputOnStop(dsdKind: String?): Boolean = dsdKind == null
+internal fun shouldFlushOutputOnStop(_dsdKind: String?): Boolean = false
 
 internal data class HardwareVolumeFeature(
     val protocol: String,
@@ -1190,8 +1190,7 @@ class UsbExclusiveAudioEngine(
     fun stop(): Map<String, Any?> {
         val keepSession = stopWorkerKeepingSession()
         if (keepSession && connection != null) {
-            // PCM 停止/切歌立即丢弃旧曲在途 URB，避免界面已经切歌但 DAC 仍播放旧缓冲。
-            // DSD 不能 flush，否则 DAC 会掉出 DSD 模式，继续用静音填充跨过空窗。
+            // PCM 与 DSD 都保持等时传输连续；强制清空在途 URB 会造成断流音爆。
             if (shouldFlushOutputOnStop(sessionDsdKind)) {
                 UsbExclusiveNative.flushOutput()?.let { error ->
                     UsbDiagnostics.w(tag, "Failed to flush stopped PCM output: $error")

@@ -4,7 +4,7 @@
 
 **Goal:** 让 WebDAV、Subsonic/Navidrome、Emby 的云端独占在后台或网络短暂停顿后保持 USB 独占并自动恢复，同时消除虚假缓冲目标和切歌状态错位。
 
-**Architecture:** 保留现有 `Library` 作为唯一缓存协调点，各 client 统一返回完整下载结果并共享取消/残缺文件语义；USB 在途队列限制为真实可靠的 1000 ms，网络抗抖动继续由 `.part` 文件承担；独占请求与回调携带播放会话标识，PCM 切歌清空旧 URB，DSD 保持连续流。
+**Architecture:** 保留现有 `Library` 作为唯一缓存协调点，各 client 统一返回完整下载结果并共享取消/残缺文件语义；USB 在途队列限制为真实可靠的 1000 ms，网络抗抖动继续由 `.part` 文件承担；独占请求与回调携带播放会话标识，PCM 与 DSD 切歌均保持等时传输连续。
 
 **Tech Stack:** Flutter 3.44、Dart、Dio 5.9、Android Kotlin、JNI/C++ USBDEVFS、flutter_test、JUnit。
 
@@ -254,10 +254,10 @@ Expected: FAIL，函数尚不存在。
 增加纯函数：
 
 ```kotlin
-internal fun shouldFlushOutputOnStop(dsdKind: String?): Boolean = dsdKind == null
+internal fun shouldFlushOutputOnStop(dsdKind: String?): Boolean = false
 ```
 
-`stop()` 在 worker 退出后仅对 PCM 调用 `UsbExclusiveNative.flushOutput()`；DoP/Native DSD 保持现有 idle filler。独占 worker lambda 开头设置：
+`stop()` 不强制清空 PCM 或 DSD 的在途 URB，避免等时传输断流产生音爆；DoP/Native DSD 保持现有 idle filler。独占 worker lambda 开头设置：
 
 ```kotlin
 Process.setThreadPriority(Process.THREAD_PRIORITY_AUDIO)

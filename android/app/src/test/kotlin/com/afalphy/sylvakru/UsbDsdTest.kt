@@ -404,8 +404,8 @@ class UsbDsdTest {
     }
 
     @Test
-    fun flushesOnlyPcmOutputWhenPlaybackStops() {
-        assertEquals(true, shouldFlushOutputOnStop(null))
+    fun keepsUsbOutputQueuedWhenPlaybackStops() {
+        assertEquals(false, shouldFlushOutputOnStop(null))
         assertEquals(false, shouldFlushOutputOnStop("dop"))
         assertEquals(false, shouldFlushOutputOnStop("native"))
     }
