@@ -126,6 +126,9 @@ internal fun ibassoVolumeIndex(gainQ16: Int): Int {
 internal fun ibassoDeviceVolume(index: Int): Int =
     ibassoVolumeTable[index.coerceIn(0, ibassoVolumeTable.lastIndex)]
 
+internal fun ibassoDsdVolume(baseVolume: Int, compensationDb: Int): Int =
+    (baseVolume - compensationDb.coerceIn(-12, 6) * 2).coerceIn(0, 255)
+
 internal fun ibassoI2cWritePacket(
     command: Int,
     slave: Int,
@@ -301,7 +304,10 @@ class UsbExclusiveAudioEngine(
     @Volatile private var volumeControlEnabled = false
     @Volatile private var volumeMode = "auto"
     @Volatile private var requestedVolumeGainQ16 = UNITY_GAIN_Q16
+    @Volatile private var dsdGainCompensationDb = 0
+    @Volatile private var volumeSmoothHandoff = true
     @Volatile private var hardwareVolumeActive = false
+    private var volumeRampGeneration = 0
     private val volumeLock = Any()
     private var hardwareVolumeControl: HardwareVolumeControl? = null
     private var ibassoVolumeConnection: UsbDeviceConnection? = null
@@ -486,6 +492,9 @@ class UsbExclusiveAudioEngine(
             ?: "auto"
         requestedVolumeGainQ16 = ((arguments["volumeGainQ16"] as? Number)?.toInt() ?: UNITY_GAIN_Q16)
             .coerceIn(0, UNITY_GAIN_Q16)
+        dsdGainCompensationDb = ((arguments["dsdGainCompensationDb"] as? Number)?.toInt() ?: 0)
+            .coerceIn(-12, 6)
+        volumeSmoothHandoff = arguments["smoothHandoff"] as? Boolean ?: true
 
         // DSD 输出模式：dop / native；pcm 模式在 Dart 侧直接走共享路径，不会到这里
         val dsdMode = (arguments["dsdMode"] as? String)?.lowercase(Locale.ROOT)
@@ -866,8 +875,15 @@ class UsbExclusiveAudioEngine(
         )
     }
 
-    fun setVolume(gainQ16: Int, mode: String) {
+    fun setVolume(
+        gainQ16: Int,
+        mode: String,
+        dsdCompensationDb: Int,
+        smoothHandoff: Boolean,
+    ) {
         requestedVolumeGainQ16 = gainQ16.coerceIn(0, UNITY_GAIN_Q16)
+        dsdGainCompensationDb = dsdCompensationDb.coerceIn(-12, 6)
+        volumeSmoothHandoff = smoothHandoff
         volumeMode = mode.lowercase(Locale.ROOT)
             .takeIf { it == "auto" || it == "dac" || it == "digital" || it == "raw" }
             ?: "auto"
@@ -920,7 +936,11 @@ class UsbExclusiveAudioEngine(
                 if (isDsd && quirk.hardwareVolumeDsdSupported == false) {
                     fallbackReason = "DSD hardware volume is disabled by quirk."
                 } else if (vendorProtocol == "ibassoDc03Pro") {
-                    fallbackReason = writeIbassoDc03ProVolume(device, requestedVolumeGainQ16)
+                    fallbackReason = writeIbassoDc03ProVolume(
+                        device,
+                        requestedVolumeGainQ16,
+                        if (isDsd) dsdGainCompensationDb else 0,
+                    )
                     hardwareVolumeActive = fallbackReason == null
                 } else {
                     val activeConnection = connection
@@ -961,8 +981,11 @@ class UsbExclusiveAudioEngine(
                     }
                 }
             } else if (wasHardwareActive) {
+                if (volumeSmoothHandoff && !isDsd) {
+                    pcmVolumeGainQ16 = requestedVolumeGainQ16
+                }
                 val restoreError = if (vendorProtocol == "ibassoDc03Pro") {
-                    writeIbassoDc03ProVolume(device, UNITY_GAIN_Q16)
+                    writeIbassoDc03ProVolume(device, UNITY_GAIN_Q16, 0)
                 } else {
                     val activeConnection = connection
                     val control = hardwareVolumeControl
@@ -979,7 +1002,11 @@ class UsbExclusiveAudioEngine(
             }
 
             volumeControlEnabled = !hardwareVolumeActive && !isDsd && volumeMode != "raw"
-            pcmVolumeGainQ16 = if (volumeControlEnabled) requestedVolumeGainQ16 else UNITY_GAIN_Q16
+            val targetPcmGain = if (volumeControlEnabled) requestedVolumeGainQ16 else UNITY_GAIN_Q16
+            setPcmVolumeGain(
+                targetPcmGain,
+                volumeSmoothHandoff && !isDsd && wasHardwareActive != hardwareVolumeActive,
+            )
             if (fallbackReason != null) {
                 UsbDiagnostics.w(
                     tag,
@@ -995,6 +1022,8 @@ class UsbExclusiveAudioEngine(
                     "digitalFallback" to volumeControlEnabled,
                     "isDsd" to isDsd,
                     "gainQ16" to requestedVolumeGainQ16,
+                    "dsdGainCompensationDb" to dsdGainCompensationDb,
+                    "smoothHandoff" to volumeSmoothHandoff,
                     "source" to (hardwareVolumeControl?.source ?: vendorProtocol),
                     "features" to hardwareVolumeControl?.features?.map { it.description() },
                     "range" to hardwareVolumeControl?.range?.let {
@@ -1215,7 +1244,11 @@ class UsbExclusiveAudioEngine(
         }
     }
 
-    private fun writeIbassoDc03ProVolume(device: UsbDevice, gainQ16: Int): String? {
+    private fun writeIbassoDc03ProVolume(
+        device: UsbDevice,
+        gainQ16: Int,
+        dsdCompensationDb: Int,
+    ): String? {
         val hidInterface = (0 until device.interfaceCount)
             .map { device.getInterface(it) }
             .firstOrNull {
@@ -1244,16 +1277,17 @@ class UsbExclusiveAudioEngine(
 
         val index = ibassoVolumeIndex(gainQ16)
         val value = ibassoDeviceVolume(index)
+        val dsdValue = ibassoDsdVolume(value, dsdCompensationDb)
         val packets = listOf(
             ibassoI2cWritePacket(1, 0x60, 9, 1, value),
             ibassoI2cWritePacket(2, 0x60, 9, 2, value),
             ibassoI2cWritePacket(3, 0x62, 9, 1, value),
             ibassoI2cWritePacket(4, 0x62, 9, 2, value),
-            ibassoI2cWritePacket(9, 0x60, 7, 0, value),
-            ibassoI2cWritePacket(10, 0x60, 7, 1, value),
+            ibassoI2cWritePacket(9, 0x60, 7, 0, dsdValue),
+            ibassoI2cWritePacket(10, 0x60, 7, 1, dsdValue),
             ibassoRoomWritePacket(19, 16, value),
-            ibassoI2cWritePacket(11, 0x62, 7, 0, value),
-            ibassoI2cWritePacket(12, 0x62, 7, 1, value),
+            ibassoI2cWritePacket(11, 0x62, 7, 0, dsdValue),
+            ibassoI2cWritePacket(12, 0x62, 7, 1, dsdValue),
             ibassoRoomWritePacket(20, 17, value),
         )
         for (packet in packets) {
@@ -1292,7 +1326,7 @@ class UsbExclusiveAudioEngine(
         }
         UsbDiagnostics.i(
             tag,
-            "iBasso hardware volume set index=$index, register=$value, " +
+            "iBasso hardware volume set index=$index, register=$value, dsdRegister=$dsdValue, " +
                 "protocol=ibassoDc03Pro",
         )
         return null
@@ -1308,6 +1342,24 @@ class UsbExclusiveAudioEngine(
         ibassoVolumeConnection = null
         ibassoVolumeInterface = null
         ibassoVolumeDeviceId = null
+    }
+
+    private fun setPcmVolumeGain(targetGainQ16: Int, smooth: Boolean) {
+        val startGainQ16 = pcmVolumeGainQ16
+        val generation = ++volumeRampGeneration
+        if (!smooth || startGainQ16 == targetGainQ16) {
+            pcmVolumeGainQ16 = targetGainQ16
+            return
+        }
+        repeat(6) { index ->
+            mainHandler.postDelayed({
+                if (generation == volumeRampGeneration) {
+                    val step = index + 1
+                    pcmVolumeGainQ16 = startGainQ16 +
+                        ((targetGainQ16 - startGainQ16) * step / 6)
+                }
+            }, (index + 1) * 20L)
+        }
     }
 
     private fun transferIbassoPacket(
@@ -1503,6 +1555,7 @@ class UsbExclusiveAudioEngine(
         synchronized(volumeLock) {
             hardwareVolumeActive = false
             hardwareVolumeControl = null
+            volumeRampGeneration += 1
             closeIbassoVolumeControl()
             UsbExclusiveNative.close()
             connection?.close()

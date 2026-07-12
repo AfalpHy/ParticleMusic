@@ -275,6 +275,8 @@ void main() {
           bitDepth: 24,
           volumeGain: 0.5,
           volumeMode: 'auto',
+          dsdGainCompensationDb: 6,
+          smoothVolumeHandoff: false,
           targetBufferMs: 320,
           startPaused: false,
         ),
@@ -290,6 +292,8 @@ void main() {
         'dsdMode': null,
         'volumeGainQ16': 32768,
         'volumeMode': 'auto',
+        'dsdGainCompensationDb': 6,
+        'smoothHandoff': false,
         'targetBufferMs': 320,
         'startPaused': false,
         'streaming': false,
@@ -374,9 +378,19 @@ void main() {
       throw PlatformException(code: 'unexpected_method');
     });
 
-    await service.setExclusiveVolume(gain: 0.5, mode: 'dac');
+    await service.setExclusiveVolume(
+      gain: 0.5,
+      mode: 'dac',
+      dsdGainCompensationDb: -6,
+      smoothHandoff: false,
+    );
 
-    expect(receivedArguments, {'gainQ16': 32768, 'mode': 'dac'});
+    expect(receivedArguments, {
+      'gainQ16': 32768,
+      'mode': 'dac',
+      'dsdGainCompensationDb': -6,
+      'smoothHandoff': false,
+    });
   });
 
   test('native exclusive state event updates playback notifier', () async {

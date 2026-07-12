@@ -136,4 +136,12 @@ class UsbHardwareVolumeTest {
             packet.take(12).map { it.toInt() and 0xff },
         )
     }
+
+    @Test
+    fun appliesDsdCompensationInHalfDbHardwareSteps() {
+        assertEquals(85, ibassoDsdVolume(97, 6))
+        assertEquals(109, ibassoDsdVolume(97, -6))
+        assertEquals(0, ibassoDsdVolume(4, 6))
+        assertEquals(255, ibassoDsdVolume(250, -6))
+    }
 }

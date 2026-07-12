@@ -177,6 +177,16 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
         usbExclusiveDigitalVolumeGain(volumeNotifier.value),
       );
     });
+    usbAudioPreferences.dsdGainCompensationNotifier.addListener(() {
+      _applyUsbExclusiveVolume(
+        usbExclusiveDigitalVolumeGain(volumeNotifier.value),
+      );
+    });
+    usbAudioPreferences.volumeSmoothHandoffNotifier.addListener(() {
+      _applyUsbExclusiveVolume(
+        usbExclusiveDigitalVolumeGain(volumeNotifier.value),
+      );
+    });
     if (Platform.isAndroid) {
       WidgetsBinding.instance.addObserver(this);
     }
@@ -896,6 +906,10 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
         dsdMode: isDsd ? usbAudioPreferences.dsdModeNotifier.value.name : null,
         volumeGain: usbExclusiveDigitalVolumeGain(volumeNotifier.value),
         volumeMode: usbAudioPreferences.volumeControlModeNotifier.value.name,
+        dsdGainCompensationDb:
+            usbAudioPreferences.dsdGainCompensationNotifier.value,
+        smoothVolumeHandoff:
+            usbAudioPreferences.volumeSmoothHandoffNotifier.value,
         targetBufferMs: _exclusiveTargetBufferMsForLifecycle(
           WidgetsBinding.instance.lifecycleState,
         ),
@@ -1328,6 +1342,9 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
       usbAudioService.setExclusiveVolume(
         gain: digitalGain,
         mode: usbAudioPreferences.volumeControlModeNotifier.value.name,
+        dsdGainCompensationDb:
+            usbAudioPreferences.dsdGainCompensationNotifier.value,
+        smoothHandoff: usbAudioPreferences.volumeSmoothHandoffNotifier.value,
       ),
     );
   }

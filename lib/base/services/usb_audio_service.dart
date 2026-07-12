@@ -173,6 +173,8 @@ class UsbAudioService {
   Future<void> setExclusiveVolume({
     required double gain,
     required String mode,
+    required int dsdGainCompensationDb,
+    required bool smoothHandoff,
   }) async {
     if (!_isAndroid) {
       return;
@@ -181,6 +183,8 @@ class UsbAudioService {
     await _channel.invokeMethod<void>('setExclusiveVolume', {
       'gainQ16': (gain.clamp(0.0, 1.0) * 65536).round(),
       'mode': mode,
+      'dsdGainCompensationDb': dsdGainCompensationDb.clamp(-12, 6),
+      'smoothHandoff': smoothHandoff,
     });
   }
 
@@ -418,6 +422,8 @@ class UsbExclusivePlaybackRequest {
   final String? dsdMode;
   final double volumeGain;
   final String volumeMode;
+  final int dsdGainCompensationDb;
+  final bool smoothVolumeHandoff;
   final int? targetBufferMs;
   final bool startPaused;
 
@@ -438,6 +444,8 @@ class UsbExclusivePlaybackRequest {
     this.dsdMode,
     required this.volumeGain,
     required this.volumeMode,
+    this.dsdGainCompensationDb = 0,
+    this.smoothVolumeHandoff = true,
     required this.targetBufferMs,
     required this.startPaused,
     this.streaming = false,
@@ -455,6 +463,8 @@ class UsbExclusivePlaybackRequest {
       'dsdMode': dsdMode,
       'volumeGainQ16': (volumeGain.clamp(0.0, 1.0) * 65536).round(),
       'volumeMode': volumeMode,
+      'dsdGainCompensationDb': dsdGainCompensationDb.clamp(-12, 6),
+      'smoothHandoff': smoothVolumeHandoff,
       'targetBufferMs': targetBufferMs,
       'startPaused': startPaused,
       'streaming': streaming,
