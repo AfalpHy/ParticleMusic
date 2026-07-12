@@ -23,10 +23,11 @@ data class DacQuirk(
     val clockSetCurDelayMs: Int = 0,
     // 个别设备 GET_CUR 返回垃圾但 SET_CUR 实际生效
     val clockSkipGetCurValidation: Boolean = false,
-    // 硬件音量 Feature Unit 覆盖仅供探测和后续适配使用，当前不参与写入。
+    // 标准 Feature Unit 或厂商协议的硬件音量覆盖。
     val hardwareVolumeFeatureUnitId: Int? = null,
     val hardwareVolumeControlInterface: Int? = null,
     val hardwareVolumeChannels: List<Int> = emptyList(),
+    val hardwareVolumeProtocol: String? = null,
     val hardwareVolumeRecipient: String = "interface",
     val hardwareVolumeMinQ8_8: Int? = null,
     val hardwareVolumeMaxQ8_8: Int? = null,
@@ -266,6 +267,9 @@ object UsbDacQuirks {
                         if (channel >= 0) add(channel)
                     }
                 },
+                hardwareVolumeProtocol = hardwareVolume
+                    ?.optString("protocol")
+                    ?.takeIf { it == "uac1" || it == "uac2" || it == "ibassoDc03Pro" },
                 hardwareVolumeRecipient = hardwareVolume
                     ?.optString("recipient")
                     ?.takeIf { it == "device" || it == "interface" }

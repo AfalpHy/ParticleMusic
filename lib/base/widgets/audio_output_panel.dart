@@ -940,6 +940,7 @@ String _bitPerfectStatusLabel(UsbAudioStatus status, AppLocalizations l10n) {
   final exclusive = usbExclusivePlaybackStateNotifier.value;
   // 独占直驱时反映独占真实位完美状态；非独占回退系统共享链路偏好
   if (exclusive.active) {
+    if (exclusive.hardwareVolumeActive) return l10n.volumeControlDac;
     return _exclusiveBitPerfect(exclusive)
         ? l10n.bitPerfectDirect
         : l10n.bitPerfectVolume;

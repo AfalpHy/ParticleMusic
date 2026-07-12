@@ -3,6 +3,7 @@ package com.afalphy.sylvakru
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNull
 import org.junit.Test
+import kotlin.math.pow
 
 class UsbHardwareVolumeTest {
     private val master = HardwareVolumeFeature(
@@ -106,5 +107,33 @@ class UsbHardwareVolumeTest {
 
         assertEquals(range, uniformHardwareVolumeRange(listOf(range, range), 2))
         assertNull(uniformHardwareVolumeRange(listOf(range), 2))
+    }
+
+    @Test
+    fun mapsAcousticGainToIbassoHardwareTable() {
+        val ninetyPercentGain = (0.9.pow(1.5) * 65536).toInt()
+
+        assertEquals(0, ibassoVolumeIndex(0))
+        assertEquals(90, ibassoVolumeIndex(ninetyPercentGain))
+        assertEquals(100, ibassoVolumeIndex(65536))
+        assertEquals(97, ibassoDeviceVolume(23))
+        assertEquals(10, ibassoDeviceVolume(90))
+    }
+
+    @Test
+    fun buildsIbassoI2cVolumePacket() {
+        val packet = ibassoI2cWritePacket(
+            command = 1,
+            slave = 0x60,
+            offset = 9,
+            byteOffset = 1,
+            value = 97,
+        )
+
+        assertEquals(16, packet.size)
+        assertEquals(
+            listOf(1, 17, 0x88, 0x60, 0, 0, 5, 9, 0, 1, 0, 97),
+            packet.take(12).map { it.toInt() and 0xff },
+        )
     }
 }

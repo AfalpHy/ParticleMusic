@@ -112,6 +112,7 @@ adb logcat -d --pid=$(adb shell pidof <包名>) | grep -E "UsbExclusive|Sylvakru
             "featureUnitId": 7,
             "controlInterface": 0,
             "channels": [0, 1, 2],
+            "protocol": "uac2",
             "recipient": "interface",
             "range": {
               "minDb": -63,
@@ -145,6 +146,7 @@ adb logcat -d --pid=$(adb shell pidof <包名>) | grep -E "UsbExclusive|Sylvakru
 | `hardwareVolume.featureUnitId` | 描述符漏报、候选不唯一或实现异常时指定硬件音量 Feature Unit |
 | `hardwareVolume.controlInterface` | 指定 Feature Unit 所在的 AudioControl 接口号 |
 | `hardwareVolume.channels` | 指定主声道 `0` 或需要同步的逻辑声道；多声道会逐个 SET/GET，任一失败自动回滚 |
+| `hardwareVolume.protocol` | `uac1`/`uac2` 用于覆盖 GET_CUR 的 bRequest（分别为 `0x81`/`0x01`）；已实现的厂商私有协议使用专用名称，如 `ibassoDc03Pro` |
 | `hardwareVolume.recipient` | 默认 `interface`（标准 UAC，requestType `0x21/0xA1`）；隐藏厂商实体若使用设备接收者则填 `device`（`0x20/0xA0`） |
 | `hardwareVolume.range.minDb/maxDb/stepDb` | 描述符不公开 Feature Unit、GET_RANGE 不可用时，提供厂商已验证的固定 Q8.8 dB 范围；三项必须同时存在 |
 | `hardwareVolume.range.muteDb` | 厂商静音值；缺省沿用标准 `0x8000`，不得把普通最小音量猜成静音 |
@@ -157,7 +159,7 @@ adb logcat -d --pid=$(adb shell pidof <包名>) | grep -E "UsbExclusive|Sylvakru
 
 1. **标准 UAC**：原始描述符 AC 接口里有 `CS_INTERFACE / FEATURE_UNIT (subtype 0x06)`，报告 `featureUnits` 能列出唯一播放候选，`GET_CUR + GET_RANGE` 成功。优先完全自动探测；只有候选不唯一时才用 `featureUnitId/controlInterface/channels`。
 2. **隐藏 UAC 实体**：描述符没有 Feature Unit，但厂商软件仍调用 `UsbDeviceConnection.controlTransfer`，`wValue=0x02cc`、`wIndex=0xUUII`，数据为两字节 Q8.8 dB。此类用 `featureUnitId/controlInterface/channels + recipient + range` 描述，不在引擎里写 VID/PID 特判。
-3. **HID / bulk / I²C 私有协议**：厂商软件使用 `request=SET_REPORT(0x09)`、`bulkTransfer` 或自定义长报文。当前 quirk 字段不能表达，必须先新增经过测试的通用协议类型；禁止把报文硬塞进 UAC 音量字段。
+3. **HID / bulk / I²C 私有协议**：厂商软件使用 `request=SET_REPORT(0x09)`、`bulkTransfer` 或自定义长报文。必须先新增经过测试的专用协议类型，再由 quirk 的 `protocol` 选择；禁止把报文硬塞进 UAC 音量字段。
 
 #### 证据获取顺序
 
@@ -181,7 +183,7 @@ adb logcat -d --pid=$(adb shell pidof <包名>) | grep -E "UsbExclusive|Sylvakru
 
 #### Macaron 已验证实例
 
-`iBasso Macaron (262a:1a0b, bcdDevice 0x0060)` 的描述符没有 Feature Unit。iBasso UAC 1.8.6 使用隐藏实体：
+`iBasso Macaron (262a:1a0b, bcdDevice 0x0060)` 的描述符没有 Feature Unit。iBasso UAC 1.8.6 把它分派给 DC03 Pro 控制器，使用 HID SET_REPORT 承载 I²C 寄存器命令：
 
 ```json
 {
@@ -191,20 +193,19 @@ adb logcat -d --pid=$(adb shell pidof <包名>) | grep -E "UsbExclusive|Sylvakru
       "match": { "vid": "0x262a", "pid": "0x1a0b", "label": "iBasso Macaron" },
       "hardwareVolume": {
         "enabled": true,
-        "featureUnitId": 10,
-        "controlInterface": 1,
-        "channels": [1, 2],
-        "recipient": "device",
-        "range": { "minDb": -63, "maxDb": 0, "stepDb": 1, "muteDb": -112 }
+        "protocol": "ibassoDc03Pro",
+        "dsdSupported": true
       }
     }
   ]
 }
 ```
 
-实测 `0xA0 GET_CUR` 和 `0x20 SET_CUR` 对左右声道均返回 2；标准 `0xA1` 在系统驱动占用时返回 `EBUSY`。厂商软件还对 DC03/04/06/07、DC-Elite、DC-Nunchaku 等产品名分派不同控制类，因此本条只能精确匹配 Macaron，不能扩成整个 `0x262a:*`。
+官方软件写入使用 `controlTransfer(0x21, 0x09, 0x0200, 0, packet16, 16, 200)`，并从 HID IN 端点读取响应。一次音量更新会同步写左右 PCM、左右 DSD 和 room 寄存器，再用命令 `65` 回读左声道实际值；Sylvakru 只有在回读一致后才报告硬件音量生效。厂商软件还对 DC03/04/06/07、DC-Elite、DC-Nunchaku 等产品名分派不同控制类，因此本条只能精确匹配 Macaron，不能扩成整个 `0x262a:*`。
 
-Macaron 真机进一步确认：硬件音量控制必须使用独立 `openDevice()` 连接，不能复用正在传输 PCM/DSD 的等时流连接。流连接上的 SET 会返回 2，但读回固定为 `0 dB`；独立连接可正确写入、读回 `-1 dB`，日志应为 `recipient=device, source=quirk, hardware=true, digital=false`。
+此前尝试的 `0x20 SET_CUR` / `0xA0 GET_CUR` 虽然返回长度 2，但不会改变 DAC 的真实音量，属于“传输成功、语义错误”的假阳性。厂商私有协议必须核对实际响度和厂商读回命令，不能只看 `controlTransfer` 返回值。正确日志应包含 `protocol=ibassoDc03Pro`，随后状态为 `hardware=true, digital=false`。
+
+Macaron 的官方控制器使用 101 项非线性寄存器表（界面 0–100，寄存器值从静音 `255` 递减到满音量 `0`）。Sylvakru 先反解自身 PCM 的 `volume^1.5` 增益，再映射到同一 0–100 级，因此 90% 对应 90 级；实际显示仍使用统一百分比，不直接显示寄存器值。打开 iBasso UAC 时，它会主动恢复自身保存的级数，因此不能同时打开两个控制软件对比静态数值。
 
 ## 5. 症状排查表（含本项目真机实录）
 
@@ -300,5 +301,5 @@ Macaron 真机进一步确认：硬件音量控制必须使用独立 `openDevice
 隐藏 Feature Unit 且 RANGE 不可读时（数值必须来自厂商实现或真机证据）：
 
 ```json
-{"version":1,"devices":[{"match":{"vid":"0x____","pid":"0x____","label":"____"},"hardwareVolume":{"enabled":true,"featureUnitId":10,"controlInterface":1,"channels":[1,2],"recipient":"device","range":{"minDb":-63,"maxDb":0,"stepDb":1,"muteDb":-112}}}]}
+{"version":1,"devices":[{"match":{"vid":"0x____","pid":"0x____","label":"____"},"hardwareVolume":{"enabled":true,"featureUnitId":10,"controlInterface":1,"channels":[1,2],"protocol":"uac2","recipient":"device","range":{"minDb":-63,"maxDb":0,"stepDb":1,"muteDb":-112}}}]}
 ```

@@ -107,6 +107,7 @@ class UsbDacQuirksTest {
                             "featureUnitId": 7,
                             "controlInterface": 0,
                             "channels": [0, 1, 2],
+                            "protocol": "uac2",
                             "recipient": "device",
                             "range": {
                               "minDb": -63,
@@ -132,6 +133,7 @@ class UsbDacQuirksTest {
         assertEquals(7, exact?.hardwareVolumeFeatureUnitId)
         assertEquals(0, exact?.hardwareVolumeControlInterface)
         assertEquals(listOf(0, 1, 2), exact?.hardwareVolumeChannels)
+        assertEquals("uac2", exact?.hardwareVolumeProtocol)
         assertEquals("device", exact?.hardwareVolumeRecipient)
         assertEquals(-63 * 256, exact?.hardwareVolumeMinQ8_8)
         assertEquals(0, exact?.hardwareVolumeMaxQ8_8)
