@@ -200,10 +200,10 @@ class UsbExclusiveAudioEngine(
     private val stopped = AtomicBoolean(false)
     private val pendingSeekMs = AtomicLong(-1L)
 
+    @Volatile private var playbackId: String? = null
     @Volatile private var currentState = inactiveState()
     private var targetBufferMs = 200
     private var minimumBufferLevelMs: Long? = null
-    @Volatile private var playbackId: String? = null
     private var lastTelemetryEmitMs = 0L
     private var lastTelemetryBufferMs: Long? = null
     private var zeroBufferUnderruns = 0L
@@ -370,10 +370,10 @@ class UsbExclusiveAudioEngine(
     ): Map<String, Any?> {
         // 停掉上一首的写线程但先不拆 USB 会话，后面参数匹配时热复用
         val sessionUsable = stopWorkerKeepingSession()
+        playbackId = arguments["playbackId"] as? String
         if (connection != null) {
             // 下面任一校验失败提前返回时，兜底延迟关闭残留会话
             scheduleDeferredClose()
-        playbackId = arguments["playbackId"] as? String
         }
 
         if (!NATIVE_USB_EXCLUSIVE_STREAMING_ENABLED) {
@@ -758,11 +758,11 @@ class UsbExclusiveAudioEngine(
 
         val workerNativeFormat = if (nativeDsd) nativeFormat else null
         worker = Thread({
+            runCatching { Process.setThreadPriority(Process.THREAD_PRIORITY_AUDIO) }
+                .onFailure { UsbDiagnostics.w(tag, "Failed to set USB audio thread priority: ${it.message}") }
             if (reader != null) {
                 dsdDecodeAndWrite(reader, target, if (streaming) file else null, workerNativeFormat)
             } else {
-            runCatching { Process.setThreadPriority(Process.THREAD_PRIORITY_AUDIO) }
-                .onFailure { UsbDiagnostics.w(tag, "Failed to set USB audio thread priority: ${it.message}") }
                 decodeAndWrite(file, target, streaming, streamTotalBytes)
             }
         }, "SylvakruUsbExclusive")
@@ -3426,6 +3426,7 @@ class UsbExclusiveAudioEngine(
 
     private fun inactiveState(message: String? = null): Map<String, Any?> {
         return mapOf(
+            "playbackId" to playbackId,
             "active" to false,
             "playing" to false,
             "positionMs" to 0,
@@ -3444,7 +3445,6 @@ class UsbExclusiveAudioEngine(
             0x80000000.toInt() -> 24
             else -> 16
         }
-            "playbackId" to playbackId,
     }
 
     private data class OutputTarget(
