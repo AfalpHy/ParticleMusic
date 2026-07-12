@@ -43,7 +43,10 @@ dependencies:
       url: https://github.com/miguelpruivo/flutter_file_picker.git
       ref: v12.0.0-beta.7
   permission_handler: ^12.0.1
-  audio_tags_lofty: ^0.0.6
+  audio_tags_lofty:
+    git:
+      url: https://github.com/huya688zdx/audio_tags_lofty.git
+      ref: 65671b508897f6b248e5e479adae7d3f95e72474
   audio_service: ^0.18.18
   audio_service_mpris: ^0.2.0
   audio_service_win:
