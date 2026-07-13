@@ -1401,12 +1401,14 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
   }
 
   void _publishAndroidPlaybackInfo() {
-    androidPlaybackInfo.add(
-      androidPlaybackInfoFor(
-        usbExclusivePlaybackStateNotifier.value,
-        volumeNotifier.value,
-      ),
+    final next = androidPlaybackInfoFor(
+      usbExclusivePlaybackStateNotifier.value,
+      volumeNotifier.value,
     );
+    if (androidPlaybackInfo.hasValue && androidPlaybackInfo.value == next) {
+      return;
+    }
+    androidPlaybackInfo.add(next);
   }
 
   void _setUserVolume(double volume) {
