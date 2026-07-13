@@ -182,6 +182,22 @@ void main() {
     expect(mutedGain, 0);
     expect(mutedGain.isFinite, isTrue);
   });
+
+  test('非有限分贝转换为安全的有限线性增益', () {
+    for (final entry in {
+      double.nan: 1.0,
+      double.infinity: double.maxFinite,
+      double.negativeInfinity: 0.0,
+    }.entries) {
+      final linearGain = dbToLinear(entry.key);
+      final mutedGain = 0.0 * linearGain;
+
+      expect(linearGain, entry.value);
+      expect(linearGain.isFinite, isTrue);
+      expect(mutedGain, 0);
+      expect(mutedGain.isFinite, isTrue);
+    }
+  });
 }
 
 // 测试直接用换底公式表达规范中的峰值限制。

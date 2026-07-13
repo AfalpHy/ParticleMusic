@@ -38,6 +38,9 @@ ReplayGainResult replayGainFor(MyAudioMetadata song, ReplayGainMode mode) {
 }
 
 double dbToLinear(double db) {
+  if (db.isNaN) return 1;
+  if (db == double.negativeInfinity) return 0;
+  if (db == double.infinity) return double.maxFinite;
   final gain = math.pow(10, db / 20).toDouble();
   return gain.isInfinite ? double.maxFinite : gain;
 }
