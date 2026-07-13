@@ -940,10 +940,27 @@ String _bitPerfectStatusLabel(UsbAudioStatus status, AppLocalizations l10n) {
   final exclusive = usbExclusivePlaybackStateNotifier.value;
   // 独占直驱时反映独占真实位完美状态；非独占回退系统共享链路偏好
   if (exclusive.active) {
-    if (exclusive.hardwareVolumeActive) return l10n.volumeControlDac;
-    return _exclusiveBitPerfect(exclusive)
-        ? l10n.bitPerfectDirect
-        : l10n.bitPerfectVolume;
+    var processing = exclusive.hardwareVolumeActive
+        ? l10n.volumeControlDac
+        : exclusive.digitalVolumeActive
+        ? l10n.volumeControlDigital
+        : l10n.volumeControlRaw;
+    if (exclusive.hardwareVolumeActive &&
+        exclusive.hardwareVolumeProtocol == 'ibassoDc03Pro' &&
+        (exclusive.hardwareVolumeWriteOnly ||
+            !exclusive.hardwareVolumeReadbackVerified)) {
+      processing = '$processing (${l10n.hardwareVolumeUnverified})';
+    }
+    if (exclusive.replayGainMilliDb != 0) {
+      if (exclusive.hardwareVolumeActive || exclusive.digitalVolumeActive) {
+        final gain = (exclusive.replayGainMilliDb / 1000)
+            .toStringAsFixed(3)
+            .replaceFirst(RegExp(r'\.?0+$'), '');
+        return l10n.audioProcessingWithReplayGain(processing, gain);
+      }
+      return l10n.audioProcessingWithReplayGainNotApplied(processing);
+    }
+    return processing;
   }
   return status.preferredBitPerfect
       ? l10n.requested

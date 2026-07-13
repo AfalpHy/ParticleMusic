@@ -575,6 +575,8 @@ class UsbExclusivePlaybackState {
   final String? format;
   final bool hardwareVolumeActive;
   final bool digitalVolumeActive;
+  final bool hardwareVolumeWriteOnly;
+  final bool hardwareVolumeReadbackVerified;
   final String? hardwareVolumeProtocol;
   final int? hardwareVolumeRaw;
   final int? hardwareVolumeGainQ16;
@@ -592,6 +594,8 @@ class UsbExclusivePlaybackState {
     required this.format,
     required this.hardwareVolumeActive,
     required this.digitalVolumeActive,
+    required this.hardwareVolumeWriteOnly,
+    required this.hardwareVolumeReadbackVerified,
     required this.hardwareVolumeProtocol,
     required this.hardwareVolumeRaw,
     required this.hardwareVolumeGainQ16,
@@ -614,6 +618,8 @@ class UsbExclusivePlaybackState {
       format: null,
       hardwareVolumeActive: false,
       digitalVolumeActive: false,
+      hardwareVolumeWriteOnly: false,
+      hardwareVolumeReadbackVerified: false,
       hardwareVolumeProtocol: null,
       hardwareVolumeRaw: null,
       hardwareVolumeGainQ16: null,
@@ -636,6 +642,9 @@ class UsbExclusivePlaybackState {
       format: map['format'] as String?,
       hardwareVolumeActive: map['hardwareVolumeActive'] == true,
       digitalVolumeActive: map['digitalVolumeActive'] == true,
+      hardwareVolumeWriteOnly: map['hardwareVolumeWriteOnly'] == true,
+      hardwareVolumeReadbackVerified:
+          map['hardwareVolumeReadbackVerified'] == true,
       hardwareVolumeProtocol: map['hardwareVolumeProtocol'] as String?,
       hardwareVolumeRaw: _asInt(map['hardwareVolumeRaw']),
       hardwareVolumeGainQ16: _asInt(map['hardwareVolumeGainQ16']),
@@ -1087,6 +1096,15 @@ String buildUsbDiagnosticsReport(
     '- Exclusive: active=${state.active}, playing=${state.playing}, '
     'format=${state.format}, sampleRate=${state.sampleRate}, '
     'bitDepth=${state.bitDepth}, position=${state.position.inMilliseconds}ms',
+  );
+  buffer.writeln(
+    '- Volume processing: hardware=${state.hardwareVolumeActive}, '
+    'digital=${state.digitalVolumeActive}, '
+    'protocol=${state.hardwareVolumeProtocol}, raw=${state.hardwareVolumeRaw}, '
+    'gainQ16=${state.hardwareVolumeGainQ16}, '
+    'writeOnly=${state.hardwareVolumeWriteOnly}, '
+    'readbackVerified=${state.hardwareVolumeReadbackVerified}, '
+    'replayGainMilliDb=${state.replayGainMilliDb}',
   );
   buffer.writeln('  message=${state.message}');
   final telemetry = usbTransportTelemetryNotifier.value;

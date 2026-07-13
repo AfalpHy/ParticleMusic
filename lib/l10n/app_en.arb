@@ -282,6 +282,20 @@
   "volumeControlDigital": "Digital volume",
   "volumeControlRaw": "Raw digital level",
   "volumeControlDacFallbackHint": "Falls back to digital volume when DAC hardware volume is unavailable.",
+  "hardwareVolumeUnverified": "Unverified",
+  "audioProcessingWithReplayGain": "{processing} · ReplayGain {gain} dB",
+  "@audioProcessingWithReplayGain": {
+    "placeholders": {
+      "processing": {"type": "String"},
+      "gain": {"type": "String"}
+    }
+  },
+  "audioProcessingWithReplayGainNotApplied": "{processing} · ReplayGain not applied",
+  "@audioProcessingWithReplayGainNotApplied": {
+    "placeholders": {
+      "processing": {"type": "String"}
+    }
+  },
   "replayGain": "ReplayGain",
   "replayGainTrack": "By track",
   "replayGainTrackDesc": "Prefer track ReplayGain tags, falling back to album tags when unavailable.",

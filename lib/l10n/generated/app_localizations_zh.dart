@@ -727,6 +727,19 @@ class AppLocalizationsZh extends AppLocalizations {
   String get volumeControlDacFallbackHint => 'DAC 硬件音量不可用时自动回退为数字音量。';
 
   @override
+  String get hardwareVolumeUnverified => '未验证';
+
+  @override
+  String audioProcessingWithReplayGain(String processing, String gain) {
+    return '$processing · ReplayGain $gain dB';
+  }
+
+  @override
+  String audioProcessingWithReplayGainNotApplied(String processing) {
+    return '$processing · ReplayGain 未应用';
+  }
+
+  @override
   String get replayGain => '回放增益';
 
   @override

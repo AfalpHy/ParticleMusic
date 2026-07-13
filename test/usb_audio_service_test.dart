@@ -468,6 +468,31 @@ void main() {
     expect(state.replayGainMilliDb, -3500);
   });
 
+  test('exclusive playback state maps actual volume processing fields', () {
+    final state = UsbExclusivePlaybackState.fromMap({
+      'hardwareVolumeActive': true,
+      'digitalVolumeActive': false,
+      'hardwareVolumeWriteOnly': true,
+      'hardwareVolumeReadbackVerified': true,
+      'hardwareVolumeProtocol': 'ibassoDc03Pro',
+      'hardwareVolumeRaw': 97,
+      'hardwareVolumeGainQ16': 32768,
+      'replayGainMilliDb': -3500,
+    });
+    final inactive = UsbExclusivePlaybackState.inactive();
+
+    expect(state.hardwareVolumeActive, isTrue);
+    expect(state.digitalVolumeActive, isFalse);
+    expect(state.hardwareVolumeWriteOnly, isTrue);
+    expect(state.hardwareVolumeReadbackVerified, isTrue);
+    expect(state.hardwareVolumeProtocol, 'ibassoDc03Pro');
+    expect(state.hardwareVolumeRaw, 97);
+    expect(state.hardwareVolumeGainQ16, 32768);
+    expect(state.replayGainMilliDb, -3500);
+    expect(inactive.hardwareVolumeWriteOnly, isFalse);
+    expect(inactive.hardwareVolumeReadbackVerified, isFalse);
+  });
+
   test('ignores an exclusive callback from an older playback', () async {
     final service = UsbAudioService(channel: channel, isAndroid: true);
     messenger.setMockMethodCallHandler(channel, (call) async {
@@ -645,6 +670,9 @@ void main() {
       expect(report, contains('submittedBytes=1411200'));
       expect(report, contains('## Hardware volume probe'));
       expect(report, contains('unit=7/channel=0/volume=read-write'));
+      expect(report, contains('Volume processing: hardware=false, digital=false'));
+      expect(report, contains('writeOnly=false, readbackVerified=false'));
+      expect(report, contains('replayGainMilliDb=0'));
       expect(report, contains('open ok'));
       expect(report, contains('native line'));
     },

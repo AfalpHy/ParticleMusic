@@ -739,6 +739,19 @@ class AppLocalizationsEn extends AppLocalizations {
       'Falls back to digital volume when DAC hardware volume is unavailable.';
 
   @override
+  String get hardwareVolumeUnverified => 'Unverified';
+
+  @override
+  String audioProcessingWithReplayGain(String processing, String gain) {
+    return '$processing · ReplayGain $gain dB';
+  }
+
+  @override
+  String audioProcessingWithReplayGainNotApplied(String processing) {
+    return '$processing · ReplayGain not applied';
+  }
+
+  @override
   String get replayGain => 'ReplayGain';
 
   @override

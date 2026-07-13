@@ -1502,6 +1502,24 @@ abstract class AppLocalizations {
   /// **'Falls back to digital volume when DAC hardware volume is unavailable.'**
   String get volumeControlDacFallbackHint;
 
+  /// No description provided for @hardwareVolumeUnverified.
+  ///
+  /// In en, this message translates to:
+  /// **'Unverified'**
+  String get hardwareVolumeUnverified;
+
+  /// No description provided for @audioProcessingWithReplayGain.
+  ///
+  /// In en, this message translates to:
+  /// **'{processing} · ReplayGain {gain} dB'**
+  String audioProcessingWithReplayGain(String processing, String gain);
+
+  /// No description provided for @audioProcessingWithReplayGainNotApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'{processing} · ReplayGain not applied'**
+  String audioProcessingWithReplayGainNotApplied(String processing);
+
   /// No description provided for @replayGain.
   ///
   /// In en, this message translates to:
