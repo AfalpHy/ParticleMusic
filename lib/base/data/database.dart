@@ -31,6 +31,11 @@ class MetadataItems extends Table {
   IntColumn get samplerate => integer().nullable()();
   IntColumn get duration => integer().nullable()();
 
+  RealColumn get replayGainTrackGainDb => real().nullable()();
+  RealColumn get replayGainTrackPeak => real().nullable()();
+  RealColumn get replayGainAlbumGainDb => real().nullable()();
+  RealColumn get replayGainAlbumPeak => real().nullable()();
+
   TextColumn get lyrics => text().nullable()();
 
   IntColumn get playCount => integer().withDefault(const Constant(0))();
@@ -46,7 +51,7 @@ class MetadataDB extends _$MetadataDB {
   MetadataDB(super.executor);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration {
@@ -57,6 +62,12 @@ class MetadataDB extends _$MetadataDB {
       onUpgrade: (Migrator m, int from, int to) async {
         if (from < 2) {
           await m.addColumn(metadataItems, metadataItems.albumArtist);
+        }
+        if (from < 3) {
+          await m.addColumn(metadataItems, metadataItems.replayGainTrackGainDb);
+          await m.addColumn(metadataItems, metadataItems.replayGainTrackPeak);
+          await m.addColumn(metadataItems, metadataItems.replayGainAlbumGainDb);
+          await m.addColumn(metadataItems, metadataItems.replayGainAlbumPeak);
         }
       },
     );

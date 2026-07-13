@@ -154,6 +154,50 @@ class $MetadataItemsTable extends MetadataItems
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _replayGainTrackGainDbMeta =
+      const VerificationMeta('replayGainTrackGainDb');
+  @override
+  late final GeneratedColumn<double> replayGainTrackGainDb =
+      GeneratedColumn<double>(
+        'replay_gain_track_gain_db',
+        aliasedName,
+        true,
+        type: DriftSqlType.double,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _replayGainTrackPeakMeta =
+      const VerificationMeta('replayGainTrackPeak');
+  @override
+  late final GeneratedColumn<double> replayGainTrackPeak =
+      GeneratedColumn<double>(
+        'replay_gain_track_peak',
+        aliasedName,
+        true,
+        type: DriftSqlType.double,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _replayGainAlbumGainDbMeta =
+      const VerificationMeta('replayGainAlbumGainDb');
+  @override
+  late final GeneratedColumn<double> replayGainAlbumGainDb =
+      GeneratedColumn<double>(
+        'replay_gain_album_gain_db',
+        aliasedName,
+        true,
+        type: DriftSqlType.double,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _replayGainAlbumPeakMeta =
+      const VerificationMeta('replayGainAlbumPeak');
+  @override
+  late final GeneratedColumn<double> replayGainAlbumPeak =
+      GeneratedColumn<double>(
+        'replay_gain_album_peak',
+        aliasedName,
+        true,
+        type: DriftSqlType.double,
+        requiredDuringInsert: false,
+      );
   static const VerificationMeta _lyricsMeta = const VerificationMeta('lyrics');
   @override
   late final GeneratedColumn<String> lyrics = GeneratedColumn<String>(
@@ -203,6 +247,10 @@ class $MetadataItemsTable extends MetadataItems
     bitrate,
     samplerate,
     duration,
+    replayGainTrackGainDb,
+    replayGainTrackPeak,
+    replayGainAlbumGainDb,
+    replayGainAlbumPeak,
     lyrics,
     playCount,
     lastPlayed,
@@ -305,6 +353,42 @@ class $MetadataItemsTable extends MetadataItems
         duration.isAcceptableOrUnknown(data['duration']!, _durationMeta),
       );
     }
+    if (data.containsKey('replay_gain_track_gain_db')) {
+      context.handle(
+        _replayGainTrackGainDbMeta,
+        replayGainTrackGainDb.isAcceptableOrUnknown(
+          data['replay_gain_track_gain_db']!,
+          _replayGainTrackGainDbMeta,
+        ),
+      );
+    }
+    if (data.containsKey('replay_gain_track_peak')) {
+      context.handle(
+        _replayGainTrackPeakMeta,
+        replayGainTrackPeak.isAcceptableOrUnknown(
+          data['replay_gain_track_peak']!,
+          _replayGainTrackPeakMeta,
+        ),
+      );
+    }
+    if (data.containsKey('replay_gain_album_gain_db')) {
+      context.handle(
+        _replayGainAlbumGainDbMeta,
+        replayGainAlbumGainDb.isAcceptableOrUnknown(
+          data['replay_gain_album_gain_db']!,
+          _replayGainAlbumGainDbMeta,
+        ),
+      );
+    }
+    if (data.containsKey('replay_gain_album_peak')) {
+      context.handle(
+        _replayGainAlbumPeakMeta,
+        replayGainAlbumPeak.isAcceptableOrUnknown(
+          data['replay_gain_album_peak']!,
+          _replayGainAlbumPeakMeta,
+        ),
+      );
+    }
     if (data.containsKey('lyrics')) {
       context.handle(
         _lyricsMeta,
@@ -394,6 +478,22 @@ class $MetadataItemsTable extends MetadataItems
         DriftSqlType.int,
         data['${effectivePrefix}duration'],
       ),
+      replayGainTrackGainDb: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}replay_gain_track_gain_db'],
+      ),
+      replayGainTrackPeak: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}replay_gain_track_peak'],
+      ),
+      replayGainAlbumGainDb: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}replay_gain_album_gain_db'],
+      ),
+      replayGainAlbumPeak: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}replay_gain_album_peak'],
+      ),
       lyrics: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}lyrics'],
@@ -434,6 +534,10 @@ class MetadataItem extends DataClass implements Insertable<MetadataItem> {
   final int? bitrate;
   final int? samplerate;
   final int? duration;
+  final double? replayGainTrackGainDb;
+  final double? replayGainTrackPeak;
+  final double? replayGainAlbumGainDb;
+  final double? replayGainAlbumPeak;
   final String? lyrics;
   final int playCount;
   final int? lastPlayed;
@@ -453,6 +557,10 @@ class MetadataItem extends DataClass implements Insertable<MetadataItem> {
     this.bitrate,
     this.samplerate,
     this.duration,
+    this.replayGainTrackGainDb,
+    this.replayGainTrackPeak,
+    this.replayGainAlbumGainDb,
+    this.replayGainAlbumPeak,
     this.lyrics,
     required this.playCount,
     this.lastPlayed,
@@ -505,6 +613,22 @@ class MetadataItem extends DataClass implements Insertable<MetadataItem> {
     if (!nullToAbsent || duration != null) {
       map['duration'] = Variable<int>(duration);
     }
+    if (!nullToAbsent || replayGainTrackGainDb != null) {
+      map['replay_gain_track_gain_db'] = Variable<double>(
+        replayGainTrackGainDb,
+      );
+    }
+    if (!nullToAbsent || replayGainTrackPeak != null) {
+      map['replay_gain_track_peak'] = Variable<double>(replayGainTrackPeak);
+    }
+    if (!nullToAbsent || replayGainAlbumGainDb != null) {
+      map['replay_gain_album_gain_db'] = Variable<double>(
+        replayGainAlbumGainDb,
+      );
+    }
+    if (!nullToAbsent || replayGainAlbumPeak != null) {
+      map['replay_gain_album_peak'] = Variable<double>(replayGainAlbumPeak);
+    }
     if (!nullToAbsent || lyrics != null) {
       map['lyrics'] = Variable<String>(lyrics);
     }
@@ -554,6 +678,18 @@ class MetadataItem extends DataClass implements Insertable<MetadataItem> {
       duration: duration == null && nullToAbsent
           ? const Value.absent()
           : Value(duration),
+      replayGainTrackGainDb: replayGainTrackGainDb == null && nullToAbsent
+          ? const Value.absent()
+          : Value(replayGainTrackGainDb),
+      replayGainTrackPeak: replayGainTrackPeak == null && nullToAbsent
+          ? const Value.absent()
+          : Value(replayGainTrackPeak),
+      replayGainAlbumGainDb: replayGainAlbumGainDb == null && nullToAbsent
+          ? const Value.absent()
+          : Value(replayGainAlbumGainDb),
+      replayGainAlbumPeak: replayGainAlbumPeak == null && nullToAbsent
+          ? const Value.absent()
+          : Value(replayGainAlbumPeak),
       lyrics: lyrics == null && nullToAbsent
           ? const Value.absent()
           : Value(lyrics),
@@ -587,6 +723,18 @@ class MetadataItem extends DataClass implements Insertable<MetadataItem> {
       bitrate: serializer.fromJson<int?>(json['bitrate']),
       samplerate: serializer.fromJson<int?>(json['samplerate']),
       duration: serializer.fromJson<int?>(json['duration']),
+      replayGainTrackGainDb: serializer.fromJson<double?>(
+        json['replayGainTrackGainDb'],
+      ),
+      replayGainTrackPeak: serializer.fromJson<double?>(
+        json['replayGainTrackPeak'],
+      ),
+      replayGainAlbumGainDb: serializer.fromJson<double?>(
+        json['replayGainAlbumGainDb'],
+      ),
+      replayGainAlbumPeak: serializer.fromJson<double?>(
+        json['replayGainAlbumPeak'],
+      ),
       lyrics: serializer.fromJson<String?>(json['lyrics']),
       playCount: serializer.fromJson<int>(json['playCount']),
       lastPlayed: serializer.fromJson<int?>(json['lastPlayed']),
@@ -613,6 +761,14 @@ class MetadataItem extends DataClass implements Insertable<MetadataItem> {
       'bitrate': serializer.toJson<int?>(bitrate),
       'samplerate': serializer.toJson<int?>(samplerate),
       'duration': serializer.toJson<int?>(duration),
+      'replayGainTrackGainDb': serializer.toJson<double?>(
+        replayGainTrackGainDb,
+      ),
+      'replayGainTrackPeak': serializer.toJson<double?>(replayGainTrackPeak),
+      'replayGainAlbumGainDb': serializer.toJson<double?>(
+        replayGainAlbumGainDb,
+      ),
+      'replayGainAlbumPeak': serializer.toJson<double?>(replayGainAlbumPeak),
       'lyrics': serializer.toJson<String?>(lyrics),
       'playCount': serializer.toJson<int>(playCount),
       'lastPlayed': serializer.toJson<int?>(lastPlayed),
@@ -635,6 +791,10 @@ class MetadataItem extends DataClass implements Insertable<MetadataItem> {
     Value<int?> bitrate = const Value.absent(),
     Value<int?> samplerate = const Value.absent(),
     Value<int?> duration = const Value.absent(),
+    Value<double?> replayGainTrackGainDb = const Value.absent(),
+    Value<double?> replayGainTrackPeak = const Value.absent(),
+    Value<double?> replayGainAlbumGainDb = const Value.absent(),
+    Value<double?> replayGainAlbumPeak = const Value.absent(),
     Value<String?> lyrics = const Value.absent(),
     int? playCount,
     Value<int?> lastPlayed = const Value.absent(),
@@ -654,6 +814,18 @@ class MetadataItem extends DataClass implements Insertable<MetadataItem> {
     bitrate: bitrate.present ? bitrate.value : this.bitrate,
     samplerate: samplerate.present ? samplerate.value : this.samplerate,
     duration: duration.present ? duration.value : this.duration,
+    replayGainTrackGainDb: replayGainTrackGainDb.present
+        ? replayGainTrackGainDb.value
+        : this.replayGainTrackGainDb,
+    replayGainTrackPeak: replayGainTrackPeak.present
+        ? replayGainTrackPeak.value
+        : this.replayGainTrackPeak,
+    replayGainAlbumGainDb: replayGainAlbumGainDb.present
+        ? replayGainAlbumGainDb.value
+        : this.replayGainAlbumGainDb,
+    replayGainAlbumPeak: replayGainAlbumPeak.present
+        ? replayGainAlbumPeak.value
+        : this.replayGainAlbumPeak,
     lyrics: lyrics.present ? lyrics.value : this.lyrics,
     playCount: playCount ?? this.playCount,
     lastPlayed: lastPlayed.present ? lastPlayed.value : this.lastPlayed,
@@ -681,6 +853,18 @@ class MetadataItem extends DataClass implements Insertable<MetadataItem> {
           ? data.samplerate.value
           : this.samplerate,
       duration: data.duration.present ? data.duration.value : this.duration,
+      replayGainTrackGainDb: data.replayGainTrackGainDb.present
+          ? data.replayGainTrackGainDb.value
+          : this.replayGainTrackGainDb,
+      replayGainTrackPeak: data.replayGainTrackPeak.present
+          ? data.replayGainTrackPeak.value
+          : this.replayGainTrackPeak,
+      replayGainAlbumGainDb: data.replayGainAlbumGainDb.present
+          ? data.replayGainAlbumGainDb.value
+          : this.replayGainAlbumGainDb,
+      replayGainAlbumPeak: data.replayGainAlbumPeak.present
+          ? data.replayGainAlbumPeak.value
+          : this.replayGainAlbumPeak,
       lyrics: data.lyrics.present ? data.lyrics.value : this.lyrics,
       playCount: data.playCount.present ? data.playCount.value : this.playCount,
       lastPlayed: data.lastPlayed.present
@@ -707,6 +891,10 @@ class MetadataItem extends DataClass implements Insertable<MetadataItem> {
           ..write('bitrate: $bitrate, ')
           ..write('samplerate: $samplerate, ')
           ..write('duration: $duration, ')
+          ..write('replayGainTrackGainDb: $replayGainTrackGainDb, ')
+          ..write('replayGainTrackPeak: $replayGainTrackPeak, ')
+          ..write('replayGainAlbumGainDb: $replayGainAlbumGainDb, ')
+          ..write('replayGainAlbumPeak: $replayGainAlbumPeak, ')
           ..write('lyrics: $lyrics, ')
           ..write('playCount: $playCount, ')
           ..write('lastPlayed: $lastPlayed')
@@ -715,7 +903,7 @@ class MetadataItem extends DataClass implements Insertable<MetadataItem> {
   }
 
   @override
-  int get hashCode => Object.hash(
+  int get hashCode => Object.hashAll([
     id,
     modified,
     sourceType,
@@ -731,10 +919,14 @@ class MetadataItem extends DataClass implements Insertable<MetadataItem> {
     bitrate,
     samplerate,
     duration,
+    replayGainTrackGainDb,
+    replayGainTrackPeak,
+    replayGainAlbumGainDb,
+    replayGainAlbumPeak,
     lyrics,
     playCount,
     lastPlayed,
-  );
+  ]);
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -754,6 +946,10 @@ class MetadataItem extends DataClass implements Insertable<MetadataItem> {
           other.bitrate == this.bitrate &&
           other.samplerate == this.samplerate &&
           other.duration == this.duration &&
+          other.replayGainTrackGainDb == this.replayGainTrackGainDb &&
+          other.replayGainTrackPeak == this.replayGainTrackPeak &&
+          other.replayGainAlbumGainDb == this.replayGainAlbumGainDb &&
+          other.replayGainAlbumPeak == this.replayGainAlbumPeak &&
           other.lyrics == this.lyrics &&
           other.playCount == this.playCount &&
           other.lastPlayed == this.lastPlayed);
@@ -775,6 +971,10 @@ class MetadataItemsCompanion extends UpdateCompanion<MetadataItem> {
   final Value<int?> bitrate;
   final Value<int?> samplerate;
   final Value<int?> duration;
+  final Value<double?> replayGainTrackGainDb;
+  final Value<double?> replayGainTrackPeak;
+  final Value<double?> replayGainAlbumGainDb;
+  final Value<double?> replayGainAlbumPeak;
   final Value<String?> lyrics;
   final Value<int> playCount;
   final Value<int?> lastPlayed;
@@ -795,6 +995,10 @@ class MetadataItemsCompanion extends UpdateCompanion<MetadataItem> {
     this.bitrate = const Value.absent(),
     this.samplerate = const Value.absent(),
     this.duration = const Value.absent(),
+    this.replayGainTrackGainDb = const Value.absent(),
+    this.replayGainTrackPeak = const Value.absent(),
+    this.replayGainAlbumGainDb = const Value.absent(),
+    this.replayGainAlbumPeak = const Value.absent(),
     this.lyrics = const Value.absent(),
     this.playCount = const Value.absent(),
     this.lastPlayed = const Value.absent(),
@@ -816,6 +1020,10 @@ class MetadataItemsCompanion extends UpdateCompanion<MetadataItem> {
     this.bitrate = const Value.absent(),
     this.samplerate = const Value.absent(),
     this.duration = const Value.absent(),
+    this.replayGainTrackGainDb = const Value.absent(),
+    this.replayGainTrackPeak = const Value.absent(),
+    this.replayGainAlbumGainDb = const Value.absent(),
+    this.replayGainAlbumPeak = const Value.absent(),
     this.lyrics = const Value.absent(),
     this.playCount = const Value.absent(),
     this.lastPlayed = const Value.absent(),
@@ -838,6 +1046,10 @@ class MetadataItemsCompanion extends UpdateCompanion<MetadataItem> {
     Expression<int>? bitrate,
     Expression<int>? samplerate,
     Expression<int>? duration,
+    Expression<double>? replayGainTrackGainDb,
+    Expression<double>? replayGainTrackPeak,
+    Expression<double>? replayGainAlbumGainDb,
+    Expression<double>? replayGainAlbumPeak,
     Expression<String>? lyrics,
     Expression<int>? playCount,
     Expression<int>? lastPlayed,
@@ -859,6 +1071,14 @@ class MetadataItemsCompanion extends UpdateCompanion<MetadataItem> {
       if (bitrate != null) 'bitrate': bitrate,
       if (samplerate != null) 'samplerate': samplerate,
       if (duration != null) 'duration': duration,
+      if (replayGainTrackGainDb != null)
+        'replay_gain_track_gain_db': replayGainTrackGainDb,
+      if (replayGainTrackPeak != null)
+        'replay_gain_track_peak': replayGainTrackPeak,
+      if (replayGainAlbumGainDb != null)
+        'replay_gain_album_gain_db': replayGainAlbumGainDb,
+      if (replayGainAlbumPeak != null)
+        'replay_gain_album_peak': replayGainAlbumPeak,
       if (lyrics != null) 'lyrics': lyrics,
       if (playCount != null) 'play_count': playCount,
       if (lastPlayed != null) 'last_played': lastPlayed,
@@ -882,6 +1102,10 @@ class MetadataItemsCompanion extends UpdateCompanion<MetadataItem> {
     Value<int?>? bitrate,
     Value<int?>? samplerate,
     Value<int?>? duration,
+    Value<double?>? replayGainTrackGainDb,
+    Value<double?>? replayGainTrackPeak,
+    Value<double?>? replayGainAlbumGainDb,
+    Value<double?>? replayGainAlbumPeak,
     Value<String?>? lyrics,
     Value<int>? playCount,
     Value<int?>? lastPlayed,
@@ -903,6 +1127,12 @@ class MetadataItemsCompanion extends UpdateCompanion<MetadataItem> {
       bitrate: bitrate ?? this.bitrate,
       samplerate: samplerate ?? this.samplerate,
       duration: duration ?? this.duration,
+      replayGainTrackGainDb:
+          replayGainTrackGainDb ?? this.replayGainTrackGainDb,
+      replayGainTrackPeak: replayGainTrackPeak ?? this.replayGainTrackPeak,
+      replayGainAlbumGainDb:
+          replayGainAlbumGainDb ?? this.replayGainAlbumGainDb,
+      replayGainAlbumPeak: replayGainAlbumPeak ?? this.replayGainAlbumPeak,
       lyrics: lyrics ?? this.lyrics,
       playCount: playCount ?? this.playCount,
       lastPlayed: lastPlayed ?? this.lastPlayed,
@@ -960,6 +1190,26 @@ class MetadataItemsCompanion extends UpdateCompanion<MetadataItem> {
     if (duration.present) {
       map['duration'] = Variable<int>(duration.value);
     }
+    if (replayGainTrackGainDb.present) {
+      map['replay_gain_track_gain_db'] = Variable<double>(
+        replayGainTrackGainDb.value,
+      );
+    }
+    if (replayGainTrackPeak.present) {
+      map['replay_gain_track_peak'] = Variable<double>(
+        replayGainTrackPeak.value,
+      );
+    }
+    if (replayGainAlbumGainDb.present) {
+      map['replay_gain_album_gain_db'] = Variable<double>(
+        replayGainAlbumGainDb.value,
+      );
+    }
+    if (replayGainAlbumPeak.present) {
+      map['replay_gain_album_peak'] = Variable<double>(
+        replayGainAlbumPeak.value,
+      );
+    }
     if (lyrics.present) {
       map['lyrics'] = Variable<String>(lyrics.value);
     }
@@ -993,6 +1243,10 @@ class MetadataItemsCompanion extends UpdateCompanion<MetadataItem> {
           ..write('bitrate: $bitrate, ')
           ..write('samplerate: $samplerate, ')
           ..write('duration: $duration, ')
+          ..write('replayGainTrackGainDb: $replayGainTrackGainDb, ')
+          ..write('replayGainTrackPeak: $replayGainTrackPeak, ')
+          ..write('replayGainAlbumGainDb: $replayGainAlbumGainDb, ')
+          ..write('replayGainAlbumPeak: $replayGainAlbumPeak, ')
           ..write('lyrics: $lyrics, ')
           ..write('playCount: $playCount, ')
           ..write('lastPlayed: $lastPlayed, ')
@@ -1030,6 +1284,10 @@ typedef $$MetadataItemsTableCreateCompanionBuilder =
       Value<int?> bitrate,
       Value<int?> samplerate,
       Value<int?> duration,
+      Value<double?> replayGainTrackGainDb,
+      Value<double?> replayGainTrackPeak,
+      Value<double?> replayGainAlbumGainDb,
+      Value<double?> replayGainAlbumPeak,
       Value<String?> lyrics,
       Value<int> playCount,
       Value<int?> lastPlayed,
@@ -1052,6 +1310,10 @@ typedef $$MetadataItemsTableUpdateCompanionBuilder =
       Value<int?> bitrate,
       Value<int?> samplerate,
       Value<int?> duration,
+      Value<double?> replayGainTrackGainDb,
+      Value<double?> replayGainTrackPeak,
+      Value<double?> replayGainAlbumGainDb,
+      Value<double?> replayGainAlbumPeak,
       Value<String?> lyrics,
       Value<int> playCount,
       Value<int?> lastPlayed,
@@ -1140,6 +1402,26 @@ class $$MetadataItemsTableFilterComposer
 
   ColumnFilters<int> get duration => $composableBuilder(
     column: $table.duration,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get replayGainTrackGainDb => $composableBuilder(
+    column: $table.replayGainTrackGainDb,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get replayGainTrackPeak => $composableBuilder(
+    column: $table.replayGainTrackPeak,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get replayGainAlbumGainDb => $composableBuilder(
+    column: $table.replayGainAlbumGainDb,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get replayGainAlbumPeak => $composableBuilder(
+    column: $table.replayGainAlbumPeak,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1243,6 +1525,26 @@ class $$MetadataItemsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<double> get replayGainTrackGainDb => $composableBuilder(
+    column: $table.replayGainTrackGainDb,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get replayGainTrackPeak => $composableBuilder(
+    column: $table.replayGainTrackPeak,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get replayGainAlbumGainDb => $composableBuilder(
+    column: $table.replayGainAlbumGainDb,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get replayGainAlbumPeak => $composableBuilder(
+    column: $table.replayGainAlbumPeak,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get lyrics => $composableBuilder(
     column: $table.lyrics,
     builder: (column) => ColumnOrderings(column),
@@ -1320,6 +1622,26 @@ class $$MetadataItemsTableAnnotationComposer
   GeneratedColumn<int> get duration =>
       $composableBuilder(column: $table.duration, builder: (column) => column);
 
+  GeneratedColumn<double> get replayGainTrackGainDb => $composableBuilder(
+    column: $table.replayGainTrackGainDb,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get replayGainTrackPeak => $composableBuilder(
+    column: $table.replayGainTrackPeak,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get replayGainAlbumGainDb => $composableBuilder(
+    column: $table.replayGainAlbumGainDb,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get replayGainAlbumPeak => $composableBuilder(
+    column: $table.replayGainAlbumPeak,
+    builder: (column) => column,
+  );
+
   GeneratedColumn<String> get lyrics =>
       $composableBuilder(column: $table.lyrics, builder: (column) => column);
 
@@ -1378,6 +1700,10 @@ class $$MetadataItemsTableTableManager
                 Value<int?> bitrate = const Value.absent(),
                 Value<int?> samplerate = const Value.absent(),
                 Value<int?> duration = const Value.absent(),
+                Value<double?> replayGainTrackGainDb = const Value.absent(),
+                Value<double?> replayGainTrackPeak = const Value.absent(),
+                Value<double?> replayGainAlbumGainDb = const Value.absent(),
+                Value<double?> replayGainAlbumPeak = const Value.absent(),
                 Value<String?> lyrics = const Value.absent(),
                 Value<int> playCount = const Value.absent(),
                 Value<int?> lastPlayed = const Value.absent(),
@@ -1398,6 +1724,10 @@ class $$MetadataItemsTableTableManager
                 bitrate: bitrate,
                 samplerate: samplerate,
                 duration: duration,
+                replayGainTrackGainDb: replayGainTrackGainDb,
+                replayGainTrackPeak: replayGainTrackPeak,
+                replayGainAlbumGainDb: replayGainAlbumGainDb,
+                replayGainAlbumPeak: replayGainAlbumPeak,
                 lyrics: lyrics,
                 playCount: playCount,
                 lastPlayed: lastPlayed,
@@ -1420,6 +1750,10 @@ class $$MetadataItemsTableTableManager
                 Value<int?> bitrate = const Value.absent(),
                 Value<int?> samplerate = const Value.absent(),
                 Value<int?> duration = const Value.absent(),
+                Value<double?> replayGainTrackGainDb = const Value.absent(),
+                Value<double?> replayGainTrackPeak = const Value.absent(),
+                Value<double?> replayGainAlbumGainDb = const Value.absent(),
+                Value<double?> replayGainAlbumPeak = const Value.absent(),
                 Value<String?> lyrics = const Value.absent(),
                 Value<int> playCount = const Value.absent(),
                 Value<int?> lastPlayed = const Value.absent(),
@@ -1440,6 +1774,10 @@ class $$MetadataItemsTableTableManager
                 bitrate: bitrate,
                 samplerate: samplerate,
                 duration: duration,
+                replayGainTrackGainDb: replayGainTrackGainDb,
+                replayGainTrackPeak: replayGainTrackPeak,
+                replayGainAlbumGainDb: replayGainAlbumGainDb,
+                replayGainAlbumPeak: replayGainAlbumPeak,
                 lyrics: lyrics,
                 playCount: playCount,
                 lastPlayed: lastPlayed,

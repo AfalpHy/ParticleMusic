@@ -544,6 +544,10 @@ class Library {
         year: Value(song.year),
         track: Value(song.track),
         disc: Value(song.disc),
+        replayGainTrackGainDb: Value(song.replayGainTrackGainDb),
+        replayGainTrackPeak: Value(song.replayGainTrackPeak),
+        replayGainAlbumGainDb: Value(song.replayGainAlbumGainDb),
+        replayGainAlbumPeak: Value(song.replayGainAlbumPeak),
       ),
     );
   }

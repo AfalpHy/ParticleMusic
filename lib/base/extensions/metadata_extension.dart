@@ -31,6 +31,10 @@ extension MetadataItemMapper on MetadataItem {
         samplerate: samplerate,
         duration: duration != null ? Duration(milliseconds: duration!) : null,
         lyrics: lyrics,
+        replayGainTrackGainDb: replayGainTrackGainDb,
+        replayGainTrackPeak: replayGainTrackPeak,
+        replayGainAlbumGainDb: replayGainAlbumGainDb,
+        replayGainAlbumPeak: replayGainAlbumPeak,
       ),
 
       id: id,
@@ -76,6 +80,11 @@ extension MyAudioMetadataMapper on MyAudioMetadata {
       samplerate: Value(samplerate),
 
       duration: Value(duration?.inMilliseconds),
+
+      replayGainTrackGainDb: Value(replayGainTrackGainDb),
+      replayGainTrackPeak: Value(replayGainTrackPeak),
+      replayGainAlbumGainDb: Value(replayGainAlbumGainDb),
+      replayGainAlbumPeak: Value(replayGainAlbumPeak),
 
       lyrics: Value(lyrics),
 

@@ -72,6 +72,11 @@ class MyAudioMetadata {
   int? get bitrate => _audioMetadata.bitrate;
   int? get samplerate => _audioMetadata.samplerate;
 
+  double? get replayGainTrackGainDb => _audioMetadata.replayGainTrackGainDb;
+  double? get replayGainTrackPeak => _audioMetadata.replayGainTrackPeak;
+  double? get replayGainAlbumGainDb => _audioMetadata.replayGainAlbumGainDb;
+  double? get replayGainAlbumPeak => _audioMetadata.replayGainAlbumPeak;
+
   Duration? get duration => _audioMetadata.duration;
 
   bool get isDsd {
@@ -106,6 +111,15 @@ class MyAudioMetadata {
   set disc(int? value) => _audioMetadata.disc = value;
   set bitrate(int? value) => _audioMetadata.bitrate = value;
   set samplerate(int? value) => _audioMetadata.samplerate = value;
+
+  set replayGainTrackGainDb(double? value) =>
+      _audioMetadata.replayGainTrackGainDb = value;
+  set replayGainTrackPeak(double? value) =>
+      _audioMetadata.replayGainTrackPeak = value;
+  set replayGainAlbumGainDb(double? value) =>
+      _audioMetadata.replayGainAlbumGainDb = value;
+  set replayGainAlbumPeak(double? value) =>
+      _audioMetadata.replayGainAlbumPeak = value;
 
   set lyrics(String? value) => _audioMetadata.lyrics = value;
   set duration(Duration? value) => _audioMetadata.duration = value;
