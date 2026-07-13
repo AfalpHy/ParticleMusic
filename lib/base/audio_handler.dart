@@ -202,7 +202,9 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
           usbExclusiveDigitalVolumeGain(volumeNotifier.value),
         );
       } else {
-        unawaited(_applySharedReplayGain());
+        unawaited(
+          _applySharedReplayGain(_perceptualVolumeGain(volumeNotifier.value)),
+        );
       }
     });
     if (Platform.isAndroid) {
@@ -323,7 +325,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
   /// 用系统输出（media_kit）打开歌曲并按当前播放状态起播。
   /// 供 load() 非独占分支与独占意外中断回退续播复用。
   Future<void> _openPlayerMedia(MyAudioMetadata currentSong) async {
-    await _applySharedReplayGain();
+    await _applySharedReplayGain(_perceptualVolumeGain(volumeNotifier.value));
     if (currentSong.cacheExist) {
       await _player.open(
         Media(currentSong.cachePath!),
@@ -1354,7 +1356,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     if (_usbExclusiveActive) {
       _applyUsbExclusiveVolume(usbExclusiveDigitalVolumeGain(volume));
     } else {
-      unawaited(_applySharedReplayGain());
+      unawaited(_applySharedReplayGain(perceptualGain));
     }
   }
 
@@ -1370,14 +1372,16 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     );
   }
 
-  Future<void> _applySharedReplayGain() {
-    final gainDb = _effectiveReplayGainDb(
-      _perceptualVolumeGain(volumeNotifier.value),
-    );
-    return (_player.platform as NativePlayer).setProperty(
-      'volume-gain',
-      gainDb.toStringAsFixed(3),
-    );
+  Future<void> _applySharedReplayGain(double userLinearGain) async {
+    final gainDb = _effectiveReplayGainDb(userLinearGain);
+    try {
+      await (_player.platform as NativePlayer).setProperty(
+        'volume-gain',
+        gainDb.toStringAsFixed(3),
+      );
+    } on Object catch (error) {
+      logger.output("replay gain apply failed:$error");
+    }
   }
 
   // 把当前音量与控制模式下发给 USB 独占引擎，由原生层选择硬件音量或安全回退。
