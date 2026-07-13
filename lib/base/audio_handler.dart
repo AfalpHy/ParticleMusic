@@ -65,6 +65,20 @@ double absoluteRemoteVolume(int index) {
   return (index.clamp(0, 100) / 100).toDouble();
 }
 
+AndroidPlaybackInfo androidPlaybackInfoFor(
+  UsbExclusivePlaybackState state,
+  double volume,
+) {
+  if (!shouldUseRemoteAndroidVolume(state)) {
+    return LocalAndroidPlaybackInfo();
+  }
+  return RemoteAndroidPlaybackInfo(
+    volumeControlType: AndroidVolumeControlType.absolute,
+    maxVolume: 100,
+    volume: (volume.clamp(0.0, 1.0) * 100).round(),
+  );
+}
+
 final autoPlayOnStartupNotifier = ValueNotifier(false);
 
 Future<void> initAudioService() async {
@@ -135,6 +149,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
   int _loadGeneration = 0;
 
   MyAudioHandler() {
+    _publishAndroidPlaybackInfo();
     // avoid reading .lrc files
     (_player.platform as NativePlayer).setProperty('sub-auto', 'no');
 
@@ -271,6 +286,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     final wasActive = _usbExclusiveActive;
     _usbExclusivePosition = state.position;
     _usbExclusiveActive = state.active;
+    _publishAndroidPlaybackInfo();
 
     if (state.active) {
       // 刚进入独占时把当前音量按当前控制方式下发一次，避免独占起播后音量失控。
@@ -1381,6 +1397,46 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     } else {
       unawaited(_applySharedReplayGain(perceptualGain));
     }
+    _publishAndroidPlaybackInfo();
+  }
+
+  void _publishAndroidPlaybackInfo() {
+    androidPlaybackInfo.add(
+      androidPlaybackInfoFor(
+        usbExclusivePlaybackStateNotifier.value,
+        volumeNotifier.value,
+      ),
+    );
+  }
+
+  void _setUserVolume(double volume) {
+    final next = volume.clamp(0.0, 1.0).toDouble();
+    volumeNotifier.value = next;
+    setVolume(next);
+    savePlayState();
+    usbVolumeOverlayNotifier.value += 1;
+  }
+
+  @override
+  Future<void> androidAdjustRemoteVolume(
+    AndroidVolumeDirection direction,
+  ) async {
+    if (!shouldUseRemoteAndroidVolume(
+      usbExclusivePlaybackStateNotifier.value,
+    )) {
+      return;
+    }
+    _setUserVolume(adjustedRemoteVolume(volumeNotifier.value, direction));
+  }
+
+  @override
+  Future<void> androidSetRemoteVolume(int volumeIndex) async {
+    if (!shouldUseRemoteAndroidVolume(
+      usbExclusivePlaybackStateNotifier.value,
+    )) {
+      return;
+    }
+    _setUserVolume(absoluteRemoteVolume(volumeIndex));
   }
 
   // 与共享输出一致的感知音量曲线，返回 0..1 的线性幅度。
@@ -1446,6 +1502,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
       _player.setVolume(_perceptualVolumeGain(volume) * 100);
       savePlayState();
     }
+    _publishAndroidPlaybackInfo();
     usbVolumeOverlayNotifier.value += 1;
   }
 
@@ -1459,10 +1516,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     }
     const step = 0.02; // 每按一次 2%
     final next = (volumeNotifier.value + delta * step).clamp(0.0, 1.0);
-    volumeNotifier.value = next;
-    setVolume(next);
-    savePlayState();
-    usbVolumeOverlayNotifier.value += 1;
+    _setUserVolume(next);
   }
 
   void applyEqualizer() async {

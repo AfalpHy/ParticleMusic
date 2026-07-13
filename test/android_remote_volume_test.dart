@@ -38,6 +38,48 @@ void main() {
     );
   });
 
+  test('安卓播放信息按 USB 实际音量路径切换远程和本地模式', () {
+    final hardware = androidPlaybackInfoFor(
+      state(active: true, hardware: true),
+      0.426,
+    );
+    final digital = androidPlaybackInfoFor(
+      state(active: true, digital: true),
+      -1,
+    );
+
+    expect(hardware, isA<audio_service.RemoteAndroidPlaybackInfo>());
+    final remote = hardware as audio_service.RemoteAndroidPlaybackInfo;
+    expect(
+      remote.volumeControlType,
+      audio_service.AndroidVolumeControlType.absolute,
+    );
+    expect(remote.maxVolume, 100);
+    expect(remote.volume, 43);
+    expect((digital as audio_service.RemoteAndroidPlaybackInfo).volume, 0);
+    expect(
+      (androidPlaybackInfoFor(state(active: true, hardware: true), 2)
+              as audio_service.RemoteAndroidPlaybackInfo)
+          .volume,
+      100,
+    );
+    expect(
+      androidPlaybackInfoFor(state(active: false, hardware: true), 0.5),
+      isA<audio_service.LocalAndroidPlaybackInfo>(),
+    );
+    expect(
+      androidPlaybackInfoFor(state(active: true), 0.5),
+      isA<audio_service.LocalAndroidPlaybackInfo>(),
+    );
+    expect(
+      androidPlaybackInfoFor(
+        state(active: true, digital: true, bitDepth: 1),
+        0.5,
+      ),
+      isA<audio_service.LocalAndroidPlaybackInfo>(),
+    );
+  });
+
   test('远程相对音量按固定步长调整并限制范围', () {
     expect(
       adjustedRemoteVolume(0.5, audio_service.AndroidVolumeDirection.raise),
