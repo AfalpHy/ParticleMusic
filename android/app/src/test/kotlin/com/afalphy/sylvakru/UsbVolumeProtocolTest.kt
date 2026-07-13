@@ -39,6 +39,36 @@ class UsbVolumeProtocolTest {
     }
 
     @Test
+    fun gatesDsdHardwareGainByProtocolCapabilityAndQuirkEvidence() {
+        val vendorWithDsdGain = VendorUsbVolumeProtocol(protocol)
+        val vendorWithoutDsdGain = VendorUsbVolumeProtocol(
+            object : UsbVolumeProtocol by protocol {
+                override val capabilities = protocol.capabilities.copy(dsdGain = false)
+            },
+        )
+
+        assertTrue(hardwareVolumeSupportedForStream(vendorWithDsdGain, isDsd = true, true))
+        assertTrue(hardwareVolumeSupportedForStream(vendorWithDsdGain, isDsd = true, null))
+        assertFalse(hardwareVolumeSupportedForStream(vendorWithDsdGain, isDsd = true, false))
+        assertFalse(hardwareVolumeSupportedForStream(vendorWithoutDsdGain, isDsd = true, true))
+        assertFalse(hardwareVolumeSupportedForStream(vendorWithoutDsdGain, isDsd = true, null))
+        assertFalse(hardwareVolumeSupportedForStream(vendorWithoutDsdGain, isDsd = true, false))
+
+        assertTrue(hardwareVolumeSupportedForStream(StandardUsbVolumeProtocol, isDsd = true, true))
+        assertFalse(hardwareVolumeSupportedForStream(StandardUsbVolumeProtocol, isDsd = true, false))
+        assertFalse(hardwareVolumeSupportedForStream(StandardUsbVolumeProtocol, isDsd = true, null))
+
+        val unsupported = UnsupportedUsbVolumeProtocol("unknownProtocol")
+        assertFalse(hardwareVolumeSupportedForStream(unsupported, isDsd = true, true))
+        assertFalse(hardwareVolumeSupportedForStream(unsupported, isDsd = true, false))
+        assertFalse(hardwareVolumeSupportedForStream(unsupported, isDsd = true, null))
+
+        assertTrue(hardwareVolumeSupportedForStream(vendorWithoutDsdGain, isDsd = false, false))
+        assertTrue(hardwareVolumeSupportedForStream(StandardUsbVolumeProtocol, isDsd = false, null))
+        assertTrue(hardwareVolumeSupportedForStream(unsupported, isDsd = false, null))
+    }
+
+    @Test
     fun combinesReplayGainIntoEffectiveLinearGainSafely() {
         assertEquals(0, effectiveVolumeGainQ16(0, 6000))
         assertEquals(65536, effectiveVolumeGainQ16(65536, 6000))

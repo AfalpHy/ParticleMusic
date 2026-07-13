@@ -200,6 +200,20 @@ internal fun usbVolumeProtocolSelection(id: String?): UsbVolumeProtocolSelection
     }
 }
 
+internal fun hardwareVolumeSupportedForStream(
+    protocolSelection: UsbVolumeProtocolSelection,
+    isDsd: Boolean,
+    quirkDsdSupported: Boolean?,
+): Boolean {
+    if (!isDsd) return true
+    return when (protocolSelection) {
+        StandardUsbVolumeProtocol -> quirkDsdSupported == true
+        is VendorUsbVolumeProtocol ->
+            protocolSelection.protocol.capabilities.dsdGain && quirkDsdSupported != false
+        is UnsupportedUsbVolumeProtocol -> false
+    }
+}
+
 internal fun effectiveVolumeGainQ16(userGainQ16: Int, replayGainMilliDb: Int): Int {
     val userGain = userGainQ16.coerceIn(0, IBASSO_UNITY_GAIN_Q16)
     if (userGain == 0) return 0

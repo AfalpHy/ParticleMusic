@@ -949,8 +949,14 @@ class UsbExclusiveAudioEngine(
             )
             var fallbackReason: String? = null
             if (wantsHardware && quirk.hardwareVolumeEnabled != false) {
-                if (isDsd && quirk.hardwareVolumeDsdSupported == false) {
-                    fallbackReason = "DSD hardware volume is disabled by quirk."
+                if (
+                    !hardwareVolumeSupportedForStream(
+                        protocolSelection,
+                        isDsd,
+                        quirk.hardwareVolumeDsdSupported,
+                    )
+                ) {
+                    fallbackReason = "DSD hardware volume is not supported by protocol capability or quirk."
                 } else if (protocolSelection is VendorUsbVolumeProtocol) {
                     val volumeTarget = protocolSelection.protocol.appGainToRaw(
                         requestedVolumeGainQ16,
