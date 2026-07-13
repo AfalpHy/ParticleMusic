@@ -253,9 +253,9 @@ iBasso hardware volume readback mismatch: target=..., actual=...
 iBasso hardware volume applied with readback=unavailable, writeOnly=true, register=..., dsdRegister=...
 ```
 
-成功状态应为 `hardware=true, digital=false`；若 HID reader 重启后仍失败，诊断必须诚实显示 `writeOnly=true, readbackVerified=false`，不能把“仍可写入”误报成完整双向同步。
+成功状态应为 `hardware=true, digital=false`；若旧 HID reader 未能在有界期限内退出，或已重启的 reader 再次失败，诊断必须诚实显示 `writeOnly=true, readbackVerified=false`，不能把“仍可写入”误报成完整双向同步。
 
-Macaron 一次目标更新包含 10 个相关寄存器包，必须作为一个事务处理：开始前保存同连接上次已验证目标，或从新连接的实际读回值派生可信回滚目标；没有可信旧值时不得开始写。任一目标包、命令响应或最终读回失败，都要在关闭控制连接前 best-effort 重发完整 10 包回滚，且只有全组成功（或已明确降级 write-only 后全组写成功）才能更新“最后已应用目标”。HID IN 空闲超时不算故障；只有存在 pending command 时的持续负读或响应超时才触发 reader 健康状态。第一次故障等待旧 reader 完全退出后重启，第二次才降级 write-only，旧 generation 的线程、异常和延迟回调不得影响新连接。
+Macaron 一次目标更新包含 10 个相关寄存器包，必须作为一个事务处理：开始前保存同连接上次已验证目标，或从新连接的实际读回值派生可信回滚目标；没有可信旧值时不得开始写。任一目标包、命令响应或最终读回失败，都要在关闭控制连接前 best-effort 重发完整 10 包回滚，且只有全组成功（或已明确降级 write-only 后全组写成功）才能更新“最后已应用目标”。HID IN 空闲超时不算故障；只有存在 pending command 时的持续负读或响应超时才触发 reader 健康状态。第一次故障等待旧 reader 在有界期限内完全退出：按时退出才重启一次，超过期限则直接降级 write-only；已重启的 reader 再失败也降级 write-only。旧 generation 的线程、异常和延迟回调不得影响新连接。
 
 Macaron 的官方控制器使用 101 项非线性寄存器表（界面 0–100，寄存器值从静音 `255` 递减到满音量 `0`）。Sylvakru 先反解自身 PCM 的 `volume^1.5` 增益，再映射到同一 0–100 级，因此 90% 对应 90 级；实际显示仍使用统一百分比，不直接显示寄存器值。打开 iBasso UAC 时，它会主动恢复自身保存的级数，因此不能同时打开两个控制软件对比静态数值。
 
