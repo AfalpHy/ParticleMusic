@@ -249,6 +249,11 @@ class LayersManager {
         detailLayer = AudioOutputSettingsLayer(
           pageKind: AudioOutputSettingsPageKind.dsdMode,
         );
+      } else if (detail == 'usb_replay_gain') {
+        visibleNotifier = audioOutputVisibleNotifier;
+        detailLayer = AudioOutputSettingsLayer(
+          pageKind: AudioOutputSettingsPageKind.replayGain,
+        );
       } else if (detail == 'license') {
         visibleNotifier = aboutVisibleNotifier;
         detailLayer = LicenseLayer();

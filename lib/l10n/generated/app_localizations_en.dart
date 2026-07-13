@@ -739,6 +739,29 @@ class AppLocalizationsEn extends AppLocalizations {
       'Falls back to digital volume when DAC hardware volume is unavailable.';
 
   @override
+  String get replayGain => 'ReplayGain';
+
+  @override
+  String get replayGainTrack => 'By track';
+
+  @override
+  String get replayGainTrackDesc =>
+      'Prefer track ReplayGain tags, falling back to album tags when unavailable.';
+
+  @override
+  String get replayGainAlbum => 'By album';
+
+  @override
+  String get replayGainAlbumDesc =>
+      'Prefer album ReplayGain tags, falling back to track tags when unavailable.';
+
+  @override
+  String get replayGainOff => 'Off';
+
+  @override
+  String get replayGainOffDesc => 'Do not apply ReplayGain.';
+
+  @override
   String get dsdGainCompensation => 'DSD gain compensation';
 
   @override

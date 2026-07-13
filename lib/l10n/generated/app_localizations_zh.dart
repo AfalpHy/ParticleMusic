@@ -727,6 +727,27 @@ class AppLocalizationsZh extends AppLocalizations {
   String get volumeControlDacFallbackHint => 'DAC 硬件音量不可用时自动回退为数字音量。';
 
   @override
+  String get replayGain => '回放增益';
+
+  @override
+  String get replayGainTrack => '按音轨';
+
+  @override
+  String get replayGainTrackDesc => '优先使用音轨 ReplayGain 标签，缺失时回退为专辑标签。';
+
+  @override
+  String get replayGainAlbum => '按专辑';
+
+  @override
+  String get replayGainAlbumDesc => '优先使用专辑 ReplayGain 标签，缺失时回退为音轨标签。';
+
+  @override
+  String get replayGainOff => '关闭';
+
+  @override
+  String get replayGainOffDesc => '不应用 ReplayGain。';
+
+  @override
   String get dsdGainCompensation => 'DSD 增益补偿';
 
   @override

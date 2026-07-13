@@ -28,7 +28,12 @@ part '../landscape_view/panels/audio_output_settings_panel.dart';
 
 final audioOutputVisibleNotifier = ValueNotifier(true);
 
-enum AudioOutputSettingsPageKind { overview, fixedSampleRate, dsdMode }
+enum AudioOutputSettingsPageKind {
+  overview,
+  fixedSampleRate,
+  dsdMode,
+  replayGain,
+}
 
 String _transportHealthLabel(UsbTransportHealth health, AppLocalizations l10n) {
   return switch (health) {
@@ -100,6 +105,7 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
       AudioOutputSettingsPageKind.overview => _l10n.usbOutputSettings,
       AudioOutputSettingsPageKind.fixedSampleRate => _l10n.fixedSampleRateOutput,
       AudioOutputSettingsPageKind.dsdMode => _l10n.dsdMode,
+      AudioOutputSettingsPageKind.replayGain => _l10n.replayGain,
     };
   }
 
@@ -118,6 +124,7 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
                   AudioOutputSettingsPageKind.fixedSampleRate =>
                     _fixedSampleRate(),
                   AudioOutputSettingsPageKind.dsdMode => _dsdMode(),
+                  AudioOutputSettingsPageKind.replayGain => _replayGain(),
                 },
               ],
             );
@@ -227,6 +234,18 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
                   notifier: prefs.volumeControlModeNotifier,
                   values: UsbVolumeControlMode.values,
                   label: _volumeControlLabel,
+                ),
+                ValueListenableBuilder<ReplayGainMode>(
+                  valueListenable: prefs.replayGainModeNotifier,
+                  builder: (context, mode, _) {
+                    return _navTile(
+                      title: _l10n.replayGain,
+                      value: _replayGainLabel(mode),
+                      onTap: () {
+                        layersManager.pushDetail('settings', 'usb_replay_gain');
+                      },
+                    );
+                  },
                 ),
                 _choiceTile<int>(
                   title: _l10n.dsdGainCompensation,
@@ -719,6 +738,30 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
             );
           },
         ),
+      ],
+    );
+  }
+
+  Widget _replayGain() {
+    final prefs = usbAudioPreferences;
+    return _settingsCard(
+      children: [
+        for (final mode in ReplayGainMode.values)
+          ValueListenableBuilder<ReplayGainMode>(
+            valueListenable: prefs.replayGainModeNotifier,
+            builder: (context, selectedMode, _) {
+              return _radioTile<ReplayGainMode>(
+                title: _replayGainLabel(mode),
+                subtitle: _replayGainHint(mode),
+                value: mode,
+                groupValue: selectedMode,
+                onTap: () {
+                  prefs.replayGainModeNotifier.value = mode;
+                  setting.save();
+                },
+              );
+            },
+          ),
       ],
     );
   }
@@ -1599,6 +1642,22 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
       UsbVolumeControlMode.dac => _l10n.volumeControlDac,
       UsbVolumeControlMode.digital => _l10n.volumeControlDigital,
       UsbVolumeControlMode.raw => _l10n.volumeControlRaw,
+    };
+  }
+
+  String _replayGainLabel(ReplayGainMode mode) {
+    return switch (mode) {
+      ReplayGainMode.track => _l10n.replayGainTrack,
+      ReplayGainMode.album => _l10n.replayGainAlbum,
+      ReplayGainMode.off => _l10n.replayGainOff,
+    };
+  }
+
+  String _replayGainHint(ReplayGainMode mode) {
+    return switch (mode) {
+      ReplayGainMode.track => _l10n.replayGainTrackDesc,
+      ReplayGainMode.album => _l10n.replayGainAlbumDesc,
+      ReplayGainMode.off => _l10n.replayGainOffDesc,
     };
   }
 

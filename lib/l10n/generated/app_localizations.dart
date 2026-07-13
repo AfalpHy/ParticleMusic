@@ -1502,6 +1502,48 @@ abstract class AppLocalizations {
   /// **'Falls back to digital volume when DAC hardware volume is unavailable.'**
   String get volumeControlDacFallbackHint;
 
+  /// No description provided for @replayGain.
+  ///
+  /// In en, this message translates to:
+  /// **'ReplayGain'**
+  String get replayGain;
+
+  /// No description provided for @replayGainTrack.
+  ///
+  /// In en, this message translates to:
+  /// **'By track'**
+  String get replayGainTrack;
+
+  /// No description provided for @replayGainTrackDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Prefer track ReplayGain tags, falling back to album tags when unavailable.'**
+  String get replayGainTrackDesc;
+
+  /// No description provided for @replayGainAlbum.
+  ///
+  /// In en, this message translates to:
+  /// **'By album'**
+  String get replayGainAlbum;
+
+  /// No description provided for @replayGainAlbumDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Prefer album ReplayGain tags, falling back to track tags when unavailable.'**
+  String get replayGainAlbumDesc;
+
+  /// No description provided for @replayGainOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get replayGainOff;
+
+  /// No description provided for @replayGainOffDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Do not apply ReplayGain.'**
+  String get replayGainOffDesc;
+
   /// No description provided for @dsdGainCompensation.
   ///
   /// In en, this message translates to:
