@@ -43,8 +43,6 @@ final isPlayingNotifier = ValueNotifier(false);
 final playModeNotifier = ValueNotifier(0);
 final volumeNotifier = ValueNotifier(0.3);
 
-enum AndroidVolumeDirection { raise, lower, same }
-
 bool shouldUseRemoteAndroidVolume(UsbExclusivePlaybackState state) {
   return state.active &&
       (state.hardwareVolumeActive ||
@@ -55,11 +53,11 @@ double adjustedRemoteVolume(
   double current,
   AndroidVolumeDirection direction,
 ) {
-  final delta = switch (direction) {
-    AndroidVolumeDirection.raise => 0.02,
-    AndroidVolumeDirection.lower => -0.02,
-    AndroidVolumeDirection.same => 0.0,
-  };
+  final delta = identical(direction, AndroidVolumeDirection.raise)
+      ? 0.02
+      : identical(direction, AndroidVolumeDirection.lower)
+      ? -0.02
+      : 0.0;
   return (current + delta).clamp(0.0, 1.0).toDouble();
 }
 
