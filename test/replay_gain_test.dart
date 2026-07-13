@@ -128,6 +128,64 @@ void main() {
     expect(result.source, isNull);
   });
 
+  test('元数据更新只为当前歌曲重新计算 ReplayGain', () {
+    final currentSong = metadata(trackGain: -6, trackPeak: 0.9);
+
+    final refreshed = replayGainForMetadataUpdate(
+      currentSong: currentSong,
+      updatedSongId: currentSong.id,
+      mode: ReplayGainMode.track,
+    );
+    final ignored = replayGainForMetadataUpdate(
+      currentSong: currentSong,
+      updatedSongId: 'another-song',
+      mode: ReplayGainMode.track,
+    );
+
+    expect(refreshed, isNotNull);
+    expect(refreshed!.gainDb, -6);
+    expect(refreshed.source, ReplayGainMode.track);
+    expect(ignored, isNull);
+  });
+
+  test('缓存标签只补齐缺失的有效 ReplayGain 字段并报告变化', () {
+    final song = metadata(trackGain: -3.5);
+    final cachedMetadata = AudioMetadata(
+      replayGainTrackGainDb: -7,
+      replayGainTrackPeak: 0.9,
+      replayGainAlbumGainDb: -5.25,
+      replayGainAlbumPeak: 1.1,
+    );
+
+    expect(supplementReplayGainMetadata(song, cachedMetadata), isTrue);
+    expect(song.replayGainTrackGainDb, -3.5);
+    expect(song.replayGainTrackPeak, 0.9);
+    expect(song.replayGainAlbumGainDb, -5.25);
+    expect(song.replayGainAlbumPeak, 1.1);
+    expect(supplementReplayGainMetadata(song, cachedMetadata), isFalse);
+  });
+
+  test('缓存标签没有有效 ReplayGain 字段时不报告变化', () {
+    final song = metadata();
+
+    expect(
+      supplementReplayGainMetadata(
+        song,
+        AudioMetadata(
+          replayGainTrackGainDb: double.nan,
+          replayGainTrackPeak: 0,
+          replayGainAlbumGainDb: double.infinity,
+          replayGainAlbumPeak: -1,
+        ),
+      ),
+      isFalse,
+    );
+    expect(song.replayGainTrackGainDb, isNull);
+    expect(song.replayGainTrackPeak, isNull);
+    expect(song.replayGainAlbumGainDb, isNull);
+    expect(song.replayGainAlbumPeak, isNull);
+  });
+
   test('忽略非正或非有限峰值', () {
     for (final invalidPeak in [
       0.0,

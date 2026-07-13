@@ -93,6 +93,12 @@ internal data class IbassoReaderHealth(
     fun afterVerifiedReadback(): IbassoReaderHealth = copy(readbackVerified = true)
 }
 
+internal fun shouldUseDirectIbassoSetReport(
+    writeOnly: Boolean,
+    readerAvailable: Boolean,
+    allowWhenReaderUnavailable: Boolean,
+): Boolean = writeOnly || (!readerAvailable && allowWhenReaderUnavailable)
+
 internal class IbassoVolumeEventDebouncer {
     private val lock = Any()
     private var token = 0L

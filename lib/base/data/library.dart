@@ -14,6 +14,7 @@ import 'package:sylvakru/base/services/dsd_metadata.dart';
 import 'package:sylvakru/base/services/emby_client.dart';
 import 'package:sylvakru/base/services/logger.dart';
 import 'package:sylvakru/base/services/open_sonic_client.dart';
+import 'package:sylvakru/base/services/replay_gain.dart';
 import 'package:sylvakru/base/services/song_list_service.dart';
 import 'package:sylvakru/base/services/subsonic_client.dart';
 import 'package:sylvakru/base/services/webdav_client.dart';
@@ -26,6 +27,12 @@ import 'package:path/path.dart';
 import 'package:pool/pool.dart';
 
 final library = Library();
+
+class ReplayGainMetadataChangedEvent {
+  final String songId;
+
+  const ReplayGainMetadataChangedEvent(this.songId);
+}
 
 class Library {
   late File _localSongIdListFile;
@@ -41,6 +48,8 @@ class Library {
   late MetadataDB _embyMetadataDB;
 
   ValueNotifier<double> cacheSizeNotifier = ValueNotifier(0);
+  final replayGainMetadataChangedNotifier =
+      ValueNotifier<ReplayGainMetadataChangedEvent?>(null);
 
   Map<String, MyAudioMetadata> id2Song = {};
 
@@ -431,11 +440,13 @@ class Library {
       if (metadata == null) {
         return;
       }
-      song.replayGainTrackGainDb ??= metadata.replayGainTrackGainDb;
-      song.replayGainTrackPeak ??= metadata.replayGainTrackPeak;
-      song.replayGainAlbumGainDb ??= metadata.replayGainAlbumGainDb;
-      song.replayGainAlbumPeak ??= metadata.replayGainAlbumPeak;
+      if (!supplementReplayGainMetadata(song, metadata)) {
+        return;
+      }
       await updateMetadata(song);
+      replayGainMetadataChangedNotifier.value = ReplayGainMetadataChangedEvent(
+        song.id,
+      );
     } catch (e) {
       try {
         logger.output('cache ReplayGain metadata read failed: $e');

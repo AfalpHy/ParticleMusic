@@ -422,6 +422,78 @@ void main() {
   );
 
   test(
+    'cloud cache does not publish ReplayGain when API values are complete',
+    () async {
+      final dsd = _buildDsfWithReplayGain();
+      final server = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
+      addTearDown(() => server.close());
+      server.listen((socket) async {
+        socket.add(
+          ascii.encode(
+            'HTTP/1.1 200 OK\r\n'
+            'Content-Length: ${dsd.length}\r\n'
+            'Connection: close\r\n'
+            '\r\n',
+          ),
+        );
+        socket.add(dsd);
+        await socket.flush();
+        await socket.close();
+      });
+
+      await library_data.loadLibrary();
+      navidromeClient = NavidromeClient(
+        baseUrl: 'http://${server.address.address}:${server.port}',
+        username: 'user',
+        password: 'password',
+      );
+      final song = MyAudioMetadata.fromOpenSonicMap({
+        'id': 'complete-replay-gain-song-id',
+        'title': 'Complete ReplayGain Song',
+        'suffix': 'dsf',
+        'replayGain': {
+          'trackGain': -3.5,
+          'trackPeak': 0.8,
+          'albumGain': -4.5,
+          'albumPeak': 0.7,
+        },
+      }, app.SourceType.navidrome);
+      final library = library_data.Library();
+      var eventCount = 0;
+      library.replayGainMetadataChangedNotifier.addListener(() {
+        eventCount++;
+      });
+
+      await library.tryAddCache(song);
+
+      expect(song.replayGainTrackGainDb, -3.5);
+      expect(song.replayGainTrackPeak, 0.8);
+      expect(song.replayGainAlbumGainDb, -4.5);
+      expect(song.replayGainAlbumPeak, 0.7);
+      expect(eventCount, 0);
+    },
+  );
+
+  test('ReplayGain metadata events can repeat for the same song', () async {
+    await library_data.loadLibrary();
+    final library = library_data.Library();
+    final songIds = <String>[];
+    library.replayGainMetadataChangedNotifier.addListener(() {
+      final event = library.replayGainMetadataChangedNotifier.value;
+      if (event != null) {
+        songIds.add(event.songId);
+      }
+    });
+
+    library.replayGainMetadataChangedNotifier.value =
+        library_data.ReplayGainMetadataChangedEvent('same-song');
+    library.replayGainMetadataChangedNotifier.value =
+        library_data.ReplayGainMetadataChangedEvent('same-song');
+
+    expect(songIds, ['same-song', 'same-song']);
+  });
+
+  test(
     'cloud cache remains available when metadata refresh cannot parse audio',
     () async {
       const bytes = [1, 2, 3, 4];
@@ -453,11 +525,18 @@ void main() {
         'suffix': 'mp3',
       }, app.SourceType.navidrome);
 
-      await library_data.Library().tryAddCache(song);
+      final library = library_data.Library();
+      var eventCount = 0;
+      library.replayGainMetadataChangedNotifier.addListener(() {
+        eventCount++;
+      });
+
+      await library.tryAddCache(song);
 
       expect(song.cacheExist, isTrue);
       expect(File(song.cachePath!).existsSync(), isTrue);
       expect(await File(song.cachePath!).readAsBytes(), bytes);
+      expect(eventCount, 0);
     },
   );
 }

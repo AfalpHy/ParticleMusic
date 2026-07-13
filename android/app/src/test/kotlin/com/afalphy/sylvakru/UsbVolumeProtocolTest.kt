@@ -264,6 +264,38 @@ class UsbVolumeProtocolTest {
     }
 
     @Test
+    fun selectsDirectSetReportForRollbackWhenReaderIsUnavailable() {
+        assertTrue(
+            shouldUseDirectIbassoSetReport(
+                writeOnly = false,
+                readerAvailable = false,
+                allowWhenReaderUnavailable = true,
+            ),
+        )
+        assertFalse(
+            shouldUseDirectIbassoSetReport(
+                writeOnly = false,
+                readerAvailable = true,
+                allowWhenReaderUnavailable = true,
+            ),
+        )
+        assertFalse(
+            shouldUseDirectIbassoSetReport(
+                writeOnly = false,
+                readerAvailable = false,
+                allowWhenReaderUnavailable = false,
+            ),
+        )
+        assertTrue(
+            shouldUseDirectIbassoSetReport(
+                writeOnly = true,
+                readerAvailable = true,
+                allowWhenReaderUnavailable = false,
+            ),
+        )
+    }
+
+    @Test
     fun keepsWrittenRawOnlyInsideConfirmationWindow() {
         assertEquals(97, recentIbassoWrittenRaw(97, 1000, 1001, 500))
         assertEquals(97, recentIbassoWrittenRaw(97, 1000, 1500, 500))

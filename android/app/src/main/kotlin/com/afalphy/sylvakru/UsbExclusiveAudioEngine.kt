@@ -1547,7 +1547,12 @@ class UsbExclusiveAudioEngine(
         val errors = mutableListOf<String>()
         for (packet in ibassoVolumePackets(target)) {
             val command = packet[0].toInt() and 0xff
-            val response = transferIbassoPacket(connection, packet, command)
+            val response = transferIbassoPacket(
+                connection,
+                packet,
+                command,
+                allowDirectWhenReaderUnavailable = bestEffort,
+            )
             val responseCommand = response?.getOrNull(6)?.toInt()?.and(0xff)
             val error = when {
                 response == null -> "iBasso volume command $command failed."
@@ -1890,8 +1895,17 @@ class UsbExclusiveAudioEngine(
         connection: UsbDeviceConnection,
         packet: ByteArray,
         expectedCommand: Int,
+        allowDirectWhenReaderUnavailable: Boolean = false,
     ): ByteArray? {
-        if (ibassoReaderWriteOnly) {
+        val readerAvailable =
+            ibassoReaderRunning.get() && ibassoReaderConnection === connection
+        if (
+            shouldUseDirectIbassoSetReport(
+                ibassoReaderWriteOnly,
+                readerAvailable,
+                allowDirectWhenReaderUnavailable,
+            )
+        ) {
             val result = connection.controlTransfer(
                 0x21,
                 0x09,
@@ -1907,7 +1921,7 @@ class UsbExclusiveAudioEngine(
                 null
             }
         }
-        if (!ibassoReaderRunning.get() || ibassoReaderConnection !== connection) return null
+        if (!readerAvailable) return null
         val future = CompletableFuture<ByteArray>()
         if (ibassoPendingResponses.putIfAbsent(expectedCommand, future) != null) return null
         return try {

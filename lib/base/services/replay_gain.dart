@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 
+import 'package:audio_tags_lofty/audio_tags_lofty.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
 import 'package:sylvakru/base/services/usb_audio_preferences.dart';
 
@@ -35,6 +36,64 @@ ReplayGainResult replayGainFor(MyAudioMetadata song, ReplayGainMode mode) {
     return ReplayGainResult(limitedGain, peak, source);
   }
   return const ReplayGainResult(0, null, null);
+}
+
+ReplayGainResult? replayGainForMetadataUpdate({
+  required MyAudioMetadata? currentSong,
+  required String updatedSongId,
+  required ReplayGainMode mode,
+}) {
+  if (currentSong == null || currentSong.id != updatedSongId) {
+    return null;
+  }
+  return replayGainFor(currentSong, mode);
+}
+
+bool supplementReplayGainMetadata(
+  MyAudioMetadata song,
+  AudioMetadata metadata,
+) {
+  final trackGain = metadata.replayGainTrackGainDb;
+  final trackPeak = metadata.replayGainTrackPeak;
+  final albumGain = metadata.replayGainAlbumGainDb;
+  final albumPeak = metadata.replayGainAlbumPeak;
+  final supplementedTrackGain =
+      song.replayGainTrackGainDb == null &&
+          trackGain != null &&
+          trackGain.isFinite
+      ? trackGain
+      : null;
+  final supplementedTrackPeak =
+      song.replayGainTrackPeak == null &&
+          trackPeak != null &&
+          trackPeak.isFinite &&
+          trackPeak > 0
+      ? trackPeak
+      : null;
+  final supplementedAlbumGain =
+      song.replayGainAlbumGainDb == null &&
+          albumGain != null &&
+          albumGain.isFinite
+      ? albumGain
+      : null;
+  final supplementedAlbumPeak =
+      song.replayGainAlbumPeak == null &&
+          albumPeak != null &&
+          albumPeak.isFinite &&
+          albumPeak > 0
+      ? albumPeak
+      : null;
+  if (supplementedTrackGain == null &&
+      supplementedTrackPeak == null &&
+      supplementedAlbumGain == null &&
+      supplementedAlbumPeak == null) {
+    return false;
+  }
+  song.replayGainTrackGainDb ??= supplementedTrackGain;
+  song.replayGainTrackPeak ??= supplementedTrackPeak;
+  song.replayGainAlbumGainDb ??= supplementedAlbumGain;
+  song.replayGainAlbumPeak ??= supplementedAlbumPeak;
+  return true;
 }
 
 double dbToLinear(double db) {

@@ -226,26 +226,54 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
         usbExclusiveDigitalVolumeGain(volumeNotifier.value),
       );
     });
-    usbAudioPreferences.replayGainModeNotifier.addListener(() {
-      final song = currentSongNotifier.value;
-      _currentReplayGain = song == null
+    library.replayGainMetadataChangedNotifier.addListener(
+      _handleReplayGainMetadataChanged,
+    );
+    usbAudioPreferences.replayGainModeNotifier.addListener(
+      _handleReplayGainModeChanged,
+    );
+    if (Platform.isAndroid) {
+      WidgetsBinding.instance.addObserver(this);
+    }
+  }
+
+  void _handleReplayGainMetadataChanged() {
+    final event = library.replayGainMetadataChangedNotifier.value;
+    if (event == null) {
+      return;
+    }
+    final refreshed = replayGainForMetadataUpdate(
+      currentSong: currentSongNotifier.value,
+      updatedSongId: event.songId,
+      mode: usbAudioPreferences.replayGainModeNotifier.value,
+    );
+    if (refreshed != null) {
+      _updateCurrentReplayGain(refreshed);
+    }
+  }
+
+  void _handleReplayGainModeChanged() {
+    final song = currentSongNotifier.value;
+    _updateCurrentReplayGain(
+      song == null
           ? const ReplayGainResult(0, null, null)
           : replayGainFor(
               song,
               usbAudioPreferences.replayGainModeNotifier.value,
-            );
-      if (_usbExclusiveActive) {
-        _applyUsbExclusiveVolume(
-          usbExclusiveDigitalVolumeGain(volumeNotifier.value),
-        );
-      } else {
-        unawaited(
-          _applySharedReplayGain(_perceptualVolumeGain(volumeNotifier.value)),
-        );
-      }
-    });
-    if (Platform.isAndroid) {
-      WidgetsBinding.instance.addObserver(this);
+            ),
+    );
+  }
+
+  void _updateCurrentReplayGain(ReplayGainResult replayGain) {
+    _currentReplayGain = replayGain;
+    if (_usbExclusiveActive) {
+      _applyUsbExclusiveVolume(
+        usbExclusiveDigitalVolumeGain(volumeNotifier.value),
+      );
+    } else {
+      unawaited(
+        _applySharedReplayGain(_perceptualVolumeGain(volumeNotifier.value)),
+      );
     }
   }
 
