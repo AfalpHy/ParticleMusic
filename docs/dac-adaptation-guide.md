@@ -77,10 +77,21 @@
 | 运行状态快照 | format/sampleRate/bitDepth/message | `message` 里有回退原因（如 native 降级 DoP 的原因） |
 | Telemetry | bufferLevelMs/underrunCount/pendingUrbs | underrun 持续增长 = 供数或时钟问题 |
 
-**报告之外还需要什么**：细粒度时序问题（周期性咔嗒、反馈异常）要配 logcat。让用户执行：
+**报告之外还需要什么**：细粒度时序问题（周期性咔嗒、反馈异常）要配 logcat。先把下面的包名变量替换为实际安装包名，例如正式版 `com.afalphy.sylvakru` 或调试版 `com.afalphy.sylvakru.debug`。
 
+Windows PowerShell（`Select-String` 和 `Set-Content` 在电脑主机上执行，不在 `adb shell` 内执行）：
+
+```powershell
+$package = 'com.afalphy.sylvakru'
+$appPid = (adb shell pidof $package).Trim()
+adb logcat -d --pid=$appPid | Select-String -Pattern 'UsbExclusive|SylvakruUsb' | Set-Content -Encoding utf8 usb.log
 ```
-adb logcat -d --pid=$(adb shell pidof <包名>) | grep -E "UsbExclusive|SylvakruUsb" > usb.log
+
+Bash / Git Bash：
+
+```bash
+package='com.afalphy.sylvakru'
+adb logcat -d --pid="$(adb shell pidof "$package")" | grep -E "UsbExclusive|SylvakruUsb" > usb.log
 ```
 
 日志里最有诊断价值的行：
@@ -296,9 +307,11 @@ Raw descriptors:
   configuration/interface/endpoint hex:
   AudioControl/AudioStreaming/HID report descriptor:
 Vendor app writes:
+  status: supplied/missing/not applicable (reason)
   requestType/request/value/index/length/timeout/data or endpoint/packet:
   response/readback and actual loudness:
 DAC external controls:
+  status: supplied/missing/not applicable (reason)
   button/knob/mute action:
   raw unsolicited packets with timestamps:
 Current quirk:
@@ -308,7 +321,15 @@ Failure evidence:
   diagnostic report and relevant English log lines:
 ```
 
-最低可接受输入必须包含 VID/PID/`bcdDevice`/product、原始描述符、厂商应用写入日志、DAC 外置按钮日志、当前 quirk，以及失败状态或完整诊断报告。若目标仅为 PCM/DSD 传输问题，可将与硬件音量无关的两类日志标为“不适用”，但不能把“不适用”当成协议证据。
+最低证据按目标能力决定，不强制每台设备都存在厂商 App 或外置按钮：
+
+- **所有适配**：至少提供 VID/PID/`bcdDevice`/product、与目标能力相关的原始描述符、当前 quirk，以及失败状态或完整诊断报告。
+- **标准 UAC 硬件音量**：Feature Unit 描述符、规范定义的安全 GET/RANGE、原样 SET 后 readback 和实际响度即可形成闭环；不要求厂商 App 日志。
+- **隐藏 UAC、HID、Bulk 或 vendor control**：必须提供厂商实现、抓包或等价可信来源的完整传输证据。没有证据时只能请求材料并回退，不能猜写。
+- **主动双向同步**：只有设备客观存在外置按钮/旋钮/mute 或 unsolicited endpoint 时，才要求相应事件日志。设备没有这些控制时写 `not applicable/不适用` 并说明原因。
+- **PCM/DSD 传输问题**：与硬件音量无关的厂商写入和外置按钮日志可写 `not applicable/不适用`，原因是本次目标能力不涉及音量协议。
+
+`not applicable/不适用` 只表示设备或目标能力客观不存在该证据来源，必须附原因；尚未抓取、用户未提供、是否存在未知都属于 `missing/缺失`，必须明确请求，不能用“不适用”掩盖证据缺口。
 
 ### 输出模板（每次适配都必须包含）
 
