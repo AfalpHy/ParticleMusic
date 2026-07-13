@@ -4,7 +4,26 @@
 - **人**：按第 1–6 节理解链路、读诊断报告、按症状表定位问题；
 - **AI**：直接跳到第 7 节「AI 快速适配协议」，配合用户提供的诊断报告输出 quirk JSON 或代码改动建议。第 1–6 节是协议的知识库，遇到不确定时回来查。
 
-适配的核心思路：**绝大多数设备差异不需要改代码**，通过 quirk JSON（用户在设置页粘贴导入，立即生效、无需发版）即可解决；只有出现本指南未覆盖的新差异类别时才需要加代码。
+适配的核心思路是 **capability-first（能力优先）**：先用描述符、只读探测、厂商应用日志和真机回读证明设备实际使用的能力与协议，再决定是否需要代码和 quirk。VID、PID、`bcdDevice`、厂商名和产品名只用于建立设备指纹，不能替代协议证据。绝大多数已支持差异可通过 quirk JSON（用户在设置页粘贴导入，立即生效、无需发版）解决；只有发现新的协议类别时才加代码。
+
+> **禁止仅凭厂商 VID 泛化硬件音量协议。** 同一厂商、甚至外观相近的产品也可能分别使用 UAC Feature Unit、HID、Bulk 或完全不同的 vendor control。未经逐产品证据验证，不得把单台设备的协议扩成 `vid:*`。
+
+## 0. 能力优先适配闭环
+
+每台新 DAC 都按以下顺序取证；前一步证据不足时，不得跳到猜写寄存器：
+
+1. **建立指纹**：记录 VID、PID、`bcdDevice`、manufacturer、product 和可用的 serial。它们只负责匹配设备，不证明能力。
+2. **保存原始描述符**：保留完整 configuration/interface/endpoint、AudioControl、AudioStreaming、HID report descriptor 的原始十六进制，不只保留 App 的解析摘要。
+3. **判别控制类型**：依次检查标准 UAC Feature Unit、HID feature/input/output report、Bulk/Interrupt endpoint、自定义 vendor/class control transfer。先判类别，再谈字段含义。
+4. **安全只读 GET**：仅发送厂商实现、规范或抓包已证明安全的 GET/读命令；记录完整请求七元组和原始返回值。未知命令不得以“只读看起来安全”为由试发。
+5. **原样写回并立即读回**：取得用户许可后执行“读当前值 → 原样写回 → 立即读回”，验证写链路而不改变响度。返回长度成功不等于语义正确。
+6. **捕获主动事件**：分别记录 App 写入确认、DAC 外置音量按钮、旋钮和 mute 操作产生的 unsolicited HID/interrupt/bulk 事件，区分“写确认”和“设备主动变化”。
+7. **还原数值模型**：确认范围、步进、静音值、左右声道/主声道关系、端序、有符号格式，以及 UI 级数到寄存器或 dB 的映射。
+8. **实现精确协议**：只有第 3–7 步证明现有 UAC 路径无法表达时，才在 `UsbVolumeProtocol` 增加一个有能力声明、编码、解码和事件识别的精确协议实现。
+9. **添加精确 quirk**：先匹配完整 VID/PID；只有多款产品分别验证为同一协议后，才考虑受控的厂商默认项。未知协议必须安全回退数字音量或本地系统音量。
+10. **完成测试与诊断附件**：跑纯逻辑/协议包/状态映射自动测试和 PCM、DSD、外置按钮、拔插、失败回退真机矩阵；随适配提交原始描述符、关键英文日志、诊断报告和最小 quirk。
+
+适配完成的标准不是“SET 返回成功”，而是写入、readback、实际响度、主动事件、左右声道和失败回退形成闭环，且诊断状态诚实反映 `hardware`、`digital`、`writeOnly` 与 `readbackVerified`。
 
 ---
 
@@ -92,7 +111,7 @@ adb logcat -d --pid=$(adb shell pidof <包名>) | grep -E "UsbExclusive|Sylvakru
 
 ## 4. quirk 字段全表（症状 → 字段）
 
-内置目录按厂商分组保存；`match.vid/pid` 为十六进制字符串，设备 `pid` 可为 `"*"` 表示该厂商默认规则。手动导入仍兼容旧版平铺 `devices` JSON。
+内置目录按厂商分组保存；`match.vid/pid` 为十六进制字符串。格式允许 `pid: "*"` 表示厂商默认规则，但它只适用于已经逐产品验证的共同属性，**不得用来推断硬件音量协议**。首次适配始终使用精确 VID/PID；手动导入仍兼容旧版平铺 `devices` JSON。
 
 ```json
 {
@@ -157,20 +176,28 @@ adb logcat -d --pid=$(adb shell pidof <包名>) | grep -E "UsbExclusive|Sylvakru
 
 先判断控制属于哪一类，不能看到“音量可调”就假设存在标准 Feature Unit：
 
-1. **标准 UAC**：原始描述符 AC 接口里有 `CS_INTERFACE / FEATURE_UNIT (subtype 0x06)`，报告 `featureUnits` 能列出唯一播放候选，`GET_CUR + GET_RANGE` 成功。优先完全自动探测；只有候选不唯一时才用 `featureUnitId/controlInterface/channels`。
-2. **隐藏 UAC 实体**：描述符没有 Feature Unit，但厂商软件仍调用 `UsbDeviceConnection.controlTransfer`，`wValue=0x02cc`、`wIndex=0xUUII`，数据为两字节 Q8.8 dB。此类用 `featureUnitId/controlInterface/channels + recipient + range` 描述，不在引擎里写 VID/PID 特判。
-3. **HID / bulk / I²C 私有协议**：厂商软件使用 `request=SET_REPORT(0x09)`、`bulkTransfer` 或自定义长报文。必须先新增经过测试的专用协议类型，再由 quirk 的 `protocol` 选择；禁止把报文硬塞进 UAC 音量字段。
+| 能力类别 | 必需证据 | 实现方式 |
+| --- | --- | --- |
+| 标准 UAC Feature Unit | 原始 AC 描述符有 `CS_INTERFACE / FEATURE_UNIT (subtype 0x06)`；唯一播放候选的 `GET_CUR`、范围读取和原样 SET/GET 成功 | 优先自动探测；仅候选不唯一时用 `featureUnitId/controlInterface/channels` 精确覆盖 |
+| 隐藏 UAC 实体 | 厂商应用日志证明 `wValue=0x02cc`、`wIndex=0xUUII`、两字节 Q8.8 dB，并取得 recipient、范围、声道和 mute 证据 | 用现有 UAC 实现加精确 quirk；不在引擎写 VID/PID 特判 |
+| HID | 原始 HID/report descriptor、SET_REPORT/GET_REPORT 或 interrupt IN/OUT 包；能区分命令响应、写确认和 unsolicited 按钮事件 | 实现精确 `UsbVolumeProtocol`，声明 readable/unsolicited/DSD 能力，再由精确 quirk 选择 |
+| Bulk / Interrupt 私有报文 | endpoint、方向、包长、超时和厂商应用 `bulkTransfer` 日志；原样写回与读回闭环 | 新增经过包级测试的精确协议，失败时安全回退 |
+| Vendor/Class control | 完整 `requestType/request/value/index/length/timeout/data`，以及实际响度和 readback 证明 | 只有字段语义已证实时才能实现；返回长度成功不能作为协议证据 |
+
+I²C 寄存器可能只是 HID 或 vendor 报文内部的负载格式，不等于 Android 可以直接访问 I²C。必须先实现其 USB 承载协议，禁止把私有报文硬塞进 UAC 音量字段。
 
 #### 证据获取顺序
 
 按“只读优先、一次只验证一个变量”执行：
 
-1. 诊断报告取 VID/PID、产品名、原始描述符、`Hardware volume probe` 和 `hardwareVolume.fallbackReason`。
+1. 诊断报告取 VID/PID、`bcdDevice`、产品名、原始描述符、当前 quirk、`Hardware volume probe` 和 `hardwareVolume.fallbackReason`。
 2. 查系统能力：Windows `IAudioEndpointVolume.QueryHardwareSupport=0` 只表示系统未识别标准硬件音量，**不能排除隐藏厂商控制**。
 3. 有厂商 Android 软件时，静态搜索：`UsbDeviceConnection`、`controlTransfer`、`bulkTransfer`、`SET_CUR`、`GET_CUR`、`SET_REPORT`、`vendorId/productId/productName`。记录全部七元组：`requestType/request/value/index/length/timeout/data`。
 4. root 真机先做 GET：找到 `/dev/bus/usb/BBB/DDD`，只读厂商 `GET_CUR`；再用标准 recipient 做对照。返回长度必须等于数据长度，数据语义必须稳定。
 5. 用户明确同意后才做“读当前值 → 原样写回 → 立即读回”。这一步证明写通路，不改变响度。真正改变音量必须低音量、逐级测试，并保存左右声道原值用于失败回滚。
-6. 先导入单台精确 VID/PID override；PCM 验证通过后再验证 DoP/Native DSD。不同产品名走不同厂商控制类时，不得直接写 VID 通配规则。
+6. 保持监听并分别操作 DAC 外置按钮/旋钮与 App 滑块，保存原始 unsolicited 包；确认左右声道、mute、边界级数和连续按键去抖，避免把写确认回环当成设备主动事件。
+7. 先导入单台精确 VID/PID override；PCM 验证通过后再验证 DoP/Native DSD。不同产品名走不同厂商控制类时，不得直接写 VID 通配规则。
+8. 用测试矩阵验证 0/25/50/100%、左右一致、mute/unmute、App→DAC、DAC→App、暂停/切歌、读失败/写失败/拔插回退；最后附诊断报告、描述符和关键英文日志。
 
 #### controlTransfer 解码速查
 
@@ -181,7 +208,7 @@ adb logcat -d --pid=$(adb shell pidof <包名>) | grep -E "UsbExclusive|Sylvakru
 - 两字节小端有符号 Q8.8：`-6 dB = 0xFA00`，传输字节为 `00 FA`。
 - 多声道设备要先读完全部原值，再依次写入；任一 SET/GET 失败立即按相反顺序回滚，避免左右失衡。
 
-#### Macaron 已验证实例
+#### Macaron / DC03 Pro 协议已验证示例（不得按厂商泛化）
 
 `iBasso Macaron (262a:1a0b, bcdDevice 0x0060)` 的描述符没有 Feature Unit。iBasso UAC 1.8.6 把它分派给 DC03 Pro 控制器，使用 HID SET_REPORT 承载 I²C 寄存器命令：
 
@@ -201,9 +228,19 @@ adb logcat -d --pid=$(adb shell pidof <包名>) | grep -E "UsbExclusive|Sylvakru
 }
 ```
 
-官方软件写入使用 `controlTransfer(0x21, 0x09, 0x0200, 0, packet16, 16, 200)`，并从 HID IN 端点读取响应。一次音量更新会同步写左右 PCM、左右 DSD 和 room 寄存器，再用命令 `65` 回读左声道实际值；Sylvakru 只有在回读一致后才报告硬件音量生效。厂商软件还对 DC03/04/06/07、DC-Elite、DC-Nunchaku 等产品名分派不同控制类，因此本条只能精确匹配 Macaron，不能扩成整个 `0x262a:*`。
+官方软件写入使用 `controlTransfer(0x21, 0x09, 0x0200, 0, packet16, 16, 200)`，并从 HID IN 端点读取响应。一次音量更新会同步写左右 PCM、左右 DSD 和 room 寄存器，再用命令 `65` 回读左声道实际值；Sylvakru 只有在回读一致后才报告硬件音量生效。HID IN 还会主动上报 DAC 外置按钮产生的左右声道值；实现会区分写确认与 unsolicited event，去抖后再同步到 App。厂商软件对 DC03/04/06/07、DC-Elite、DC-Nunchaku 等产品名分派不同控制类，因此这里只验证了 Macaron 使用的 DC03 Pro 协议实现，本条只能精确匹配 `262a:1a0b`，不能扩成整个 `0x262a:*`，也不能据此假设所有 DC 系列包格式相同。
 
-此前尝试的 `0x20 SET_CUR` / `0xA0 GET_CUR` 虽然返回长度 2，但不会改变 DAC 的真实音量，属于“传输成功、语义错误”的假阳性。厂商私有协议必须核对实际响度和厂商读回命令，不能只看 `controlTransfer` 返回值。正确日志应包含 `protocol=ibassoDc03Pro`，随后状态为 `hardware=true, digital=false`。
+此前尝试的 `0x20 SET_CUR` / `0xA0 GET_CUR` 虽然返回长度 2，但不会改变 DAC 的真实音量，属于“传输成功、语义错误”的假阳性。厂商私有协议必须核对实际响度和厂商读回命令，不能只看 `controlTransfer` 返回值。以下开发者日志保持英文，便于其他 AI 与源码逐字匹配：
+
+```text
+iBasso hardware volume set register=..., dsdRegister=..., protocol=ibassoDc03Pro
+iBasso hardware volume write confirmation raw=...
+iBasso unsolicited hardware volume leftRaw=..., rightRaw=..., actualRaw=..., gainQ16=...
+iBasso hardware volume readback mismatch: target=..., actual=...
+iBasso hardware volume applied with readback=unavailable, writeOnly=true, register=..., dsdRegister=...
+```
+
+成功状态应为 `hardware=true, digital=false`；若 HID reader 重启后仍失败，诊断必须诚实显示 `writeOnly=true, readbackVerified=false`，不能把“仍可写入”误报成完整双向同步。
 
 Macaron 的官方控制器使用 101 项非线性寄存器表（界面 0–100，寄存器值从静音 `255` 递减到满音量 `0`）。Sylvakru 先反解自身 PCM 的 `volume^1.5` 增益，再映射到同一 0–100 级，因此 90% 对应 90 级；实际显示仍使用统一百分比，不直接显示寄存器值。打开 iBasso UAC 时，它会主动恢复自身保存的级数，因此不能同时打开两个控制软件对比静态数值。
 
@@ -247,7 +284,56 @@ USB 设置中的 DSD 增益补偿只调整 Macaron 的四个 DSD 音量寄存器
 
 > 你是拿到「本指南 + 用户诊断报告（+ 可选 logcat）+ 症状描述」的 AI。目标：输出一条 quirk JSON 让用户导入，或判定需要代码改动并给出精确位置。按以下步骤执行，不要跳步。
 
-**步骤 0 —— 提取设备指纹**：从报告 Device 节取 `vid`/`pid`（十六进制）。后续所有 quirk 的 `match` 用它。
+### 输入模板（缺项必须显式指出）
+
+将用户材料先整理成下面的输入合同；没有证据的字段写“缺失”，不能自行补全：
+
+```text
+Device fingerprint:
+  VID/PID/bcdDevice:
+  manufacturer/product/serial:
+Raw descriptors:
+  configuration/interface/endpoint hex:
+  AudioControl/AudioStreaming/HID report descriptor:
+Vendor app writes:
+  requestType/request/value/index/length/timeout/data or endpoint/packet:
+  response/readback and actual loudness:
+DAC external controls:
+  button/knob/mute action:
+  raw unsolicited packets with timestamps:
+Current quirk:
+  matched entry/effective fields/load errors:
+Failure evidence:
+  playback state/message/fallbackReason:
+  diagnostic report and relevant English log lines:
+```
+
+最低可接受输入必须包含 VID/PID/`bcdDevice`/product、原始描述符、厂商应用写入日志、DAC 外置按钮日志、当前 quirk，以及失败状态或完整诊断报告。若目标仅为 PCM/DSD 传输问题，可将与硬件音量无关的两类日志标为“不适用”，但不能把“不适用”当成协议证据。
+
+### 输出模板（每次适配都必须包含）
+
+```text
+Protocol hypothesis:
+  type and packet/control semantics:
+  confidence: high/medium/low
+  evidence:
+Missing evidence:
+  ...
+Minimal implementation:
+  code files/functions to change:
+  protocol capabilities and safe failure behavior:
+Minimal quirk:
+  exact VID/PID match and only evidence-backed fields:
+Verification:
+  automated tests:
+  on-device matrix:
+Safe fallback:
+  behavior on probe/read/write/event failure:
+```
+
+协议假设必须同时给出置信度和逐条证据；输出还必须列出缺失证据、最小代码文件、最小精确 quirk、自动测试、真机测试和失败安全回退。**未知协议不得猜写任何控制命令或寄存器。** 证据不足时，正确输出是请求缺失日志并保持数字音量/本地系统音量回退，而不是生成“试试看”的 vendor 报文。
+
+**步骤 0 —— 提取设备指纹**：从报告 Device 节取 VID/PID/`bcdDevice`/product。后续所有 quirk 先用精确 VID/PID 匹配；指纹只用于定位证据，不得作为协议推断依据。
 
 **步骤 1 —— 判断问题层级**（按症状关键词匹配 §5 表）：
 - 报告 Quirk 节有 `Load errors` → 先修用户导入的 JSON 语法，结束。
@@ -284,9 +370,9 @@ USB 设置中的 DSD 增益补偿只调整 Macaron 的四个 DSD 音量寄存器
    - 周期性小咔嗒 → 让用户做暂停二分（§5 papapa 行），把结果带回来再判。
 3. 切歌/seek 咔嗒 + 指示灯变色 → 检查是否新代码在 DSD 会话调用了 `flushOutput`（铁律 1），这不是 quirk 能解决的，指向 `UsbExclusiveAudioEngine` 的 stop/seek/热复用路径。
 
-**步骤 4 —— 输出**。quirk 修改输出完整可粘贴 JSON（含 version/devices 包裹、match 指纹、label 写设备名），并附一句"导入后重新连接设备生效；如无效把新的诊断报告+日志发回"。代码问题则给出文件+函数名+违反的铁律编号。
+**步骤 4 —— 输出**。按上面的输出模板先给协议假设、证据与缺失证据。quirk 修改输出完整可粘贴 JSON（含 version/devices 包裹、精确 match 指纹、label 写设备名），并附一句“导入后重新连接设备生效；如无效把新的诊断报告+日志发回”。代码问题则给出最小文件+函数名+违反的铁律编号、协议能力声明和测试矩阵；任何失败都必须说明如何回退到数字音量或本地系统音量。
 
-**禁止事项**：不要建议在 DoP/native 数据路径加软件音量/DSP/重采样（Feature Unit 硬件音量不修改码流）；不要建议 seek/切歌时 flush（铁律 1）；不要把 GET_CUR=0 当失败（已内置豁免）；不要一次改多个 quirk 字段（无法归因）。
+**禁止事项**：不要建议在 DoP/native 数据路径加软件音量/DSP/重采样（Feature Unit 硬件音量不修改码流）；不要建议 seek/切歌时 flush（铁律 1）；不要把 GET_CUR=0 当失败（已内置豁免）；不要一次改多个 quirk 字段（无法归因）；不要从 VID、厂商名或相邻型号复制未知私有协议；不要在缺少 readback/实际响度证据时宣称硬件音量已验证。
 
 ### quirk 试验模板（按需删改）
 
