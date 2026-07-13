@@ -83,9 +83,6 @@ private const val UNITY_GAIN_Q16 = 65536
 
 internal fun shouldFlushOutputOnStop(_dsdKind: String?): Boolean = false
 
-internal fun shouldCloseUsbSession(hasConnection: Boolean, hasTarget: Boolean): Boolean =
-    hasConnection || hasTarget
-
 internal data class HardwareVolumeFeature(
     val protocol: String,
     val controlInterface: Int,
@@ -893,56 +890,58 @@ class UsbExclusiveAudioEngine(
         dsdCompensationDb: Int,
         smoothHandoff: Boolean,
     ) {
-        requestedVolumeGainQ16 = gainQ16.coerceIn(0, UNITY_GAIN_Q16)
-        requestedReplayGainMilliDb = replayGainMilliDb
-        dsdGainCompensationDb = dsdCompensationDb.coerceIn(-12, 6)
-        volumeSmoothHandoff = smoothHandoff
-        volumeMode = mode.lowercase(Locale.ROOT)
-            .takeIf { it == "auto" || it == "dac" || it == "digital" || it == "raw" }
-            ?: "auto"
-        val device = sessionDevice
-        val target = sessionTarget
-        if (device != null && target != null && connection != null) {
-            applyVolumeControl(
-                device,
-                target,
-                sessionDsdKind != null,
-                UsbDacQuirks.forDevice(context, device.vendorId, device.productId),
-            )
-        } else {
-            hardwareVolumeActive = false
-            hardwareVolumeProtocol = null
-            hardwareVolumeRaw = null
-            hardwareVolumeGainQ16 = null
-            standardHardwareVolumeReadbackVerified = false
-            volumeControlEnabled = volumeMode != "raw"
-            pcmVolumeGainQ16 = if (volumeControlEnabled) {
-                effectiveVolumeGainQ16(requestedVolumeGainQ16, requestedReplayGainMilliDb)
+        synchronized(volumeLock) {
+            requestedVolumeGainQ16 = gainQ16.coerceIn(0, UNITY_GAIN_Q16)
+            requestedReplayGainMilliDb = replayGainMilliDb
+            dsdGainCompensationDb = dsdCompensationDb.coerceIn(-12, 6)
+            volumeSmoothHandoff = smoothHandoff
+            volumeMode = mode.lowercase(Locale.ROOT)
+                .takeIf { it == "auto" || it == "dac" || it == "digital" || it == "raw" }
+                ?: "auto"
+            val device = sessionDevice
+            val target = sessionTarget
+            if (device != null && target != null && connection != null) {
+                applyVolumeControl(
+                    device,
+                    target,
+                    sessionDsdKind != null,
+                    UsbDacQuirks.forDevice(context, device.vendorId, device.productId),
+                )
             } else {
-                UNITY_GAIN_Q16
+                hardwareVolumeActive = false
+                hardwareVolumeProtocol = null
+                hardwareVolumeRaw = null
+                hardwareVolumeGainQ16 = null
+                standardHardwareVolumeReadbackVerified = false
+                volumeControlEnabled = volumeMode != "raw"
+                pcmVolumeGainQ16 = if (volumeControlEnabled) {
+                    effectiveVolumeGainQ16(requestedVolumeGainQ16, requestedReplayGainMilliDb)
+                } else {
+                    UNITY_GAIN_Q16
+                }
             }
-        }
-        UsbDiagnostics.i(
-            tag,
-            "set exclusive volume gainQ16=$requestedVolumeGainQ16, " +
-                "replayGainMilliDb=$requestedReplayGainMilliDb, mode=$volumeMode, " +
-                "hardware=$hardwareVolumeActive, digital=$volumeControlEnabled",
-        )
-        if (currentState["active"] == true) {
-            updateState(
-                currentState + mapOf(
-                    "hardwareVolumeActive" to hardwareVolumeActive,
-                    "digitalVolumeActive" to volumeControlEnabled,
-                    "replayGainMilliDb" to requestedReplayGainMilliDb,
-                    "hardwareVolumeProtocol" to hardwareVolumeProtocol,
-                    "hardwareVolumeRaw" to hardwareVolumeRaw,
-                    "hardwareVolumeGainQ16" to hardwareVolumeGainQ16,
-                    "hardwareVolumeWriteOnly" to hardwareVolumeWriteOnlyState,
-                    "hardwareVolumeReadbackVerified" to hardwareVolumeReadbackVerifiedState,
-                ),
+            UsbDiagnostics.i(
+                tag,
+                "set exclusive volume gainQ16=$requestedVolumeGainQ16, " +
+                    "replayGainMilliDb=$requestedReplayGainMilliDb, mode=$volumeMode, " +
+                    "hardware=$hardwareVolumeActive, digital=$volumeControlEnabled",
             )
-            pendingHardwareVolumeEvent?.let(emitHardwareVolume)
-            pendingHardwareVolumeEvent = null
+            if (currentState["active"] == true) {
+                updateState(
+                    currentState + mapOf(
+                        "hardwareVolumeActive" to hardwareVolumeActive,
+                        "digitalVolumeActive" to volumeControlEnabled,
+                        "replayGainMilliDb" to requestedReplayGainMilliDb,
+                        "hardwareVolumeProtocol" to hardwareVolumeProtocol,
+                        "hardwareVolumeRaw" to hardwareVolumeRaw,
+                        "hardwareVolumeGainQ16" to hardwareVolumeGainQ16,
+                        "hardwareVolumeWriteOnly" to hardwareVolumeWriteOnlyState,
+                        "hardwareVolumeReadbackVerified" to hardwareVolumeReadbackVerifiedState,
+                    ),
+                )
+                pendingHardwareVolumeEvent?.let(emitHardwareVolume)
+                pendingHardwareVolumeEvent = null
+            }
         }
     }
 
@@ -953,6 +952,9 @@ class UsbExclusiveAudioEngine(
         quirk: DacQuirk,
     ) {
         synchronized(volumeLock) {
+            if (sessionDevice !== device || sessionTarget !== target || connection == null) {
+                return
+            }
             val wasHardwareActive = hardwareVolumeActive
             hardwareVolumeActive = false
             hardwareVolumeProtocol = null
@@ -2327,7 +2329,7 @@ class UsbExclusiveAudioEngine(
             hardwareVolumeGainQ16 = null
             standardHardwareVolumeReadbackVerified = false
             hardwareVolumeControl = null
-            if (!shouldCloseUsbSession(connection != null, sessionTarget != null)) {
+            if (connection == null && sessionTarget == null) {
                 return
             }
             UsbDiagnostics.i(tag, "close exclusive USB session: $reason")
