@@ -296,6 +296,80 @@ class UsbVolumeProtocolTest {
     }
 
     @Test
+    fun rejectsCallbacksFromSupersededReaderGenerations() {
+        assertTrue(
+            isCurrentIbassoReaderGeneration(
+                readerGeneration = 2,
+                currentGeneration = 2,
+                running = true,
+                threadMatches = true,
+                connectionMatches = true,
+                endpointMatches = true,
+            ),
+        )
+        assertFalse(
+            isCurrentIbassoReaderGeneration(
+                readerGeneration = 1,
+                currentGeneration = 2,
+                running = true,
+                threadMatches = true,
+                connectionMatches = true,
+                endpointMatches = true,
+            ),
+        )
+        assertFalse(
+            isCurrentIbassoReaderGeneration(
+                readerGeneration = 2,
+                currentGeneration = 2,
+                running = true,
+                threadMatches = false,
+                connectionMatches = true,
+                endpointMatches = true,
+            ),
+        )
+    }
+
+    @Test
+    fun restartsOnlyTheFailedCurrentReaderGeneration() {
+        assertTrue(
+            shouldRestartIbassoReaderGeneration(
+                readerGeneration = 2,
+                currentGeneration = 2,
+                running = false,
+                failedThreadNotReplaced = true,
+                connectionMatches = true,
+                endpointMatches = true,
+                volumeConnectionMatches = true,
+                restartRequested = true,
+            ),
+        )
+        assertFalse(
+            shouldRestartIbassoReaderGeneration(
+                readerGeneration = 1,
+                currentGeneration = 2,
+                running = false,
+                failedThreadNotReplaced = true,
+                connectionMatches = true,
+                endpointMatches = true,
+                volumeConnectionMatches = true,
+                restartRequested = true,
+            ),
+        )
+        assertFalse(
+            shouldRestartIbassoReaderGeneration(
+                readerGeneration = 2,
+                currentGeneration = 2,
+                running = false,
+                failedThreadNotReplaced = false,
+                connectionMatches = true,
+                endpointMatches = true,
+                volumeConnectionMatches = true,
+                restartRequested = true,
+            ),
+        )
+    }
+
+    @Test
     fun ignoresIdleReaderTimeoutsWithoutPendingResponse() {
         var health = IbassoReaderHealth()
 

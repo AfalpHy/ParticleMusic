@@ -130,6 +130,53 @@ internal fun shouldResumeIbassoReaderHealth(
     deviceId: Int,
 ): Boolean = health.failureCount > 0 && healthDeviceId == deviceId
 
+internal fun isCurrentIbassoReaderGeneration(
+    readerGeneration: Long,
+    currentGeneration: Long,
+    running: Boolean,
+    threadMatches: Boolean,
+    connectionMatches: Boolean,
+    endpointMatches: Boolean,
+): Boolean = readerGeneration == currentGeneration &&
+    running &&
+    threadMatches &&
+    connectionMatches &&
+    endpointMatches
+
+internal fun shouldRestartIbassoReaderGeneration(
+    readerGeneration: Long,
+    currentGeneration: Long,
+    running: Boolean,
+    failedThreadNotReplaced: Boolean,
+    connectionMatches: Boolean,
+    endpointMatches: Boolean,
+    volumeConnectionMatches: Boolean,
+    restartRequested: Boolean,
+): Boolean = isFailedIbassoReaderGenerationCurrent(
+    readerGeneration,
+    currentGeneration,
+    running,
+    failedThreadNotReplaced,
+    connectionMatches,
+    endpointMatches,
+    volumeConnectionMatches,
+) && restartRequested
+
+internal fun isFailedIbassoReaderGenerationCurrent(
+    readerGeneration: Long,
+    currentGeneration: Long,
+    running: Boolean,
+    failedThreadNotReplaced: Boolean,
+    connectionMatches: Boolean,
+    endpointMatches: Boolean,
+    volumeConnectionMatches: Boolean,
+): Boolean = readerGeneration == currentGeneration &&
+    !running &&
+    failedThreadNotReplaced &&
+    connectionMatches &&
+    endpointMatches &&
+    volumeConnectionMatches
+
 internal fun hardwareVolumeWriteOnlyForState(
     protocol: String?,
     ibassoHealth: IbassoReaderHealth,

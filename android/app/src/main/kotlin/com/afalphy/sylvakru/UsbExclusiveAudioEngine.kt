@@ -276,6 +276,8 @@ class UsbExclusiveAudioEngine(
     private var ibassoVolumeInterface: UsbInterface? = null
     private var ibassoVolumeDeviceId: Int? = null
     private val ibassoPendingResponses = ConcurrentHashMap<Int, CompletableFuture<ByteArray>>()
+    private val ibassoReaderLock = Any()
+    private val ibassoReaderGeneration = AtomicLong()
     private val ibassoReaderRunning = AtomicBoolean(false)
     private val ibassoReaderFailureHandled = AtomicBoolean(false)
     @Volatile private var ibassoReaderThread: Thread? = null
@@ -1656,113 +1658,173 @@ class UsbExclusiveAudioEngine(
         eventsEnabled: Boolean,
         restarted: Boolean = false,
     ) {
-        if (ibassoReaderRunning.getAndSet(true)) return
-        ibassoReaderFailureHandled.set(false)
-        ibassoReaderConnection = controlConnection
-        ibassoReaderEndpoint = inputEndpoint
-        ibassoReaderEventsEnabled = eventsEnabled
-        ibassoVolumeEventDebouncer.clear()
-        synchronized(ibassoReaderHealthLock) {
-            ibassoReaderHealth = if (restarted) {
-                ibassoReaderHealth.afterRestart()
-            } else {
-                IbassoReaderHealth()
+        synchronized(ibassoReaderLock) {
+            if (!ibassoReaderRunning.compareAndSet(false, true)) return
+            val generation = ibassoReaderGeneration.incrementAndGet()
+            ibassoReaderFailureHandled.set(false)
+            ibassoReaderConnection = controlConnection
+            ibassoReaderEndpoint = inputEndpoint
+            ibassoReaderEventsEnabled = eventsEnabled
+            ibassoVolumeEventDebouncer.clear()
+            synchronized(ibassoReaderHealthLock) {
+                ibassoReaderHealth = if (restarted) {
+                    ibassoReaderHealth.afterRestart()
+                } else {
+                    IbassoReaderHealth()
+                }
             }
-        }
-        lateinit var reader: Thread
-        reader = Thread({
-            val buffer = ByteArray(inputEndpoint.maxPacketSize.coerceAtLeast(16))
-            try {
-                while (ibassoReaderRunning.get() &&
-                    ibassoReaderConnection === controlConnection &&
-                    ibassoReaderEndpoint === inputEndpoint
-                ) {
-                    val length = controlConnection.bulkTransfer(
-                        inputEndpoint,
-                        buffer,
-                        buffer.size,
-                        IBASSO_READER_TIMEOUT_MS,
-                    )
-                    val persistentPendingFailure = synchronized(ibassoReaderHealthLock) {
-                        ibassoReaderHealth = ibassoReaderHealth.afterReadResult(
-                            length,
-                            ibassoPendingResponses.isNotEmpty(),
-                        )
-                        ibassoReaderHealth.hasPersistentPendingFailure(
-                            IBASSO_PENDING_READ_FAILURE_LIMIT,
-                        )
-                    }
-                    if (length > 0) {
-                        routeIbassoReaderPacket(
-                            buffer.copyOf(length),
-                            controlConnection,
-                            eventsEnabled,
-                        )
-                    } else if (persistentPendingFailure) {
-                        handleIbassoReaderFailure(
-                            IOException("iBasso HID reader did not return a pending response."),
+            lateinit var reader: Thread
+            reader = Thread({
+                val buffer = ByteArray(inputEndpoint.maxPacketSize.coerceAtLeast(16))
+                try {
+                    while (
+                        isCurrentIbassoReader(
+                            generation,
+                            reader,
                             controlConnection,
                             inputEndpoint,
-                            eventsEnabled,
                         )
-                        break
-                    } else {
-                        SystemClock.sleep(20)
+                    ) {
+                        val length = controlConnection.bulkTransfer(
+                            inputEndpoint,
+                            buffer,
+                            buffer.size,
+                            IBASSO_READER_TIMEOUT_MS,
+                        )
+                        val persistentPendingFailure = synchronized(ibassoReaderLock) {
+                            if (
+                                !isCurrentIbassoReader(
+                                    generation,
+                                    reader,
+                                    controlConnection,
+                                    inputEndpoint,
+                                )
+                            ) {
+                                return@synchronized null
+                            }
+                            val persistentFailure = synchronized(ibassoReaderHealthLock) {
+                                ibassoReaderHealth = ibassoReaderHealth.afterReadResult(
+                                    length,
+                                    ibassoPendingResponses.isNotEmpty(),
+                                )
+                                ibassoReaderHealth.hasPersistentPendingFailure(
+                                    IBASSO_PENDING_READ_FAILURE_LIMIT,
+                                )
+                            }
+                            if (length > 0) {
+                                routeIbassoReaderPacket(
+                                    buffer.copyOf(length),
+                                    controlConnection,
+                                    eventsEnabled,
+                                )
+                            }
+                            persistentFailure
+                        } ?: break
+                        if (length <= 0 && persistentPendingFailure) {
+                            handleIbassoReaderFailure(
+                                IOException("iBasso HID reader did not return a pending response."),
+                                controlConnection,
+                                inputEndpoint,
+                                eventsEnabled,
+                                generation,
+                                reader,
+                            )
+                            break
+                        } else if (length <= 0) {
+                            SystemClock.sleep(20)
+                        }
+                    }
+                } catch (error: Exception) {
+                    handleIbassoReaderFailure(
+                        error,
+                        controlConnection,
+                        inputEndpoint,
+                        eventsEnabled,
+                        generation,
+                        reader,
+                    )
+                } finally {
+                    synchronized(ibassoReaderLock) {
+                        if (
+                            generation == ibassoReaderGeneration.get() &&
+                            ibassoReaderThread === reader
+                        ) {
+                            ibassoReaderRunning.set(false)
+                            ibassoReaderThread = null
+                        }
                     }
                 }
-            } catch (error: Exception) {
-                handleIbassoReaderFailure(
-                    error,
-                    controlConnection,
-                    inputEndpoint,
-                    eventsEnabled,
-                )
-            } finally {
-                if (ibassoReaderThread === reader) {
-                    ibassoReaderRunning.set(false)
-                    ibassoReaderThread = null
-                }
-            }
-        }, "ibasso-volume-reader")
-        reader.isDaemon = true
-        ibassoReaderThread = reader
-        reader.start()
+            }, "ibasso-volume-reader")
+            reader.isDaemon = true
+            ibassoReaderThread = reader
+            reader.start()
+        }
     }
+
+    private fun isCurrentIbassoReader(
+        generation: Long,
+        reader: Thread,
+        controlConnection: UsbDeviceConnection,
+        inputEndpoint: UsbEndpoint,
+    ): Boolean = isCurrentIbassoReaderGeneration(
+        readerGeneration = generation,
+        currentGeneration = ibassoReaderGeneration.get(),
+        running = ibassoReaderRunning.get(),
+        threadMatches = ibassoReaderThread === reader,
+        connectionMatches = ibassoReaderConnection === controlConnection,
+        endpointMatches = ibassoReaderEndpoint === inputEndpoint,
+    )
 
     private fun handleIbassoReaderFailure(
         error: Exception,
         controlConnection: UsbDeviceConnection,
         inputEndpoint: UsbEndpoint,
         eventsEnabled: Boolean,
+        generation: Long,
+        reader: Thread,
     ) {
-        if (!ibassoReaderFailureHandled.compareAndSet(false, true)) return
-        ibassoReaderRunning.set(false)
-        failIbassoPendingResponses("iBasso HID reader failed: ${error.message}")
-        val health = synchronized(ibassoReaderHealthLock) {
-            ibassoReaderHealth = ibassoReaderHealth.afterFailure()
-            ibassoReaderHealth
-        }
-        if (!health.restartRequested) {
-            markIbassoWriteOnly(error.message)
-            return
+        synchronized(ibassoReaderLock) {
+            if (!isCurrentIbassoReader(generation, reader, controlConnection, inputEndpoint)) {
+                return
+            }
+            if (!ibassoReaderFailureHandled.compareAndSet(false, true)) return
+            ibassoReaderRunning.set(false)
+            failIbassoPendingResponses("iBasso HID reader failed: ${error.message}")
+            val health = synchronized(ibassoReaderHealthLock) {
+                ibassoReaderHealth = ibassoReaderHealth.afterFailure()
+                ibassoReaderHealth
+            }
+            if (!health.restartRequested) {
+                markIbassoWriteOnly(error.message)
+                return
+            }
         }
         UsbDiagnostics.w(
             tag,
             "iBasso HID reader failed; scheduling one reader-thread restart: ${error.message}",
         )
         mainHandler.postDelayed({
-            if (ibassoReaderConnection === controlConnection &&
-                ibassoReaderEndpoint === inputEndpoint &&
-                ibassoVolumeConnection === controlConnection &&
-                !ibassoReaderRunning.get() &&
-                ibassoReaderHealth.restartRequested
-            ) {
-                startIbassoVolumeReader(
-                    controlConnection,
-                    inputEndpoint,
-                    eventsEnabled,
-                    restarted = true,
-                )
+            synchronized(ibassoReaderLock) {
+                if (
+                    shouldRestartIbassoReaderGeneration(
+                        readerGeneration = generation,
+                        currentGeneration = ibassoReaderGeneration.get(),
+                        running = ibassoReaderRunning.get(),
+                        failedThreadNotReplaced =
+                            ibassoReaderThread == null || ibassoReaderThread === reader,
+                        connectionMatches = ibassoReaderConnection === controlConnection,
+                        endpointMatches = ibassoReaderEndpoint === inputEndpoint,
+                        volumeConnectionMatches = ibassoVolumeConnection === controlConnection,
+                        restartRequested = ibassoReaderHealth.restartRequested,
+                    )
+                ) {
+                    startIbassoVolumeReader(
+                        controlConnection,
+                        inputEndpoint,
+                        eventsEnabled,
+                        restarted = true,
+                    )
+                }
             }
         }, 50L)
     }
@@ -1919,15 +1981,25 @@ class UsbExclusiveAudioEngine(
     }
 
     private fun closeIbassoVolumeControl(resetReaderHealth: Boolean = true) {
-        ibassoReaderFailureHandled.set(true)
-        ibassoReaderRunning.set(false)
-        val reader = ibassoReaderThread
-        ibassoReaderThread = null
-        ibassoReaderConnection = null
-        ibassoReaderEndpoint = null
-        ibassoReaderEventsEnabled = false
-        failIbassoPendingResponses("iBasso HID reader stopped.")
-        ibassoVolumeEventDebouncer.clear()
+        val reader = synchronized(ibassoReaderLock) {
+            ibassoReaderGeneration.incrementAndGet()
+            ibassoReaderFailureHandled.set(true)
+            ibassoReaderRunning.set(false)
+            val activeReader = ibassoReaderThread
+            ibassoReaderThread = null
+            ibassoReaderConnection = null
+            ibassoReaderEndpoint = null
+            ibassoReaderEventsEnabled = false
+            failIbassoPendingResponses("iBasso HID reader stopped.")
+            ibassoVolumeEventDebouncer.clear()
+            if (resetReaderHealth) {
+                synchronized(ibassoReaderHealthLock) {
+                    ibassoReaderHealth = IbassoReaderHealth()
+                }
+                ibassoReaderHealthDeviceId = null
+            }
+            activeReader
+        }
         if (reader != null && reader != Thread.currentThread()) {
             reader.join(250)
         }
@@ -1940,12 +2012,6 @@ class UsbExclusiveAudioEngine(
         ibassoVolumeConnection = null
         ibassoVolumeInterface = null
         ibassoVolumeDeviceId = null
-        if (resetReaderHealth) {
-            synchronized(ibassoReaderHealthLock) {
-                ibassoReaderHealth = IbassoReaderHealth()
-            }
-            ibassoReaderHealthDeviceId = null
-        }
         ibassoLastAppliedTarget = null
         ibassoHandoffBaseRaw = null
         ibassoLastWrittenRaw = null
@@ -1976,8 +2042,13 @@ class UsbExclusiveAudioEngine(
         expectedCommand: Int,
         allowDirectWhenReaderUnavailable: Boolean = false,
     ): ByteArray? {
-        val readerAvailable =
-            ibassoReaderRunning.get() && ibassoReaderConnection === connection
+        val readerGeneration = ibassoReaderGeneration.get()
+        val reader = ibassoReaderThread
+        val inputEndpoint = ibassoReaderEndpoint
+        val readerEventsEnabled = ibassoReaderEventsEnabled
+        val readerAvailable = reader != null &&
+            inputEndpoint != null &&
+            isCurrentIbassoReader(readerGeneration, reader, connection, inputEndpoint)
         if (
             shouldUseDirectIbassoSetReport(
                 ibassoReaderWriteOnly,
@@ -2002,7 +2073,11 @@ class UsbExclusiveAudioEngine(
         }
         if (!readerAvailable) return null
         val future = CompletableFuture<ByteArray>()
-        if (ibassoPendingResponses.putIfAbsent(expectedCommand, future) != null) return null
+        val registered = synchronized(ibassoReaderLock) {
+            isCurrentIbassoReader(readerGeneration, reader, connection, inputEndpoint) &&
+                ibassoPendingResponses.putIfAbsent(expectedCommand, future) == null
+        }
+        if (!registered) return null
         return try {
             val result = connection.controlTransfer(
                 0x21,
@@ -2019,21 +2094,29 @@ class UsbExclusiveAudioEngine(
                 val response = runCatching {
                     future.get(300, TimeUnit.MILLISECONDS)
                 }.getOrNull()
-                if (response == null &&
-                    !ibassoReaderWriteOnly &&
-                    ibassoReaderRunning.get() &&
-                    ibassoReaderConnection === connection
-                ) {
-                    ibassoReaderEndpoint?.let { inputEndpoint ->
-                        handleIbassoReaderFailure(
-                            IOException("iBasso HID command $expectedCommand response timed out."),
-                            connection,
-                            inputEndpoint,
-                            ibassoReaderEventsEnabled,
-                        )
-                    }
+                if (response == null && !ibassoReaderWriteOnly) {
+                    handleIbassoReaderFailure(
+                        IOException("iBasso HID command $expectedCommand response timed out."),
+                        connection,
+                        inputEndpoint,
+                        readerEventsEnabled,
+                        readerGeneration,
+                        reader,
+                    )
                 }
-                response ?: if (ibassoReaderWriteOnly) {
+                val failedGenerationIsCurrent = synchronized(ibassoReaderLock) {
+                    isFailedIbassoReaderGenerationCurrent(
+                        readerGeneration = readerGeneration,
+                        currentGeneration = ibassoReaderGeneration.get(),
+                        running = ibassoReaderRunning.get(),
+                        failedThreadNotReplaced =
+                            ibassoReaderThread == null || ibassoReaderThread === reader,
+                        connectionMatches = ibassoReaderConnection === connection,
+                        endpointMatches = ibassoReaderEndpoint === inputEndpoint,
+                        volumeConnectionMatches = ibassoVolumeConnection === connection,
+                    )
+                }
+                response ?: if (ibassoReaderWriteOnly && failedGenerationIsCurrent) {
                     ByteArray(16).also { it[6] = expectedCommand.toByte() }
                 } else {
                     null
