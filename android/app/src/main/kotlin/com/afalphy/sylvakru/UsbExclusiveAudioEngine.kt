@@ -268,6 +268,7 @@ class UsbExclusiveAudioEngine(
     @Volatile private var hardwareVolumeProtocol: String? = null
     @Volatile private var hardwareVolumeRaw: Int? = null
     @Volatile private var hardwareVolumeGainQ16: Int? = null
+    @Volatile private var standardHardwareVolumeReadbackVerified = false
     private var volumeRampGeneration = 0
     private val volumeLock = Any()
     private var hardwareVolumeControl: HardwareVolumeControl? = null
@@ -288,6 +289,14 @@ class UsbExclusiveAudioEngine(
         get() = ibassoReaderHealth.writeOnly
     private val ibassoReadbackVerified: Boolean
         get() = ibassoReaderHealth.readbackVerified
+    private val hardwareVolumeWriteOnlyState: Boolean
+        get() = hardwareVolumeWriteOnlyForState(hardwareVolumeProtocol, ibassoReaderHealth)
+    private val hardwareVolumeReadbackVerifiedState: Boolean
+        get() = hardwareVolumeReadbackVerifiedForState(
+            hardwareVolumeProtocol,
+            standardHardwareVolumeReadbackVerified,
+            ibassoReaderHealth,
+        )
     @Volatile private var ibassoLastWrittenRaw: Int? = null
     @Volatile private var ibassoLastWrittenAtMs = 0L
     private val ibassoVolumeEventDebouncer = IbassoVolumeEventDebouncer()
@@ -800,8 +809,8 @@ class UsbExclusiveAudioEngine(
             "hardwareVolumeProtocol" to hardwareVolumeProtocol,
             "hardwareVolumeRaw" to hardwareVolumeRaw,
             "hardwareVolumeGainQ16" to hardwareVolumeGainQ16,
-            "hardwareVolumeWriteOnly" to ibassoReaderWriteOnly,
-            "hardwareVolumeReadbackVerified" to ibassoReadbackVerified,
+            "hardwareVolumeWriteOnly" to hardwareVolumeWriteOnlyState,
+            "hardwareVolumeReadbackVerified" to hardwareVolumeReadbackVerifiedState,
             "format" to if (reader != null) {
                 "${reader.formatName}($dsdSuffix)"
             } else {
@@ -897,6 +906,7 @@ class UsbExclusiveAudioEngine(
             hardwareVolumeProtocol = null
             hardwareVolumeRaw = null
             hardwareVolumeGainQ16 = null
+            standardHardwareVolumeReadbackVerified = false
             volumeControlEnabled = volumeMode != "raw"
             pcmVolumeGainQ16 = if (volumeControlEnabled) {
                 effectiveVolumeGainQ16(requestedVolumeGainQ16, requestedReplayGainMilliDb)
@@ -919,10 +929,12 @@ class UsbExclusiveAudioEngine(
                     "hardwareVolumeProtocol" to hardwareVolumeProtocol,
                     "hardwareVolumeRaw" to hardwareVolumeRaw,
                     "hardwareVolumeGainQ16" to hardwareVolumeGainQ16,
-                    "hardwareVolumeWriteOnly" to ibassoReaderWriteOnly,
-                    "hardwareVolumeReadbackVerified" to ibassoReadbackVerified,
+                    "hardwareVolumeWriteOnly" to hardwareVolumeWriteOnlyState,
+                    "hardwareVolumeReadbackVerified" to hardwareVolumeReadbackVerifiedState,
                 ),
             )
+            pendingHardwareVolumeEvent?.let(emitHardwareVolume)
+            pendingHardwareVolumeEvent = null
         }
     }
 
@@ -938,6 +950,7 @@ class UsbExclusiveAudioEngine(
             hardwareVolumeProtocol = null
             hardwareVolumeRaw = null
             hardwareVolumeGainQ16 = null
+            standardHardwareVolumeReadbackVerified = false
             val wantsHardware = volumeMode == "auto" || volumeMode == "dac"
             val vendorProtocol = quirk.hardwareVolumeProtocol
             val protocolSelection = usbVolumeProtocolSelection(vendorProtocol)
@@ -1039,28 +1052,27 @@ class UsbExclusiveAudioEngine(
                         } else {
                             null
                         }
-                        val readGainQ16 = initialValues?.minOfOrNull {
-                            hardwareVolumeGainQ16(it, control.range.muteQ8_8)
+                        val initialActual = initialValues?.let {
+                            actualHardwareVolume(it, control.range.muteQ8_8)
                         }
                         val handoff = hardwareVolumeHandoffTarget(
                             volumeSmoothHandoff,
-                            readGainQ16,
+                            initialActual?.gainQ16,
                             effectiveHardwareGainQ16,
                         )
                         if (handoff.source == HardwareVolumeHandoffSource.DEVICE) {
                             val protocol = control.features.first().protocol
-                            val actualQ8_8 = initialValues!!.minBy {
-                                hardwareVolumeGainQ16(it, control.range.muteQ8_8)
-                            }
+                            val actual = initialActual!!
                             hardwareVolumeActive = true
                             hardwareVolumeProtocol = protocol
-                            hardwareVolumeRaw = actualQ8_8
-                            hardwareVolumeGainQ16 = handoff.gainQ16
+                            hardwareVolumeRaw = actual.raw
+                            hardwareVolumeGainQ16 = actual.gainQ16
+                            standardHardwareVolumeReadbackVerified = true
                             pendingHardwareVolumeEvent = hardwareVolumeEventMap(
                                 protocol,
-                                handoff.gainQ16,
-                                actualQ8_8,
-                                actualQ8_8,
+                                actual.gainQ16,
+                                actual.raw,
+                                actual.raw,
                                 isDsd,
                             )
                         } else {
@@ -1070,16 +1082,32 @@ class UsbExclusiveAudioEngine(
                                     "Initial UAC hardware volume read failed; using the app target.",
                                 )
                             }
-                            fallbackReason = writeHardwareVolume(
+                            val writeResult = writeHardwareVolume(
                                 activeConnection,
                                 device,
                                 control,
                                 effectiveHardwareGainQ16,
                             )
+                            val actual = writeResult.actual
+                            fallbackReason = writeResult.error ?: if (actual == null) {
+                                "Hardware volume readback is unavailable."
+                            } else {
+                                null
+                            }
                             hardwareVolumeActive = fallbackReason == null
                             if (hardwareVolumeActive) {
-                                hardwareVolumeProtocol = control.features.firstOrNull()?.protocol
-                                hardwareVolumeGainQ16 = effectiveHardwareGainQ16
+                                val protocol = control.features.first().protocol
+                                hardwareVolumeProtocol = protocol
+                                hardwareVolumeRaw = actual!!.raw
+                                hardwareVolumeGainQ16 = actual.gainQ16
+                                standardHardwareVolumeReadbackVerified = true
+                                pendingHardwareVolumeEvent = hardwareVolumeEventMap(
+                                    protocol,
+                                    actual.gainQ16,
+                                    actual.raw,
+                                    actual.raw,
+                                    isDsd,
+                                )
                             }
                         }
                         if (!hardwareVolumeActive && wasHardwareActive) {
@@ -1090,7 +1118,7 @@ class UsbExclusiveAudioEngine(
                                     device,
                                     control,
                                     UNITY_GAIN_Q16,
-                                ),
+                                ).error,
                             )
                             hardwareVolumeActive = recovery.hardwareActive
                             fallbackReason = recovery.fallbackReason
@@ -1116,7 +1144,7 @@ class UsbExclusiveAudioEngine(
                     val activeConnection = connection
                     val control = hardwareVolumeControl
                     if (activeConnection != null && control != null) {
-                        writeHardwareVolume(activeConnection, device, control, UNITY_GAIN_Q16)
+                        writeHardwareVolume(activeConnection, device, control, UNITY_GAIN_Q16).error
                     } else {
                         "Active hardware volume control is unavailable."
                     }
@@ -1152,8 +1180,9 @@ class UsbExclusiveAudioEngine(
                     "replayGainMilliDb" to requestedReplayGainMilliDb,
                     "hardwareVolumeProtocol" to hardwareVolumeProtocol,
                     "hardwareVolumeRaw" to hardwareVolumeRaw,
-                    "hardwareVolumeWriteOnly" to ibassoReaderWriteOnly,
-                    "hardwareVolumeReadbackVerified" to ibassoReadbackVerified,
+                    "hardwareVolumeGainQ16" to hardwareVolumeGainQ16,
+                    "hardwareVolumeWriteOnly" to hardwareVolumeWriteOnlyState,
+                    "hardwareVolumeReadbackVerified" to hardwareVolumeReadbackVerifiedState,
                     "dsdGainCompensationDb" to dsdGainCompensationDb,
                     "smoothHandoff" to volumeSmoothHandoff,
                     "source" to (hardwareVolumeControl?.source ?: vendorProtocol),
@@ -1334,9 +1363,9 @@ class UsbExclusiveAudioEngine(
         device: UsbDevice,
         control: HardwareVolumeControl,
         gainQ16: Int,
-    ): String? {
+    ): HardwareVolumeWriteResult {
         val controlInterface = findAudioControlInterface(device, control.features.first().controlInterface)
-            ?: return "AudioControl interface is unavailable."
+            ?: return HardwareVolumeWriteResult(error = "AudioControl interface is unavailable.")
         val dedicatedConnection = hardwareVolumeRequiresDedicatedConnection(
             control.features.first().recipient,
         )
@@ -1344,7 +1373,7 @@ class UsbExclusiveAudioEngine(
             context.getSystemService(UsbManager::class.java).openDevice(device)
         } else {
             connection
-        } ?: return "Dedicated hardware volume connection is unavailable."
+        } ?: return HardwareVolumeWriteResult(error = "Dedicated hardware volume connection is unavailable.")
         val requiresClaim = hardwareVolumeRequiresInterfaceClaim(control.features.first().recipient)
         val claimed = !requiresClaim ||
             runCatching { transferConnection.claimInterface(controlInterface, true) }.getOrDefault(false)
@@ -1352,23 +1381,28 @@ class UsbExclusiveAudioEngine(
             if (dedicatedConnection) {
                 runCatching { transferConnection.close() }
             }
-            return "Failed to claim the AudioControl interface."
+            return HardwareVolumeWriteResult(error = "Failed to claim the AudioControl interface.")
         }
         val previous = mutableMapOf<HardwareVolumeFeature, Int>()
         val written = mutableListOf<HardwareVolumeFeature>()
+        val readBackValues = mutableListOf<Int>()
         val targetQ8_8 = hardwareVolumeQ8_8(gainQ16, control.range)
         return try {
             for (feature in control.features) {
                 val current = readHardwareVolumeCurrent(transferConnection, feature)
                 if (current == null) {
-                    return "Failed to read hardware volume channel ${feature.channel}."
+                    return HardwareVolumeWriteResult(
+                        error = "Failed to read hardware volume channel ${feature.channel}.",
+                    )
                 }
                 previous[feature] = current
             }
             for (feature in control.features) {
                 if (!writeHardwareVolumeValue(transferConnection, feature, targetQ8_8)) {
                     rollbackHardwareVolume(transferConnection, written, previous)
-                    return "Failed to set hardware volume channel ${feature.channel}."
+                    return HardwareVolumeWriteResult(
+                        error = "Failed to set hardware volume channel ${feature.channel}.",
+                    )
                 }
                 written += feature
                 val readBack = readHardwareVolumeCurrent(transferConnection, feature)
@@ -1377,17 +1411,22 @@ class UsbExclusiveAudioEngine(
                     !hardwareVolumeReadbackMatches(targetQ8_8, readBack, control.range.stepQ8_8)
                 ) {
                     rollbackHardwareVolume(transferConnection, written, previous)
-                    return "Hardware volume readback mismatch on channel ${feature.channel}: " +
-                        "targetQ8_8=$targetQ8_8, actualQ8_8=${readBack ?: "unavailable"}."
+                    return HardwareVolumeWriteResult(
+                        error = "Hardware volume readback mismatch on channel ${feature.channel}: " +
+                            "targetQ8_8=$targetQ8_8, actualQ8_8=${readBack ?: "unavailable"}.",
+                    )
                 }
+                readBackValues += readBack
             }
+            val actual = actualHardwareVolume(readBackValues, control.range.muteQ8_8)
+                ?: return HardwareVolumeWriteResult(error = "Hardware volume readback is unavailable.")
             UsbDiagnostics.i(
                 tag,
                 "hardware volume SET_CUR targetQ8_8=$targetQ8_8, " +
-                    "channels=${control.features.map { it.channel }}, " +
+                    "actualQ8_8=${actual.raw}, channels=${control.features.map { it.channel }}, " +
                     "recipient=${control.features.first().recipient}, source=${control.source}",
             )
-            null
+            HardwareVolumeWriteResult(actual = actual)
         } finally {
             if (requiresClaim) {
                 runCatching { transferConnection.releaseInterface(controlInterface) }
@@ -1741,8 +1780,8 @@ class UsbExclusiveAudioEngine(
         updateState(
             currentState + mapOf(
                 "hardwareVolumeReader" to "writeOnly",
-                "hardwareVolumeWriteOnly" to true,
-                "hardwareVolumeReadbackVerified" to false,
+                "hardwareVolumeWriteOnly" to hardwareVolumeWriteOnlyState,
+                "hardwareVolumeReadbackVerified" to hardwareVolumeReadbackVerifiedState,
             ),
         )
         UsbDiagnostics.w(
@@ -1827,6 +1866,8 @@ class UsbExclusiveAudioEngine(
                     "hardwareVolumeProtocol" to hardwareVolumeProtocol,
                     "hardwareVolumeRaw" to actual.raw,
                     "hardwareVolumeGainQ16" to actual.gainQ16,
+                    "hardwareVolumeWriteOnly" to hardwareVolumeWriteOnlyState,
+                    "hardwareVolumeReadbackVerified" to hardwareVolumeReadbackVerifiedState,
                     "hardwareVolumeLeftRaw" to pendingEvent.leftRaw,
                     "hardwareVolumeRightRaw" to pendingEvent.rightRaw,
                 ),
@@ -2136,6 +2177,12 @@ class UsbExclusiveAudioEngine(
 
     private fun hardCloseSession(reason: String) {
         pendingHardwareVolumeEvent = null
+        hardwareVolumeActive = false
+        hardwareVolumeProtocol = null
+        hardwareVolumeRaw = null
+        hardwareVolumeGainQ16 = null
+        standardHardwareVolumeReadbackVerified = false
+        hardwareVolumeControl = null
         if (connection == null && sessionTarget == null) {
             return
         }
@@ -4297,6 +4344,13 @@ class UsbExclusiveAudioEngine(
             "durationMs" to null,
             "sampleRate" to null,
             "bitDepth" to null,
+            "hardwareVolumeActive" to false,
+            "digitalVolumeActive" to false,
+            "hardwareVolumeProtocol" to null,
+            "hardwareVolumeRaw" to null,
+            "hardwareVolumeGainQ16" to null,
+            "hardwareVolumeWriteOnly" to false,
+            "hardwareVolumeReadbackVerified" to false,
             "format" to null,
             "message" to message,
         )

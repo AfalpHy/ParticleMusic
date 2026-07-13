@@ -27,6 +27,38 @@ class UsbVolumeProtocolTest {
     }
 
     @Test
+    fun derivesReadbackStateFromTheActiveProtocol() {
+        val contradictoryIbassoHealth = IbassoReaderHealth(
+            writeOnly = true,
+            readbackVerified = true,
+        )
+
+        assertTrue(hardwareVolumeWriteOnlyForState("ibassoDc03Pro", contradictoryIbassoHealth))
+        assertFalse(
+            hardwareVolumeReadbackVerifiedForState(
+                "ibassoDc03Pro",
+                standardReadbackVerified = true,
+                ibassoHealth = contradictoryIbassoHealth,
+            ),
+        )
+        assertFalse(hardwareVolumeWriteOnlyForState("uac2", contradictoryIbassoHealth))
+        assertTrue(
+            hardwareVolumeReadbackVerifiedForState(
+                "uac2",
+                standardReadbackVerified = true,
+                ibassoHealth = contradictoryIbassoHealth,
+            ),
+        )
+        assertFalse(
+            hardwareVolumeReadbackVerifiedForState(
+                null,
+                standardReadbackVerified = true,
+                ibassoHealth = contradictoryIbassoHealth,
+            ),
+        )
+    }
+
+    @Test
     fun selectsVendorStandardAndUnsupportedProtocolsExplicitly() {
         assertSame(IbassoDc03ProVolumeProtocol, usbVolumeProtocolFor("ibassoDc03Pro"))
         assertEquals(StandardUsbVolumeProtocol, usbVolumeProtocolSelection(null))

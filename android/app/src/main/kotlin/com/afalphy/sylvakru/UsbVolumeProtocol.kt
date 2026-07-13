@@ -32,6 +32,18 @@ internal data class UsbActualVolume(
     val gainQ16: Int,
 )
 
+internal data class HardwareVolumeWriteResult(
+    val error: String? = null,
+    val actual: UsbActualVolume? = null,
+)
+
+internal fun actualHardwareVolume(
+    valuesQ8_8: List<Int>,
+    muteQ8_8: Int,
+): UsbActualVolume? = valuesQ8_8
+    .map { raw -> UsbActualVolume(raw, hardwareVolumeGainQ16(raw, muteQ8_8)) }
+    .minWithOrNull(compareBy<UsbActualVolume> { it.gainQ16 }.thenBy { it.raw })
+
 internal sealed interface UsbVolumeProtocolSelection
 
 internal data object StandardUsbVolumeProtocol : UsbVolumeProtocolSelection
@@ -117,6 +129,21 @@ internal fun shouldResumeIbassoReaderHealth(
     healthDeviceId: Int?,
     deviceId: Int,
 ): Boolean = health.failureCount > 0 && healthDeviceId == deviceId
+
+internal fun hardwareVolumeWriteOnlyForState(
+    protocol: String?,
+    ibassoHealth: IbassoReaderHealth,
+): Boolean = protocol == "ibassoDc03Pro" && ibassoHealth.writeOnly
+
+internal fun hardwareVolumeReadbackVerifiedForState(
+    protocol: String?,
+    standardReadbackVerified: Boolean,
+    ibassoHealth: IbassoReaderHealth,
+): Boolean = when (protocol) {
+    null -> false
+    "ibassoDc03Pro" -> ibassoHealth.readbackVerified && !ibassoHealth.writeOnly
+    else -> standardReadbackVerified
+}
 
 internal fun shouldUseDirectIbassoSetReport(
     writeOnly: Boolean,

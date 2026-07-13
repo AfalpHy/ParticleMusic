@@ -84,6 +84,42 @@ class UsbHardwareVolumeTest {
     }
 
     @Test
+    fun selectsConservativeActualVolumeAcrossChannels() {
+        val actual = actualHardwareVolume(
+            listOf(0, -6 * 256, -12 * 256),
+            Short.MIN_VALUE.toInt(),
+        )
+
+        assertEquals(-12 * 256, actual?.raw)
+        assertEquals(
+            hardwareVolumeGainQ16(-12 * 256, Short.MIN_VALUE.toInt()),
+            actual?.gainQ16,
+        )
+    }
+
+    @Test
+    fun actualVolumeDoesNotDependOnChannelOrder() {
+        val forward = actualHardwareVolume(listOf(0, -6 * 256), Short.MIN_VALUE.toInt())
+        val reversed = actualHardwareVolume(listOf(-6 * 256, 0), Short.MIN_VALUE.toInt())
+
+        assertEquals(forward, reversed)
+        assertEquals(-6 * 256, forward?.raw)
+    }
+
+    @Test
+    fun actualVolumePreservesMuteRawAndGain() {
+        val mute = -112 * 256
+        val actual = actualHardwareVolume(listOf(0, mute, -6 * 256), mute)
+
+        assertEquals(UsbActualVolume(raw = mute, gainQ16 = 0), actual)
+    }
+
+    @Test
+    fun actualVolumeIsAbsentWithoutReadbackValues() {
+        assertNull(actualHardwareVolume(emptyList(), Short.MIN_VALUE.toInt()))
+    }
+
+    @Test
     fun buildsClassRequestTypeForConfiguredRecipient() {
         assertEquals(0xa0, hardwareVolumeRequestType(0x80, "device"))
         assertEquals(0x20, hardwareVolumeRequestType(0x00, "device"))
