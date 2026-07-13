@@ -20,6 +20,18 @@ internal data class UsbVolumeTarget(
     val dsdRaw: Int,
 )
 
+internal enum class HardwareVolumeHandoffSource { DEVICE, APP }
+
+internal data class HardwareVolumeHandoffTarget(
+    val gainQ16: Int,
+    val source: HardwareVolumeHandoffSource,
+)
+
+internal data class UsbActualVolume(
+    val raw: Int,
+    val gainQ16: Int,
+)
+
 internal sealed interface UsbVolumeProtocolSelection
 
 internal data object StandardUsbVolumeProtocol : UsbVolumeProtocolSelection
@@ -257,6 +269,37 @@ internal fun recentIbassoWrittenRaw(
     windowMs: Long,
 ): Int? = lastWrittenRaw?.takeIf {
     nowMs - lastWrittenAtMs in 0..windowMs
+}
+
+internal fun hardwareVolumeHandoffTarget(
+    smooth: Boolean,
+    readGainQ16: Int?,
+    appTargetQ16: Int,
+): HardwareVolumeHandoffTarget = if (
+    smooth && readGainQ16 != null && readGainQ16 in 0..IBASSO_UNITY_GAIN_Q16
+) {
+    HardwareVolumeHandoffTarget(readGainQ16, HardwareVolumeHandoffSource.DEVICE)
+} else {
+    HardwareVolumeHandoffTarget(
+        appTargetQ16.coerceIn(0, IBASSO_UNITY_GAIN_Q16),
+        HardwareVolumeHandoffSource.APP,
+    )
+}
+
+internal fun ibassoActualEventGainQ16(
+    baseRaw: Int,
+    isDsd: Boolean,
+    dsdCompensationDb: Int,
+): UsbActualVolume {
+    val actualRaw = if (isDsd) {
+        ibassoDsdVolume(baseRaw, dsdCompensationDb)
+    } else {
+        baseRaw.coerceIn(0, 255)
+    }
+    return UsbActualVolume(
+        raw = actualRaw,
+        gainQ16 = IbassoDc03ProVolumeProtocol.rawToLinearGainQ16(actualRaw),
+    )
 }
 
 private const val IBASSO_UNITY_GAIN_Q16 = 65536

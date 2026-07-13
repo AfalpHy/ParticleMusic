@@ -29,6 +29,7 @@ import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.math.log10
+import kotlin.math.pow
 import kotlin.math.roundToInt
 
 object UsbExclusiveNative {
@@ -187,6 +188,16 @@ internal fun hardwareVolumeQ8_8(gainQ16: Int, range: HardwareVolumeRange): Int {
         .coerceIn(range.minQ8_8, range.maxQ8_8)
 }
 
+internal fun hardwareVolumeGainQ16(valueQ8_8: Int, muteQ8_8: Int): Int {
+    if (valueQ8_8 <= muteQ8_8 || valueQ8_8 == Int.MIN_VALUE) return 0
+    val gain = 10.0.pow(valueQ8_8.toDouble() / (20.0 * 256.0)) * UNITY_GAIN_Q16
+    return when {
+        !gain.isFinite() || gain >= UNITY_GAIN_Q16 -> UNITY_GAIN_Q16
+        gain <= 0 -> 0
+        else -> gain.roundToInt()
+    }
+}
+
 internal fun hardwareVolumeReadbackMatches(targetQ8_8: Int, actualQ8_8: Int, stepQ8_8: Int): Boolean {
     if (targetQ8_8 == Short.MIN_VALUE.toInt()) {
         return actualQ8_8 == targetQ8_8
@@ -276,6 +287,9 @@ class UsbExclusiveAudioEngine(
     @Volatile private var ibassoLastWrittenRaw: Int? = null
     @Volatile private var ibassoLastWrittenAtMs = 0L
     private val ibassoVolumeEventDebouncer = IbassoVolumeEventDebouncer()
+    private var pendingHardwareVolumeEvent: Map<String, Any?>? = null
+    private var ibassoLastAppliedTarget: UsbVolumeTarget? = null
+    private var ibassoHandoffBaseRaw: Int? = null
 
     private val diagnosticsLock = Any()
     private var sessionSequence = 0L
@@ -402,6 +416,7 @@ class UsbExclusiveAudioEngine(
         // 停掉上一首的写线程但先不拆 USB 会话，后面参数匹配时热复用
         val sessionUsable = stopWorkerKeepingSession()
         playbackId = arguments["playbackId"] as? String
+        pendingHardwareVolumeEvent = null
         if (connection != null) {
             // 下面任一校验失败提前返回时，兜底延迟关闭残留会话
             scheduleDeferredClose()
@@ -798,6 +813,8 @@ class UsbExclusiveAudioEngine(
             },
         )
         updateState(initialState)
+        pendingHardwareVolumeEvent?.let(emitHardwareVolume)
+        pendingHardwareVolumeEvent = null
         emitTransportTelemetry(target.packetsPerSecond, force = true)
 
         val workerNativeFormat = if (nativeDsd) nativeFormat else null
@@ -944,16 +961,34 @@ class UsbExclusiveAudioEngine(
                         requestedReplayGainMilliDb,
                         if (isDsd) dsdGainCompensationDb else 0,
                     )
+                    ibassoLastAppliedTarget = null
+                    ibassoHandoffBaseRaw = null
                     fallbackReason = writeIbassoDc03ProVolume(
                         device,
                         volumeTarget,
                         if (isDsd) volumeTarget.dsdRaw else volumeTarget.baseRaw,
+                        isDsd,
                     )
                     hardwareVolumeActive = fallbackReason == null
                     if (hardwareVolumeActive) {
+                        val appliedTarget = ibassoLastAppliedTarget ?: volumeTarget
+                        val actual = ibassoActualEventGainQ16(
+                            appliedTarget.baseRaw,
+                            isDsd,
+                            dsdGainCompensationDb,
+                        )
                         hardwareVolumeProtocol = protocolSelection.protocol.id
-                        hardwareVolumeRaw = if (isDsd) volumeTarget.dsdRaw else volumeTarget.baseRaw
-                        hardwareVolumeGainQ16 = effectiveHardwareGainQ16
+                        hardwareVolumeRaw = actual.raw
+                        hardwareVolumeGainQ16 = actual.gainQ16
+                        ibassoHandoffBaseRaw?.let { baseRaw ->
+                            pendingHardwareVolumeEvent = hardwareVolumeEventMap(
+                                protocolSelection.protocol.id,
+                                actual.gainQ16,
+                                baseRaw,
+                                baseRaw,
+                                isDsd,
+                            )
+                        }
                     } else if (wasHardwareActive) {
                         val recovery = hardwareVolumeRecovery(
                             fallbackReason ?: "Hardware volume write failed.",
@@ -961,6 +996,7 @@ class UsbExclusiveAudioEngine(
                                 device,
                                 protocolSelection.protocol.appGainToRaw(UNITY_GAIN_Q16, 0, 0),
                                 0,
+                                false,
                             ),
                         )
                         hardwareVolumeActive = recovery.hardwareActive
@@ -973,10 +1009,11 @@ class UsbExclusiveAudioEngine(
                     fallbackReason = "Unsupported hardware volume protocol: ${protocolSelection.id}."
                 } else {
                     val activeConnection = connection
+                    val existingControl = hardwareVolumeControl
                     val control = if (activeConnection == null) {
                         null
                     } else {
-                        hardwareVolumeControl ?: resolveHardwareVolumeControl(
+                        existingControl ?: resolveHardwareVolumeControl(
                             activeConnection,
                             device,
                             target,
@@ -986,16 +1023,57 @@ class UsbExclusiveAudioEngine(
                     if (control == null) {
                         fallbackReason = "No unique writable playback Feature Unit passed probing."
                     } else if (activeConnection != null) {
-                        fallbackReason = writeHardwareVolume(
-                            activeConnection,
-                            device,
-                            control,
+                        val initialHandoff =
+                            existingControl == null &&
+                            volumeSmoothHandoff &&
+                            currentState["active"] != true
+                        val initialValues = if (initialHandoff) {
+                            readHardwareVolumeValues(activeConnection, device, control)
+                        } else {
+                            null
+                        }
+                        val readGainQ16 = initialValues?.minOfOrNull {
+                            hardwareVolumeGainQ16(it, control.range.muteQ8_8)
+                        }
+                        val handoff = hardwareVolumeHandoffTarget(
+                            initialHandoff,
+                            readGainQ16,
                             effectiveHardwareGainQ16,
                         )
-                        hardwareVolumeActive = fallbackReason == null
-                        if (hardwareVolumeActive) {
-                            hardwareVolumeProtocol = control.features.firstOrNull()?.protocol
-                            hardwareVolumeGainQ16 = effectiveHardwareGainQ16
+                        if (handoff.source == HardwareVolumeHandoffSource.DEVICE) {
+                            val protocol = control.features.first().protocol
+                            val actualQ8_8 = initialValues!!.minBy {
+                                hardwareVolumeGainQ16(it, control.range.muteQ8_8)
+                            }
+                            hardwareVolumeActive = true
+                            hardwareVolumeProtocol = protocol
+                            hardwareVolumeRaw = actualQ8_8
+                            hardwareVolumeGainQ16 = handoff.gainQ16
+                            pendingHardwareVolumeEvent = hardwareVolumeEventMap(
+                                protocol,
+                                handoff.gainQ16,
+                                actualQ8_8,
+                                actualQ8_8,
+                                isDsd,
+                            )
+                        } else {
+                            if (initialHandoff && initialValues == null) {
+                                UsbDiagnostics.w(
+                                    tag,
+                                    "Initial UAC hardware volume read failed; using the app target.",
+                                )
+                            }
+                            fallbackReason = writeHardwareVolume(
+                                activeConnection,
+                                device,
+                                control,
+                                effectiveHardwareGainQ16,
+                            )
+                            hardwareVolumeActive = fallbackReason == null
+                            if (hardwareVolumeActive) {
+                                hardwareVolumeProtocol = control.features.firstOrNull()?.protocol
+                                hardwareVolumeGainQ16 = effectiveHardwareGainQ16
+                            }
                         }
                         if (!hardwareVolumeActive && wasHardwareActive) {
                             val recovery = hardwareVolumeRecovery(
@@ -1024,6 +1102,7 @@ class UsbExclusiveAudioEngine(
                         device,
                         protocolSelection.protocol.appGainToRaw(UNITY_GAIN_Q16, 0, 0),
                         0,
+                        false,
                     )
                 } else {
                     val activeConnection = connection
@@ -1210,6 +1289,38 @@ class UsbExclusiveAudioEngine(
         }
     }
 
+    private fun readHardwareVolumeValues(
+        connection: UsbDeviceConnection,
+        device: UsbDevice,
+        control: HardwareVolumeControl,
+    ): List<Int>? {
+        val controlInterface = findAudioControlInterface(
+            device,
+            control.features.first().controlInterface,
+        ) ?: return null
+        val dedicated = hardwareVolumeRequiresDedicatedConnection(control.features.first().recipient)
+        val transferConnection = if (dedicated) {
+            context.getSystemService(UsbManager::class.java).openDevice(device)
+        } else {
+            connection
+        } ?: return null
+        val requiresClaim = hardwareVolumeRequiresInterfaceClaim(control.features.first().recipient)
+        val claimed = !requiresClaim ||
+            runCatching { transferConnection.claimInterface(controlInterface, true) }.getOrDefault(false)
+        if (!claimed) {
+            if (dedicated) transferConnection.close()
+            return null
+        }
+        return try {
+            control.features.map { readHardwareVolumeCurrent(transferConnection, it) }
+                .takeIf { values -> values.all { it != null } }
+                ?.filterNotNull()
+        } finally {
+            if (requiresClaim) runCatching { transferConnection.releaseInterface(controlInterface) }
+            if (dedicated) runCatching { transferConnection.close() }
+        }
+    }
+
     private fun writeHardwareVolume(
         connection: UsbDeviceConnection,
         device: UsbDevice,
@@ -1293,6 +1404,7 @@ class UsbExclusiveAudioEngine(
         device: UsbDevice,
         target: UsbVolumeTarget,
         activeRaw: Int,
+        isDsd: Boolean,
     ): String? {
         val hidInterface = (0 until device.interfaceCount)
             .map { device.getInterface(it) }
@@ -1305,7 +1417,8 @@ class UsbExclusiveAudioEngine(
             .map { hidInterface.getEndpoint(it) }
             .firstOrNull { it.direction == UsbConstants.USB_DIR_IN }
             ?: return "iBasso HID input endpoint is unavailable."
-        if (ibassoVolumeDeviceId != device.deviceId || ibassoVolumeConnection == null) {
+        val newConnection = ibassoVolumeDeviceId != device.deviceId || ibassoVolumeConnection == null
+        if (newConnection) {
             closeIbassoVolumeControl()
             val controlConnection = context.getSystemService(UsbManager::class.java).openDevice(device)
                 ?: return "iBasso control connection is unavailable."
@@ -1325,8 +1438,37 @@ class UsbExclusiveAudioEngine(
         val controlConnection = ibassoVolumeConnection
             ?: return "iBasso control connection is unavailable."
 
-        val value = target.baseRaw
-        val dsdValue = target.dsdRaw
+        val initialHandoff = newConnection &&
+            volumeSmoothHandoff &&
+            currentState["active"] != true
+        val readBaseRaw = if (initialHandoff) {
+            readIbassoCurrentBaseRaw(controlConnection)
+        } else {
+            null
+        }
+        if (initialHandoff && readBaseRaw == null) {
+            UsbDiagnostics.w(tag, "iBasso initial hardware volume read failed; using the app target.")
+        }
+        val handoff = hardwareVolumeHandoffTarget(
+            initialHandoff,
+            readBaseRaw?.let(IbassoDc03ProVolumeProtocol::rawToLinearGainQ16),
+            IbassoDc03ProVolumeProtocol.rawToLinearGainQ16(activeRaw),
+        )
+        val appliedTarget = if (handoff.source == HardwareVolumeHandoffSource.DEVICE) {
+            val baseRaw = readBaseRaw!!
+            ibassoHandoffBaseRaw = baseRaw
+            UsbVolumeTarget(baseRaw, ibassoDsdVolume(baseRaw, dsdGainCompensationDb))
+        } else {
+            target
+        }
+        ibassoLastAppliedTarget = appliedTarget
+        val value = appliedTarget.baseRaw
+        val dsdValue = appliedTarget.dsdRaw
+        val appliedActiveRaw = ibassoActualEventGainQ16(
+            value,
+            isDsd,
+            dsdGainCompensationDb,
+        ).raw
         val packets = listOf(
             ibassoI2cWritePacket(1, 0x60, 9, 1, value),
             ibassoI2cWritePacket(2, 0x60, 9, 2, value),
@@ -1339,7 +1481,7 @@ class UsbExclusiveAudioEngine(
             ibassoI2cWritePacket(12, 0x62, 7, 1, dsdValue),
             ibassoRoomWritePacket(20, 17, value),
         )
-        ibassoLastWrittenRaw = activeRaw
+        ibassoLastWrittenRaw = appliedActiveRaw
         ibassoLastWrittenAtMs = SystemClock.elapsedRealtime()
         synchronized(ibassoReaderHealthLock) {
             ibassoReaderHealth = ibassoReaderHealth.copy(readbackVerified = false)
@@ -1384,7 +1526,7 @@ class UsbExclusiveAudioEngine(
             closeIbassoVolumeControl()
             return "iBasso hardware volume readback mismatch: target=$value, actual=$readBack."
         }
-        ibassoLastWrittenRaw = activeRaw
+        ibassoLastWrittenRaw = appliedActiveRaw
         ibassoLastWrittenAtMs = SystemClock.elapsedRealtime()
         synchronized(ibassoReaderHealthLock) {
             ibassoReaderHealth = ibassoReaderHealth.afterVerifiedReadback()
@@ -1395,6 +1537,12 @@ class UsbExclusiveAudioEngine(
                 "protocol=ibassoDc03Pro",
         )
         return null
+    }
+
+    private fun readIbassoCurrentBaseRaw(connection: UsbDeviceConnection): Int? {
+        val response = transferIbassoPacket(connection, ibassoVolumeReadPacket(), 65)
+        if (ibassoReaderWriteOnly) return null
+        return response?.getOrNull(8)?.toInt()?.and(0xff)
     }
 
     private fun startIbassoVolumeReader(
@@ -1569,22 +1717,30 @@ class UsbExclusiveAudioEngine(
             if (!ibassoReaderRunning.get() || ibassoReaderConnection !== readerConnection) {
                 return@postDelayed
             }
-            val leftGainQ16 = IbassoDc03ProVolumeProtocol.rawToLinearGainQ16(pendingEvent.leftRaw)
-            val rightGainQ16 = IbassoDc03ProVolumeProtocol.rawToLinearGainQ16(pendingEvent.rightRaw)
-            val actualGainQ16 = minOf(leftGainQ16, rightGainQ16)
-            val actualRaw = if (leftGainQ16 <= rightGainQ16) {
-                pendingEvent.leftRaw
+            val isDsd = currentState["bitDepth"] == 1
+            val left = ibassoActualEventGainQ16(
+                pendingEvent.leftRaw,
+                isDsd,
+                dsdGainCompensationDb,
+            )
+            val right = ibassoActualEventGainQ16(
+                pendingEvent.rightRaw,
+                isDsd,
+                dsdGainCompensationDb,
+            )
+            val actual = if (left.gainQ16 <= right.gainQ16) {
+                left
             } else {
-                pendingEvent.rightRaw
+                right
             }
             hardwareVolumeProtocol = IbassoDc03ProVolumeProtocol.id
-            hardwareVolumeRaw = actualRaw
-            hardwareVolumeGainQ16 = actualGainQ16
+            hardwareVolumeRaw = actual.raw
+            hardwareVolumeGainQ16 = actual.gainQ16
             updateState(
                 currentState + mapOf(
                     "hardwareVolumeProtocol" to hardwareVolumeProtocol,
-                    "hardwareVolumeRaw" to actualRaw,
-                    "hardwareVolumeGainQ16" to actualGainQ16,
+                    "hardwareVolumeRaw" to actual.raw,
+                    "hardwareVolumeGainQ16" to actual.gainQ16,
                     "hardwareVolumeLeftRaw" to pendingEvent.leftRaw,
                     "hardwareVolumeRightRaw" to pendingEvent.rightRaw,
                 ),
@@ -1593,11 +1749,11 @@ class UsbExclusiveAudioEngine(
                 emitHardwareVolume(
                     mapOf(
                         "playbackId" to currentPlaybackId,
-                        "gainQ16" to actualGainQ16,
+                        "gainQ16" to actual.gainQ16,
                         "leftRaw" to pendingEvent.leftRaw,
                         "rightRaw" to pendingEvent.rightRaw,
                         "protocol" to IbassoDc03ProVolumeProtocol.id,
-                        "isDsd" to (currentState["bitDepth"] == 1),
+                        "isDsd" to isDsd,
                         "replayGainMilliDb" to requestedReplayGainMilliDb,
                         "dsdGainCompensationDb" to dsdGainCompensationDb,
                     ),
@@ -1606,11 +1762,28 @@ class UsbExclusiveAudioEngine(
             UsbDiagnostics.i(
                 tag,
                 "iBasso unsolicited hardware volume leftRaw=${pendingEvent.leftRaw}, " +
-                    "rightRaw=${pendingEvent.rightRaw}, actualRaw=$actualRaw, " +
-                    "gainQ16=$actualGainQ16.",
+                    "rightRaw=${pendingEvent.rightRaw}, actualRaw=${actual.raw}, " +
+                    "gainQ16=${actual.gainQ16}.",
             )
         }, IBASSO_EVENT_DEBOUNCE_MS)
     }
+
+    private fun hardwareVolumeEventMap(
+        protocol: String,
+        gainQ16: Int,
+        leftRaw: Int,
+        rightRaw: Int,
+        isDsd: Boolean,
+    ): Map<String, Any?> = mapOf(
+        "playbackId" to playbackId,
+        "gainQ16" to gainQ16,
+        "leftRaw" to leftRaw,
+        "rightRaw" to rightRaw,
+        "protocol" to protocol,
+        "isDsd" to isDsd,
+        "replayGainMilliDb" to requestedReplayGainMilliDb,
+        "dsdGainCompensationDb" to dsdGainCompensationDb,
+    )
 
     private fun failIbassoPendingResponses(message: String) {
         val error = IOException(message)
@@ -1844,6 +2017,7 @@ class UsbExclusiveAudioEngine(
     }
 
     private fun hardCloseSession(reason: String) {
+        pendingHardwareVolumeEvent = null
         if (connection == null && sessionTarget == null) {
             return
         }

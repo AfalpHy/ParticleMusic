@@ -75,6 +75,15 @@ class UsbHardwareVolumeTest {
     }
 
     @Test
+    fun mapsQ8_8DbBackToLinearGain() {
+        assertEquals(65536, hardwareVolumeGainQ16(0, Short.MIN_VALUE.toInt()))
+        assertEquals(32846, hardwareVolumeGainQ16(-6 * 256, Short.MIN_VALUE.toInt()))
+        assertEquals(0, hardwareVolumeGainQ16(Short.MIN_VALUE.toInt(), Short.MIN_VALUE.toInt()))
+        assertEquals(0, hardwareVolumeGainQ16(Int.MIN_VALUE, Short.MIN_VALUE.toInt()))
+        assertEquals(65536, hardwareVolumeGainQ16(Int.MAX_VALUE, Short.MIN_VALUE.toInt()))
+    }
+
+    @Test
     fun buildsClassRequestTypeForConfiguredRecipient() {
         assertEquals(0xa0, hardwareVolumeRequestType(0x80, "device"))
         assertEquals(0x20, hardwareVolumeRequestType(0x00, "device"))

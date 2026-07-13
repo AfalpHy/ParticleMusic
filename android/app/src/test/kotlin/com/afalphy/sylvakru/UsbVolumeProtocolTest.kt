@@ -242,6 +242,37 @@ class UsbVolumeProtocolTest {
     }
 
     @Test
+    fun selectsReadableDeviceGainOnlyForSmoothHandoff() {
+        assertEquals(
+            HardwareVolumeHandoffTarget(32768, HardwareVolumeHandoffSource.DEVICE),
+            hardwareVolumeHandoffTarget(true, 32768, 16384),
+        )
+        assertEquals(
+            HardwareVolumeHandoffTarget(16384, HardwareVolumeHandoffSource.APP),
+            hardwareVolumeHandoffTarget(false, 32768, 16384),
+        )
+        assertEquals(
+            HardwareVolumeHandoffTarget(16384, HardwareVolumeHandoffSource.APP),
+            hardwareVolumeHandoffTarget(true, null, 16384),
+        )
+        assertEquals(
+            HardwareVolumeHandoffTarget(16384, HardwareVolumeHandoffSource.APP),
+            hardwareVolumeHandoffTarget(true, 65537, 16384),
+        )
+    }
+
+    @Test
+    fun mapsIbassoBaseRawToCurrentPcmOrDsdGain() {
+        val pcm = ibassoActualEventGainQ16(97, isDsd = false, dsdCompensationDb = 6)
+        val dsd = ibassoActualEventGainQ16(97, isDsd = true, dsdCompensationDb = 6)
+
+        assertEquals(97, pcm.raw)
+        assertEquals(IbassoDc03ProVolumeProtocol.rawToLinearGainQ16(97), pcm.gainQ16)
+        assertEquals(85, dsd.raw)
+        assertEquals(IbassoDc03ProVolumeProtocol.rawToLinearGainQ16(85), dsd.gainQ16)
+    }
+
+    @Test
     fun consumesOnlyTheLatestDebouncedVolumeEventOnce() {
         val debouncer = IbassoVolumeEventDebouncer()
         val eventA = UsbVolumeEvent(97, 97)

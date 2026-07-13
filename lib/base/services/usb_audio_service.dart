@@ -395,11 +395,7 @@ class UsbHardwareVolumeEvent {
         gainQ16 < 0 ||
         gainQ16 > 65536 ||
         leftRaw == null ||
-        leftRaw < 0 ||
-        leftRaw > 255 ||
         rightRaw == null ||
-        rightRaw < 0 ||
-        rightRaw > 255 ||
         protocol is! String ||
         protocol.isEmpty ||
         isDsd is! bool ||
