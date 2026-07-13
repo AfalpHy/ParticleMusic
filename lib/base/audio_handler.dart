@@ -23,6 +23,7 @@ import 'package:sylvakru/base/utils/contrast_color_generator.dart';
 import 'package:sylvakru/base/data/library.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
 import 'package:sylvakru/base/services/navidrome_client.dart';
+import 'package:sylvakru/base/services/replay_gain.dart';
 import 'package:sylvakru/base/services/usb_audio_preferences.dart';
 import 'package:sylvakru/base/services/usb_audio_service.dart';
 import 'package:sylvakru/base/utils/metadata_utils.dart';
@@ -100,6 +101,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
   bool _intentionalExclusiveStop = false;
   bool _suppressPlayerCompleted = false;
   final _positionController = StreamController<Duration>.broadcast();
+  ReplayGainResult _currentReplayGain = const ReplayGainResult(0, null, null);
 
   late final File _playQueueState;
   late final File _playState;
@@ -186,6 +188,22 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
       _applyUsbExclusiveVolume(
         usbExclusiveDigitalVolumeGain(volumeNotifier.value),
       );
+    });
+    usbAudioPreferences.replayGainModeNotifier.addListener(() {
+      final song = currentSongNotifier.value;
+      _currentReplayGain = song == null
+          ? const ReplayGainResult(0, null, null)
+          : replayGainFor(
+              song,
+              usbAudioPreferences.replayGainModeNotifier.value,
+            );
+      if (_usbExclusiveActive) {
+        _applyUsbExclusiveVolume(
+          usbExclusiveDigitalVolumeGain(volumeNotifier.value),
+        );
+      } else {
+        unawaited(_applySharedReplayGain());
+      }
     });
     if (Platform.isAndroid) {
       WidgetsBinding.instance.addObserver(this);
@@ -305,6 +323,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
   /// 用系统输出（media_kit）打开歌曲并按当前播放状态起播。
   /// 供 load() 非独占分支与独占意外中断回退续播复用。
   Future<void> _openPlayerMedia(MyAudioMetadata currentSong) async {
+    await _applySharedReplayGain();
     if (currentSong.cacheExist) {
       await _player.open(
         Media(currentSong.cachePath!),
@@ -735,6 +754,10 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     if (generation != _loadGeneration) {
       return;
     }
+    _currentReplayGain = replayGainFor(
+      currentSong,
+      usbAudioPreferences.replayGainModeNotifier.value,
+    );
     _superLyric.updateLines(currentSong.parsedLyrics!.lines);
 
     currentSongNotifier.value = currentSong;
@@ -905,6 +928,9 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
         bitDepth: isDsd ? null : _preferredExclusiveBitDepth(),
         dsdMode: isDsd ? usbAudioPreferences.dsdModeNotifier.value.name : null,
         volumeGain: usbExclusiveDigitalVolumeGain(volumeNotifier.value),
+        replayGainDb: _effectiveReplayGainDb(
+          usbExclusiveDigitalVolumeGain(volumeNotifier.value),
+        ),
         volumeMode: usbAudioPreferences.volumeControlModeNotifier.value.name,
         dsdGainCompensationDb:
             usbAudioPreferences.dsdGainCompensationNotifier.value,
@@ -1325,12 +1351,33 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
   void setVolume(double volume) {
     final perceptualGain = _perceptualVolumeGain(volume);
     _player.setVolume(perceptualGain * 100);
-    _applyUsbExclusiveVolume(usbExclusiveDigitalVolumeGain(volume));
+    if (_usbExclusiveActive) {
+      _applyUsbExclusiveVolume(usbExclusiveDigitalVolumeGain(volume));
+    } else {
+      unawaited(_applySharedReplayGain());
+    }
   }
 
   // 与共享输出一致的感知音量曲线，返回 0..1 的线性幅度。
   double _perceptualVolumeGain(double volume) {
     return math.log(volume * 9 + 1) / math.log(10);
+  }
+
+  double _effectiveReplayGainDb(double userLinearGain) {
+    return replayGainWithinOutputHeadroom(
+      _currentReplayGain.gainDb,
+      userLinearGain,
+    );
+  }
+
+  Future<void> _applySharedReplayGain() {
+    final gainDb = _effectiveReplayGainDb(
+      _perceptualVolumeGain(volumeNotifier.value),
+    );
+    return (_player.platform as NativePlayer).setProperty(
+      'volume-gain',
+      gainDb.toStringAsFixed(3),
+    );
   }
 
   // 把当前音量与控制模式下发给 USB 独占引擎，由原生层选择硬件音量或安全回退。
@@ -1341,6 +1388,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     unawaited(
       usbAudioService.setExclusiveVolume(
         gain: digitalGain,
+        replayGainDb: _effectiveReplayGainDb(digitalGain),
         mode: usbAudioPreferences.volumeControlModeNotifier.value.name,
         dsdGainCompensationDb:
             usbAudioPreferences.dsdGainCompensationNotifier.value,

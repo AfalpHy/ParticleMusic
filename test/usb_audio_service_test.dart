@@ -274,6 +274,7 @@ void main() {
           sampleRate: 44100,
           bitDepth: 24,
           volumeGain: 0.5,
+          replayGainDb: -5.5,
           volumeMode: 'auto',
           dsdGainCompensationDb: 6,
           smoothVolumeHandoff: false,
@@ -291,6 +292,7 @@ void main() {
         'bitDepth': 24,
         'dsdMode': null,
         'volumeGainQ16': 32768,
+        'replayGainMilliDb': -5500,
         'volumeMode': 'auto',
         'dsdGainCompensationDb': 6,
         'smoothHandoff': false,
@@ -380,6 +382,7 @@ void main() {
 
     await service.setExclusiveVolume(
       gain: 0.5,
+      replayGainDb: -5.5,
       mode: 'dac',
       dsdGainCompensationDb: -6,
       smoothHandoff: false,
@@ -387,11 +390,45 @@ void main() {
 
     expect(receivedArguments, {
       'gainQ16': 32768,
+      'replayGainMilliDb': -5500,
       'mode': 'dac',
       'dsdGainCompensationDb': -6,
       'smoothHandoff': false,
     });
   });
+
+  test(
+    'playback request safely maps zero, non-finite and extreme ReplayGain',
+    () {
+      UsbExclusivePlaybackRequest request(double replayGainDb) {
+        return UsbExclusivePlaybackRequest(
+          playbackId: 'load-safe-gain',
+          filePath: '/music/safe.flac',
+          title: 'Safe',
+          sourceFormat: 'flac',
+          sampleRate: 44100,
+          bitDepth: 24,
+          volumeGain: 1,
+          replayGainDb: replayGainDb,
+          volumeMode: 'auto',
+          targetBufferMs: 200,
+          startPaused: false,
+        );
+      }
+
+      expect(request(0).toMap()['replayGainMilliDb'], 0);
+      expect(request(double.nan).toMap()['replayGainMilliDb'], 0);
+      expect(request(double.infinity).toMap()['replayGainMilliDb'], 0);
+      expect(
+        request(double.maxFinite).toMap()['replayGainMilliDb'],
+        2147483647,
+      );
+      expect(
+        request(-double.maxFinite).toMap()['replayGainMilliDb'],
+        -2147483648,
+      );
+    },
+  );
 
   test('native exclusive state event updates playback notifier', () async {
     UsbAudioService(channel: channel, isAndroid: true);

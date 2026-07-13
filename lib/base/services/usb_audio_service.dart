@@ -172,6 +172,7 @@ class UsbAudioService {
   /// 设置独占音量。原生层按 mode 选择 DAC 硬件音量、PCM 数字音量或原始电平。
   Future<void> setExclusiveVolume({
     required double gain,
+    required double replayGainDb,
     required String mode,
     required int dsdGainCompensationDb,
     required bool smoothHandoff,
@@ -182,6 +183,7 @@ class UsbAudioService {
 
     await _channel.invokeMethod<void>('setExclusiveVolume', {
       'gainQ16': (gain.clamp(0.0, 1.0) * 65536).round(),
+      'replayGainMilliDb': _replayGainMilliDb(replayGainDb),
       'mode': mode,
       'dsdGainCompensationDb': dsdGainCompensationDb.clamp(-12, 6),
       'smoothHandoff': smoothHandoff,
@@ -421,6 +423,7 @@ class UsbExclusivePlaybackRequest {
   /// DSD 文件的输出模式（UsbDsdMode.name：dop/native），非 DSD 为 null
   final String? dsdMode;
   final double volumeGain;
+  final double replayGainDb;
   final String volumeMode;
   final int dsdGainCompensationDb;
   final bool smoothVolumeHandoff;
@@ -443,6 +446,7 @@ class UsbExclusivePlaybackRequest {
     required this.bitDepth,
     this.dsdMode,
     required this.volumeGain,
+    this.replayGainDb = 0,
     required this.volumeMode,
     this.dsdGainCompensationDb = 0,
     this.smoothVolumeHandoff = true,
@@ -462,6 +466,7 @@ class UsbExclusivePlaybackRequest {
       'bitDepth': bitDepth,
       'dsdMode': dsdMode,
       'volumeGainQ16': (volumeGain.clamp(0.0, 1.0) * 65536).round(),
+      'replayGainMilliDb': _replayGainMilliDb(replayGainDb),
       'volumeMode': volumeMode,
       'dsdGainCompensationDb': dsdGainCompensationDb.clamp(-12, 6),
       'smoothHandoff': smoothVolumeHandoff,
@@ -471,6 +476,21 @@ class UsbExclusivePlaybackRequest {
       'totalBytes': totalBytes,
     };
   }
+}
+
+int _replayGainMilliDb(double gainDb) {
+  if (!gainDb.isFinite) {
+    return 0;
+  }
+  const maximum = 2147483647;
+  const minimum = -2147483648;
+  if (gainDb >= maximum / 1000) {
+    return maximum;
+  }
+  if (gainDb <= minimum / 1000) {
+    return minimum;
+  }
+  return (gainDb * 1000).round();
 }
 
 @immutable
