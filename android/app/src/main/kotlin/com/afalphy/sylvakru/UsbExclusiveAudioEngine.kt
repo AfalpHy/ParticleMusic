@@ -72,6 +72,9 @@ private const val USB_RECIP_INTERFACE = 0x01
 private const val USB_RECIP_ENDPOINT = 0x02
 private const val IBASSO_READER_TIMEOUT_MS = 100
 private const val IBASSO_PENDING_READ_FAILURE_LIMIT = 3
+private const val IBASSO_READER_RESTART_INITIAL_DELAY_MS = 50L
+private const val IBASSO_READER_RESTART_RETRY_DELAY_MS = 25L
+private const val IBASSO_READER_RESTART_EXIT_CHECKS = 9
 private const val IBASSO_EVENT_DEBOUNCE_MS = 50L
 private const val IBASSO_WRITE_CONFIRMATION_WINDOW_MS = 500L
 
@@ -1806,19 +1809,55 @@ class UsbExclusiveAudioEngine(
             tag,
             "iBasso HID reader failed; scheduling one reader-thread restart: ${error.message}",
         )
+        scheduleIbassoReaderRestart(
+            controlConnection,
+            inputEndpoint,
+            eventsEnabled,
+            generation,
+            reader,
+            error.message,
+        )
+    }
+
+    private fun scheduleIbassoReaderRestart(
+        controlConnection: UsbDeviceConnection,
+        inputEndpoint: UsbEndpoint,
+        eventsEnabled: Boolean,
+        generation: Long,
+        reader: Thread,
+        failureMessage: String?,
+        checksRemaining: Int = IBASSO_READER_RESTART_EXIT_CHECKS,
+        delayMs: Long = IBASSO_READER_RESTART_INITIAL_DELAY_MS,
+    ) {
         mainHandler.postDelayed({
+            var retry = false
             synchronized(ibassoReaderLock) {
-                if (
-                    shouldRestartIbassoReaderGeneration(
+                val currentThread = ibassoReaderThread
+                val connectionMatches = ibassoReaderConnection === controlConnection
+                val endpointMatches = ibassoReaderEndpoint === inputEndpoint
+                val volumeConnectionMatches = ibassoVolumeConnection === controlConnection
+                val restartRequested = ibassoReaderHealth.restartRequested
+                val failedGenerationCurrent = isFailedIbassoReaderGenerationCurrent(
+                    readerGeneration = generation,
+                    currentGeneration = ibassoReaderGeneration.get(),
+                    running = ibassoReaderRunning.get(),
+                    failedThreadNotReplaced = currentThread == null || currentThread === reader,
+                    connectionMatches = connectionMatches,
+                    endpointMatches = endpointMatches,
+                    volumeConnectionMatches = volumeConnectionMatches,
+                )
+                if (!failedGenerationCurrent || !restartRequested) {
+                    return@synchronized
+                }
+                if (shouldRestartIbassoReaderGeneration(
                         readerGeneration = generation,
                         currentGeneration = ibassoReaderGeneration.get(),
                         running = ibassoReaderRunning.get(),
-                        failedThreadNotReplaced =
-                            ibassoReaderThread == null || ibassoReaderThread === reader,
-                        connectionMatches = ibassoReaderConnection === controlConnection,
-                        endpointMatches = ibassoReaderEndpoint === inputEndpoint,
-                        volumeConnectionMatches = ibassoVolumeConnection === controlConnection,
-                        restartRequested = ibassoReaderHealth.restartRequested,
+                        readerThreadExited = currentThread == null,
+                        connectionMatches = connectionMatches,
+                        endpointMatches = endpointMatches,
+                        volumeConnectionMatches = volumeConnectionMatches,
+                        restartRequested = restartRequested,
                     )
                 ) {
                     startIbassoVolumeReader(
@@ -1827,9 +1866,27 @@ class UsbExclusiveAudioEngine(
                         eventsEnabled,
                         restarted = true,
                     )
+                } else if (checksRemaining <= 1) {
+                    markIbassoWriteOnly(
+                        "iBasso HID reader thread did not exit after failure: $failureMessage",
+                    )
+                } else {
+                    retry = true
                 }
             }
-        }, 50L)
+            if (retry) {
+                scheduleIbassoReaderRestart(
+                    controlConnection,
+                    inputEndpoint,
+                    eventsEnabled,
+                    generation,
+                    reader,
+                    failureMessage,
+                    checksRemaining = checksRemaining - 1,
+                    delayMs = IBASSO_READER_RESTART_RETRY_DELAY_MS,
+                )
+            }
+        }, delayMs)
     }
 
     private fun markIbassoWriteOnly(message: String?) {
@@ -1851,7 +1908,7 @@ class UsbExclusiveAudioEngine(
         )
         UsbDiagnostics.w(
             tag,
-            "iBasso HID reader failed after one restart; hardware volume is write-only: $message",
+            "iBasso HID reader is unavailable; hardware volume is write-only: $message",
         )
     }
 

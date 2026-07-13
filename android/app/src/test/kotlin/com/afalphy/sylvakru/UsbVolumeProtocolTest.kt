@@ -330,13 +330,13 @@ class UsbVolumeProtocolTest {
     }
 
     @Test
-    fun restartsOnlyTheFailedCurrentReaderGeneration() {
+    fun restartsOnlyAfterTheFailedCurrentReaderThreadExits() {
         assertTrue(
             shouldRestartIbassoReaderGeneration(
                 readerGeneration = 2,
                 currentGeneration = 2,
                 running = false,
-                failedThreadNotReplaced = true,
+                readerThreadExited = true,
                 connectionMatches = true,
                 endpointMatches = true,
                 volumeConnectionMatches = true,
@@ -348,7 +348,7 @@ class UsbVolumeProtocolTest {
                 readerGeneration = 1,
                 currentGeneration = 2,
                 running = false,
-                failedThreadNotReplaced = true,
+                readerThreadExited = true,
                 connectionMatches = true,
                 endpointMatches = true,
                 volumeConnectionMatches = true,
@@ -360,7 +360,7 @@ class UsbVolumeProtocolTest {
                 readerGeneration = 2,
                 currentGeneration = 2,
                 running = false,
-                failedThreadNotReplaced = false,
+                readerThreadExited = false,
                 connectionMatches = true,
                 endpointMatches = true,
                 volumeConnectionMatches = true,
