@@ -922,10 +922,6 @@ class UsbExclusiveAudioEngine(
         }
     }
 
-    fun isVolumeControlEngaged(): Boolean =
-        currentState["active"] == true &&
-            (hardwareVolumeActive || (volumeControlEnabled && currentState["bitDepth"] != 1))
-
     private fun applyVolumeControl(
         device: UsbDevice,
         target: OutputTarget,
