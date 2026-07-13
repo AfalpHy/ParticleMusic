@@ -362,6 +362,27 @@ internal fun ibassoRoomWritePacket(command: Int, register: Int, value: Int): Byt
         it[7] = value.toByte()
     }
 
+internal fun ibassoVolumePackets(target: UsbVolumeTarget): List<ByteArray> = listOf(
+    ibassoI2cWritePacket(1, 0x60, 9, 1, target.baseRaw),
+    ibassoI2cWritePacket(2, 0x60, 9, 2, target.baseRaw),
+    ibassoI2cWritePacket(3, 0x62, 9, 1, target.baseRaw),
+    ibassoI2cWritePacket(4, 0x62, 9, 2, target.baseRaw),
+    ibassoI2cWritePacket(9, 0x60, 7, 0, target.dsdRaw),
+    ibassoI2cWritePacket(10, 0x60, 7, 1, target.dsdRaw),
+    ibassoRoomWritePacket(19, 16, target.baseRaw),
+    ibassoI2cWritePacket(11, 0x62, 7, 0, target.dsdRaw),
+    ibassoI2cWritePacket(12, 0x62, 7, 1, target.dsdRaw),
+    ibassoRoomWritePacket(20, 17, target.baseRaw),
+)
+
+internal fun ibassoRollbackTarget(
+    lastAppliedTarget: UsbVolumeTarget?,
+    initialBaseRaw: Int?,
+    dsdCompensationDb: Int,
+): UsbVolumeTarget? = lastAppliedTarget ?: initialBaseRaw?.coerceIn(0, 255)?.let { baseRaw ->
+    UsbVolumeTarget(baseRaw, ibassoDsdVolume(baseRaw, dsdCompensationDb))
+}
+
 internal fun ibassoVolumeReadPacket(): ByteArray = ByteArray(16).also {
     it[0] = 65
     it[1] = 0x12

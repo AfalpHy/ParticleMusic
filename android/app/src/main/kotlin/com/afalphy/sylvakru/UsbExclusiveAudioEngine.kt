@@ -957,7 +957,6 @@ class UsbExclusiveAudioEngine(
                         requestedReplayGainMilliDb,
                         if (isDsd) dsdGainCompensationDb else 0,
                     )
-                    ibassoLastAppliedTarget = null
                     ibassoHandoffBaseRaw = null
                     fallbackReason = writeIbassoDc03ProVolume(
                         device,
@@ -993,6 +992,7 @@ class UsbExclusiveAudioEngine(
                                 protocolSelection.protocol.appGainToRaw(UNITY_GAIN_Q16, 0, 0),
                                 0,
                                 false,
+                                useDeviceHandoff = false,
                             ),
                         )
                         hardwareVolumeActive = recovery.hardwareActive
@@ -1100,6 +1100,7 @@ class UsbExclusiveAudioEngine(
                         protocolSelection.protocol.appGainToRaw(UNITY_GAIN_Q16, 0, 0),
                         0,
                         false,
+                        useDeviceHandoff = false,
                     )
                 } else {
                     val activeConnection = connection
@@ -1402,6 +1403,7 @@ class UsbExclusiveAudioEngine(
         target: UsbVolumeTarget,
         activeRaw: Int,
         isDsd: Boolean,
+        useDeviceHandoff: Boolean = true,
     ): String? {
         val hidInterface = (0 until device.interfaceCount)
             .map { device.getInterface(it) }
@@ -1415,6 +1417,7 @@ class UsbExclusiveAudioEngine(
             .firstOrNull { it.direction == UsbConstants.USB_DIR_IN }
             ?: return "iBasso HID input endpoint is unavailable."
         val newConnection = ibassoVolumeDeviceId != device.deviceId || ibassoVolumeConnection == null
+        val previousAppliedTarget = ibassoLastAppliedTarget.takeUnless { newConnection }
         if (newConnection) {
             closeIbassoVolumeControl()
             val controlConnection = context.getSystemService(UsbManager::class.java).openDevice(device)
@@ -1444,11 +1447,19 @@ class UsbExclusiveAudioEngine(
         } else {
             null
         }
-        if (shouldReadInitialVolume && readBaseRaw == null) {
-            UsbDiagnostics.w(tag, "iBasso initial hardware volume read failed; using the app target.")
+        val rollbackTarget = ibassoRollbackTarget(
+            previousAppliedTarget,
+            readBaseRaw,
+            dsdGainCompensationDb,
+        )
+        if (rollbackTarget == null) {
+            val error = "No trusted previous iBasso hardware volume is available; target was not written."
+            UsbDiagnostics.w(tag, error)
+            closeIbassoVolumeControl()
+            return error
         }
         val handoff = hardwareVolumeHandoffTarget(
-            volumeSmoothHandoff,
+            volumeSmoothHandoff && useDeviceHandoff,
             readBaseRaw?.let(IbassoDc03ProVolumeProtocol::rawToLinearGainQ16),
             IbassoDc03ProVolumeProtocol.rawToLinearGainQ16(activeRaw),
         )
@@ -1459,7 +1470,6 @@ class UsbExclusiveAudioEngine(
         } else {
             target
         }
-        ibassoLastAppliedTarget = appliedTarget
         val value = appliedTarget.baseRaw
         val dsdValue = appliedTarget.dsdRaw
         val appliedActiveRaw = ibassoActualEventGainQ16(
@@ -1467,42 +1477,21 @@ class UsbExclusiveAudioEngine(
             isDsd,
             dsdGainCompensationDb,
         ).raw
-        val packets = listOf(
-            ibassoI2cWritePacket(1, 0x60, 9, 1, value),
-            ibassoI2cWritePacket(2, 0x60, 9, 2, value),
-            ibassoI2cWritePacket(3, 0x62, 9, 1, value),
-            ibassoI2cWritePacket(4, 0x62, 9, 2, value),
-            ibassoI2cWritePacket(9, 0x60, 7, 0, dsdValue),
-            ibassoI2cWritePacket(10, 0x60, 7, 1, dsdValue),
-            ibassoRoomWritePacket(19, 16, value),
-            ibassoI2cWritePacket(11, 0x62, 7, 0, dsdValue),
-            ibassoI2cWritePacket(12, 0x62, 7, 1, dsdValue),
-            ibassoRoomWritePacket(20, 17, value),
-        )
         ibassoLastWrittenRaw = appliedActiveRaw
         ibassoLastWrittenAtMs = SystemClock.elapsedRealtime()
         synchronized(ibassoReaderHealthLock) {
             ibassoReaderHealth = ibassoReaderHealth.copy(readbackVerified = false)
         }
-        for (packet in packets) {
-            val command = packet[0].toInt() and 0xff
-            val response = transferIbassoPacket(
-                controlConnection,
-                packet,
-                command,
-            )
-            if (response == null) {
-                closeIbassoVolumeControl()
-                return "iBasso volume command $command failed."
-            }
-            val responseCommand = response.getOrNull(6)?.toInt()?.and(0xff)
-            if (responseCommand != command) {
-                closeIbassoVolumeControl()
-                return "iBasso volume command $command returned response $responseCommand."
-            }
-            SystemClock.sleep(10)
+        val writeError = transferIbassoVolumeTarget(
+            controlConnection,
+            appliedTarget,
+            bestEffort = false,
+        )
+        if (writeError != null) {
+            return rollbackFailedIbassoVolumeWrite(controlConnection, rollbackTarget, writeError)
         }
         if (ibassoReaderWriteOnly) {
+            ibassoLastAppliedTarget = appliedTarget
             UsbDiagnostics.w(
                 tag,
                 "iBasso hardware volume applied with readback=unavailable, writeOnly=true, " +
@@ -1516,14 +1505,21 @@ class UsbExclusiveAudioEngine(
             65,
         )
         if (response == null) {
-            closeIbassoVolumeControl()
-            return "Failed to read iBasso hardware volume."
+            return rollbackFailedIbassoVolumeWrite(
+                controlConnection,
+                rollbackTarget,
+                "Failed to read iBasso hardware volume.",
+            )
         }
         val readBack = response.getOrNull(8)?.toInt()?.and(0xff)
         if (readBack != value) {
-            closeIbassoVolumeControl()
-            return "iBasso hardware volume readback mismatch: target=$value, actual=$readBack."
+            return rollbackFailedIbassoVolumeWrite(
+                controlConnection,
+                rollbackTarget,
+                "iBasso hardware volume readback mismatch: target=$value, actual=$readBack.",
+            )
         }
+        ibassoLastAppliedTarget = appliedTarget
         ibassoLastWrittenRaw = appliedActiveRaw
         ibassoLastWrittenAtMs = SystemClock.elapsedRealtime()
         synchronized(ibassoReaderHealthLock) {
@@ -1535,6 +1531,54 @@ class UsbExclusiveAudioEngine(
                 "protocol=ibassoDc03Pro",
         )
         return null
+    }
+
+    private fun transferIbassoVolumeTarget(
+        connection: UsbDeviceConnection,
+        target: UsbVolumeTarget,
+        bestEffort: Boolean,
+    ): String? {
+        val errors = mutableListOf<String>()
+        for (packet in ibassoVolumePackets(target)) {
+            val command = packet[0].toInt() and 0xff
+            val response = transferIbassoPacket(connection, packet, command)
+            val responseCommand = response?.getOrNull(6)?.toInt()?.and(0xff)
+            val error = when {
+                response == null -> "iBasso volume command $command failed."
+                responseCommand != command ->
+                    "iBasso volume command $command returned response $responseCommand."
+                else -> null
+            }
+            if (error != null) {
+                errors += error
+                if (!bestEffort) break
+            } else {
+                SystemClock.sleep(10)
+            }
+        }
+        return errors.takeIf { it.isNotEmpty() }?.joinToString(" ")
+    }
+
+    private fun rollbackFailedIbassoVolumeWrite(
+        connection: UsbDeviceConnection,
+        rollbackTarget: UsbVolumeTarget,
+        failure: String,
+    ): String {
+        ibassoLastWrittenRaw = rollbackTarget.baseRaw
+        ibassoLastWrittenAtMs = SystemClock.elapsedRealtime()
+        val rollbackError = transferIbassoVolumeTarget(
+            connection,
+            rollbackTarget,
+            bestEffort = true,
+        )
+        val result = if (rollbackError == null) {
+            "$failure Restored the previous iBasso hardware volume."
+        } else {
+            "$failure iBasso rollback failed: $rollbackError"
+        }
+        UsbDiagnostics.w(tag, result)
+        closeIbassoVolumeControl()
+        return result
     }
 
     private fun readIbassoCurrentBaseRaw(connection: UsbDeviceConnection): Int? {
@@ -1812,6 +1856,8 @@ class UsbExclusiveAudioEngine(
         synchronized(ibassoReaderHealthLock) {
             ibassoReaderHealth = IbassoReaderHealth()
         }
+        ibassoLastAppliedTarget = null
+        ibassoHandoffBaseRaw = null
         ibassoLastWrittenRaw = null
         ibassoLastWrittenAtMs = 0L
     }

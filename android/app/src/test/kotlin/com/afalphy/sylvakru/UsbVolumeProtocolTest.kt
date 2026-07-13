@@ -269,6 +269,42 @@ class UsbVolumeProtocolTest {
     }
 
     @Test
+    fun selectsOnlyTrustedIbassoRollbackTargets() {
+        val lastApplied = UsbVolumeTarget(baseRaw = 97, dsdRaw = 85)
+
+        assertEquals(lastApplied, ibassoRollbackTarget(lastApplied, 109, 6))
+        assertEquals(UsbVolumeTarget(109, 97), ibassoRollbackTarget(null, 109, 6))
+        assertNull(ibassoRollbackTarget(null, null, 6))
+    }
+
+    @Test
+    fun buildsCompleteIbassoTargetAndRollbackPacketGroups() {
+        val targetPackets = ibassoVolumePackets(UsbVolumeTarget(97, 85))
+        val rollbackTarget = ibassoRollbackTarget(null, 109, 6)!!
+        val rollbackPackets = ibassoVolumePackets(rollbackTarget)
+        val commands = listOf(1, 2, 3, 4, 9, 10, 19, 11, 12, 20)
+
+        assertEquals(10, targetPackets.size)
+        assertEquals(commands, targetPackets.map { it[0].toInt() and 0xff })
+        assertEquals(
+            listOf(97, 97, 97, 97, 85, 85, 97, 85, 85, 97),
+            targetPackets.map { packet ->
+                val command = packet[0].toInt() and 0xff
+                packet[if (command == 19 || command == 20) 7 else 11].toInt() and 0xff
+            },
+        )
+        assertEquals(10, rollbackPackets.size)
+        assertEquals(commands, rollbackPackets.map { it[0].toInt() and 0xff })
+        assertEquals(
+            listOf(109, 109, 109, 109, 97, 97, 109, 97, 97, 109),
+            rollbackPackets.map { packet ->
+                val command = packet[0].toInt() and 0xff
+                packet[if (command == 19 || command == 20) 7 else 11].toInt() and 0xff
+            },
+        )
+    }
+
+    @Test
     fun mapsIbassoBaseRawToCurrentPcmOrDsdGain() {
         val pcm = ibassoActualEventGainQ16(97, isDsd = false, dsdCompensationDb = 6)
         val dsd = ibassoActualEventGainQ16(97, isDsd = true, dsdCompensationDb = 6)
