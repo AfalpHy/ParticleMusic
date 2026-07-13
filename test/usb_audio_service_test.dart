@@ -12,6 +12,7 @@ void main() {
   tearDown(() {
     messenger.setMockMethodCallHandler(channel, null);
     usbTransportTelemetryNotifier.value = UsbTransportTelemetry.inactive();
+    usbHardwareVolumeNotifier.value = null;
   });
 
   test(
@@ -444,6 +445,10 @@ void main() {
           'sampleRate': 48000,
           'bitDepth': 24,
           'format': 'flac',
+          'hardwareVolumeProtocol': 'ibassoDc03Pro',
+          'hardwareVolumeRaw': 97,
+          'hardwareVolumeGainQ16': 32768,
+          'replayGainMilliDb': -3500,
           'message': 'Paused.',
         }),
       ),
@@ -457,6 +462,10 @@ void main() {
     expect(state.duration, const Duration(minutes: 4));
     expect(state.sampleRate, 48000);
     expect(state.bitDepth, 24);
+    expect(state.hardwareVolumeProtocol, 'ibassoDc03Pro');
+    expect(state.hardwareVolumeRaw, 97);
+    expect(state.hardwareVolumeGainQ16, 32768);
+    expect(state.replayGainMilliDb, -3500);
   });
 
   test('ignores an exclusive callback from an older playback', () async {
@@ -640,6 +649,76 @@ void main() {
       expect(report, contains('native line'));
     },
   );
+
+  test(
+    'native hardware volume event publishes validated immutable data',
+    () async {
+      UsbAudioService(channel: channel, isAndroid: true);
+
+      await messenger.handlePlatformMessage(
+        channel.name,
+        const StandardMethodCodec().encodeMethodCall(
+          MethodCall('onUsbHardwareVolumeChanged', {
+            'playbackId': 'load-9',
+            'gainQ16': 32768,
+            'leftRaw': 97,
+            'rightRaw': 98,
+            'protocol': 'ibassoDc03Pro',
+            'isDsd': true,
+            'replayGainMilliDb': -3500,
+            'dsdGainCompensationDb': 6,
+          }),
+        ),
+        (_) {},
+      );
+
+      final event = usbHardwareVolumeNotifier.value;
+      expect(event, isNotNull);
+      expect(event!.playbackId, 'load-9');
+      expect(event.gainQ16, 32768);
+      expect(event.leftRaw, 97);
+      expect(event.rightRaw, 98);
+      expect(event.protocol, 'ibassoDc03Pro');
+      expect(event.isDsd, isTrue);
+      expect(event.replayGainMilliDb, -3500);
+      expect(event.dsdGainCompensationDb, 6);
+    },
+  );
+
+  test('invalid native hardware volume events are ignored', () async {
+    UsbAudioService(channel: channel, isAndroid: true);
+
+    for (final arguments in [
+      <String, Object?>{
+        'playbackId': 'load-9',
+        'gainQ16': 32768,
+        'leftRaw': 97,
+        'rightRaw': 98,
+        'isDsd': false,
+        'replayGainMilliDb': 0,
+        'dsdGainCompensationDb': 0,
+      },
+      <String, Object?>{
+        'playbackId': 'load-9',
+        'gainQ16': 65537,
+        'leftRaw': 97,
+        'rightRaw': 98,
+        'protocol': 'ibassoDc03Pro',
+        'isDsd': false,
+        'replayGainMilliDb': 0,
+        'dsdGainCompensationDb': 0,
+      },
+    ]) {
+      await messenger.handlePlatformMessage(
+        channel.name,
+        const StandardMethodCodec().encodeMethodCall(
+          MethodCall('onUsbHardwareVolumeChanged', arguments),
+        ),
+        (_) {},
+      );
+      expect(usbHardwareVolumeNotifier.value, isNull);
+    }
+  });
 
   test('buildUsbDiagnosticsReport handles missing device data', () {
     final report = buildUsbDiagnosticsReport(const {}, platformSupported: true);

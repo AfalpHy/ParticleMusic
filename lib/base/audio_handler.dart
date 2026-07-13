@@ -173,6 +173,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
 
     usbExclusivePlaybackStateNotifier.addListener(_handleUsbExclusiveState);
     usbExclusiveVolumeKeyNotifier.addListener(_handleUsbExclusiveVolumeKey);
+    usbHardwareVolumeNotifier.addListener(_handleUsbHardwareVolume);
     // 切换音量控制方式后立即按新方式重下发（原始数字电平旁路、其余数字音量）。
     usbAudioPreferences.volumeControlModeNotifier.addListener(() {
       _applyUsbExclusiveVolume(
@@ -1403,6 +1404,29 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
 
   int _lastVolumeKeyValue = 0;
 
+  void _handleUsbHardwareVolume() {
+    final event = usbHardwareVolumeNotifier.value;
+    final state = usbExclusivePlaybackStateNotifier.value;
+    if (!_usbExclusiveActive ||
+        !state.active ||
+        event == null ||
+        event.playbackId != state.playbackId ||
+        event.protocol != state.hardwareVolumeProtocol) {
+      return;
+    }
+    final volume = usbUserVolumeFromHardwareGain(
+      event.gainQ16,
+      event.replayGainMilliDb / 1000,
+      event.isDsd ? event.dsdGainCompensationDb : 0,
+    );
+    if ((volumeNotifier.value - volume).abs() > 0.000001) {
+      volumeNotifier.value = volume;
+      _player.setVolume(_perceptualVolumeGain(volume) * 100);
+      savePlayState();
+    }
+    usbVolumeOverlayNotifier.value += 1;
+  }
+
   // 独占模式下安卓物理音量键：按累计方向差值增减音量，再走 setVolume 下发数字音量。
   void _handleUsbExclusiveVolumeKey() {
     final value = usbExclusiveVolumeKeyNotifier.value;
@@ -1416,6 +1440,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     volumeNotifier.value = next;
     setVolume(next);
     savePlayState();
+    usbVolumeOverlayNotifier.value += 1;
   }
 
   void applyEqualizer() async {

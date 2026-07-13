@@ -61,6 +61,11 @@ class MainActivity : AudioServiceActivity() {
                     usbAudioChannel.invokeMethod("onUsbTransportTelemetryChanged", telemetry)
                 }
             },
+            emitHardwareVolume = { event ->
+                runOnUiThread {
+                    usbAudioChannel.invokeMethod("onUsbHardwareVolumeChanged", event)
+                }
+            },
         )
         usbAudioChannel.setMethodCallHandler { call, result ->
             when (call.method) {

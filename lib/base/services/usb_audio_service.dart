@@ -15,6 +15,8 @@ final usbExclusivePlaybackStateNotifier = ValueNotifier(
 final usbTransportTelemetryNotifier = ValueNotifier(
   UsbTransportTelemetry.inactive(),
 );
+final usbHardwareVolumeNotifier = ValueNotifier<UsbHardwareVolumeEvent?>(null);
+final usbVolumeOverlayNotifier = ValueNotifier<int>(0);
 
 /// 独占模式下安卓物理音量键的累计方向：+1 表示按了一次音量加，-1 表示音量减。
 /// 每次按键都会改变数值，监听方按前后差值增减独占音量（见 audio_handler）。
@@ -321,6 +323,16 @@ class UsbAudioService {
       return null;
     }
 
+    if (call.method == 'onUsbHardwareVolumeChanged') {
+      final event = UsbHardwareVolumeEvent.fromMap(
+        (call.arguments as Map?)?.cast<String, Object?>() ?? const {},
+      );
+      if (event != null) {
+        usbHardwareVolumeNotifier.value = event;
+      }
+      return null;
+    }
+
     if (call.method == 'onUsbTransportTelemetryChanged') {
       final telemetry = UsbTransportTelemetry.fromMap(
         (call.arguments as Map?)?.cast<String, Object?>() ?? const {},
@@ -343,6 +355,68 @@ class UsbAudioService {
       return;
     }
     usbExclusivePlaybackStateNotifier.value = state;
+  }
+}
+
+@immutable
+class UsbHardwareVolumeEvent {
+  final String playbackId;
+  final int gainQ16;
+  final int leftRaw;
+  final int rightRaw;
+  final String protocol;
+  final bool isDsd;
+  final int replayGainMilliDb;
+  final int dsdGainCompensationDb;
+
+  const UsbHardwareVolumeEvent({
+    required this.playbackId,
+    required this.gainQ16,
+    required this.leftRaw,
+    required this.rightRaw,
+    required this.protocol,
+    required this.isDsd,
+    required this.replayGainMilliDb,
+    required this.dsdGainCompensationDb,
+  });
+
+  static UsbHardwareVolumeEvent? fromMap(Map<String, Object?> map) {
+    final playbackId = map['playbackId'];
+    final gainQ16 = _asInt(map['gainQ16']);
+    final leftRaw = _asInt(map['leftRaw']);
+    final rightRaw = _asInt(map['rightRaw']);
+    final protocol = map['protocol'];
+    final isDsd = map['isDsd'];
+    final replayGainMilliDb = _asInt(map['replayGainMilliDb']);
+    final dsdGainCompensationDb = _asInt(map['dsdGainCompensationDb']);
+    if (playbackId is! String ||
+        playbackId.isEmpty ||
+        gainQ16 == null ||
+        gainQ16 < 0 ||
+        gainQ16 > 65536 ||
+        leftRaw == null ||
+        leftRaw < 0 ||
+        leftRaw > 255 ||
+        rightRaw == null ||
+        rightRaw < 0 ||
+        rightRaw > 255 ||
+        protocol is! String ||
+        protocol.isEmpty ||
+        isDsd is! bool ||
+        replayGainMilliDb == null ||
+        dsdGainCompensationDb == null) {
+      return null;
+    }
+    return UsbHardwareVolumeEvent(
+      playbackId: playbackId,
+      gainQ16: gainQ16,
+      leftRaw: leftRaw,
+      rightRaw: rightRaw,
+      protocol: protocol,
+      isDsd: isDsd,
+      replayGainMilliDb: replayGainMilliDb,
+      dsdGainCompensationDb: dsdGainCompensationDb,
+    );
   }
 }
 
@@ -505,6 +579,10 @@ class UsbExclusivePlaybackState {
   final String? format;
   final bool hardwareVolumeActive;
   final bool digitalVolumeActive;
+  final String? hardwareVolumeProtocol;
+  final int? hardwareVolumeRaw;
+  final int? hardwareVolumeGainQ16;
+  final int replayGainMilliDb;
   final String? message;
 
   const UsbExclusivePlaybackState({
@@ -518,6 +596,10 @@ class UsbExclusivePlaybackState {
     required this.format,
     required this.hardwareVolumeActive,
     required this.digitalVolumeActive,
+    required this.hardwareVolumeProtocol,
+    required this.hardwareVolumeRaw,
+    required this.hardwareVolumeGainQ16,
+    required this.replayGainMilliDb,
     required this.message,
   });
 
@@ -536,6 +618,10 @@ class UsbExclusivePlaybackState {
       format: null,
       hardwareVolumeActive: false,
       digitalVolumeActive: false,
+      hardwareVolumeProtocol: null,
+      hardwareVolumeRaw: null,
+      hardwareVolumeGainQ16: null,
+      replayGainMilliDb: 0,
       message: message,
     );
   }
@@ -554,6 +640,10 @@ class UsbExclusivePlaybackState {
       format: map['format'] as String?,
       hardwareVolumeActive: map['hardwareVolumeActive'] == true,
       digitalVolumeActive: map['digitalVolumeActive'] == true,
+      hardwareVolumeProtocol: map['hardwareVolumeProtocol'] as String?,
+      hardwareVolumeRaw: _asInt(map['hardwareVolumeRaw']),
+      hardwareVolumeGainQ16: _asInt(map['hardwareVolumeGainQ16']),
+      replayGainMilliDb: _asInt(map['replayGainMilliDb']) ?? 0,
       message: map['message'] as String?,
     );
   }

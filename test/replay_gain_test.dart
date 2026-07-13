@@ -198,6 +198,41 @@ void main() {
       expect(mutedGain.isFinite, isTrue);
     }
   });
+
+  test('USB硬件实际增益反推用户音量并移除增益偏移', () {
+    int actualGain(double volume, double offsetDb) =>
+        (usbExclusiveDigitalVolumeGain(volume) * dbToLinear(offsetDb) * 65536)
+            .round();
+
+    expect(usbUserVolumeFromHardwareGain(0, 0, 0), 0);
+    expect(
+      usbUserVolumeFromHardwareGain(actualGain(0.5, 0), 0, 0),
+      closeTo(0.5, 0.0001),
+    );
+    expect(
+      usbUserVolumeFromHardwareGain(actualGain(0.4, 6), 6, 0),
+      closeTo(0.4, 0.0001),
+    );
+    expect(
+      usbUserVolumeFromHardwareGain(actualGain(0.8, -6), -6, 0),
+      closeTo(0.8, 0.0001),
+    );
+    expect(
+      usbUserVolumeFromHardwareGain(actualGain(0.5, 3), 0, 3),
+      closeTo(0.5, 0.0001),
+    );
+    expect(usbUserVolumeFromHardwareGain(999999, 0, 0), 1);
+    expect(usbUserVolumeFromHardwareGain(-1, 0, 0), 0);
+    for (final offset in [
+      double.nan,
+      double.infinity,
+      double.negativeInfinity,
+    ]) {
+      final value = usbUserVolumeFromHardwareGain(32768, offset, 0);
+      expect(value.isFinite, isTrue);
+      expect(value, inInclusiveRange(0, 1));
+    }
+  });
 }
 
 // 测试直接用换底公式表达规范中的峰值限制。

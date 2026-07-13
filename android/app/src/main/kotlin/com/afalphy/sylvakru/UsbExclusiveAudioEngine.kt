@@ -198,6 +198,7 @@ class UsbExclusiveAudioEngine(
     private val context: Context,
     private val emitState: (Map<String, Any?>) -> Unit,
     private val emitTelemetry: (Map<String, Any?>) -> Unit,
+    private val emitHardwareVolume: (Map<String, Any?>) -> Unit,
 ) {
     private val tag = "UsbExclusiveAudioEngine"
     private var worker: Thread? = null
@@ -1588,6 +1589,20 @@ class UsbExclusiveAudioEngine(
                     "hardwareVolumeRightRaw" to pendingEvent.rightRaw,
                 ),
             )
+            playbackId?.let { currentPlaybackId ->
+                emitHardwareVolume(
+                    mapOf(
+                        "playbackId" to currentPlaybackId,
+                        "gainQ16" to actualGainQ16,
+                        "leftRaw" to pendingEvent.leftRaw,
+                        "rightRaw" to pendingEvent.rightRaw,
+                        "protocol" to IbassoDc03ProVolumeProtocol.id,
+                        "isDsd" to (currentState["bitDepth"] == 1),
+                        "replayGainMilliDb" to requestedReplayGainMilliDb,
+                        "dsdGainCompensationDb" to dsdGainCompensationDb,
+                    ),
+                )
+            }
             UsbDiagnostics.i(
                 tag,
                 "iBasso unsolicited hardware volume leftRaw=${pendingEvent.leftRaw}, " +

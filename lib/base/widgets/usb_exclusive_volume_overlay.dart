@@ -31,12 +31,12 @@ class _UsbExclusiveVolumeOverlayState extends State<UsbExclusiveVolumeOverlay>
       vsync: this,
       duration: const Duration(milliseconds: 2400),
     );
-    usbExclusiveVolumeKeyNotifier.addListener(_show);
+    usbVolumeOverlayNotifier.addListener(_show);
   }
 
   @override
   void dispose() {
-    usbExclusiveVolumeKeyNotifier.removeListener(_show);
+    usbVolumeOverlayNotifier.removeListener(_show);
     _hideTimer?.cancel();
     _lavaController.dispose();
     super.dispose();

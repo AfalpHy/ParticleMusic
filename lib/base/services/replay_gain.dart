@@ -50,3 +50,19 @@ double replayGainWithinOutputHeadroom(double gainDb, double userLinearGain) {
   final headroomDb = -20 * math.log(userLinearGain) / math.ln10;
   return math.min(gainDb, headroomDb);
 }
+
+double usbUserVolumeFromHardwareGain(
+  int actualGainQ16,
+  double replayGainDb,
+  int dsdGainCompensationDb,
+) {
+  final actualGain = (actualGainQ16 / 65536).clamp(0.0, 1.0).toDouble();
+  if (actualGain <= 0) return 0;
+  final factor = dbToLinear(replayGainDb + dsdGainCompensationDb);
+  final baseGain = factor > 0 ? actualGain / factor : double.infinity;
+  final safeBaseGain = baseGain.isNaN
+      ? actualGain
+      : baseGain.clamp(0.0, 1.0).toDouble();
+  final volume = math.pow(safeBaseGain, 2 / 3).toDouble();
+  return volume.isFinite ? volume.clamp(0.0, 1.0).toDouble() : 0;
+}
