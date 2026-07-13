@@ -56,6 +56,10 @@ void main() {
   test('uses practical defaults for USB buffer and volume options', () {
     usbAudioPreferences.load(const {});
 
+    expect(
+      usbAudioPreferences.replayGainModeNotifier.value,
+      ReplayGainMode.off,
+    );
     expect(usbAudioPreferences.foregroundBufferMsNotifier.value, 200);
     expect(usbAudioPreferences.backgroundBufferMsNotifier.value, 1000);
     expect(usbAudioPreferences.volumeSmoothHandoffNotifier.value, isTrue);
@@ -77,6 +81,15 @@ void main() {
 
     usbAudioPreferences.keepAliveInBackgroundNotifier.value = false;
     expect(preferredUsbExclusiveTargetBufferMs(background: true), 320);
+  });
+
+  test('loads and serializes ReplayGain modes', () {
+    for (final mode in ReplayGainMode.values) {
+      usbAudioPreferences.load({'usbReplayGainMode': mode.name});
+
+      expect(usbAudioPreferences.replayGainModeNotifier.value, mode);
+      expect(usbAudioPreferences.toMap()['usbReplayGainMode'], mode.name);
+    }
   });
 
   test('clamps foreground and background USB buffers to real limit', () {

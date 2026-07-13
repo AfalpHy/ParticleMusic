@@ -30,6 +30,8 @@ double usbExclusiveDigitalVolumeGain(double volume) {
 
 enum UsbDsdMode { pcm, dop, native }
 
+enum ReplayGainMode { track, album, off }
+
 /// 独占音量控制方式：自动/DAC 硬件音量/数字音量/原始数字电平。
 enum UsbVolumeControlMode { auto, dac, digital, raw }
 
@@ -46,6 +48,7 @@ class UsbAudioPreferences {
   final dsd256PcmRateNotifier = ValueNotifier(88200);
   final dsd512PcmRateNotifier = ValueNotifier(88200);
   final performanceModeNotifier = ValueNotifier(true);
+  final replayGainModeNotifier = ValueNotifier(ReplayGainMode.off);
   final volumeControlModeNotifier = ValueNotifier(UsbVolumeControlMode.auto);
   final dsdGainCompensationNotifier = ValueNotifier(0);
   final bitDepthModeNotifier = ValueNotifier(UsbBitDepthMode.auto);
@@ -75,6 +78,11 @@ class UsbAudioPreferences {
     dsd512PcmRateNotifier.value =
         _validRate(json['usbDsd512PcmRate'] as int?) ?? 88200;
     performanceModeNotifier.value = json['usbPerformanceMode'] as bool? ?? true;
+    replayGainModeNotifier.value = _enumByName(
+      ReplayGainMode.values,
+      json['usbReplayGainMode'] as String?,
+      ReplayGainMode.off,
+    );
     volumeControlModeNotifier.value = _enumByName(
       UsbVolumeControlMode.values,
       json['usbVolumeControlMode'] as String?,
@@ -113,6 +121,7 @@ class UsbAudioPreferences {
       'usbDsd256PcmRate': dsd256PcmRateNotifier.value,
       'usbDsd512PcmRate': dsd512PcmRateNotifier.value,
       'usbPerformanceMode': performanceModeNotifier.value,
+      'usbReplayGainMode': replayGainModeNotifier.value.name,
       'usbVolumeControlMode': volumeControlModeNotifier.value.name,
       'usbDsdGainCompensation': dsdGainCompensationNotifier.value,
       'usbBitDepthMode': bitDepthModeNotifier.value.name,
