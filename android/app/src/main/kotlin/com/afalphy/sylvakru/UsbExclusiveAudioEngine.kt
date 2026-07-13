@@ -929,6 +929,19 @@ class UsbExclusiveAudioEngine(
                         hardwareVolumeProtocol = protocolSelection.protocol.id
                         hardwareVolumeRaw = if (isDsd) volumeTarget.dsdRaw else volumeTarget.baseRaw
                         hardwareVolumeGainQ16 = effectiveHardwareGainQ16
+                    } else if (wasHardwareActive) {
+                        val recovery = hardwareVolumeRecovery(
+                            fallbackReason ?: "Hardware volume write failed.",
+                            writeIbassoDc03ProVolume(
+                                device,
+                                protocolSelection.protocol.appGainToRaw(UNITY_GAIN_Q16, 0, 0),
+                            ),
+                        )
+                        hardwareVolumeActive = recovery.hardwareActive
+                        fallbackReason = recovery.fallbackReason
+                        if (hardwareVolumeActive) {
+                            hardwareVolumeProtocol = protocolSelection.protocol.id
+                        }
                     }
                 } else if (protocolSelection is UnsupportedUsbVolumeProtocol) {
                     fallbackReason = "Unsupported hardware volume protocol: ${protocolSelection.id}."
@@ -959,17 +972,19 @@ class UsbExclusiveAudioEngine(
                             hardwareVolumeGainQ16 = effectiveHardwareGainQ16
                         }
                         if (!hardwareVolumeActive && wasHardwareActive) {
-                            val restoreError = writeHardwareVolume(
-                                activeConnection,
-                                device,
-                                control,
-                                UNITY_GAIN_Q16,
+                            val recovery = hardwareVolumeRecovery(
+                                fallbackReason ?: "Hardware volume write failed.",
+                                writeHardwareVolume(
+                                    activeConnection,
+                                    device,
+                                    control,
+                                    UNITY_GAIN_Q16,
+                                ),
                             )
-                            hardwareVolumeActive = restoreError != null
-                            if (restoreError != null) {
-                                fallbackReason =
-                                    "${fallbackReason ?: "Hardware volume write failed."} " +
-                                    "Failed to restore hardware volume: $restoreError"
+                            hardwareVolumeActive = recovery.hardwareActive
+                            fallbackReason = recovery.fallbackReason
+                            if (hardwareVolumeActive) {
+                                hardwareVolumeProtocol = control.features.firstOrNull()?.protocol
                             }
                         }
                     }

@@ -63,6 +63,25 @@ class UsbVolumeProtocolTest {
     }
 
     @Test
+    fun keepsHardwareActiveOnlyWhenUnityRestoreFails() {
+        assertEquals(
+            HardwareVolumeRecovery(
+                hardwareActive = false,
+                fallbackReason = "Target write failed.",
+            ),
+            hardwareVolumeRecovery("Target write failed.", restoreFailure = null),
+        )
+        assertEquals(
+            HardwareVolumeRecovery(
+                hardwareActive = true,
+                fallbackReason =
+                    "Target write failed. Failed to restore hardware volume: Restore failed.",
+            ),
+            hardwareVolumeRecovery("Target write failed.", "Restore failed."),
+        )
+    }
+
+    @Test
     fun mapsAppGainToIbassoRawTable() {
         assertEquals(255, protocol.appGainToRaw(0, 0, 0).baseRaw)
         assertEquals(97, protocol.appGainToRaw(gainQ16ForIndex(23), 0, 0).baseRaw)

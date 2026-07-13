@@ -32,6 +32,11 @@ internal data class UnsupportedUsbVolumeProtocol(
     val id: String,
 ) : UsbVolumeProtocolSelection
 
+internal data class HardwareVolumeRecovery(
+    val hardwareActive: Boolean,
+    val fallbackReason: String,
+)
+
 internal interface UsbVolumeProtocol {
     val id: String
     val capabilities: UsbVolumeCapabilities
@@ -138,6 +143,22 @@ internal fun effectiveHardwareVolumeGainQ16(
             if (isDsd) dsdCompensationDb.toLong() * 1000L else 0L
         ).coerceIn(Int.MIN_VALUE.toLong(), Int.MAX_VALUE.toLong()).toInt()
     return effectiveVolumeGainQ16(userGainQ16, combinedGainMilliDb)
+}
+
+internal fun hardwareVolumeRecovery(
+    writeFailure: String,
+    restoreFailure: String?,
+): HardwareVolumeRecovery = if (restoreFailure == null) {
+    HardwareVolumeRecovery(
+        hardwareActive = false,
+        fallbackReason = writeFailure,
+    )
+} else {
+    HardwareVolumeRecovery(
+        hardwareActive = true,
+        fallbackReason =
+            "$writeFailure Failed to restore hardware volume: $restoreFailure",
+    )
 }
 
 private const val IBASSO_UNITY_GAIN_Q16 = 65536
