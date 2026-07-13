@@ -120,6 +120,13 @@ class UsbHardwareVolumeTest {
     }
 
     @Test
+    fun closesSessionWhenAConnectionOrTargetRemains() {
+        assertEquals(false, shouldCloseUsbSession(hasConnection = false, hasTarget = false))
+        assertEquals(true, shouldCloseUsbSession(hasConnection = true, hasTarget = false))
+        assertEquals(true, shouldCloseUsbSession(hasConnection = false, hasTarget = true))
+    }
+
+    @Test
     fun buildsClassRequestTypeForConfiguredRecipient() {
         assertEquals(0xa0, hardwareVolumeRequestType(0x80, "device"))
         assertEquals(0x20, hardwareVolumeRequestType(0x00, "device"))

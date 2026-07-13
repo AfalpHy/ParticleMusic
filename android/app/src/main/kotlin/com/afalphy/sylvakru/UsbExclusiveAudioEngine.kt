@@ -80,6 +80,9 @@ private const val UNITY_GAIN_Q16 = 65536
 
 internal fun shouldFlushOutputOnStop(_dsdKind: String?): Boolean = false
 
+internal fun shouldCloseUsbSession(hasConnection: Boolean, hasTarget: Boolean): Boolean =
+    hasConnection || hasTarget
+
 internal data class HardwareVolumeFeature(
     val protocol: String,
     val controlInterface: Int,
@@ -2259,33 +2262,31 @@ class UsbExclusiveAudioEngine(
     }
 
     private fun hardCloseSession(reason: String) {
-        pendingHardwareVolumeEvent = null
-        hardwareVolumeActive = false
-        hardwareVolumeProtocol = null
-        hardwareVolumeRaw = null
-        hardwareVolumeGainQ16 = null
-        standardHardwareVolumeReadbackVerified = false
-        hardwareVolumeControl = null
-        if (connection == null && sessionTarget == null) {
-            return
-        }
-        UsbDiagnostics.i(tag, "close exclusive USB session: $reason")
-        updateSessionDiagnostics("closed", mapOf("reason" to reason, "atMs" to System.currentTimeMillis()))
-        mainHandler.removeCallbacks(deferredCloseRunnable)
-        stopDopIdleFiller()
-        sessionDsd = null
-        sessionPacketizer = null
-        sessionDsdKind = null
-        sessionNativeFormat = null
-        sessionTarget = null
-        sessionDeviceId = null
-        sessionDevice = null
-        sessionSampleRate = null
-        sessionChannels = null
-        sessionBitDepth = null
         synchronized(volumeLock) {
+            pendingHardwareVolumeEvent = null
             hardwareVolumeActive = false
+            hardwareVolumeProtocol = null
+            hardwareVolumeRaw = null
+            hardwareVolumeGainQ16 = null
+            standardHardwareVolumeReadbackVerified = false
             hardwareVolumeControl = null
+            if (!shouldCloseUsbSession(connection != null, sessionTarget != null)) {
+                return
+            }
+            UsbDiagnostics.i(tag, "close exclusive USB session: $reason")
+            updateSessionDiagnostics("closed", mapOf("reason" to reason, "atMs" to System.currentTimeMillis()))
+            mainHandler.removeCallbacks(deferredCloseRunnable)
+            stopDopIdleFiller()
+            sessionDsd = null
+            sessionPacketizer = null
+            sessionDsdKind = null
+            sessionNativeFormat = null
+            sessionTarget = null
+            sessionDeviceId = null
+            sessionDevice = null
+            sessionSampleRate = null
+            sessionChannels = null
+            sessionBitDepth = null
             volumeRampGeneration += 1
             closeIbassoVolumeControl()
             UsbExclusiveNative.close()
