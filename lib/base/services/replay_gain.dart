@@ -37,7 +37,10 @@ ReplayGainResult replayGainFor(MyAudioMetadata song, ReplayGainMode mode) {
   return const ReplayGainResult(0, null, null);
 }
 
-double dbToLinear(double db) => math.pow(10, db / 20).toDouble();
+double dbToLinear(double db) {
+  final gain = math.pow(10, db / 20).toDouble();
+  return gain.isInfinite ? double.maxFinite : gain;
+}
 
 double replayGainWithinOutputHeadroom(double gainDb, double userLinearGain) {
   if (userLinearGain <= 0) return gainDb;

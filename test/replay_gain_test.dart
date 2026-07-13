@@ -172,6 +172,16 @@ void main() {
     expect(dbToLinear(6), closeTo(1.995262, 0.000001));
     expect(dbToLinear(-6), closeTo(0.501187, 0.000001));
   });
+
+  test('极端有限正分贝转换后保持有限', () {
+    final linearGain = dbToLinear(double.maxFinite);
+    final mutedGain = 0.0 * linearGain;
+
+    expect(linearGain, double.maxFinite);
+    expect(linearGain.isFinite, isTrue);
+    expect(mutedGain, 0);
+    expect(mutedGain.isFinite, isTrue);
+  });
 }
 
 // 测试直接用换底公式表达规范中的峰值限制。
