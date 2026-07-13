@@ -81,6 +81,30 @@ internal data class IbassoReaderHealth(
     fun afterVerifiedReadback(): IbassoReaderHealth = copy(readbackVerified = true)
 }
 
+internal class IbassoVolumeEventDebouncer {
+    private val lock = Any()
+    private var token = 0L
+    private var event: UsbVolumeEvent? = null
+
+    fun submit(value: UsbVolumeEvent): Long = synchronized(lock) {
+        event = value
+        ++token
+    }
+
+    fun consume(expectedToken: Long): UsbVolumeEvent? = synchronized(lock) {
+        if (expectedToken != token) {
+            null
+        } else {
+            event.also { event = null }
+        }
+    }
+
+    fun clear() = synchronized(lock) {
+        event = null
+        token += 1
+    }
+}
+
 internal interface UsbVolumeProtocol {
     val id: String
     val capabilities: UsbVolumeCapabilities

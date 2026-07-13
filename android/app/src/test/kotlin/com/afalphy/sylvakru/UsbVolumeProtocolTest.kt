@@ -241,6 +241,24 @@ class UsbVolumeProtocolTest {
         assertNull(recentIbassoWrittenRaw(null, 1000, 1001, 500))
     }
 
+    @Test
+    fun consumesOnlyTheLatestDebouncedVolumeEventOnce() {
+        val debouncer = IbassoVolumeEventDebouncer()
+        val eventA = UsbVolumeEvent(97, 97)
+        val eventB = UsbVolumeEvent(98, 99)
+
+        val token1 = debouncer.submit(eventA)
+        val token2 = debouncer.submit(eventB)
+        assertFalse(token1 == token2)
+        assertNull(debouncer.consume(token1))
+        assertEquals(eventB, debouncer.consume(token2))
+        assertNull(debouncer.consume(token2))
+
+        val staleToken = debouncer.submit(eventA)
+        debouncer.clear()
+        assertNull(debouncer.consume(staleToken))
+    }
+
     private fun ibassoEventPacket(leftRaw: Int, rightRaw: Int): ByteArray =
         ByteArray(16).also {
             it[0] = 0xfe.toByte()

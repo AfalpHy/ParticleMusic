@@ -274,9 +274,7 @@ class UsbExclusiveAudioEngine(
         get() = ibassoReaderHealth.readbackVerified
     @Volatile private var ibassoLastWrittenRaw: Int? = null
     @Volatile private var ibassoLastWrittenAtMs = 0L
-    private val ibassoEventLock = Any()
-    private var ibassoEventGeneration = 0
-    private var ibassoPendingEvent: UsbVolumeEvent? = null
+    private val ibassoVolumeEventDebouncer = IbassoVolumeEventDebouncer()
 
     private val diagnosticsLock = Any()
     private var sessionSequence = 0L
@@ -1407,6 +1405,7 @@ class UsbExclusiveAudioEngine(
         if (ibassoReaderRunning.getAndSet(true)) return
         ibassoReaderConnection = controlConnection
         ibassoReaderEndpoint = inputEndpoint
+        ibassoVolumeEventDebouncer.clear()
         synchronized(ibassoReaderHealthLock) {
             ibassoReaderHealth = if (restarted) {
                 ibassoReaderHealth.afterRestart()
@@ -1562,18 +1561,10 @@ class UsbExclusiveAudioEngine(
         event: UsbVolumeEvent,
         readerConnection: UsbDeviceConnection,
     ) {
-        val generation = synchronized(ibassoEventLock) {
-            ibassoPendingEvent = event
-            ++ibassoEventGeneration
-        }
+        val token = ibassoVolumeEventDebouncer.submit(event)
         mainHandler.postDelayed({
-            val pendingEvent = synchronized(ibassoEventLock) {
-                if (generation != ibassoEventGeneration) {
-                    null
-                } else {
-                    ibassoPendingEvent.also { ibassoPendingEvent = null }
-                }
-            } ?: return@postDelayed
+            val pendingEvent = ibassoVolumeEventDebouncer.consume(token)
+                ?: return@postDelayed
             if (!ibassoReaderRunning.get() || ibassoReaderConnection !== readerConnection) {
                 return@postDelayed
             }
@@ -1588,12 +1579,14 @@ class UsbExclusiveAudioEngine(
             hardwareVolumeProtocol = IbassoDc03ProVolumeProtocol.id
             hardwareVolumeRaw = actualRaw
             hardwareVolumeGainQ16 = actualGainQ16
-            currentState = currentState + mapOf(
-                "hardwareVolumeProtocol" to hardwareVolumeProtocol,
-                "hardwareVolumeRaw" to actualRaw,
-                "hardwareVolumeGainQ16" to actualGainQ16,
-                "hardwareVolumeLeftRaw" to pendingEvent.leftRaw,
-                "hardwareVolumeRightRaw" to pendingEvent.rightRaw,
+            updateState(
+                currentState + mapOf(
+                    "hardwareVolumeProtocol" to hardwareVolumeProtocol,
+                    "hardwareVolumeRaw" to actualRaw,
+                    "hardwareVolumeGainQ16" to actualGainQ16,
+                    "hardwareVolumeLeftRaw" to pendingEvent.leftRaw,
+                    "hardwareVolumeRightRaw" to pendingEvent.rightRaw,
+                ),
             )
             UsbDiagnostics.i(
                 tag,
@@ -1617,10 +1610,7 @@ class UsbExclusiveAudioEngine(
         ibassoReaderConnection = null
         ibassoReaderEndpoint = null
         failIbassoPendingResponses("iBasso HID reader stopped.")
-        synchronized(ibassoEventLock) {
-            ibassoEventGeneration += 1
-            ibassoPendingEvent = null
-        }
+        ibassoVolumeEventDebouncer.clear()
         if (reader != null && reader != Thread.currentThread()) {
             reader.join(250)
         }
