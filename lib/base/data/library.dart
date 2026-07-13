@@ -404,12 +404,42 @@ class Library {
         song.cacheExist = true;
         cacheSizeNotifier.value +=
             await File(savePath).length() / (1024 * 1024);
+        await _supplementCachedReplayGain(song, savePath);
         return;
       }
       if (!cancelToken.isCancelled) {
         logger.output('cache download retry:${song.title}');
         await Future.delayed(const Duration(seconds: 1));
       }
+    }
+  }
+
+  Future<void> _supplementCachedReplayGain(
+    MyAudioMetadata song,
+    String savePath,
+  ) async {
+    if (song.replayGainTrackGainDb != null &&
+        song.replayGainTrackPeak != null &&
+        song.replayGainAlbumGainDb != null &&
+        song.replayGainAlbumPeak != null) {
+      return;
+    }
+    try {
+      final metadata = song.isDsd
+          ? await readDsdMetadata(savePath)
+          : await readMetadataAsync(savePath, false);
+      if (metadata == null) {
+        return;
+      }
+      song.replayGainTrackGainDb ??= metadata.replayGainTrackGainDb;
+      song.replayGainTrackPeak ??= metadata.replayGainTrackPeak;
+      song.replayGainAlbumGainDb ??= metadata.replayGainAlbumGainDb;
+      song.replayGainAlbumPeak ??= metadata.replayGainAlbumPeak;
+      await updateMetadata(song);
+    } catch (e) {
+      try {
+        logger.output('cache ReplayGain metadata read failed: $e');
+      } catch (_) {}
     }
   }
 

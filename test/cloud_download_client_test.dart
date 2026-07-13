@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'dart:io';
+import 'dart:typed_data';
 
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -376,4 +377,123 @@ void main() {
       expect(await File(song.cachePath!).readAsBytes(), [1, 2, 3]);
     },
   );
+
+  test(
+    'cloud cache supplements missing ReplayGain without replacing API values',
+    () async {
+      final dsd = _buildDsfWithReplayGain();
+      final server = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
+      addTearDown(() => server.close());
+      server.listen((socket) async {
+        socket.add(
+          ascii.encode(
+            'HTTP/1.1 200 OK\r\n'
+            'Content-Length: ${dsd.length}\r\n'
+            'Connection: close\r\n'
+            '\r\n',
+          ),
+        );
+        socket.add(dsd);
+        await socket.flush();
+        await socket.close();
+      });
+
+      await library_data.loadLibrary();
+      navidromeClient = NavidromeClient(
+        baseUrl: 'http://${server.address.address}:${server.port}',
+        username: 'user',
+        password: 'password',
+      );
+      final song = MyAudioMetadata.fromOpenSonicMap({
+        'id': 'replay-gain-song-id',
+        'title': 'ReplayGain Song',
+        'suffix': 'dsf',
+        'replayGain': {'trackGain': -3.5},
+      }, app.SourceType.navidrome);
+
+      await library_data.Library().tryAddCache(song);
+
+      expect(song.cacheExist, isTrue);
+      expect(song.replayGainTrackGainDb, -3.5);
+      expect(song.replayGainTrackPeak, 0.9);
+      expect(song.replayGainAlbumGainDb, -5.25);
+      expect(song.replayGainAlbumPeak, 1.1);
+    },
+  );
 }
+
+Uint8List _buildDsfWithReplayGain() {
+  final frames = BytesBuilder();
+  const tags = {
+    'REPLAYGAIN_TRACK_GAIN': '-7.0 dB',
+    'REPLAYGAIN_TRACK_PEAK': '0.9',
+    'REPLAYGAIN_ALBUM_GAIN': '-5.25 dB',
+    'REPLAYGAIN_ALBUM_PEAK': '1.1',
+  };
+  tags.forEach((description, value) {
+    final body = <int>[
+      3,
+      ...utf8.encode(description),
+      0,
+      ...utf8.encode(value),
+    ];
+    frames.add('TXXX'.codeUnits);
+    frames.add(_intBe(body.length));
+    frames.add([0, 0]);
+    frames.add(body);
+  });
+  final frameBytes = frames.toBytes();
+  final id3 = BytesBuilder()
+    ..add('ID3'.codeUnits)
+    ..add([3, 0, 0])
+    ..add(_syncsafe(frameBytes.length))
+    ..add(frameBytes);
+  final id3Bytes = id3.toBytes();
+  const metadataOffset = 28 + 52 + 12 + 16;
+  final builder = BytesBuilder()
+    ..add('DSD '.codeUnits)
+    ..add(_longLe(28))
+    ..add(_longLe(metadataOffset + id3Bytes.length))
+    ..add(_longLe(metadataOffset))
+    ..add('fmt '.codeUnits)
+    ..add(_longLe(52))
+    ..add(_intLe(1))
+    ..add(_intLe(0))
+    ..add(_intLe(2))
+    ..add(_intLe(2))
+    ..add(_intLe(2822400))
+    ..add(_intLe(1))
+    ..add(_longLe(2822400))
+    ..add(_intLe(4096))
+    ..add(_intLe(0))
+    ..add('data'.codeUnits)
+    ..add(_longLe(28))
+    ..add(Uint8List(16))
+    ..add(id3Bytes);
+  return builder.toBytes();
+}
+
+List<int> _syncsafe(int value) => [
+  (value >> 21) & 0x7f,
+  (value >> 14) & 0x7f,
+  (value >> 7) & 0x7f,
+  value & 0x7f,
+];
+
+List<int> _intLe(int value) => [
+  value & 0xff,
+  (value >> 8) & 0xff,
+  (value >> 16) & 0xff,
+  (value >> 24) & 0xff,
+];
+
+List<int> _longLe(int value) => [
+  for (var index = 0; index < 8; index++) (value >> (index * 8)) & 0xff,
+];
+
+List<int> _intBe(int value) => [
+  (value >> 24) & 0xff,
+  (value >> 16) & 0xff,
+  (value >> 8) & 0xff,
+  value & 0xff,
+];

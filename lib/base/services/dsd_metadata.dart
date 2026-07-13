@@ -134,7 +134,9 @@ Future<AudioMetadata?> _readDff(
       String.fromCharCodes(Uint8List.sublistView(header, 8, 12)) != 'DSD ') {
     return null;
   }
-  final formEnd = (12 + header.getUint64(0, Endian.big)).clamp(0, length).toInt();
+  final formEnd = (12 + header.getUint64(0, Endian.big))
+      .clamp(0, length)
+      .toInt();
 
   var sampleRate = 0;
   var channels = 0;
@@ -201,7 +203,15 @@ Future<AudioMetadata?> _readDff(
 }
 
 const _id3TextFrames = {
-  'TIT2', 'TPE1', 'TALB', 'TPE2', 'TCON', 'TRCK', 'TPOS', 'TYER', 'TDRC',
+  'TIT2',
+  'TPE1',
+  'TALB',
+  'TPE2',
+  'TCON',
+  'TRCK',
+  'TPOS',
+  'TYER',
+  'TDRC',
 };
 
 /// DSF 尾部是标准 ID3v2（v2.3/v2.4），只取常用文本帧，封面与其余帧忽略。
@@ -235,11 +245,19 @@ Future<void> _applyId3v2(
       return;
     }
     remaining -= 10 + size;
-    if (!_id3TextFrames.contains(id) || size > 4096) {
+    if ((!_id3TextFrames.contains(id) && id != 'TXXX') || size > 4096) {
       await input.setPosition(await input.position() + size);
       continue;
     }
-    final text = _decodeId3Text(await input.read(size));
+    final body = await input.read(size);
+    if (id == 'TXXX') {
+      final userText = _decodeId3UserText(body);
+      if (userText != null) {
+        _applyReplayGain(metadata, userText.$1, userText.$2);
+      }
+      continue;
+    }
+    final text = _decodeId3Text(body);
     if (text.isEmpty) {
       continue;
     }
@@ -275,6 +293,87 @@ Future<void> _applyId3v2(
   }
 }
 
+(String, String)? _decodeId3UserText(Uint8List body) {
+  if (body.length < 3) {
+    return null;
+  }
+  final encoding = body[0];
+  final content = Uint8List.sublistView(body, 1);
+  if (encoding == 0 || encoding == 3) {
+    final separator = content.indexOf(0);
+    if (separator < 0) {
+      return null;
+    }
+    String decode(Uint8List bytes) => encoding == 3
+        ? const Utf8Decoder(allowMalformed: true).convert(bytes).trim()
+        : String.fromCharCodes(bytes).trim();
+    return (
+      decode(Uint8List.sublistView(content, 0, separator)),
+      decode(Uint8List.sublistView(content, separator + 1)),
+    );
+  }
+  if (encoding != 1 && encoding != 2) {
+    return null;
+  }
+
+  var endian = encoding == 2 ? Endian.big : Endian.little;
+  var start = 0;
+  if (encoding == 1 && content.length >= 2) {
+    if (content[0] == 0xFE && content[1] == 0xFF) {
+      endian = Endian.big;
+      start = 2;
+    } else if (content[0] == 0xFF && content[1] == 0xFE) {
+      start = 2;
+    }
+  }
+  var separator = -1;
+  for (var index = start; index + 1 < content.length; index += 2) {
+    if (content[index] == 0 && content[index + 1] == 0) {
+      separator = index;
+      break;
+    }
+  }
+  if (separator < 0) {
+    return null;
+  }
+  return (
+    _decodeUtf16(Uint8List.sublistView(content, 0, separator), endian).trim(),
+    _decodeUtf16(Uint8List.sublistView(content, separator + 2), endian).trim(),
+  );
+}
+
+void _applyReplayGain(
+  AudioMetadata metadata,
+  String description,
+  String value,
+) {
+  final name = description.toUpperCase();
+  final isPeak = name.endsWith('_PEAK');
+  final normalized = isPeak
+      ? value.trim()
+      : value
+            .replaceFirst(RegExp(r'\s*dB\s*$', caseSensitive: false), '')
+            .trim();
+  final parsed = double.tryParse(normalized);
+  if (parsed == null || !parsed.isFinite || (isPeak && parsed <= 0)) {
+    return;
+  }
+  switch (name) {
+    case 'REPLAYGAIN_TRACK_GAIN':
+      metadata.replayGainTrackGainDb = parsed;
+      break;
+    case 'REPLAYGAIN_TRACK_PEAK':
+      metadata.replayGainTrackPeak = parsed;
+      break;
+    case 'REPLAYGAIN_ALBUM_GAIN':
+      metadata.replayGainAlbumGainDb = parsed;
+      break;
+    case 'REPLAYGAIN_ALBUM_PEAK':
+      metadata.replayGainAlbumPeak = parsed;
+      break;
+  }
+}
+
 int _syncsafe(List<int> bytes, int offset) {
   return ((bytes[offset] & 0x7f) << 21) |
       ((bytes[offset + 1] & 0x7f) << 14) |
@@ -298,9 +397,9 @@ String _decodeId3Text(Uint8List body) {
     default: // 0=Latin-1、3=UTF-8，按 UTF-8 尽力解码
       text = String.fromCharCodes(content.where((byte) => byte != 0));
       try {
-        text = const Utf8Decoder(allowMalformed: true).convert(
-          content.takeWhile((byte) => byte != 0).toList(),
-        );
+        text = const Utf8Decoder(
+          allowMalformed: true,
+        ).convert(content.takeWhile((byte) => byte != 0).toList());
       } catch (_) {}
       break;
   }

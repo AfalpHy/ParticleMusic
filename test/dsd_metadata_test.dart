@@ -29,13 +29,21 @@ void main() {
     const channels = 2;
     const sampleCount = 2822400 * 2; // 每通道 2 秒
     final audioBytes = Uint8List(64); // 音频体不参与解析，给个占位
-    final id3 = _buildId3v23({
-      'TIT2': 'DSD 测试曲',
-      'TPE1': '测试艺人',
-      'TALB': '测试专辑',
-      'TRCK': '3/12',
-      'TYER': '2020',
-    });
+    final id3 = _buildId3v23(
+      {
+        'TIT2': 'DSD 测试曲',
+        'TPE1': '测试艺人',
+        'TALB': '测试专辑',
+        'TRCK': '3/12',
+        'TYER': '2020',
+      },
+      userTextFrames: {
+        'replaygain_track_gain': ' -7.25 dB ',
+        'REPLAYGAIN_TRACK_PEAK': '0.9876',
+        'ReplayGain_Album_Gain': '+1.50 DB',
+        'REPLAYGAIN_ALBUM_PEAK': '1.2345',
+      },
+    );
     final metadataOffset = 28 + 52 + 12 + audioBytes.length;
 
     builder.add('DSD '.codeUnits);
@@ -70,6 +78,52 @@ void main() {
     expect(metadata.album, '测试专辑');
     expect(metadata.track, 3);
     expect(metadata.year, 2020);
+    expect(metadata.replayGainTrackGainDb, -7.25);
+    expect(metadata.replayGainTrackPeak, 0.9876);
+    expect(metadata.replayGainAlbumGainDb, 1.5);
+    expect(metadata.replayGainAlbumPeak, 1.2345);
+  });
+
+  test('DSF ID3v2.3 TXXX 忽略非有限增益和非正峰值', () async {
+    final id3 = _buildId3v23(
+      const {},
+      userTextFrames: {
+        'REPLAYGAIN_TRACK_GAIN': 'NaN dB',
+        'REPLAYGAIN_TRACK_PEAK': '0',
+        'REPLAYGAIN_ALBUM_GAIN': 'Infinity dB',
+        'REPLAYGAIN_ALBUM_PEAK': '-0.25',
+      },
+    );
+    final path = await writeFile('invalid_gain.dsf', _buildDsf(id3));
+
+    final metadata = await readDsdMetadata(path);
+
+    expect(metadata, isNotNull);
+    expect(metadata!.replayGainTrackGainDb, isNull);
+    expect(metadata.replayGainTrackPeak, isNull);
+    expect(metadata.replayGainAlbumGainDb, isNull);
+    expect(metadata.replayGainAlbumPeak, isNull);
+  });
+
+  test('DSF ID3v2.3 TXXX 按帧编码拆分 description 和 value', () async {
+    final id3 = _buildId3v23(
+      const {},
+      encodedUserTextFrames: {
+        'REPLAYGAIN_TRACK_GAIN': (0, '-4.0 dB'),
+        'REPLAYGAIN_TRACK_PEAK': (1, '0.8'),
+        'REPLAYGAIN_ALBUM_GAIN': (2, '-5.0 dB'),
+        'REPLAYGAIN_ALBUM_PEAK': (3, '1.05'),
+      },
+    );
+    final path = await writeFile('encoded_gain.dsf', _buildDsf(id3));
+
+    final metadata = await readDsdMetadata(path);
+
+    expect(metadata, isNotNull);
+    expect(metadata!.replayGainTrackGainDb, -4.0);
+    expect(metadata.replayGainTrackPeak, 0.8);
+    expect(metadata.replayGainAlbumGainDb, -5.0);
+    expect(metadata.replayGainAlbumPeak, 1.05);
   });
 
   test('DFF 头部解析出速率/声道/时长', () async {
@@ -159,14 +213,21 @@ void main() {
     final path = await writeFile('head_only.dff', headOnly);
     final totalLength = headOnly.length + dataBytes - 16;
 
-    final metadata = await readDsdMetadata(path, remoteTotalLength: totalLength);
+    final metadata = await readDsdMetadata(
+      path,
+      remoteTotalLength: totalLength,
+    );
     expect(metadata, isNotNull);
     expect(metadata!.samplerate, sampleRate);
     expect(metadata.duration, const Duration(seconds: 2));
   });
 }
 
-Uint8List _buildId3v23(Map<String, String> textFrames) {
+Uint8List _buildId3v23(
+  Map<String, String> textFrames, {
+  Map<String, String> userTextFrames = const {},
+  Map<String, (int, String)> encodedUserTextFrames = const {},
+}) {
   final frames = BytesBuilder();
   textFrames.forEach((id, value) {
     // UTF-8 编码（encoding byte = 3）
@@ -176,6 +237,20 @@ Uint8List _buildId3v23(Map<String, String> textFrames) {
     frames.add([0, 0]); // flags
     frames.add(encoded);
   });
+  userTextFrames.forEach((description, value) {
+    final encoded = _encodeTxxx(description, value, 3);
+    frames.add('TXXX'.codeUnits);
+    frames.add(_intBe(encoded.length));
+    frames.add([0, 0]);
+    frames.add(encoded);
+  });
+  encodedUserTextFrames.forEach((description, entry) {
+    final encoded = _encodeTxxx(description, entry.$2, entry.$1);
+    frames.add('TXXX'.codeUnits);
+    frames.add(_intBe(encoded.length));
+    frames.add([0, 0]);
+    frames.add(encoded);
+  });
   final frameBytes = frames.toBytes();
 
   final builder = BytesBuilder();
@@ -183,6 +258,63 @@ Uint8List _buildId3v23(Map<String, String> textFrames) {
   builder.add([3, 0, 0]); // v2.3, flags=0
   builder.add(_syncsafe(frameBytes.length));
   builder.add(frameBytes);
+  return builder.toBytes();
+}
+
+List<int> _encodeTxxx(String description, String value, int encoding) {
+  if (encoding == 0 || encoding == 3) {
+    final encode = encoding == 3
+        ? utf8.encode
+        : (String text) => text.codeUnits;
+    return [encoding, ...encode(description), 0, ...encode(value)];
+  }
+  List<int> utf16(String text, Endian endian) => [
+    for (final unit in text.codeUnits)
+      if (endian == Endian.little) ...[
+        unit & 0xff,
+        unit >> 8,
+      ] else ...[
+        unit >> 8,
+        unit & 0xff,
+      ],
+  ];
+  final endian = encoding == 2 ? Endian.big : Endian.little;
+  return [
+    encoding,
+    if (encoding == 1) ...[0xff, 0xfe],
+    ...utf16(description, endian),
+    0,
+    0,
+    ...utf16(value, endian),
+  ];
+}
+
+Uint8List _buildDsf(Uint8List id3) {
+  const sampleRate = 2822400;
+  const channels = 2;
+  const sampleCount = sampleRate;
+  final audioBytes = Uint8List(16);
+  final metadataOffset = 28 + 52 + 12 + audioBytes.length;
+  final builder = BytesBuilder();
+  builder.add('DSD '.codeUnits);
+  builder.add(_longLe(28));
+  builder.add(_longLe(metadataOffset + id3.length));
+  builder.add(_longLe(metadataOffset));
+  builder.add('fmt '.codeUnits);
+  builder.add(_longLe(52));
+  builder.add(_intLe(1));
+  builder.add(_intLe(0));
+  builder.add(_intLe(2));
+  builder.add(_intLe(channels));
+  builder.add(_intLe(sampleRate));
+  builder.add(_intLe(1));
+  builder.add(_longLe(sampleCount));
+  builder.add(_intLe(4096));
+  builder.add(_intLe(0));
+  builder.add('data'.codeUnits);
+  builder.add(_longLe(12 + audioBytes.length));
+  builder.add(audioBytes);
+  builder.add(id3);
   return builder.toBytes();
 }
 
