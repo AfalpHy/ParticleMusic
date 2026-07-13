@@ -264,6 +264,85 @@ class UsbVolumeProtocolTest {
     }
 
     @Test
+    fun ignoresIdleReaderTimeoutsWithoutPendingResponse() {
+        var health = IbassoReaderHealth()
+
+        repeat(10) {
+            health = health.afterReadResult(readLength = -1, hasPendingResponse = false)
+        }
+
+        assertEquals(0, health.pendingReadFailureCount)
+        assertEquals(0, health.failureCount)
+        assertFalse(health.restartRequested)
+        assertFalse(health.writeOnly)
+    }
+
+    @Test
+    fun pendingReaderFailuresRestartThenBecomeWriteOnly() {
+        var health = IbassoReaderHealth()
+        repeat(3) {
+            health = health.afterReadResult(readLength = -1, hasPendingResponse = true)
+        }
+        assertTrue(health.hasPersistentPendingFailure(3))
+
+        health = health.afterFailure()
+        assertTrue(health.restartRequested)
+        assertFalse(health.writeOnly)
+
+        health = health.afterRestart()
+        repeat(3) {
+            health = health.afterReadResult(readLength = 0, hasPendingResponse = true)
+        }
+        assertTrue(health.hasPersistentPendingFailure(3))
+
+        health = health.afterFailure()
+        assertFalse(health.restartRequested)
+        assertTrue(health.writeOnly)
+    }
+
+    @Test
+    fun successfulReaderReadResetsPendingFailures() {
+        var health = IbassoReaderHealth()
+            .afterReadResult(readLength = -1, hasPendingResponse = true)
+            .afterReadResult(readLength = 0, hasPendingResponse = true)
+        assertEquals(2, health.pendingReadFailureCount)
+
+        health = health.afterReadResult(readLength = 16, hasPendingResponse = true)
+
+        assertEquals(0, health.pendingReadFailureCount)
+        assertFalse(health.hasPersistentPendingFailure(3))
+        assertEquals(0, health.failureCount)
+    }
+
+    @Test
+    fun idleTimeoutResetsAnIncompletePendingFailureSequence() {
+        var health = IbassoReaderHealth()
+            .afterReadResult(readLength = -1, hasPendingResponse = true)
+            .afterReadResult(readLength = -1, hasPendingResponse = true)
+
+        health = health.afterReadResult(readLength = -1, hasPendingResponse = false)
+
+        assertEquals(0, health.pendingReadFailureCount)
+        assertFalse(health.restartRequested)
+        assertFalse(health.writeOnly)
+    }
+
+    @Test
+    fun resumesReaderFailureHealthOnlyForTheSameDevice() {
+        val failed = IbassoReaderHealth().afterFailure()
+
+        assertTrue(shouldResumeIbassoReaderHealth(failed, healthDeviceId = 7, deviceId = 7))
+        assertFalse(shouldResumeIbassoReaderHealth(failed, healthDeviceId = 7, deviceId = 8))
+        assertFalse(
+            shouldResumeIbassoReaderHealth(
+                IbassoReaderHealth(),
+                healthDeviceId = 7,
+                deviceId = 7,
+            ),
+        )
+    }
+
+    @Test
     fun selectsDirectSetReportForRollbackWhenReaderIsUnavailable() {
         assertTrue(
             shouldUseDirectIbassoSetReport(

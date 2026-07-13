@@ -65,6 +65,7 @@ internal sealed interface IbassoVolumePacketRoute {
 
 internal data class IbassoReaderHealth(
     val failureCount: Int = 0,
+    val pendingReadFailureCount: Int = 0,
     val restartRequested: Boolean = false,
     val writeOnly: Boolean = false,
     val readbackVerified: Boolean = false,
@@ -75,6 +76,7 @@ internal data class IbassoReaderHealth(
     fun afterFailure(): IbassoReaderHealth = if (failureCount == 0) {
         copy(
             failureCount = 1,
+            pendingReadFailureCount = 0,
             restartRequested = true,
             writeOnly = false,
             readbackVerified = false,
@@ -82,16 +84,39 @@ internal data class IbassoReaderHealth(
     } else {
         copy(
             failureCount = failureCount + 1,
+            pendingReadFailureCount = 0,
             restartRequested = false,
             writeOnly = true,
             readbackVerified = false,
         )
     }
 
-    fun afterRestart(): IbassoReaderHealth = copy(restartRequested = false)
+    fun afterReadResult(readLength: Int, hasPendingResponse: Boolean): IbassoReaderHealth =
+        if (readLength > 0 || !hasPendingResponse) {
+            copy(pendingReadFailureCount = 0)
+        } else {
+            copy(pendingReadFailureCount = pendingReadFailureCount + 1)
+        }
 
-    fun afterVerifiedReadback(): IbassoReaderHealth = copy(readbackVerified = true)
+    fun hasPersistentPendingFailure(limit: Int): Boolean =
+        pendingReadFailureCount >= limit.coerceAtLeast(1)
+
+    fun afterRestart(): IbassoReaderHealth = copy(
+        pendingReadFailureCount = 0,
+        restartRequested = false,
+    )
+
+    fun afterVerifiedReadback(): IbassoReaderHealth = copy(
+        pendingReadFailureCount = 0,
+        readbackVerified = true,
+    )
 }
+
+internal fun shouldResumeIbassoReaderHealth(
+    health: IbassoReaderHealth,
+    healthDeviceId: Int?,
+    deviceId: Int,
+): Boolean = health.failureCount > 0 && healthDeviceId == deviceId
 
 internal fun shouldUseDirectIbassoSetReport(
     writeOnly: Boolean,
