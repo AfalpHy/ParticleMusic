@@ -571,9 +571,7 @@ class UsbExclusivePlaybackState {
   final String? message;
 
   bool get hardwareVolumeUnverified =>
-      hardwareVolumeWriteOnly ||
-      (hardwareVolumeProtocol == 'ibassoDc03Pro' &&
-          !hardwareVolumeReadbackVerified);
+      hardwareVolumeActive && !hardwareVolumeReadbackVerified;
 
   const UsbExclusivePlaybackState({
     required this.playbackId,

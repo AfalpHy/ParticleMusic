@@ -360,6 +360,11 @@ internal fun hardwareVolumeRecovery(
     )
 }
 
+internal fun hardwareVolumeProtocolAfterRecovery(
+    previousProtocol: String?,
+    hardwareActive: Boolean,
+): String? = previousProtocol.takeIf { hardwareActive }
+
 internal fun routeIbassoVolumePacket(
     packet: ByteArray,
     pendingCommands: Set<Int>,

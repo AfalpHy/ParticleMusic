@@ -144,6 +144,16 @@ class UsbVolumeProtocolTest {
     }
 
     @Test
+    fun keepsPreviousProtocolOnlyWhenHardwareRestoreFails() {
+        assertEquals(
+            "uac2",
+            hardwareVolumeProtocolAfterRecovery("uac2", hardwareActive = true),
+        )
+        assertNull(hardwareVolumeProtocolAfterRecovery("uac2", hardwareActive = false))
+        assertNull(hardwareVolumeProtocolAfterRecovery(null, hardwareActive = true))
+    }
+
+    @Test
     fun mapsAppGainToIbassoRawTable() {
         assertEquals(255, protocol.appGainToRaw(0, 0, 0).baseRaw)
         assertEquals(97, protocol.appGainToRaw(gainQ16ForIndex(23), 0, 0).baseRaw)

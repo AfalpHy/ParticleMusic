@@ -956,6 +956,7 @@ class UsbExclusiveAudioEngine(
                 return
             }
             val wasHardwareActive = hardwareVolumeActive
+            val previousHardwareVolumeProtocol = hardwareVolumeProtocol
             hardwareVolumeActive = false
             hardwareVolumeProtocol = null
             hardwareVolumeRaw = null
@@ -1030,9 +1031,10 @@ class UsbExclusiveAudioEngine(
                         )
                         hardwareVolumeActive = recovery.hardwareActive
                         fallbackReason = recovery.fallbackReason
-                        if (hardwareVolumeActive) {
-                            hardwareVolumeProtocol = protocolSelection.protocol.id
-                        }
+                        hardwareVolumeProtocol = hardwareVolumeProtocolAfterRecovery(
+                            previousHardwareVolumeProtocol,
+                            hardwareVolumeActive,
+                        )
                     }
                 } else if (protocolSelection is UnsupportedUsbVolumeProtocol) {
                     fallbackReason = "Unsupported hardware volume protocol: ${protocolSelection.id}."
@@ -1132,9 +1134,10 @@ class UsbExclusiveAudioEngine(
                             )
                             hardwareVolumeActive = recovery.hardwareActive
                             fallbackReason = recovery.fallbackReason
-                            if (hardwareVolumeActive) {
-                                hardwareVolumeProtocol = control.features.firstOrNull()?.protocol
-                            }
+                            hardwareVolumeProtocol = hardwareVolumeProtocolAfterRecovery(
+                                previousHardwareVolumeProtocol,
+                                hardwareVolumeActive,
+                            )
                         }
                     }
                 }
@@ -1160,6 +1163,10 @@ class UsbExclusiveAudioEngine(
                     }
                 }
                 hardwareVolumeActive = restoreError != null
+                hardwareVolumeProtocol = hardwareVolumeProtocolAfterRecovery(
+                    previousHardwareVolumeProtocol,
+                    hardwareVolumeActive,
+                )
                 fallbackReason = restoreError?.let { "Failed to restore hardware volume: $it" }
             } else {
                 hardwareVolumeActive = false

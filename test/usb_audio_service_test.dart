@@ -497,10 +497,12 @@ void main() {
     'exclusive playback state derives unverified hardware volume honestly',
     () {
       UsbExclusivePlaybackState state({
+        required bool active,
         required String protocol,
         required bool writeOnly,
         required bool readbackVerified,
       }) => UsbExclusivePlaybackState.fromMap({
+        'hardwareVolumeActive': active,
         'hardwareVolumeProtocol': protocol,
         'hardwareVolumeWriteOnly': writeOnly,
         'hardwareVolumeReadbackVerified': readbackVerified,
@@ -508,7 +510,8 @@ void main() {
 
       expect(
         state(
-          protocol: 'futureVendor',
+          active: true,
+          protocol: 'ibassoDc03Pro',
           writeOnly: true,
           readbackVerified: false,
         ).hardwareVolumeUnverified,
@@ -516,7 +519,8 @@ void main() {
       );
       expect(
         state(
-          protocol: 'ibassoDc03Pro',
+          active: true,
+          protocol: 'uac2',
           writeOnly: false,
           readbackVerified: false,
         ).hardwareVolumeUnverified,
@@ -524,17 +528,19 @@ void main() {
       );
       expect(
         state(
-          protocol: 'ibassoDc03Pro',
-          writeOnly: false,
-          readbackVerified: true,
+          active: false,
+          protocol: 'uac2',
+          writeOnly: true,
+          readbackVerified: false,
         ).hardwareVolumeUnverified,
         isFalse,
       );
       expect(
         state(
+          active: true,
           protocol: 'uac2',
           writeOnly: false,
-          readbackVerified: false,
+          readbackVerified: true,
         ).hardwareVolumeUnverified,
         isFalse,
       );
