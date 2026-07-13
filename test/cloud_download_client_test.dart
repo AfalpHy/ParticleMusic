@@ -420,6 +420,46 @@ void main() {
       expect(song.replayGainAlbumPeak, 1.1);
     },
   );
+
+  test(
+    'cloud cache remains available when metadata refresh cannot parse audio',
+    () async {
+      const bytes = [1, 2, 3, 4];
+      final server = await ServerSocket.bind(InternetAddress.loopbackIPv4, 0);
+      addTearDown(() => server.close());
+      server.listen((socket) async {
+        socket.add(
+          ascii.encode(
+            'HTTP/1.1 200 OK\r\n'
+            'Content-Length: ${bytes.length}\r\n'
+            'Connection: close\r\n'
+            '\r\n',
+          ),
+        );
+        socket.add(bytes);
+        await socket.flush();
+        await socket.close();
+      });
+
+      await library_data.loadLibrary();
+      navidromeClient = NavidromeClient(
+        baseUrl: 'http://${server.address.address}:${server.port}',
+        username: 'user',
+        password: 'password',
+      );
+      final song = MyAudioMetadata.fromOpenSonicMap({
+        'id': 'invalid-metadata-song-id',
+        'title': 'Invalid Metadata Song',
+        'suffix': 'mp3',
+      }, app.SourceType.navidrome);
+
+      await library_data.Library().tryAddCache(song);
+
+      expect(song.cacheExist, isTrue);
+      expect(File(song.cachePath!).existsSync(), isTrue);
+      expect(await File(song.cachePath!).readAsBytes(), bytes);
+    },
+  );
 }
 
 Uint8List _buildDsfWithReplayGain() {

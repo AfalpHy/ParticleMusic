@@ -126,6 +126,24 @@ void main() {
     expect(metadata.replayGainAlbumPeak, 1.05);
   });
 
+  test('DSF ID3v2.4 TXXX 按 syncsafe 帧大小解析 ReplayGain', () async {
+    final id3 = _buildId3v23(
+      const {},
+      majorVersion: 4,
+      userTextFrames: {
+        'REPLAYGAIN_TRACK_GAIN': '-8.5 dB',
+        'REPLAYGAIN_TRACK_PEAK': '0.75',
+      },
+    );
+    final path = await writeFile('id3v24_gain.dsf', _buildDsf(id3));
+
+    final metadata = await readDsdMetadata(path);
+
+    expect(metadata, isNotNull);
+    expect(metadata!.replayGainTrackGainDb, -8.5);
+    expect(metadata.replayGainTrackPeak, 0.75);
+  });
+
   test('DFF 头部解析出速率/声道/时长', () async {
     const sampleRate = 5644800;
     const channels = 2;
@@ -225,29 +243,32 @@ void main() {
 
 Uint8List _buildId3v23(
   Map<String, String> textFrames, {
+  int majorVersion = 3,
   Map<String, String> userTextFrames = const {},
   Map<String, (int, String)> encodedUserTextFrames = const {},
 }) {
   final frames = BytesBuilder();
+  List<int> frameSize(int value) =>
+      majorVersion >= 4 ? _syncsafe(value) : _intBe(value);
   textFrames.forEach((id, value) {
     // UTF-8 编码（encoding byte = 3）
     final encoded = <int>[3, ...utf8.encode(value)];
     frames.add(id.codeUnits);
-    frames.add(_intBe(encoded.length));
+    frames.add(frameSize(encoded.length));
     frames.add([0, 0]); // flags
     frames.add(encoded);
   });
   userTextFrames.forEach((description, value) {
     final encoded = _encodeTxxx(description, value, 3);
     frames.add('TXXX'.codeUnits);
-    frames.add(_intBe(encoded.length));
+    frames.add(frameSize(encoded.length));
     frames.add([0, 0]);
     frames.add(encoded);
   });
   encodedUserTextFrames.forEach((description, entry) {
     final encoded = _encodeTxxx(description, entry.$2, entry.$1);
     frames.add('TXXX'.codeUnits);
-    frames.add(_intBe(encoded.length));
+    frames.add(frameSize(encoded.length));
     frames.add([0, 0]);
     frames.add(encoded);
   });
@@ -255,7 +276,7 @@ Uint8List _buildId3v23(
 
   final builder = BytesBuilder();
   builder.add('ID3'.codeUnits);
-  builder.add([3, 0, 0]); // v2.3, flags=0
+  builder.add([majorVersion, 0, 0]);
   builder.add(_syncsafe(frameBytes.length));
   builder.add(frameBytes);
   return builder.toBytes();
