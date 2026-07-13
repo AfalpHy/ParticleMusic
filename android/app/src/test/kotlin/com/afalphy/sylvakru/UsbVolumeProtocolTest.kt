@@ -27,19 +27,40 @@ class UsbVolumeProtocolTest {
 
     @Test
     fun mapsAppGainToIbassoRawTable() {
-        assertEquals(255, protocol.appGainToRaw(0, 0, 0))
-        assertEquals(97, protocol.appGainToRaw(gainQ16ForIndex(23), 0, 0))
-        assertEquals(10, protocol.appGainToRaw(gainQ16ForIndex(90), 0, 0))
-        assertEquals(0, protocol.appGainToRaw(65536, 0, 0))
+        assertEquals(255, protocol.appGainToRaw(0, 0, 0).baseRaw)
+        assertEquals(97, protocol.appGainToRaw(gainQ16ForIndex(23), 0, 0).baseRaw)
+        assertEquals(10, protocol.appGainToRaw(gainQ16ForIndex(90), 0, 0).baseRaw)
+        assertEquals(0, protocol.appGainToRaw(65536, 0, 0).baseRaw)
+    }
+
+    @Test
+    fun keepsMuteAcrossDsdCompensation() {
+        assertEquals(UsbVolumeTarget(255, 255), protocol.appGainToRaw(0, 0, 6))
+        assertEquals(UsbVolumeTarget(255, 255), protocol.appGainToRaw(0, 0, -6))
     }
 
     @Test
     fun appliesReplayGainBeforeClampAndDsdHalfDbSteps() {
-        assertEquals(0, protocol.appGainToRaw(gainQ16ForIndex(90), 6000, 0))
-        assertEquals(85, protocol.appGainToRaw(gainQ16ForIndex(23), 0, 6))
-        assertEquals(109, protocol.appGainToRaw(gainQ16ForIndex(23), 0, -6))
-        assertEquals(255, protocol.appGainToRaw(65536, Int.MIN_VALUE, 0))
-        assertEquals(0, protocol.appGainToRaw(65536, Int.MAX_VALUE, 0))
+        assertEquals(
+            UsbVolumeTarget(0, 0),
+            protocol.appGainToRaw(gainQ16ForIndex(90), 6000, 0),
+        )
+        assertEquals(
+            UsbVolumeTarget(97, 85),
+            protocol.appGainToRaw(gainQ16ForIndex(23), 0, 6),
+        )
+        assertEquals(
+            UsbVolumeTarget(97, 109),
+            protocol.appGainToRaw(gainQ16ForIndex(23), 0, -6),
+        )
+        assertEquals(
+            UsbVolumeTarget(255, 255),
+            protocol.appGainToRaw(65536, Int.MIN_VALUE, 0),
+        )
+        assertEquals(
+            UsbVolumeTarget(0, 0),
+            protocol.appGainToRaw(65536, Int.MAX_VALUE, 0),
+        )
     }
 
     @Test

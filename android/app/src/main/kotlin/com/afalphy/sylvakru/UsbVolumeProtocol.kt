@@ -15,6 +15,11 @@ internal data class UsbVolumeEvent(
     val rightRaw: Int,
 )
 
+internal data class UsbVolumeTarget(
+    val baseRaw: Int,
+    val dsdRaw: Int,
+)
+
 internal interface UsbVolumeProtocol {
     val id: String
     val capabilities: UsbVolumeCapabilities
@@ -23,7 +28,7 @@ internal interface UsbVolumeProtocol {
         gainQ16: Int,
         replayGainMilliDb: Int,
         dsdCompensationDb: Int,
-    ): Int
+    ): UsbVolumeTarget
 
     fun rawToLinearGainQ16(raw: Int): Int
 
@@ -47,7 +52,7 @@ internal object IbassoDc03ProVolumeProtocol : UsbVolumeProtocol {
         gainQ16: Int,
         replayGainMilliDb: Int,
         dsdCompensationDb: Int,
-    ): Int {
+    ): UsbVolumeTarget {
         val baseGain = gainQ16.coerceIn(0, IBASSO_UNITY_GAIN_Q16)
         val adjustedGain = if (baseGain == 0) {
             0
@@ -62,8 +67,14 @@ internal object IbassoDc03ProVolumeProtocol : UsbVolumeProtocol {
                 else -> adjusted.roundToInt()
             }
         }
-        val raw = ibassoDeviceVolume(ibassoVolumeIndex(adjustedGain))
-        return ibassoDsdVolume(raw, dsdCompensationDb)
+        if (adjustedGain <= 0) {
+            return UsbVolumeTarget(baseRaw = 255, dsdRaw = 255)
+        }
+        val baseRaw = ibassoDeviceVolume(ibassoVolumeIndex(adjustedGain))
+        return UsbVolumeTarget(
+            baseRaw = baseRaw,
+            dsdRaw = ibassoDsdVolume(baseRaw, dsdCompensationDb),
+        )
     }
 
     override fun rawToLinearGainQ16(raw: Int): Int {
