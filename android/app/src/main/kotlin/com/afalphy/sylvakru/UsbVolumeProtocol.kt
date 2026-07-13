@@ -37,6 +37,20 @@ internal data class HardwareVolumeRecovery(
     val fallbackReason: String,
 )
 
+internal sealed interface IbassoVolumePacketRoute {
+    data class CommandResponse(
+        val command: Int,
+        val packet: ByteArray,
+    ) : IbassoVolumePacketRoute
+
+    data class Event(
+        val event: UsbVolumeEvent,
+        val isWriteConfirmation: Boolean,
+    ) : IbassoVolumePacketRoute
+
+    data object Unknown : IbassoVolumePacketRoute
+}
+
 internal interface UsbVolumeProtocol {
     val id: String
     val capabilities: UsbVolumeCapabilities
@@ -159,6 +173,27 @@ internal fun hardwareVolumeRecovery(
         fallbackReason =
             "$writeFailure Failed to restore hardware volume: $restoreFailure",
     )
+}
+
+internal fun routeIbassoVolumePacket(
+    packet: ByteArray,
+    pendingCommands: Set<Int>,
+    lastWrittenRaw: Int?,
+): IbassoVolumePacketRoute {
+    val event = IbassoDc03ProVolumeProtocol.decodeEvent(packet)
+    if (event != null) {
+        return IbassoVolumePacketRoute.Event(
+            event = event,
+            isWriteConfirmation =
+                IbassoDc03ProVolumeProtocol.isWriteConfirmation(event, lastWrittenRaw),
+        )
+    }
+    val command = packet.getOrNull(6)?.toInt()?.and(0xff)
+    return if (command != null && command in pendingCommands) {
+        IbassoVolumePacketRoute.CommandResponse(command, packet)
+    } else {
+        IbassoVolumePacketRoute.Unknown
+    }
 }
 
 private const val IBASSO_UNITY_GAIN_Q16 = 65536

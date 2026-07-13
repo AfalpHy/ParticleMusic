@@ -155,6 +155,73 @@ class UsbVolumeProtocolTest {
         assertFalse(protocol.isWriteConfirmation(UsbVolumeEvent(97, 97), null))
     }
 
+    @Test
+    fun routesUnsolicitedEventsBeforeCommandResponses() {
+        val packet = ibassoEventPacket(leftRaw = 97, rightRaw = 97).also {
+            it[6] = 65
+        }
+
+        val route = routeIbassoVolumePacket(packet, setOf(65), lastWrittenRaw = 97)
+
+        assertTrue(route is IbassoVolumePacketRoute.Event)
+        route as IbassoVolumePacketRoute.Event
+        assertEquals(UsbVolumeEvent(97, 97), route.event)
+        assertTrue(route.isWriteConfirmation)
+    }
+
+    @Test
+    fun routesOnlyPendingCommandResponses() {
+        val matchingPacket = ibassoResponsePacket(65)
+        val matching = routeIbassoVolumePacket(matchingPacket, setOf(65), null)
+        val wrongCommand = routeIbassoVolumePacket(ibassoResponsePacket(64), setOf(65), null)
+
+        assertTrue(matching is IbassoVolumePacketRoute.CommandResponse)
+        matching as IbassoVolumePacketRoute.CommandResponse
+        assertEquals(65, matching.command)
+        assertSame(matchingPacket, matching.packet)
+        assertEquals(IbassoVolumePacketRoute.Unknown, wrongCommand)
+    }
+
+    @Test
+    fun doesNotMistakeOrdinaryResponsesForEvents() {
+        val route = routeIbassoVolumePacket(ibassoResponsePacket(19), setOf(19), null)
+
+        assertTrue(route is IbassoVolumePacketRoute.CommandResponse)
+        assertFalse(route is IbassoVolumePacketRoute.Event)
+    }
+
+    @Test
+    fun classifiesStereoEventsAndUnknownPackets() {
+        val confirmation = routeIbassoVolumePacket(
+            ibassoEventPacket(leftRaw = 97, rightRaw = 97),
+            emptySet(),
+            lastWrittenRaw = 97,
+        )
+        val changed = routeIbassoVolumePacket(
+            ibassoEventPacket(leftRaw = 97, rightRaw = 98),
+            emptySet(),
+            lastWrittenRaw = 97,
+        )
+
+        assertTrue((confirmation as IbassoVolumePacketRoute.Event).isWriteConfirmation)
+        assertFalse((changed as IbassoVolumePacketRoute.Event).isWriteConfirmation)
+        assertEquals(
+            IbassoVolumePacketRoute.Unknown,
+            routeIbassoVolumePacket(byteArrayOf(0x01), emptySet(), null),
+        )
+    }
+
+    private fun ibassoEventPacket(leftRaw: Int, rightRaw: Int): ByteArray =
+        ByteArray(16).also {
+            it[0] = 0xfe.toByte()
+            it[1] = 0x01
+            it[8] = leftRaw.toByte()
+            it[9] = rightRaw.toByte()
+        }
+
+    private fun ibassoResponsePacket(command: Int): ByteArray =
+        ByteArray(16).also { it[6] = command.toByte() }
+
     private fun gainQ16ForIndex(index: Int): Int =
         ((index / 100.0).pow(1.5) * 65536).roundToInt()
 }
