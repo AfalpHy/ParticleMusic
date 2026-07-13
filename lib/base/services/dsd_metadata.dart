@@ -241,7 +241,7 @@ Future<void> _applyId3v2(
     final size = major >= 4
         ? _syncsafe(frameHeader, 4)
         : ByteData.sublistView(frameHeader).getUint32(4, Endian.big);
-    if (size <= 0 || size > remaining) {
+    if (size <= 0 || 10 + size > remaining) {
       return;
     }
     remaining -= 10 + size;

@@ -144,6 +144,20 @@ void main() {
     expect(metadata.replayGainTrackPeak, 0.75);
   });
 
+  test('DSF ID3 不读取超出标签声明边界的 TXXX 帧', () async {
+    final id3 = _buildId3v23(
+      const {},
+      declaredSizeAdjustment: -5,
+      userTextFrames: {'REPLAYGAIN_TRACK_GAIN': '-9.0 dB'},
+    );
+    final path = await writeFile('truncated_id3_boundary.dsf', _buildDsf(id3));
+
+    final metadata = await readDsdMetadata(path);
+
+    expect(metadata, isNotNull);
+    expect(metadata!.replayGainTrackGainDb, isNull);
+  });
+
   test('DFF 头部解析出速率/声道/时长', () async {
     const sampleRate = 5644800;
     const channels = 2;
@@ -244,6 +258,7 @@ void main() {
 Uint8List _buildId3v23(
   Map<String, String> textFrames, {
   int majorVersion = 3,
+  int declaredSizeAdjustment = 0,
   Map<String, String> userTextFrames = const {},
   Map<String, (int, String)> encodedUserTextFrames = const {},
 }) {
@@ -277,7 +292,7 @@ Uint8List _buildId3v23(
   final builder = BytesBuilder();
   builder.add('ID3'.codeUnits);
   builder.add([majorVersion, 0, 0]);
-  builder.add(_syncsafe(frameBytes.length));
+  builder.add(_syncsafe(frameBytes.length + declaredSizeAdjustment));
   builder.add(frameBytes);
   return builder.toBytes();
 }
