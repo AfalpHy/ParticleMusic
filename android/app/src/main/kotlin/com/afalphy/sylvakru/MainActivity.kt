@@ -78,12 +78,15 @@ class MainActivity : AudioServiceActivity() {
                 }
                 "setExclusiveVolume" -> {
                     val gainQ16 = call.argument<Number>("gainQ16")?.toInt() ?: 65536
+                    val replayGainMilliDb =
+                        call.argument<Number>("replayGainMilliDb")?.toInt() ?: 0
                     val mode = call.argument<String>("mode") ?: "auto"
                     val dsdGainCompensationDb =
                         call.argument<Number>("dsdGainCompensationDb")?.toInt() ?: 0
                     val smoothHandoff = call.argument<Boolean>("smoothHandoff") ?: true
                     usbExclusiveAudioEngine.setVolume(
                         gainQ16,
+                        replayGainMilliDb,
                         mode,
                         dsdGainCompensationDb,
                         smoothHandoff,

@@ -269,7 +269,8 @@ object UsbDacQuirks {
                 },
                 hardwareVolumeProtocol = hardwareVolume
                     ?.optString("protocol")
-                    ?.takeIf { it == "uac1" || it == "uac2" || it == "ibassoDc03Pro" },
+                    ?.trim()
+                    ?.takeIf { it.isNotEmpty() },
                 hardwareVolumeRecipient = hardwareVolume
                     ?.optString("recipient")
                     ?.takeIf { it == "device" || it == "interface" }

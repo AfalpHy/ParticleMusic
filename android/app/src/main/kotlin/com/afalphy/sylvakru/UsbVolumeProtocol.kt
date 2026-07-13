@@ -20,6 +20,18 @@ internal data class UsbVolumeTarget(
     val dsdRaw: Int,
 )
 
+internal sealed interface UsbVolumeProtocolSelection
+
+internal data object StandardUsbVolumeProtocol : UsbVolumeProtocolSelection
+
+internal data class VendorUsbVolumeProtocol(
+    val protocol: UsbVolumeProtocol,
+) : UsbVolumeProtocolSelection
+
+internal data class UnsupportedUsbVolumeProtocol(
+    val id: String,
+) : UsbVolumeProtocolSelection
+
 internal interface UsbVolumeProtocol {
     val id: String
     val capabilities: UsbVolumeCapabilities
@@ -53,20 +65,7 @@ internal object IbassoDc03ProVolumeProtocol : UsbVolumeProtocol {
         replayGainMilliDb: Int,
         dsdCompensationDb: Int,
     ): UsbVolumeTarget {
-        val baseGain = gainQ16.coerceIn(0, IBASSO_UNITY_GAIN_Q16)
-        val adjustedGain = if (baseGain == 0) {
-            0
-        } else {
-            val factor = 10.0.pow(replayGainMilliDb.toDouble() / 20000.0)
-            val adjusted = baseGain * factor
-            when {
-                adjusted.isNaN() -> 0
-                adjusted == Double.POSITIVE_INFINITY -> IBASSO_UNITY_GAIN_Q16
-                adjusted <= 0 -> 0
-                adjusted >= IBASSO_UNITY_GAIN_Q16 -> IBASSO_UNITY_GAIN_Q16
-                else -> adjusted.roundToInt()
-            }
-        }
+        val adjustedGain = effectiveVolumeGainQ16(gainQ16, replayGainMilliDb)
         if (adjustedGain <= 0) {
             return UsbVolumeTarget(baseRaw = 255, dsdRaw = 255)
         }
@@ -99,6 +98,46 @@ internal object IbassoDc03ProVolumeProtocol : UsbVolumeProtocol {
             rightRaw = packet[9].toInt() and 0xff,
         )
     }
+}
+
+internal fun usbVolumeProtocolFor(id: String?): UsbVolumeProtocol? =
+    when (id?.trim()) {
+        "ibassoDc03Pro" -> IbassoDc03ProVolumeProtocol
+        else -> null
+    }
+
+internal fun usbVolumeProtocolSelection(id: String?): UsbVolumeProtocolSelection {
+    val normalized = id?.trim()?.takeIf { it.isNotEmpty() }
+    return when (normalized) {
+        null, "uac1", "uac2" -> StandardUsbVolumeProtocol
+        "ibassoDc03Pro" -> VendorUsbVolumeProtocol(IbassoDc03ProVolumeProtocol)
+        else -> UnsupportedUsbVolumeProtocol(normalized)
+    }
+}
+
+internal fun effectiveVolumeGainQ16(userGainQ16: Int, replayGainMilliDb: Int): Int {
+    val userGain = userGainQ16.coerceIn(0, IBASSO_UNITY_GAIN_Q16)
+    if (userGain == 0) return 0
+    val factor = 10.0.pow(replayGainMilliDb.toDouble() / 20000.0)
+    val adjusted = userGain * factor
+    return when {
+        adjusted.isNaN() || adjusted <= 0 -> 0
+        !adjusted.isFinite() || adjusted >= IBASSO_UNITY_GAIN_Q16 -> IBASSO_UNITY_GAIN_Q16
+        else -> adjusted.roundToInt()
+    }
+}
+
+internal fun effectiveHardwareVolumeGainQ16(
+    userGainQ16: Int,
+    replayGainMilliDb: Int,
+    dsdCompensationDb: Int,
+    isDsd: Boolean,
+): Int {
+    val combinedGainMilliDb = (
+        replayGainMilliDb.toLong() +
+            if (isDsd) dsdCompensationDb.toLong() * 1000L else 0L
+        ).coerceIn(Int.MIN_VALUE.toLong(), Int.MAX_VALUE.toLong()).toInt()
+    return effectiveVolumeGainQ16(userGainQ16, combinedGainMilliDb)
 }
 
 private const val IBASSO_UNITY_GAIN_Q16 = 65536

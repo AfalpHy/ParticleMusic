@@ -243,9 +243,13 @@ class UsbExclusiveAudioEngine(
     @Volatile private var volumeControlEnabled = false
     @Volatile private var volumeMode = "auto"
     @Volatile private var requestedVolumeGainQ16 = UNITY_GAIN_Q16
+    @Volatile private var requestedReplayGainMilliDb = 0
     @Volatile private var dsdGainCompensationDb = 0
     @Volatile private var volumeSmoothHandoff = true
     @Volatile private var hardwareVolumeActive = false
+    @Volatile private var hardwareVolumeProtocol: String? = null
+    @Volatile private var hardwareVolumeRaw: Int? = null
+    @Volatile private var hardwareVolumeGainQ16: Int? = null
     private var volumeRampGeneration = 0
     private val volumeLock = Any()
     private var hardwareVolumeControl: HardwareVolumeControl? = null
@@ -431,6 +435,8 @@ class UsbExclusiveAudioEngine(
             ?: "auto"
         requestedVolumeGainQ16 = ((arguments["volumeGainQ16"] as? Number)?.toInt() ?: UNITY_GAIN_Q16)
             .coerceIn(0, UNITY_GAIN_Q16)
+        requestedReplayGainMilliDb =
+            (arguments["replayGainMilliDb"] as? Number)?.toInt() ?: 0
         dsdGainCompensationDb = ((arguments["dsdGainCompensationDb"] as? Number)?.toInt() ?: 0)
             .coerceIn(-12, 6)
         volumeSmoothHandoff = arguments["smoothHandoff"] as? Boolean ?: true
@@ -751,6 +757,10 @@ class UsbExclusiveAudioEngine(
             "bitDepth" to if (reader != null) 1 else arguments["bitDepth"],
             "hardwareVolumeActive" to hardwareVolumeActive,
             "digitalVolumeActive" to volumeControlEnabled,
+            "replayGainMilliDb" to requestedReplayGainMilliDb,
+            "hardwareVolumeProtocol" to hardwareVolumeProtocol,
+            "hardwareVolumeRaw" to hardwareVolumeRaw,
+            "hardwareVolumeGainQ16" to hardwareVolumeGainQ16,
             "format" to if (reader != null) {
                 "${reader.formatName}($dsdSuffix)"
             } else {
@@ -759,6 +769,8 @@ class UsbExclusiveAudioEngine(
             "message" to if (reader != null && nativeFallbackReason != null) {
                 "USB exclusive playback prepared (native DSD unavailable: " +
                     "$nativeFallbackReason; using DoP)."
+            } else if (reader != null && requestedReplayGainMilliDb != 0 && !hardwareVolumeActive) {
+                "USB exclusive playback prepared; ReplayGain is not applied to the DSD bitstream."
             } else {
                 "USB exclusive playback prepared."
             },
@@ -816,11 +828,13 @@ class UsbExclusiveAudioEngine(
 
     fun setVolume(
         gainQ16: Int,
+        replayGainMilliDb: Int,
         mode: String,
         dsdCompensationDb: Int,
         smoothHandoff: Boolean,
     ) {
         requestedVolumeGainQ16 = gainQ16.coerceIn(0, UNITY_GAIN_Q16)
+        requestedReplayGainMilliDb = replayGainMilliDb
         dsdGainCompensationDb = dsdCompensationDb.coerceIn(-12, 6)
         volumeSmoothHandoff = smoothHandoff
         volumeMode = mode.lowercase(Locale.ROOT)
@@ -837,12 +851,20 @@ class UsbExclusiveAudioEngine(
             )
         } else {
             hardwareVolumeActive = false
+            hardwareVolumeProtocol = null
+            hardwareVolumeRaw = null
+            hardwareVolumeGainQ16 = null
             volumeControlEnabled = volumeMode != "raw"
-            pcmVolumeGainQ16 = if (volumeControlEnabled) requestedVolumeGainQ16 else UNITY_GAIN_Q16
+            pcmVolumeGainQ16 = if (volumeControlEnabled) {
+                effectiveVolumeGainQ16(requestedVolumeGainQ16, requestedReplayGainMilliDb)
+            } else {
+                UNITY_GAIN_Q16
+            }
         }
         UsbDiagnostics.i(
             tag,
-            "set exclusive volume gainQ16=$requestedVolumeGainQ16, mode=$volumeMode, " +
+            "set exclusive volume gainQ16=$requestedVolumeGainQ16, " +
+                "replayGainMilliDb=$requestedReplayGainMilliDb, mode=$volumeMode, " +
                 "hardware=$hardwareVolumeActive, digital=$volumeControlEnabled",
         )
         if (currentState["active"] == true) {
@@ -850,6 +872,10 @@ class UsbExclusiveAudioEngine(
                 currentState + mapOf(
                     "hardwareVolumeActive" to hardwareVolumeActive,
                     "digitalVolumeActive" to volumeControlEnabled,
+                    "replayGainMilliDb" to requestedReplayGainMilliDb,
+                    "hardwareVolumeProtocol" to hardwareVolumeProtocol,
+                    "hardwareVolumeRaw" to hardwareVolumeRaw,
+                    "hardwareVolumeGainQ16" to hardwareVolumeGainQ16,
                 ),
             )
         }
@@ -868,19 +894,44 @@ class UsbExclusiveAudioEngine(
         synchronized(volumeLock) {
             val wasHardwareActive = hardwareVolumeActive
             hardwareVolumeActive = false
+            hardwareVolumeProtocol = null
+            hardwareVolumeRaw = null
+            hardwareVolumeGainQ16 = null
             val wantsHardware = volumeMode == "auto" || volumeMode == "dac"
             val vendorProtocol = quirk.hardwareVolumeProtocol
+            val protocolSelection = usbVolumeProtocolSelection(vendorProtocol)
+            val effectiveGainQ16 = effectiveVolumeGainQ16(
+                requestedVolumeGainQ16,
+                requestedReplayGainMilliDb,
+            )
+            val effectiveHardwareGainQ16 = effectiveHardwareVolumeGainQ16(
+                requestedVolumeGainQ16,
+                requestedReplayGainMilliDb,
+                dsdGainCompensationDb,
+                isDsd,
+            )
             var fallbackReason: String? = null
             if (wantsHardware && quirk.hardwareVolumeEnabled != false) {
                 if (isDsd && quirk.hardwareVolumeDsdSupported == false) {
                     fallbackReason = "DSD hardware volume is disabled by quirk."
-                } else if (vendorProtocol == "ibassoDc03Pro") {
-                    fallbackReason = writeIbassoDc03ProVolume(
-                        device,
+                } else if (protocolSelection is VendorUsbVolumeProtocol) {
+                    val volumeTarget = protocolSelection.protocol.appGainToRaw(
                         requestedVolumeGainQ16,
+                        requestedReplayGainMilliDb,
                         if (isDsd) dsdGainCompensationDb else 0,
                     )
+                    fallbackReason = writeIbassoDc03ProVolume(
+                        device,
+                        volumeTarget,
+                    )
                     hardwareVolumeActive = fallbackReason == null
+                    if (hardwareVolumeActive) {
+                        hardwareVolumeProtocol = protocolSelection.protocol.id
+                        hardwareVolumeRaw = if (isDsd) volumeTarget.dsdRaw else volumeTarget.baseRaw
+                        hardwareVolumeGainQ16 = effectiveHardwareGainQ16
+                    }
+                } else if (protocolSelection is UnsupportedUsbVolumeProtocol) {
+                    fallbackReason = "Unsupported hardware volume protocol: ${protocolSelection.id}."
                 } else {
                     val activeConnection = connection
                     val control = if (activeConnection == null) {
@@ -900,9 +951,13 @@ class UsbExclusiveAudioEngine(
                             activeConnection,
                             device,
                             control,
-                            requestedVolumeGainQ16,
+                            effectiveHardwareGainQ16,
                         )
                         hardwareVolumeActive = fallbackReason == null
+                        if (hardwareVolumeActive) {
+                            hardwareVolumeProtocol = control.features.firstOrNull()?.protocol
+                            hardwareVolumeGainQ16 = effectiveHardwareGainQ16
+                        }
                         if (!hardwareVolumeActive && wasHardwareActive) {
                             val restoreError = writeHardwareVolume(
                                 activeConnection,
@@ -921,10 +976,13 @@ class UsbExclusiveAudioEngine(
                 }
             } else if (wasHardwareActive) {
                 if (volumeSmoothHandoff && !isDsd) {
-                    pcmVolumeGainQ16 = requestedVolumeGainQ16
+                    pcmVolumeGainQ16 = effectiveGainQ16
                 }
-                val restoreError = if (vendorProtocol == "ibassoDc03Pro") {
-                    writeIbassoDc03ProVolume(device, UNITY_GAIN_Q16, 0)
+                val restoreError = if (protocolSelection is VendorUsbVolumeProtocol) {
+                    writeIbassoDc03ProVolume(
+                        device,
+                        protocolSelection.protocol.appGainToRaw(UNITY_GAIN_Q16, 0, 0),
+                    )
                 } else {
                     val activeConnection = connection
                     val control = hardwareVolumeControl
@@ -941,7 +999,7 @@ class UsbExclusiveAudioEngine(
             }
 
             volumeControlEnabled = !hardwareVolumeActive && !isDsd && volumeMode != "raw"
-            val targetPcmGain = if (volumeControlEnabled) requestedVolumeGainQ16 else UNITY_GAIN_Q16
+            val targetPcmGain = if (volumeControlEnabled) effectiveGainQ16 else UNITY_GAIN_Q16
             setPcmVolumeGain(
                 targetPcmGain,
                 volumeSmoothHandoff && !isDsd && wasHardwareActive != hardwareVolumeActive,
@@ -961,6 +1019,10 @@ class UsbExclusiveAudioEngine(
                     "digitalFallback" to volumeControlEnabled,
                     "isDsd" to isDsd,
                     "gainQ16" to requestedVolumeGainQ16,
+                    "effectiveGainQ16" to effectiveGainQ16,
+                    "replayGainMilliDb" to requestedReplayGainMilliDb,
+                    "hardwareVolumeProtocol" to hardwareVolumeProtocol,
+                    "hardwareVolumeRaw" to hardwareVolumeRaw,
                     "dsdGainCompensationDb" to dsdGainCompensationDb,
                     "smoothHandoff" to volumeSmoothHandoff,
                     "source" to (hardwareVolumeControl?.source ?: vendorProtocol),
@@ -1185,8 +1247,7 @@ class UsbExclusiveAudioEngine(
 
     private fun writeIbassoDc03ProVolume(
         device: UsbDevice,
-        gainQ16: Int,
-        dsdCompensationDb: Int,
+        target: UsbVolumeTarget,
     ): String? {
         val hidInterface = (0 until device.interfaceCount)
             .map { device.getInterface(it) }
@@ -1214,9 +1275,8 @@ class UsbExclusiveAudioEngine(
         val controlConnection = ibassoVolumeConnection
             ?: return "iBasso control connection is unavailable."
 
-        val index = ibassoVolumeIndex(gainQ16)
-        val value = ibassoDeviceVolume(index)
-        val dsdValue = ibassoDsdVolume(value, dsdCompensationDb)
+        val value = target.baseRaw
+        val dsdValue = target.dsdRaw
         val packets = listOf(
             ibassoI2cWritePacket(1, 0x60, 9, 1, value),
             ibassoI2cWritePacket(2, 0x60, 9, 2, value),
@@ -1265,7 +1325,7 @@ class UsbExclusiveAudioEngine(
         }
         UsbDiagnostics.i(
             tag,
-            "iBasso hardware volume set index=$index, register=$value, dsdRegister=$dsdValue, " +
+            "iBasso hardware volume set register=$value, dsdRegister=$dsdValue, " +
                 "protocol=ibassoDc03Pro",
         )
         return null

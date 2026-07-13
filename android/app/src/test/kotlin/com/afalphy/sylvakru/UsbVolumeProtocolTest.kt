@@ -3,6 +3,7 @@ package com.afalphy.sylvakru
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertNull
+import org.junit.Assert.assertSame
 import org.junit.Assert.assertTrue
 import org.junit.Test
 import kotlin.math.abs
@@ -22,6 +23,42 @@ class UsbVolumeProtocolTest {
                 dsdGain = true,
             ),
             protocol.capabilities,
+        )
+    }
+
+    @Test
+    fun selectsVendorStandardAndUnsupportedProtocolsExplicitly() {
+        assertSame(IbassoDc03ProVolumeProtocol, usbVolumeProtocolFor("ibassoDc03Pro"))
+        assertEquals(StandardUsbVolumeProtocol, usbVolumeProtocolSelection(null))
+        assertEquals(StandardUsbVolumeProtocol, usbVolumeProtocolSelection("uac1"))
+        assertEquals(StandardUsbVolumeProtocol, usbVolumeProtocolSelection("uac2"))
+        assertEquals(
+            UnsupportedUsbVolumeProtocol("unknownProtocol"),
+            usbVolumeProtocolSelection("unknownProtocol"),
+        )
+    }
+
+    @Test
+    fun combinesReplayGainIntoEffectiveLinearGainSafely() {
+        assertEquals(0, effectiveVolumeGainQ16(0, 6000))
+        assertEquals(65536, effectiveVolumeGainQ16(65536, 6000))
+        assertTrue(abs(effectiveVolumeGainQ16(65536, -6021) - 32768) <= 2)
+        assertEquals(0, effectiveVolumeGainQ16(65536, Int.MIN_VALUE))
+        assertEquals(65536, effectiveVolumeGainQ16(1, Int.MAX_VALUE))
+    }
+
+    @Test
+    fun addsDsdCompensationOnlyToDsdHardwareVolume() {
+        assertTrue(
+            abs(effectiveHardwareVolumeGainQ16(32768, 0, 6, isDsd = true) - 65381) <= 2,
+        )
+        assertEquals(
+            32768,
+            effectiveHardwareVolumeGainQ16(32768, 0, 6, isDsd = false),
+        )
+        assertEquals(
+            0,
+            effectiveHardwareVolumeGainQ16(0, Int.MAX_VALUE, 6, isDsd = true),
         )
     }
 

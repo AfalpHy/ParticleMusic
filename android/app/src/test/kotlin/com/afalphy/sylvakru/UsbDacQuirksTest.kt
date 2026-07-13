@@ -146,4 +146,17 @@ class UsbDacQuirksTest {
         assertEquals("XMOS", vendor?.label)
         assertEquals(40, vendor?.clockSetCurDelayMs)
     }
+
+    @Test
+    fun preservesUnknownNonBlankHardwareVolumeProtocol() {
+        val unknown = UsbDacQuirks.parseEntries(
+            """{"version":1,"devices":[{"match":{"vid":"0x1","pid":"0x2"},"hardwareVolume":{"protocol":"futureProtocol"}}]}""",
+        )
+        val blank = UsbDacQuirks.parseEntries(
+            """{"version":1,"devices":[{"match":{"vid":"0x1","pid":"0x3"},"hardwareVolume":{"protocol":"   "}}]}""",
+        )
+
+        assertEquals("futureProtocol", unknown.single().second.hardwareVolumeProtocol)
+        assertNull(blank.single().second.hardwareVolumeProtocol)
+    }
 }
