@@ -493,6 +493,54 @@ void main() {
     expect(inactive.hardwareVolumeReadbackVerified, isFalse);
   });
 
+  test(
+    'exclusive playback state derives unverified hardware volume honestly',
+    () {
+      UsbExclusivePlaybackState state({
+        required String protocol,
+        required bool writeOnly,
+        required bool readbackVerified,
+      }) => UsbExclusivePlaybackState.fromMap({
+        'hardwareVolumeProtocol': protocol,
+        'hardwareVolumeWriteOnly': writeOnly,
+        'hardwareVolumeReadbackVerified': readbackVerified,
+      });
+
+      expect(
+        state(
+          protocol: 'futureVendor',
+          writeOnly: true,
+          readbackVerified: false,
+        ).hardwareVolumeUnverified,
+        isTrue,
+      );
+      expect(
+        state(
+          protocol: 'ibassoDc03Pro',
+          writeOnly: false,
+          readbackVerified: false,
+        ).hardwareVolumeUnverified,
+        isTrue,
+      );
+      expect(
+        state(
+          protocol: 'ibassoDc03Pro',
+          writeOnly: false,
+          readbackVerified: true,
+        ).hardwareVolumeUnverified,
+        isFalse,
+      );
+      expect(
+        state(
+          protocol: 'uac2',
+          writeOnly: false,
+          readbackVerified: false,
+        ).hardwareVolumeUnverified,
+        isFalse,
+      );
+    },
+  );
+
   test('ignores an exclusive callback from an older playback', () async {
     final service = UsbAudioService(channel: channel, isAndroid: true);
     messenger.setMockMethodCallHandler(channel, (call) async {

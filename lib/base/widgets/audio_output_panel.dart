@@ -946,9 +946,7 @@ String _bitPerfectStatusLabel(UsbAudioStatus status, AppLocalizations l10n) {
         ? l10n.volumeControlDigital
         : l10n.volumeControlRaw;
     if (exclusive.hardwareVolumeActive &&
-        exclusive.hardwareVolumeProtocol == 'ibassoDc03Pro' &&
-        (exclusive.hardwareVolumeWriteOnly ||
-            !exclusive.hardwareVolumeReadbackVerified)) {
+        exclusive.hardwareVolumeUnverified) {
       processing = '$processing (${l10n.hardwareVolumeUnverified})';
     }
     if (exclusive.replayGainMilliDb != 0) {
