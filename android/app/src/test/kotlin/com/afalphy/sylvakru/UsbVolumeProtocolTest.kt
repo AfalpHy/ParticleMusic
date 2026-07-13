@@ -1,0 +1,83 @@
+package com.afalphy.sylvakru
+
+import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertNull
+import org.junit.Assert.assertTrue
+import org.junit.Test
+import kotlin.math.abs
+import kotlin.math.pow
+import kotlin.math.roundToInt
+
+class UsbVolumeProtocolTest {
+    private val protocol = IbassoDc03ProVolumeProtocol
+
+    @Test
+    fun exposesIbassoProtocolCapabilities() {
+        assertEquals("ibassoDc03Pro", protocol.id)
+        assertEquals(
+            UsbVolumeCapabilities(
+                readable = true,
+                unsolicitedEvents = true,
+                dsdGain = true,
+            ),
+            protocol.capabilities,
+        )
+    }
+
+    @Test
+    fun mapsAppGainToIbassoRawTable() {
+        assertEquals(255, protocol.appGainToRaw(0, 0, 0))
+        assertEquals(97, protocol.appGainToRaw(gainQ16ForIndex(23), 0, 0))
+        assertEquals(10, protocol.appGainToRaw(gainQ16ForIndex(90), 0, 0))
+        assertEquals(0, protocol.appGainToRaw(65536, 0, 0))
+    }
+
+    @Test
+    fun appliesReplayGainBeforeClampAndDsdHalfDbSteps() {
+        assertEquals(0, protocol.appGainToRaw(gainQ16ForIndex(90), 6000, 0))
+        assertEquals(85, protocol.appGainToRaw(gainQ16ForIndex(23), 0, 6))
+        assertEquals(109, protocol.appGainToRaw(gainQ16ForIndex(23), 0, -6))
+        assertEquals(255, protocol.appGainToRaw(65536, Int.MIN_VALUE, 0))
+        assertEquals(0, protocol.appGainToRaw(65536, Int.MAX_VALUE, 0))
+    }
+
+    @Test
+    fun mapsRawTableValuesBackToLinearGain() {
+        assertEquals(0, protocol.rawToLinearGainQ16(255))
+        assertTrue(
+            abs(protocol.rawToLinearGainQ16(97) - gainQ16ForIndex(23)) <= 1,
+        )
+        assertTrue(
+            abs(protocol.rawToLinearGainQ16(10) - gainQ16ForIndex(90)) <= 1,
+        )
+        assertEquals(65536, protocol.rawToLinearGainQ16(0))
+    }
+
+    @Test
+    fun decodesOnlyFixedLengthUnsolicitedVolumeEvents() {
+        val packet = ByteArray(16)
+        packet[0] = 0xfe.toByte()
+        packet[1] = 0x01
+        packet[8] = 97
+        packet[9] = 98
+
+        assertEquals(UsbVolumeEvent(97, 98), protocol.decodeEvent(packet))
+        assertNull(protocol.decodeEvent(packet.copyOf(9)))
+
+        val response = ByteArray(16)
+        response[6] = 65
+        response[8] = 97
+        assertNull(protocol.decodeEvent(response))
+    }
+
+    @Test
+    fun recognizesOnlyMatchingStereoWriteConfirmation() {
+        assertTrue(protocol.isWriteConfirmation(UsbVolumeEvent(97, 97), 97))
+        assertFalse(protocol.isWriteConfirmation(UsbVolumeEvent(97, 98), 97))
+        assertFalse(protocol.isWriteConfirmation(UsbVolumeEvent(97, 97), null))
+    }
+
+    private fun gainQ16ForIndex(index: Int): Int =
+        ((index / 100.0).pow(1.5) * 65536).roundToInt()
+}
