@@ -17,7 +17,6 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
-import android.view.KeyEvent
 import android.hardware.usb.UsbConstants
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbDeviceConnection
@@ -126,29 +125,6 @@ class MainActivity : AudioServiceActivity() {
             }
 
         ensureSuperLyricPublisherRegistered()
-    }
-
-    // 独占播放且硬件/数字音量实际可用时接管安卓物理音量键，把方向上报给 Dart，
-    // 并吞掉按键，避免系统去改对独占输出无效的 STREAM_MUSIC。其余情况交回系统。
-    override fun dispatchKeyEvent(event: KeyEvent): Boolean {
-        val keyCode = event.keyCode
-        val isVolumeKey =
-            keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN
-        if (
-            isVolumeKey &&
-            ::usbExclusiveAudioEngine.isInitialized &&
-            usbExclusiveAudioEngine.isVolumeControlEngaged()
-        ) {
-            if (event.action == KeyEvent.ACTION_DOWN) {
-                val direction = if (keyCode == KeyEvent.KEYCODE_VOLUME_UP) 1 else -1
-                usbAudioChannel.invokeMethod(
-                    "onUsbExclusiveVolumeKey",
-                    mapOf("direction" to direction),
-                )
-            }
-            return true
-        }
-        return super.dispatchKeyEvent(event)
     }
 
     override fun onDestroy() {

@@ -18,10 +18,6 @@ final usbTransportTelemetryNotifier = ValueNotifier(
 final usbHardwareVolumeNotifier = ValueNotifier<UsbHardwareVolumeEvent?>(null);
 final usbVolumeOverlayNotifier = ValueNotifier<int>(0);
 
-/// 独占模式下安卓物理音量键的累计方向：+1 表示按了一次音量加，-1 表示音量减。
-/// 每次按键都会改变数值，监听方按前后差值增减独占音量（见 audio_handler）。
-final usbExclusiveVolumeKeyNotifier = ValueNotifier<int>(0);
-
 enum UsbAudioDeviceEventType { added, removed }
 
 class UsbAudioService {
@@ -311,15 +307,6 @@ class UsbAudioService {
         (call.arguments as Map?)?.cast<String, Object?>() ?? const {},
       );
       _publishExclusiveState(state);
-      return null;
-    }
-
-    if (call.method == 'onUsbExclusiveVolumeKey') {
-      final direction =
-          _asInt((call.arguments as Map?)?['direction'] as Object?) ?? 0;
-      if (direction != 0) {
-        usbExclusiveVolumeKeyNotifier.value += direction;
-      }
       return null;
     }
 

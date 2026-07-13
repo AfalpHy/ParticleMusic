@@ -209,7 +209,6 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     });
 
     usbExclusivePlaybackStateNotifier.addListener(_handleUsbExclusiveState);
-    usbExclusiveVolumeKeyNotifier.addListener(_handleUsbExclusiveVolumeKey);
     usbHardwareVolumeNotifier.addListener(_handleUsbHardwareVolume);
     // 切换音量控制方式后立即按新方式重下发（原始数字电平旁路、其余数字音量）。
     usbAudioPreferences.volumeControlModeNotifier.addListener(() {
@@ -1482,8 +1481,6 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     );
   }
 
-  int _lastVolumeKeyValue = 0;
-
   void _handleUsbHardwareVolume() {
     final event = usbHardwareVolumeNotifier.value;
     final state = usbExclusivePlaybackStateNotifier.value;
@@ -1506,19 +1503,6 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     }
     _publishAndroidPlaybackInfo();
     usbVolumeOverlayNotifier.value += 1;
-  }
-
-  // 独占模式下安卓物理音量键：按累计方向差值增减音量，再走 setVolume 下发数字音量。
-  void _handleUsbExclusiveVolumeKey() {
-    final value = usbExclusiveVolumeKeyNotifier.value;
-    final delta = value - _lastVolumeKeyValue;
-    _lastVolumeKeyValue = value;
-    if (delta == 0 || !_usbExclusiveActive) {
-      return;
-    }
-    const step = 0.02; // 每按一次 2%
-    final next = (volumeNotifier.value + delta * step).clamp(0.0, 1.0);
-    _setUserVolume(next);
   }
 
   void applyEqualizer() async {
