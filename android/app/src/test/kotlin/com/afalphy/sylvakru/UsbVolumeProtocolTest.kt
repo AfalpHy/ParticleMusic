@@ -262,6 +262,13 @@ class UsbVolumeProtocolTest {
     }
 
     @Test
+    fun readsInitialHardwareVolumeOnlyForNewReadableControl() {
+        assertTrue(shouldReadInitialHardwareVolume(isNewConnection = true, readable = true))
+        assertFalse(shouldReadInitialHardwareVolume(isNewConnection = false, readable = true))
+        assertFalse(shouldReadInitialHardwareVolume(isNewConnection = true, readable = false))
+    }
+
+    @Test
     fun mapsIbassoBaseRawToCurrentPcmOrDsdGain() {
         val pcm = ibassoActualEventGainQ16(97, isDsd = false, dsdCompensationDb = 6)
         val dsd = ibassoActualEventGainQ16(97, isDsd = true, dsdCompensationDb = 6)

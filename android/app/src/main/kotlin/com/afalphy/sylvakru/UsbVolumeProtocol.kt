@@ -286,6 +286,11 @@ internal fun hardwareVolumeHandoffTarget(
     )
 }
 
+internal fun shouldReadInitialHardwareVolume(
+    isNewConnection: Boolean,
+    readable: Boolean,
+): Boolean = isNewConnection && readable
+
 internal fun ibassoActualEventGainQ16(
     baseRaw: Int,
     isDsd: Boolean,

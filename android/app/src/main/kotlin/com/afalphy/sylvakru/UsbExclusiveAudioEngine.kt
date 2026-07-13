@@ -1023,11 +1023,12 @@ class UsbExclusiveAudioEngine(
                     if (control == null) {
                         fallbackReason = "No unique writable playback Feature Unit passed probing."
                     } else if (activeConnection != null) {
-                        val initialHandoff =
-                            existingControl == null &&
-                            volumeSmoothHandoff &&
-                            currentState["active"] != true
-                        val initialValues = if (initialHandoff) {
+                        val shouldReadInitialVolume = shouldReadInitialHardwareVolume(
+                            isNewConnection =
+                                existingControl == null && currentState["active"] != true,
+                            readable = true,
+                        )
+                        val initialValues = if (shouldReadInitialVolume) {
                             readHardwareVolumeValues(activeConnection, device, control)
                         } else {
                             null
@@ -1036,7 +1037,7 @@ class UsbExclusiveAudioEngine(
                             hardwareVolumeGainQ16(it, control.range.muteQ8_8)
                         }
                         val handoff = hardwareVolumeHandoffTarget(
-                            initialHandoff,
+                            volumeSmoothHandoff,
                             readGainQ16,
                             effectiveHardwareGainQ16,
                         )
@@ -1057,7 +1058,7 @@ class UsbExclusiveAudioEngine(
                                 isDsd,
                             )
                         } else {
-                            if (initialHandoff && initialValues == null) {
+                            if (shouldReadInitialVolume && initialValues == null) {
                                 UsbDiagnostics.w(
                                     tag,
                                     "Initial UAC hardware volume read failed; using the app target.",
@@ -1438,19 +1439,20 @@ class UsbExclusiveAudioEngine(
         val controlConnection = ibassoVolumeConnection
             ?: return "iBasso control connection is unavailable."
 
-        val initialHandoff = newConnection &&
-            volumeSmoothHandoff &&
-            currentState["active"] != true
-        val readBaseRaw = if (initialHandoff) {
+        val shouldReadInitialVolume = shouldReadInitialHardwareVolume(
+            isNewConnection = newConnection,
+            readable = IbassoDc03ProVolumeProtocol.capabilities.readable,
+        )
+        val readBaseRaw = if (shouldReadInitialVolume) {
             readIbassoCurrentBaseRaw(controlConnection)
         } else {
             null
         }
-        if (initialHandoff && readBaseRaw == null) {
+        if (shouldReadInitialVolume && readBaseRaw == null) {
             UsbDiagnostics.w(tag, "iBasso initial hardware volume read failed; using the app target.")
         }
         val handoff = hardwareVolumeHandoffTarget(
-            initialHandoff,
+            volumeSmoothHandoff,
             readBaseRaw?.let(IbassoDc03ProVolumeProtocol::rawToLinearGainQ16),
             IbassoDc03ProVolumeProtocol.rawToLinearGainQ16(activeRaw),
         )
