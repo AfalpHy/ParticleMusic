@@ -211,6 +211,36 @@ class UsbVolumeProtocolTest {
         )
     }
 
+    @Test
+    fun transitionsReaderFromRestartToWriteOnlyAfterTwoFailures() {
+        val initial = IbassoReaderHealth()
+        assertTrue(initial.readable)
+        assertFalse(initial.restartRequested)
+        assertFalse(initial.writeOnly)
+
+        val firstFailure = initial.afterFailure()
+        assertTrue(firstFailure.readable)
+        assertTrue(firstFailure.restartRequested)
+        assertFalse(firstFailure.writeOnly)
+        assertFalse(firstFailure.readbackVerified)
+
+        val restarted = firstFailure.afterRestart()
+        assertFalse(restarted.restartRequested)
+        val secondFailure = restarted.afterFailure()
+        assertFalse(secondFailure.readable)
+        assertFalse(secondFailure.restartRequested)
+        assertTrue(secondFailure.writeOnly)
+        assertFalse(secondFailure.readbackVerified)
+    }
+
+    @Test
+    fun keepsWrittenRawOnlyInsideConfirmationWindow() {
+        assertEquals(97, recentIbassoWrittenRaw(97, 1000, 1001, 500))
+        assertEquals(97, recentIbassoWrittenRaw(97, 1000, 1500, 500))
+        assertNull(recentIbassoWrittenRaw(97, 1000, 1501, 500))
+        assertNull(recentIbassoWrittenRaw(null, 1000, 1001, 500))
+    }
+
     private fun ibassoEventPacket(leftRaw: Int, rightRaw: Int): ByteArray =
         ByteArray(16).also {
             it[0] = 0xfe.toByte()

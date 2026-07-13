@@ -51,6 +51,36 @@ internal sealed interface IbassoVolumePacketRoute {
     data object Unknown : IbassoVolumePacketRoute
 }
 
+internal data class IbassoReaderHealth(
+    val failureCount: Int = 0,
+    val restartRequested: Boolean = false,
+    val writeOnly: Boolean = false,
+    val readbackVerified: Boolean = false,
+) {
+    val readable: Boolean
+        get() = !writeOnly
+
+    fun afterFailure(): IbassoReaderHealth = if (failureCount == 0) {
+        copy(
+            failureCount = 1,
+            restartRequested = true,
+            writeOnly = false,
+            readbackVerified = false,
+        )
+    } else {
+        copy(
+            failureCount = failureCount + 1,
+            restartRequested = false,
+            writeOnly = true,
+            readbackVerified = false,
+        )
+    }
+
+    fun afterRestart(): IbassoReaderHealth = copy(restartRequested = false)
+
+    fun afterVerifiedReadback(): IbassoReaderHealth = copy(readbackVerified = true)
+}
+
 internal interface UsbVolumeProtocol {
     val id: String
     val capabilities: UsbVolumeCapabilities
@@ -194,6 +224,15 @@ internal fun routeIbassoVolumePacket(
     } else {
         IbassoVolumePacketRoute.Unknown
     }
+}
+
+internal fun recentIbassoWrittenRaw(
+    lastWrittenRaw: Int?,
+    lastWrittenAtMs: Long,
+    nowMs: Long,
+    windowMs: Long,
+): Int? = lastWrittenRaw?.takeIf {
+    nowMs - lastWrittenAtMs in 0..windowMs
 }
 
 private const val IBASSO_UNITY_GAIN_Q16 = 65536
