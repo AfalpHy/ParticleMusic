@@ -48,6 +48,7 @@ final usbExclusiveVolumeNotifier = ValueNotifier(
 
 const _safeUsbVolumeIncreaseDb = 1.0;
 const _phoneUsbVolumeStepDb = 2.5;
+const _phoneUsbVolumeStep = 0.02;
 
 double dbToUsbVolumeRatio(double db) => math.pow(10, db / 30).toDouble();
 
@@ -67,17 +68,26 @@ double nextSafeUsbVolume(double applied, double requested) {
 
 double adjustedRemoteVolume(double current, AndroidVolumeDirection direction) {
   final applied = current.clamp(0.0, 1.0).toDouble();
-  final ratio = dbToUsbVolumeRatio(_phoneUsbVolumeStepDb);
   if (identical(direction, AndroidVolumeDirection.raise)) {
-    return (applied <= 0 ? 0.01 : applied * ratio).clamp(0.0, 1.0).toDouble();
+    return (applied + _phoneUsbVolumeStep).clamp(0.0, 1.0).toDouble();
   }
   if (identical(direction, AndroidVolumeDirection.lower)) {
-    if (applied <= 0.01) {
-      return 0;
-    }
-    return (applied / ratio).clamp(0.0, 1.0).toDouble();
+    return (applied - _phoneUsbVolumeStep).clamp(0.0, 1.0).toDouble();
   }
   return applied;
+}
+
+AndroidVolumeDirection? usbExclusiveVolumeKeyDirection({
+  required int delta,
+  required bool active,
+  required bool writeInProgress,
+}) {
+  if (delta == 0 || !active || writeInProgress) {
+    return null;
+  }
+  return delta > 0
+      ? AndroidVolumeDirection.raise
+      : AndroidVolumeDirection.lower;
 }
 
 AndroidPlaybackInfo androidPlaybackInfoFor(
@@ -1576,7 +1586,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     );
   }
 
-  void _applyUserVolume(
+  Future<void>? _applyUserVolume(
     double volume, {
     double maxOutputGainIncreaseDb = _safeUsbVolumeIncreaseDb,
   }) {
@@ -1592,8 +1602,9 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     }
     final perceptualGain = _perceptualVolumeGain(next);
     _player.setVolume(perceptualGain * 100);
+    Future<void>? write;
     if (_usbExclusiveActive) {
-      _applyUsbExclusiveVolume(
+      write = _applyUsbExclusiveVolume(
         usbExclusiveDigitalVolumeGain(next),
         maxIncreaseDb: maxOutputGainIncreaseDb,
       );
@@ -1606,6 +1617,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
       );
     }
     _publishAndroidPlaybackInfo();
+    return write;
   }
 
   void setUsbExclusiveVolume(double volume) {
@@ -1636,14 +1648,15 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     androidPlaybackInfo.add(next);
   }
 
-  void _setUserVolumeImmediately(double volume) {
+  Future<void> _setUserVolumeImmediately(double volume) {
     _cancelVolumeRamp();
     _volumeRampTarget = volume.clamp(0.0, 1.0).toDouble();
-    _applyUserVolume(
+    final write = _applyUserVolume(
       _volumeRampTarget,
       maxOutputGainIncreaseDb: _phoneUsbVolumeStepDb,
     );
     savePlayState();
+    return write ?? Future.value();
   }
 
   // 与共享输出一致的感知音量曲线，返回 0..1 的线性幅度。
@@ -1685,12 +1698,12 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
   }
 
   // 把当前音量与控制模式下发给 USB 独占引擎，由原生层选择硬件音量或安全回退。
-  void _applyUsbExclusiveVolume(
+  Future<void> _applyUsbExclusiveVolume(
     double digitalGain, {
     double maxIncreaseDb = _safeUsbVolumeIncreaseDb,
   }) {
     if (!_usbExclusiveActive) {
-      return;
+      return Future.value();
     }
     final isDsd = currentSongNotifier.value?.isDsd == true;
     final dsdCompensationDb = isDsd
@@ -1704,20 +1717,19 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
       maxIncreaseDb: maxIncreaseDb,
     );
     _appliedOutputGain = transition.appliedGain;
-    unawaited(
-      usbAudioService.setExclusiveVolume(
-        gain: digitalGain,
-        replayGainDb: transition.adjustmentDb - dsdCompensationDb,
-        mode: usbAudioPreferences.volumeControlModeNotifier.value.name,
-        dsdGainCompensationDb: dsdCompensationDb,
-        smoothHandoff: usbAudioPreferences.volumeSmoothHandoffNotifier.value,
-      ),
+    final write = usbAudioService.setExclusiveVolume(
+      gain: digitalGain,
+      replayGainDb: transition.adjustmentDb - dsdCompensationDb,
+      mode: usbAudioPreferences.volumeControlModeNotifier.value.name,
+      dsdGainCompensationDb: dsdCompensationDb,
+      smoothHandoff: usbAudioPreferences.volumeSmoothHandoffNotifier.value,
     );
     if (transition.needsRamp) {
       _scheduleOutputGainRamp(maxIncreaseDb);
     } else {
       _cancelOutputGainRamp();
     }
+    return write;
   }
 
   void _scheduleOutputGainRamp([
@@ -1750,21 +1762,32 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
   }
 
   int _lastVolumeKeyValue = 0;
+  bool _phoneVolumeKeyWriteInProgress = false;
 
-  void _handleUsbExclusiveVolumeKey() {
+  void _handleUsbExclusiveVolumeKey() async {
     final value = usbExclusiveVolumeKeyNotifier.value;
     final delta = value - _lastVolumeKeyValue;
     _lastVolumeKeyValue = value;
-    if (delta == 0 || !_usbExclusiveActive) {
+    final direction = usbExclusiveVolumeKeyDirection(
+      delta: delta,
+      active: _usbExclusiveActive,
+      writeInProgress: _phoneVolumeKeyWriteInProgress,
+    );
+    if (direction == null) {
       return;
     }
-    final direction = delta > 0
-        ? AndroidVolumeDirection.raise
-        : AndroidVolumeDirection.lower;
-    _setUserVolumeImmediately(
-      adjustedRemoteVolume(volumeNotifier.value, direction),
-    );
-    usbVolumeOverlayNotifier.value += 1;
+    _phoneVolumeKeyWriteInProgress = true;
+    try {
+      final write = _setUserVolumeImmediately(
+        adjustedRemoteVolume(volumeNotifier.value, direction),
+      );
+      usbVolumeOverlayNotifier.value += 1;
+      await write;
+    } on Object catch (error) {
+      logger.output("usb volume key apply failed:$error");
+    } finally {
+      _phoneVolumeKeyWriteInProgress = false;
+    }
   }
 
   void _handleUsbHardwareVolume() {

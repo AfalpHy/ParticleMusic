@@ -1,8 +1,6 @@
 import 'package:audio_service/audio_service.dart' as audio_service;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sylvakru/base/audio_handler.dart';
-import 'package:sylvakru/base/services/replay_gain.dart';
-import 'package:sylvakru/base/services/usb_audio_preferences.dart';
 import 'package:sylvakru/base/services/usb_audio_service.dart';
 
 void main() {
@@ -52,14 +50,14 @@ void main() {
     );
   });
 
-  test('远程相对音量按分贝步长调整并限制范围', () {
+  test('远程相对音量固定调整百分之二并限制范围', () {
     expect(
       adjustedRemoteVolume(0.5, audio_service.AndroidVolumeDirection.raise),
-      closeTo(0.5 * dbToUsbVolumeRatio(2.5), 0.000001),
+      closeTo(0.52, 0.000001),
     );
     expect(
       adjustedRemoteVolume(0.5, audio_service.AndroidVolumeDirection.lower),
-      closeTo(0.5 / dbToUsbVolumeRatio(2.5), 0.000001),
+      closeTo(0.48, 0.000001),
     );
     expect(
       adjustedRemoteVolume(0.5, audio_service.AndroidVolumeDirection.same),
@@ -67,6 +65,10 @@ void main() {
     );
     expect(
       adjustedRemoteVolume(1, audio_service.AndroidVolumeDirection.raise),
+      1,
+    );
+    expect(
+      adjustedRemoteVolume(0.99, audio_service.AndroidVolumeDirection.raise),
       1,
     );
     expect(
@@ -81,10 +83,45 @@ void main() {
       audio_service.AndroidVolumeDirection.raise,
     );
 
-    expect(next, closeTo(0.03 * dbToUsbVolumeRatio(2.5), 0.000001));
+    expect(next, closeTo(0.05, 0.000001));
     expect(
-      usbExclusiveDigitalVolumeGain(next) / usbExclusiveDigitalVolumeGain(0.03),
-      closeTo(dbToLinear(2.5), 0.000001),
+      next - 0.03,
+      closeTo(0.02, 0.000001),
+    );
+  });
+
+  test('USB 音量写入在途时忽略后续手机物理按键', () {
+    expect(
+      usbExclusiveVolumeKeyDirection(
+        delta: 1,
+        active: true,
+        writeInProgress: false,
+      ),
+      audio_service.AndroidVolumeDirection.raise,
+    );
+    expect(
+      usbExclusiveVolumeKeyDirection(
+        delta: -1,
+        active: true,
+        writeInProgress: false,
+      ),
+      audio_service.AndroidVolumeDirection.lower,
+    );
+    expect(
+      usbExclusiveVolumeKeyDirection(
+        delta: 1,
+        active: true,
+        writeInProgress: true,
+      ),
+      isNull,
+    );
+    expect(
+      usbExclusiveVolumeKeyDirection(
+        delta: 1,
+        active: false,
+        writeInProgress: false,
+      ),
+      isNull,
     );
   });
 }
