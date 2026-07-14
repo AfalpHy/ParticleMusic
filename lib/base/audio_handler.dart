@@ -65,15 +65,24 @@ double adjustedRemoteVolume(
   AndroidVolumeDirection direction,
 ) {
   final delta = identical(direction, AndroidVolumeDirection.raise)
-      ? 0.02
+      ? 0.05
       : identical(direction, AndroidVolumeDirection.lower)
-      ? -0.02
+      ? -0.05
       : 0.0;
   return (current + delta).clamp(0.0, 1.0).toDouble();
 }
 
 double absoluteRemoteVolume(int index) {
   return (index.clamp(0, 100) / 100).toDouble();
+}
+
+double adjustedAbsoluteRemoteVolume(double current, int index) {
+  final applied = current.clamp(0.0, 1.0).toDouble();
+  final target = absoluteRemoteVolume(index);
+  if (target <= applied) {
+    return target;
+  }
+  return math.min(target, applied + 0.2);
 }
 
 AndroidPlaybackInfo androidPlaybackInfoFor(

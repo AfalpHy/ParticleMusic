@@ -39,6 +39,7 @@ enum UsbBitDepthMode { auto, pcm16, pcm24, pcm32 }
 
 class UsbAudioPreferences {
   static const sampleRates = [44100, 48000, 88200, 96000, 176400, 192000];
+  static const defaultExclusiveVolume = 0.3;
 
   final fixedSampleRateEnabledNotifier = ValueNotifier(false);
   final fixedSampleRateNotifier = ValueNotifier<int?>(null);
@@ -57,8 +58,20 @@ class UsbAudioPreferences {
   final foregroundBufferMsNotifier = ValueNotifier(200);
   final backgroundBufferMsNotifier = ValueNotifier(1000);
   final volumeSmoothHandoffNotifier = ValueNotifier(true);
+  final Map<String, double> _exclusiveDeviceVolumes = {};
 
   void load(Map<String, dynamic> json) {
+    _exclusiveDeviceVolumes.clear();
+    final deviceVolumes = json['usbExclusiveDeviceVolumes'];
+    if (deviceVolumes is Map) {
+      for (final entry in deviceVolumes.entries) {
+        final key = entry.key;
+        final value = entry.value;
+        if (key is String && value is num && value.isFinite) {
+          setVolumeForDevice(key, value.toDouble());
+        }
+      }
+    }
     fixedSampleRateEnabledNotifier.value =
         json['usbFixedSampleRateEnabled'] as bool? ?? false;
     fixedSampleRateNotifier.value = _validRate(
@@ -131,7 +144,24 @@ class UsbAudioPreferences {
       'usbForegroundBufferMs': foregroundBufferMsNotifier.value,
       'usbBackgroundBufferMs': backgroundBufferMsNotifier.value,
       'usbVolumeSmoothHandoff': volumeSmoothHandoffNotifier.value,
+      'usbExclusiveDeviceVolumes': Map<String, double>.unmodifiable(
+        _exclusiveDeviceVolumes,
+      ),
     };
+  }
+
+  double volumeForDevice(String? key) {
+    if (key == null) return defaultExclusiveVolume;
+    return _exclusiveDeviceVolumes[key.toLowerCase()] ?? defaultExclusiveVolume;
+  }
+
+  void setVolumeForDevice(String? key, double volume) {
+    final normalized = key?.toLowerCase();
+    if (normalized == null ||
+        !RegExp(r'^[0-9a-f]{4}:[0-9a-f]{4}$').hasMatch(normalized)) {
+      return;
+    }
+    _exclusiveDeviceVolumes[normalized] = volume.clamp(0.0, 1.0).toDouble();
   }
 
   int? preferredFixedSampleRate() {

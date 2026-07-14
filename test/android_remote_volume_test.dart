@@ -83,11 +83,11 @@ void main() {
   test('远程相对音量按固定步长调整并限制范围', () {
     expect(
       adjustedRemoteVolume(0.5, audio_service.AndroidVolumeDirection.raise),
-      0.52,
+      0.55,
     );
     expect(
       adjustedRemoteVolume(0.5, audio_service.AndroidVolumeDirection.lower),
-      0.48,
+      0.45,
     );
     expect(
       adjustedRemoteVolume(0.5, audio_service.AndroidVolumeDirection.same),
@@ -109,5 +109,11 @@ void main() {
     expect(absoluteRemoteVolume(100), 1);
     expect(absoluteRemoteVolume(-1), 0);
     expect(absoluteRemoteVolume(101), 1);
+  });
+
+  test('远程绝对音量降低立即生效而提高单次不超过百分之二十', () {
+    expect(adjustedAbsoluteRemoteVolume(0.6, 20), 0.2);
+    expect(adjustedAbsoluteRemoteVolume(0.2, 90), 0.4);
+    expect(adjustedAbsoluteRemoteVolume(0.95, 100), 1);
   });
 }

@@ -245,6 +245,18 @@ void main() {
     expect(transition.needsRamp, isTrue);
   });
 
+  test('ReplayGain 可指定每步百分之二十的上升边界', () {
+    final transition = safeOutputGainTransition(
+      appliedGain: 0.2,
+      userGain: 0.8,
+      adjustmentDb: 0,
+      maxIncrease: 0.2,
+    );
+
+    expect(transition.appliedGain, closeTo(0.4, 0.000001));
+    expect(transition.needsRamp, isTrue);
+  });
+
   test('PCM 与 DSD 补偿都按最终有效输出执行上升保护', () {
     final pcm = safeOutputGainTransition(
       appliedGain: 0.3,

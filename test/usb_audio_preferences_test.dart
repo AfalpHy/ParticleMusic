@@ -92,6 +92,26 @@ void main() {
     }
   });
 
+  test('按 VID PID 保存独立 USB 音量并过滤非法数据', () {
+    usbAudioPreferences.load({
+      'usbExclusiveDeviceVolumes': {
+        '0661:0883': 0.42,
+        'GGGG:0001': 0.9,
+        '1234:5678': 2,
+      },
+    });
+
+    expect(usbAudioPreferences.volumeForDevice('0661:0883'), 0.42);
+    expect(usbAudioPreferences.volumeForDevice('1234:5678'), 1);
+    expect(usbAudioPreferences.volumeForDevice('GGGG:0001'), 0.3);
+    usbAudioPreferences.setVolumeForDevice('0661:0883', 0.25);
+    expect(
+      (usbAudioPreferences.toMap()['usbExclusiveDeviceVolumes']
+          as Map)['0661:0883'],
+      0.25,
+    );
+  });
+
   test('clamps foreground and background USB buffers to real limit', () {
     usbAudioPreferences.load({
       'usbForegroundBufferMs': 1400,

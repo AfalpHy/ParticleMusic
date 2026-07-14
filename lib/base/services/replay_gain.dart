@@ -28,6 +28,7 @@ SafeOutputGainTransition safeOutputGainTransition({
   required double? appliedGain,
   required double userGain,
   required double adjustmentDb,
+  double maxIncrease = 0.02,
 }) {
   final safeUserGain = userGain.clamp(0.0, 1.0).toDouble();
   final targetGain = (safeUserGain * dbToLinear(adjustmentDb))
@@ -36,7 +37,10 @@ SafeOutputGainTransition safeOutputGainTransition({
   final currentGain = appliedGain?.clamp(0.0, 1.0).toDouble();
   final nextGain = currentGain == null || targetGain <= currentGain
       ? targetGain
-      : math.min(targetGain, currentGain + 0.02);
+      : math.min(
+          targetGain,
+          currentGain + maxIncrease.clamp(0.0, 1.0).toDouble(),
+        );
   final appliedAdjustmentDb = safeUserGain <= 0 || nextGain <= 0
       ? adjustmentDb
       : 20 * math.log(nextGain / safeUserGain) / math.ln10;
