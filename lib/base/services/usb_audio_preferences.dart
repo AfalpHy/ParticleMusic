@@ -28,6 +28,12 @@ double usbExclusiveDigitalVolumeGain(double volume) {
   return math.pow(safeVolume, 1.5).toDouble();
 }
 
+String? usbExclusiveVolumeDeviceKey(int? vendorId, int? productId) {
+  if (vendorId == null || productId == null) return null;
+  return '${vendorId.toRadixString(16).padLeft(4, '0')}:'
+      '${productId.toRadixString(16).padLeft(4, '0')}';
+}
+
 enum UsbDsdMode { pcm, dop, native }
 
 enum ReplayGainMode { track, album, off }
@@ -61,17 +67,7 @@ class UsbAudioPreferences {
   final Map<String, double> _exclusiveDeviceVolumes = {};
 
   void load(Map<String, dynamic> json) {
-    _exclusiveDeviceVolumes.clear();
-    final deviceVolumes = json['usbExclusiveDeviceVolumes'];
-    if (deviceVolumes is Map) {
-      for (final entry in deviceVolumes.entries) {
-        final key = entry.key;
-        final value = entry.value;
-        if (key is String && value is num && value.isFinite) {
-          setVolumeForDevice(key, value.toDouble());
-        }
-      }
-    }
+    loadDeviceVolumes(json['usbExclusiveDeviceVolumes']);
     fixedSampleRateEnabledNotifier.value =
         json['usbFixedSampleRateEnabled'] as bool? ?? false;
     fixedSampleRateNotifier.value = _validRate(
@@ -122,6 +118,19 @@ class UsbAudioPreferences {
     );
     volumeSmoothHandoffNotifier.value =
         json['usbVolumeSmoothHandoff'] as bool? ?? true;
+  }
+
+  void loadDeviceVolumes(Object? deviceVolumes) {
+    _exclusiveDeviceVolumes.clear();
+    if (deviceVolumes is Map) {
+      for (final entry in deviceVolumes.entries) {
+        final key = entry.key;
+        final value = entry.value;
+        if (key is String && value is num && value.isFinite) {
+          setVolumeForDevice(key, value.toDouble());
+        }
+      }
+    }
   }
 
   Map<String, Object?> toMap() {

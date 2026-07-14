@@ -944,7 +944,7 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
 
   Widget _mediaVolumeTile() {
     return ValueListenableBuilder<double>(
-      valueListenable: volumeNotifier,
+      valueListenable: usbExclusiveVolumeNotifier,
       builder: (context, volume, _) {
         final percent = (volume.clamp(0.0, 1.0) * 100).round();
         final sliderValue = volume.clamp(0.0, 1.0);
@@ -979,8 +979,8 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
                   divisions: 100,
                   label: '$percent%',
                   onChanged: (next) {
-                    volumeNotifier.value = next;
-                    _setPlayerVolumeIfReady(next);
+                    usbExclusiveVolumeNotifier.value = next;
+                    _setUsbExclusiveVolumeIfReady(next);
                   },
                   onChangeEnd: (_) => setting.save(),
                 ),
@@ -992,9 +992,9 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
     );
   }
 
-  void _setPlayerVolumeIfReady(double volume) {
+  void _setUsbExclusiveVolumeIfReady(double volume) {
     try {
-      audioHandler.setVolume(volume);
+      audioHandler.setUsbExclusiveVolume(volume);
     } on Error catch (error) {
       if (!error.toString().contains('LateInitializationError')) rethrow;
     }

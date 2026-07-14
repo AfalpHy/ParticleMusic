@@ -112,6 +112,21 @@ void main() {
     );
   });
 
+  test('USB 状态生成稳定 VID PID 音量键', () {
+    expect(usbExclusiveVolumeDeviceKey(0x0661, 0x0883), '0661:0883');
+    expect(usbExclusiveVolumeDeviceKey(null, 0x0883), isNull);
+  });
+
+  test('播放状态可单独恢复设备音量记录', () {
+    usbAudioPreferences.loadDeviceVolumes({'0661:0883': 0.66});
+
+    expect(usbAudioPreferences.volumeForDevice('0661:0883'), 0.66);
+    expect(
+      usbAudioPreferences.replayGainModeNotifier.value,
+      ReplayGainMode.off,
+    );
+  });
+
   test('clamps foreground and background USB buffers to real limit', () {
     usbAudioPreferences.load({
       'usbForegroundBufferMs': 1400,
