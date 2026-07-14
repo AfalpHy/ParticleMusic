@@ -147,6 +147,14 @@ abstract class OpenSubsonicClient {
         [];
   }
 
+  Future<Map<String, dynamic>?> getSong(String songId) {
+    return safeRequest(
+      () => get('/rest/getSong.view', query: {'id': songId}),
+      (data) =>
+          Map<String, dynamic>.from(data['subsonic-response']['song'] as Map),
+    );
+  }
+
   Future<bool> starSongs(List<String> songIds) async {
     return await safeRequest(
           () => get('/rest/star.view', query: {'id': songIds}),

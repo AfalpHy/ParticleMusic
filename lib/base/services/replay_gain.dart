@@ -53,10 +53,22 @@ bool supplementReplayGainMetadata(
   MyAudioMetadata song,
   AudioMetadata metadata,
 ) {
-  final trackGain = metadata.replayGainTrackGainDb;
-  final trackPeak = metadata.replayGainTrackPeak;
-  final albumGain = metadata.replayGainAlbumGainDb;
-  final albumPeak = metadata.replayGainAlbumPeak;
+  return supplementReplayGainValues(
+    song,
+    trackGain: metadata.replayGainTrackGainDb,
+    trackPeak: metadata.replayGainTrackPeak,
+    albumGain: metadata.replayGainAlbumGainDb,
+    albumPeak: metadata.replayGainAlbumPeak,
+  );
+}
+
+bool supplementReplayGainValues(
+  MyAudioMetadata song, {
+  double? trackGain,
+  double? trackPeak,
+  double? albumGain,
+  double? albumPeak,
+}) {
   final supplementedTrackGain =
       song.replayGainTrackGainDb == null &&
           trackGain != null &&

@@ -422,6 +422,30 @@ void main() {
   );
 
   test(
+    'existing cloud cache is scanned once to supplement ReplayGain',
+    () async {
+      await library_data.loadLibrary();
+      final song = MyAudioMetadata.fromOpenSonicMap({
+        'id': 'existing-replay-gain-cache',
+        'title': 'Existing ReplayGain Cache',
+        'suffix': 'dsf',
+      }, app.SourceType.navidrome);
+      final cacheFile = File(song.cachePath!);
+      await cacheFile.parent.create(recursive: true);
+      await cacheFile.writeAsBytes(_buildDsfWithReplayGain());
+      song.cacheExist = true;
+
+      final library = library_data.Library();
+      await library.tryAddCache(song);
+
+      expect(song.replayGainTrackGainDb, -7);
+      expect(song.replayGainTrackPeak, 0.9);
+      expect(song.replayGainAlbumGainDb, -5.25);
+      expect(song.replayGainAlbumPeak, 1.1);
+    },
+  );
+
+  test(
     'cloud cache does not publish ReplayGain when API values are complete',
     () async {
       final dsd = _buildDsfWithReplayGain();

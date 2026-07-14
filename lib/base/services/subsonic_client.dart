@@ -93,6 +93,15 @@ class SubsonicClient extends OpenSubsonicClient {
   }
 
   @override
+  Future<Map<String, dynamic>?> getSong(String songId) async {
+    final song = await super.getSong(convertToServerId(songId));
+    if (song != null) {
+      song['id'] = convertToClinetId(song['id'].toString());
+    }
+    return song;
+  }
+
+  @override
   Future<List<String>> getFavoriteSongIds() async {
     return (await super.getFavoriteSongIds()).map(convertToClinetId).toList();
   }

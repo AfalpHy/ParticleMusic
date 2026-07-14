@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -339,10 +340,87 @@ class Library {
 
   final Map<String, Future<void>> _cacheDownloads = {};
   final Map<String, CancelToken> _cacheDownloadCancelTokens = {};
+  final Set<String> _replayGainApiChecked = {};
+  final Map<String, Future<void>> _replayGainApiRefreshes = {};
+  final Set<String> _replayGainCacheChecked = {};
+
+  Future<void> supplementReplayGainForPlayback(MyAudioMetadata song) async {
+    final client = switch (song.sourceType) {
+      .subsonic => subsonicClient,
+      .navidrome => navidromeClient,
+      _ => null,
+    };
+    final apiKey = '${song.sourceType.name}:${song.id}';
+    final metadataComplete =
+        song.replayGainTrackGainDb != null &&
+        song.replayGainTrackPeak != null &&
+        song.replayGainAlbumGainDb != null &&
+        song.replayGainAlbumPeak != null;
+    if (client != null && !metadataComplete) {
+      final inFlight = _replayGainApiRefreshes[apiKey];
+      if (inFlight != null) {
+        await inFlight;
+      } else if (!_replayGainApiChecked.contains(apiKey)) {
+        final refresh = _supplementReplayGainFromApi(
+          song,
+          client,
+          apiKey,
+        ).whenComplete(() => _replayGainApiRefreshes.remove(apiKey));
+        _replayGainApiRefreshes[apiKey] = refresh;
+        await refresh;
+      }
+    }
+    if (song.cacheExist && song.cachePath != null) {
+      await _supplementCachedReplayGain(song, song.cachePath!);
+    }
+  }
+
+  Future<void> _supplementReplayGainFromApi(
+    MyAudioMetadata song,
+    OpenSubsonicClient client,
+    String apiKey,
+  ) async {
+    try {
+      final songMap = await client
+          .getSong(song.id)
+          .timeout(const Duration(milliseconds: 1500));
+      if (songMap == null) {
+        return;
+      }
+      _replayGainApiChecked.add(apiKey);
+      final apiSong = MyAudioMetadata.fromOpenSonicMap(
+        songMap,
+        song.sourceType,
+      );
+      if (!supplementReplayGainValues(
+        song,
+        trackGain: apiSong.replayGainTrackGainDb,
+        trackPeak: apiSong.replayGainTrackPeak,
+        albumGain: apiSong.replayGainAlbumGainDb,
+        albumPeak: apiSong.replayGainAlbumPeak,
+      )) {
+        return;
+      }
+      await updateMetadata(song);
+      replayGainMetadataChangedNotifier.value = ReplayGainMetadataChangedEvent(
+        song.id,
+      );
+    } on TimeoutException {
+      logger.output('OpenSubsonic ReplayGain request timed out: ${song.id}');
+    } catch (e) {
+      logger.output('OpenSubsonic ReplayGain refresh failed: $e');
+    }
+  }
 
   Future<void> tryAddCache(MyAudioMetadata song) {
-    if (song.sourceType == .local || song.cacheExist) {
+    if (song.sourceType == .local) {
       return Future.value();
+    }
+    if (song.cacheExist) {
+      final savePath = song.cachePath;
+      return savePath == null
+          ? Future.value()
+          : _supplementCachedReplayGain(song, savePath);
     }
     final savePath = song.cachePath!;
     final inFlight = _cacheDownloads[savePath];
@@ -427,6 +505,9 @@ class Library {
     MyAudioMetadata song,
     String savePath,
   ) async {
+    if (!_replayGainCacheChecked.add(savePath)) {
+      return;
+    }
     if (song.replayGainTrackGainDb != null &&
         song.replayGainTrackPeak != null &&
         song.replayGainAlbumGainDb != null &&
@@ -485,6 +566,7 @@ class Library {
     }
 
     cacheSizeNotifier.value -= totalSize / (1024 * 1024);
+    _replayGainCacheChecked.clear();
   }
 
   Future<void> clearPicture(SourceType sourceType) async {
