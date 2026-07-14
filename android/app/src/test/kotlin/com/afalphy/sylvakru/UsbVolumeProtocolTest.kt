@@ -14,6 +14,14 @@ class UsbVolumeProtocolTest {
     private val protocol = IbassoDc03ProVolumeProtocol
 
     @Test
+    fun selectsUsbSlotFromPcmSourceBitDepthInAutoMode() {
+        assertEquals(16, preferredAutoPcmBitDepth(16, listOf(16, 24, 32)))
+        assertEquals(24, preferredAutoPcmBitDepth(20, listOf(16, 24, 32)))
+        assertEquals(24, preferredAutoPcmBitDepth(null, listOf(16, 24, 32)))
+        assertNull(preferredAutoPcmBitDepth(32, listOf(16, 24)))
+    }
+
+    @Test
     fun allowsPcmDigitalFallbackWithoutVerifiedHardwareVolume() {
         assertNull(
             unsafeDsdVolumeReason(

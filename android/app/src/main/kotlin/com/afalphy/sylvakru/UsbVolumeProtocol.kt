@@ -4,6 +4,18 @@ import kotlin.math.abs
 import kotlin.math.pow
 import kotlin.math.roundToInt
 
+internal fun preferredAutoPcmBitDepth(
+    sourceBitDepth: Int?,
+    availableBitDepths: List<Int>,
+): Int? {
+    val available = availableBitDepths.filter { it > 0 }.distinct()
+    if (sourceBitDepth == null) {
+        return listOf(24, 32, 16).firstOrNull { it in available } ?: available.minOrNull()
+    }
+    return available.firstOrNull { it == sourceBitDepth }
+        ?: available.filter { it > sourceBitDepth }.minOrNull()
+}
+
 internal data class UsbVolumeCapabilities(
     val readable: Boolean,
     val unsolicitedEvents: Boolean,

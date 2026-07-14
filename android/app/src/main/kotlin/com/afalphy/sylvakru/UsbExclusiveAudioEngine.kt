@@ -571,6 +571,16 @@ class UsbExclusiveAudioEngine(
             nativeDsd -> nativeDsdBytesPerSample(nativeFormat)?.let { it * 8 }
             else -> null
         }
+        val autoPcmSourceBitDepth = if (dsdReader == null && requestedBitDepth == null) {
+            readPcmSourceBitDepth(file)
+        } else {
+            null
+        }
+        val requestedSessionBitDepth = if (dsdReader == null) {
+            requestedBitDepth ?: autoPcmSourceBitDepth
+        } else {
+            requestedBitDepth
+        }
         targetBufferMs = ((arguments["targetBufferMs"] as? Number)?.toInt() ?: 200).coerceIn(50, 1000)
         if (streaming) {
             // 流式播放用更深的 USB 水位吸收下载抖动
@@ -597,7 +607,7 @@ class UsbExclusiveAudioEngine(
             sessionDeviceId == device.deviceId &&
             sessionSampleRate == requestedSampleRate &&
             sessionChannels == requestedChannels &&
-            sessionBitDepth == requestedBitDepth &&
+            sessionBitDepth == requestedSessionBitDepth &&
             sessionDsdKind == wantDsdKind &&
             (wantDsdKind != "native" || sessionNativeFormat == nativeFormat) &&
             (dsdReader == null || nativeDsd || sessionTarget!!.usbBytesPerSample >= 3)
@@ -709,6 +719,7 @@ class UsbExclusiveAudioEngine(
                     sampleRate = requestedSampleRate,
                     channels = requestedChannels,
                     bitDepth = requestedBitDepth,
+                    autoSourceBitDepth = if (dsdReader == null) autoPcmSourceBitDepth else null,
                     reportSelection = true,
                 )
             }
@@ -778,7 +789,11 @@ class UsbExclusiveAudioEngine(
             sessionDeviceId = device.deviceId
             sessionSampleRate = requestedSampleRate
             sessionChannels = requestedChannels
-            sessionBitDepth = requestedBitDepth
+            sessionBitDepth = if (dsdReader == null) {
+                requestedBitDepth ?: autoPcmSourceBitDepth
+            } else {
+                requestedBitDepth
+            }
             sessionTarget = resolvedTarget
             sessionDevice = device
             sessionDsdKind = when {
@@ -821,7 +836,7 @@ class UsbExclusiveAudioEngine(
             "durationMs" to reader?.durationMs,
             "sampleRate" to (reader?.sampleRate ?: arguments["sampleRate"]),
             "bitDepth" to if (reader != null) 1 else arguments["bitDepth"],
-            "sourceBitDepth" to if (reader != null) 1 else null,
+            "sourceBitDepth" to if (reader != null) 1 else autoPcmSourceBitDepth,
             "decodedBitDepth" to if (reader != null) 1 else null,
             "usbBitDepth" to (target.usbBitResolution ?: target.usbBytesPerSample * 8),
             "bitPerfect" to (reader != null),
@@ -3719,6 +3734,40 @@ class UsbExclusiveAudioEngine(
         packetizer.write(data)
     }
 
+    private fun readPcmSourceBitDepth(file: File): Int? {
+        val extractor = MediaExtractor()
+        return try {
+            extractor.setDataSource(file.absolutePath)
+            val trackIndex = findAudioTrack(extractor)
+            if (trackIndex < 0) {
+                null
+            } else {
+                val format = extractor.getTrackFormat(trackIndex)
+                val bitDepth = when {
+                    format.containsKey("bits-per-sample") -> format.getInteger("bits-per-sample")
+                    format.getString(MediaFormat.KEY_MIME) == "audio/raw" &&
+                        format.containsKey(MediaFormat.KEY_PCM_ENCODING) ->
+                        bitDepthFromPcmEncoding(format.getInteger(MediaFormat.KEY_PCM_ENCODING))
+                    else -> null
+                }?.takeIf { it in 8..32 }
+                UsbDiagnostics.i(
+                    tag,
+                    "PCM auto bit depth file=${file.name}, sourceBitDepth=${bitDepth ?: "unknown"}",
+                )
+                bitDepth
+            }
+        } catch (error: Throwable) {
+            UsbDiagnostics.w(
+                tag,
+                "PCM auto bit depth preflight failed for ${file.name}; using compatibility fallback.",
+                error,
+            )
+            null
+        } finally {
+            extractor.release()
+        }
+    }
+
     private fun findAudioTrack(extractor: MediaExtractor): Int {
         for (index in 0 until extractor.trackCount) {
             val format = extractor.getTrackFormat(index)
@@ -4252,6 +4301,7 @@ class UsbExclusiveAudioEngine(
         sampleRate: Int? = null,
         channels: Int = 2,
         bitDepth: Int? = null,
+        autoSourceBitDepth: Int? = null,
         requireRawData: Boolean = false,
         reportSelection: Boolean = false,
     ): OutputTarget? {
@@ -4304,11 +4354,13 @@ class UsbExclusiveAudioEngine(
             fittingCandidates.filter { it.usbBitResolution == requested }
         } ?: emptyList()
         val autoBitDepthCandidates = if (bitDepth == null) {
-            listOf(24, 32, 16)
-                .firstNotNullOfOrNull { preferred ->
-                    fittingCandidates.filter { it.usbBitResolution == preferred }.takeIf { it.isNotEmpty() }
-                }
-                ?: fittingCandidates
+            val preferred = preferredAutoPcmBitDepth(
+                autoSourceBitDepth,
+                fittingCandidates.mapNotNull { it.usbBitResolution },
+            )
+            preferred?.let { selectedDepth ->
+                fittingCandidates.filter { it.usbBitResolution == selectedDepth }
+            }?.takeIf { it.isNotEmpty() } ?: fittingCandidates
         } else {
             emptyList()
         }
@@ -4341,7 +4393,8 @@ class UsbExclusiveAudioEngine(
             tag,
             "selected USB alt=${selected.alternateSetting}, maxPacket=${selected.endpoint.maxPacketSize}, " +
                 "requiredPacketBytes=$selectedRequiredPacketBytes, " +
-                "requestedBitDepth=${bitDepth ?: "auto"}, selectedBitDepth=${selected.usbBitResolution}, " +
+                "requestedBitDepth=${bitDepth ?: "auto"}, autoSourceBitDepth=${autoSourceBitDepth ?: "unknown"}, " +
+                "selectedBitDepth=${selected.usbBitResolution}, " +
                 "packetsPerSecond=${selected.packetsPerSecond}, candidates=${sortedCandidates.joinToString { candidate ->
                     val required = requiredIsoPacketBytes(
                         sampleRate,
