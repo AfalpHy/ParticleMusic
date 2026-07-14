@@ -416,6 +416,16 @@ internal fun shouldUsePcmDigitalVolumeFallback(
     volumeMode != "raw" &&
     (!hardwareVolumeActive || !readbackVerified || writeOnly)
 
+internal fun shouldSmoothPcmVolumeHandoff(
+    smoothHandoff: Boolean,
+    isDsd: Boolean,
+    wasHardwareActive: Boolean,
+    hardwareVolumeActive: Boolean,
+): Boolean = smoothHandoff &&
+    !isDsd &&
+    !wasHardwareActive &&
+    hardwareVolumeActive
+
 internal fun routeIbassoVolumePacket(
     packet: ByteArray,
     pendingCommands: Set<Int>,

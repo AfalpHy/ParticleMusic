@@ -57,6 +57,34 @@ class UsbVolumeProtocolTest {
     }
 
     @Test
+    fun attenuatesImmediatelyWhenPcmFallsBackFromHardwareVolume() {
+        assertFalse(
+            shouldSmoothPcmVolumeHandoff(
+                smoothHandoff = true,
+                isDsd = false,
+                wasHardwareActive = true,
+                hardwareVolumeActive = false,
+            ),
+        )
+        assertTrue(
+            shouldSmoothPcmVolumeHandoff(
+                smoothHandoff = true,
+                isDsd = false,
+                wasHardwareActive = false,
+                hardwareVolumeActive = true,
+            ),
+        )
+        assertFalse(
+            shouldSmoothPcmVolumeHandoff(
+                smoothHandoff = false,
+                isDsd = false,
+                wasHardwareActive = false,
+                hardwareVolumeActive = true,
+            ),
+        )
+    }
+
+    @Test
     fun allowsDsdOnlyWithVerifiedReadableHardwareVolume() {
         assertNull(
             unsafeDsdVolumeReason(

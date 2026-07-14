@@ -1070,6 +1070,7 @@ class UsbExclusiveAudioEngine(
                         wasHardwareActive &&
                         shouldRestoreUnityAfterHardwareVolumeFailure(isDsd)
                     ) {
+                        applyPcmDigitalFallbackImmediately(isDsd, effectiveGainQ16)
                         val recovery = hardwareVolumeRecovery(
                             fallbackReason ?: "Hardware volume write failed.",
                             writeIbassoDc03ProVolume(
@@ -1178,6 +1179,7 @@ class UsbExclusiveAudioEngine(
                             wasHardwareActive &&
                             shouldRestoreUnityAfterHardwareVolumeFailure(isDsd)
                         ) {
+                            applyPcmDigitalFallbackImmediately(isDsd, effectiveGainQ16)
                             val recovery = hardwareVolumeRecovery(
                                 fallbackReason ?: "Hardware volume write failed.",
                                 writeHardwareVolume(
@@ -1247,7 +1249,12 @@ class UsbExclusiveAudioEngine(
             val targetPcmGain = if (volumeControlEnabled) effectiveGainQ16 else UNITY_GAIN_Q16
             setPcmVolumeGain(
                 targetPcmGain,
-                volumeSmoothHandoff && !isDsd && wasHardwareActive != hardwareVolumeActive,
+                shouldSmoothPcmVolumeHandoff(
+                    volumeSmoothHandoff,
+                    isDsd,
+                    wasHardwareActive,
+                    hardwareVolumeActive,
+                ),
             )
             val dsdVolumeError = unsafeDsdVolumeReason(
                 isDsd = isDsd,
@@ -2028,6 +2035,16 @@ class UsbExclusiveAudioEngine(
         )
         if (isDsd) {
             paused.set(true)
+        } else if (digitalFallback) {
+            synchronized(volumeLock) {
+                applyPcmDigitalFallbackImmediately(
+                    isDsd = false,
+                    effectiveVolumeGainQ16(
+                        requestedVolumeGainQ16,
+                        requestedReplayGainMilliDb,
+                    ),
+                )
+            }
         }
         updateState(
             currentState + mapOf(
@@ -2062,12 +2079,12 @@ class UsbExclusiveAudioEngine(
                     writeOnly = true,
                 )
                 if (volumeControlEnabled) {
-                    setPcmVolumeGain(
+                    applyPcmDigitalFallbackImmediately(
+                        isDsd,
                         effectiveVolumeGainQ16(
                             requestedVolumeGainQ16,
                             requestedReplayGainMilliDb,
                         ),
-                        smooth = true,
                     )
                 }
                 val dsdVolumeError = unsafeDsdVolumeReason(
@@ -2111,6 +2128,12 @@ class UsbExclusiveAudioEngine(
                 }
             }
         }
+    }
+
+    private fun applyPcmDigitalFallbackImmediately(isDsd: Boolean, effectiveGainQ16: Int) {
+        if (isDsd || volumeMode == "raw") return
+        volumeControlEnabled = true
+        setPcmVolumeGain(effectiveGainQ16, smooth = false)
     }
 
     private fun routeIbassoReaderPacket(
