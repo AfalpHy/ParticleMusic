@@ -14,6 +14,65 @@ class UsbVolumeProtocolTest {
     private val protocol = IbassoDc03ProVolumeProtocol
 
     @Test
+    fun allowsPcmDigitalFallbackWithoutVerifiedHardwareVolume() {
+        assertNull(
+            unsafeDsdVolumeReason(
+                isDsd = false,
+                hardwareVolumeActive = false,
+                readbackVerified = false,
+                writeOnly = true,
+            ),
+        )
+    }
+
+    @Test
+    fun allowsDsdOnlyWithVerifiedReadableHardwareVolume() {
+        assertNull(
+            unsafeDsdVolumeReason(
+                isDsd = true,
+                hardwareVolumeActive = true,
+                readbackVerified = true,
+                writeOnly = false,
+            ),
+        )
+    }
+
+    @Test
+    fun rejectsDsdWithoutActiveHardwareVolume() {
+        assertEquals(
+            "DSD playback requires active hardware volume.",
+            unsafeDsdVolumeReason(
+                isDsd = true,
+                hardwareVolumeActive = false,
+                readbackVerified = true,
+                writeOnly = false,
+            ),
+        )
+    }
+
+    @Test
+    fun rejectsDsdWriteOnlyOrUnverifiedHardwareVolume() {
+        assertEquals(
+            "DSD playback requires readable hardware volume confirmation.",
+            unsafeDsdVolumeReason(
+                isDsd = true,
+                hardwareVolumeActive = true,
+                readbackVerified = false,
+                writeOnly = false,
+            ),
+        )
+        assertEquals(
+            "DSD playback requires readable hardware volume confirmation.",
+            unsafeDsdVolumeReason(
+                isDsd = true,
+                hardwareVolumeActive = true,
+                readbackVerified = true,
+                writeOnly = true,
+            ),
+        )
+    }
+
+    @Test
     fun exposesIbassoProtocolCapabilities() {
         assertEquals("ibassoDc03Pro", protocol.id)
         assertEquals(

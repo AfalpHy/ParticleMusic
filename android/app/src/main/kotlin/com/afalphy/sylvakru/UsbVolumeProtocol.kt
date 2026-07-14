@@ -365,6 +365,22 @@ internal fun hardwareVolumeProtocolAfterRecovery(
     hardwareActive: Boolean,
 ): String? = previousProtocol.takeIf { hardwareActive }
 
+internal fun unsafeDsdVolumeReason(
+    isDsd: Boolean,
+    hardwareVolumeActive: Boolean,
+    readbackVerified: Boolean,
+    writeOnly: Boolean,
+): String? {
+    if (!isDsd) return null
+    if (!hardwareVolumeActive) {
+        return "DSD playback requires active hardware volume."
+    }
+    if (writeOnly || !readbackVerified) {
+        return "DSD playback requires readable hardware volume confirmation."
+    }
+    return null
+}
+
 internal fun routeIbassoVolumePacket(
     packet: ByteArray,
     pendingCommands: Set<Int>,

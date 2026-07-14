@@ -790,6 +790,18 @@ class UsbExclusiveAudioEngine(
         }
         sessionDevice = device
         applyVolumeControl(device, target, dsdReader != null, quirk)
+        val dsdVolumeError = unsafeDsdVolumeReason(
+            isDsd = dsdReader != null,
+            hardwareVolumeActive = hardwareVolumeActive,
+            readbackVerified = hardwareVolumeReadbackVerifiedState,
+            writeOnly = hardwareVolumeWriteOnlyState,
+        )
+        if (dsdVolumeError != null) {
+            UsbDiagnostics.w(tag, "DSD volume safety gate rejected playback: $dsdVolumeError")
+            dsdReader?.close()
+            hardCloseSession("DSD hardware volume was not safely confirmed")
+            return updateState(inactiveState(dsdVolumeError))
+        }
         sessionBroken = false
         workerEndedAtEof = false
         paused.set(arguments["startPaused"] == true)
