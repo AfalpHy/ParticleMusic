@@ -876,6 +876,22 @@ class UsbExclusiveAudioEngine(
             UsbDiagnostics.w(tag, "resume ignored because exclusive playback is not active: $currentState")
             return updateState(inactiveState("No exclusive playback is active."))
         }
+        val dsdVolumeError = unsafeDsdVolumeReason(
+            isDsd = sessionDsdKind != null,
+            hardwareVolumeActive = hardwareVolumeActive,
+            readbackVerified = hardwareVolumeReadbackVerifiedState,
+            writeOnly = hardwareVolumeWriteOnlyState,
+        )
+        if (dsdVolumeError != null) {
+            paused.set(true)
+            UsbDiagnostics.w(tag, "DSD resume rejected by volume safety gate: $dsdVolumeError")
+            return updateState(
+                currentState + mapOf(
+                    "playing" to false,
+                    "message" to dsdVolumeError,
+                ),
+            )
+        }
         UsbDiagnostics.i(
             tag,
             "resume exclusive playback position=${currentState["positionMs"]}, wasPaused=${paused.get()}",
@@ -1045,7 +1061,10 @@ class UsbExclusiveAudioEngine(
                                 isDsd,
                             )
                         }
-                    } else if (wasHardwareActive) {
+                    } else if (
+                        wasHardwareActive &&
+                        shouldRestoreUnityAfterHardwareVolumeFailure(isDsd)
+                    ) {
                         val recovery = hardwareVolumeRecovery(
                             fallbackReason ?: "Hardware volume write failed.",
                             writeIbassoDc03ProVolume(
@@ -1149,7 +1168,11 @@ class UsbExclusiveAudioEngine(
                                 )
                             }
                         }
-                        if (!hardwareVolumeActive && wasHardwareActive) {
+                        if (
+                            !hardwareVolumeActive &&
+                            wasHardwareActive &&
+                            shouldRestoreUnityAfterHardwareVolumeFailure(isDsd)
+                        ) {
                             val recovery = hardwareVolumeRecovery(
                                 fallbackReason ?: "Hardware volume write failed.",
                                 writeHardwareVolume(
@@ -1205,6 +1228,22 @@ class UsbExclusiveAudioEngine(
                 targetPcmGain,
                 volumeSmoothHandoff && !isDsd && wasHardwareActive != hardwareVolumeActive,
             )
+            val dsdVolumeError = unsafeDsdVolumeReason(
+                isDsd = isDsd,
+                hardwareVolumeActive = hardwareVolumeActive,
+                readbackVerified = hardwareVolumeReadbackVerifiedState,
+                writeOnly = hardwareVolumeWriteOnlyState,
+            )
+            if (dsdVolumeError != null && currentState["active"] == true) {
+                paused.set(true)
+                UsbDiagnostics.w(tag, "DSD playback paused by volume safety gate: $dsdVolumeError")
+                updateState(
+                    currentState + mapOf(
+                        "playing" to false,
+                        "message" to dsdVolumeError,
+                    ),
+                )
+            }
             if (fallbackReason != null) {
                 UsbDiagnostics.w(
                     tag,
@@ -1571,6 +1610,20 @@ class UsbExclusiveAudioEngine(
             UsbVolumeTarget(baseRaw, ibassoDsdVolume(baseRaw, dsdGainCompensationDb))
         } else {
             target
+        }
+        if (
+            shouldSkipIbassoVolumeWrite(
+                target = appliedTarget,
+                previousTarget = previousAppliedTarget,
+                readbackVerified = ibassoReaderHealth.readbackVerified,
+            )
+        ) {
+            UsbDiagnostics.i(
+                tag,
+                "Skipped unchanged verified iBasso hardware volume " +
+                    "register=${appliedTarget.baseRaw}, dsdRegister=${appliedTarget.dsdRaw}.",
+            )
+            return null
         }
         val value = appliedTarget.baseRaw
         val dsdValue = appliedTarget.dsdRaw

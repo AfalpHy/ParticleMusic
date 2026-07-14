@@ -213,6 +213,39 @@ class UsbVolumeProtocolTest {
     }
 
     @Test
+    fun neverRestoresUnityAfterDsdHardwareVolumeFailure() {
+        assertFalse(shouldRestoreUnityAfterHardwareVolumeFailure(isDsd = true))
+        assertTrue(shouldRestoreUnityAfterHardwareVolumeFailure(isDsd = false))
+    }
+
+    @Test
+    fun skipsOnlyVerifiedDuplicateIbassoVolumeTargets() {
+        val target = UsbVolumeTarget(baseRaw = 130, dsdRaw = 130)
+
+        assertTrue(
+            shouldSkipIbassoVolumeWrite(
+                target = target,
+                previousTarget = target,
+                readbackVerified = true,
+            ),
+        )
+        assertFalse(
+            shouldSkipIbassoVolumeWrite(
+                target = target,
+                previousTarget = target,
+                readbackVerified = false,
+            ),
+        )
+        assertFalse(
+            shouldSkipIbassoVolumeWrite(
+                target = target,
+                previousTarget = UsbVolumeTarget(baseRaw = 120, dsdRaw = 120),
+                readbackVerified = true,
+            ),
+        )
+    }
+
+    @Test
     fun keepsPreviousProtocolOnlyWhenHardwareRestoreFails() {
         assertEquals(
             "uac2",

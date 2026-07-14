@@ -374,6 +374,14 @@ internal fun hardwareVolumeRecovery(
     )
 }
 
+internal fun shouldRestoreUnityAfterHardwareVolumeFailure(isDsd: Boolean): Boolean = !isDsd
+
+internal fun shouldSkipIbassoVolumeWrite(
+    target: UsbVolumeTarget,
+    previousTarget: UsbVolumeTarget?,
+    readbackVerified: Boolean,
+): Boolean = readbackVerified && target == previousTarget
+
 internal fun hardwareVolumeProtocolAfterRecovery(
     previousProtocol: String?,
     hardwareActive: Boolean,
