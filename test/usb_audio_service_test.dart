@@ -13,6 +13,7 @@ void main() {
     messenger.setMockMethodCallHandler(channel, null);
     usbTransportTelemetryNotifier.value = UsbTransportTelemetry.inactive();
     usbHardwareVolumeNotifier.value = null;
+    usbExclusiveVolumeKeyNotifier.value = 0;
   });
 
   test(
@@ -474,6 +475,20 @@ void main() {
     expect(state.hardwareVolumeRaw, 97);
     expect(state.hardwareVolumeGainQ16, 32768);
     expect(state.replayGainMilliDb, -3500);
+  });
+
+  test('原生独占音量键事件累加按键方向', () async {
+    UsbAudioService(channel: channel, isAndroid: true);
+
+    await messenger.handlePlatformMessage(
+      channel.name,
+      const StandardMethodCodec().encodeMethodCall(
+        MethodCall('onUsbExclusiveVolumeKey', {'direction': -1}),
+      ),
+      (_) {},
+    );
+
+    expect(usbExclusiveVolumeKeyNotifier.value, -1);
   });
 
   test('exclusive playback state maps actual volume processing fields', () {

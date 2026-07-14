@@ -65,13 +65,6 @@ double nextSafeUsbVolume(double applied, double requested) {
   return math.pow(nextGain, 2 / 3).toDouble().clamp(0.0, 1.0);
 }
 
-bool shouldUseRemoteAndroidVolume(UsbExclusivePlaybackState state) {
-  return state.active &&
-      ((state.hardwareVolumeActive &&
-              state.hardwareVolumeReadbackVerified) ||
-          (state.digitalVolumeActive && state.bitDepth != 1));
-}
-
 double adjustedRemoteVolume(double current, AndroidVolumeDirection direction) {
   final applied = current.clamp(0.0, 1.0).toDouble();
   final ratio = dbToUsbVolumeRatio(_phoneUsbVolumeStepDb);
@@ -87,35 +80,10 @@ double adjustedRemoteVolume(double current, AndroidVolumeDirection direction) {
   return applied;
 }
 
-double absoluteRemoteVolume(int index) {
-  return (index.clamp(0, 100) / 100).toDouble();
-}
-
-double adjustedAbsoluteRemoteVolume(double current, int index) {
-  final applied = current.clamp(0.0, 1.0).toDouble();
-  final target = absoluteRemoteVolume(index);
-  if (target <= applied) {
-    return target;
-  }
-  final safeTarget = applied <= 0
-      ? 0.01
-      : applied * dbToUsbVolumeRatio(_phoneUsbVolumeStepDb);
-  return math.min(target, safeTarget).clamp(0.0, 1.0).toDouble();
-}
-
 AndroidPlaybackInfo androidPlaybackInfoFor(
-  UsbExclusivePlaybackState state,
-  double volume,
-) {
-  if (!shouldUseRemoteAndroidVolume(state)) {
-    return LocalAndroidPlaybackInfo();
-  }
-  return RemoteAndroidPlaybackInfo(
-    volumeControlType: AndroidVolumeControlType.absolute,
-    maxVolume: 100,
-    volume: (volume.clamp(0.0, 1.0) * 100).round(),
-  );
-}
+  UsbExclusivePlaybackState _,
+  double _,
+) => LocalAndroidPlaybackInfo();
 
 final autoPlayOnStartupNotifier = ValueNotifier(false);
 
@@ -262,6 +230,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     });
 
     usbExclusivePlaybackStateNotifier.addListener(_handleUsbExclusiveState);
+    usbExclusiveVolumeKeyNotifier.addListener(_handleUsbExclusiveVolumeKey);
     usbHardwareVolumeNotifier.addListener(_handleUsbHardwareVolume);
     usbAudioStatusNotifier.addListener(_handleUsbAudioStatus);
     _handleUsbAudioStatus();
@@ -1677,32 +1646,6 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     savePlayState();
   }
 
-  @override
-  Future<void> androidAdjustRemoteVolume(
-    AndroidVolumeDirection direction,
-  ) async {
-    if (!shouldUseRemoteAndroidVolume(
-      usbExclusivePlaybackStateNotifier.value,
-    )) {
-      return;
-    }
-    _setUserVolumeImmediately(
-      adjustedRemoteVolume(volumeNotifier.value, direction),
-    );
-  }
-
-  @override
-  Future<void> androidSetRemoteVolume(int volumeIndex) async {
-    if (!shouldUseRemoteAndroidVolume(
-      usbExclusivePlaybackStateNotifier.value,
-    )) {
-      return;
-    }
-    _setUserVolumeImmediately(
-      adjustedAbsoluteRemoteVolume(volumeNotifier.value, volumeIndex),
-    );
-  }
-
   // 与共享输出一致的感知音量曲线，返回 0..1 的线性幅度。
   double _perceptualVolumeGain(double volume) {
     return math.log(volume * 9 + 1) / math.log(10);
@@ -1804,6 +1747,24 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     _outputGainRampTimer?.cancel();
     _outputGainRampTimer = null;
     _outputGainRampStepDb = _safeUsbVolumeIncreaseDb;
+  }
+
+  int _lastVolumeKeyValue = 0;
+
+  void _handleUsbExclusiveVolumeKey() {
+    final value = usbExclusiveVolumeKeyNotifier.value;
+    final delta = value - _lastVolumeKeyValue;
+    _lastVolumeKeyValue = value;
+    if (delta == 0 || !_usbExclusiveActive) {
+      return;
+    }
+    final direction = delta > 0
+        ? AndroidVolumeDirection.raise
+        : AndroidVolumeDirection.lower;
+    _setUserVolumeImmediately(
+      adjustedRemoteVolume(volumeNotifier.value, direction),
+    );
+    usbVolumeOverlayNotifier.value += 1;
   }
 
   void _handleUsbHardwareVolume() {

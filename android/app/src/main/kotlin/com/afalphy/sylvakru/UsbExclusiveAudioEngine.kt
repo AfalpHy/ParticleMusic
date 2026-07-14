@@ -901,6 +901,10 @@ class UsbExclusiveAudioEngine(
         return updateState(currentState + mapOf("playing" to true, "message" to "Playing."))
     }
 
+    fun isVolumeControlEngaged(): Boolean =
+        currentState["active"] == true &&
+            (hardwareVolumeActive || (volumeControlEnabled && currentState["bitDepth"] != 1))
+
     fun seek(positionMs: Long): Map<String, Any?> {
         if (currentState["active"] != true) {
             UsbDiagnostics.w(tag, "seek ignored because exclusive playback is not active: $currentState")

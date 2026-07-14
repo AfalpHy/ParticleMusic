@@ -17,6 +17,7 @@ final usbTransportTelemetryNotifier = ValueNotifier(
 );
 final usbHardwareVolumeNotifier = ValueNotifier<UsbHardwareVolumeEvent?>(null);
 final usbVolumeOverlayNotifier = ValueNotifier<int>(0);
+final usbExclusiveVolumeKeyNotifier = ValueNotifier<int>(0);
 
 enum UsbAudioDeviceEventType { added, removed }
 
@@ -307,6 +308,15 @@ class UsbAudioService {
         (call.arguments as Map?)?.cast<String, Object?>() ?? const {},
       );
       _publishExclusiveState(state);
+      return null;
+    }
+
+    if (call.method == 'onUsbExclusiveVolumeKey') {
+      final direction =
+          _asInt((call.arguments as Map?)?['direction'] as Object?) ?? 0;
+      if (direction != 0) {
+        usbExclusiveVolumeKeyNotifier.value += direction;
+      }
       return null;
     }
 

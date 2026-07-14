@@ -20,35 +20,7 @@ void main() {
     'bitDepth': bitDepth,
   });
 
-  test('远程音量仅用于正在处理音量的 USB 独占播放', () {
-    expect(
-      shouldUseRemoteAndroidVolume(
-        state(active: true, hardware: true, verified: true),
-      ),
-      isTrue,
-    );
-    expect(
-      shouldUseRemoteAndroidVolume(state(active: true, digital: true)),
-      isTrue,
-    );
-    expect(
-      shouldUseRemoteAndroidVolume(state(active: false, hardware: true)),
-      isFalse,
-    );
-    expect(
-      shouldUseRemoteAndroidVolume(state(active: true, hardware: true)),
-      isFalse,
-    );
-    expect(shouldUseRemoteAndroidVolume(state(active: true)), isFalse);
-    expect(
-      shouldUseRemoteAndroidVolume(
-        state(active: true, digital: true, bitDepth: 1),
-      ),
-      isFalse,
-    );
-  });
-
-  test('安卓播放信息按 USB 实际音量路径切换远程和本地模式', () {
+  test('安卓播放信息始终使用本地音量模式', () {
     final hardware = androidPlaybackInfoFor(
       state(active: true, hardware: true, verified: true),
       0.426,
@@ -58,24 +30,8 @@ void main() {
       -1,
     );
 
-    expect(hardware, isA<audio_service.RemoteAndroidPlaybackInfo>());
-    final remote = hardware as audio_service.RemoteAndroidPlaybackInfo;
-    expect(
-      remote.volumeControlType,
-      audio_service.AndroidVolumeControlType.absolute,
-    );
-    expect(remote.maxVolume, 100);
-    expect(remote.volume, 43);
-    expect((digital as audio_service.RemoteAndroidPlaybackInfo).volume, 0);
-    expect(
-      (androidPlaybackInfoFor(
-                state(active: true, hardware: true, verified: true),
-                2,
-              )
-              as audio_service.RemoteAndroidPlaybackInfo)
-          .volume,
-      100,
-    );
+    expect(hardware, isA<audio_service.LocalAndroidPlaybackInfo>());
+    expect(digital, isA<audio_service.LocalAndroidPlaybackInfo>());
     expect(
       androidPlaybackInfoFor(
         state(active: false, hardware: true, verified: true),
@@ -117,23 +73,6 @@ void main() {
       adjustedRemoteVolume(0.01, audio_service.AndroidVolumeDirection.lower),
       0,
     );
-  });
-
-  test('远程绝对音量将系统索引映射到 0 到 1', () {
-    expect(absoluteRemoteVolume(0), 0);
-    expect(absoluteRemoteVolume(50), 0.5);
-    expect(absoluteRemoteVolume(100), 1);
-    expect(absoluteRemoteVolume(-1), 0);
-    expect(absoluteRemoteVolume(101), 1);
-  });
-
-  test('远程绝对音量降低立即生效而提高单次不超过 2.5 dB', () {
-    expect(adjustedAbsoluteRemoteVolume(0.6, 20), 0.2);
-    expect(
-      adjustedAbsoluteRemoteVolume(0.2, 90),
-      closeTo(0.2 * dbToUsbVolumeRatio(2.5), 0.000001),
-    );
-    expect(adjustedAbsoluteRemoteVolume(0.95, 100), 1);
   });
 
   test('低音量区单次手机加音量不会产生十余分贝跃升', () {
