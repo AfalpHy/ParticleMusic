@@ -348,6 +348,16 @@ internal fun effectiveHardwareVolumeGainQ16(
     return effectiveVolumeGainQ16(userGainQ16, combinedGainMilliDb)
 }
 
+internal fun pcmBitPerfect(
+    sourceBitDepth: Int?,
+    decodedBitDepth: Int?,
+    usbBitDepth: Int?,
+    digitalVolumeActive: Boolean,
+): Boolean = !digitalVolumeActive &&
+    sourceBitDepth != null &&
+    sourceBitDepth == decodedBitDepth &&
+    decodedBitDepth == usbBitDepth
+
 internal fun hardwareVolumeRecovery(
     writeFailure: String,
     restoreFailure: String?,

@@ -1000,6 +1000,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get encoding => '编码';
 
   @override
+  String get sourceBitDepth => '源位深';
+
+  @override
+  String get decodedBitDepth => '解码有效位深';
+
+  @override
+  String get usbSlotBitDepth => 'USB 槽位';
+
+  @override
+  String get bitDepthConverted => '位深转换';
+
+  @override
   String get requested => '已请求';
 
   @override

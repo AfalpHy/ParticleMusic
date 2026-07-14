@@ -1023,6 +1023,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get encoding => 'Encoding';
 
   @override
+  String get sourceBitDepth => 'Source bit depth';
+
+  @override
+  String get decodedBitDepth => 'Decoded effective depth';
+
+  @override
+  String get usbSlotBitDepth => 'USB slot';
+
+  @override
+  String get bitDepthConverted => 'Bit-depth conversion';
+
+  @override
   String get requested => 'Requested';
 
   @override

@@ -820,6 +820,10 @@ class UsbExclusiveAudioEngine(
             "durationMs" to reader?.durationMs,
             "sampleRate" to (reader?.sampleRate ?: arguments["sampleRate"]),
             "bitDepth" to if (reader != null) 1 else arguments["bitDepth"],
+            "sourceBitDepth" to if (reader != null) 1 else null,
+            "decodedBitDepth" to if (reader != null) 1 else null,
+            "usbBitDepth" to (target.usbBitResolution ?: target.usbBytesPerSample * 8),
+            "bitPerfect" to (reader != null),
             "hardwareVolumeActive" to hardwareVolumeActive,
             "digitalVolumeActive" to volumeControlEnabled,
             "replayGainMilliDb" to requestedReplayGainMilliDb,
@@ -939,10 +943,21 @@ class UsbExclusiveAudioEngine(
                     "hardware=$hardwareVolumeActive, digital=$volumeControlEnabled",
             )
             if (currentState["active"] == true) {
+                val bitPerfect = if (currentState["bitDepth"] == 1) {
+                    true
+                } else {
+                    pcmBitPerfect(
+                        (currentState["sourceBitDepth"] as? Number)?.toInt(),
+                        (currentState["decodedBitDepth"] as? Number)?.toInt(),
+                        (currentState["usbBitDepth"] as? Number)?.toInt(),
+                        volumeControlEnabled,
+                    )
+                }
                 updateState(
                     currentState + mapOf(
                         "hardwareVolumeActive" to hardwareVolumeActive,
                         "digitalVolumeActive" to volumeControlEnabled,
+                        "bitPerfect" to bitPerfect,
                         "replayGainMilliDb" to requestedReplayGainMilliDb,
                         "hardwareVolumeProtocol" to hardwareVolumeProtocol,
                         "hardwareVolumeRaw" to hardwareVolumeRaw,
@@ -2554,6 +2569,11 @@ class UsbExclusiveAudioEngine(
             } else {
                 null
             }
+            val sourceBitDepth = if (format.containsKey("bits-per-sample")) {
+                format.getInteger("bits-per-sample")
+            } else {
+                null
+            }
 
             UsbDiagnostics.i(
                 tag,
@@ -2581,6 +2601,15 @@ class UsbExclusiveAudioEngine(
                     "durationMs" to durationMs,
                     "sampleRate" to sampleRate,
                     "bitDepth" to (target.usbBitResolution ?: 16),
+                    "sourceBitDepth" to sourceBitDepth,
+                    "decodedBitDepth" to 16,
+                    "usbBitDepth" to (target.usbBitResolution ?: target.usbBytesPerSample * 8),
+                    "bitPerfect" to pcmBitPerfect(
+                        sourceBitDepth,
+                        16,
+                        target.usbBitResolution ?: target.usbBytesPerSample * 8,
+                        volumeControlEnabled,
+                    ),
                     "message" to "USB exclusive decoding ${file.name} to ${target.endpointLabel}, channels=$channels.",
                 ),
             )
@@ -2741,6 +2770,17 @@ class UsbExclusiveAudioEngine(
                         currentState + mapOf(
                             "sampleRate" to outputSampleRate,
                             "bitDepth" to (target.usbBitResolution ?: outputBitDepth),
+                            "sourceBitDepth" to sourceBitDepth,
+                            "decodedBitDepth" to outputBitDepth,
+                            "usbBitDepth" to (
+                                target.usbBitResolution ?: target.usbBytesPerSample * 8
+                            ),
+                            "bitPerfect" to pcmBitPerfect(
+                                sourceBitDepth,
+                                outputBitDepth,
+                                target.usbBitResolution ?: target.usbBytesPerSample * 8,
+                                volumeControlEnabled,
+                            ),
                         ),
                     )
                 }
@@ -3051,6 +3091,15 @@ class UsbExclusiveAudioEngine(
                 "durationMs" to durationMs,
                 "sampleRate" to sampleRate,
                 "bitDepth" to (target.usbBitResolution ?: sourceBitDepth),
+                "sourceBitDepth" to sourceBitDepth,
+                "decodedBitDepth" to sourceBitDepth,
+                "usbBitDepth" to (target.usbBitResolution ?: target.usbBytesPerSample * 8),
+                "bitPerfect" to pcmBitPerfect(
+                    sourceBitDepth,
+                    sourceBitDepth,
+                    target.usbBitResolution ?: target.usbBytesPerSample * 8,
+                    volumeControlEnabled,
+                ),
                 "message" to "USB exclusive streaming raw PCM ${file.name} to ${target.endpointLabel}.",
             ),
         )
@@ -4506,6 +4555,10 @@ class UsbExclusiveAudioEngine(
             "durationMs" to null,
             "sampleRate" to null,
             "bitDepth" to null,
+            "sourceBitDepth" to null,
+            "decodedBitDepth" to null,
+            "usbBitDepth" to null,
+            "bitPerfect" to false,
             "hardwareVolumeActive" to false,
             "digitalVolumeActive" to false,
             "hardwareVolumeProtocol" to null,

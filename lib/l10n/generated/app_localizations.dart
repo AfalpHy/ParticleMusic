@@ -2012,6 +2012,30 @@ abstract class AppLocalizations {
   /// **'Encoding'**
   String get encoding;
 
+  /// No description provided for @sourceBitDepth.
+  ///
+  /// In en, this message translates to:
+  /// **'Source bit depth'**
+  String get sourceBitDepth;
+
+  /// No description provided for @decodedBitDepth.
+  ///
+  /// In en, this message translates to:
+  /// **'Decoded effective depth'**
+  String get decodedBitDepth;
+
+  /// No description provided for @usbSlotBitDepth.
+  ///
+  /// In en, this message translates to:
+  /// **'USB slot'**
+  String get usbSlotBitDepth;
+
+  /// No description provided for @bitDepthConverted.
+  ///
+  /// In en, this message translates to:
+  /// **'Bit-depth conversion'**
+  String get bitDepthConverted;
+
   /// No description provided for @requested.
   ///
   /// In en, this message translates to:

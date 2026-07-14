@@ -513,6 +513,8 @@ class _AudioOutputSheetState extends State<_AudioOutputSheet> {
     return ValueListenableBuilder(
       valueListenable: usbAudioStatusNotifier,
       builder: (context, status, child) {
+        final exclusive = usbExclusivePlaybackStateNotifier.value;
+        final showPcmDepths = exclusive.active && exclusive.bitDepth != 1;
         return Padding(
           padding: EdgeInsets.only(
             left: 12,
@@ -608,6 +610,21 @@ class _AudioOutputSheetState extends State<_AudioOutputSheet> {
                       _InfoRow(l10n.outputPort, _outputPortLabel(status, l10n)),
                       _InfoRow(l10n.outputSampleRate, formatOutputSampleRate(status, l10n)),
                       _InfoRow(l10n.encoding, _outputEncodingLabel(status, l10n)),
+                      if (showPcmDepths)
+                        _InfoRow(
+                          l10n.sourceBitDepth,
+                          _formatBitDepth(exclusive.sourceBitDepth, l10n),
+                        ),
+                      if (showPcmDepths)
+                        _InfoRow(
+                          l10n.decodedBitDepth,
+                          _formatBitDepth(exclusive.decodedBitDepth, l10n),
+                        ),
+                      if (showPcmDepths)
+                        _InfoRow(
+                          l10n.usbSlotBitDepth,
+                          _formatBitDepth(exclusive.usbBitDepth, l10n),
+                        ),
                       _InfoRow(
                         'Bit-perfect',
                         _bitPerfectStatusLabel(status, l10n),
@@ -843,6 +860,7 @@ Color _outputDotColor(UsbAudioStatus status, UsbExclusivePlaybackState exclusive
 bool _exclusiveBitPerfect(UsbExclusivePlaybackState exclusive) {
   if (!exclusive.active) return false;
   if (exclusive.bitDepth == 1) return true;
+  if (exclusive.bitPerfect != null) return exclusive.bitPerfect!;
   return !exclusive.digitalVolumeActive;
 }
 
@@ -911,7 +929,11 @@ String _bitDepthLabel(UsbAudioStatus status, AppLocalizations l10n) {
   final exclusive = usbExclusivePlaybackStateNotifier.value;
   if (exclusive.active && exclusive.bitDepth != null) {
     // DoP 激活时 bitDepth=1（DSD 是 1-bit 流）
-    return exclusive.bitDepth == 1 ? '1 bit' : '${exclusive.bitDepth} bits';
+    if (exclusive.bitDepth == 1) return '1 bit';
+    return _formatBitDepth(
+      exclusive.decodedBitDepth ?? exclusive.bitDepth,
+      l10n,
+    );
   }
 
   final encoding = status.preferredEncoding ?? status.outputEncoding;
@@ -920,6 +942,10 @@ String _bitDepthLabel(UsbAudioStatus status, AppLocalizations l10n) {
   if (encoding == 'pcm_24bit_packed') return '24 bits';
   if (encoding == 'pcm_16bit') return '16 bits';
   return l10n.unknown;
+}
+
+String _formatBitDepth(int? bitDepth, AppLocalizations l10n) {
+  return bitDepth == null ? l10n.unknown : '$bitDepth bits';
 }
 
 String _outputEncodingLabel(UsbAudioStatus status, AppLocalizations l10n) {
@@ -948,6 +974,14 @@ String _bitPerfectStatusLabel(UsbAudioStatus status, AppLocalizations l10n) {
     if (exclusive.hardwareVolumeActive &&
         exclusive.hardwareVolumeUnverified) {
       processing = '$processing (${l10n.hardwareVolumeUnverified})';
+    }
+    final bitDepthConverted = exclusive.sourceBitDepth != null &&
+        exclusive.decodedBitDepth != null &&
+        exclusive.usbBitDepth != null &&
+        (exclusive.sourceBitDepth != exclusive.decodedBitDepth ||
+            exclusive.decodedBitDepth != exclusive.usbBitDepth);
+    if (!exclusive.digitalVolumeActive && bitDepthConverted) {
+      processing = '$processing · ${l10n.bitDepthConverted}';
     }
     if (exclusive.replayGainMilliDb != 0) {
       if (exclusive.hardwareVolumeActive || exclusive.digitalVolumeActive) {

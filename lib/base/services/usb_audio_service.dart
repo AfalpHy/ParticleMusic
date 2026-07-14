@@ -559,6 +559,10 @@ class UsbExclusivePlaybackState {
   final Duration? duration;
   final int? sampleRate;
   final int? bitDepth;
+  final int? sourceBitDepth;
+  final int? decodedBitDepth;
+  final int? usbBitDepth;
+  final bool? bitPerfect;
   final String? format;
   final bool hardwareVolumeActive;
   final bool digitalVolumeActive;
@@ -581,6 +585,10 @@ class UsbExclusivePlaybackState {
     required this.duration,
     required this.sampleRate,
     required this.bitDepth,
+    this.sourceBitDepth,
+    this.decodedBitDepth,
+    this.usbBitDepth,
+    this.bitPerfect,
     required this.format,
     required this.hardwareVolumeActive,
     required this.digitalVolumeActive,
@@ -629,6 +637,10 @@ class UsbExclusivePlaybackState {
           : Duration(milliseconds: _asInt(map['durationMs'])!),
       sampleRate: _asInt(map['sampleRate']),
       bitDepth: _asInt(map['bitDepth']),
+      sourceBitDepth: _asInt(map['sourceBitDepth']),
+      decodedBitDepth: _asInt(map['decodedBitDepth']),
+      usbBitDepth: _asInt(map['usbBitDepth']),
+      bitPerfect: map['bitPerfect'] as bool?,
       format: map['format'] as String?,
       hardwareVolumeActive: map['hardwareVolumeActive'] == true,
       digitalVolumeActive: map['digitalVolumeActive'] == true,
@@ -1085,7 +1097,10 @@ String buildUsbDiagnosticsReport(
   buffer.writeln(
     '- Exclusive: active=${state.active}, playing=${state.playing}, '
     'format=${state.format}, sampleRate=${state.sampleRate}, '
-    'bitDepth=${state.bitDepth}, position=${state.position.inMilliseconds}ms',
+    'bitDepth=${state.bitDepth}, sourceBitDepth=${state.sourceBitDepth}, '
+    'decodedBitDepth=${state.decodedBitDepth}, usbBitDepth=${state.usbBitDepth}, '
+    'bitPerfect=${state.bitPerfect}, '
+    'position=${state.position.inMilliseconds}ms',
   );
   buffer.writeln(
     '- Volume processing: hardware=${state.hardwareVolumeActive}, '

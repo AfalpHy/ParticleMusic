@@ -444,6 +444,10 @@ void main() {
           'durationMs': 240000,
           'sampleRate': 48000,
           'bitDepth': 24,
+          'sourceBitDepth': 24,
+          'decodedBitDepth': 16,
+          'usbBitDepth': 24,
+          'bitPerfect': false,
           'format': 'flac',
           'hardwareVolumeProtocol': 'ibassoDc03Pro',
           'hardwareVolumeRaw': 97,
@@ -462,6 +466,10 @@ void main() {
     expect(state.duration, const Duration(minutes: 4));
     expect(state.sampleRate, 48000);
     expect(state.bitDepth, 24);
+    expect(state.sourceBitDepth, 24);
+    expect(state.decodedBitDepth, 16);
+    expect(state.usbBitDepth, 24);
+    expect(state.bitPerfect, isFalse);
     expect(state.hardwareVolumeProtocol, 'ibassoDc03Pro');
     expect(state.hardwareVolumeRaw, 97);
     expect(state.hardwareVolumeGainQ16, 32768);

@@ -169,6 +169,16 @@ class UsbVolumeProtocolTest {
     }
 
     @Test
+    fun reportsPcmBitPerfectOnlyWhenEffectiveDepthAndUsbSlotMatch() {
+        assertTrue(pcmBitPerfect(24, 24, 24, digitalVolumeActive = false))
+        assertTrue(pcmBitPerfect(16, 16, 16, digitalVolumeActive = false))
+        assertFalse(pcmBitPerfect(24, 16, 24, digitalVolumeActive = false))
+        assertFalse(pcmBitPerfect(16, 16, 24, digitalVolumeActive = false))
+        assertFalse(pcmBitPerfect(null, 16, 16, digitalVolumeActive = false))
+        assertFalse(pcmBitPerfect(24, 24, 24, digitalVolumeActive = true))
+    }
+
+    @Test
     fun addsDsdCompensationOnlyToDsdHardwareVolume() {
         assertTrue(
             abs(effectiveHardwareVolumeGainQ16(32768, 0, 6, isDsd = true) - 65381) <= 2,
