@@ -263,17 +263,23 @@ class UsbVolumeProtocolTest {
     }
 
     @Test
-    fun decodesOnlyFixedLengthUnsolicitedVolumeEvents() {
-        val packet = ByteArray(16)
-        packet[0] = 0xfe.toByte()
-        packet[1] = 0x01
+    fun decodesEndpointPrefixedAndLegacyUnsolicitedVolumeEvents() {
+        val packet = ByteArray(32)
+        packet[4] = 0xfe.toByte()
+        packet[5] = 0x01
         packet[8] = 97
         packet[9] = 98
+        val legacy = ByteArray(16)
+        legacy[0] = 0xfe.toByte()
+        legacy[1] = 0x01
+        legacy[8] = 97
+        legacy[9] = 98
 
         assertEquals(UsbVolumeEvent(97, 98), protocol.decodeEvent(packet))
+        assertEquals(UsbVolumeEvent(97, 98), protocol.decodeEvent(legacy))
         assertNull(protocol.decodeEvent(packet.copyOf(9)))
 
-        val response = ByteArray(16)
+        val response = ByteArray(32)
         response[6] = 65
         response[8] = 97
         assertNull(protocol.decodeEvent(response))
@@ -301,7 +307,7 @@ class UsbVolumeProtocolTest {
     }
 
     @Test
-    fun routesOnlyPendingCommandResponses() {
+    fun routesCommandResponsesAndKeepsTheirCommandId() {
         val matchingPacket = ibassoResponsePacket(65)
         val matching = routeIbassoVolumePacket(matchingPacket, setOf(65), null)
         val wrongCommand = routeIbassoVolumePacket(ibassoResponsePacket(64), setOf(65), null)
@@ -310,7 +316,21 @@ class UsbVolumeProtocolTest {
         matching as IbassoVolumePacketRoute.CommandResponse
         assertEquals(65, matching.command)
         assertSame(matchingPacket, matching.packet)
-        assertEquals(IbassoVolumePacketRoute.Unknown, wrongCommand)
+        assertTrue(wrongCommand is IbassoVolumePacketRoute.CommandResponse)
+        wrongCommand as IbassoVolumePacketRoute.CommandResponse
+        assertEquals(64, wrongCommand.command)
+    }
+
+    @Test
+    fun routesLateValidCommandResponsesWithoutReportingUnknownPackets() {
+        val packet = ibassoResponsePacket(command = 0, value = 120)
+
+        val route = routeIbassoVolumePacket(packet, emptySet(), null)
+
+        assertTrue(route is IbassoVolumePacketRoute.CommandResponse)
+        route as IbassoVolumePacketRoute.CommandResponse
+        assertEquals(0, route.command)
+        assertSame(packet, route.packet)
     }
 
     @Test
@@ -650,15 +670,19 @@ class UsbVolumeProtocolTest {
     }
 
     private fun ibassoEventPacket(leftRaw: Int, rightRaw: Int): ByteArray =
-        ByteArray(16).also {
-            it[0] = 0xfe.toByte()
-            it[1] = 0x01
+        ByteArray(32).also {
+            it[4] = 0xfe.toByte()
+            it[5] = 0x01
             it[8] = leftRaw.toByte()
             it[9] = rightRaw.toByte()
         }
 
-    private fun ibassoResponsePacket(command: Int): ByteArray =
-        ByteArray(16).also { it[6] = command.toByte() }
+    private fun ibassoResponsePacket(command: Int, value: Int = 0): ByteArray =
+        ByteArray(32).also {
+            it[6] = command.toByte()
+            it[7] = 1
+            it[8] = value.toByte()
+        }
 
     private fun gainQ16ForIndex(index: Int): Int =
         ((index / 100.0).pow(1.5) * 65536).roundToInt()

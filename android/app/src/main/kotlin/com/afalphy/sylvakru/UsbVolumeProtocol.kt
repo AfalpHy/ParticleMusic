@@ -277,10 +277,14 @@ internal object IbassoDc03ProVolumeProtocol : UsbVolumeProtocol {
     }
 
     override fun decodeEvent(packet: ByteArray): UsbVolumeEvent? {
-        if (packet.size != IBASSO_EVENT_PACKET_SIZE ||
-            packet[0].toInt() and 0xff != 0xfe ||
-            packet[1].toInt() and 0xff != 0x01
-        ) {
+        if (packet.size < IBASSO_EVENT_MIN_PACKET_SIZE) {
+            return null
+        }
+        val endpointPrefixed = packet[4].toInt() and 0xff == 0xfe &&
+            packet[5].toInt() and 0xff == 0x01
+        val legacy = packet[0].toInt() and 0xff == 0xfe &&
+            packet[1].toInt() and 0xff == 0x01
+        if (!endpointPrefixed && !legacy) {
             return null
         }
         return UsbVolumeEvent(
@@ -395,11 +399,20 @@ internal fun routeIbassoVolumePacket(
         )
     }
     val command = packet.getOrNull(6)?.toInt()?.and(0xff)
-    return if (command != null && command in pendingCommands) {
-        IbassoVolumePacketRoute.CommandResponse(command, packet)
+    val pendingCommand = command?.takeIf { it in pendingCommands }
+    val responseCommand = pendingCommand ?: ibassoResponseCommand(packet)
+    return if (responseCommand != null) {
+        IbassoVolumePacketRoute.CommandResponse(responseCommand, packet)
     } else {
         IbassoVolumePacketRoute.Unknown
     }
+}
+
+private fun ibassoResponseCommand(packet: ByteArray): Int? {
+    if (packet.size <= 8) return null
+    val payloadLength = packet[7].toInt() and 0xff
+    if (payloadLength > packet.size - 8) return null
+    return packet[6].toInt() and 0xff
 }
 
 internal fun recentIbassoWrittenRaw(
@@ -448,7 +461,7 @@ internal fun ibassoActualEventGainQ16(
 }
 
 private const val IBASSO_UNITY_GAIN_Q16 = 65536
-private const val IBASSO_EVENT_PACKET_SIZE = 16
+private const val IBASSO_EVENT_MIN_PACKET_SIZE = 10
 
 private val ibassoVolumeTable = intArrayOf(
     255, 155, 150, 145, 140, 135, 130, 125, 120, 115, 110, 109, 108, 107, 106, 105,
