@@ -28,19 +28,17 @@ SafeOutputGainTransition safeOutputGainTransition({
   required double? appliedGain,
   required double userGain,
   required double adjustmentDb,
-  double maxIncrease = 0.02,
+  double maxIncreaseDb = 1,
 }) {
   final safeUserGain = userGain.clamp(0.0, 1.0).toDouble();
   final targetGain = (safeUserGain * dbToLinear(adjustmentDb))
       .clamp(0.0, 1.0)
       .toDouble();
-  final currentGain = appliedGain?.clamp(0.0, 1.0).toDouble();
-  final nextGain = currentGain == null || targetGain <= currentGain
-      ? targetGain
-      : math.min(
-          targetGain,
-          currentGain + maxIncrease.clamp(0.0, 1.0).toDouble(),
-        );
+  final nextGain = limitedOutputGainIncrease(
+    appliedGain: appliedGain,
+    targetGain: targetGain,
+    maxIncreaseDb: maxIncreaseDb,
+  );
   final appliedAdjustmentDb = safeUserGain <= 0 || nextGain <= 0
       ? adjustmentDb
       : 20 * math.log(nextGain / safeUserGain) / math.ln10;
@@ -49,6 +47,29 @@ SafeOutputGainTransition safeOutputGainTransition({
     appliedAdjustmentDb,
     nextGain + 0.000001 < targetGain,
   );
+}
+
+double limitedOutputGainIncrease({
+  required double? appliedGain,
+  required double targetGain,
+  required double maxIncreaseDb,
+}) {
+  final target = targetGain.clamp(0.0, 1.0).toDouble();
+  final current = appliedGain?.clamp(0.0, 1.0).toDouble();
+  if (current != null && target <= current) {
+    return target;
+  }
+  if (current == null || current <= 0) {
+    return math.min(target, dbToLinear(-60));
+  }
+  final start = current;
+  if (target <= start) {
+    return target;
+  }
+  final safeIncreaseDb = maxIncreaseDb.isNaN
+      ? 0.0
+      : maxIncreaseDb.clamp(0.0, 120.0).toDouble();
+  return math.min(target, start * dbToLinear(safeIncreaseDb));
 }
 
 ReplayGainResult replayGainFor(MyAudioMetadata song, ReplayGainMode mode) {

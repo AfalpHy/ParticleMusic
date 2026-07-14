@@ -46,8 +46,10 @@ final usbExclusiveVolumeNotifier = ValueNotifier(
   UsbAudioPreferences.defaultExclusiveVolume,
 );
 
-const _safeUsbVolumeStep = 0.02;
-const _fastUsbVolumeStep = 0.2;
+const _safeUsbVolumeIncreaseDb = 1.0;
+const _phoneUsbVolumeStepDb = 2.5;
+
+double dbToUsbVolumeRatio(double db) => math.pow(10, db / 30).toDouble();
 
 double nextSafeUsbVolume(double applied, double requested) {
   final current = applied.clamp(0.0, 1.0).toDouble();
@@ -55,7 +57,12 @@ double nextSafeUsbVolume(double applied, double requested) {
   if (target <= current) {
     return target;
   }
-  return math.min(target, current + _safeUsbVolumeStep);
+  final nextGain = limitedOutputGainIncrease(
+    appliedGain: usbExclusiveDigitalVolumeGain(current),
+    targetGain: usbExclusiveDigitalVolumeGain(target),
+    maxIncreaseDb: _safeUsbVolumeIncreaseDb,
+  );
+  return math.pow(nextGain, 2 / 3).toDouble().clamp(0.0, 1.0);
 }
 
 bool shouldUseRemoteAndroidVolume(UsbExclusivePlaybackState state) {
@@ -65,16 +72,19 @@ bool shouldUseRemoteAndroidVolume(UsbExclusivePlaybackState state) {
           (state.digitalVolumeActive && state.bitDepth != 1));
 }
 
-double adjustedRemoteVolume(
-  double current,
-  AndroidVolumeDirection direction,
-) {
-  final delta = identical(direction, AndroidVolumeDirection.raise)
-      ? 0.05
-      : identical(direction, AndroidVolumeDirection.lower)
-      ? -0.05
-      : 0.0;
-  return (current + delta).clamp(0.0, 1.0).toDouble();
+double adjustedRemoteVolume(double current, AndroidVolumeDirection direction) {
+  final applied = current.clamp(0.0, 1.0).toDouble();
+  final ratio = dbToUsbVolumeRatio(_phoneUsbVolumeStepDb);
+  if (identical(direction, AndroidVolumeDirection.raise)) {
+    return (applied <= 0 ? 0.01 : applied * ratio).clamp(0.0, 1.0).toDouble();
+  }
+  if (identical(direction, AndroidVolumeDirection.lower)) {
+    if (applied <= 0.01) {
+      return 0;
+    }
+    return (applied / ratio).clamp(0.0, 1.0).toDouble();
+  }
+  return applied;
 }
 
 double absoluteRemoteVolume(int index) {
@@ -87,7 +97,10 @@ double adjustedAbsoluteRemoteVolume(double current, int index) {
   if (target <= applied) {
     return target;
   }
-  return math.min(target, applied + 0.2);
+  final safeTarget = applied <= 0
+      ? 0.01
+      : applied * dbToUsbVolumeRatio(_phoneUsbVolumeStepDb);
+  return math.min(target, safeTarget).clamp(0.0, 1.0).toDouble();
 }
 
 AndroidPlaybackInfo androidPlaybackInfoFor(
@@ -168,7 +181,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
   double _volumeRampTarget = volumeNotifier.value;
   Timer? _volumeRampTimer;
   double? _appliedOutputGain;
-  double _outputGainRampStep = _safeUsbVolumeStep;
+  double _outputGainRampStepDb = _safeUsbVolumeIncreaseDb;
   Timer? _outputGainRampTimer;
   String? _usbVolumeDeviceKey;
 
@@ -304,13 +317,13 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     if (_usbExclusiveActive) {
       _applyUsbExclusiveVolume(
         usbExclusiveDigitalVolumeGain(volumeNotifier.value),
-        maxIncrease: _fastUsbVolumeStep,
+        maxIncreaseDb: _safeUsbVolumeIncreaseDb,
       );
     } else {
       unawaited(
         _applySharedReplayGain(
           _perceptualVolumeGain(volumeNotifier.value),
-          maxIncrease: _fastUsbVolumeStep,
+          maxIncreaseDb: _safeUsbVolumeIncreaseDb,
         ),
       );
     }
@@ -1588,7 +1601,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
 
   void _applyUserVolume(
     double volume, {
-    double maxOutputGainIncrease = _safeUsbVolumeStep,
+    double maxOutputGainIncreaseDb = _safeUsbVolumeIncreaseDb,
   }) {
     final next = volume.clamp(0.0, 1.0).toDouble();
     _appliedUserVolume = next;
@@ -1605,13 +1618,13 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     if (_usbExclusiveActive) {
       _applyUsbExclusiveVolume(
         usbExclusiveDigitalVolumeGain(next),
-        maxIncrease: maxOutputGainIncrease,
+        maxIncreaseDb: maxOutputGainIncreaseDb,
       );
     } else {
       unawaited(
         _applySharedReplayGain(
           perceptualGain,
-          maxIncrease: maxOutputGainIncrease,
+          maxIncreaseDb: maxOutputGainIncreaseDb,
         ),
       );
     }
@@ -1651,7 +1664,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     _volumeRampTarget = volume.clamp(0.0, 1.0).toDouble();
     _applyUserVolume(
       _volumeRampTarget,
-      maxOutputGainIncrease: _fastUsbVolumeStep,
+      maxOutputGainIncreaseDb: _phoneUsbVolumeStepDb,
     );
     savePlayState();
   }
@@ -1696,13 +1709,13 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
 
   Future<void> _applySharedReplayGain(
     double userLinearGain, {
-    double maxIncrease = _safeUsbVolumeStep,
+    double maxIncreaseDb = _safeUsbVolumeIncreaseDb,
   }) async {
     final transition = safeOutputGainTransition(
       appliedGain: _appliedOutputGain,
       userGain: userLinearGain,
       adjustmentDb: _effectiveReplayGainDb(userLinearGain),
-      maxIncrease: maxIncrease,
+      maxIncreaseDb: maxIncreaseDb,
     );
     _appliedOutputGain = transition.appliedGain;
     try {
@@ -1711,7 +1724,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
         transition.adjustmentDb.toStringAsFixed(3),
       );
       if (transition.needsRamp) {
-        _scheduleOutputGainRamp(maxIncrease);
+        _scheduleOutputGainRamp(maxIncreaseDb);
       } else {
         _cancelOutputGainRamp();
       }
@@ -1723,7 +1736,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
   // 把当前音量与控制模式下发给 USB 独占引擎，由原生层选择硬件音量或安全回退。
   void _applyUsbExclusiveVolume(
     double digitalGain, {
-    double maxIncrease = _safeUsbVolumeStep,
+    double maxIncreaseDb = _safeUsbVolumeIncreaseDb,
   }) {
     if (!_usbExclusiveActive) {
       return;
@@ -1737,7 +1750,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
       userGain: digitalGain,
       adjustmentDb:
           _effectiveReplayGainDb(digitalGain) + dsdCompensationDb,
-      maxIncrease: maxIncrease,
+      maxIncreaseDb: maxIncreaseDb,
     );
     _appliedOutputGain = transition.appliedGain;
     unawaited(
@@ -1750,40 +1763,39 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
       ),
     );
     if (transition.needsRamp) {
-      _scheduleOutputGainRamp(maxIncrease);
+      _scheduleOutputGainRamp(maxIncreaseDb);
     } else {
       _cancelOutputGainRamp();
     }
   }
 
   void _scheduleOutputGainRamp([
-    double maxIncrease = _safeUsbVolumeStep,
+    double maxIncreaseDb = _safeUsbVolumeIncreaseDb,
   ]) {
-    _outputGainRampStep = maxIncrease;
-    _outputGainRampTimer ??= Timer.periodic(
-      const Duration(milliseconds: 100),
-      (_) {
-        if (_usbExclusiveActive) {
-          _applyUsbExclusiveVolume(
-            usbExclusiveDigitalVolumeGain(volumeNotifier.value),
-            maxIncrease: _outputGainRampStep,
-          );
-        } else {
-          unawaited(
-            _applySharedReplayGain(
-              _perceptualVolumeGain(volumeNotifier.value),
-              maxIncrease: _outputGainRampStep,
-            ),
-          );
-        }
-      },
-    );
+    _outputGainRampStepDb = maxIncreaseDb;
+    _outputGainRampTimer ??= Timer.periodic(const Duration(milliseconds: 100), (
+      _,
+    ) {
+      if (_usbExclusiveActive) {
+        _applyUsbExclusiveVolume(
+          usbExclusiveDigitalVolumeGain(volumeNotifier.value),
+          maxIncreaseDb: _outputGainRampStepDb,
+        );
+      } else {
+        unawaited(
+          _applySharedReplayGain(
+            _perceptualVolumeGain(volumeNotifier.value),
+            maxIncreaseDb: _outputGainRampStepDb,
+          ),
+        );
+      }
+    });
   }
 
   void _cancelOutputGainRamp() {
     _outputGainRampTimer?.cancel();
     _outputGainRampTimer = null;
-    _outputGainRampStep = _safeUsbVolumeStep;
+    _outputGainRampStepDb = _safeUsbVolumeIncreaseDb;
   }
 
   void _handleUsbHardwareVolume() {

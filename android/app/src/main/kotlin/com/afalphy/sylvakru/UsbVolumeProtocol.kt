@@ -403,6 +403,16 @@ internal fun unsafeDsdVolumeReason(
     return null
 }
 
+internal fun shouldUsePcmDigitalVolumeFallback(
+    isDsd: Boolean,
+    volumeMode: String,
+    hardwareVolumeActive: Boolean,
+    readbackVerified: Boolean,
+    writeOnly: Boolean,
+): Boolean = !isDsd &&
+    volumeMode != "raw" &&
+    (!hardwareVolumeActive || !readbackVerified || writeOnly)
+
 internal fun routeIbassoVolumePacket(
     packet: ByteArray,
     pendingCommands: Set<Int>,

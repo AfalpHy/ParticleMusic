@@ -26,6 +26,37 @@ class UsbVolumeProtocolTest {
     }
 
     @Test
+    fun usesDigitalFallbackWhenPcmHardwareVolumeLosesVerification() {
+        assertTrue(
+            shouldUsePcmDigitalVolumeFallback(
+                isDsd = false,
+                volumeMode = "auto",
+                hardwareVolumeActive = true,
+                readbackVerified = false,
+                writeOnly = true,
+            ),
+        )
+        assertFalse(
+            shouldUsePcmDigitalVolumeFallback(
+                isDsd = true,
+                volumeMode = "auto",
+                hardwareVolumeActive = true,
+                readbackVerified = false,
+                writeOnly = true,
+            ),
+        )
+        assertFalse(
+            shouldUsePcmDigitalVolumeFallback(
+                isDsd = false,
+                volumeMode = "raw",
+                hardwareVolumeActive = false,
+                readbackVerified = false,
+                writeOnly = true,
+            ),
+        )
+    }
+
+    @Test
     fun allowsDsdOnlyWithVerifiedReadableHardwareVolume() {
         assertNull(
             unsafeDsdVolumeReason(

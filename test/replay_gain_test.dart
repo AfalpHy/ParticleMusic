@@ -233,27 +233,31 @@ void main() {
     expect(transition.needsRamp, isFalse);
   });
 
-  test('有效输出变大时单步最多增加两个百分点', () {
+  test('有效输出变大时单步最多增加一分贝', () {
     final transition = safeOutputGainTransition(
       appliedGain: 0.2,
       userGain: 0.8,
       adjustmentDb: 0,
     );
 
-    expect(transition.appliedGain, closeTo(0.22, 0.000001));
-    expect(0.8 * dbToLinear(transition.adjustmentDb), closeTo(0.22, 0.000001));
+    final expected = 0.2 * dbToLinear(1);
+    expect(transition.appliedGain, closeTo(expected, 0.000001));
+    expect(
+      0.8 * dbToLinear(transition.adjustmentDb),
+      closeTo(expected, 0.000001),
+    );
     expect(transition.needsRamp, isTrue);
   });
 
-  test('ReplayGain 可指定每步百分之二十的上升边界', () {
+  test('ReplayGain 可指定每步分贝上升边界', () {
     final transition = safeOutputGainTransition(
       appliedGain: 0.2,
       userGain: 0.8,
       adjustmentDb: 0,
-      maxIncrease: 0.2,
+      maxIncreaseDb: 2.5,
     );
 
-    expect(transition.appliedGain, closeTo(0.4, 0.000001));
+    expect(transition.appliedGain, closeTo(0.2 * dbToLinear(2.5), 0.000001));
     expect(transition.needsRamp, isTrue);
   });
 
@@ -269,22 +273,21 @@ void main() {
       adjustmentDb: 6.0206,
     );
 
-    expect(pcm.appliedGain, closeTo(0.32, 0.000001));
-    expect(dsd.appliedGain, closeTo(0.32, 0.000001));
+    expect(pcm.appliedGain, closeTo(0.3 * dbToLinear(1), 0.000001));
+    expect(dsd.appliedGain, closeTo(0.3 * dbToLinear(1), 0.000001));
     expect(pcm.needsRamp, isTrue);
     expect(dsd.needsRamp, isTrue);
   });
 
-  test('首次应用没有旧输出时直接使用当前安全目标', () {
+  test('首次应用没有可信旧输出时从负六十分贝安全起步', () {
     final transition = safeOutputGainTransition(
       appliedGain: null,
       userGain: 0.4,
       adjustmentDb: -6,
     );
 
-    expect(transition.appliedGain, closeTo(0.4 * dbToLinear(-6), 0.000001));
-    expect(transition.adjustmentDb, closeTo(-6, 0.000001));
-    expect(transition.needsRamp, isFalse);
+    expect(transition.appliedGain, closeTo(dbToLinear(-60), 0.000001));
+    expect(transition.needsRamp, isTrue);
   });
 
   test('零用户增益不限制 ReplayGain', () {

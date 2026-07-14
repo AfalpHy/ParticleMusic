@@ -1223,7 +1223,23 @@ class UsbExclusiveAudioEngine(
                 hardwareVolumeActive = false
             }
 
-            volumeControlEnabled = !hardwareVolumeActive && !isDsd && volumeMode != "raw"
+            if (
+                hardwareVolumeActive &&
+                (!hardwareVolumeReadbackVerifiedState || hardwareVolumeWriteOnlyState)
+            ) {
+                hardwareVolumeActive = false
+                hardwareVolumeRaw = null
+                hardwareVolumeGainQ16 = null
+                fallbackReason = fallbackReason
+                    ?: "Hardware volume readback is unavailable; using safe PCM fallback."
+            }
+            volumeControlEnabled = shouldUsePcmDigitalVolumeFallback(
+                isDsd = isDsd,
+                volumeMode = volumeMode,
+                hardwareVolumeActive = hardwareVolumeActive,
+                readbackVerified = hardwareVolumeReadbackVerifiedState,
+                writeOnly = hardwareVolumeWriteOnlyState,
+            )
             val targetPcmGain = if (volumeControlEnabled) effectiveGainQ16 else UNITY_GAIN_Q16
             setPcmVolumeGain(
                 targetPcmGain,
@@ -1998,17 +2014,99 @@ class UsbExclusiveAudioEngine(
         }
         ibassoReaderRunning.set(false)
         failIbassoPendingResponses("iBasso HID reader unavailable: $message")
+        val isDsd = sessionDsdKind != null
+        val digitalFallback = shouldUsePcmDigitalVolumeFallback(
+            isDsd = isDsd,
+            volumeMode = volumeMode,
+            hardwareVolumeActive = false,
+            readbackVerified = false,
+            writeOnly = true,
+        )
+        if (isDsd) {
+            paused.set(true)
+        }
         updateState(
             currentState + mapOf(
                 "hardwareVolumeReader" to "writeOnly",
-                "hardwareVolumeWriteOnly" to hardwareVolumeWriteOnlyState,
-                "hardwareVolumeReadbackVerified" to hardwareVolumeReadbackVerifiedState,
+                "playing" to (currentState["active"] == true && !isDsd && !paused.get()),
+                "hardwareVolumeActive" to false,
+                "digitalVolumeActive" to digitalFallback,
+                "hardwareVolumeWriteOnly" to true,
+                "hardwareVolumeReadbackVerified" to false,
             ),
         )
+        applyIbassoReadbackFailureFallback()
         UsbDiagnostics.w(
             tag,
             "iBasso HID reader is unavailable; hardware volume is write-only: $message",
         )
+    }
+
+    private fun applyIbassoReadbackFailureFallback() {
+        mainHandler.post {
+            synchronized(volumeLock) {
+                if (!ibassoReaderWriteOnly || ibassoReadbackVerified) return@synchronized
+                val isDsd = sessionDsdKind != null
+                hardwareVolumeActive = false
+                hardwareVolumeRaw = null
+                hardwareVolumeGainQ16 = null
+                volumeControlEnabled = shouldUsePcmDigitalVolumeFallback(
+                    isDsd = isDsd,
+                    volumeMode = volumeMode,
+                    hardwareVolumeActive = false,
+                    readbackVerified = false,
+                    writeOnly = true,
+                )
+                if (volumeControlEnabled) {
+                    setPcmVolumeGain(
+                        effectiveVolumeGainQ16(
+                            requestedVolumeGainQ16,
+                            requestedReplayGainMilliDb,
+                        ),
+                        smooth = true,
+                    )
+                }
+                val dsdVolumeError = unsafeDsdVolumeReason(
+                    isDsd = isDsd,
+                    hardwareVolumeActive = false,
+                    readbackVerified = false,
+                    writeOnly = true,
+                )
+                if (dsdVolumeError != null) {
+                    paused.set(true)
+                    UsbDiagnostics.w(
+                        tag,
+                        "DSD playback paused after hardware volume readback was lost: " +
+                            dsdVolumeError,
+                    )
+                }
+                if (currentState["active"] == true) {
+                    val bitPerfect = if (isDsd) {
+                        true
+                    } else {
+                        pcmBitPerfect(
+                            (currentState["sourceBitDepth"] as? Number)?.toInt(),
+                            (currentState["decodedBitDepth"] as? Number)?.toInt(),
+                            (currentState["usbBitDepth"] as? Number)?.toInt(),
+                            volumeControlEnabled,
+                        )
+                    }
+                    updateState(
+                        currentState + mapOf(
+                            "playing" to (dsdVolumeError == null && !paused.get()),
+                            "bitPerfect" to bitPerfect,
+                            "hardwareVolumeActive" to false,
+                            "digitalVolumeActive" to volumeControlEnabled,
+                            "hardwareVolumeRaw" to null,
+                            "hardwareVolumeGainQ16" to null,
+                            "hardwareVolumeWriteOnly" to true,
+                            "hardwareVolumeReadbackVerified" to false,
+                            "message" to dsdVolumeError,
+                        ),
+                    )
+                }
+            }
+        }
     }
 
     private fun routeIbassoReaderPacket(

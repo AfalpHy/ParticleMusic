@@ -1,6 +1,8 @@
 import 'package:audio_service/audio_service.dart' as audio_service;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sylvakru/base/audio_handler.dart';
+import 'package:sylvakru/base/services/replay_gain.dart';
+import 'package:sylvakru/base/services/usb_audio_preferences.dart';
 import 'package:sylvakru/base/services/usb_audio_service.dart';
 
 void main() {
@@ -94,21 +96,21 @@ void main() {
     );
   });
 
-  test('远程相对音量按固定步长调整并限制范围', () {
+  test('远程相对音量按分贝步长调整并限制范围', () {
     expect(
       adjustedRemoteVolume(0.5, audio_service.AndroidVolumeDirection.raise),
-      0.55,
+      closeTo(0.5 * dbToUsbVolumeRatio(2.5), 0.000001),
     );
     expect(
       adjustedRemoteVolume(0.5, audio_service.AndroidVolumeDirection.lower),
-      0.45,
+      closeTo(0.5 / dbToUsbVolumeRatio(2.5), 0.000001),
     );
     expect(
       adjustedRemoteVolume(0.5, audio_service.AndroidVolumeDirection.same),
       0.5,
     );
     expect(
-      adjustedRemoteVolume(0.99, audio_service.AndroidVolumeDirection.raise),
+      adjustedRemoteVolume(1, audio_service.AndroidVolumeDirection.raise),
       1,
     );
     expect(
@@ -125,9 +127,25 @@ void main() {
     expect(absoluteRemoteVolume(101), 1);
   });
 
-  test('远程绝对音量降低立即生效而提高单次不超过百分之二十', () {
+  test('远程绝对音量降低立即生效而提高单次不超过 2.5 dB', () {
     expect(adjustedAbsoluteRemoteVolume(0.6, 20), 0.2);
-    expect(adjustedAbsoluteRemoteVolume(0.2, 90), 0.4);
+    expect(
+      adjustedAbsoluteRemoteVolume(0.2, 90),
+      closeTo(0.2 * dbToUsbVolumeRatio(2.5), 0.000001),
+    );
     expect(adjustedAbsoluteRemoteVolume(0.95, 100), 1);
+  });
+
+  test('低音量区单次手机加音量不会产生十余分贝跃升', () {
+    final next = adjustedRemoteVolume(
+      0.03,
+      audio_service.AndroidVolumeDirection.raise,
+    );
+
+    expect(next, closeTo(0.03 * dbToUsbVolumeRatio(2.5), 0.000001));
+    expect(
+      usbExclusiveDigitalVolumeGain(next) / usbExclusiveDigitalVolumeGain(0.03),
+      closeTo(dbToLinear(2.5), 0.000001),
+    );
   });
 }
