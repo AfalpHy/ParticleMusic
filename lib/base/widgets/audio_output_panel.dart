@@ -613,17 +613,17 @@ class _AudioOutputSheetState extends State<_AudioOutputSheet> {
                       if (showPcmDepths)
                         _InfoRow(
                           l10n.sourceBitDepth,
-                          _formatBitDepth(exclusive.sourceBitDepth, l10n),
+                          formatUsbBitDepth(exclusive.sourceBitDepth, l10n),
                         ),
                       if (showPcmDepths)
                         _InfoRow(
                           l10n.decodedBitDepth,
-                          _formatBitDepth(exclusive.decodedBitDepth, l10n),
+                          formatUsbBitDepth(exclusive.decodedBitDepth, l10n),
                         ),
                       if (showPcmDepths)
                         _InfoRow(
                           l10n.usbSlotBitDepth,
-                          _formatBitDepth(exclusive.usbBitDepth, l10n),
+                          formatUsbBitDepth(exclusive.usbBitDepth, l10n),
                         ),
                       _InfoRow(
                         'Bit-perfect',
@@ -930,7 +930,7 @@ String _bitDepthLabel(UsbAudioStatus status, AppLocalizations l10n) {
   if (exclusive.active && exclusive.bitDepth != null) {
     // DoP 激活时 bitDepth=1（DSD 是 1-bit 流）
     if (exclusive.bitDepth == 1) return '1 bit';
-    return _formatBitDepth(
+    return formatUsbBitDepth(
       exclusive.decodedBitDepth ?? exclusive.bitDepth,
       l10n,
     );
@@ -944,7 +944,7 @@ String _bitDepthLabel(UsbAudioStatus status, AppLocalizations l10n) {
   return l10n.unknown;
 }
 
-String _formatBitDepth(int? bitDepth, AppLocalizations l10n) {
+String formatUsbBitDepth(int? bitDepth, AppLocalizations l10n) {
   return bitDepth == null ? l10n.unknown : '$bitDepth bits';
 }
 

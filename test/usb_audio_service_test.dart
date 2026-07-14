@@ -1,9 +1,17 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:sylvakru/base/services/usb_audio_service.dart';
+import 'package:sylvakru/base/widgets/audio_output_panel.dart';
+import 'package:sylvakru/l10n/generated/app_localizations_zh.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  test('源位深未知时不使用 USB 槽位冒充', () {
+    final l10n = AppLocalizationsZh();
+    expect(formatUsbBitDepth(16, l10n), '16 bits');
+    expect(formatUsbBitDepth(null, l10n), l10n.unknown);
+  });
 
   const channel = MethodChannel('com.afalphy.sylvakru/usb_audio');
   final messenger =

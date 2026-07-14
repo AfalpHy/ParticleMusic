@@ -866,6 +866,16 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
                 exclusive.active &&
                 exclusive.sampleRate != null &&
                 (exclusive.format?.contains('(Native)') ?? false);
+            final sourceDepth = song?.isDsd == true
+                ? '1-bit'
+                : formatUsbBitDepth(
+                    exclusive.sourceBitDepth,
+                    _l10n,
+                  ).replaceAll(' bits', '-bit');
+            final endpointDepth = formatUsbBitDepth(
+              exclusive.usbBitDepth,
+              _l10n,
+            ).replaceAll(' bits', '-bit');
             return Padding(
               padding: const EdgeInsets.fromLTRB(16, 16, 16, 18),
               child: Column(
@@ -875,7 +885,7 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
                     _sourceFormatLabel(song),
                     formatSampleRate(song?.samplerate, _l10n),
                     channel,
-                    song?.isDsd == true ? '1-bit' : _compactDepthLabel(status),
+                    sourceDepth,
                   ]),
                   const SizedBox(height: 24),
                   _formatMetricRow(_l10n.dacEndpoint, [
@@ -890,7 +900,7 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
                         ? '1-bit'
                         : dopActive
                         ? '24-bit'
-                        : _compactDepthLabel(status),
+                        : endpointDepth,
                   ]),
                 ],
               ),
