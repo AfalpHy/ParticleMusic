@@ -60,7 +60,8 @@ double nextSafeUsbVolume(double applied, double requested) {
 
 bool shouldUseRemoteAndroidVolume(UsbExclusivePlaybackState state) {
   return state.active &&
-      (state.hardwareVolumeActive ||
+      ((state.hardwareVolumeActive &&
+              state.hardwareVolumeReadbackVerified) ||
           (state.digitalVolumeActive && state.bitDepth != 1));
 }
 

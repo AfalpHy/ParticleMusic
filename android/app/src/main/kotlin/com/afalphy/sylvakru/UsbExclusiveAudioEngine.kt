@@ -307,6 +307,7 @@ class UsbExclusiveAudioEngine(
     private val ibassoVolumeEventDebouncer = IbassoVolumeEventDebouncer()
     private var pendingHardwareVolumeEvent: Map<String, Any?>? = null
     private var ibassoLastAppliedTarget: UsbVolumeTarget? = null
+    private var ibassoLastAppliedDeviceId: Int? = null
     private var ibassoHandoffBaseRaw: Int? = null
 
     private val diagnosticsLock = Any()
@@ -1549,14 +1550,21 @@ class UsbExclusiveAudioEngine(
             .firstOrNull { it.direction == UsbConstants.USB_DIR_IN }
             ?: return "iBasso HID input endpoint is unavailable."
         val newConnection = ibassoVolumeDeviceId != device.deviceId || ibassoVolumeConnection == null
-        val previousAppliedTarget = ibassoLastAppliedTarget.takeUnless { newConnection }
+        val previousAppliedTarget = trustedIbassoTargetForDevice(
+            ibassoLastAppliedTarget,
+            ibassoLastAppliedDeviceId,
+            device.deviceId,
+        )
         if (newConnection) {
             val resumeReaderHealth = shouldResumeIbassoReaderHealth(
                 ibassoReaderHealth,
                 ibassoReaderHealthDeviceId,
                 device.deviceId,
             )
-            closeIbassoVolumeControl(resetReaderHealth = !resumeReaderHealth)
+            closeIbassoVolumeControl(
+                resetReaderHealth = !resumeReaderHealth,
+                clearTrustedTarget = previousAppliedTarget == null,
+            )
             val controlConnection = context.getSystemService(UsbManager::class.java).openDevice(device)
                 ?: return "iBasso control connection is unavailable."
             if (!controlConnection.claimInterface(hidInterface, true)) {
@@ -1647,6 +1655,7 @@ class UsbExclusiveAudioEngine(
         }
         if (ibassoReaderWriteOnly) {
             ibassoLastAppliedTarget = appliedTarget
+            ibassoLastAppliedDeviceId = device.deviceId
             UsbDiagnostics.w(
                 tag,
                 "iBasso hardware volume applied with readback=unavailable, writeOnly=true, " +
@@ -1675,6 +1684,7 @@ class UsbExclusiveAudioEngine(
             )
         }
         ibassoLastAppliedTarget = appliedTarget
+        ibassoLastAppliedDeviceId = device.deviceId
         ibassoLastWrittenRaw = appliedActiveRaw
         ibassoLastWrittenAtMs = SystemClock.elapsedRealtime()
         synchronized(ibassoReaderHealthLock) {
@@ -2069,11 +2079,29 @@ class UsbExclusiveAudioEngine(
             } else {
                 right
             }
+            val actualBaseRaw = if (left.gainQ16 <= right.gainQ16) {
+                pendingEvent.leftRaw
+            } else {
+                pendingEvent.rightRaw
+            }
+            synchronized(ibassoReaderHealthLock) {
+                ibassoReaderHealth = ibassoReaderHealth.afterVerifiedReadback()
+            }
+            hardwareVolumeActive = true
+            volumeControlEnabled = false
+            setPcmVolumeGain(65536, smooth = true)
             hardwareVolumeProtocol = IbassoDc03ProVolumeProtocol.id
             hardwareVolumeRaw = actual.raw
             hardwareVolumeGainQ16 = actual.gainQ16
+            ibassoLastAppliedTarget = ibassoTargetFromEvent(
+                actualBaseRaw,
+                dsdGainCompensationDb,
+            )
+            ibassoLastAppliedDeviceId = ibassoVolumeDeviceId
             updateState(
                 currentState + mapOf(
+                    "hardwareVolumeActive" to true,
+                    "digitalVolumeActive" to false,
                     "hardwareVolumeProtocol" to hardwareVolumeProtocol,
                     "hardwareVolumeRaw" to actual.raw,
                     "hardwareVolumeGainQ16" to actual.gainQ16,
@@ -2129,7 +2157,10 @@ class UsbExclusiveAudioEngine(
         ibassoPendingResponses.clear()
     }
 
-    private fun closeIbassoVolumeControl(resetReaderHealth: Boolean = true) {
+    private fun closeIbassoVolumeControl(
+        resetReaderHealth: Boolean = true,
+        clearTrustedTarget: Boolean = resetReaderHealth,
+    ) {
         val reader = synchronized(ibassoReaderLock) {
             ibassoReaderGeneration.incrementAndGet()
             ibassoReaderFailureHandled.set(true)
@@ -2161,7 +2192,10 @@ class UsbExclusiveAudioEngine(
         ibassoVolumeConnection = null
         ibassoVolumeInterface = null
         ibassoVolumeDeviceId = null
-        ibassoLastAppliedTarget = null
+        if (clearTrustedTarget) {
+            ibassoLastAppliedTarget = null
+            ibassoLastAppliedDeviceId = null
+        }
         ibassoHandoffBaseRaw = null
         ibassoLastWrittenRaw = null
         ibassoLastWrittenAtMs = 0L

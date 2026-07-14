@@ -581,6 +581,23 @@ class UsbVolumeProtocolTest {
     }
 
     @Test
+    fun keepsTrustedIbassoTargetOnlyForSameDevice() {
+        val target = UsbVolumeTarget(baseRaw = 97, dsdRaw = 85)
+
+        assertEquals(target, trustedIbassoTargetForDevice(target, 7, 7))
+        assertNull(trustedIbassoTargetForDevice(target, 7, 8))
+        assertNull(trustedIbassoTargetForDevice(null, 7, 7))
+    }
+
+    @Test
+    fun unsolicitedIbassoEventBecomesTrustedTarget() {
+        assertEquals(
+            UsbVolumeTarget(baseRaw = 97, dsdRaw = 85),
+            ibassoTargetFromEvent(baseRaw = 97, dsdCompensationDb = 6),
+        )
+    }
+
+    @Test
     fun selectsDirectSetReportForRollbackWhenReaderIsUnavailable() {
         assertTrue(
             shouldUseDirectIbassoSetReport(

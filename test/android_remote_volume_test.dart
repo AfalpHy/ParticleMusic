@@ -8,17 +8,21 @@ void main() {
     required bool active,
     bool hardware = false,
     bool digital = false,
+    bool verified = false,
     int? bitDepth = 24,
   }) => UsbExclusivePlaybackState.fromMap({
     'active': active,
     'hardwareVolumeActive': hardware,
     'digitalVolumeActive': digital,
+    'hardwareVolumeReadbackVerified': verified,
     'bitDepth': bitDepth,
   });
 
   test('远程音量仅用于正在处理音量的 USB 独占播放', () {
     expect(
-      shouldUseRemoteAndroidVolume(state(active: true, hardware: true)),
+      shouldUseRemoteAndroidVolume(
+        state(active: true, hardware: true, verified: true),
+      ),
       isTrue,
     );
     expect(
@@ -27,6 +31,10 @@ void main() {
     );
     expect(
       shouldUseRemoteAndroidVolume(state(active: false, hardware: true)),
+      isFalse,
+    );
+    expect(
+      shouldUseRemoteAndroidVolume(state(active: true, hardware: true)),
       isFalse,
     );
     expect(shouldUseRemoteAndroidVolume(state(active: true)), isFalse);
@@ -40,7 +48,7 @@ void main() {
 
   test('安卓播放信息按 USB 实际音量路径切换远程和本地模式', () {
     final hardware = androidPlaybackInfoFor(
-      state(active: true, hardware: true),
+      state(active: true, hardware: true, verified: true),
       0.426,
     );
     final digital = androidPlaybackInfoFor(
@@ -58,13 +66,19 @@ void main() {
     expect(remote.volume, 43);
     expect((digital as audio_service.RemoteAndroidPlaybackInfo).volume, 0);
     expect(
-      (androidPlaybackInfoFor(state(active: true, hardware: true), 2)
+      (androidPlaybackInfoFor(
+                state(active: true, hardware: true, verified: true),
+                2,
+              )
               as audio_service.RemoteAndroidPlaybackInfo)
           .volume,
       100,
     );
     expect(
-      androidPlaybackInfoFor(state(active: false, hardware: true), 0.5),
+      androidPlaybackInfoFor(
+        state(active: false, hardware: true, verified: true),
+        0.5,
+      ),
       isA<audio_service.LocalAndroidPlaybackInfo>(),
     );
     expect(

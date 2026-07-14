@@ -554,6 +554,20 @@ internal fun ibassoRollbackTarget(
     UsbVolumeTarget(baseRaw, ibassoDsdVolume(baseRaw, dsdCompensationDb))
 }
 
+internal fun trustedIbassoTargetForDevice(
+    target: UsbVolumeTarget?,
+    targetDeviceId: Int?,
+    deviceId: Int,
+): UsbVolumeTarget? = target.takeIf { targetDeviceId == deviceId }
+
+internal fun ibassoTargetFromEvent(
+    baseRaw: Int,
+    dsdCompensationDb: Int,
+): UsbVolumeTarget = UsbVolumeTarget(
+    baseRaw.coerceIn(0, 255),
+    ibassoDsdVolume(baseRaw, dsdCompensationDb),
+)
+
 internal fun ibassoVolumeReadPacket(): ByteArray = ByteArray(16).also {
     it[0] = 65
     it[1] = 0x12
