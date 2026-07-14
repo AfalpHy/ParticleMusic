@@ -60,7 +60,6 @@ class _UsbExclusiveVolumeOverlayState extends State<UsbExclusiveVolumeOverlay>
   }
 
   void _applyVolume(double next) {
-    volumeNotifier.value = next;
     audioHandler.setVolume(next);
     _show();
   }

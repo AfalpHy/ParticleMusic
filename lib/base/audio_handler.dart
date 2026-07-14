@@ -43,6 +43,17 @@ final isPlayingNotifier = ValueNotifier(false);
 final playModeNotifier = ValueNotifier(0);
 final volumeNotifier = ValueNotifier(0.3);
 
+const _safeUsbVolumeStep = 0.02;
+
+double nextSafeUsbVolume(double applied, double requested) {
+  final current = applied.clamp(0.0, 1.0).toDouble();
+  final target = requested.clamp(0.0, 1.0).toDouble();
+  if (target <= current) {
+    return target;
+  }
+  return math.min(target, current + _safeUsbVolumeStep);
+}
+
 bool shouldUseRemoteAndroidVolume(UsbExclusivePlaybackState state) {
   return state.active &&
       (state.hardwareVolumeActive ||
@@ -138,6 +149,9 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
   bool _suppressPlayerCompleted = false;
   final _positionController = StreamController<Duration>.broadcast();
   ReplayGainResult _currentReplayGain = const ReplayGainResult(0, null, null);
+  double _appliedUserVolume = volumeNotifier.value;
+  double _volumeRampTarget = volumeNotifier.value;
+  Timer? _volumeRampTimer;
 
   late final File _playQueueState;
   late final File _playState;
@@ -313,6 +327,9 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     final wasActive = _usbExclusiveActive;
     _usbExclusivePosition = state.position;
     _usbExclusiveActive = state.active;
+    if (wasActive && !state.active) {
+      _cancelVolumeRamp();
+    }
     _publishAndroidPlaybackInfo();
 
     if (state.active) {
@@ -529,7 +546,13 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     playModeNotifier.value = json['playMode'] as int? ?? 0;
     _tmpPlayMode = json['tmpPlayMode'] as int? ?? 0;
 
-    volumeNotifier.value = json['volume'] as double? ?? 0.3;
+    final restoredVolume = (json['volume'] as double? ?? 0.3)
+        .clamp(0.0, 1.0)
+        .toDouble();
+    _appliedUserVolume = restoredVolume;
+    _volumeRampTarget = restoredVolume;
+    volumeNotifier.value = restoredVolume;
+    _applyUserVolume(restoredVolume);
 
     if (!_started) {
       _started = true;
@@ -552,9 +575,6 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
         currentIndex = 0;
       }
       await load();
-    }
-    if (!isMobile) {
-      setVolume(volumeNotifier.value);
     }
   }
 
@@ -792,6 +812,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
   }
 
   Future<void> load() async {
+    _cancelVolumeRamp();
     final generation = ++_loadGeneration;
     final previousSong = currentSongNotifier.value;
     final previousNext = previousSong == null
@@ -1328,6 +1349,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
 
   @override
   Future<void> pause() async {
+    _cancelVolumeRamp();
     debugPrint(
       "audio handler pause requested: usbExclusiveActive=$_usbExclusiveActive, playing=${isPlayingNotifier.value}",
     );
@@ -1349,6 +1371,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
 
   @override
   Future<void> stop() async {
+    _cancelVolumeRamp();
     if (_usbExclusiveActive) {
       await _stopExclusiveIntentionally();
       _usbExclusiveActive = false;
@@ -1417,14 +1440,54 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
   }
 
   void setVolume(double volume) {
-    final perceptualGain = _perceptualVolumeGain(volume);
+    _volumeRampTarget = volume.clamp(0.0, 1.0).toDouble();
+    if (_volumeRampTarget <= _appliedUserVolume) {
+      _volumeRampTimer?.cancel();
+      _volumeRampTimer = null;
+      _applyUserVolume(_volumeRampTarget);
+      return;
+    }
+
+    _applyUserVolume(
+      nextSafeUsbVolume(_appliedUserVolume, _volumeRampTarget),
+    );
+    if (_appliedUserVolume + 0.000001 >= _volumeRampTarget) {
+      return;
+    }
+    _volumeRampTimer ??= Timer.periodic(
+      const Duration(milliseconds: 100),
+      (_) {
+        _applyUserVolume(
+          nextSafeUsbVolume(_appliedUserVolume, _volumeRampTarget),
+        );
+        if (_appliedUserVolume + 0.000001 >= _volumeRampTarget) {
+          _cancelVolumeRamp();
+          savePlayState();
+        }
+      },
+    );
+  }
+
+  void _applyUserVolume(double volume) {
+    final next = volume.clamp(0.0, 1.0).toDouble();
+    _appliedUserVolume = next;
+    if ((volumeNotifier.value - next).abs() > 0.000001) {
+      volumeNotifier.value = next;
+    }
+    final perceptualGain = _perceptualVolumeGain(next);
     _player.setVolume(perceptualGain * 100);
     if (_usbExclusiveActive) {
-      _applyUsbExclusiveVolume(usbExclusiveDigitalVolumeGain(volume));
+      _applyUsbExclusiveVolume(usbExclusiveDigitalVolumeGain(next));
     } else {
       unawaited(_applySharedReplayGain(perceptualGain));
     }
     _publishAndroidPlaybackInfo();
+  }
+
+  void _cancelVolumeRamp() {
+    _volumeRampTimer?.cancel();
+    _volumeRampTimer = null;
+    _volumeRampTarget = _appliedUserVolume;
   }
 
   void _publishAndroidPlaybackInfo() {
@@ -1439,11 +1502,8 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
   }
 
   void _setUserVolume(double volume) {
-    final next = volume.clamp(0.0, 1.0).toDouble();
-    volumeNotifier.value = next;
-    setVolume(next);
+    setVolume(volume);
     savePlayState();
-    usbVolumeOverlayNotifier.value += 1;
   }
 
   @override
@@ -1524,11 +1584,17 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
       event.replayGainMilliDb / 1000,
       event.isDsd ? event.dsdGainCompensationDb : 0,
     );
-    if ((volumeNotifier.value - volume).abs() > 0.000001) {
+    final safeVolume = nextSafeUsbVolume(_appliedUserVolume, volume);
+    _cancelVolumeRamp();
+    if (safeVolume + 0.000001 < volume) {
+      _applyUserVolume(safeVolume);
+    } else if ((_appliedUserVolume - volume).abs() > 0.000001) {
+      _appliedUserVolume = volume;
+      _volumeRampTarget = volume;
       volumeNotifier.value = volume;
       _player.setVolume(_perceptualVolumeGain(volume) * 100);
-      savePlayState();
     }
+    savePlayState();
     _publishAndroidPlaybackInfo();
     usbVolumeOverlayNotifier.value += 1;
   }
