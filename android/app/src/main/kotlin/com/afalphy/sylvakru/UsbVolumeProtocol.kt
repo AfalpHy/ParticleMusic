@@ -119,7 +119,10 @@ internal data class IbassoReaderHealth(
     )
 
     fun afterVerifiedReadback(): IbassoReaderHealth = copy(
+        failureCount = 0,
         pendingReadFailureCount = 0,
+        restartRequested = false,
+        writeOnly = false,
         readbackVerified = true,
     )
 }

@@ -459,6 +459,24 @@ class UsbVolumeProtocolTest {
     }
 
     @Test
+    fun verifiedReadbackClearsPreviousReaderFailureBeforeNextFailure() {
+        val recovered = IbassoReaderHealth()
+            .afterFailure()
+            .afterRestart()
+            .afterVerifiedReadback()
+
+        assertEquals(0, recovered.failureCount)
+        assertFalse(recovered.restartRequested)
+        assertFalse(recovered.writeOnly)
+        assertTrue(recovered.readbackVerified)
+
+        val nextFailure = recovered.afterFailure()
+        assertEquals(1, nextFailure.failureCount)
+        assertTrue(nextFailure.restartRequested)
+        assertFalse(nextFailure.writeOnly)
+    }
+
+    @Test
     fun rejectsCallbacksFromSupersededReaderGenerations() {
         assertTrue(
             isCurrentIbassoReaderGeneration(
