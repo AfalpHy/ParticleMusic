@@ -345,6 +345,10 @@ class Library {
   final Set<String> _replayGainCacheChecked = {};
 
   Future<void> supplementReplayGainForPlayback(MyAudioMetadata song) async {
+    unawaited(_supplementReplayGainForPlayback(song));
+  }
+
+  Future<void> _supplementReplayGainForPlayback(MyAudioMetadata song) async {
     final client = switch (song.sourceType) {
       .subsonic => subsonicClient,
       .navidrome => navidromeClient,

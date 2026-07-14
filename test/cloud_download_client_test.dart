@@ -517,6 +517,33 @@ void main() {
     expect(songIds, ['same-song', 'same-song']);
   });
 
+  test('播放前补齐 ReplayGain 不等待远端接口返回', () async {
+    final server = await HttpServer.bind(InternetAddress.loopbackIPv4, 0);
+    final requests = server.listen((_) {});
+    addTearDown(() async {
+      navidromeClient = null;
+      await requests.cancel();
+      await server.close(force: true);
+    });
+
+    await library_data.loadLibrary();
+    navidromeClient = NavidromeClient(
+      baseUrl: 'http://${server.address.address}:${server.port}',
+      username: 'user',
+      password: 'password',
+    );
+    final song = MyAudioMetadata.fromOpenSonicMap({
+      'id': 'slow-replay-gain-song-id',
+      'title': 'Slow ReplayGain Song',
+      'suffix': 'flac',
+    }, app.SourceType.navidrome);
+    final library = library_data.Library();
+
+    await library
+        .supplementReplayGainForPlayback(song)
+        .timeout(const Duration(milliseconds: 100));
+  });
+
   test(
     'cloud cache remains available when metadata refresh cannot parse audio',
     () async {

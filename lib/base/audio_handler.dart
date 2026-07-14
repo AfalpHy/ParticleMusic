@@ -949,10 +949,8 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
 
     final currentSong = playQueue[currentIndex];
 
-    await Future.wait([
-      _setLyricsAndUpdateColors(currentSong),
-      library.supplementReplayGainForPlayback(currentSong),
-    ]);
+    unawaited(library.supplementReplayGainForPlayback(currentSong));
+    await _setLyricsAndUpdateColors(currentSong);
     if (generation != _loadGeneration) {
       return;
     }
