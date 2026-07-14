@@ -119,6 +119,13 @@ AndroidPlaybackInfo androidPlaybackInfoFor(
 
 final autoPlayOnStartupNotifier = ValueNotifier(false);
 
+int? restoredPlaybackIndex(int currentIndex, int queueLength) {
+  if (currentIndex < 0 || queueLength <= 0) {
+    return null;
+  }
+  return currentIndex < queueLength ? currentIndex : 0;
+}
+
 Future<void> initAudioService() async {
   MediaKit.ensureInitialized();
   audioHandler = await AudioService.init(
@@ -666,13 +673,16 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
       }
     }
 
-    if (currentIndex != -1 && playQueue.isNotEmpty) {
-      // reload may make some songs not in the library to be removed
-      if (currentIndex >= playQueue.length) {
-        currentIndex = 0;
-      }
-      await load();
+    currentIndex = restoredPlaybackIndex(currentIndex, playQueue.length) ?? -1;
+  }
+
+  Future<void> restoreCurrentSong() async {
+    final restored = restoredPlaybackIndex(currentIndex, playQueue.length);
+    if (restored == null) {
+      return;
     }
+    currentIndex = restored;
+    await load();
   }
 
   void savePlayState() {

@@ -162,6 +162,13 @@ Future<void> main() async {
   );
 
   logger.output('App start');
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    unawaited(
+      audioHandler.restoreCurrentSong().onError((error, stackTrace) {
+        logger.output('Playback restore failed: $error');
+      }),
+    );
+  });
 }
 
 Future<void> _setupMainWindow() async {
