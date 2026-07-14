@@ -221,6 +221,60 @@ void main() {
     expect(userLinearGain * dbToLinear(limitedGain), closeTo(1, 0.000001));
   });
 
+  test('有效输出变小时立即应用目标值', () {
+    final transition = safeOutputGainTransition(
+      appliedGain: 0.8,
+      userGain: 0.5,
+      adjustmentDb: 0,
+    );
+
+    expect(transition.appliedGain, 0.5);
+    expect(transition.adjustmentDb, closeTo(0, 0.000001));
+    expect(transition.needsRamp, isFalse);
+  });
+
+  test('有效输出变大时单步最多增加两个百分点', () {
+    final transition = safeOutputGainTransition(
+      appliedGain: 0.2,
+      userGain: 0.8,
+      adjustmentDb: 0,
+    );
+
+    expect(transition.appliedGain, closeTo(0.22, 0.000001));
+    expect(0.8 * dbToLinear(transition.adjustmentDb), closeTo(0.22, 0.000001));
+    expect(transition.needsRamp, isTrue);
+  });
+
+  test('PCM 与 DSD 补偿都按最终有效输出执行上升保护', () {
+    final pcm = safeOutputGainTransition(
+      appliedGain: 0.3,
+      userGain: 0.5,
+      adjustmentDb: 0,
+    );
+    final dsd = safeOutputGainTransition(
+      appliedGain: 0.3,
+      userGain: 0.25,
+      adjustmentDb: 6.0206,
+    );
+
+    expect(pcm.appliedGain, closeTo(0.32, 0.000001));
+    expect(dsd.appliedGain, closeTo(0.32, 0.000001));
+    expect(pcm.needsRamp, isTrue);
+    expect(dsd.needsRamp, isTrue);
+  });
+
+  test('首次应用没有旧输出时直接使用当前安全目标', () {
+    final transition = safeOutputGainTransition(
+      appliedGain: null,
+      userGain: 0.4,
+      adjustmentDb: -6,
+    );
+
+    expect(transition.appliedGain, closeTo(0.4 * dbToLinear(-6), 0.000001));
+    expect(transition.adjustmentDb, closeTo(-6, 0.000001));
+    expect(transition.needsRamp, isFalse);
+  });
+
   test('零用户增益不限制 ReplayGain', () {
     expect(replayGainWithinOutputHeadroom(6, 0), 6);
   });

@@ -12,6 +12,41 @@ class ReplayGainResult {
   const ReplayGainResult(this.gainDb, this.peak, this.source);
 }
 
+class SafeOutputGainTransition {
+  final double appliedGain;
+  final double adjustmentDb;
+  final bool needsRamp;
+
+  const SafeOutputGainTransition(
+    this.appliedGain,
+    this.adjustmentDb,
+    this.needsRamp,
+  );
+}
+
+SafeOutputGainTransition safeOutputGainTransition({
+  required double? appliedGain,
+  required double userGain,
+  required double adjustmentDb,
+}) {
+  final safeUserGain = userGain.clamp(0.0, 1.0).toDouble();
+  final targetGain = (safeUserGain * dbToLinear(adjustmentDb))
+      .clamp(0.0, 1.0)
+      .toDouble();
+  final currentGain = appliedGain?.clamp(0.0, 1.0).toDouble();
+  final nextGain = currentGain == null || targetGain <= currentGain
+      ? targetGain
+      : math.min(targetGain, currentGain + 0.02);
+  final appliedAdjustmentDb = safeUserGain <= 0 || nextGain <= 0
+      ? adjustmentDb
+      : 20 * math.log(nextGain / safeUserGain) / math.ln10;
+  return SafeOutputGainTransition(
+    nextGain,
+    appliedAdjustmentDb,
+    nextGain + 0.000001 < targetGain,
+  );
+}
+
 ReplayGainResult replayGainFor(MyAudioMetadata song, ReplayGainMode mode) {
   if (mode == ReplayGainMode.off) {
     return const ReplayGainResult(0, null, null);
