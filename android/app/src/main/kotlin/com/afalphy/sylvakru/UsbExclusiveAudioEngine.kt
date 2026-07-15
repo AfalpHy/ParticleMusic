@@ -84,6 +84,18 @@ private const val UNITY_GAIN_Q16 = 65536
 
 internal fun shouldFlushOutputOnStop(_dsdKind: String?): Boolean = false
 
+internal fun isUsbVolumeControlEngaged(
+    active: Boolean,
+    hardwareVolumeActive: Boolean,
+    hardwareVolumeSyncPending: Boolean,
+    digitalVolumeActive: Boolean,
+    bitDepth: Int?,
+): Boolean =
+    active &&
+        (hardwareVolumeActive ||
+            hardwareVolumeSyncPending ||
+            (digitalVolumeActive && bitDepth != 1))
+
 internal data class HardwareVolumeFeature(
     val protocol: String,
     val controlInterface: Int,
@@ -932,9 +944,13 @@ class UsbExclusiveAudioEngine(
         return updateState(currentState + mapOf("playing" to true, "message" to "Playing."))
     }
 
-    fun isVolumeControlEngaged(): Boolean =
-        currentState["active"] == true &&
-            (hardwareVolumeActive || (volumeControlEnabled && currentState["bitDepth"] != 1))
+    fun isVolumeControlEngaged(): Boolean = isUsbVolumeControlEngaged(
+        active = currentState["active"] == true,
+        hardwareVolumeActive = hardwareVolumeActive,
+        hardwareVolumeSyncPending = hardwareVolumeSyncPending,
+        digitalVolumeActive = volumeControlEnabled,
+        bitDepth = currentState["bitDepth"] as? Int,
+    )
 
     fun seek(positionMs: Long): Map<String, Any?> {
         if (currentState["active"] != true) {

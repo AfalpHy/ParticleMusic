@@ -140,6 +140,20 @@ class UsbHardwareVolumeTest {
     }
 
     @Test
+    fun keepsPhoneVolumeKeysEngagedWhileHardwareVolumeSyncIsPending() {
+        assertEquals(
+            true,
+            isUsbVolumeControlEngaged(
+                active = true,
+                hardwareVolumeActive = false,
+                hardwareVolumeSyncPending = true,
+                digitalVolumeActive = false,
+                bitDepth = 24,
+            ),
+        )
+    }
+
+    @Test
     fun acceptsDeviceRoundingWithinOneVolumeStep() {
         assertEquals(true, hardwareVolumeReadbackMatches(-1536, -1280, 256))
         assertEquals(false, hardwareVolumeReadbackMatches(-1536, -1024, 256))
