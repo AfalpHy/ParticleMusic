@@ -166,6 +166,9 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
   double _outputGainRampStepDb = _safeUsbVolumeIncreaseDb;
   Timer? _outputGainRampTimer;
   String? _usbVolumeDeviceKey;
+  int? _usbAudioDeviceId;
+  bool _usbOutputHandoffInProgress = false;
+  int? _usbOutputHandoffGeneration;
 
   late final File _playQueueState;
   late final File _playState;
@@ -240,6 +243,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     usbExclusiveVolumeKeyNotifier.addListener(_handleUsbExclusiveVolumeKey);
     usbHardwareVolumeNotifier.addListener(_handleUsbHardwareVolume);
     usbAudioStatusNotifier.addListener(_handleUsbAudioStatus);
+    usbAudioEventNotifier.addListener(_handleUsbAudioEvent);
     _handleUsbAudioStatus();
     // 切换音量控制方式后立即按新方式重下发（原始数字电平旁路、其余数字音量）。
     usbAudioPreferences.volumeControlModeNotifier.addListener(() {
@@ -314,6 +318,9 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
 
   void _handleUsbAudioStatus() {
     final status = usbAudioStatusNotifier.value;
+    if (status.activeDeviceId != null) {
+      _usbAudioDeviceId = status.activeDeviceId;
+    }
     _usbVolumeDeviceKey = usbExclusiveVolumeDeviceKey(
       status.vendorId,
       status.productId,
@@ -323,6 +330,19 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
         _usbVolumeDeviceKey,
       );
     }
+  }
+
+  void _handleUsbAudioEvent() {
+    final event = usbAudioEventNotifier.value;
+    if (event?.type != UsbAudioDeviceEventType.removed ||
+        event?.deviceId != _usbAudioDeviceId ||
+        !_usbExclusiveActive) {
+      return;
+    }
+    final position = _usbExclusivePosition;
+    updateIsPlaying(false);
+    updatePlaybackState(postion: position);
+    usbAudioService.markExclusiveDeviceRemoved(position: position);
   }
 
   void _prepareUsbExclusiveVolume() {
@@ -343,7 +363,6 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     _volumeRampTarget = volume;
     volumeNotifier.value = volume;
     _player.setVolume(_perceptualVolumeGain(volume) * 100);
-    unawaited(_applySharedReplayGain(_perceptualVolumeGain(volume)));
   }
 
   void _rememberUsbExclusiveVolume(double volume) {
@@ -386,7 +405,12 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
   void _handleUsbExclusiveState() {
     final state = usbExclusivePlaybackStateNotifier.value;
     final wasActive = _usbExclusiveActive;
-    _usbExclusivePosition = state.position;
+    final interruptedPosition = trustedUsbExclusivePosition(
+      current: _usbExclusivePosition,
+      reported: state.position,
+      stateActive: state.active,
+    );
+    _usbExclusivePosition = interruptedPosition;
     _usbExclusiveActive = state.active;
     if (wasActive && !state.active) {
       _cancelVolumeRamp();
@@ -444,16 +468,21 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
           await pause();
         }
       }());
-    } else if (wasActive && !_intentionalExclusiveStop) {
-      // 独占播放中途意外失活（拔出 DAC / 写失败 ENODEV 等）：回退系统输出，从中断位置续播，
-      // 不再卡住需要手动切歌才恢复。
+    } else if (shouldStartUsbOutputHandoff(
+      wasActive: wasActive,
+      intentionalStop: _intentionalExclusiveStop,
+      handoffInProgress: _usbOutputHandoffInProgress,
+      completed: false,
+    )) {
       logger.output(
-        "usb exclusive interrupted -> system output fallback:${state.message}",
+        "usb exclusive interrupted -> safe system output handoff:${state.message}",
       );
       debugPrint(
-        "usb exclusive interrupted -> system output fallback:${state.message}",
+        "usb exclusive interrupted -> safe system output handoff:${state.message}",
       );
-      unawaited(_resumeOnSystemOutputAfterExclusiveInterrupt(state.position));
+      unawaited(
+        _handoffToSystemOutputAfterExclusiveInterrupt(interruptedPosition),
+      );
     }
   }
 
@@ -520,27 +549,40 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     );
   }
 
-  /// 独占播放中途意外中断（拔出 DAC、写失败 ENODEV 等）时回退到系统输出，
-  /// 从中断位置续播，避免卡住需要手动切歌才恢复。
-  Future<void> _resumeOnSystemOutputAfterExclusiveInterrupt(
+  /// 独占播放中途意外中断时切换到共享输出并恢复位置，但保持暂停。
+  Future<void> _handoffToSystemOutputAfterExclusiveInterrupt(
     Duration position,
   ) async {
+    if (_usbOutputHandoffInProgress) return;
     final currentSong = currentSongNotifier.value;
     if (currentSong == null) {
       return;
     }
     final generation = _loadGeneration;
+    _usbOutputHandoffInProgress = true;
+    _usbOutputHandoffGeneration = generation;
+    updateIsPlaying(false);
+    updatePlaybackState(postion: position);
     try {
       await _applyUsbOutputForSong(currentSong);
       if (generation != _loadGeneration) return;
       await _openPlayerMedia(currentSong);
       if (generation != _loadGeneration) return;
+      await _applySharedReplayGain(_perceptualVolumeGain(_sharedUserVolume));
+      if (generation != _loadGeneration) return;
       if (position > Duration.zero) {
         await _player.seek(position);
       }
+      _positionController.add(position);
+      updatePlaybackState(postion: position);
     } catch (error) {
-      logger.output("usb exclusive interrupt fallback failed:$error");
-      debugPrint("usb exclusive interrupt fallback failed:$error");
+      logger.output("usb exclusive interrupt handoff failed:$error");
+      debugPrint("usb exclusive interrupt handoff failed:$error");
+    } finally {
+      if (_usbOutputHandoffGeneration == generation) {
+        _usbOutputHandoffInProgress = false;
+        _usbOutputHandoffGeneration = null;
+      }
     }
   }
 

@@ -28,6 +28,18 @@ Duration trustedUsbExclusivePosition({
   return reported > current ? reported : current;
 }
 
+bool shouldStartUsbOutputHandoff({
+  required bool wasActive,
+  required bool intentionalStop,
+  required bool handoffInProgress,
+  required bool completed,
+}) {
+  return wasActive &&
+      !intentionalStop &&
+      !handoffInProgress &&
+      !completed;
+}
+
 enum UsbAudioDeviceEventType { added, removed }
 
 class UsbAudioService {

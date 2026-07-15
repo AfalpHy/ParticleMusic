@@ -39,4 +39,43 @@ void main() {
       const Duration(seconds: 30),
     );
   });
+
+  test('只有意外失活且没有进行中的交接才启动共享回退', () {
+    expect(
+      shouldStartUsbOutputHandoff(
+        wasActive: true,
+        intentionalStop: false,
+        handoffInProgress: false,
+        completed: false,
+      ),
+      isTrue,
+    );
+    expect(
+      shouldStartUsbOutputHandoff(
+        wasActive: true,
+        intentionalStop: true,
+        handoffInProgress: false,
+        completed: false,
+      ),
+      isFalse,
+    );
+    expect(
+      shouldStartUsbOutputHandoff(
+        wasActive: true,
+        intentionalStop: false,
+        handoffInProgress: true,
+        completed: false,
+      ),
+      isFalse,
+    );
+    expect(
+      shouldStartUsbOutputHandoff(
+        wasActive: true,
+        intentionalStop: false,
+        handoffInProgress: false,
+        completed: true,
+      ),
+      isFalse,
+    );
+  });
 }
