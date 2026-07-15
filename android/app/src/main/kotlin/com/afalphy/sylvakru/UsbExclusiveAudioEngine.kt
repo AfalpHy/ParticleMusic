@@ -273,6 +273,9 @@ class UsbExclusiveAudioEngine(
     @Volatile private var hardwareVolumeRaw: Int? = null
     @Volatile private var hardwareVolumeGainQ16: Int? = null
     @Volatile private var standardHardwareVolumeReadbackVerified = false
+    @Volatile private var hardwareVolumeSyncPending = false
+    @Volatile private var hardwareVolumeFrozen = false
+    private var ibassoVerificationFailureCount = 0
     private var volumeRampGeneration = 0
     private val volumeLock = Any()
     private val volumeCommandExecutor = Executors.newSingleThreadExecutor { runnable ->
@@ -300,8 +303,6 @@ class UsbExclusiveAudioEngine(
     @Volatile private var ibassoReaderHealthDeviceId: Int? = null
     private val ibassoReaderWriteOnly: Boolean
         get() = ibassoReaderHealth.writeOnly
-    private val ibassoReadbackVerified: Boolean
-        get() = ibassoReaderHealth.readbackVerified
     private val hardwareVolumeWriteOnlyState: Boolean
         get() = hardwareVolumeWriteOnlyForState(hardwareVolumeProtocol, ibassoReaderHealth)
     private val hardwareVolumeReadbackVerifiedState: Boolean
@@ -814,6 +815,7 @@ class UsbExclusiveAudioEngine(
             target = resolvedTarget
         }
         sessionDevice = device
+        val dsdVolumeWasFrozen = dsdReader != null && hardwareVolumeFrozen
         applyVolumeControl(device, target, dsdReader != null, quirk)
         val dsdVolumeError = unsafeDsdVolumeReason(
             isDsd = dsdReader != null,
@@ -829,7 +831,8 @@ class UsbExclusiveAudioEngine(
         }
         sessionBroken = false
         workerEndedAtEof = false
-        paused.set(arguments["startPaused"] == true)
+        val volumeSafetyPaused = hardwareVolumeFrozen && paused.get()
+        paused.set(arguments["startPaused"] == true || dsdVolumeWasFrozen || volumeSafetyPaused)
         stopped.set(false)
         pendingSeekMs.set(-1L)
 
@@ -857,6 +860,9 @@ class UsbExclusiveAudioEngine(
             "hardwareVolumeGainQ16" to hardwareVolumeGainQ16,
             "hardwareVolumeWriteOnly" to hardwareVolumeWriteOnlyState,
             "hardwareVolumeReadbackVerified" to hardwareVolumeReadbackVerifiedState,
+            "hardwareVolumeSyncPending" to hardwareVolumeSyncPending,
+            "hardwareVolumeFrozen" to hardwareVolumeFrozen,
+            "hardwareVolumeVerificationFailures" to ibassoVerificationFailureCount,
             "format" to if (reader != null) {
                 "${reader.formatName}($dsdSuffix)"
             } else {
@@ -1054,6 +1060,9 @@ class UsbExclusiveAudioEngine(
                         "hardwareVolumeGainQ16" to hardwareVolumeGainQ16,
                         "hardwareVolumeWriteOnly" to hardwareVolumeWriteOnlyState,
                         "hardwareVolumeReadbackVerified" to hardwareVolumeReadbackVerifiedState,
+                        "hardwareVolumeSyncPending" to hardwareVolumeSyncPending,
+                        "hardwareVolumeFrozen" to hardwareVolumeFrozen,
+                        "hardwareVolumeVerificationFailures" to ibassoVerificationFailureCount,
                     ),
                 )
                 pendingHardwareVolumeEvent?.let(emitHardwareVolume)
@@ -1069,7 +1078,11 @@ class UsbExclusiveAudioEngine(
                 tag,
                 "USB volume transaction started generation=${request.sessionGeneration}.",
             )
-            applyVolumeRequest(request)
+            try {
+                applyVolumeRequest(request)
+            } catch (error: Exception) {
+                UsbDiagnostics.w(tag, "USB volume transaction failed: ${error.message}")
+            }
             UsbDiagnostics.i(
                 tag,
                 "USB volume transaction completed generation=${request.sessionGeneration}.",
@@ -1110,11 +1123,13 @@ class UsbExclusiveAudioEngine(
                 return
             }
             val wasHardwareActive = hardwareVolumeActive
-            hardwareVolumeActive = false
-            hardwareVolumeProtocol = null
-            hardwareVolumeRaw = null
-            hardwareVolumeGainQ16 = null
-            standardHardwareVolumeReadbackVerified = false
+            if (!hardwareVolumeFrozen) {
+                hardwareVolumeActive = false
+                hardwareVolumeProtocol = null
+                hardwareVolumeRaw = null
+                hardwareVolumeGainQ16 = null
+                standardHardwareVolumeReadbackVerified = false
+            }
             val wantsHardware = volumeMode == "auto" || volumeMode == "dac"
             val vendorProtocol = quirk.hardwareVolumeProtocol
             val protocolSelection = usbVolumeProtocolSelection(vendorProtocol)
@@ -1151,7 +1166,9 @@ class UsbExclusiveAudioEngine(
                         if (isDsd) volumeTarget.dsdRaw else volumeTarget.baseRaw,
                         isDsd,
                     )
-                    hardwareVolumeActive = fallbackReason == null
+                    if (fallbackReason == null && !hardwareVolumeFrozen) {
+                        hardwareVolumeActive = true
+                    }
                     if (hardwareVolumeActive) {
                         val appliedTarget = ibassoLastAppliedTarget ?: volumeTarget
                         val actual = ibassoActualEventGainQ16(
@@ -1171,7 +1188,7 @@ class UsbExclusiveAudioEngine(
                                 isDsd,
                             )
                         }
-                    } else if (wasHardwareActive && !isDsd) {
+                    } else if (wasHardwareActive && !isDsd && !hardwareVolumeFrozen) {
                         applyPcmDigitalFallbackImmediately(isDsd, effectiveGainQ16)
                     }
                 } else if (protocolSelection is UnsupportedUsbVolumeProtocol) {
@@ -1265,18 +1282,19 @@ class UsbExclusiveAudioEngine(
                         }
                     }
                 }
-            } else if (wasHardwareActive) {
+            } else if (wasHardwareActive && !hardwareVolumeFrozen) {
                 if (!isDsd && volumeMode != "raw") {
                     applyPcmDigitalFallbackImmediately(isDsd, effectiveGainQ16)
                 }
                 hardwareVolumeActive = false
                 hardwareVolumeProtocol = null
                 fallbackReason = "Hardware volume was left unchanged during the safe mode transition."
-            } else {
+            } else if (!hardwareVolumeFrozen) {
                 hardwareVolumeActive = false
             }
 
             if (
+                !hardwareVolumeFrozen &&
                 hardwareVolumeActive &&
                 (!hardwareVolumeReadbackVerifiedState || hardwareVolumeWriteOnlyState)
             ) {
@@ -1286,23 +1304,29 @@ class UsbExclusiveAudioEngine(
                 fallbackReason = fallbackReason
                     ?: "Hardware volume readback is unavailable; using safe PCM fallback."
             }
-            volumeControlEnabled = shouldUsePcmDigitalVolumeFallback(
-                isDsd = isDsd,
-                volumeMode = volumeMode,
-                hardwareVolumeActive = hardwareVolumeActive,
-                readbackVerified = hardwareVolumeReadbackVerifiedState,
-                writeOnly = hardwareVolumeWriteOnlyState,
-            )
-            val targetPcmGain = if (volumeControlEnabled) effectiveGainQ16 else UNITY_GAIN_Q16
-            setPcmVolumeGain(
-                targetPcmGain,
-                shouldSmoothPcmVolumeHandoff(
-                    volumeSmoothHandoff,
-                    isDsd,
-                    wasHardwareActive,
-                    hardwareVolumeActive,
-                ),
-            )
+            volumeControlEnabled = if (hardwareVolumeFrozen) {
+                false
+            } else {
+                shouldUsePcmDigitalVolumeFallback(
+                    isDsd = isDsd,
+                    volumeMode = volumeMode,
+                    hardwareVolumeActive = hardwareVolumeActive,
+                    readbackVerified = hardwareVolumeReadbackVerifiedState,
+                    writeOnly = hardwareVolumeWriteOnlyState,
+                )
+            }
+            if (!hardwareVolumeFrozen) {
+                val targetPcmGain = if (volumeControlEnabled) effectiveGainQ16 else UNITY_GAIN_Q16
+                setPcmVolumeGain(
+                    targetPcmGain,
+                    shouldSmoothPcmVolumeHandoff(
+                        volumeSmoothHandoff,
+                        isDsd,
+                        wasHardwareActive,
+                        hardwareVolumeActive,
+                    ),
+                )
+            }
             val dsdVolumeError = unsafeDsdVolumeReason(
                 isDsd = isDsd,
                 hardwareVolumeActive = hardwareVolumeActive,
@@ -1341,6 +1365,9 @@ class UsbExclusiveAudioEngine(
                     "hardwareVolumeGainQ16" to hardwareVolumeGainQ16,
                     "hardwareVolumeWriteOnly" to hardwareVolumeWriteOnlyState,
                     "hardwareVolumeReadbackVerified" to hardwareVolumeReadbackVerifiedState,
+                    "hardwareVolumeSyncPending" to hardwareVolumeSyncPending,
+                    "hardwareVolumeFrozen" to hardwareVolumeFrozen,
+                    "hardwareVolumeVerificationFailures" to ibassoVerificationFailureCount,
                     "dsdGainCompensationDb" to dsdGainCompensationDb,
                     "smoothHandoff" to volumeSmoothHandoff,
                     "source" to (hardwareVolumeControl?.source ?: vendorProtocol),
@@ -1660,6 +1687,32 @@ class UsbExclusiveAudioEngine(
         val controlConnection = ibassoVolumeConnection
             ?: return "iBasso control connection is unavailable."
 
+        if (hardwareVolumeFrozen) {
+            hardwareVolumeSyncPending = true
+            if (currentState["active"] == true) {
+                updateState(
+                    currentState + mapOf(
+                        "hardwareVolumeSyncPending" to true,
+                        "hardwareVolumeFrozen" to true,
+                    ),
+                )
+            }
+            val recoveredRaw = readIbassoCurrentBaseRaw(controlConnection)
+            if (previousAppliedTarget == null || recoveredRaw != previousAppliedTarget.baseRaw) {
+                if (isDsd) {
+                    paused.set(true)
+                    hardwareVolumeActive = false
+                    volumeControlEnabled = false
+                    hardwareVolumeSyncPending = false
+                    hardwareVolumeFrozen = true
+                } else {
+                    freezeIbassoPcmVolume(previousAppliedTarget)
+                }
+                return "iBasso hardware volume synchronization is still frozen."
+            }
+            acceptVerifiedIbassoTarget(device, previousAppliedTarget, isDsd)
+        }
+
         val shouldReadInitialVolume = shouldReadInitialHardwareVolume(
             isNewConnection = newConnection,
             readable = IbassoDc03ProVolumeProtocol.capabilities.readable && !ibassoReaderWriteOnly,
@@ -1718,63 +1771,148 @@ class UsbExclusiveAudioEngine(
         synchronized(ibassoReaderHealthLock) {
             ibassoReaderHealth = ibassoReaderHealth.copy(readbackVerified = false)
         }
+        hardwareVolumeSyncPending = true
+        if (currentState["active"] == true) {
+            updateState(
+                currentState + mapOf(
+                    "hardwareVolumeSyncPending" to true,
+                    "hardwareVolumeFrozen" to hardwareVolumeFrozen,
+                ),
+            )
+        }
         val writeError = transferIbassoVolumeTarget(
             controlConnection,
             appliedTarget,
-            bestEffort = false,
         )
         if (writeError != null) {
-            return rollbackFailedIbassoVolumeWrite(controlConnection, rollbackTarget, writeError)
-        }
-        if (ibassoReaderWriteOnly) {
-            ibassoLastAppliedTarget = appliedTarget
-            ibassoLastAppliedDeviceId = device.deviceId
             UsbDiagnostics.w(
                 tag,
-                "iBasso hardware volume applied with readback=unavailable, writeOnly=true, " +
-                    "register=$value, dsdRegister=$dsdValue.",
+                "iBasso write ACK timed out; verifying the current hardware register.",
             )
-            return null
         }
-        val response = transferIbassoPacket(
-            controlConnection,
-            ibassoVolumeReadPacket(),
-            65,
+        var readBack: Int?
+        var verificationAction: IbassoVolumeVerificationAction
+        do {
+            ibassoVerificationFailureCount += 1
+            readBack = readIbassoCurrentBaseRaw(
+                controlConnection,
+                failReaderOnTimeout = ibassoVerificationFailureCount >= 3,
+            )
+            verificationAction = ibassoVolumeVerificationAction(
+                targetRaw = appliedTarget.baseRaw,
+                previousRaw = previousAppliedTarget?.baseRaw,
+                readbackRaw = readBack,
+                failureCount = ibassoVerificationFailureCount,
+                isDsd = isDsd,
+            )
+            if (verificationAction == IbassoVolumeVerificationAction.RETRY_READBACK) {
+                SystemClock.sleep(50)
+            }
+        } while (verificationAction == IbassoVolumeVerificationAction.RETRY_READBACK)
+        return when (verificationAction) {
+            IbassoVolumeVerificationAction.ACCEPT_TARGET -> {
+                ibassoVerificationFailureCount = 0
+                acceptVerifiedIbassoTarget(device, appliedTarget, isDsd)
+                UsbDiagnostics.i(
+                    tag,
+                    "iBasso hardware volume set register=$value, dsdRegister=$dsdValue, " +
+                        "protocol=ibassoDc03Pro",
+                )
+                null
+            }
+            IbassoVolumeVerificationAction.KEEP_PREVIOUS -> {
+                ibassoVerificationFailureCount = 0
+                keepVerifiedIbassoTarget(device, previousAppliedTarget!!, isDsd)
+                UsbDiagnostics.w(
+                    tag,
+                    "iBasso hardware volume kept the previous verified target.",
+                )
+                "iBasso write was not applied; kept the previous verified hardware volume."
+            }
+            IbassoVolumeVerificationAction.RETRY_READBACK ->
+                error("RETRY_READBACK must be resolved by the bounded verification loop.")
+            IbassoVolumeVerificationAction.FREEZE_PCM -> {
+                freezeIbassoPcmVolume(previousAppliedTarget)
+                UsbDiagnostics.w(
+                    tag,
+                    "iBasso PCM hardware volume synchronization is frozen without digital fallback.",
+                )
+                "iBasso hardware volume synchronization is frozen."
+            }
+            IbassoVolumeVerificationAction.PAUSE_DSD -> {
+                paused.set(true)
+                hardwareVolumeActive = false
+                volumeControlEnabled = false
+                hardwareVolumeSyncPending = false
+                hardwareVolumeFrozen = true
+                UsbDiagnostics.w(
+                    tag,
+                    "DSD playback paused after persistent hardware volume verification failure.",
+                )
+                "DSD playback paused because hardware volume could not be verified."
+            }
+        }
+    }
+
+    private fun acceptVerifiedIbassoTarget(
+        device: UsbDevice,
+        target: UsbVolumeTarget,
+        isDsd: Boolean,
+    ) {
+        val actual = ibassoActualEventGainQ16(
+            target.baseRaw,
+            isDsd,
+            dsdGainCompensationDb,
         )
-        if (response == null) {
-            return rollbackFailedIbassoVolumeWrite(
-                controlConnection,
-                rollbackTarget,
-                "Failed to read iBasso hardware volume.",
-            )
-        }
-        val readBack = response.getOrNull(8)?.toInt()?.and(0xff)
-        if (readBack != value) {
-            return rollbackFailedIbassoVolumeWrite(
-                controlConnection,
-                rollbackTarget,
-                "iBasso hardware volume readback mismatch: target=$value, actual=$readBack.",
-            )
-        }
-        ibassoLastAppliedTarget = appliedTarget
+        ibassoLastAppliedTarget = target
         ibassoLastAppliedDeviceId = device.deviceId
-        ibassoLastWrittenRaw = appliedActiveRaw
-        ibassoLastWrittenAtMs = SystemClock.elapsedRealtime()
         synchronized(ibassoReaderHealthLock) {
             ibassoReaderHealth = ibassoReaderHealth.afterVerifiedReadback()
         }
-        UsbDiagnostics.i(
-            tag,
-            "iBasso hardware volume set register=$value, dsdRegister=$dsdValue, " +
-                "protocol=ibassoDc03Pro",
+        hardwareVolumeActive = true
+        volumeControlEnabled = false
+        hardwareVolumeProtocol = IbassoDc03ProVolumeProtocol.id
+        hardwareVolumeRaw = actual.raw
+        hardwareVolumeGainQ16 = actual.gainQ16
+        hardwareVolumeSyncPending = false
+        hardwareVolumeFrozen = false
+        ibassoVerificationFailureCount = 0
+    }
+
+    private fun keepVerifiedIbassoTarget(
+        device: UsbDevice,
+        target: UsbVolumeTarget,
+        isDsd: Boolean,
+    ) {
+        acceptVerifiedIbassoTarget(device, target, isDsd)
+    }
+
+    private fun freezeIbassoPcmVolume(previousTarget: UsbVolumeTarget?) {
+        if (previousTarget == null) {
+            paused.set(true)
+            hardwareVolumeActive = false
+            volumeControlEnabled = false
+            hardwareVolumeSyncPending = false
+            hardwareVolumeFrozen = true
+            return
+        }
+        val actual = ibassoActualEventGainQ16(
+            previousTarget.baseRaw,
+            isDsd = false,
+            dsdCompensationDb = 0,
         )
-        return null
+        hardwareVolumeActive = true
+        volumeControlEnabled = false
+        hardwareVolumeProtocol = IbassoDc03ProVolumeProtocol.id
+        hardwareVolumeRaw = actual.raw
+        hardwareVolumeGainQ16 = actual.gainQ16
+        hardwareVolumeSyncPending = false
+        hardwareVolumeFrozen = true
     }
 
     private fun transferIbassoVolumeTarget(
         connection: UsbDeviceConnection,
         target: UsbVolumeTarget,
-        bestEffort: Boolean,
     ): String? {
         val errors = mutableListOf<String>()
         for (packet in ibassoVolumePackets(target)) {
@@ -1783,7 +1921,7 @@ class UsbExclusiveAudioEngine(
                 connection,
                 packet,
                 command,
-                allowDirectWhenReaderUnavailable = bestEffort,
+                failReaderOnTimeout = command != 1 && command != 2,
             )
             val responseCommand = response?.getOrNull(6)?.toInt()?.and(0xff)
             val error = when {
@@ -1794,7 +1932,7 @@ class UsbExclusiveAudioEngine(
             }
             if (error != null) {
                 errors += error
-                if (!bestEffort) break
+                if (command != 1 && command != 2) break
             } else {
                 SystemClock.sleep(10)
             }
@@ -1802,30 +1940,16 @@ class UsbExclusiveAudioEngine(
         return errors.takeIf { it.isNotEmpty() }?.joinToString(" ")
     }
 
-    private fun rollbackFailedIbassoVolumeWrite(
+    private fun readIbassoCurrentBaseRaw(
         connection: UsbDeviceConnection,
-        rollbackTarget: UsbVolumeTarget,
-        failure: String,
-    ): String {
-        ibassoLastWrittenRaw = rollbackTarget.baseRaw
-        ibassoLastWrittenAtMs = SystemClock.elapsedRealtime()
-        val rollbackError = transferIbassoVolumeTarget(
+        failReaderOnTimeout: Boolean = true,
+    ): Int? {
+        val response = transferIbassoPacket(
             connection,
-            rollbackTarget,
-            bestEffort = true,
+            ibassoVolumeReadPacket(),
+            65,
+            failReaderOnTimeout = failReaderOnTimeout,
         )
-        val result = if (rollbackError == null) {
-            "$failure Restored the previous iBasso hardware volume."
-        } else {
-            "$failure iBasso rollback failed: $rollbackError"
-        }
-        UsbDiagnostics.w(tag, result)
-        closeIbassoVolumeControl(resetReaderHealth = false)
-        return result
-    }
-
-    private fun readIbassoCurrentBaseRaw(connection: UsbDeviceConnection): Int? {
-        val response = transferIbassoPacket(connection, ibassoVolumeReadPacket(), 65)
         if (ibassoReaderWriteOnly) return null
         return response?.getOrNull(8)?.toInt()?.and(0xff)
     }
@@ -1961,7 +2085,7 @@ class UsbExclusiveAudioEngine(
         generation: Long,
         reader: Thread,
     ) {
-        synchronized(ibassoReaderLock) {
+        val shouldMarkWriteOnly = synchronized(ibassoReaderLock) {
             if (!isCurrentIbassoReader(generation, reader, controlConnection, inputEndpoint)) {
                 return
             }
@@ -1972,10 +2096,11 @@ class UsbExclusiveAudioEngine(
                 ibassoReaderHealth = ibassoReaderHealth.afterFailure()
                 ibassoReaderHealth
             }
-            if (!health.restartRequested) {
-                markIbassoWriteOnly(error.message)
-                return
-            }
+            !health.restartRequested
+        }
+        if (shouldMarkWriteOnly) {
+            markIbassoWriteOnly(error.message)
+            return
         }
         UsbDiagnostics.w(
             tag,
@@ -2003,6 +2128,7 @@ class UsbExclusiveAudioEngine(
     ) {
         mainHandler.postDelayed({
             var retry = false
+            var writeOnlyMessage: String? = null
             synchronized(ibassoReaderLock) {
                 val currentThread = ibassoReaderThread
                 val connectionMatches = ibassoReaderConnection === controlConnection
@@ -2039,12 +2165,15 @@ class UsbExclusiveAudioEngine(
                         restarted = true,
                     )
                 } else if (checksRemaining <= 1) {
-                    markIbassoWriteOnly(
-                        "iBasso HID reader thread did not exit after failure: $failureMessage",
-                    )
+                    writeOnlyMessage =
+                        "iBasso HID reader thread did not exit after failure: $failureMessage"
                 } else {
                     retry = true
                 }
+            }
+            writeOnlyMessage?.let {
+                markIbassoWriteOnly(it)
+                return@postDelayed
             }
             if (retry) {
                 scheduleIbassoReaderRestart(
@@ -2072,108 +2201,40 @@ class UsbExclusiveAudioEngine(
         ibassoReaderRunning.set(false)
         failIbassoPendingResponses("iBasso HID reader unavailable: $message")
         val isDsd = sessionDsdKind != null
-        val digitalFallback = shouldUsePcmDigitalVolumeFallback(
-            isDsd = isDsd,
-            volumeMode = volumeMode,
-            hardwareVolumeActive = false,
-            readbackVerified = false,
-            writeOnly = true,
-        )
-        if (isDsd) {
-            paused.set(true)
-        } else if (digitalFallback) {
-            synchronized(volumeLock) {
-                applyPcmDigitalFallbackImmediately(
-                    isDsd = false,
-                    effectiveVolumeGainQ16(
-                        requestedVolumeGainQ16,
-                        requestedReplayGainMilliDb,
+        synchronized(volumeLock) {
+            if (isDsd) {
+                paused.set(true)
+                hardwareVolumeActive = false
+                volumeControlEnabled = false
+                hardwareVolumeSyncPending = false
+                hardwareVolumeFrozen = true
+            } else {
+                freezeIbassoPcmVolume(
+                    trustedIbassoTargetForDevice(
+                        ibassoLastAppliedTarget,
+                        ibassoLastAppliedDeviceId,
+                        ibassoVolumeDeviceId ?: -1,
                     ),
                 )
             }
+            updateState(
+                currentState + mapOf(
+                    "hardwareVolumeReader" to "writeOnly",
+                    "playing" to (currentState["active"] == true && !isDsd && !paused.get()),
+                    "hardwareVolumeActive" to hardwareVolumeActive,
+                    "digitalVolumeActive" to false,
+                    "hardwareVolumeWriteOnly" to true,
+                    "hardwareVolumeReadbackVerified" to false,
+                    "hardwareVolumeSyncPending" to hardwareVolumeSyncPending,
+                    "hardwareVolumeFrozen" to hardwareVolumeFrozen,
+                    "hardwareVolumeVerificationFailures" to ibassoVerificationFailureCount,
+                ),
+            )
         }
-        updateState(
-            currentState + mapOf(
-                "hardwareVolumeReader" to "writeOnly",
-                "playing" to (currentState["active"] == true && !isDsd && !paused.get()),
-                "hardwareVolumeActive" to false,
-                "digitalVolumeActive" to digitalFallback,
-                "hardwareVolumeWriteOnly" to true,
-                "hardwareVolumeReadbackVerified" to false,
-            ),
-        )
-        applyIbassoReadbackFailureFallback()
         UsbDiagnostics.w(
             tag,
-            "iBasso HID reader is unavailable; hardware volume is write-only: $message",
+            "iBasso HID reader is unavailable; hardware volume control was frozen: $message",
         )
-    }
-
-    private fun applyIbassoReadbackFailureFallback() {
-        mainHandler.post {
-            synchronized(volumeLock) {
-                if (!ibassoReaderWriteOnly || ibassoReadbackVerified) return@synchronized
-                val isDsd = sessionDsdKind != null
-                hardwareVolumeActive = false
-                hardwareVolumeRaw = null
-                hardwareVolumeGainQ16 = null
-                volumeControlEnabled = shouldUsePcmDigitalVolumeFallback(
-                    isDsd = isDsd,
-                    volumeMode = volumeMode,
-                    hardwareVolumeActive = false,
-                    readbackVerified = false,
-                    writeOnly = true,
-                )
-                if (volumeControlEnabled) {
-                    applyPcmDigitalFallbackImmediately(
-                        isDsd,
-                        effectiveVolumeGainQ16(
-                            requestedVolumeGainQ16,
-                            requestedReplayGainMilliDb,
-                        ),
-                    )
-                }
-                val dsdVolumeError = unsafeDsdVolumeReason(
-                    isDsd = isDsd,
-                    hardwareVolumeActive = false,
-                    readbackVerified = false,
-                    writeOnly = true,
-                )
-                if (dsdVolumeError != null) {
-                    paused.set(true)
-                    UsbDiagnostics.w(
-                        tag,
-                        "DSD playback paused after hardware volume readback was lost: " +
-                            dsdVolumeError,
-                    )
-                }
-                if (currentState["active"] == true) {
-                    val bitPerfect = if (isDsd) {
-                        true
-                    } else {
-                        pcmBitPerfect(
-                            (currentState["sourceBitDepth"] as? Number)?.toInt(),
-                            (currentState["decodedBitDepth"] as? Number)?.toInt(),
-                            (currentState["usbBitDepth"] as? Number)?.toInt(),
-                            volumeControlEnabled,
-                        )
-                    }
-                    updateState(
-                        currentState + mapOf(
-                            "playing" to (dsdVolumeError == null && !paused.get()),
-                            "bitPerfect" to bitPerfect,
-                            "hardwareVolumeActive" to false,
-                            "digitalVolumeActive" to volumeControlEnabled,
-                            "hardwareVolumeRaw" to null,
-                            "hardwareVolumeGainQ16" to null,
-                            "hardwareVolumeWriteOnly" to true,
-                            "hardwareVolumeReadbackVerified" to false,
-                            "message" to dsdVolumeError,
-                        ),
-                    )
-                }
-            }
-        }
     }
 
     private fun applyPcmDigitalFallbackImmediately(isDsd: Boolean, effectiveGainQ16: Int) {
@@ -2264,6 +2325,9 @@ class UsbExclusiveAudioEngine(
             hardwareVolumeProtocol = IbassoDc03ProVolumeProtocol.id
             hardwareVolumeRaw = actual.raw
             hardwareVolumeGainQ16 = actual.gainQ16
+            hardwareVolumeSyncPending = false
+            hardwareVolumeFrozen = false
+            ibassoVerificationFailureCount = 0
             ibassoLastAppliedTarget = ibassoTargetFromEvent(
                 actualBaseRaw,
                 dsdGainCompensationDb,
@@ -2278,6 +2342,9 @@ class UsbExclusiveAudioEngine(
                     "hardwareVolumeGainQ16" to actual.gainQ16,
                     "hardwareVolumeWriteOnly" to hardwareVolumeWriteOnlyState,
                     "hardwareVolumeReadbackVerified" to hardwareVolumeReadbackVerifiedState,
+                    "hardwareVolumeSyncPending" to hardwareVolumeSyncPending,
+                    "hardwareVolumeFrozen" to hardwareVolumeFrozen,
+                    "hardwareVolumeVerificationFailures" to ibassoVerificationFailureCount,
                     "hardwareVolumeLeftRaw" to pendingEvent.leftRaw,
                     "hardwareVolumeRightRaw" to pendingEvent.rightRaw,
                 ),
@@ -2395,6 +2462,7 @@ class UsbExclusiveAudioEngine(
         packet: ByteArray,
         expectedCommand: Int,
         allowDirectWhenReaderUnavailable: Boolean = false,
+        failReaderOnTimeout: Boolean = true,
     ): ByteArray? {
         val readerGeneration = ibassoReaderGeneration.get()
         val reader = ibassoReaderThread
@@ -2448,7 +2516,7 @@ class UsbExclusiveAudioEngine(
                 val response = runCatching {
                     future.get(300, TimeUnit.MILLISECONDS)
                 }.getOrNull()
-                if (response == null && !ibassoReaderWriteOnly) {
+                if (response == null && !ibassoReaderWriteOnly && failReaderOnTimeout) {
                     handleIbassoReaderFailure(
                         IOException("iBasso HID command $expectedCommand response timed out."),
                         connection,
@@ -2621,6 +2689,9 @@ class UsbExclusiveAudioEngine(
             hardwareVolumeRaw = null
             hardwareVolumeGainQ16 = null
             standardHardwareVolumeReadbackVerified = false
+            hardwareVolumeSyncPending = false
+            hardwareVolumeFrozen = false
+            ibassoVerificationFailureCount = 0
             hardwareVolumeControl = null
             if (connection == null && sessionTarget == null) {
                 return
@@ -4863,6 +4934,9 @@ class UsbExclusiveAudioEngine(
             "hardwareVolumeGainQ16" to null,
             "hardwareVolumeWriteOnly" to false,
             "hardwareVolumeReadbackVerified" to false,
+            "hardwareVolumeSyncPending" to false,
+            "hardwareVolumeFrozen" to false,
+            "hardwareVolumeVerificationFailures" to 0,
             "format" to null,
             "message" to message,
         )
