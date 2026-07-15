@@ -49,6 +49,28 @@ internal enum class IbassoVolumeVerificationAction {
     PAUSE_DSD,
 }
 
+internal enum class IbassoReaderRecoveryAction {
+    VERIFY_NOW,
+    WAIT,
+    FREEZE_PCM,
+    CANCEL,
+}
+
+internal fun ibassoReaderRecoveryAction(
+    isDsd: Boolean,
+    health: IbassoReaderHealth,
+    readerRunning: Boolean,
+    generationMatches: Boolean,
+    waitExpired: Boolean,
+): IbassoReaderRecoveryAction = when {
+    !generationMatches -> IbassoReaderRecoveryAction.CANCEL
+    isDsd -> IbassoReaderRecoveryAction.VERIFY_NOW
+    health.writeOnly -> IbassoReaderRecoveryAction.FREEZE_PCM
+    readerRunning && !health.restartRequested -> IbassoReaderRecoveryAction.VERIFY_NOW
+    waitExpired -> IbassoReaderRecoveryAction.FREEZE_PCM
+    else -> IbassoReaderRecoveryAction.WAIT
+}
+
 internal fun coalescedUsbVolumeRequest(
     running: UsbVolumeRequest,
     pending: UsbVolumeRequest?,

@@ -76,6 +76,9 @@ private const val IBASSO_PENDING_READ_FAILURE_LIMIT = 3
 private const val IBASSO_READER_RESTART_INITIAL_DELAY_MS = 50L
 private const val IBASSO_READER_RESTART_RETRY_DELAY_MS = 25L
 private const val IBASSO_READER_RESTART_EXIT_CHECKS = 9
+private const val IBASSO_READER_RECOVERY_WAIT_MS =
+    IBASSO_READER_RESTART_INITIAL_DELAY_MS +
+        IBASSO_READER_RESTART_RETRY_DELAY_MS * (IBASSO_READER_RESTART_EXIT_CHECKS - 1)
 private const val IBASSO_EVENT_DEBOUNCE_MS = 50L
 private const val IBASSO_WRITE_CONFIRMATION_WINDOW_MS = 500L
 
@@ -829,7 +832,13 @@ class UsbExclusiveAudioEngine(
         }
         sessionDevice = device
         val dsdVolumeWasFrozen = dsdReader != null && hardwareVolumeFrozen
-        applyVolumeControl(device, target, dsdReader != null, quirk)
+        applyVolumeControl(
+            device,
+            target,
+            dsdReader != null,
+            quirk,
+            volumeSessionGeneration.get(),
+        )
         val dsdVolumeError = unsafeDsdVolumeReason(
             isDsd = dsdReader != null,
             hardwareVolumeActive = hardwareVolumeActive,
@@ -1036,6 +1045,7 @@ class UsbExclusiveAudioEngine(
                     target,
                     sessionDsdKind != null,
                     UsbDacQuirks.forDevice(context, device.vendorId, device.productId),
+                    request.sessionGeneration,
                 )
             } else {
                 hardwareVolumeActive = false
@@ -1155,6 +1165,7 @@ class UsbExclusiveAudioEngine(
         target: OutputTarget,
         isDsd: Boolean,
         quirk: DacQuirk,
+        requestSessionGeneration: Long,
     ) {
         synchronized(volumeLock) {
             if (sessionDevice !== device || sessionTarget !== target || connection == null) {
@@ -1203,6 +1214,7 @@ class UsbExclusiveAudioEngine(
                         volumeTarget,
                         if (isDsd) volumeTarget.dsdRaw else volumeTarget.baseRaw,
                         isDsd,
+                        requestSessionGeneration,
                     )
                     if (fallbackReason == null && !hardwareVolumeFrozen) {
                         hardwareVolumeActive = true
@@ -1670,11 +1682,33 @@ class UsbExclusiveAudioEngine(
         }
     }
 
+    private fun awaitIbassoReaderForVolumeVerification(
+        isDsd: Boolean,
+        requestSessionGeneration: Long,
+    ): IbassoReaderRecoveryAction {
+        val deadlineMs = SystemClock.elapsedRealtime() + IBASSO_READER_RECOVERY_WAIT_MS
+        while (true) {
+            val health = synchronized(ibassoReaderHealthLock) { ibassoReaderHealth }
+            val action = ibassoReaderRecoveryAction(
+                isDsd = isDsd,
+                health = health,
+                readerRunning = ibassoReaderRunning.get(),
+                generationMatches = requestSessionGeneration == volumeSessionGeneration.get(),
+                waitExpired = SystemClock.elapsedRealtime() >= deadlineMs,
+            )
+            if (action != IbassoReaderRecoveryAction.WAIT) {
+                return action
+            }
+            SystemClock.sleep(IBASSO_READER_RESTART_RETRY_DELAY_MS)
+        }
+    }
+
     private fun writeIbassoHidVolume(
         device: UsbDevice,
         target: UsbVolumeTarget,
         activeRaw: Int,
         isDsd: Boolean,
+        requestSessionGeneration: Long,
     ): String? {
         val hidInterface = (0 until device.interfaceCount)
             .map { device.getInterface(it) }
@@ -1830,7 +1864,26 @@ class UsbExclusiveAudioEngine(
         }
         var readBack: Int?
         var verificationAction: IbassoVolumeVerificationAction
-        do {
+        verificationLoop@ do {
+            when (
+                awaitIbassoReaderForVolumeVerification(
+                    isDsd = isDsd,
+                    requestSessionGeneration = requestSessionGeneration,
+                )
+            ) {
+                IbassoReaderRecoveryAction.VERIFY_NOW -> Unit
+                IbassoReaderRecoveryAction.WAIT ->
+                    error("WAIT must be resolved by the bounded reader recovery loop.")
+                IbassoReaderRecoveryAction.FREEZE_PCM -> {
+                    verificationAction = IbassoVolumeVerificationAction.FREEZE_PCM
+                    break@verificationLoop
+                }
+                IbassoReaderRecoveryAction.CANCEL ->
+                    throw java.util.concurrent.CancellationException(
+                        "USB volume verification cancelled because the session changed.",
+                    )
+            }
+
             ibassoVerificationFailureCount += 1
             readBack = readIbassoCurrentBaseRaw(
                 controlConnection,

@@ -384,6 +384,82 @@ class UsbVolumeProtocolTest {
     }
 
     @Test
+    fun waitsForPcmReaderRestartWithoutVerifyingOrFreezing() {
+        assertEquals(
+            IbassoReaderRecoveryAction.WAIT,
+            ibassoReaderRecoveryAction(
+                isDsd = false,
+                health = IbassoReaderHealth(restartRequested = true),
+                readerRunning = false,
+                generationMatches = true,
+                waitExpired = false,
+            ),
+        )
+    }
+
+    @Test
+    fun verifiesPcmAsSoonAsTheRestartedReaderIsReady() {
+        assertEquals(
+            IbassoReaderRecoveryAction.VERIFY_NOW,
+            ibassoReaderRecoveryAction(
+                isDsd = false,
+                health = IbassoReaderHealth().afterFailure().afterRestart(),
+                readerRunning = true,
+                generationMatches = true,
+                waitExpired = false,
+            ),
+        )
+    }
+
+    @Test
+    fun freezesPcmWhenReaderRecoveryExpiresOrBecomesWriteOnly() {
+        assertEquals(
+            IbassoReaderRecoveryAction.FREEZE_PCM,
+            ibassoReaderRecoveryAction(
+                isDsd = false,
+                health = IbassoReaderHealth(restartRequested = true),
+                readerRunning = false,
+                generationMatches = true,
+                waitExpired = true,
+            ),
+        )
+        assertEquals(
+            IbassoReaderRecoveryAction.FREEZE_PCM,
+            ibassoReaderRecoveryAction(
+                isDsd = false,
+                health = IbassoReaderHealth(writeOnly = true),
+                readerRunning = false,
+                generationMatches = true,
+                waitExpired = false,
+            ),
+        )
+    }
+
+    @Test
+    fun keepsDsdVerificationImmediateAndCancelsStaleSessions() {
+        assertEquals(
+            IbassoReaderRecoveryAction.VERIFY_NOW,
+            ibassoReaderRecoveryAction(
+                isDsd = true,
+                health = IbassoReaderHealth(restartRequested = true),
+                readerRunning = false,
+                generationMatches = true,
+                waitExpired = false,
+            ),
+        )
+        assertEquals(
+            IbassoReaderRecoveryAction.CANCEL,
+            ibassoReaderRecoveryAction(
+                isDsd = false,
+                health = IbassoReaderHealth(restartRequested = true),
+                readerRunning = false,
+                generationMatches = false,
+                waitExpired = false,
+            ),
+        )
+    }
+
+    @Test
     fun skipsOnlyVerifiedDuplicateIbassoVolumeTargets() {
         val target = UsbVolumeTarget(baseRaw = 130, dsdRaw = 130)
 
