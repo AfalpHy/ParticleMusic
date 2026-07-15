@@ -221,11 +221,19 @@ if ($wildcardProtocols.Count -ne 0) {
   throw 'Vendor wildcard entries must not enable iBasso HID writes.'
 }
 
-rg -n 'IbassoDc03ProVolumeProtocol|ibassoDc03Pro|writeIbassoDc03ProVolume' `
+rg -n 'IbassoDc03ProVolumeProtocol|writeIbassoDc03ProVolume' `
   android/app/src/main android/app/src/test test
+rg -n 'ibassoDc03Pro' android/app/src/main test
+$legacyRejectionCount = @(
+  rg -o 'ibassoDc03Pro' `
+    android/app/src/test/kotlin/com/afalphy/sylvakru/UsbVolumeProtocolTest.kt
+).Count
+if ($legacyRejectionCount -ne 3) {
+  throw 'The removed protocol ID may appear only in its three rejection assertions.'
+}
 ```
 
-预期：PowerShell 断言不抛错，`rg` 无输出。设备 quirk 的识别标签可以保留具体设备名称，但协议对象、协议 ID、函数名、状态和测试中不得残留旧型号化身份。
+预期：PowerShell 断言不抛错，前两条 `rg` 无输出，旧协议 ID 只在 Kotlin 测试的三处拒绝断言中出现。设备 quirk 的识别标签可以保留具体设备名称，但协议对象、函数名、生产状态和配置中不得残留旧型号化身份。
 
 - [ ] **Step 6: 运行 Android 与 Dart 定向测试**
 
