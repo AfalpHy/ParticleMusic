@@ -261,6 +261,38 @@ class UsbVolumeProtocolTest {
     }
 
     @Test
+    fun keepsOnlyLatestPendingUsbVolumeRequest() {
+        val first = UsbVolumeRequest(1000, 0, "dac", 0, true, 7)
+        val latest = UsbVolumeRequest(2000, -3000, "dac", 0, true, 7)
+
+        assertEquals(latest, latestUsbVolumeRequest(first, latest))
+    }
+
+    @Test
+    fun verifiesIbassoWriteBeforeChangingHardwareAuthority() {
+        assertEquals(
+            IbassoVolumeVerificationAction.ACCEPT_TARGET,
+            ibassoVolumeVerificationAction(100, 102, 100, 1, isDsd = false),
+        )
+        assertEquals(
+            IbassoVolumeVerificationAction.KEEP_PREVIOUS,
+            ibassoVolumeVerificationAction(100, 102, 102, 1, isDsd = false),
+        )
+        assertEquals(
+            IbassoVolumeVerificationAction.RETRY_READBACK,
+            ibassoVolumeVerificationAction(100, 102, null, 1, isDsd = false),
+        )
+        assertEquals(
+            IbassoVolumeVerificationAction.FREEZE_PCM,
+            ibassoVolumeVerificationAction(100, 102, null, 3, isDsd = false),
+        )
+        assertEquals(
+            IbassoVolumeVerificationAction.PAUSE_DSD,
+            ibassoVolumeVerificationAction(100, 102, null, 3, isDsd = true),
+        )
+    }
+
+    @Test
     fun skipsOnlyVerifiedDuplicateIbassoVolumeTargets() {
         val target = UsbVolumeTarget(baseRaw = 130, dsdRaw = 130)
 

@@ -32,6 +32,43 @@ internal data class UsbVolumeTarget(
     val dsdRaw: Int,
 )
 
+internal data class UsbVolumeRequest(
+    val gainQ16: Int,
+    val replayGainMilliDb: Int,
+    val mode: String,
+    val dsdCompensationDb: Int,
+    val smoothHandoff: Boolean,
+    val sessionGeneration: Long,
+)
+
+internal enum class IbassoVolumeVerificationAction {
+    ACCEPT_TARGET,
+    KEEP_PREVIOUS,
+    RETRY_READBACK,
+    FREEZE_PCM,
+    PAUSE_DSD,
+}
+
+internal fun latestUsbVolumeRequest(
+    pending: UsbVolumeRequest?,
+    incoming: UsbVolumeRequest,
+): UsbVolumeRequest = incoming
+
+internal fun ibassoVolumeVerificationAction(
+    targetRaw: Int,
+    previousRaw: Int?,
+    readbackRaw: Int?,
+    failureCount: Int,
+    isDsd: Boolean,
+): IbassoVolumeVerificationAction = when {
+    readbackRaw == targetRaw -> IbassoVolumeVerificationAction.ACCEPT_TARGET
+    previousRaw != null && readbackRaw == previousRaw ->
+        IbassoVolumeVerificationAction.KEEP_PREVIOUS
+    failureCount < 3 -> IbassoVolumeVerificationAction.RETRY_READBACK
+    isDsd -> IbassoVolumeVerificationAction.PAUSE_DSD
+    else -> IbassoVolumeVerificationAction.FREEZE_PCM
+}
+
 internal enum class HardwareVolumeHandoffSource { DEVICE, APP }
 
 internal data class HardwareVolumeHandoffTarget(
