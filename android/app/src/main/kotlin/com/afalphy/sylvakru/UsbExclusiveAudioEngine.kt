@@ -302,6 +302,7 @@ class UsbExclusiveAudioEngine(
     private var runningVolumeRequest: UsbVolumeRequest? = null
     private var pendingVolumeRequest: UsbVolumeRequest? = null
     private var pendingVolumeRequestUpdatedAtMs: Long? = null
+    private var lastIbassoVolumeTransactionCompletedAtMs: Long? = null
     private var hardwareVolumeControl: HardwareVolumeControl? = null
     private var ibassoVolumeConnection: UsbDeviceConnection? = null
     private var ibassoVolumeInterface: UsbInterface? = null
@@ -1146,6 +1147,16 @@ class UsbExclusiveAudioEngine(
                 request = next
             }
             val current = checkNotNull(request)
+            val requestProtocol = synchronized(volumeLock) {
+                val device = sessionDevice
+                usbVolumeProtocolForRequest(
+                    current.mode,
+                    device?.let {
+                        UsbDacQuirks.forDevice(context, it.vendorId, it.productId)
+                            .hardwareVolumeProtocol
+                    },
+                )
+            }
             UsbDiagnostics.i(
                 tag,
                 "USB volume transaction started generation=${current.sessionGeneration}.",
@@ -1159,7 +1170,7 @@ class UsbExclusiveAudioEngine(
                 tag,
                 "USB volume transaction completed generation=${current.sessionGeneration}.",
             )
-            lastCompletedProtocol = hardwareVolumeProtocol
+            lastCompletedProtocol = requestProtocol
             lastCompletedAtMs = SystemClock.elapsedRealtime()
         }
     }
@@ -1221,13 +1232,31 @@ class UsbExclusiveAudioEngine(
                         if (isDsd) dsdGainCompensationDb else 0,
                     )
                     ibassoHandoffBaseRaw = null
-                    fallbackReason = writeIbassoHidVolume(
-                        device,
-                        volumeTarget,
-                        if (isDsd) volumeTarget.dsdRaw else volumeTarget.baseRaw,
-                        isDsd,
-                        requestSessionGeneration,
+                    val protocol = protocolSelection.protocol.id
+                    val settleDelayMs = usbVolumePendingDelayMs(
+                        protocol,
+                        lastIbassoVolumeTransactionCompletedAtMs,
+                        null,
+                        SystemClock.elapsedRealtime(),
                     )
+                    if (settleDelayMs > 0) {
+                        SystemClock.sleep(settleDelayMs)
+                    }
+                    if (requestSessionGeneration != volumeSessionGeneration.get()) return
+                    try {
+                        fallbackReason = writeIbassoHidVolume(
+                            device,
+                            volumeTarget,
+                            if (isDsd) volumeTarget.dsdRaw else volumeTarget.baseRaw,
+                            isDsd,
+                            requestSessionGeneration,
+                        )
+                    } finally {
+                        if (protocol == IbassoHidVolumeProtocol.id) {
+                            lastIbassoVolumeTransactionCompletedAtMs =
+                                SystemClock.elapsedRealtime()
+                        }
+                    }
                     if (fallbackReason == null && !hardwareVolumeFrozen) {
                         hardwareVolumeActive = true
                     }

@@ -78,6 +78,11 @@ internal fun coalescedUsbVolumeRequest(
     isDsd: Boolean,
 ): UsbVolumeRequest = incoming
 
+internal fun usbVolumeProtocolForRequest(
+    mode: String,
+    configuredProtocol: String?,
+): String? = configuredProtocol.takeIf { mode == "auto" || mode == "dac" }
+
 private const val IBASSO_VOLUME_TRANSACTION_SETTLE_MS = 150L
 private const val IBASSO_VOLUME_PENDING_QUIET_MS = 300L
 
