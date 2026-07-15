@@ -90,6 +90,32 @@ void main() {
     },
   );
 
+  test('USB 音频状态区分已连接设备与移除状态', () {
+    final connected = UsbAudioStatus.fromMap({
+      'supported': true,
+      'activeDeviceId': 18,
+      'vendorId': 0x0661,
+      'productId': 0x0883,
+      'devices': [
+        {
+          'id': 18,
+          'name': 'USB DAC',
+          'type': 'usb_device',
+          'sampleRates': [48000],
+          'encodings': ['pcm_24bit_packed'],
+          'channelCounts': [2],
+        },
+      ],
+    });
+    final removed = UsbAudioStatus.fromMap({
+      'supported': true,
+      'devices': const [],
+    });
+
+    expect(connected.hasConnectedUsbAudioDevice, isTrue);
+    expect(removed.hasConnectedUsbAudioDevice, isFalse);
+  });
+
   test(
     'applyPreferredOutput requests requested sample rate and device id',
     () async {

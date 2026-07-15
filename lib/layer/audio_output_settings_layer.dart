@@ -953,49 +953,59 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
   }
 
   Widget _mediaVolumeTile() {
-    return ValueListenableBuilder<double>(
-      valueListenable: usbExclusiveVolumeNotifier,
-      builder: (context, volume, _) {
+    return ListenableBuilder(
+      listenable: Listenable.merge([
+        usbAudioStatusNotifier,
+        usbExclusiveVolumeNotifier,
+      ]),
+      builder: (context, _) {
+        final volume = usbExclusiveVolumeNotifier.value;
+        final enabled = usbAudioStatusNotifier.value.hasConnectedUsbAudioDevice;
         final percent = (volume.clamp(0.0, 1.0) * 100).round();
         final sliderValue = volume.clamp(0.0, 1.0);
-        return Padding(
-          padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Row(
-                children: [
-                  Expanded(
-                    child: Text(
-                      _l10n.mediaVolume,
-                      style: const TextStyle(fontWeight: FontWeight.w700),
+        return Opacity(
+          opacity: enabled ? 1 : 0.45,
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Expanded(
+                      child: Text(
+                        _l10n.mediaVolume,
+                        style: const TextStyle(fontWeight: FontWeight.w700),
+                      ),
                     ),
-                  ),
-                  Text(
-                    '$percent%',
-                    style: TextStyle(
-                      color: textColor.value.withAlpha(180),
-                      fontWeight: FontWeight.w700,
+                    Text(
+                      '$percent%',
+                      style: TextStyle(
+                        color: textColor.value.withAlpha(180),
+                        fontWeight: FontWeight.w700,
+                      ),
                     ),
-                  ),
-                ],
-              ),
-              SliderTheme(
-                data: _sliderThemeData(context),
-                child: Slider(
-                  value: sliderValue,
-                  min: 0,
-                  max: 1,
-                  divisions: 100,
-                  label: '$percent%',
-                  onChanged: (next) {
-                    usbExclusiveVolumeNotifier.value = next;
-                    _setUsbExclusiveVolumeIfReady(next);
-                  },
-                  onChangeEnd: (_) => setting.save(),
+                  ],
                 ),
-              ),
-            ],
+                SliderTheme(
+                  data: _sliderThemeData(context),
+                  child: Slider(
+                    value: sliderValue,
+                    min: 0,
+                    max: 1,
+                    divisions: 100,
+                    label: '$percent%',
+                    onChanged: enabled
+                        ? (next) {
+                            usbExclusiveVolumeNotifier.value = next;
+                            _setUsbExclusiveVolumeIfReady(next);
+                          }
+                        : null,
+                    onChangeEnd: enabled ? (_) => setting.save() : null,
+                  ),
+                ),
+              ],
+            ),
           ),
         );
       },

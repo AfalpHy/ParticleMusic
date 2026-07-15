@@ -943,6 +943,11 @@ class UsbAudioStatus {
     return devices.isEmpty ? null : devices.first.id;
   }
 
+  bool get hasConnectedUsbAudioDevice {
+    if (devices.isNotEmpty) return true;
+    return activeDeviceId != null && vendorId != null && productId != null;
+  }
+
   int? get bestAvailableSampleRate {
     final deviceId = bestAvailableDeviceId;
     if (deviceId == null) {

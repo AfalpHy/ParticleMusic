@@ -321,11 +321,16 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     if (status.activeDeviceId != null) {
       _usbAudioDeviceId = status.activeDeviceId;
     }
-    _usbVolumeDeviceKey = usbExclusiveVolumeDeviceKey(
+    final deviceKey = usbExclusiveVolumeDeviceKey(
       status.vendorId,
       status.productId,
     );
-    if (!_usbExclusiveActive) {
+    if (deviceKey != null) {
+      _usbVolumeDeviceKey = deviceKey;
+    }
+    if (!_usbExclusiveActive &&
+        status.hasConnectedUsbAudioDevice &&
+        _usbVolumeDeviceKey != null) {
       usbExclusiveVolumeNotifier.value = usbAudioPreferences.volumeForDevice(
         _usbVolumeDeviceKey,
       );
