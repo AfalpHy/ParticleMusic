@@ -86,10 +86,17 @@ internal fun coalescedUsbVolumeRequest(
     return if (incomingGain < pendingGain) incoming else pending
 }
 
-internal fun latestUsbVolumeRequest(
-    pending: UsbVolumeRequest?,
-    incoming: UsbVolumeRequest,
-): UsbVolumeRequest = incoming
+private const val IBASSO_VOLUME_TRANSACTION_SETTLE_MS = 150L
+
+internal fun usbVolumeTransactionSettleDelayMs(
+    protocol: String?,
+    lastCompletedAtMs: Long?,
+    nowMs: Long,
+): Long {
+    if (protocol != IbassoDc03ProVolumeProtocol.id || lastCompletedAtMs == null) return 0L
+    val elapsedMs = (nowMs - lastCompletedAtMs).coerceAtLeast(0L)
+    return (IBASSO_VOLUME_TRANSACTION_SETTLE_MS - elapsedMs).coerceAtLeast(0L)
+}
 
 internal fun ibassoVolumeVerificationAction(
     targetRaw: Int,

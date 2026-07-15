@@ -284,6 +284,7 @@ class UsbExclusiveAudioEngine(
     private val volumeCommandLock = Any()
     private val volumeSessionGeneration = AtomicLong()
     private var volumeCommandRunning = false
+    private var runningVolumeRequest: UsbVolumeRequest? = null
     private var pendingVolumeRequest: UsbVolumeRequest? = null
     private var hardwareVolumeControl: HardwareVolumeControl? = null
     private var ibassoVolumeConnection: UsbDeviceConnection? = null
@@ -967,13 +968,21 @@ class UsbExclusiveAudioEngine(
             smoothHandoff = smoothHandoff,
             sessionGeneration = volumeSessionGeneration.get(),
         )
+        val isDsd = sessionDsdKind != null
         val start = synchronized(volumeCommandLock) {
             if (volumeCommandRunning) {
-                pendingVolumeRequest = latestUsbVolumeRequest(pendingVolumeRequest, request)
-                UsbDiagnostics.i(tag, "USB volume request queued as the latest pending target.")
+                val running = checkNotNull(runningVolumeRequest)
+                pendingVolumeRequest = coalescedUsbVolumeRequest(
+                    running,
+                    pendingVolumeRequest,
+                    request,
+                    isDsd,
+                )
+                UsbDiagnostics.i(tag, "USB volume request coalesced into the pending target.")
                 false
             } else {
                 volumeCommandRunning = true
+                runningVolumeRequest = request
                 true
             }
         }
@@ -1072,36 +1081,49 @@ class UsbExclusiveAudioEngine(
     }
 
     private fun drainVolumeRequests(first: UsbVolumeRequest) {
-        var request = first
+        var request: UsbVolumeRequest? = first
+        var lastCompletedAtMs: Long? = null
+        var lastCompletedProtocol: String? = null
         while (true) {
+            val settleDelayMs = usbVolumeTransactionSettleDelayMs(
+                lastCompletedProtocol,
+                lastCompletedAtMs,
+                SystemClock.elapsedRealtime(),
+            )
+            if (settleDelayMs > 0) {
+                SystemClock.sleep(settleDelayMs)
+            }
+            if (lastCompletedAtMs != null) {
+                val next = synchronized(volumeCommandLock) {
+                    pendingVolumeRequest.also {
+                        pendingVolumeRequest = null
+                        if (it == null) {
+                            runningVolumeRequest = null
+                            volumeCommandRunning = false
+                        } else {
+                            runningVolumeRequest = it
+                        }
+                    }
+                }
+                if (next == null) return
+                request = next
+            }
+            val current = checkNotNull(request)
             UsbDiagnostics.i(
                 tag,
-                "USB volume transaction started generation=${request.sessionGeneration}.",
+                "USB volume transaction started generation=${current.sessionGeneration}.",
             )
             try {
-                applyVolumeRequest(request)
+                applyVolumeRequest(current)
             } catch (error: Exception) {
                 UsbDiagnostics.w(tag, "USB volume transaction failed: ${error.message}")
             }
             UsbDiagnostics.i(
                 tag,
-                "USB volume transaction completed generation=${request.sessionGeneration}.",
+                "USB volume transaction completed generation=${current.sessionGeneration}.",
             )
-            val next = synchronized(volumeCommandLock) {
-                pendingVolumeRequest.also { pendingVolumeRequest = null }
-            }
-            if (next == null) {
-                synchronized(volumeCommandLock) {
-                    if (pendingVolumeRequest == null) {
-                        volumeCommandRunning = false
-                        return
-                    }
-                    request = pendingVolumeRequest!!
-                    pendingVolumeRequest = null
-                }
-            } else {
-                request = next
-            }
+            lastCompletedProtocol = hardwareVolumeProtocol
+            lastCompletedAtMs = SystemClock.elapsedRealtime()
         }
     }
 

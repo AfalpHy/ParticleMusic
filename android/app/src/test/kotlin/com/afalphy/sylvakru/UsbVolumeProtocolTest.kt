@@ -337,6 +337,20 @@ class UsbVolumeProtocolTest {
     }
 
     @Test
+    fun calculatesRemainingIbassoTransactionSettleDelay() {
+        val protocol = IbassoDc03ProVolumeProtocol.id
+
+        assertEquals(0L, usbVolumeTransactionSettleDelayMs(protocol, null, 1000L))
+        assertEquals(100L, usbVolumeTransactionSettleDelayMs(protocol, 1000L, 1050L))
+        assertEquals(0L, usbVolumeTransactionSettleDelayMs(protocol, 1000L, 1150L))
+        assertEquals(
+            0L,
+            usbVolumeTransactionSettleDelayMs("standardUsbAudioClass", 1000L, 1050L),
+        )
+        assertEquals(0L, usbVolumeTransactionSettleDelayMs(null, 1000L, 1050L))
+    }
+
+    @Test
     fun verifiesIbassoWriteBeforeChangingHardwareAuthority() {
         assertEquals(
             IbassoVolumeVerificationAction.ACCEPT_TARGET,
