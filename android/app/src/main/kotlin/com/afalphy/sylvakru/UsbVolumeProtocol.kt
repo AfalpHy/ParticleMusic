@@ -49,6 +49,43 @@ internal enum class IbassoVolumeVerificationAction {
     PAUSE_DSD,
 }
 
+internal fun coalescedUsbVolumeRequest(
+    running: UsbVolumeRequest,
+    pending: UsbVolumeRequest?,
+    incoming: UsbVolumeRequest,
+    isDsd: Boolean,
+): UsbVolumeRequest {
+    if (pending == null) return incoming
+    if (
+        running.sessionGeneration != pending.sessionGeneration ||
+        pending.sessionGeneration != incoming.sessionGeneration ||
+        running.mode != pending.mode ||
+        pending.mode != incoming.mode
+    ) {
+        return incoming
+    }
+    val runningGain = effectiveHardwareVolumeGainQ16(
+        running.gainQ16,
+        running.replayGainMilliDb,
+        running.dsdCompensationDb,
+        isDsd,
+    )
+    val pendingGain = effectiveHardwareVolumeGainQ16(
+        pending.gainQ16,
+        pending.replayGainMilliDb,
+        pending.dsdCompensationDb,
+        isDsd,
+    )
+    if (pendingGain >= runningGain) return incoming
+    val incomingGain = effectiveHardwareVolumeGainQ16(
+        incoming.gainQ16,
+        incoming.replayGainMilliDb,
+        incoming.dsdCompensationDb,
+        isDsd,
+    )
+    return if (incomingGain < pendingGain) incoming else pending
+}
+
 internal fun latestUsbVolumeRequest(
     pending: UsbVolumeRequest?,
     incoming: UsbVolumeRequest,

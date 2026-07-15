@@ -261,11 +261,79 @@ class UsbVolumeProtocolTest {
     }
 
     @Test
-    fun keepsOnlyLatestPendingUsbVolumeRequest() {
-        val first = UsbVolumeRequest(1000, 0, "dac", 0, true, 7)
-        val latest = UsbVolumeRequest(2000, -3000, "dac", 0, true, 7)
+    fun keepsLatestPendingTargetWhenPendingDoesNotLowerOutput() {
+        val running = UsbVolumeRequest(1000, 0, "dac", 0, true, 7)
+        val pending = UsbVolumeRequest(2000, 0, "dac", 0, true, 7)
+        val incoming = UsbVolumeRequest(3000, 0, "dac", 0, true, 7)
 
-        assertEquals(latest, latestUsbVolumeRequest(first, latest))
+        assertEquals(
+            incoming,
+            coalescedUsbVolumeRequest(running, pending, incoming, isDsd = false),
+        )
+    }
+
+    @Test
+    fun latchesPendingOutputReductionAgainstLaterIncrease() {
+        val running = UsbVolumeRequest(3000, 0, "dac", 0, true, 7)
+        val pending = UsbVolumeRequest(2000, 0, "dac", 0, true, 7)
+        val incoming = UsbVolumeRequest(2500, 0, "dac", 0, true, 7)
+
+        assertEquals(
+            pending,
+            coalescedUsbVolumeRequest(running, pending, incoming, isDsd = false),
+        )
+    }
+
+    @Test
+    fun replacesLatchedReductionWithAnEvenLowerTarget() {
+        val running = UsbVolumeRequest(3000, 0, "dac", 0, true, 7)
+        val pending = UsbVolumeRequest(2000, 0, "dac", 0, true, 7)
+        val incoming = UsbVolumeRequest(1000, 0, "dac", 0, true, 7)
+
+        assertEquals(
+            incoming,
+            coalescedUsbVolumeRequest(running, pending, incoming, isDsd = false),
+        )
+    }
+
+    @Test
+    fun acceptsAnIncreaseAfterTheLowerTargetBecomesRunning() {
+        val loweredRunning = UsbVolumeRequest(2000, 0, "dac", 0, true, 7)
+        val incoming = UsbVolumeRequest(2500, 0, "dac", 0, true, 7)
+
+        assertEquals(
+            incoming,
+            coalescedUsbVolumeRequest(loweredRunning, null, incoming, isDsd = false),
+        )
+    }
+
+    @Test
+    fun acceptsLatestTargetAcrossSessionOrModeChanges() {
+        val running = UsbVolumeRequest(3000, 0, "dac", 0, true, 7)
+        val pending = UsbVolumeRequest(2000, 0, "dac", 0, true, 7)
+        val nextSession = UsbVolumeRequest(2500, 0, "dac", 0, true, 8)
+        val digital = UsbVolumeRequest(2500, 0, "digital", 0, true, 7)
+
+        assertEquals(
+            nextSession,
+            coalescedUsbVolumeRequest(running, pending, nextSession, isDsd = false),
+        )
+        assertEquals(
+            digital,
+            coalescedUsbVolumeRequest(running, pending, digital, isDsd = false),
+        )
+    }
+
+    @Test
+    fun comparesTotalEffectiveDsdOutputWhenCoalescingTargets() {
+        val running = UsbVolumeRequest(32768, 0, "dac", 0, true, 7)
+        val pending = UsbVolumeRequest(32768, -1000, "dac", 0, true, 7)
+        val incoming = UsbVolumeRequest(32768, -500, "dac", 6, true, 7)
+
+        assertEquals(
+            pending,
+            coalescedUsbVolumeRequest(running, pending, incoming, isDsd = true),
+        )
     }
 
     @Test
