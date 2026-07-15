@@ -8,7 +8,7 @@
           "match": { "pid": "0x1a0b", "label": "iBasso Macaron" },
           "hardwareVolume": {
             "enabled": true,
-            "protocol": "ibassoDc03Pro",
+            "protocol": "ibassoHid",
             "dsdSupported": true
           }
         }

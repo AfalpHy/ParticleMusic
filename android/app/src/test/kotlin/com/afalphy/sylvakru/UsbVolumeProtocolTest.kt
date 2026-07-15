@@ -11,7 +11,7 @@ import kotlin.math.pow
 import kotlin.math.roundToInt
 
 class UsbVolumeProtocolTest {
-    private val protocol = IbassoDc03ProVolumeProtocol
+    private val protocol = IbassoHidVolumeProtocol
 
     @Test
     fun selectsUsbSlotFromPcmSourceBitDepthInAutoMode() {
@@ -141,7 +141,7 @@ class UsbVolumeProtocolTest {
 
     @Test
     fun exposesIbassoProtocolCapabilities() {
-        assertEquals("ibassoDc03Pro", protocol.id)
+        assertEquals("ibassoHid", protocol.id)
         assertEquals(
             UsbVolumeCapabilities(
                 readable = true,
@@ -159,10 +159,10 @@ class UsbVolumeProtocolTest {
             readbackVerified = true,
         )
 
-        assertTrue(hardwareVolumeWriteOnlyForState("ibassoDc03Pro", contradictoryIbassoHealth))
+        assertTrue(hardwareVolumeWriteOnlyForState("ibassoHid", contradictoryIbassoHealth))
         assertFalse(
             hardwareVolumeReadbackVerifiedForState(
-                "ibassoDc03Pro",
+                "ibassoHid",
                 standardReadbackVerified = true,
                 ibassoHealth = contradictoryIbassoHealth,
             ),
@@ -185,8 +185,17 @@ class UsbVolumeProtocolTest {
     }
 
     @Test
-    fun selectsVendorStandardAndUnsupportedProtocolsExplicitly() {
-        assertSame(IbassoDc03ProVolumeProtocol, usbVolumeProtocolFor("ibassoDc03Pro"))
+    fun selectsOnlyTheGenericIbassoHidProtocolId() {
+        assertSame(IbassoHidVolumeProtocol, usbVolumeProtocolFor("ibassoHid"))
+        assertNull(usbVolumeProtocolFor("ibassoDc03Pro"))
+        assertEquals(
+            VendorUsbVolumeProtocol(IbassoHidVolumeProtocol),
+            usbVolumeProtocolSelection("ibassoHid"),
+        )
+        assertEquals(
+            UnsupportedUsbVolumeProtocol("ibassoDc03Pro"),
+            usbVolumeProtocolSelection("ibassoDc03Pro"),
+        )
         assertEquals(StandardUsbVolumeProtocol, usbVolumeProtocolSelection(null))
         assertEquals(StandardUsbVolumeProtocol, usbVolumeProtocolSelection("uac1"))
         assertEquals(StandardUsbVolumeProtocol, usbVolumeProtocolSelection("uac2"))
@@ -338,7 +347,7 @@ class UsbVolumeProtocolTest {
 
     @Test
     fun calculatesRemainingIbassoTransactionSettleDelay() {
-        val protocol = IbassoDc03ProVolumeProtocol.id
+        val protocol = IbassoHidVolumeProtocol.id
 
         assertEquals(0L, usbVolumeTransactionSettleDelayMs(protocol, null, 1000L))
         assertEquals(100L, usbVolumeTransactionSettleDelayMs(protocol, 1000L, 1050L))
@@ -874,9 +883,9 @@ class UsbVolumeProtocolTest {
         val dsd = ibassoActualEventGainQ16(97, isDsd = true, dsdCompensationDb = 6)
 
         assertEquals(97, pcm.raw)
-        assertEquals(IbassoDc03ProVolumeProtocol.rawToLinearGainQ16(97), pcm.gainQ16)
+        assertEquals(IbassoHidVolumeProtocol.rawToLinearGainQ16(97), pcm.gainQ16)
         assertEquals(85, dsd.raw)
-        assertEquals(IbassoDc03ProVolumeProtocol.rawToLinearGainQ16(85), dsd.gainQ16)
+        assertEquals(IbassoHidVolumeProtocol.rawToLinearGainQ16(85), dsd.gainQ16)
     }
 
     @Test

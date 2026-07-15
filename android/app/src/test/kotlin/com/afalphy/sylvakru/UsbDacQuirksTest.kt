@@ -159,4 +159,44 @@ class UsbDacQuirksTest {
         assertEquals("futureProtocol", unknown.single().second.hardwareVolumeProtocol)
         assertNull(blank.single().second.hardwareVolumeProtocol)
     }
+
+    @Test
+    fun enablesIbassoHidOnlyForExplicitDeviceEntries() {
+        val entries = UsbDacQuirks.parseEntries(
+            """
+                {
+                  "version": 2,
+                  "vendors": [
+                    {
+                      "match": { "vid": "0x262a", "label": "iBasso" },
+                      "devices": [
+                        {
+                          "match": { "pid": "0x1001", "label": "adapted-a" },
+                          "hardwareVolume": { "protocol": "ibassoHid" }
+                        },
+                        {
+                          "match": { "pid": "0x1002", "label": "adapted-b" },
+                          "hardwareVolume": { "protocol": "ibassoHid" }
+                        },
+                        {
+                          "match": { "pid": "*" }
+                        }
+                      ]
+                    }
+                  ]
+                }
+            """.trimIndent(),
+        )
+
+        assertEquals(
+            "ibassoHid",
+            UsbDacQuirks.matchQuirk(entries, 0x262a, 0x1001)?.hardwareVolumeProtocol,
+        )
+        assertEquals(
+            "ibassoHid",
+            UsbDacQuirks.matchQuirk(entries, 0x262a, 0x1002)?.hardwareVolumeProtocol,
+        )
+        assertNull(UsbDacQuirks.matchQuirk(entries, 0x262a, 0x9999)?.hardwareVolumeProtocol)
+        assertNull(UsbDacQuirks.matchQuirk(entries, 0x1234, 0x9999))
+    }
 }

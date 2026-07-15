@@ -1198,7 +1198,7 @@ class UsbExclusiveAudioEngine(
                         if (isDsd) dsdGainCompensationDb else 0,
                     )
                     ibassoHandoffBaseRaw = null
-                    fallbackReason = writeIbassoDc03ProVolume(
+                    fallbackReason = writeIbassoHidVolume(
                         device,
                         volumeTarget,
                         if (isDsd) volumeTarget.dsdRaw else volumeTarget.baseRaw,
@@ -1670,7 +1670,7 @@ class UsbExclusiveAudioEngine(
         }
     }
 
-    private fun writeIbassoDc03ProVolume(
+    private fun writeIbassoHidVolume(
         device: UsbDevice,
         target: UsbVolumeTarget,
         activeRaw: Int,
@@ -1717,7 +1717,7 @@ class UsbExclusiveAudioEngine(
                 startIbassoVolumeReader(
                     controlConnection,
                     inputEndpoint,
-                    IbassoDc03ProVolumeProtocol.capabilities.unsolicitedEvents,
+                    IbassoHidVolumeProtocol.capabilities.unsolicitedEvents,
                     restarted = resumeReaderHealth,
                 )
             }
@@ -1753,7 +1753,7 @@ class UsbExclusiveAudioEngine(
 
         val shouldReadInitialVolume = shouldReadInitialHardwareVolume(
             isNewConnection = newConnection,
-            readable = IbassoDc03ProVolumeProtocol.capabilities.readable && !ibassoReaderWriteOnly,
+            readable = IbassoHidVolumeProtocol.capabilities.readable && !ibassoReaderWriteOnly,
         )
         val readBaseRaw = if (shouldReadInitialVolume) {
             readIbassoCurrentBaseRaw(controlConnection)
@@ -1773,8 +1773,8 @@ class UsbExclusiveAudioEngine(
         }
         val handoff = hardwareVolumeHandoffTarget(
             volumeSmoothHandoff,
-            readBaseRaw?.let(IbassoDc03ProVolumeProtocol::rawToLinearGainQ16),
-            IbassoDc03ProVolumeProtocol.rawToLinearGainQ16(activeRaw),
+            readBaseRaw?.let(IbassoHidVolumeProtocol::rawToLinearGainQ16),
+            IbassoHidVolumeProtocol.rawToLinearGainQ16(activeRaw),
         )
         val appliedTarget = if (handoff.source == HardwareVolumeHandoffSource.DEVICE) {
             val baseRaw = readBaseRaw!!
@@ -1854,7 +1854,7 @@ class UsbExclusiveAudioEngine(
                 UsbDiagnostics.i(
                     tag,
                     "iBasso hardware volume set register=$value, dsdRegister=$dsdValue, " +
-                        "protocol=ibassoDc03Pro",
+                        "protocol=ibassoHid",
                 )
                 null
             }
@@ -1909,7 +1909,7 @@ class UsbExclusiveAudioEngine(
         }
         hardwareVolumeActive = true
         volumeControlEnabled = false
-        hardwareVolumeProtocol = IbassoDc03ProVolumeProtocol.id
+        hardwareVolumeProtocol = IbassoHidVolumeProtocol.id
         hardwareVolumeRaw = actual.raw
         hardwareVolumeGainQ16 = actual.gainQ16
         hardwareVolumeSyncPending = false
@@ -1941,7 +1941,7 @@ class UsbExclusiveAudioEngine(
         )
         hardwareVolumeActive = true
         volumeControlEnabled = false
-        hardwareVolumeProtocol = IbassoDc03ProVolumeProtocol.id
+        hardwareVolumeProtocol = IbassoHidVolumeProtocol.id
         hardwareVolumeRaw = actual.raw
         hardwareVolumeGainQ16 = actual.gainQ16
         hardwareVolumeSyncPending = false
@@ -2360,7 +2360,7 @@ class UsbExclusiveAudioEngine(
             hardwareVolumeActive = true
             volumeControlEnabled = false
             setPcmVolumeGain(65536, smooth = true)
-            hardwareVolumeProtocol = IbassoDc03ProVolumeProtocol.id
+            hardwareVolumeProtocol = IbassoHidVolumeProtocol.id
             hardwareVolumeRaw = actual.raw
             hardwareVolumeGainQ16 = actual.gainQ16
             hardwareVolumeSyncPending = false
@@ -2394,7 +2394,7 @@ class UsbExclusiveAudioEngine(
                         "gainQ16" to actual.gainQ16,
                         "leftRaw" to pendingEvent.leftRaw,
                         "rightRaw" to pendingEvent.rightRaw,
-                        "protocol" to IbassoDc03ProVolumeProtocol.id,
+                        "protocol" to IbassoHidVolumeProtocol.id,
                         "isDsd" to isDsd,
                         "replayGainMilliDb" to requestedReplayGainMilliDb,
                         "dsdGainCompensationDb" to dsdGainCompensationDb,

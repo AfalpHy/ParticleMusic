@@ -458,7 +458,7 @@ void main() {
           'usbBitDepth': 24,
           'bitPerfect': false,
           'format': 'flac',
-          'hardwareVolumeProtocol': 'ibassoDc03Pro',
+          'hardwareVolumeProtocol': 'ibassoHid',
           'hardwareVolumeRaw': 97,
           'hardwareVolumeGainQ16': 32768,
           'replayGainMilliDb': -3500,
@@ -479,7 +479,7 @@ void main() {
     expect(state.decodedBitDepth, 16);
     expect(state.usbBitDepth, 24);
     expect(state.bitPerfect, isFalse);
-    expect(state.hardwareVolumeProtocol, 'ibassoDc03Pro');
+    expect(state.hardwareVolumeProtocol, 'ibassoHid');
     expect(state.hardwareVolumeRaw, 97);
     expect(state.hardwareVolumeGainQ16, 32768);
     expect(state.replayGainMilliDb, -3500);
@@ -507,7 +507,7 @@ void main() {
       'hardwareVolumeReadbackVerified': true,
       'hardwareVolumeSyncPending': true,
       'hardwareVolumeFrozen': false,
-      'hardwareVolumeProtocol': 'ibassoDc03Pro',
+      'hardwareVolumeProtocol': 'ibassoHid',
       'hardwareVolumeRaw': 97,
       'hardwareVolumeGainQ16': 32768,
       'replayGainMilliDb': -3500,
@@ -523,7 +523,7 @@ void main() {
     expect(state.hardwareVolumeReadbackVerified, isTrue);
     expect(state.hardwareVolumeSyncPending, isTrue);
     expect(state.hardwareVolumeFrozen, isFalse);
-    expect(state.hardwareVolumeProtocol, 'ibassoDc03Pro');
+    expect(state.hardwareVolumeProtocol, 'ibassoHid');
     expect(state.hardwareVolumeRaw, 97);
     expect(state.hardwareVolumeGainQ16, 32768);
     expect(state.replayGainMilliDb, -3500);
@@ -552,7 +552,7 @@ void main() {
       expect(
         state(
           active: true,
-          protocol: 'ibassoDc03Pro',
+          protocol: 'ibassoHid',
           writeOnly: true,
           readbackVerified: false,
         ).hardwareVolumeUnverified,
@@ -786,7 +786,7 @@ void main() {
             'gainQ16': 32768,
             'leftRaw': 97,
             'rightRaw': 98,
-            'protocol': 'ibassoDc03Pro',
+            'protocol': 'ibassoHid',
             'isDsd': true,
             'replayGainMilliDb': -3500,
             'dsdGainCompensationDb': 6,
@@ -801,7 +801,7 @@ void main() {
       expect(event.gainQ16, 32768);
       expect(event.leftRaw, 97);
       expect(event.rightRaw, 98);
-      expect(event.protocol, 'ibassoDc03Pro');
+      expect(event.protocol, 'ibassoHid');
       expect(event.isDsd, isTrue);
       expect(event.replayGainMilliDb, -3500);
       expect(event.dsdGainCompensationDb, 6);
@@ -826,7 +826,7 @@ void main() {
         'gainQ16': 65537,
         'leftRaw': 97,
         'rightRaw': 98,
-        'protocol': 'ibassoDc03Pro',
+        'protocol': 'ibassoHid',
         'isDsd': false,
         'replayGainMilliDb': 0,
         'dsdGainCompensationDb': 0,

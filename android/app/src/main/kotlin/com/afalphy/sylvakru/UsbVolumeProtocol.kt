@@ -93,7 +93,7 @@ internal fun usbVolumeTransactionSettleDelayMs(
     lastCompletedAtMs: Long?,
     nowMs: Long,
 ): Long {
-    if (protocol != IbassoDc03ProVolumeProtocol.id || lastCompletedAtMs == null) return 0L
+    if (protocol != IbassoHidVolumeProtocol.id || lastCompletedAtMs == null) return 0L
     val elapsedMs = (nowMs - lastCompletedAtMs).coerceAtLeast(0L)
     return (IBASSO_VOLUME_TRANSACTION_SETTLE_MS - elapsedMs).coerceAtLeast(0L)
 }
@@ -271,7 +271,7 @@ internal fun isFailedIbassoReaderGenerationCurrent(
 internal fun hardwareVolumeWriteOnlyForState(
     protocol: String?,
     ibassoHealth: IbassoReaderHealth,
-): Boolean = protocol == "ibassoDc03Pro" && ibassoHealth.writeOnly
+): Boolean = protocol == "ibassoHid" && ibassoHealth.writeOnly
 
 internal fun hardwareVolumeReadbackVerifiedForState(
     protocol: String?,
@@ -279,7 +279,7 @@ internal fun hardwareVolumeReadbackVerifiedForState(
     ibassoHealth: IbassoReaderHealth,
 ): Boolean = when (protocol) {
     null -> false
-    "ibassoDc03Pro" -> ibassoHealth.readbackVerified && !ibassoHealth.writeOnly
+    "ibassoHid" -> ibassoHealth.readbackVerified && !ibassoHealth.writeOnly
     else -> standardReadbackVerified
 }
 
@@ -333,8 +333,8 @@ internal interface UsbVolumeProtocol {
             event.rightRaw == lastWrittenRaw
 }
 
-internal object IbassoDc03ProVolumeProtocol : UsbVolumeProtocol {
-    override val id = "ibassoDc03Pro"
+internal object IbassoHidVolumeProtocol : UsbVolumeProtocol {
+    override val id = "ibassoHid"
     override val capabilities = UsbVolumeCapabilities(
         readable = true,
         unsolicitedEvents = true,
@@ -387,7 +387,7 @@ internal object IbassoDc03ProVolumeProtocol : UsbVolumeProtocol {
 
 internal fun usbVolumeProtocolFor(id: String?): UsbVolumeProtocol? =
     when (id?.trim()) {
-        "ibassoDc03Pro" -> IbassoDc03ProVolumeProtocol
+        "ibassoHid" -> IbassoHidVolumeProtocol
         else -> null
     }
 
@@ -395,7 +395,7 @@ internal fun usbVolumeProtocolSelection(id: String?): UsbVolumeProtocolSelection
     val normalized = id?.trim()?.takeIf { it.isNotEmpty() }
     return when (normalized) {
         null, "uac1", "uac2" -> StandardUsbVolumeProtocol
-        "ibassoDc03Pro" -> VendorUsbVolumeProtocol(IbassoDc03ProVolumeProtocol)
+        "ibassoHid" -> VendorUsbVolumeProtocol(IbassoHidVolumeProtocol)
         else -> UnsupportedUsbVolumeProtocol(normalized)
     }
 }
@@ -496,12 +496,12 @@ internal fun routeIbassoVolumePacket(
     pendingCommands: Set<Int>,
     lastWrittenRaw: Int?,
 ): IbassoVolumePacketRoute {
-    val event = IbassoDc03ProVolumeProtocol.decodeEvent(packet)
+    val event = IbassoHidVolumeProtocol.decodeEvent(packet)
     if (event != null) {
         return IbassoVolumePacketRoute.Event(
             event = event,
             isWriteConfirmation =
-                IbassoDc03ProVolumeProtocol.isWriteConfirmation(event, lastWrittenRaw),
+                IbassoHidVolumeProtocol.isWriteConfirmation(event, lastWrittenRaw),
         )
     }
     val command = packet.getOrNull(6)?.toInt()?.and(0xff)
@@ -564,7 +564,7 @@ internal fun ibassoActualEventGainQ16(
     }
     return UsbActualVolume(
         raw = actualRaw,
-        gainQ16 = IbassoDc03ProVolumeProtocol.rawToLinearGainQ16(actualRaw),
+        gainQ16 = IbassoHidVolumeProtocol.rawToLinearGainQ16(actualRaw),
     )
 }
 
