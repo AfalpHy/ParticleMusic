@@ -76,49 +76,33 @@ internal fun coalescedUsbVolumeRequest(
     pending: UsbVolumeRequest?,
     incoming: UsbVolumeRequest,
     isDsd: Boolean,
-): UsbVolumeRequest {
-    if (pending == null) return incoming
-    if (
-        running.sessionGeneration != pending.sessionGeneration ||
-        pending.sessionGeneration != incoming.sessionGeneration ||
-        running.mode != pending.mode ||
-        pending.mode != incoming.mode
-    ) {
-        return incoming
-    }
-    val runningGain = effectiveHardwareVolumeGainQ16(
-        running.gainQ16,
-        running.replayGainMilliDb,
-        running.dsdCompensationDb,
-        isDsd,
-    )
-    val pendingGain = effectiveHardwareVolumeGainQ16(
-        pending.gainQ16,
-        pending.replayGainMilliDb,
-        pending.dsdCompensationDb,
-        isDsd,
-    )
-    if (pendingGain >= runningGain) return incoming
-    val incomingGain = effectiveHardwareVolumeGainQ16(
-        incoming.gainQ16,
-        incoming.replayGainMilliDb,
-        incoming.dsdCompensationDb,
-        isDsd,
-    )
-    return if (incomingGain < pendingGain) incoming else pending
-}
+): UsbVolumeRequest = incoming
 
 private const val IBASSO_VOLUME_TRANSACTION_SETTLE_MS = 150L
+private const val IBASSO_VOLUME_PENDING_QUIET_MS = 300L
+
+internal fun usbVolumePendingDelayMs(
+    protocol: String?,
+    lastCompletedAtMs: Long?,
+    pendingUpdatedAtMs: Long?,
+    nowMs: Long,
+): Long {
+    if (protocol != IbassoHidVolumeProtocol.id || lastCompletedAtMs == null) return 0L
+    val settleElapsedMs = (nowMs - lastCompletedAtMs).coerceAtLeast(0L)
+    val settleDelayMs =
+        (IBASSO_VOLUME_TRANSACTION_SETTLE_MS - settleElapsedMs).coerceAtLeast(0L)
+    val quietDelayMs = pendingUpdatedAtMs?.let {
+        val quietElapsedMs = (nowMs - it).coerceAtLeast(0L)
+        (IBASSO_VOLUME_PENDING_QUIET_MS - quietElapsedMs).coerceAtLeast(0L)
+    } ?: 0L
+    return maxOf(settleDelayMs, quietDelayMs)
+}
 
 internal fun usbVolumeTransactionSettleDelayMs(
     protocol: String?,
     lastCompletedAtMs: Long?,
     nowMs: Long,
-): Long {
-    if (protocol != IbassoHidVolumeProtocol.id || lastCompletedAtMs == null) return 0L
-    val elapsedMs = (nowMs - lastCompletedAtMs).coerceAtLeast(0L)
-    return (IBASSO_VOLUME_TRANSACTION_SETTLE_MS - elapsedMs).coerceAtLeast(0L)
-}
+): Long = usbVolumePendingDelayMs(protocol, lastCompletedAtMs, null, nowMs)
 
 internal fun ibassoVolumeVerificationAction(
     targetRaw: Int,

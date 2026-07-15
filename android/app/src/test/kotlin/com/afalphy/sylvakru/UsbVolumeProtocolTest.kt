@@ -282,13 +282,13 @@ class UsbVolumeProtocolTest {
     }
 
     @Test
-    fun latchesPendingOutputReductionAgainstLaterIncrease() {
+    fun keepsOnlyTheLatestPendingAbsoluteTarget() {
         val running = UsbVolumeRequest(3000, 0, "dac", 0, true, 7)
         val pending = UsbVolumeRequest(2000, 0, "dac", 0, true, 7)
         val incoming = UsbVolumeRequest(2500, 0, "dac", 0, true, 7)
 
         assertEquals(
-            pending,
+            incoming,
             coalescedUsbVolumeRequest(running, pending, incoming, isDsd = false),
         )
     }
@@ -340,23 +340,28 @@ class UsbVolumeProtocolTest {
         val incoming = UsbVolumeRequest(32768, -500, "dac", 6, true, 7)
 
         assertEquals(
-            pending,
+            incoming,
             coalescedUsbVolumeRequest(running, pending, incoming, isDsd = true),
         )
     }
 
     @Test
-    fun calculatesRemainingIbassoTransactionSettleDelay() {
+    fun waitsForIbassoSettleAndLatestPendingQuietWindow() {
         val protocol = IbassoHidVolumeProtocol.id
 
-        assertEquals(0L, usbVolumeTransactionSettleDelayMs(protocol, null, 1000L))
-        assertEquals(100L, usbVolumeTransactionSettleDelayMs(protocol, 1000L, 1050L))
-        assertEquals(0L, usbVolumeTransactionSettleDelayMs(protocol, 1000L, 1150L))
+        assertEquals(100L, usbVolumePendingDelayMs(protocol, 1000L, null, 1050L))
+        assertEquals(200L, usbVolumePendingDelayMs(protocol, 1000L, 1100L, 1200L))
+        assertEquals(50L, usbVolumePendingDelayMs(protocol, 1000L, 1100L, 1350L))
+        assertEquals(0L, usbVolumePendingDelayMs(protocol, 1000L, 1100L, 1400L))
+    }
+
+    @Test
+    fun skipsPendingDebounceOutsideAnActiveIbassoSequence() {
+        assertEquals(0L, usbVolumePendingDelayMs(null, null, 1000L, 1100L))
         assertEquals(
             0L,
-            usbVolumeTransactionSettleDelayMs("standardUsbAudioClass", 1000L, 1050L),
+            usbVolumePendingDelayMs("standardUsbAudioClass", 1000L, 1050L, 1100L),
         )
-        assertEquals(0L, usbVolumeTransactionSettleDelayMs(null, 1000L, 1050L))
     }
 
     @Test
