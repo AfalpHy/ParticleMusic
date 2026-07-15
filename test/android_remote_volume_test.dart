@@ -90,6 +90,37 @@ void main() {
     );
   });
 
+  test('硬件写入期间按键最多保留一个方向且降低优先', () {
+    expect(
+      pendingUsbVolumeKeyDirection(
+        null,
+        audio_service.AndroidVolumeDirection.raise,
+      ),
+      audio_service.AndroidVolumeDirection.raise,
+    );
+    expect(
+      pendingUsbVolumeKeyDirection(
+        audio_service.AndroidVolumeDirection.raise,
+        audio_service.AndroidVolumeDirection.raise,
+      ),
+      audio_service.AndroidVolumeDirection.raise,
+    );
+    expect(
+      pendingUsbVolumeKeyDirection(
+        audio_service.AndroidVolumeDirection.raise,
+        audio_service.AndroidVolumeDirection.lower,
+      ),
+      audio_service.AndroidVolumeDirection.lower,
+    );
+    expect(
+      pendingUsbVolumeKeyDirection(
+        audio_service.AndroidVolumeDirection.lower,
+        audio_service.AndroidVolumeDirection.raise,
+      ),
+      audio_service.AndroidVolumeDirection.lower,
+    );
+  });
+
   test('USB 音量写入在途时忽略后续手机物理按键', () {
     expect(
       usbExclusiveVolumeKeyDirection(
