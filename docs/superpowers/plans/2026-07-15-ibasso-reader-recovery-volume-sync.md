@@ -1,10 +1,10 @@
-# iBasso Reader Recovery Volume Sync Implementation Plan
+# iBasso HID Reader Recovery Volume Sync Implementation Plan
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 让 PCM 音量事务在 iBasso HID reader 有界重启期间保留最后可信 DAC 音量并等待恢复，避免把“reader 暂不可用”误计为三次寄存器回读失败而冻结。
+**Goal:** 将厂商音量协议直接通用化为 `ibassoHid`，由精确设备 quirk 管理适配范围，并让 PCM 音量事务在 HID reader 有界重启期间保留最后可信 DAC 音量等待恢复。
 
-**Architecture:** 在现有 `IbassoReaderHealth` 与 `IbassoVolumeVerificationAction` 旁增加一个纯状态决策，区分立即验证、等待、冻结和会话取消。`UsbExclusiveAudioEngine` 仍使用单线程音量执行器与唯一待处理目标，在 reader 既有 250ms 重启期限内轮询状态；恢复后沿用当前寄存器验证，超时或未知值仍进入现有安全冻结，DSD 路径不变。
+**Architecture:** 先把型号化协议对象、协议 ID、引擎函数和状态测试直接迁移为通用 iBasso HID 命名，不保留旧 ID；设备是否适配只由精确 VID/PID quirk 决定。随后在现有 `IbassoReaderHealth` 与 `IbassoVolumeVerificationAction` 旁增加纯状态决策，复用单线程音量执行器、唯一待处理目标和 reader 既有 250ms 重启期限；恢复后沿用寄存器验证，超时或未知值仍安全冻结，DSD 路径不变。
 
 **Tech Stack:** Android Kotlin、USB Host API、JUnit 4、Flutter 3.44.5、ADB。
 
@@ -12,9 +12,12 @@
 
 ## 文件边界
 
-- 修改 `android/app/src/main/kotlin/com/afalphy/sylvakru/UsbVolumeProtocol.kt`：只承载可单测的 reader 恢复决策，不访问 Android 线程或 USB 对象。
-- 修改 `android/app/src/main/kotlin/com/afalphy/sylvakru/UsbExclusiveAudioEngine.kt`：复用现有 reader 健康状态、会话 generation 和单线程音量执行器，完成有界等待与取消。
-- 修改 `android/app/src/test/kotlin/com/afalphy/sylvakru/UsbVolumeProtocolTest.kt`：覆盖等待、恢复、超时、只写、DSD 和会话取消状态。
+- 修改 `android/app/src/main/kotlin/com/afalphy/sylvakru/UsbVolumeProtocol.kt`：定义唯一的 `IbassoHidVolumeProtocol` / `ibassoHid`，并承载可单测的 reader 恢复决策。
+- 修改 `android/app/src/main/kotlin/com/afalphy/sylvakru/UsbExclusiveAudioEngine.kt`：使用通用 iBasso HID 命名，复用现有 reader 健康状态、会话 generation 和单线程音量执行器完成有界等待与取消。
+- 修改 `android/app/src/main/assets/usb_dac_quirks.json`：已适配设备的精确 VID/PID 条目改用 `ibassoHid`，不新增厂商通配协议。
+- 修改 `android/app/src/test/kotlin/com/afalphy/sylvakru/UsbVolumeProtocolTest.kt`：覆盖协议硬迁移、等待、恢复、超时、只写、DSD 和会话取消状态。
+- 修改 `android/app/src/test/kotlin/com/afalphy/sylvakru/UsbDacQuirksTest.kt`：覆盖多个精确设备共享通用协议，以及未知设备不误启用。
+- 修改 `test/usb_audio_service_test.dart`：状态与事件 fixture 只接受新的 `ibassoHid` 协议 ID。
 - 不修改 Dart 音量目标、滑条、按键步进、系统音量条、自绘浮层、iBasso 报文和寄存器映射。
 
 ## Task 1：修改前检查与用户修改保护
@@ -36,19 +39,238 @@ git rev-list --left-right --count fork/usb-exclusive-volume-overlay-performance.
 
 预期：当前分支为 `usb-exclusive-volume-overlay-performance`，fork 与 HEAD 为 `0 0`。记录所有既有未提交文件；不得执行 reset、clean、merge、rebase 或切换分支。
 
-- [ ] **Step 2: 确认本轮允许修改的三个文件差异**
+- [ ] **Step 2: 确认本轮允许修改的六个文件差异**
 
 ```powershell
 git diff -- android/app/src/main/kotlin/com/afalphy/sylvakru/UsbVolumeProtocol.kt
 git diff -- android/app/src/main/kotlin/com/afalphy/sylvakru/UsbExclusiveAudioEngine.kt
+git diff -- android/app/src/main/assets/usb_dac_quirks.json
 git diff -- android/app/src/test/kotlin/com/afalphy/sylvakru/UsbVolumeProtocolTest.kt
+git diff -- android/app/src/test/kotlin/com/afalphy/sylvakru/UsbDacQuirksTest.kt
+git diff -- test/usb_audio_service_test.dart
 ```
 
-预期：`UsbExclusiveAudioEngine.kt` 仍可能包含用户未提交的 `initialState` 中 `playbackId` 排序修改；后续只暂存本计划新增的 reader 恢复 hunk。另两个文件若出现未知修改，停止并先区分归属。
+预期：`UsbExclusiveAudioEngine.kt` 仍包含用户未提交的 `initialState` 中 `playbackId` 排序修改；后续只暂存本计划新增的协议重命名和 reader 恢复 hunk。其余五个文件若出现未知修改，停止并先区分归属。
 
 ---
 
-## Task 2：以 TDD 接入 reader 恢复状态决策和有界等待
+## Task 2：以 TDD 将协议身份直接迁移为通用 iBasso HID
+
+**Files:**
+- Modify: `android/app/src/main/kotlin/com/afalphy/sylvakru/UsbVolumeProtocol.kt:336-400`
+- Modify: `android/app/src/main/kotlin/com/afalphy/sylvakru/UsbExclusiveAudioEngine.kt:1201,1673-1912,2363-2397`
+- Modify: `android/app/src/main/assets/usb_dac_quirks.json:1-18`
+- Test: `android/app/src/test/kotlin/com/afalphy/sylvakru/UsbVolumeProtocolTest.kt:14,140-200,341,877-879`
+- Test: `android/app/src/test/kotlin/com/afalphy/sylvakru/UsbDacQuirksTest.kt`
+- Test: `test/usb_audio_service_test.dart:461-829`
+
+- [ ] **Step 1: 写通用协议身份和精确设备管理的失败测试**
+
+把 `UsbVolumeProtocolTest` 的协议 fixture 与选择测试改为：
+
+```kotlin
+private val protocol = IbassoHidVolumeProtocol
+
+@Test
+fun selectsOnlyTheGenericIbassoHidProtocolId() {
+    assertEquals("ibassoHid", protocol.id)
+    assertSame(IbassoHidVolumeProtocol, usbVolumeProtocolFor("ibassoHid"))
+    assertNull(usbVolumeProtocolFor("ibassoDc03Pro"))
+    assertEquals(
+        VendorUsbVolumeProtocol(IbassoHidVolumeProtocol),
+        usbVolumeProtocolSelection("ibassoHid"),
+    )
+    assertEquals(
+        UnsupportedUsbVolumeProtocol("ibassoDc03Pro"),
+        usbVolumeProtocolSelection("ibassoDc03Pro"),
+    )
+    assertEquals(StandardUsbVolumeProtocol, usbVolumeProtocolSelection(null))
+    assertEquals(StandardUsbVolumeProtocol, usbVolumeProtocolSelection("uac1"))
+    assertEquals(StandardUsbVolumeProtocol, usbVolumeProtocolSelection("uac2"))
+    assertEquals(
+        UnsupportedUsbVolumeProtocol("unknownProtocol"),
+        usbVolumeProtocolSelection("unknownProtocol"),
+    )
+}
+```
+
+同时把该测试文件其余 `IbassoDc03ProVolumeProtocol` 和 `ibassoDc03Pro` 期望改为 `IbassoHidVolumeProtocol` 与 `ibassoHid`。
+
+在 `UsbDacQuirksTest` 中加入：
+
+```kotlin
+@Test
+fun enablesIbassoHidOnlyForExplicitDeviceEntries() {
+    val entries = UsbDacQuirks.parseEntries(
+        """
+            {
+              "version": 2,
+              "vendors": [
+                {
+                  "match": { "vid": "0x262a", "label": "iBasso" },
+                  "devices": [
+                    {
+                      "match": { "pid": "0x1001", "label": "adapted-a" },
+                      "hardwareVolume": { "protocol": "ibassoHid" }
+                    },
+                    {
+                      "match": { "pid": "0x1002", "label": "adapted-b" },
+                      "hardwareVolume": { "protocol": "ibassoHid" }
+                    },
+                    {
+                      "match": { "pid": "*" }
+                    }
+                  ]
+                }
+              ]
+            }
+        """.trimIndent(),
+    )
+
+    assertEquals(
+        "ibassoHid",
+        UsbDacQuirks.matchQuirk(entries, 0x262a, 0x1001)?.hardwareVolumeProtocol,
+    )
+    assertEquals(
+        "ibassoHid",
+        UsbDacQuirks.matchQuirk(entries, 0x262a, 0x1002)?.hardwareVolumeProtocol,
+    )
+    assertNull(UsbDacQuirks.matchQuirk(entries, 0x262a, 0x9999)?.hardwareVolumeProtocol)
+    assertNull(UsbDacQuirks.matchQuirk(entries, 0x1234, 0x9999))
+}
+```
+
+- [ ] **Step 2: 运行测试并确认按预期失败**
+
+```powershell
+Set-Location android
+.\gradlew.bat app:testDebugUnitTest --tests "com.afalphy.sylvakru.UsbVolumeProtocolTest" --tests "com.afalphy.sylvakru.UsbDacQuirksTest"
+Set-Location ..
+```
+
+预期：编译失败，错误包含 `Unresolved reference 'IbassoHidVolumeProtocol'`。如果直接通过，说明测试未验证协议身份硬迁移，必须修正后继续。
+
+- [ ] **Step 3: 直接替换协议对象和唯一协议 ID**
+
+在 `UsbVolumeProtocol.kt` 中将协议声明和选择器改为：
+
+```kotlin
+internal object IbassoHidVolumeProtocol : UsbVolumeProtocol {
+    override val id = "ibassoHid"
+```
+
+协议对象的 `capabilities`、音量映射和事件解码函数体保持现有实现不变。选择器必须是：
+
+```kotlin
+internal fun usbVolumeProtocolFor(id: String?): UsbVolumeProtocol? =
+    when (id?.trim()) {
+        "ibassoHid" -> IbassoHidVolumeProtocol
+        else -> null
+    }
+
+internal fun usbVolumeProtocolSelection(id: String?): UsbVolumeProtocolSelection {
+    val normalized = id?.trim()?.takeIf { it.isNotEmpty() }
+    return when (normalized) {
+        null, "uac1", "uac2" -> StandardUsbVolumeProtocol
+        "ibassoHid" -> VendorUsbVolumeProtocol(IbassoHidVolumeProtocol)
+        else -> UnsupportedUsbVolumeProtocol(normalized)
+    }
+}
+```
+
+不得加入 `ibassoDc03Pro` 分支、别名常量或迁移逻辑。
+
+- [ ] **Step 4: 通用化引擎命名并迁移精确设备配置和 Dart fixture**
+
+在 `UsbExclusiveAudioEngine.kt` 中执行以下精确替换：
+
+```text
+IbassoDc03ProVolumeProtocol -> IbassoHidVolumeProtocol
+writeIbassoDc03ProVolume -> writeIbassoHidVolume
+protocol=ibassoDc03Pro -> protocol=ibassoHid
+```
+
+把 `usb_dac_quirks.json` 中已适配设备的协议字段改为：
+
+```json
+"hardwareVolume": {
+  "enabled": true,
+  "protocol": "ibassoHid",
+  "dsdSupported": true
+}
+```
+
+保留现有精确 VID/PID 与设备标签，不新增 `pid: "*"` 的 `hardwareVolume.protocol`。把 `test/usb_audio_service_test.dart` 中所有状态和事件 fixture 的 `ibassoDc03Pro` 改为 `ibassoHid`。
+
+- [ ] **Step 5: 确认生产代码和测试不再引用旧协议身份**
+
+```powershell
+$catalog = Get-Content -Raw -Encoding UTF8 `
+  'android/app/src/main/assets/usb_dac_quirks.json' | ConvertFrom-Json
+$devices = @($catalog.vendors | ForEach-Object { $_.devices })
+$adapted = @($devices | Where-Object { $_.match.pid -ne '*' -and $_.hardwareVolume.enabled })
+$wildcardProtocols = @(
+  $devices | Where-Object { $_.match.pid -eq '*' -and $_.hardwareVolume.protocol }
+)
+if ($adapted.Count -eq 0 -or @($adapted | Where-Object {
+    $_.hardwareVolume.protocol -ne 'ibassoHid'
+  }).Count -ne 0) {
+  throw 'Every explicitly adapted iBasso HID device must use ibassoHid.'
+}
+if ($wildcardProtocols.Count -ne 0) {
+  throw 'Vendor wildcard entries must not enable iBasso HID writes.'
+}
+
+rg -n 'IbassoDc03ProVolumeProtocol|ibassoDc03Pro|writeIbassoDc03ProVolume' `
+  android/app/src/main android/app/src/test test
+```
+
+预期：PowerShell 断言不抛错，`rg` 无输出。设备 quirk 的识别标签可以保留具体设备名称，但协议对象、协议 ID、函数名、状态和测试中不得残留旧型号化身份。
+
+- [ ] **Step 6: 运行 Android 与 Dart 定向测试**
+
+```powershell
+Set-Location android
+.\gradlew.bat app:testDebugUnitTest --tests "com.afalphy.sylvakru.UsbVolumeProtocolTest" --tests "com.afalphy.sylvakru.UsbDacQuirksTest"
+Set-Location ..
+& 'F:\software\flutter_3.44.5\bin\flutter.bat' test test/usb_audio_service_test.dart
+```
+
+预期：Android 显示 `BUILD SUCCESSFUL`，Flutter 测试全部通过。
+
+- [ ] **Step 7: 检查、暂存、提交并推送协议迁移**
+
+```powershell
+git diff --check
+git diff --stat
+git diff -- android/app/src/main/kotlin/com/afalphy/sylvakru/UsbVolumeProtocol.kt
+git diff -- android/app/src/main/kotlin/com/afalphy/sylvakru/UsbExclusiveAudioEngine.kt
+git diff -- android/app/src/main/assets/usb_dac_quirks.json
+git diff -- android/app/src/test/kotlin/com/afalphy/sylvakru/UsbVolumeProtocolTest.kt
+git diff -- android/app/src/test/kotlin/com/afalphy/sylvakru/UsbDacQuirksTest.kt
+git diff -- test/usb_audio_service_test.dart
+git add -- android/app/src/main/kotlin/com/afalphy/sylvakru/UsbVolumeProtocol.kt
+git add -- android/app/src/main/assets/usb_dac_quirks.json
+git add -- android/app/src/test/kotlin/com/afalphy/sylvakru/UsbVolumeProtocolTest.kt
+git add -- android/app/src/test/kotlin/com/afalphy/sylvakru/UsbDacQuirksTest.kt
+git add -- test/usb_audio_service_test.dart
+git add -p -- android/app/src/main/kotlin/com/afalphy/sylvakru/UsbExclusiveAudioEngine.kt
+git diff --cached --check
+git diff --cached --stat
+git diff --cached
+git commit -m "refactor(usb): 通用化 iBasso HID 音量协议"
+git status --short
+git log -1 --oneline
+git push fork usb-exclusive-volume-overlay-performance
+git fetch fork
+git rev-list --left-right --count fork/usb-exclusive-volume-overlay-performance...HEAD
+```
+
+交互暂存引擎文件时只选择协议对象、函数和日志字符串重命名，拒绝用户已有 `playbackId` 排序 hunk。预期提交只包含六个文件，用户修改仍保留，远端比较为 `0 0`。
+
+---
+
+## Task 3：以 TDD 接入 reader 恢复状态决策和有界等待
 
 **Files:**
 - Modify: `android/app/src/main/kotlin/com/afalphy/sylvakru/UsbVolumeProtocol.kt:44-114`
@@ -233,11 +455,11 @@ private fun applyVolumeControl(
 ) {
 ```
 
-调用 `writeIbassoDc03ProVolume` 时追加 `requestSessionGeneration`，并在该函数签名中接收同名参数。不得在写入结束后重新读取当前 generation 充当请求 generation，否则切歌期间会把旧请求误认为新请求。
+调用 `writeIbassoHidVolume` 时追加 `requestSessionGeneration`，并在该函数签名中接收同名参数。不得在写入结束后重新读取当前 generation 充当请求 generation，否则切歌期间会把旧请求误认为新请求。
 
 - [ ] **Step 7: 在引擎加入非主线程的有界条件等待**
 
-在 `writeIbassoDc03ProVolume` 前加入：
+在 `writeIbassoHidVolume` 前加入：
 
 ```kotlin
 private fun awaitIbassoReaderForVolumeVerification(
@@ -354,7 +576,7 @@ git rev-list --left-right --count fork/usb-exclusive-volume-overlay-performance.
 
 ---
 
-## Task 3：自动回归、静态检查与 arm64 构建
+## Task 4：自动回归、静态检查与 arm64 构建
 
 **Files:**
 - Verify: Kotlin and Flutter tests
@@ -401,7 +623,7 @@ git rev-list --left-right --count fork/usb-exclusive-volume-overlay-performance.
 
 ---
 
-## Task 4：真机安全验收
+## Task 5：真机安全验收
 
 **Files:**
 - Install only: `build/app/outputs/flutter-apk/app-profile.apk`
