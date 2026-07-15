@@ -261,31 +261,6 @@ class UsbVolumeProtocolTest {
     }
 
     @Test
-    fun keepsHardwareActiveOnlyWhenUnityRestoreFails() {
-        assertEquals(
-            HardwareVolumeRecovery(
-                hardwareActive = false,
-                fallbackReason = "Target write failed.",
-            ),
-            hardwareVolumeRecovery("Target write failed.", restoreFailure = null),
-        )
-        assertEquals(
-            HardwareVolumeRecovery(
-                hardwareActive = true,
-                fallbackReason =
-                    "Target write failed. Failed to restore hardware volume: Restore failed.",
-            ),
-            hardwareVolumeRecovery("Target write failed.", "Restore failed."),
-        )
-    }
-
-    @Test
-    fun neverRestoresUnityAfterDsdHardwareVolumeFailure() {
-        assertFalse(shouldRestoreUnityAfterHardwareVolumeFailure(isDsd = true))
-        assertTrue(shouldRestoreUnityAfterHardwareVolumeFailure(isDsd = false))
-    }
-
-    @Test
     fun skipsOnlyVerifiedDuplicateIbassoVolumeTargets() {
         val target = UsbVolumeTarget(baseRaw = 130, dsdRaw = 130)
 
@@ -310,16 +285,6 @@ class UsbVolumeProtocolTest {
                 readbackVerified = true,
             ),
         )
-    }
-
-    @Test
-    fun keepsPreviousProtocolOnlyWhenHardwareRestoreFails() {
-        assertEquals(
-            "uac2",
-            hardwareVolumeProtocolAfterRecovery("uac2", hardwareActive = true),
-        )
-        assertNull(hardwareVolumeProtocolAfterRecovery("uac2", hardwareActive = false))
-        assertNull(hardwareVolumeProtocolAfterRecovery(null, hardwareActive = true))
     }
 
     @Test
@@ -723,9 +688,13 @@ class UsbVolumeProtocolTest {
     }
 
     @Test
-    fun selectsReadableDeviceGainOnlyForSmoothHandoff() {
+    fun selectsReadableDeviceGainOnlyWhenItCannotRaiseVolume() {
         assertEquals(
-            HardwareVolumeHandoffTarget(32768, HardwareVolumeHandoffSource.DEVICE),
+            HardwareVolumeHandoffTarget(16384, HardwareVolumeHandoffSource.DEVICE),
+            hardwareVolumeHandoffTarget(true, 16384, 32768),
+        )
+        assertEquals(
+            HardwareVolumeHandoffTarget(16384, HardwareVolumeHandoffSource.APP),
             hardwareVolumeHandoffTarget(true, 32768, 16384),
         )
         assertEquals(

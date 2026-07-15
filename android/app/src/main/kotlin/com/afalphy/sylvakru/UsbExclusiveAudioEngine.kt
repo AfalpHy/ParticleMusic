@@ -1019,7 +1019,6 @@ class UsbExclusiveAudioEngine(
                 return
             }
             val wasHardwareActive = hardwareVolumeActive
-            val previousHardwareVolumeProtocol = hardwareVolumeProtocol
             hardwareVolumeActive = false
             hardwareVolumeProtocol = null
             hardwareVolumeRaw = null
@@ -1081,27 +1080,8 @@ class UsbExclusiveAudioEngine(
                                 isDsd,
                             )
                         }
-                    } else if (
-                        wasHardwareActive &&
-                        shouldRestoreUnityAfterHardwareVolumeFailure(isDsd)
-                    ) {
+                    } else if (wasHardwareActive && !isDsd) {
                         applyPcmDigitalFallbackImmediately(isDsd, effectiveGainQ16)
-                        val recovery = hardwareVolumeRecovery(
-                            fallbackReason ?: "Hardware volume write failed.",
-                            writeIbassoDc03ProVolume(
-                                device,
-                                protocolSelection.protocol.appGainToRaw(UNITY_GAIN_Q16, 0, 0),
-                                0,
-                                false,
-                                useDeviceHandoff = false,
-                            ),
-                        )
-                        hardwareVolumeActive = recovery.hardwareActive
-                        fallbackReason = recovery.fallbackReason
-                        hardwareVolumeProtocol = hardwareVolumeProtocolAfterRecovery(
-                            previousHardwareVolumeProtocol,
-                            hardwareVolumeActive,
-                        )
                     }
                 } else if (protocolSelection is UnsupportedUsbVolumeProtocol) {
                     fallbackReason = "Unsupported hardware volume protocol: ${protocolSelection.id}."
@@ -1189,57 +1169,18 @@ class UsbExclusiveAudioEngine(
                                 )
                             }
                         }
-                        if (
-                            !hardwareVolumeActive &&
-                            wasHardwareActive &&
-                            shouldRestoreUnityAfterHardwareVolumeFailure(isDsd)
-                        ) {
+                        if (!hardwareVolumeActive && wasHardwareActive && !isDsd) {
                             applyPcmDigitalFallbackImmediately(isDsd, effectiveGainQ16)
-                            val recovery = hardwareVolumeRecovery(
-                                fallbackReason ?: "Hardware volume write failed.",
-                                writeHardwareVolume(
-                                    activeConnection,
-                                    device,
-                                    control,
-                                    UNITY_GAIN_Q16,
-                                ).error,
-                            )
-                            hardwareVolumeActive = recovery.hardwareActive
-                            fallbackReason = recovery.fallbackReason
-                            hardwareVolumeProtocol = hardwareVolumeProtocolAfterRecovery(
-                                previousHardwareVolumeProtocol,
-                                hardwareVolumeActive,
-                            )
                         }
                     }
                 }
             } else if (wasHardwareActive) {
-                if (volumeSmoothHandoff && !isDsd) {
-                    pcmVolumeGainQ16 = effectiveGainQ16
+                if (!isDsd && volumeMode != "raw") {
+                    applyPcmDigitalFallbackImmediately(isDsd, effectiveGainQ16)
                 }
-                val restoreError = if (protocolSelection is VendorUsbVolumeProtocol) {
-                    writeIbassoDc03ProVolume(
-                        device,
-                        protocolSelection.protocol.appGainToRaw(UNITY_GAIN_Q16, 0, 0),
-                        0,
-                        false,
-                        useDeviceHandoff = false,
-                    )
-                } else {
-                    val activeConnection = connection
-                    val control = hardwareVolumeControl
-                    if (activeConnection != null && control != null) {
-                        writeHardwareVolume(activeConnection, device, control, UNITY_GAIN_Q16).error
-                    } else {
-                        "Active hardware volume control is unavailable."
-                    }
-                }
-                hardwareVolumeActive = restoreError != null
-                hardwareVolumeProtocol = hardwareVolumeProtocolAfterRecovery(
-                    previousHardwareVolumeProtocol,
-                    hardwareVolumeActive,
-                )
-                fallbackReason = restoreError?.let { "Failed to restore hardware volume: $it" }
+                hardwareVolumeActive = false
+                hardwareVolumeProtocol = null
+                fallbackReason = "Hardware volume was left unchanged during the safe mode transition."
             } else {
                 hardwareVolumeActive = false
             }
@@ -1578,7 +1519,6 @@ class UsbExclusiveAudioEngine(
         target: UsbVolumeTarget,
         activeRaw: Int,
         isDsd: Boolean,
-        useDeviceHandoff: Boolean = true,
     ): String? {
         val hidInterface = (0 until device.interfaceCount)
             .map { device.getInterface(it) }
@@ -1650,7 +1590,7 @@ class UsbExclusiveAudioEngine(
             return error
         }
         val handoff = hardwareVolumeHandoffTarget(
-            volumeSmoothHandoff && useDeviceHandoff,
+            volumeSmoothHandoff,
             readBaseRaw?.let(IbassoDc03ProVolumeProtocol::rawToLinearGainQ16),
             IbassoDc03ProVolumeProtocol.rawToLinearGainQ16(activeRaw),
         )

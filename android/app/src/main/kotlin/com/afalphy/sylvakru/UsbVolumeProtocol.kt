@@ -68,11 +68,6 @@ internal data class UnsupportedUsbVolumeProtocol(
     val id: String,
 ) : UsbVolumeProtocolSelection
 
-internal data class HardwareVolumeRecovery(
-    val hardwareActive: Boolean,
-    val fallbackReason: String,
-)
-
 internal sealed interface IbassoVolumePacketRoute {
     data class CommandResponse(
         val command: Int,
@@ -373,34 +368,11 @@ internal fun pcmBitPerfect(
     sourceBitDepth == decodedBitDepth &&
     decodedBitDepth == usbBitDepth
 
-internal fun hardwareVolumeRecovery(
-    writeFailure: String,
-    restoreFailure: String?,
-): HardwareVolumeRecovery = if (restoreFailure == null) {
-    HardwareVolumeRecovery(
-        hardwareActive = false,
-        fallbackReason = writeFailure,
-    )
-} else {
-    HardwareVolumeRecovery(
-        hardwareActive = true,
-        fallbackReason =
-            "$writeFailure Failed to restore hardware volume: $restoreFailure",
-    )
-}
-
-internal fun shouldRestoreUnityAfterHardwareVolumeFailure(isDsd: Boolean): Boolean = !isDsd
-
 internal fun shouldSkipIbassoVolumeWrite(
     target: UsbVolumeTarget,
     previousTarget: UsbVolumeTarget?,
     readbackVerified: Boolean,
 ): Boolean = readbackVerified && target == previousTarget
-
-internal fun hardwareVolumeProtocolAfterRecovery(
-    previousProtocol: String?,
-    hardwareActive: Boolean,
-): String? = previousProtocol.takeIf { hardwareActive }
 
 internal fun unsafeDsdVolumeReason(
     isDsd: Boolean,
@@ -481,15 +453,17 @@ internal fun hardwareVolumeHandoffTarget(
     smooth: Boolean,
     readGainQ16: Int?,
     appTargetQ16: Int,
-): HardwareVolumeHandoffTarget = if (
-    smooth && readGainQ16 != null && readGainQ16 in 0..IBASSO_UNITY_GAIN_Q16
-) {
-    HardwareVolumeHandoffTarget(readGainQ16, HardwareVolumeHandoffSource.DEVICE)
-} else {
-    HardwareVolumeHandoffTarget(
-        appTargetQ16.coerceIn(0, IBASSO_UNITY_GAIN_Q16),
-        HardwareVolumeHandoffSource.APP,
-    )
+): HardwareVolumeHandoffTarget {
+    val safeAppTarget = appTargetQ16.coerceIn(0, IBASSO_UNITY_GAIN_Q16)
+    return if (
+        smooth &&
+        readGainQ16 != null &&
+        readGainQ16 in 0..safeAppTarget
+    ) {
+        HardwareVolumeHandoffTarget(readGainQ16, HardwareVolumeHandoffSource.DEVICE)
+    } else {
+        HardwareVolumeHandoffTarget(safeAppTarget, HardwareVolumeHandoffSource.APP)
+    }
 }
 
 internal fun shouldReadInitialHardwareVolume(
