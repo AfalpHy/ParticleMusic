@@ -298,6 +298,42 @@ git commit -m "fix(usb): 防抖快速连续硬件音量点击"
 
 Expected: 缓存差异不包含 `initialState` 的 `playbackId` 排序；提交后该用户 hunk 仍显示为未提交修改。
 
+### Task 2.5: 补齐切歌直达路径和失败事务门控
+
+**Files:**
+- Modify: `android/app/src/main/kotlin/com/afalphy/sylvakru/UsbVolumeProtocol.kt`
+- Modify: `android/app/src/main/kotlin/com/afalphy/sylvakru/UsbExclusiveAudioEngine.kt`
+- Test: `android/app/src/test/kotlin/com/afalphy/sylvakru/UsbVolumeProtocolTest.kt`
+
+- [ ] **Step 1: 用失败测试固定“请求预期协议”规则**
+
+新增纯逻辑测试：`auto`、`dac` 模式保留 quirk 配置的协议；`digital`、`raw` 模式返回空。先运行 `UsbVolumeProtocolTest`，确认因新函数不存在而失败。
+
+- [ ] **Step 2: 让失败事务继续使用预期协议参与尾部防抖**
+
+增加纯函数，根据请求模式和 quirk 协议返回本次可能尝试的硬件协议。协调器在调用 `applyVolumeRequest` 前保存该值，事务结束后不再依赖可能被失败路径清空的 `hardwareVolumeProtocol`。
+
+- [ ] **Step 3: 给所有 iBasso 硬件尝试增加共享 150ms 门控**
+
+在 `volumeLock` 保护下记录最后一次 iBasso 硬件尝试完成时间。`applyVolumeControl` 进入 vendor HID 分支后，先等待剩余 settle 时间，再执行写入和读回，并在 `finally` 中更新时间。这样同步的 `start()` / 热切歌路径、异步音量协调器和失败重试共用同一门控；300ms 静默窗口仍只属于连续待处理输入。
+
+- [ ] **Step 4: 运行目标测试与完整 Android 单元测试**
+
+```powershell
+cd android
+.\gradlew.bat app:testDebugUnitTest --tests com.afalphy.sylvakru.UsbVolumeProtocolTest
+.\gradlew.bat app:testDebugUnitTest
+cd ..
+```
+
+- [ ] **Step 5: 分块暂存并提交**
+
+继续排除 `UsbExclusiveAudioEngine.kt` 中用户已有的 `playbackId` 排序 hunk，提交信息：
+
+```text
+fix(usb): 统一硬件音量事务间隔门控
+```
+
 ### Task 3: 自动化回归、构建和推送
 
 **Files:**
