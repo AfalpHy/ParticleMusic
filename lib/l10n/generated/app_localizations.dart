@@ -1574,6 +1574,24 @@ abstract class AppLocalizations {
   /// **'Do not apply ReplayGain.'**
   String get replayGainOffDesc;
 
+  /// No description provided for @replayGainApplying.
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing'**
+  String get replayGainApplying;
+
+  /// No description provided for @replayGainNotApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Not applied'**
+  String get replayGainNotApplied;
+
+  /// No description provided for @replayGainNoTag.
+  ///
+  /// In en, this message translates to:
+  /// **'No tag'**
+  String get replayGainNoTag;
+
   /// No description provided for @dsdGainCompensation.
   ///
   /// In en, this message translates to:

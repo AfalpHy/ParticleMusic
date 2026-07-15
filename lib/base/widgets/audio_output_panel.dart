@@ -2,9 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/services/interaction.dart';
+import 'package:sylvakru/base/services/replay_gain.dart';
 import 'package:sylvakru/base/services/usb_audio_preferences.dart';
 import 'package:sylvakru/base/services/usb_audio_service.dart';
 import 'package:sylvakru/l10n/generated/app_localizations.dart';
+
+String formatReplayGainStatus(
+  ReplayGainPlaybackState state,
+  AppLocalizations l10n,
+) {
+  return switch (state.phase) {
+    ReplayGainApplyPhase.off => l10n.replayGainOff,
+    ReplayGainApplyPhase.noTag => l10n.replayGainNoTag,
+    ReplayGainApplyPhase.pending => l10n.replayGainApplying,
+    ReplayGainApplyPhase.failed => l10n.replayGainNotApplied,
+    ReplayGainApplyPhase.applied =>
+      '${state.actualDb!.toStringAsFixed(3).replaceFirst(RegExp(r'\.?0+$'), '')} dB',
+  };
+}
 
 String formatSampleRate(int? sampleRate, AppLocalizations l10n) {
   if (sampleRate == null || sampleRate <= 0) {
@@ -510,10 +525,16 @@ class _AudioOutputSheetState extends State<_AudioOutputSheet> {
     final border = foreground.withAlpha(28);
     final muted = foreground.withAlpha(150);
 
-    return ValueListenableBuilder(
-      valueListenable: usbAudioStatusNotifier,
-      builder: (context, status, child) {
+    return ListenableBuilder(
+      listenable: Listenable.merge([
+        usbAudioStatusNotifier,
+        usbExclusivePlaybackStateNotifier,
+        replayGainPlaybackStateNotifier,
+      ]),
+      builder: (context, child) {
+        final status = usbAudioStatusNotifier.value;
         final exclusive = usbExclusivePlaybackStateNotifier.value;
+        final replayGain = replayGainPlaybackStateNotifier.value;
         final showPcmDepths = exclusive.active && exclusive.bitDepth != 1;
         return Padding(
           padding: EdgeInsets.only(
@@ -628,6 +649,10 @@ class _AudioOutputSheetState extends State<_AudioOutputSheet> {
                       _InfoRow(
                         'Bit-perfect',
                         _bitPerfectStatusLabel(status, l10n),
+                      ),
+                      _InfoRow(
+                        l10n.replayGain,
+                        formatReplayGainStatus(replayGain, l10n),
                       ),
                     ],
                   ),
@@ -986,15 +1011,6 @@ String _bitPerfectStatusLabel(UsbAudioStatus status, AppLocalizations l10n) {
             exclusive.decodedBitDepth != exclusive.usbBitDepth);
     if (!exclusive.digitalVolumeActive && bitDepthConverted) {
       processing = '$processing · ${l10n.bitDepthConverted}';
-    }
-    if (exclusive.replayGainMilliDb != 0) {
-      if (exclusive.hardwareVolumeActive || exclusive.digitalVolumeActive) {
-        final gain = (exclusive.replayGainMilliDb / 1000)
-            .toStringAsFixed(3)
-            .replaceFirst(RegExp(r'\.?0+$'), '');
-        return l10n.audioProcessingWithReplayGain(processing, gain);
-      }
-      return l10n.audioProcessingWithReplayGainNotApplied(processing);
     }
     return processing;
   }

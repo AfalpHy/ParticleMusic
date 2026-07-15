@@ -767,6 +767,15 @@ class AppLocalizationsZh extends AppLocalizations {
   String get replayGainOffDesc => '不应用 ReplayGain。';
 
   @override
+  String get replayGainApplying => '同步中';
+
+  @override
+  String get replayGainNotApplied => '未应用';
+
+  @override
+  String get replayGainNoTag => '无标签';
+
+  @override
   String get dsdGainCompensation => 'DSD 增益补偿';
 
   @override

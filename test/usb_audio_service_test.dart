@@ -1,5 +1,6 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sylvakru/base/services/replay_gain.dart';
 import 'package:sylvakru/base/services/usb_audio_service.dart';
 import 'package:sylvakru/base/widgets/audio_output_panel.dart';
 import 'package:sylvakru/l10n/generated/app_localizations_zh.dart';
@@ -11,6 +12,24 @@ void main() {
     final l10n = AppLocalizationsZh();
     expect(formatUsbBitDepth(16, l10n), '16 bits');
     expect(formatUsbBitDepth(null, l10n), l10n.unknown);
+  });
+
+  test('ReplayGain 输出文案使用实际应用值并区分状态', () {
+    final l10n = AppLocalizationsZh();
+    expect(
+      formatReplayGainStatus(ReplayGainPlaybackState.off(), l10n),
+      l10n.replayGainOff,
+    );
+    expect(
+      formatReplayGainStatus(ReplayGainPlaybackState.noTag(), l10n),
+      l10n.replayGainNoTag,
+    );
+    final applied = ReplayGainPlaybackState.pending(
+      selectedDb: -8.4,
+      path: ReplayGainOutputPath.sharedDigital,
+      generation: 2,
+    ).applied(actualDb: -8.4);
+    expect(formatReplayGainStatus(applied, l10n), '-8.4 dB');
   });
 
   const channel = MethodChannel('com.afalphy.sylvakru/usb_audio');

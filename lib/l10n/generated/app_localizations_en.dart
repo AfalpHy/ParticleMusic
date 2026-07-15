@@ -781,6 +781,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get replayGainOffDesc => 'Do not apply ReplayGain.';
 
   @override
+  String get replayGainApplying => 'Syncing';
+
+  @override
+  String get replayGainNotApplied => 'Not applied';
+
+  @override
+  String get replayGainNoTag => 'No tag';
+
+  @override
   String get dsdGainCompensation => 'DSD gain compensation';
 
   @override
