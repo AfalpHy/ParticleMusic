@@ -297,6 +297,7 @@ class UsbExclusiveAudioEngine(
         Thread(runnable, "usb-volume-command").apply { isDaemon = true }
     }
     private val volumeCommandLock = Any()
+    private val volumeSessionWriteLock = Any()
     private val volumeSessionGeneration = AtomicLong()
     private var volumeCommandRunning = false
     private var runningVolumeRequest: UsbVolumeRequest? = null
@@ -1187,7 +1188,7 @@ class UsbExclusiveAudioEngine(
     }
 
     private fun invalidatePendingVolumeRequests() {
-        synchronized(volumeLock) {
+        synchronized(volumeSessionWriteLock) {
             volumeSessionGeneration.incrementAndGet()
         }
         synchronized(volumeCommandLock) {
@@ -1892,12 +1893,23 @@ class UsbExclusiveAudioEngine(
             isDsd,
             dsdGainCompensationDb,
         ).raw
-        ibassoLastWrittenRaw = appliedActiveRaw
-        ibassoLastWrittenAtMs = SystemClock.elapsedRealtime()
-        synchronized(ibassoReaderHealthLock) {
-            ibassoReaderHealth = ibassoReaderHealth.copy(readbackVerified = false)
+        val writeError = synchronized(volumeSessionWriteLock) {
+            if (requestSessionGeneration != volumeSessionGeneration.get()) {
+                throw java.util.concurrent.CancellationException(
+                    "USB volume write cancelled because the session changed.",
+                )
+            }
+            ibassoLastWrittenRaw = appliedActiveRaw
+            ibassoLastWrittenAtMs = SystemClock.elapsedRealtime()
+            synchronized(ibassoReaderHealthLock) {
+                ibassoReaderHealth = ibassoReaderHealth.copy(readbackVerified = false)
+            }
+            hardwareVolumeSyncPending = true
+            transferIbassoVolumeTarget(
+                controlConnection,
+                appliedTarget,
+            )
         }
-        hardwareVolumeSyncPending = true
         if (currentState["active"] == true) {
             updateState(
                 currentState + mapOf(
@@ -1906,10 +1918,6 @@ class UsbExclusiveAudioEngine(
                 ),
             )
         }
-        val writeError = transferIbassoVolumeTarget(
-            controlConnection,
-            appliedTarget,
-        )
         if (writeError != null) {
             UsbDiagnostics.w(
                 tag,
