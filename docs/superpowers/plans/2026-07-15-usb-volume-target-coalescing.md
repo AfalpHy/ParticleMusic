@@ -126,7 +126,7 @@ cd ..
 
 - [ ] **Step 3：实现总有效输出比较和降低锁存**
 
-在 `UsbVolumeProtocol.kt` 中用以下函数替换 `latestUsbVolumeRequest`：
+在 `UsbVolumeProtocol.kt` 中加入以下函数。Task 1 暂时保留引擎仍在使用的 `latestUsbVolumeRequest`，避免在 Task 2 接入前破坏生产代码编译：
 
 ```kotlin
 internal fun coalescedUsbVolumeRequest(
@@ -281,7 +281,7 @@ val start = synchronized(volumeCommandLock) {
 }
 ```
 
-不要改变请求构造、代际失效或现有 ACK/readback/freeze 逻辑。
+接入新函数后删除不再使用的 `latestUsbVolumeRequest`。不要改变请求构造、代际失效或现有 ACK/readback/freeze 逻辑。
 
 - [ ] **Step 5：事务完成后在同一执行器中等待，再原子读取合并后的目标**
 
