@@ -307,15 +307,15 @@ Expected: 缓存差异不包含 `initialState` 的 `playbackId` 排序；提交�
 
 - [ ] **Step 1: 用失败测试固定“请求预期协议”规则**
 
-新增纯逻辑测试：`auto`、`dac` 模式保留 quirk 配置的协议；`digital`、`raw` 模式返回空。先运行 `UsbVolumeProtocolTest`，确认因新函数不存在而失败。
+新增纯逻辑测试：`auto`、`dac` 模式保留 quirk 配置的协议；`digital`、`raw`、硬件音量禁用或当前流不支持时返回空。先运行 `UsbVolumeProtocolTest`，确认新边界尚未实现时失败。
 
 - [ ] **Step 2: 让失败事务继续使用预期协议参与尾部防抖**
 
-增加纯函数，根据请求模式和 quirk 协议返回本次可能尝试的硬件协议。协调器在调用 `applyVolumeRequest` 前保存该值，事务结束后不再依赖可能被失败路径清空的 `hardwareVolumeProtocol`。
+增加纯函数，根据请求模式、quirk 协议、硬件音量开关和当前流能力返回本次可能尝试的硬件协议。协调器在调用 `applyVolumeRequest` 前保存该值，事务结束后不再依赖可能被失败路径清空的 `hardwareVolumeProtocol`，也不让纯数字回退误进入 300ms 防抖。
 
 - [ ] **Step 3: 给所有 iBasso 硬件尝试增加共享 150ms 门控**
 
-在 `volumeLock` 保护下记录最后一次 iBasso 硬件尝试完成时间。`applyVolumeControl` 进入 vendor HID 分支后，先等待剩余 settle 时间，再执行写入和读回，并在 `finally` 中更新时间。这样同步的 `start()` / 热切歌路径、异步音量协调器和失败重试共用同一门控；300ms 静默窗口仍只属于连续待处理输入。
+在 `volumeLock` 保护下记录最后一次 iBasso 硬件尝试完成时间。`applyVolumeControl` 进入 vendor HID 分支后，先等待剩余 settle 时间，再执行写入和读回，并在 `finally` 中更新时间。session generation 的递增也必须持有 `volumeLock`，消除复查后到实际传输前的竞态。这样同步的 `start()` / 热切歌路径、异步音量协调器和失败重试共用同一门控；300ms 静默窗口仍只属于连续待处理输入。
 
 - [ ] **Step 4: 运行目标测试与完整 Android 单元测试**
 
