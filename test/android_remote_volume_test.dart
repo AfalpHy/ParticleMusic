@@ -84,75 +84,37 @@ void main() {
     );
 
     expect(next, closeTo(0.05, 0.000001));
-    expect(
-      next - 0.03,
-      closeTo(0.02, 0.000001),
-    );
+    expect(next - 0.03, closeTo(0.02, 0.000001));
   });
 
-  test('硬件写入期间按键最多保留一个方向且降低优先', () {
+  test('USB 独占激活时手机按键转换为音量方向', () {
     expect(
-      pendingUsbVolumeKeyDirection(
-        null,
-        audio_service.AndroidVolumeDirection.raise,
-      ),
+      usbExclusiveVolumeKeyDirection(delta: 1, active: true),
       audio_service.AndroidVolumeDirection.raise,
     );
     expect(
-      pendingUsbVolumeKeyDirection(
-        audio_service.AndroidVolumeDirection.raise,
-        audio_service.AndroidVolumeDirection.raise,
-      ),
-      audio_service.AndroidVolumeDirection.raise,
-    );
-    expect(
-      pendingUsbVolumeKeyDirection(
-        audio_service.AndroidVolumeDirection.raise,
-        audio_service.AndroidVolumeDirection.lower,
-      ),
+      usbExclusiveVolumeKeyDirection(delta: -1, active: true),
       audio_service.AndroidVolumeDirection.lower,
     );
-    expect(
-      pendingUsbVolumeKeyDirection(
-        audio_service.AndroidVolumeDirection.lower,
-        audio_service.AndroidVolumeDirection.raise,
-      ),
-      audio_service.AndroidVolumeDirection.lower,
-    );
+    expect(usbExclusiveVolumeKeyDirection(delta: 0, active: true), isNull);
+    expect(usbExclusiveVolumeKeyDirection(delta: 1, active: false), isNull);
   });
 
-  test('USB 音量写入在途时忽略后续手机物理按键', () {
-    expect(
-      usbExclusiveVolumeKeyDirection(
-        delta: 1,
-        active: true,
-        writeInProgress: false,
-      ),
+  test('连续手机音量键基于最新绝对音量计算目标', () {
+    var target = 0.5;
+    target = adjustedRemoteVolume(
+      target,
       audio_service.AndroidVolumeDirection.raise,
     );
-    expect(
-      usbExclusiveVolumeKeyDirection(
-        delta: -1,
-        active: true,
-        writeInProgress: false,
-      ),
+    target = adjustedRemoteVolume(
+      target,
+      audio_service.AndroidVolumeDirection.raise,
+    );
+    target = adjustedRemoteVolume(
+      target,
       audio_service.AndroidVolumeDirection.lower,
     );
-    expect(
-      usbExclusiveVolumeKeyDirection(
-        delta: 1,
-        active: true,
-        writeInProgress: true,
-      ),
-      isNull,
-    );
-    expect(
-      usbExclusiveVolumeKeyDirection(
-        delta: 1,
-        active: false,
-        writeInProgress: false,
-      ),
-      isNull,
-    );
+
+    expect(target, closeTo(0.52, 0.000001));
   });
 }

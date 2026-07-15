@@ -77,24 +77,11 @@ double adjustedRemoteVolume(double current, AndroidVolumeDirection direction) {
   return applied;
 }
 
-AndroidVolumeDirection pendingUsbVolumeKeyDirection(
-  AndroidVolumeDirection? pending,
-  AndroidVolumeDirection incoming,
-) {
-  if (pending == null || identical(incoming, AndroidVolumeDirection.lower)) {
-    return incoming;
-  }
-  return pending;
-}
-
 AndroidVolumeDirection? usbExclusiveVolumeKeyDirection({
   required int delta,
   required bool active,
-  required bool writeInProgress,
 }) {
-  if (delta == 0 || !active || writeInProgress) {
-    return null;
-  }
+  if (delta == 0 || !active) return null;
   return delta > 0
       ? AndroidVolumeDirection.raise
       : AndroidVolumeDirection.lower;
@@ -1772,8 +1759,6 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
   }
 
   int _lastVolumeKeyValue = 0;
-  bool _phoneVolumeKeyWriteInProgress = false;
-  AndroidVolumeDirection? _pendingPhoneVolumeDirection;
 
   void _handleUsbExclusiveVolumeKey() {
     final value = usbExclusiveVolumeKeyNotifier.value;
@@ -1782,38 +1767,19 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     final direction = usbExclusiveVolumeKeyDirection(
       delta: delta,
       active: _usbExclusiveActive,
-      writeInProgress: false,
     );
     if (direction == null) return;
-    if (_phoneVolumeKeyWriteInProgress) {
-      _pendingPhoneVolumeDirection = pendingUsbVolumeKeyDirection(
-        _pendingPhoneVolumeDirection,
-        direction,
-      );
-      return;
-    }
-    unawaited(_drainPhoneVolumeKey(direction));
+    unawaited(_applyPhoneVolumeKey(direction));
   }
 
-  Future<void> _drainPhoneVolumeKey(AndroidVolumeDirection first) async {
-    var direction = first;
-    _phoneVolumeKeyWriteInProgress = true;
-    while (true) {
-      try {
-        await _setUserVolumeImmediately(
-          adjustedRemoteVolume(volumeNotifier.value, direction),
-        );
-        usbVolumeOverlayNotifier.value += 1;
-      } on Object catch (error) {
-        logger.output("usb volume key apply failed:$error");
-      }
-      final pending = _pendingPhoneVolumeDirection;
-      _pendingPhoneVolumeDirection = null;
-      if (pending == null) {
-        _phoneVolumeKeyWriteInProgress = false;
-        return;
-      }
-      direction = pending;
+  Future<void> _applyPhoneVolumeKey(AndroidVolumeDirection direction) async {
+    try {
+      await _setUserVolumeImmediately(
+        adjustedRemoteVolume(volumeNotifier.value, direction),
+      );
+      usbVolumeOverlayNotifier.value += 1;
+    } on Object catch (error) {
+      logger.output("usb volume key apply failed:$error");
     }
   }
 
