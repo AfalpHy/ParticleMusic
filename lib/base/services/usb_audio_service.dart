@@ -19,6 +19,15 @@ final usbHardwareVolumeNotifier = ValueNotifier<UsbHardwareVolumeEvent?>(null);
 final usbVolumeOverlayNotifier = ValueNotifier<int>(0);
 final usbExclusiveVolumeKeyNotifier = ValueNotifier<int>(0);
 
+Duration trustedUsbExclusivePosition({
+  required Duration current,
+  required Duration reported,
+  required bool stateActive,
+}) {
+  if (stateActive) return reported;
+  return reported > current ? reported : current;
+}
+
 enum UsbAudioDeviceEventType { added, removed }
 
 class UsbAudioService {
@@ -156,6 +165,19 @@ class UsbAudioService {
 
   Future<UsbExclusivePlaybackState> resumeExclusivePlayback() {
     return _invokeExclusiveState('resumeExclusivePlayback');
+  }
+
+  void markExclusiveDeviceRemoved({required Duration position}) {
+    final current = usbExclusivePlaybackStateNotifier.value;
+    if (!current.active) return;
+    _publishExclusiveState(
+      UsbExclusivePlaybackState.inactive(
+        playbackId: current.playbackId,
+        position: position,
+        duration: current.duration,
+        message: 'USB audio device removed.',
+      ),
+    );
   }
 
   Future<void> setExclusiveTargetBufferMs(int targetBufferMs) async {
@@ -617,14 +639,16 @@ class UsbExclusivePlaybackState {
 
   factory UsbExclusivePlaybackState.inactive({
     String? playbackId,
+    Duration position = Duration.zero,
+    Duration? duration,
     String? message,
   }) {
     return UsbExclusivePlaybackState(
       playbackId: playbackId,
       active: false,
       playing: false,
-      position: Duration.zero,
-      duration: null,
+      position: position,
+      duration: duration,
       sampleRate: null,
       bitDepth: null,
       format: null,

@@ -19,6 +19,8 @@ void main() {
 
   tearDown(() {
     messenger.setMockMethodCallHandler(channel, null);
+    usbExclusivePlaybackStateNotifier.value =
+        UsbExclusivePlaybackState.inactive();
     usbTransportTelemetryNotifier.value = UsbTransportTelemetry.inactive();
     usbHardwareVolumeNotifier.value = null;
     usbExclusiveVolumeKeyNotifier.value = 0;
@@ -175,6 +177,44 @@ void main() {
     expect(event.status.supported, isTrue);
     expect(event.status.devices.single.name, 'USB DAC');
     expect(usbAudioStatusNotifier.value.activeDeviceId, 18);
+  });
+
+  test('设备移除立即发布保留最后位置的非活动状态', () {
+    final service = UsbAudioService(channel: channel, isAndroid: true);
+    usbExclusivePlaybackStateNotifier.value =
+        UsbExclusivePlaybackState.fromMap({
+          'playbackId': 'load-7',
+          'active': true,
+          'playing': false,
+          'positionMs': 120000,
+          'durationMs': 240000,
+        });
+
+    service.markExclusiveDeviceRemoved(position: const Duration(minutes: 2));
+
+    final state = usbExclusivePlaybackStateNotifier.value;
+    expect(state.playbackId, 'load-7');
+    expect(state.active, isFalse);
+    expect(state.playing, isFalse);
+    expect(state.position, const Duration(minutes: 2));
+    expect(state.duration, const Duration(minutes: 4));
+  });
+
+  test('重复设备移除不重复发布独占状态', () {
+    final service = UsbAudioService(channel: channel, isAndroid: true);
+    usbExclusivePlaybackStateNotifier.value =
+        UsbExclusivePlaybackState.inactive(
+          playbackId: 'load-7',
+          position: const Duration(minutes: 2),
+        );
+    final previous = usbExclusivePlaybackStateNotifier.value;
+
+    service.markExclusiveDeviceRemoved(position: const Duration(minutes: 3));
+
+    expect(
+      identical(usbExclusivePlaybackStateNotifier.value, previous),
+      isTrue,
+    );
   });
 
   test('probeExclusiveAccess maps native USB claim result', () async {
