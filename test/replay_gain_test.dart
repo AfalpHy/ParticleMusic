@@ -50,6 +50,23 @@ void main() {
     expect(result.source, isNull);
   });
 
+  test('ReplayGain 状态区分关闭、无标签、等待、成功和失败', () {
+    expect(ReplayGainPlaybackState.off().phase, ReplayGainApplyPhase.off);
+    expect(ReplayGainPlaybackState.noTag().phase, ReplayGainApplyPhase.noTag);
+    final pending = ReplayGainPlaybackState.pending(
+      selectedDb: -6,
+      path: ReplayGainOutputPath.sharedDigital,
+      generation: 3,
+    );
+    final applied = pending.applied(actualDb: -5.5);
+    final failed = pending.failed();
+
+    expect(pending.phase, ReplayGainApplyPhase.pending);
+    expect(applied.phase, ReplayGainApplyPhase.applied);
+    expect(applied.actualDb, -5.5);
+    expect(failed.phase, ReplayGainApplyPhase.failed);
+  });
+
   test('音轨模式优先使用音轨增益和同组峰值', () {
     final result = replayGainFor(
       metadata(trackGain: -6, trackPeak: 0.9, albumGain: -3, albumPeak: 0.8),

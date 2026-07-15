@@ -1,8 +1,79 @@
 import 'dart:math' as math;
 
 import 'package:audio_tags_lofty/audio_tags_lofty.dart';
+import 'package:flutter/foundation.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
 import 'package:sylvakru/base/services/usb_audio_preferences.dart';
+
+enum ReplayGainApplyPhase { off, noTag, pending, applied, failed }
+
+enum ReplayGainOutputPath { none, sharedDigital, usbDigital, usbHardware }
+
+@immutable
+class ReplayGainPlaybackState {
+  final ReplayGainApplyPhase phase;
+  final ReplayGainOutputPath path;
+  final double selectedDb;
+  final double? actualDb;
+  final int generation;
+
+  const ReplayGainPlaybackState({
+    required this.phase,
+    required this.path,
+    required this.selectedDb,
+    required this.actualDb,
+    required this.generation,
+  });
+
+  factory ReplayGainPlaybackState.off() => const ReplayGainPlaybackState(
+    phase: ReplayGainApplyPhase.off,
+    path: ReplayGainOutputPath.none,
+    selectedDb: 0,
+    actualDb: 0,
+    generation: 0,
+  );
+
+  factory ReplayGainPlaybackState.noTag() => const ReplayGainPlaybackState(
+    phase: ReplayGainApplyPhase.noTag,
+    path: ReplayGainOutputPath.none,
+    selectedDb: 0,
+    actualDb: 0,
+    generation: 0,
+  );
+
+  factory ReplayGainPlaybackState.pending({
+    required double selectedDb,
+    required ReplayGainOutputPath path,
+    required int generation,
+  }) => ReplayGainPlaybackState(
+    phase: ReplayGainApplyPhase.pending,
+    path: path,
+    selectedDb: selectedDb,
+    actualDb: null,
+    generation: generation,
+  );
+
+  ReplayGainPlaybackState applied({required double actualDb}) =>
+      ReplayGainPlaybackState(
+        phase: ReplayGainApplyPhase.applied,
+        path: path,
+        selectedDb: selectedDb,
+        actualDb: actualDb,
+        generation: generation,
+      );
+
+  ReplayGainPlaybackState failed() => ReplayGainPlaybackState(
+    phase: ReplayGainApplyPhase.failed,
+    path: path,
+    selectedDb: selectedDb,
+    actualDb: null,
+    generation: generation,
+  );
+}
+
+final replayGainPlaybackStateNotifier = ValueNotifier(
+  ReplayGainPlaybackState.off(),
+);
 
 class ReplayGainResult {
   final double gainDb;
