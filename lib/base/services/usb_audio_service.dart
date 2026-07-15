@@ -578,6 +578,8 @@ class UsbExclusivePlaybackState {
   final bool digitalVolumeActive;
   final bool hardwareVolumeWriteOnly;
   final bool hardwareVolumeReadbackVerified;
+  final bool hardwareVolumeSyncPending;
+  final bool hardwareVolumeFrozen;
   final String? hardwareVolumeProtocol;
   final int? hardwareVolumeRaw;
   final int? hardwareVolumeGainQ16;
@@ -604,6 +606,8 @@ class UsbExclusivePlaybackState {
     required this.digitalVolumeActive,
     required this.hardwareVolumeWriteOnly,
     required this.hardwareVolumeReadbackVerified,
+    required this.hardwareVolumeSyncPending,
+    required this.hardwareVolumeFrozen,
     required this.hardwareVolumeProtocol,
     required this.hardwareVolumeRaw,
     required this.hardwareVolumeGainQ16,
@@ -628,6 +632,8 @@ class UsbExclusivePlaybackState {
       digitalVolumeActive: false,
       hardwareVolumeWriteOnly: false,
       hardwareVolumeReadbackVerified: false,
+      hardwareVolumeSyncPending: false,
+      hardwareVolumeFrozen: false,
       hardwareVolumeProtocol: null,
       hardwareVolumeRaw: null,
       hardwareVolumeGainQ16: null,
@@ -657,6 +663,8 @@ class UsbExclusivePlaybackState {
       hardwareVolumeWriteOnly: map['hardwareVolumeWriteOnly'] == true,
       hardwareVolumeReadbackVerified:
           map['hardwareVolumeReadbackVerified'] == true,
+      hardwareVolumeSyncPending: map['hardwareVolumeSyncPending'] == true,
+      hardwareVolumeFrozen: map['hardwareVolumeFrozen'] == true,
       hardwareVolumeProtocol: map['hardwareVolumeProtocol'] as String?,
       hardwareVolumeRaw: _asInt(map['hardwareVolumeRaw']),
       hardwareVolumeGainQ16: _asInt(map['hardwareVolumeGainQ16']),

@@ -971,7 +971,11 @@ String _bitPerfectStatusLabel(UsbAudioStatus status, AppLocalizations l10n) {
         : exclusive.digitalVolumeActive
         ? l10n.volumeControlDigital
         : l10n.volumeControlRaw;
-    if (exclusive.hardwareVolumeActive &&
+    if (exclusive.hardwareVolumeFrozen) {
+      processing = '$processing (${l10n.hardwareVolumeFrozen})';
+    } else if (exclusive.hardwareVolumeSyncPending) {
+      processing = '$processing (${l10n.hardwareVolumeSyncPending})';
+    } else if (exclusive.hardwareVolumeActive &&
         exclusive.hardwareVolumeUnverified) {
       processing = '$processing (${l10n.hardwareVolumeUnverified})';
     }

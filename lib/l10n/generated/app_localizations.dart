@@ -1508,6 +1508,18 @@ abstract class AppLocalizations {
   /// **'Unverified'**
   String get hardwareVolumeUnverified;
 
+  /// No description provided for @hardwareVolumeSyncPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing'**
+  String get hardwareVolumeSyncPending;
+
+  /// No description provided for @hardwareVolumeFrozen.
+  ///
+  /// In en, this message translates to:
+  /// **'Volume sync failed; controls are frozen'**
+  String get hardwareVolumeFrozen;
+
   /// No description provided for @audioProcessingWithReplayGain.
   ///
   /// In en, this message translates to:

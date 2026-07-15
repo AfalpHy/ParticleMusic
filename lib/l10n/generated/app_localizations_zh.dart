@@ -730,6 +730,12 @@ class AppLocalizationsZh extends AppLocalizations {
   String get hardwareVolumeUnverified => '未验证';
 
   @override
+  String get hardwareVolumeSyncPending => '同步中';
+
+  @override
+  String get hardwareVolumeFrozen => '音量同步失败，控制已冻结';
+
+  @override
   String audioProcessingWithReplayGain(String processing, String gain) {
     return '$processing · ReplayGain $gain dB';
   }

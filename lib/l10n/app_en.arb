@@ -283,6 +283,8 @@
   "volumeControlRaw": "Raw digital level",
   "volumeControlDacFallbackHint": "Falls back to digital volume when DAC hardware volume is unavailable.",
   "hardwareVolumeUnverified": "Unverified",
+  "hardwareVolumeSyncPending": "Syncing",
+  "hardwareVolumeFrozen": "Volume sync failed; controls are frozen",
   "audioProcessingWithReplayGain": "{processing} · ReplayGain {gain} dB",
   "@audioProcessingWithReplayGain": {
     "placeholders": {

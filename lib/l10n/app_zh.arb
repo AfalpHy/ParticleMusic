@@ -234,6 +234,8 @@
   "volumeControlRaw": "原始数字电平",
   "volumeControlDacFallbackHint": "DAC 硬件音量不可用时自动回退为数字音量。",
   "hardwareVolumeUnverified": "未验证",
+  "hardwareVolumeSyncPending": "同步中",
+  "hardwareVolumeFrozen": "音量同步失败，控制已冻结",
   "audioProcessingWithReplayGain": "{processing} · ReplayGain {gain} dB",
   "audioProcessingWithReplayGainNotApplied": "{processing} · ReplayGain 未应用",
   "replayGain": "回放增益",

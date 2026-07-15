@@ -742,6 +742,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get hardwareVolumeUnverified => 'Unverified';
 
   @override
+  String get hardwareVolumeSyncPending => 'Syncing';
+
+  @override
+  String get hardwareVolumeFrozen => 'Volume sync failed; controls are frozen';
+
+  @override
   String audioProcessingWithReplayGain(String processing, String gain) {
     return '$processing · ReplayGain $gain dB';
   }

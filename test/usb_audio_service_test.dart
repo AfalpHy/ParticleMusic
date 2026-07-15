@@ -505,23 +505,33 @@ void main() {
       'digitalVolumeActive': false,
       'hardwareVolumeWriteOnly': true,
       'hardwareVolumeReadbackVerified': true,
+      'hardwareVolumeSyncPending': true,
+      'hardwareVolumeFrozen': false,
       'hardwareVolumeProtocol': 'ibassoDc03Pro',
       'hardwareVolumeRaw': 97,
       'hardwareVolumeGainQ16': 32768,
       'replayGainMilliDb': -3500,
     });
     final inactive = UsbExclusivePlaybackState.inactive();
+    final frozen = UsbExclusivePlaybackState.fromMap({
+      'hardwareVolumeFrozen': true,
+    });
 
     expect(state.hardwareVolumeActive, isTrue);
     expect(state.digitalVolumeActive, isFalse);
     expect(state.hardwareVolumeWriteOnly, isTrue);
     expect(state.hardwareVolumeReadbackVerified, isTrue);
+    expect(state.hardwareVolumeSyncPending, isTrue);
+    expect(state.hardwareVolumeFrozen, isFalse);
     expect(state.hardwareVolumeProtocol, 'ibassoDc03Pro');
     expect(state.hardwareVolumeRaw, 97);
     expect(state.hardwareVolumeGainQ16, 32768);
     expect(state.replayGainMilliDb, -3500);
     expect(inactive.hardwareVolumeWriteOnly, isFalse);
     expect(inactive.hardwareVolumeReadbackVerified, isFalse);
+    expect(inactive.hardwareVolumeSyncPending, isFalse);
+    expect(inactive.hardwareVolumeFrozen, isFalse);
+    expect(frozen.hardwareVolumeFrozen, isTrue);
   });
 
   test(
