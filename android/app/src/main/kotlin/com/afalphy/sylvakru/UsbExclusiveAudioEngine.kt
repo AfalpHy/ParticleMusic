@@ -25,6 +25,7 @@ import java.nio.ByteBuffer
 import java.util.Locale
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.ConcurrentHashMap
+import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicLong
@@ -274,6 +275,13 @@ class UsbExclusiveAudioEngine(
     @Volatile private var standardHardwareVolumeReadbackVerified = false
     private var volumeRampGeneration = 0
     private val volumeLock = Any()
+    private val volumeCommandExecutor = Executors.newSingleThreadExecutor { runnable ->
+        Thread(runnable, "usb-volume-command").apply { isDaemon = true }
+    }
+    private val volumeCommandLock = Any()
+    private val volumeSessionGeneration = AtomicLong()
+    private var volumeCommandRunning = false
+    private var pendingVolumeRequest: UsbVolumeRequest? = null
     private var hardwareVolumeControl: HardwareVolumeControl? = null
     private var ibassoVolumeConnection: UsbDeviceConnection? = null
     private var ibassoVolumeInterface: UsbInterface? = null
@@ -432,6 +440,7 @@ class UsbExclusiveAudioEngine(
         device: UsbDevice?,
         arguments: Map<String, Any?>,
     ): Map<String, Any?> {
+        invalidatePendingVolumeRequests()
         // 停掉上一首的写线程但先不拆 USB 会话，后面参数匹配时热复用
         val sessionUsable = stopWorkerKeepingSession()
         playbackId = arguments["playbackId"] as? String
@@ -942,14 +951,52 @@ class UsbExclusiveAudioEngine(
         dsdCompensationDb: Int,
         smoothHandoff: Boolean,
     ) {
-        synchronized(volumeLock) {
-            requestedVolumeGainQ16 = gainQ16.coerceIn(0, UNITY_GAIN_Q16)
-            requestedReplayGainMilliDb = replayGainMilliDb
-            dsdGainCompensationDb = dsdCompensationDb.coerceIn(-12, 6)
-            volumeSmoothHandoff = smoothHandoff
-            volumeMode = mode.lowercase(Locale.ROOT)
+        val request = UsbVolumeRequest(
+            gainQ16 = gainQ16.coerceIn(0, UNITY_GAIN_Q16),
+            replayGainMilliDb = replayGainMilliDb,
+            mode = mode.lowercase(Locale.ROOT)
                 .takeIf { it == "auto" || it == "dac" || it == "digital" || it == "raw" }
-                ?: "auto"
+                ?: "auto",
+            dsdCompensationDb = dsdCompensationDb.coerceIn(-12, 6),
+            smoothHandoff = smoothHandoff,
+            sessionGeneration = volumeSessionGeneration.get(),
+        )
+        val start = synchronized(volumeCommandLock) {
+            if (volumeCommandRunning) {
+                pendingVolumeRequest = latestUsbVolumeRequest(pendingVolumeRequest, request)
+                UsbDiagnostics.i(tag, "USB volume request queued as the latest pending target.")
+                false
+            } else {
+                volumeCommandRunning = true
+                true
+            }
+        }
+        if (start) {
+            volumeCommandExecutor.execute { drainVolumeRequests(request) }
+        }
+    }
+
+    private fun applyVolumeRequest(request: UsbVolumeRequest) {
+        if (request.sessionGeneration != volumeSessionGeneration.get()) {
+            UsbDiagnostics.i(
+                tag,
+                "Ignored a stale USB volume request generation=${request.sessionGeneration}.",
+            )
+            return
+        }
+        synchronized(volumeLock) {
+            if (request.sessionGeneration != volumeSessionGeneration.get()) {
+                UsbDiagnostics.i(
+                    tag,
+                    "Ignored a stale USB volume request generation=${request.sessionGeneration}.",
+                )
+                return
+            }
+            requestedVolumeGainQ16 = request.gainQ16
+            requestedReplayGainMilliDb = request.replayGainMilliDb
+            dsdGainCompensationDb = request.dsdCompensationDb
+            volumeSmoothHandoff = request.smoothHandoff
+            volumeMode = request.mode
             val device = sessionDevice
             val target = sessionTarget
             if (device != null && target != null && connection != null) {
@@ -971,6 +1018,13 @@ class UsbExclusiveAudioEngine(
                 } else {
                     UNITY_GAIN_Q16
                 }
+            }
+            if (request.sessionGeneration != volumeSessionGeneration.get()) {
+                UsbDiagnostics.i(
+                    tag,
+                    "Ignored a stale USB volume request generation=${request.sessionGeneration}.",
+                )
+                return
             }
             UsbDiagnostics.i(
                 tag,
@@ -1005,6 +1059,43 @@ class UsbExclusiveAudioEngine(
                 pendingHardwareVolumeEvent?.let(emitHardwareVolume)
                 pendingHardwareVolumeEvent = null
             }
+        }
+    }
+
+    private fun drainVolumeRequests(first: UsbVolumeRequest) {
+        var request = first
+        while (true) {
+            UsbDiagnostics.i(
+                tag,
+                "USB volume transaction started generation=${request.sessionGeneration}.",
+            )
+            applyVolumeRequest(request)
+            UsbDiagnostics.i(
+                tag,
+                "USB volume transaction completed generation=${request.sessionGeneration}.",
+            )
+            val next = synchronized(volumeCommandLock) {
+                pendingVolumeRequest.also { pendingVolumeRequest = null }
+            }
+            if (next == null) {
+                synchronized(volumeCommandLock) {
+                    if (pendingVolumeRequest == null) {
+                        volumeCommandRunning = false
+                        return
+                    }
+                    request = pendingVolumeRequest!!
+                    pendingVolumeRequest = null
+                }
+            } else {
+                request = next
+            }
+        }
+    }
+
+    private fun invalidatePendingVolumeRequests() {
+        volumeSessionGeneration.incrementAndGet()
+        synchronized(volumeCommandLock) {
+            pendingVolumeRequest = null
         }
     }
 
@@ -2522,6 +2613,7 @@ class UsbExclusiveAudioEngine(
     }
 
     private fun hardCloseSession(reason: String) {
+        invalidatePendingVolumeRequests()
         synchronized(volumeLock) {
             pendingHardwareVolumeEvent = null
             hardwareVolumeActive = false
