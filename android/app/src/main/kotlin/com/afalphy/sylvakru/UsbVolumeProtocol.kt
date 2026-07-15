@@ -98,12 +98,6 @@ internal fun usbVolumePendingDelayMs(
     return maxOf(settleDelayMs, quietDelayMs)
 }
 
-internal fun usbVolumeTransactionSettleDelayMs(
-    protocol: String?,
-    lastCompletedAtMs: Long?,
-    nowMs: Long,
-): Long = usbVolumePendingDelayMs(protocol, lastCompletedAtMs, null, nowMs)
-
 internal fun ibassoVolumeVerificationAction(
     targetRaw: Int,
     previousRaw: Int?,

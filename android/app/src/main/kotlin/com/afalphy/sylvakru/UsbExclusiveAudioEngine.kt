@@ -301,6 +301,7 @@ class UsbExclusiveAudioEngine(
     private var volumeCommandRunning = false
     private var runningVolumeRequest: UsbVolumeRequest? = null
     private var pendingVolumeRequest: UsbVolumeRequest? = null
+    private var pendingVolumeRequestUpdatedAtMs: Long? = null
     private var hardwareVolumeControl: HardwareVolumeControl? = null
     private var ibassoVolumeConnection: UsbDeviceConnection? = null
     private var ibassoVolumeInterface: UsbInterface? = null
@@ -1003,6 +1004,7 @@ class UsbExclusiveAudioEngine(
                     request,
                     isDsd,
                 )
+                pendingVolumeRequestUpdatedAtMs = SystemClock.elapsedRealtime()
                 UsbDiagnostics.i(tag, "USB volume request coalesced into the pending target.")
                 false
             } else {
@@ -1111,27 +1113,36 @@ class UsbExclusiveAudioEngine(
         var lastCompletedAtMs: Long? = null
         var lastCompletedProtocol: String? = null
         while (true) {
-            val settleDelayMs = usbVolumeTransactionSettleDelayMs(
-                lastCompletedProtocol,
-                lastCompletedAtMs,
-                SystemClock.elapsedRealtime(),
-            )
-            if (settleDelayMs > 0) {
-                SystemClock.sleep(settleDelayMs)
-            }
             if (lastCompletedAtMs != null) {
-                val next = synchronized(volumeCommandLock) {
-                    pendingVolumeRequest.also {
-                        pendingVolumeRequest = null
-                        if (it == null) {
-                            runningVolumeRequest = null
-                            volumeCommandRunning = false
-                        } else {
-                            runningVolumeRequest = it
+                var next: UsbVolumeRequest? = null
+                while (next == null) {
+                    var delayMs = 0L
+                    var hasPending = true
+                    synchronized(volumeCommandLock) {
+                        delayMs = usbVolumePendingDelayMs(
+                            lastCompletedProtocol,
+                            lastCompletedAtMs,
+                            pendingVolumeRequestUpdatedAtMs,
+                            SystemClock.elapsedRealtime(),
+                        )
+                        if (delayMs == 0L) {
+                            next = pendingVolumeRequest
+                            pendingVolumeRequest = null
+                            pendingVolumeRequestUpdatedAtMs = null
+                            if (next == null) {
+                                runningVolumeRequest = null
+                                volumeCommandRunning = false
+                                hasPending = false
+                            } else {
+                                runningVolumeRequest = next
+                            }
                         }
                     }
+                    if (!hasPending) return
+                    if (next == null) {
+                        SystemClock.sleep(delayMs)
+                    }
                 }
-                if (next == null) return
                 request = next
             }
             val current = checkNotNull(request)
@@ -1157,6 +1168,7 @@ class UsbExclusiveAudioEngine(
         volumeSessionGeneration.incrementAndGet()
         synchronized(volumeCommandLock) {
             pendingVolumeRequest = null
+            pendingVolumeRequestUpdatedAtMs = null
         }
     }
 
