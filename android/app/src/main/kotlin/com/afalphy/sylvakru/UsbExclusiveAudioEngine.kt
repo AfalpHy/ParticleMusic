@@ -1149,13 +1149,24 @@ class UsbExclusiveAudioEngine(
             val current = checkNotNull(request)
             val requestProtocol = synchronized(volumeLock) {
                 val device = sessionDevice
-                usbVolumeProtocolForRequest(
-                    current.mode,
-                    device?.let {
-                        UsbDacQuirks.forDevice(context, it.vendorId, it.productId)
-                            .hardwareVolumeProtocol
-                    },
-                )
+                val quirk = device?.let {
+                    UsbDacQuirks.forDevice(context, it.vendorId, it.productId)
+                }
+                val protocol = quirk?.hardwareVolumeProtocol
+                if (quirk == null) {
+                    null
+                } else {
+                    usbVolumeProtocolForRequest(
+                        current.mode,
+                        protocol,
+                        quirk.hardwareVolumeEnabled != false,
+                        hardwareVolumeSupportedForStream(
+                            usbVolumeProtocolSelection(protocol),
+                            sessionDsdKind != null,
+                            quirk.hardwareVolumeDsdSupported,
+                        ),
+                    )
+                }
             }
             UsbDiagnostics.i(
                 tag,
@@ -1176,7 +1187,9 @@ class UsbExclusiveAudioEngine(
     }
 
     private fun invalidatePendingVolumeRequests() {
-        volumeSessionGeneration.incrementAndGet()
+        synchronized(volumeLock) {
+            volumeSessionGeneration.incrementAndGet()
+        }
         synchronized(volumeCommandLock) {
             pendingVolumeRequest = null
             pendingVolumeRequestUpdatedAtMs = null

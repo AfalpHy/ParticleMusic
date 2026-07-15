@@ -368,11 +368,13 @@ class UsbVolumeProtocolTest {
     fun keepsConfiguredProtocolOnlyForHardwareVolumeRequests() {
         val protocol = IbassoHidVolumeProtocol.id
 
-        assertEquals(protocol, usbVolumeProtocolForRequest("auto", protocol))
-        assertEquals(protocol, usbVolumeProtocolForRequest("dac", protocol))
-        assertNull(usbVolumeProtocolForRequest("digital", protocol))
-        assertNull(usbVolumeProtocolForRequest("raw", protocol))
-        assertNull(usbVolumeProtocolForRequest("auto", null))
+        assertEquals(protocol, usbVolumeProtocolForRequest("auto", protocol, true, true))
+        assertEquals(protocol, usbVolumeProtocolForRequest("dac", protocol, true, true))
+        assertNull(usbVolumeProtocolForRequest("digital", protocol, true, true))
+        assertNull(usbVolumeProtocolForRequest("raw", protocol, true, true))
+        assertNull(usbVolumeProtocolForRequest("auto", null, true, true))
+        assertNull(usbVolumeProtocolForRequest("auto", protocol, false, true))
+        assertNull(usbVolumeProtocolForRequest("auto", protocol, true, false))
     }
 
     @Test
