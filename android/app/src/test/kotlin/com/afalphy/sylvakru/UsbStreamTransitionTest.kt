@@ -53,6 +53,31 @@ class UsbStreamTransitionTest {
     }
 
     @Test
+    fun addsSilenceOnlyForCrossParameterReconfiguration() {
+        assertEquals(
+            UsbTransitionSilencePlan(0, 0, 0),
+            usbTransitionSilencePlan(UsbStreamTransitionAction.REUSE),
+        )
+        assertEquals(
+            UsbTransitionSilencePlan(16, 24, 100),
+            usbTransitionSilencePlan(UsbStreamTransitionAction.SILENT_RECONFIGURE),
+        )
+        assertEquals(
+            UsbTransitionSilencePlan(0, 0, 0),
+            usbTransitionSilencePlan(UsbStreamTransitionAction.OPEN_FRESH),
+        )
+    }
+
+    @Test
+    fun alignsTheGainAdjustedLastPcmSampleInTheUsbDomain() {
+        assertEquals(4096, pcmSampleForUsbTransition(32, 16, 24, 32768))
+        assertEquals(-4096, pcmSampleForUsbTransition(-32, 16, 24, 32768))
+        assertEquals(32, pcmSampleForUsbTransition(32, 16, 16, 65536))
+        assertEquals(0x1234, pcmSampleForUsbTransition(0x123456, 24, 16, 65536))
+        assertEquals(Int.MAX_VALUE, pcmSampleForUsbTransition(Int.MAX_VALUE, 32, 32, 65536))
+    }
+
+    @Test
     fun doesNotPublishInactiveStateForAnUncommittedReplacementFailure() {
         assertFalse(shouldPublishUsbStartFailure(true, false, true))
         assertTrue(shouldPublishUsbStartFailure(true, true, true))

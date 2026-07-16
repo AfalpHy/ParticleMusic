@@ -20,6 +20,24 @@ internal enum class UsbStreamTransitionAction {
     OPEN_FRESH,
 }
 
+internal data class UsbTransitionSilencePlan(
+    val oldFadeMs: Int,
+    val oldSilenceMs: Int,
+    val newPreRollMs: Int,
+)
+
+internal fun usbTransitionSilencePlan(
+    action: UsbStreamTransitionAction,
+): UsbTransitionSilencePlan = if (action == UsbStreamTransitionAction.SILENT_RECONFIGURE) {
+    UsbTransitionSilencePlan(
+        oldFadeMs = USB_TRANSITION_FADE_MS,
+        oldSilenceMs = USB_TRANSITION_OLD_SILENCE_MS,
+        newPreRollMs = USB_TRANSITION_PREROLL_MS,
+    )
+} else {
+    UsbTransitionSilencePlan(0, 0, 0)
+}
+
 internal fun usbStreamTransitionAction(
     current: UsbStreamSignature?,
     next: UsbStreamSignature,
@@ -55,6 +73,20 @@ internal fun pcmFadeToSilence(
         }
     }
     return result
+}
+
+internal fun pcmSampleForUsbTransition(
+    sample: Int,
+    inputBitDepth: Int,
+    usbBitResolution: Int,
+    gainQ16: Int,
+): Int {
+    val adjusted = ((sample.toLong() * gainQ16.coerceIn(0, 65536)) shr 16).toInt()
+    return if (usbBitResolution >= inputBitDepth) {
+        adjusted shl (usbBitResolution - inputBitDepth)
+    } else {
+        adjusted shr (inputBitDepth - usbBitResolution)
+    }
 }
 
 internal fun usbSilenceFrames(sampleRate: Int, durationMs: Int): Int =

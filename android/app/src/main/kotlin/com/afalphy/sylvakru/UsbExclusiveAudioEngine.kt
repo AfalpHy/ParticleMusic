@@ -237,6 +237,8 @@ class UsbExclusiveAudioEngine(
     private val paused = AtomicBoolean(false)
     private val stopped = AtomicBoolean(false)
     private val silentReconfigureRequested = AtomicBoolean(false)
+    @Volatile
+    private var activeTransitionSilencePlan = UsbTransitionSilencePlan(0, 0, 0)
     private val pendingSeekMs = AtomicLong(-1L)
 
     @Volatile private var playbackId: String? = null
@@ -669,12 +671,15 @@ class UsbExclusiveAudioEngine(
         } else {
             requestedTransitionAction
         }
+        val silencePlan = usbTransitionSilencePlan(transitionAction)
+        val preRollMs = silencePlan.newPreRollMs
 
         invalidatePendingVolumeRequests()
         transitionCommitted = true
         val sessionUsable = when (transitionAction) {
             UsbStreamTransitionAction.REUSE -> stopWorkerKeepingSession()
-            UsbStreamTransitionAction.SILENT_RECONFIGURE -> stopWorkerForSilentReconfigure()
+            UsbStreamTransitionAction.SILENT_RECONFIGURE ->
+                stopWorkerForSilentReconfigure(silencePlan)
             UsbStreamTransitionAction.OPEN_FRESH -> {
                 stopWorkerKeepingSession()
                 false
@@ -714,6 +719,7 @@ class UsbExclusiveAudioEngine(
                 bitDepth = requestedBitDepth,
                 streaming = streaming,
             )
+            updateSessionDiagnostics("transitionStage", "reuse")
             target = sessionTarget!!
             mainHandler.removeCallbacks(deferredCloseRunnable)
             stopDopIdleFiller()
@@ -727,6 +733,7 @@ class UsbExclusiveAudioEngine(
             )
         } else {
             hardCloseSession("device or stream parameters changed")
+            updateSessionDiagnostics("transitionStage", "old-session-closed")
             beginSessionDiagnostics(
                 reused = false,
                 device = device,
@@ -874,6 +881,7 @@ class UsbExclusiveAudioEngine(
                     dsdReader?.close()
                     return updateState(inactiveState(clockError))
                 }
+                updateSessionDiagnostics("transitionStage", "new-clock-configured")
             }
 
             connection = openedConnection
@@ -974,9 +982,15 @@ class UsbExclusiveAudioEngine(
             runCatching { Process.setThreadPriority(Process.THREAD_PRIORITY_AUDIO) }
                 .onFailure { UsbDiagnostics.w(tag, "Failed to set USB audio thread priority: ${it.message}") }
             if (reader != null) {
-                dsdDecodeAndWrite(reader, target, if (streaming) file else null, workerNativeFormat)
+                dsdDecodeAndWrite(
+                    reader,
+                    target,
+                    if (streaming) file else null,
+                    workerNativeFormat,
+                    preRollMs,
+                )
             } else {
-                decodeAndWrite(file, target, streaming, streamTotalBytes)
+                decodeAndWrite(file, target, streaming, streamTotalBytes, preRollMs)
             }
         }, "SylvakruUsbExclusive")
         worker?.start()
@@ -2865,8 +2879,11 @@ class UsbExclusiveAudioEngine(
         return !sessionBroken && connection != null
     }
 
-    private fun stopWorkerForSilentReconfigure(): Boolean {
+    private fun stopWorkerForSilentReconfigure(
+        silencePlan: UsbTransitionSilencePlan,
+    ): Boolean {
         val startedAtMs = SystemClock.elapsedRealtime()
+        activeTransitionSilencePlan = silencePlan
         silentReconfigureRequested.set(true)
         updateSessionDiagnostics("transitionStage", "old-tail-started")
         return try {
@@ -2875,6 +2892,7 @@ class UsbExclusiveAudioEngine(
             usable
         } finally {
             silentReconfigureRequested.set(false)
+            activeTransitionSilencePlan = UsbTransitionSilencePlan(0, 0, 0)
         }
     }
 
@@ -3110,6 +3128,7 @@ class UsbExclusiveAudioEngine(
         target: OutputTarget,
         streaming: Boolean = false,
         totalBytes: Long = 0L,
+        preRollMs: Int = 0,
     ) {
         val extractor = MediaExtractor()
         var codec: MediaCodec? = null
@@ -3120,9 +3139,19 @@ class UsbExclusiveAudioEngine(
         val startMs = SystemClock.elapsedRealtime()
         var lastPositionEmitMs = 0L
         var packetizer: PcmIsoPacketizer? = null
+        var lastPacketizerWithAudio: PcmIsoPacketizer? = null
+        var preRollPending = preRollMs > 0
+        var transitionAudioStarted = false
         // 流式独占当前应播位置（ms）与缓冲日志去重，语义同 writeRawPcm
         var streamTargetMs = 0L
         var streamBufferingLogged = false
+
+        fun writePreRollIfNeeded(writer: PcmIsoPacketizer, sampleRate: Int) {
+            if (!preRollPending) return
+            writer.writeUsbSilence(usbSilenceFrames(sampleRate, preRollMs))
+            preRollPending = false
+            updateSessionDiagnostics("transitionStage", "new-silence-preroll")
+        }
 
         try {
             if (streaming) {
@@ -3173,7 +3202,18 @@ class UsbExclusiveAudioEngine(
             )
 
             if (mime == "audio/raw") {
-                writeRawPcm(extractor, file, format, sampleRate, channels, durationMs, target, startMs, streaming)
+                writeRawPcm(
+                    extractor,
+                    file,
+                    format,
+                    sampleRate,
+                    channels,
+                    durationMs,
+                    target,
+                    startMs,
+                    streaming,
+                    preRollMs,
+                )
                 return
             }
 
@@ -3183,6 +3223,7 @@ class UsbExclusiveAudioEngine(
 
             if (sampleRate != null && channels != null) {
                 packetizer = createPacketizer(sampleRate, channels, 16, target)
+                    .also { writePreRollIfNeeded(it, sampleRate) }
             }
 
             updateState(
@@ -3226,6 +3267,7 @@ class UsbExclusiveAudioEngine(
                     extractor.seekTo(seekUs, MediaExtractor.SEEK_TO_CLOSEST_SYNC)
                     codec.flush()
                     packetizer?.reset()
+                    lastPacketizerWithAudio = null
                     sawInputEos = false
                     outputDone = false
                     lastPositionEmitMs = -1L
@@ -3298,8 +3340,16 @@ class UsbExclusiveAudioEngine(
                                 channels ?: 2,
                                 16,
                                 target,
-                            ).also { packetizer = it }
+                            ).also {
+                                writePreRollIfNeeded(it, sampleRate ?: 48000)
+                                packetizer = it
+                            }
                         writeOutputBuffer(outputBuffer, info, writer)
+                        lastPacketizerWithAudio = writer
+                        if (preRollMs > 0 && !transitionAudioStarted) {
+                            transitionAudioStarted = true
+                            updateSessionDiagnostics("transitionStage", "new-audio-started")
+                        }
                     }
                     if ((info.flags and MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
                         outputDone = true
@@ -3355,7 +3405,7 @@ class UsbExclusiveAudioEngine(
                             outputChannels,
                             outputBitDepth,
                             target,
-                        )
+                        ).also { writePreRollIfNeeded(it, outputSampleRate) }
                     }
                     updateState(
                         currentState + mapOf(
@@ -3378,7 +3428,7 @@ class UsbExclusiveAudioEngine(
             }
 
             UsbDiagnostics.i(tag, "exclusive decode reached end of stream, flushing remainder.")
-            packetizer?.flush()
+            (lastPacketizerWithAudio ?: packetizer)?.let(::finishPcmPacketizer)
             if (!stopped.get()) {
                 workerEndedAtEof = true
                 updateState(inactiveState("USB exclusive playback completed."))
@@ -3474,11 +3524,13 @@ class UsbExclusiveAudioEngine(
         target: OutputTarget,
         streamingFile: File? = null,
         nativeFormat: String? = null,
+        preRollMs: Int = 0,
     ) {
         var lastPositionEmitMs = 0L
         // 流式下载中的缓冲恢复水位：饥饿后攒到该长度才继续读，避免走走停停
         var streamingResumeBytes = 0L
         var streamingBufferingLogged = false
+        var naturalEofTailWritten = false
         // nativeFormat=null 走 DoP（24-bit 帧，帧率=速率÷16）；否则按字节排列直发
         //（帧率=速率÷8÷每采样字节数），两者都复用 PcmIsoPacketizer 的水位/反馈节奏
         val nativeBps = nativeDsdBytesPerSample(nativeFormat)
@@ -3519,6 +3571,12 @@ class UsbExclusiveAudioEngine(
                         "(${reader.formatName}) to ${target.endpointLabel}.",
                 ),
             )
+            if (preRollMs > 0) {
+                packetizer.write(dop.encodeSilence(usbSilenceFrames(frameRate, preRollMs)))
+                packetizer.flush()
+                updateSessionDiagnostics("transitionStage", "new-silence-preroll")
+            }
+            var transitionAudioStarted = false
 
             // 单次读写约 10 ms 的量；写满水位后由 native 阻塞回收自然限速
             val silenceFramesPerWrite = maxOf(1, frameRate / 100)
@@ -3579,9 +3637,14 @@ class UsbExclusiveAudioEngine(
                     packetizer.write(dop.drain())
                     packetizer.write(dop.encodeSilence(silenceFramesPerWrite * 20))
                     packetizer.flush()
+                    naturalEofTailWritten = true
                     break
                 }
                 packetizer.write(dop.encode(buffer, count))
+                if (preRollMs > 0 && !transitionAudioStarted) {
+                    transitionAudioStarted = true
+                    updateSessionDiagnostics("transitionStage", "new-audio-started")
+                }
 
                 val positionMs = reader.positionMs
                 if (positionMs - lastPositionEmitMs >= 250) {
@@ -3594,6 +3657,13 @@ class UsbExclusiveAudioEngine(
                         ),
                     )
                 }
+            }
+
+            if (silentReconfigureRequested.get() && !naturalEofTailWritten) {
+                val plan = activeTransitionSilencePlan
+                val tailFrames = usbSilenceFrames(frameRate, plan.oldFadeMs + plan.oldSilenceMs)
+                packetizer.write(dop.encodeSilence(tailFrames))
+                packetizer.flush()
             }
 
             UsbDiagnostics.i(tag, "exclusive DSD playback reached end of stream.")
@@ -3630,6 +3700,7 @@ class UsbExclusiveAudioEngine(
         target: OutputTarget,
         startMs: Long,
         streaming: Boolean = false,
+        preRollMs: Int = 0,
     ) {
         if (sampleRate == null || channels == null) {
             emitError("Raw PCM stream is missing sample rate or channel count.")
@@ -3660,6 +3731,11 @@ class UsbExclusiveAudioEngine(
         }
         val buffer = ByteBuffer.allocate(maxInputSize)
         val packetizer = createPacketizer(sampleRate, channels, sourceBitDepth, target)
+        if (preRollMs > 0) {
+            packetizer.writeUsbSilence(usbSilenceFrames(sampleRate, preRollMs))
+            updateSessionDiagnostics("transitionStage", "new-silence-preroll")
+        }
+        var transitionAudioStarted = false
         var lastPositionEmitMs = 0L
         var lastSampleTimeUs: Long? = null
         var rawChunkLogCount = 0
@@ -3773,6 +3849,10 @@ class UsbExclusiveAudioEngine(
                 streamTargetMs = sampleTimeUs / 1000
             }
             packetizer.write(data)
+            if (preRollMs > 0 && !transitionAudioStarted) {
+                transitionAudioStarted = true
+                updateSessionDiagnostics("transitionStage", "new-audio-started")
+            }
 
             val positionMs = if (sampleTimeUs > 0) {
                 sampleTimeUs / 1000
@@ -3797,10 +3877,19 @@ class UsbExclusiveAudioEngine(
             "exclusive raw PCM loop exit: stopped=${stopped.get()}, streaming=$streaming, " +
                 "partExists=${file.exists()}, lastPos=${streamTargetMs}ms",
         )
-        packetizer.flush()
+        finishPcmPacketizer(packetizer)
         if (!stopped.get()) {
             workerEndedAtEof = true
             updateState(inactiveState("USB exclusive playback completed."))
+        }
+    }
+
+    private fun finishPcmPacketizer(packetizer: PcmIsoPacketizer) {
+        if (silentReconfigureRequested.get()) {
+            val plan = activeTransitionSilencePlan
+            packetizer.writeTransitionTail(plan.oldFadeMs, plan.oldSilenceMs)
+        } else {
+            packetizer.flush()
         }
     }
 
@@ -5275,7 +5364,7 @@ class UsbExclusiveAudioEngine(
     private class PcmIsoPacketizer(
         private val sampleRate: Int,
         private val packetsPerSecond: Int,
-        channels: Int,
+        private val channels: Int,
         private val inputBytesPerSample: Int,
         private val inputBitDepth: Int,
         private val usbBytesPerSample: Int,
@@ -5298,6 +5387,8 @@ class UsbExclusiveAudioEngine(
         private var feedbackRejectLogCount = 0
         private var pcmPreviewLogged = false
         private var pcmPreviewAttempts = 0
+        private val lastUsbSamples = IntArray(channels)
+        private var hasLastUsbFrame = false
 
         fun write(data: ByteArray) {
             val converted = convertPcmToUsbSlots(data)
@@ -5321,6 +5412,27 @@ class UsbExclusiveAudioEngine(
             drain(fullPacketsOnly = false)
         }
 
+        fun writeTransitionTail(fadeMs: Int, silenceMs: Int) {
+            val fadeFrames = usbSilenceFrames(sampleRate, fadeMs)
+            val silenceFrames = usbSilenceFrames(sampleRate, silenceMs)
+            if (!hasLastUsbFrame) {
+                writeUsbSilence(fadeFrames + silenceFrames)
+                return
+            }
+            val samples = pcmFadeToSilence(lastUsbSamples, fadeFrames, silenceFrames)
+            val bytes = ByteArray(samples.size * usbBytesPerSample)
+            samples.forEachIndexed { index, sample ->
+                writeLittleEndian(bytes, index * usbBytesPerSample, usbBytesPerSample, sample)
+            }
+            pending.write(bytes)
+            drain(fullPacketsOnly = false)
+        }
+
+        fun writeUsbSilence(frames: Int) {
+            pending.write(ByteArray(frames * bytesPerFrame))
+            drain(fullPacketsOnly = false)
+        }
+
         fun reset() {
             pending.reset()
             transfer.reset()
@@ -5331,6 +5443,8 @@ class UsbExclusiveAudioEngine(
             feedbackRejectLogCount = 0
             pcmPreviewLogged = false
             pcmPreviewAttempts = 0
+            lastUsbSamples.fill(0)
+            hasLastUsbFrame = false
         }
 
         private fun drain(fullPacketsOnly: Boolean) {
@@ -5421,27 +5535,44 @@ class UsbExclusiveAudioEngine(
         private fun convertPcmToUsbSlots(data: ByteArray): ByteArray {
             val gainQ16 = volumeGainQ16?.invoke() ?: UNITY_GAIN_Q16
             val applyGain = gainQ16 < UNITY_GAIN_Q16
+            val frames = data.size / inputBytesPerFrame
+            if (frames > 0) {
+                var inputOffset = (frames - 1) * inputBytesPerFrame
+                repeat(channels) { channel ->
+                    val sample = readSignedLittleEndian(
+                        data,
+                        inputOffset,
+                        inputBytesPerSample,
+                        inputBitDepth,
+                    )
+                    lastUsbSamples[channel] = pcmSampleForUsbTransition(
+                        sample,
+                        inputBitDepth,
+                        usbBitResolution,
+                        gainQ16,
+                    )
+                    inputOffset += inputBytesPerSample
+                }
+                hasLastUsbFrame = true
+            }
             // 满刻度且无需重排位深时零拷贝直通，保持位完美。
             if (!applyGain && inputBytesPerSample == usbBytesPerSample && inputBitDepth == usbBitResolution) {
                 return data
             }
 
-            val frames = data.size / inputBytesPerFrame
             val output = ByteArray(frames * bytesPerFrame)
             var inputOffset = 0
             var outputOffset = 0
             repeat(frames) {
                 repeat(inputBytesPerFrame / inputBytesPerSample) {
-                    var sample = readSignedLittleEndian(data, inputOffset, inputBytesPerSample, inputBitDepth)
-                    if (applyGain) {
-                        // 在源位深域施加线性增益（Long 防溢出）再做 slot 对齐移位。
-                        sample = ((sample.toLong() * gainQ16) shr 16).toInt()
-                    }
-                    val shifted = if (usbBitResolution >= inputBitDepth) {
-                        sample shl (usbBitResolution - inputBitDepth)
-                    } else {
-                        sample shr (inputBitDepth - usbBitResolution)
-                    }
+                    val sample = readSignedLittleEndian(data, inputOffset, inputBytesPerSample, inputBitDepth)
+                    // 在源位深域施加线性增益（Long 防溢出）再做 slot 对齐移位。
+                    val shifted = pcmSampleForUsbTransition(
+                        sample,
+                        inputBitDepth,
+                        usbBitResolution,
+                        gainQ16,
+                    )
                     writeLittleEndian(output, outputOffset, usbBytesPerSample, shifted)
                     inputOffset += inputBytesPerSample
                     outputOffset += usbBytesPerSample
