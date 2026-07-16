@@ -100,16 +100,19 @@ SafeOutputGainTransition safeOutputGainTransition({
   required double userGain,
   required double adjustmentDb,
   double maxIncreaseDb = 1,
+  bool establishBaseline = false,
 }) {
   final safeUserGain = userGain.clamp(0.0, 1.0).toDouble();
   final targetGain = (safeUserGain * dbToLinear(adjustmentDb))
       .clamp(0.0, 1.0)
       .toDouble();
-  final nextGain = limitedOutputGainIncrease(
-    appliedGain: appliedGain,
-    targetGain: targetGain,
-    maxIncreaseDb: maxIncreaseDb,
-  );
+  final nextGain = establishBaseline
+      ? targetGain
+      : limitedOutputGainIncrease(
+          appliedGain: appliedGain,
+          targetGain: targetGain,
+          maxIncreaseDb: maxIncreaseDb,
+        );
   final appliedAdjustmentDb = safeUserGain <= 0 || nextGain <= 0
       ? adjustmentDb
       : 20 * math.log(nextGain / safeUserGain) / math.ln10;

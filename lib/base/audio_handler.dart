@@ -538,6 +538,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
       await _player.open(Media(currentSong.cachePath!), play: false);
       await _applySharedReplayGain(
         _perceptualVolumeGain(volumeNotifier.value),
+        establishBaseline: true,
       );
       if (shouldPlay) await _player.play();
       return;
@@ -570,7 +571,10 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
       Media(resource, httpHeaders: needHeader ? webdavClient?.headers : null),
       play: false,
     );
-    await _applySharedReplayGain(_perceptualVolumeGain(volumeNotifier.value));
+    await _applySharedReplayGain(
+      _perceptualVolumeGain(volumeNotifier.value),
+      establishBaseline: true,
+    );
     if (shouldPlay) await _player.play();
   }
 
@@ -1737,6 +1741,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
   Future<void> _applySharedReplayGain(
     double userLinearGain, {
     double maxIncreaseDb = _safeUsbVolumeIncreaseDb,
+    bool establishBaseline = false,
   }) async {
     final generation = ++_replayGainApplyGeneration;
     final pending = _pendingReplayGainState(
@@ -1749,6 +1754,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
       userGain: userLinearGain,
       adjustmentDb: _effectiveReplayGainDb(userLinearGain),
       maxIncreaseDb: maxIncreaseDb,
+      establishBaseline: establishBaseline,
     );
     _appliedOutputGain = transition.appliedGain;
     try {

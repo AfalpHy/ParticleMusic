@@ -307,6 +307,22 @@ void main() {
     expect(transition.needsRamp, isTrue);
   });
 
+  test('共享播放器静音打开时直接建立目标输出基线', () {
+    final transition = safeOutputGainTransition(
+      appliedGain: null,
+      userGain: 0.4,
+      adjustmentDb: -6,
+      establishBaseline: true,
+    );
+
+    expect(
+      transition.appliedGain,
+      closeTo(0.4 * dbToLinear(-6), 0.000001),
+    );
+    expect(transition.adjustmentDb, closeTo(-6, 0.000001));
+    expect(transition.needsRamp, isFalse);
+  });
+
   test('零用户增益不限制 ReplayGain', () {
     expect(replayGainWithinOutputHeadroom(6, 0), 6);
   });
