@@ -77,6 +77,11 @@ double adjustedRemoteVolume(double current, AndroidVolumeDirection direction) {
   return applied;
 }
 
+double outputUserVolume({required bool active, required double requested}) {
+  if (!active) return 1;
+  return requested.clamp(0.0, 1.0).toDouble();
+}
+
 AndroidVolumeDirection? usbExclusiveVolumeKeyDirection({
   required int delta,
   required bool active,
@@ -158,7 +163,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
   bool _suppressPlayerCompleted = false;
   final _positionController = StreamController<Duration>.broadcast();
   ReplayGainResult _currentReplayGain = const ReplayGainResult(0, null, null);
-  double _sharedUserVolume = volumeNotifier.value;
+  double _sharedUserVolume = 1;
   double _appliedUserVolume = volumeNotifier.value;
   double _volumeRampTarget = volumeNotifier.value;
   Timer? _volumeRampTimer;
@@ -326,7 +331,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     } else {
       unawaited(
         _applySharedReplayGain(
-          _perceptualVolumeGain(volumeNotifier.value),
+          outputUserVolume(active: false, requested: volumeNotifier.value),
           maxIncreaseDb: _safeUsbVolumeIncreaseDb,
         ),
       );
@@ -380,7 +385,11 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
 
   void _restoreSharedVolume() {
     _cancelVolumeRamp();
-    final volume = _sharedUserVolume.clamp(0.0, 1.0).toDouble();
+    final volume = outputUserVolume(
+      active: false,
+      requested: _sharedUserVolume,
+    );
+    _sharedUserVolume = volume;
     _appliedUserVolume = volume;
     _volumeRampTarget = volume;
     volumeNotifier.value = volume;
@@ -537,7 +546,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     if (currentSong.cacheExist) {
       await _player.open(Media(currentSong.cachePath!), play: false);
       await _applySharedReplayGain(
-        _perceptualVolumeGain(volumeNotifier.value),
+        outputUserVolume(active: false, requested: volumeNotifier.value),
         establishBaseline: true,
       );
       if (shouldPlay) await _player.play();
@@ -572,7 +581,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
       play: false,
     );
     await _applySharedReplayGain(
-      _perceptualVolumeGain(volumeNotifier.value),
+      outputUserVolume(active: false, requested: volumeNotifier.value),
       establishBaseline: true,
     );
     if (shouldPlay) await _player.play();
@@ -694,9 +703,10 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     playModeNotifier.value = json['playMode'] as int? ?? 0;
     _tmpPlayMode = json['tmpPlayMode'] as int? ?? 0;
 
-    final restoredVolume = (json['volume'] as double? ?? 0.3)
-        .clamp(0.0, 1.0)
-        .toDouble();
+    final restoredVolume = outputUserVolume(
+      active: false,
+      requested: (json['volume'] as double? ?? 1),
+    );
     _sharedUserVolume = restoredVolume;
     _appliedUserVolume = restoredVolume;
     _volumeRampTarget = restoredVolume;
@@ -1625,7 +1635,13 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
   }
 
   void setVolume(double volume) {
-    _volumeRampTarget = volume.clamp(0.0, 1.0).toDouble();
+    if (!_usbExclusiveActive) {
+      _restoreSharedVolume();
+      unawaited(_applySharedReplayGain(1));
+      _publishAndroidPlaybackInfo();
+      return;
+    }
+    _volumeRampTarget = outputUserVolume(active: true, requested: volume);
     if (_volumeRampTarget <= _appliedUserVolume) {
       _volumeRampTimer?.cancel();
       _volumeRampTimer = null;
@@ -1657,7 +1673,10 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     double volume, {
     double maxOutputGainIncreaseDb = _safeUsbVolumeIncreaseDb,
   }) {
-    final next = volume.clamp(0.0, 1.0).toDouble();
+    final next = outputUserVolume(
+      active: _usbExclusiveActive,
+      requested: volume,
+    );
     _appliedUserVolume = next;
     if (_usbExclusiveActive) {
       _rememberUsbExclusiveVolume(next);
@@ -1861,7 +1880,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
       } else {
         unawaited(
           _applySharedReplayGain(
-            _perceptualVolumeGain(volumeNotifier.value),
+            outputUserVolume(active: false, requested: volumeNotifier.value),
             maxIncreaseDb: _outputGainRampStepDb,
           ),
         );

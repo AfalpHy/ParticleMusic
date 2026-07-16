@@ -117,4 +117,10 @@ void main() {
 
     expect(target, closeTo(0.52, 0.000001));
   });
+
+  test('非独占输出固定使用满幅用户增益并交给系统音量控制', () {
+    expect(outputUserVolume(active: false, requested: 0.07), 1);
+    expect(outputUserVolume(active: false, requested: 0.8), 1);
+    expect(outputUserVolume(active: true, requested: 0.17), 0.17);
+  });
 }
