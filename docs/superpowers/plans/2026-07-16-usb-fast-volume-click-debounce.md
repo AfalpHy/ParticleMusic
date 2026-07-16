@@ -315,7 +315,7 @@ Expected: 缓存差异不包含 `initialState` 的 `playbackId` 排序；提交�
 
 - [ ] **Step 3: 给所有 iBasso 硬件尝试增加共享 150ms 门控**
 
-在 `volumeLock` 保护下记录最后一次 iBasso 硬件尝试完成时间。`applyVolumeControl` 进入 vendor HID 分支后，先等待剩余 settle 时间，再执行写入和读回，并在 `finally` 中更新时间。另用一个短临界区同时保护 session generation 递增和实际 HID 写包，消除复查后到传输前的竞态；读回与 reader 恢复不得持有该锁，保证切歌能及时让恢复循环进入 `CANCEL`。这样同步的 `start()` / 热切歌路径、异步音量协调器和失败重试共用同一门控；300ms 静默窗口仍只属于连续待处理输入。
+在 `volumeLock` 保护下记录最后一次 iBasso 硬件尝试完成时间。`applyVolumeControl` 进入 vendor HID 分支后，先等待剩余 settle 时间，再执行写入和读回，并在 `finally` 中更新时间。另用一个短临界区同时保护 session generation 递增和实际硬件写入事务，消除复查后到传输前的竞态：iBasso 只在实际 HID 写包时持锁，读回与 reader 恢复不得持锁，保证切歌能及时让恢复循环进入 `CANCEL`；标准 UAC 则在同一会话锁内完成多通道 `SET_CUR` 和紧随写入的校验/回滚，避免失效发生在通道之间。这样同步的 `start()` / 热切歌路径、异步音量协调器和失败重试共用同一门控；150/300ms 防抖仍只适用于 iBasso，标准 UAC 不增加额外等待。
 
 - [ ] **Step 4: 运行目标测试与完整 Android 单元测试**
 
