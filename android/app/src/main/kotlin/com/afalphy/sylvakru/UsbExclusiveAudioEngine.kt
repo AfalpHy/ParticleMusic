@@ -1359,6 +1359,7 @@ class UsbExclusiveAudioEngine(
                                 device,
                                 control,
                                 effectiveHardwareGainQ16,
+                                requestSessionGeneration,
                             )
                             val actual = writeResult.actual
                             fallbackReason = writeResult.error ?: if (actual == null) {
@@ -1653,6 +1654,7 @@ class UsbExclusiveAudioEngine(
         device: UsbDevice,
         control: HardwareVolumeControl,
         gainQ16: Int,
+        requestSessionGeneration: Long,
     ): HardwareVolumeWriteResult {
         val controlInterface = findAudioControlInterface(device, control.features.first().controlInterface)
             ?: return HardwareVolumeWriteResult(error = "AudioControl interface is unavailable.")
@@ -1687,36 +1689,45 @@ class UsbExclusiveAudioEngine(
                 }
                 previous[feature] = current
             }
-            for (feature in control.features) {
-                if (!writeHardwareVolumeValue(transferConnection, feature, targetQ8_8)) {
-                    rollbackHardwareVolume(transferConnection, written, previous)
-                    return HardwareVolumeWriteResult(
-                        error = "Failed to set hardware volume channel ${feature.channel}.",
+            synchronized(volumeSessionWriteLock) {
+                if (requestSessionGeneration != volumeSessionGeneration.get()) {
+                    throw java.util.concurrent.CancellationException(
+                        "USB volume write cancelled because the session changed.",
                     )
                 }
-                written += feature
-                val readBack = readHardwareVolumeCurrent(transferConnection, feature)
-                if (
-                    readBack == null ||
-                    !hardwareVolumeReadbackMatches(targetQ8_8, readBack, control.range.stepQ8_8)
-                ) {
-                    rollbackHardwareVolume(transferConnection, written, previous)
-                    return HardwareVolumeWriteResult(
-                        error = "Hardware volume readback mismatch on channel ${feature.channel}: " +
-                            "targetQ8_8=$targetQ8_8, actualQ8_8=${readBack ?: "unavailable"}.",
-                    )
+                for (feature in control.features) {
+                    if (!writeHardwareVolumeValue(transferConnection, feature, targetQ8_8)) {
+                        rollbackHardwareVolume(transferConnection, written, previous)
+                        return@synchronized HardwareVolumeWriteResult(
+                            error = "Failed to set hardware volume channel ${feature.channel}.",
+                        )
+                    }
+                    written += feature
+                    val readBack = readHardwareVolumeCurrent(transferConnection, feature)
+                    if (
+                        readBack == null ||
+                        !hardwareVolumeReadbackMatches(targetQ8_8, readBack, control.range.stepQ8_8)
+                    ) {
+                        rollbackHardwareVolume(transferConnection, written, previous)
+                        return@synchronized HardwareVolumeWriteResult(
+                            error = "Hardware volume readback mismatch on channel ${feature.channel}: " +
+                                "targetQ8_8=$targetQ8_8, actualQ8_8=${readBack ?: "unavailable"}.",
+                        )
+                    }
+                    readBackValues += readBack
                 }
-                readBackValues += readBack
+                val actual = actualHardwareVolume(readBackValues, control.range.muteQ8_8)
+                    ?: return@synchronized HardwareVolumeWriteResult(
+                        error = "Hardware volume readback is unavailable.",
+                    )
+                UsbDiagnostics.i(
+                    tag,
+                    "hardware volume SET_CUR targetQ8_8=$targetQ8_8, " +
+                        "actualQ8_8=${actual.raw}, channels=${control.features.map { it.channel }}, " +
+                        "recipient=${control.features.first().recipient}, source=${control.source}",
+                )
+                HardwareVolumeWriteResult(actual = actual)
             }
-            val actual = actualHardwareVolume(readBackValues, control.range.muteQ8_8)
-                ?: return HardwareVolumeWriteResult(error = "Hardware volume readback is unavailable.")
-            UsbDiagnostics.i(
-                tag,
-                "hardware volume SET_CUR targetQ8_8=$targetQ8_8, " +
-                    "actualQ8_8=${actual.raw}, channels=${control.features.map { it.channel }}, " +
-                    "recipient=${control.features.first().recipient}, source=${control.source}",
-            )
-            HardwareVolumeWriteResult(actual = actual)
         } finally {
             if (requiresClaim) {
                 runCatching { transferConnection.releaseInterface(controlInterface) }
