@@ -236,6 +236,7 @@ class UsbExclusiveAudioEngine(
     private var connection: UsbDeviceConnection? = null
     private val paused = AtomicBoolean(false)
     private val stopped = AtomicBoolean(false)
+    private val silentReconfigureRequested = AtomicBoolean(false)
     private val pendingSeekMs = AtomicLong(-1L)
 
     @Volatile private var playbackId: String? = null
@@ -460,25 +461,34 @@ class UsbExclusiveAudioEngine(
         device: UsbDevice?,
         arguments: Map<String, Any?>,
     ): Map<String, Any?> {
-        invalidatePendingVolumeRequests()
-        // 停掉上一首的写线程但先不拆 USB 会话，后面参数匹配时热复用
-        val sessionUsable = stopWorkerKeepingSession()
-        playbackId = arguments["playbackId"] as? String
-        pendingHardwareVolumeEvent = null
-        if (connection != null) {
-            // 下面任一校验失败提前返回时，兜底延迟关闭残留会话
-            scheduleDeferredClose()
+        val requestedPlaybackId = arguments["playbackId"] as? String
+        val replaceActive = arguments["replaceActive"] == true
+        var transitionCommitted = false
+
+        fun failStart(message: String): Map<String, Any?> {
+            val failedState = inactiveState(message) + mapOf("playbackId" to requestedPlaybackId)
+            return if (
+                shouldPublishUsbStartFailure(
+                    replaceActive,
+                    transitionCommitted,
+                    currentState["active"] == true,
+                )
+            ) {
+                updateState(failedState)
+            } else {
+                failedState
+            }
         }
 
         if (!NATIVE_USB_EXCLUSIVE_STREAMING_ENABLED) {
-            return updateState(inactiveState(NATIVE_USB_EXCLUSIVE_DISABLED_MESSAGE))
+            return failStart(NATIVE_USB_EXCLUSIVE_DISABLED_MESSAGE)
         }
 
         if (device == null) {
-            return updateState(inactiveState("No USB Audio Class device was found."))
+            return failStart("No USB Audio Class device was found.")
         }
         if (!usbManager.hasPermission(device)) {
-            return updateState(inactiveState("USB permission is required before exclusive playback."))
+            return failStart("USB permission is required before exclusive playback.")
         }
 
         val filePath = arguments["filePath"] as? String
@@ -487,12 +497,12 @@ class UsbExclusiveAudioEngine(
             ?.trim()
             ?.takeIf { it.isNotEmpty() }
         if (filePath.isNullOrBlank()) {
-            return updateState(inactiveState("Exclusive playback requires a local audio file path."))
+            return failStart("Exclusive playback requires a local audio file path.")
         }
 
         val file = File(filePath)
         if (!file.exists()) {
-            return updateState(inactiveState("Exclusive playback file does not exist: $filePath"))
+            return failStart("Exclusive playback file does not exist: $filePath")
         }
         UsbDiagnostics.i(
             tag,
@@ -500,7 +510,7 @@ class UsbExclusiveAudioEngine(
         )
 
         if (!isSupportedFile(filePath, sourceFormat)) {
-            return updateState(inactiveState("This audio format cannot be decoded for USB exclusive playback."))
+            return failStart("This audio format cannot be decoded for USB exclusive playback.")
         }
 
         // 流式独占：file 是仍在下载增长的 .part 文件，下载完成时会被改名为正式
@@ -512,17 +522,18 @@ class UsbExclusiveAudioEngine(
 
         // 该设备的 quirk 生效值（vid:pid 精确 → vid:* 厂商 → 默认）
         val quirk = UsbDacQuirks.forDevice(context, device.vendorId, device.productId)
-        volumeMode = (arguments["volumeMode"] as? String)
+        val nextVolumeMode = (arguments["volumeMode"] as? String)
             ?.lowercase(Locale.ROOT)
             ?.takeIf { it == "auto" || it == "dac" || it == "digital" || it == "raw" }
             ?: "auto"
-        requestedVolumeGainQ16 = ((arguments["volumeGainQ16"] as? Number)?.toInt() ?: UNITY_GAIN_Q16)
-            .coerceIn(0, UNITY_GAIN_Q16)
-        requestedReplayGainMilliDb =
+        val nextRequestedVolumeGainQ16 =
+            ((arguments["volumeGainQ16"] as? Number)?.toInt() ?: UNITY_GAIN_Q16)
+                .coerceIn(0, UNITY_GAIN_Q16)
+        val nextRequestedReplayGainMilliDb =
             (arguments["replayGainMilliDb"] as? Number)?.toInt() ?: 0
-        dsdGainCompensationDb = ((arguments["dsdGainCompensationDb"] as? Number)?.toInt() ?: 0)
-            .coerceIn(-12, 6)
-        volumeSmoothHandoff = arguments["smoothHandoff"] as? Boolean ?: true
+        val nextDsdGainCompensationDb =
+            ((arguments["dsdGainCompensationDb"] as? Number)?.toInt() ?: 0).coerceIn(-12, 6)
+        val nextVolumeSmoothHandoff = arguments["smoothHandoff"] as? Boolean ?: true
 
         // DSD 输出模式：dop / native；pcm 模式在 Dart 侧直接走共享路径，不会到这里
         val dsdMode = (arguments["dsdMode"] as? String)?.lowercase(Locale.ROOT)
@@ -547,16 +558,14 @@ class UsbExclusiveAudioEngine(
 
         if (isDsdFile(filePath, sourceFormat)) {
             if (dsdMode != "dop" && dsdMode != "native") {
-                return updateState(
-                    inactiveState(
-                        "DSD over USB exclusive requires DoP or native mode (current: ${dsdMode ?: "unset"}).",
-                    ),
+                return failStart(
+                    "DSD over USB exclusive requires DoP or native mode (current: ${dsdMode ?: "unset"}).",
                 )
             }
             dsdReader = try {
                 DsdFileReader.open(file, streaming)
             } catch (error: IOException) {
-                return updateState(inactiveState(error.message ?: "Failed to parse DSD file."))
+                return failStart(error.message ?: "Failed to parse DSD file.")
             }
             val multiple = dsdReader.dsdMultiple
             if (dsdMode == "native") {
@@ -573,7 +582,7 @@ class UsbExclusiveAudioEngine(
                 // DoP 模式，或 native 上限超标回退 DoP
                 dopGateError(multiple)?.let { gateError ->
                     dsdReader.close()
-                    return updateState(inactiveState(gateError))
+                    return failStart(gateError)
                 }
                 nativeFallbackReason?.let {
                     UsbDiagnostics.w(tag, "native DSD unavailable, falling back to DoP: $it")
@@ -610,11 +619,75 @@ class UsbExclusiveAudioEngine(
         } else {
             requestedBitDepth
         }
-        targetBufferMs = ((arguments["targetBufferMs"] as? Number)?.toInt() ?: 200).coerceIn(50, 1000)
+        var nextTargetBufferMs =
+            ((arguments["targetBufferMs"] as? Number)?.toInt() ?: 200).coerceIn(50, 1000)
         if (streaming) {
             // 流式播放用更深的 USB 水位吸收下载抖动
-            targetBufferMs = maxOf(targetBufferMs, 1000)
+            nextTargetBufferMs = maxOf(nextTargetBufferMs, 1000)
         }
+        val requestedChannels = dsdReader?.channels ?: 2
+        val wantDsdKind = when {
+            dsdReader == null -> null
+            nativeDsd -> "native"
+            else -> "dop"
+        }
+        val currentSignature = if (
+            connection != null &&
+            sessionTarget != null &&
+            sessionDeviceId != null
+        ) {
+            UsbStreamSignature(
+                deviceId = sessionDeviceId!!,
+                sampleRate = sessionSampleRate,
+                channels = sessionChannels ?: 2,
+                bitDepth = sessionBitDepth,
+                dsdKind = sessionDsdKind,
+                nativeFormat = sessionNativeFormat,
+            )
+        } else {
+            null
+        }
+        val nextSignature = UsbStreamSignature(
+            deviceId = device.deviceId,
+            sampleRate = requestedSampleRate,
+            channels = requestedChannels,
+            bitDepth = requestedSessionBitDepth,
+            dsdKind = wantDsdKind,
+            nativeFormat = nativeFormat,
+        )
+        val requestedTransitionAction = usbStreamTransitionAction(
+            current = currentSignature,
+            next = nextSignature,
+            replaceActive = replaceActive,
+        )
+        val transitionAction = if (
+            requestedTransitionAction == UsbStreamTransitionAction.REUSE &&
+            wantDsdKind == "native" &&
+            nativeFormat == null
+        ) {
+            UsbStreamTransitionAction.SILENT_RECONFIGURE
+        } else {
+            requestedTransitionAction
+        }
+
+        invalidatePendingVolumeRequests()
+        transitionCommitted = true
+        val sessionUsable = when (transitionAction) {
+            UsbStreamTransitionAction.REUSE -> stopWorkerKeepingSession()
+            UsbStreamTransitionAction.SILENT_RECONFIGURE -> stopWorkerForSilentReconfigure()
+            UsbStreamTransitionAction.OPEN_FRESH -> {
+                stopWorkerKeepingSession()
+                false
+            }
+        }
+        playbackId = requestedPlaybackId
+        pendingHardwareVolumeEvent = null
+        volumeMode = nextVolumeMode
+        requestedVolumeGainQ16 = nextRequestedVolumeGainQ16
+        requestedReplayGainMilliDb = nextRequestedReplayGainMilliDb
+        dsdGainCompensationDb = nextDsdGainCompensationDb
+        volumeSmoothHandoff = nextVolumeSmoothHandoff
+        targetBufferMs = nextTargetBufferMs
         minimumBufferLevelMs = null
         lastTelemetryEmitMs = 0L
         lastTelemetryBufferMs = null
@@ -622,23 +695,12 @@ class UsbExclusiveAudioEngine(
         lastTelemetryUnderrunCount = 0L
         lastUnderrunAtMs = null
         activePacketsPerSecond = 0
-        val requestedChannels = dsdReader?.channels ?: 2
-        val wantDsdKind = when {
-            dsdReader == null -> null
-            nativeDsd -> "native"
-            else -> "dop"
-        }
         // 设备与端点参数都没变时热复用已打开的会话；输出类别（PCM/DoP/native
         // 及 native 字节排列）必须一致，DoP 复用还要确认既有 slot ≥ 24-bit
-        val reuseSession = sessionUsable &&
+        val reuseSession = transitionAction == UsbStreamTransitionAction.REUSE &&
+            sessionUsable &&
             connection != null &&
             sessionTarget != null &&
-            sessionDeviceId == device.deviceId &&
-            sessionSampleRate == requestedSampleRate &&
-            sessionChannels == requestedChannels &&
-            sessionBitDepth == requestedSessionBitDepth &&
-            sessionDsdKind == wantDsdKind &&
-            (wantDsdKind != "native" || sessionNativeFormat == nativeFormat) &&
             (dsdReader == null || nativeDsd || sessionTarget!!.usbBytesPerSample >= 3)
         val target: OutputTarget
         if (reuseSession) {
@@ -2801,6 +2863,41 @@ class UsbExclusiveAudioEngine(
             return false
         }
         return !sessionBroken && connection != null
+    }
+
+    private fun stopWorkerForSilentReconfigure(): Boolean {
+        val startedAtMs = SystemClock.elapsedRealtime()
+        silentReconfigureRequested.set(true)
+        updateSessionDiagnostics("transitionStage", "old-tail-started")
+        return try {
+            val usable = stopWorkerKeepingSession()
+            if (usable) awaitOldOutputDrain(startedAtMs)
+            usable
+        } finally {
+            silentReconfigureRequested.set(false)
+        }
+    }
+
+    private fun awaitOldOutputDrain(startedAtMs: Long) {
+        while (true) {
+            val pendingPackets = UsbExclusiveNative.transportTelemetry().getOrNull(0) ?: 0L
+            val elapsedMs = SystemClock.elapsedRealtime() - startedAtMs
+            when (outputDrainAction(pendingPackets, elapsedMs, USB_TRANSITION_DRAIN_TIMEOUT_MS)) {
+                OutputDrainAction.DRAINED -> {
+                    updateSessionDiagnostics("transitionStage", "old-output-drained")
+                    return
+                }
+                OutputDrainAction.TIMED_OUT -> {
+                    UsbDiagnostics.w(
+                        tag,
+                        "USB transition output drain timed out " +
+                            "pendingPackets=$pendingPackets elapsedMs=$elapsedMs",
+                    )
+                    return
+                }
+                OutputDrainAction.WAIT -> SystemClock.sleep(10)
+            }
+        }
     }
 
     private fun scheduleDeferredClose() {

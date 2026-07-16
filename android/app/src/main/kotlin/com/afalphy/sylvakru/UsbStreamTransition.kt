@@ -25,9 +25,10 @@ internal fun usbStreamTransitionAction(
     next: UsbStreamSignature,
     replaceActive: Boolean,
 ): UsbStreamTransitionAction = when {
-    !replaceActive || current == null -> UsbStreamTransitionAction.OPEN_FRESH
+    current == null -> UsbStreamTransitionAction.OPEN_FRESH
     current == next -> UsbStreamTransitionAction.REUSE
-    else -> UsbStreamTransitionAction.SILENT_RECONFIGURE
+    replaceActive -> UsbStreamTransitionAction.SILENT_RECONFIGURE
+    else -> UsbStreamTransitionAction.OPEN_FRESH
 }
 
 internal fun shouldPublishUsbStartFailure(

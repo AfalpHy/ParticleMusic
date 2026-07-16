@@ -33,10 +33,18 @@ class UsbStreamTransitionTest {
     }
 
     @Test
-    fun opensFreshWhenTheRequestIsNotReplacingAnActiveSession() {
+    fun reusesAnExactIdleSessionAndOpensFreshForOtherRegularStarts() {
+        assertEquals(
+            UsbStreamTransitionAction.REUSE,
+            usbStreamTransitionAction(pcm441, pcm441, replaceActive = false),
+        )
         assertEquals(
             UsbStreamTransitionAction.OPEN_FRESH,
-            usbStreamTransitionAction(pcm441, pcm441, replaceActive = false),
+            usbStreamTransitionAction(
+                pcm441,
+                pcm441.copy(sampleRate = 96000),
+                replaceActive = false,
+            ),
         )
         assertEquals(
             UsbStreamTransitionAction.OPEN_FRESH,
