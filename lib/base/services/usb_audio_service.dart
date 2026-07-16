@@ -530,6 +530,7 @@ class UsbExclusivePlaybackRequest {
   final bool smoothVolumeHandoff;
   final int? targetBufferMs;
   final bool startPaused;
+  final bool replaceActive;
 
   /// filePath 是仍在下载增长中的 .part 缓存文件（流式独占）
   final bool streaming;
@@ -553,6 +554,7 @@ class UsbExclusivePlaybackRequest {
     this.smoothVolumeHandoff = true,
     required this.targetBufferMs,
     required this.startPaused,
+    this.replaceActive = false,
     this.streaming = false,
     this.totalBytes,
   });
@@ -575,6 +577,7 @@ class UsbExclusivePlaybackRequest {
       'startPaused': startPaused,
       'streaming': streaming,
       'totalBytes': totalBytes,
+      'replaceActive': replaceActive,
     };
   }
 }

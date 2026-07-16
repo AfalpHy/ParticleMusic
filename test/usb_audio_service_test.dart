@@ -375,6 +375,7 @@ void main() {
           smoothVolumeHandoff: false,
           targetBufferMs: 320,
           startPaused: false,
+          replaceActive: true,
         ),
       );
 
@@ -395,6 +396,7 @@ void main() {
         'startPaused': false,
         'streaming': false,
         'totalBytes': null,
+        'replaceActive': true,
       });
       expect(state.active, isTrue);
       expect(state.playbackId, 'load-7');

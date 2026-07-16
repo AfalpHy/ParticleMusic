@@ -1018,10 +1018,13 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     currentSongNotifier.value = currentSong;
 
     isLoading = true;
+    final replacingUsbExclusive = _usbExclusiveActive;
     try {
-      await _stopExclusiveIntentionally();
-      _usbExclusiveActive = false;
-      _usbExclusivePosition = Duration.zero;
+      if (!replacingUsbExclusive) {
+        await _stopExclusiveIntentionally();
+        _usbExclusiveActive = false;
+        _usbExclusivePosition = Duration.zero;
+      }
       if (previousSong != null && previousSong != currentSong) {
         library.cancelCacheDownload(previousSong);
       }
@@ -1032,6 +1035,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
       final openedExclusive = await _tryOpenUsbExclusive(
         currentSong,
         generation: generation,
+        replaceActive: replacingUsbExclusive,
       );
       if (generation != _loadGeneration) {
         isLoading = false;
@@ -1043,6 +1047,11 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
           _playLastSyncTime = DateTime.now();
         }
       } else {
+        if (replacingUsbExclusive) {
+          await _stopExclusiveIntentionally();
+          _usbExclusiveActive = false;
+          _usbExclusivePosition = Duration.zero;
+        }
         await _applyUsbOutputForSong(currentSong);
         if (generation != _loadGeneration) {
           isLoading = false;
@@ -1055,6 +1064,11 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
         _playLastSyncTime = DateTime.now();
       }
     } catch (error) {
+      if (replacingUsbExclusive && generation == _loadGeneration) {
+        await _stopExclusiveIntentionally();
+        _usbExclusiveActive = false;
+        _usbExclusivePosition = Duration.zero;
+      }
       _player.stop();
       logger.output("[${currentSong.title}] $error");
     }
@@ -1111,6 +1125,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
   Future<bool> _tryOpenUsbExclusive(
     MyAudioMetadata song, {
     int? generation,
+    bool replaceActive = false,
   }) async {
     if (!_shouldTryUsbExclusive(song)) {
       return false;
@@ -1186,37 +1201,45 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     );
     final previousOutputGain = _appliedOutputGain;
     _appliedOutputGain = transition.appliedGain;
+    final request = UsbExclusivePlaybackRequest(
+      playbackId: 'load-${generation ?? _loadGeneration}',
+      filePath: filePath,
+      title: getTitle(song),
+      sourceFormat: _normalizedExclusiveFormat(song),
+      sampleRate: exclusiveSampleRate,
+      bitDepth: isDsd ? null : _preferredExclusiveBitDepth(),
+      dsdMode: isDsd
+          ? usbAudioPreferences.dsdModeNotifier.value.name
+          : null,
+      volumeGain: digitalGain,
+      replayGainDb: transition.adjustmentDb - dsdCompensationDb,
+      volumeMode: usbAudioPreferences.volumeControlModeNotifier.value.name,
+      dsdGainCompensationDb: dsdCompensationDb,
+      smoothVolumeHandoff:
+          usbAudioPreferences.volumeSmoothHandoffNotifier.value,
+      targetBufferMs: _exclusiveTargetBufferMsForLifecycle(
+        WidgetsBinding.instance.lifecycleState,
+      ),
+      startPaused: !isPlayingNotifier.value,
+      streaming: streaming,
+      totalBytes: streaming ? _estimateStreamTotalBytes(song) : null,
+      replaceActive: replaceActive,
+    );
     late final UsbExclusivePlaybackState state;
+    final previousIntentionalStop = _intentionalExclusiveStop;
+    if (replaceActive) {
+      _intentionalExclusiveStop = true;
+    }
     try {
-      state = await usbAudioService.startExclusivePlayback(
-        UsbExclusivePlaybackRequest(
-          playbackId: 'load-${generation ?? _loadGeneration}',
-          filePath: filePath,
-          title: getTitle(song),
-          sourceFormat: _normalizedExclusiveFormat(song),
-          sampleRate: exclusiveSampleRate,
-          bitDepth: isDsd ? null : _preferredExclusiveBitDepth(),
-          dsdMode: isDsd
-              ? usbAudioPreferences.dsdModeNotifier.value.name
-              : null,
-          volumeGain: digitalGain,
-          replayGainDb: transition.adjustmentDb - dsdCompensationDb,
-          volumeMode: usbAudioPreferences.volumeControlModeNotifier.value.name,
-          dsdGainCompensationDb: dsdCompensationDb,
-          smoothVolumeHandoff:
-              usbAudioPreferences.volumeSmoothHandoffNotifier.value,
-          targetBufferMs: _exclusiveTargetBufferMsForLifecycle(
-            WidgetsBinding.instance.lifecycleState,
-          ),
-          startPaused: !isPlayingNotifier.value,
-          streaming: streaming,
-          totalBytes: streaming ? _estimateStreamTotalBytes(song) : null,
-        ),
-      );
+      state = await usbAudioService.startExclusivePlayback(request);
     } catch (_) {
       _appliedOutputGain = previousOutputGain;
       _restoreSharedVolume();
       rethrow;
+    } finally {
+      if (replaceActive) {
+        _intentionalExclusiveStop = previousIntentionalStop;
+      }
     }
 
     if (!state.active) {
