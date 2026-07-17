@@ -66,6 +66,18 @@ class UsbStreamTransitionTest {
             UsbTransitionSilencePlan(0, 0, 100),
             usbTransitionSilencePlan(UsbStreamTransitionAction.OPEN_FRESH),
         )
+        // quirk 覆盖预滚时长时按覆盖值垫；REUSE 不受影响
+        assertEquals(
+            UsbTransitionSilencePlan(16, 24, 300),
+            usbTransitionSilencePlan(
+                UsbStreamTransitionAction.SILENT_RECONFIGURE,
+                preRollMs = 300,
+            ),
+        )
+        assertEquals(
+            UsbTransitionSilencePlan(0, 0, 0),
+            usbTransitionSilencePlan(UsbStreamTransitionAction.REUSE, preRollMs = 300),
+        )
     }
 
     @Test

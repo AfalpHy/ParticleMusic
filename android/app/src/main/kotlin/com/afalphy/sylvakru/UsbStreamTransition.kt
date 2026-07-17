@@ -30,21 +30,24 @@ internal data class UsbTransitionSilencePlan(
     val newPreRollMs: Int,
 )
 
+// preRollMs 可由 quirk clock.preRollMs 覆盖：重锁慢的 DAC（继电器/异步锁定）
+// 100ms 不够时按设备加长。
 internal fun usbTransitionSilencePlan(
     action: UsbStreamTransitionAction,
+    preRollMs: Int = USB_TRANSITION_PREROLL_MS,
 ): UsbTransitionSilencePlan = when (action) {
     UsbStreamTransitionAction.REUSE -> UsbTransitionSilencePlan(0, 0, 0)
     UsbStreamTransitionAction.SILENT_RECONFIGURE -> UsbTransitionSilencePlan(
         oldFadeMs = USB_TRANSITION_FADE_MS,
         oldSilenceMs = USB_TRANSITION_OLD_SILENCE_MS,
-        newPreRollMs = USB_TRANSITION_PREROLL_MS,
+        newPreRollMs = preRollMs,
     )
     // 新开流（首播/停止后再播/自然播完切到不同参数）没有旧流要淡出，但 DAC
     // 同样要重锁时钟：预滚静音让重锁咔嗒不盖到曲子开头。
     UsbStreamTransitionAction.OPEN_FRESH -> UsbTransitionSilencePlan(
         oldFadeMs = 0,
         oldSilenceMs = 0,
-        newPreRollMs = USB_TRANSITION_PREROLL_MS,
+        newPreRollMs = preRollMs,
     )
 }
 

@@ -23,6 +23,8 @@ data class DacQuirk(
     val clockSetCurDelayMs: Int = 0,
     // 个别设备 GET_CUR 返回垃圾但 SET_CUR 实际生效
     val clockSkipGetCurValidation: Boolean = false,
+    // 新流出声前的预滚静音时长覆盖；null=默认 100ms，重锁慢的 DAC 可加长
+    val clockPreRollMs: Int? = null,
     // 标准 Feature Unit 或厂商协议的硬件音量覆盖。
     val hardwareVolumeFeatureUnitId: Int? = null,
     val hardwareVolumeControlInterface: Int? = null,
@@ -254,6 +256,7 @@ object UsbDacQuirks {
                 nativeDsdMaxDsd = nativeDsd?.optInt("maxDsd", 0)?.takeIf { it > 0 },
                 clockSetCurDelayMs = clock?.optInt("setCurDelayMs", 0) ?: 0,
                 clockSkipGetCurValidation = clock?.optBoolean("skipGetCurValidation") == true,
+                clockPreRollMs = clock?.optInt("preRollMs", -1)?.takeIf { it >= 0 },
                 hardwareVolumeFeatureUnitId = hardwareVolume
                     ?.optInt("featureUnitId", 0)
                     ?.takeIf { it in 1..255 },

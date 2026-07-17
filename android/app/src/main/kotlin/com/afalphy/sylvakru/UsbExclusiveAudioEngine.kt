@@ -678,7 +678,10 @@ class UsbExclusiveAudioEngine(
         } else {
             requestedTransitionAction
         }
-        val silencePlan = usbTransitionSilencePlan(transitionAction)
+        val silencePlan = usbTransitionSilencePlan(
+            transitionAction,
+            preRollMs = quirk.clockPreRollMs ?: USB_TRANSITION_PREROLL_MS,
+        )
         val preRollMs = silencePlan.newPreRollMs
         val preserveTrustedHardwareTarget =
             transitionAction == UsbStreamTransitionAction.SILENT_RECONFIGURE &&

@@ -171,6 +171,7 @@ adb logcat -d --pid="$(adb shell pidof "$package")" | grep -E "UsbExclusive|Sylv
 | `nativeDsd.maxDsd` | native 高倍率失败，限制上限 |
 | `clock.setCurDelayMs` | 起播头几百毫秒爆音/变调后恢复——DAC SET_CUR 后需要时间锁定，加 30–100ms |
 | `clock.skipGetCurValidation` | 明明能正常播却被判"DAC 未接受采样率"回退——GET_CUR 返回垃圾值（非零且≠请求值）的设备 |
+| `clock.preRollMs` | 换采样率/新开流的重锁咔嗒盖住曲子开头或吞掉开头——预滚静音默认 100ms，重锁慢的 DAC（继电器/异步锁定）加到 200–500 |
 | `hardwareVolume.enabled` | Feature Unit 声明异常、写入不安全或硬件音量实际无效时设 `false`，强制回退 |
 | `hardwareVolume.dsdSupported` | PCM 硬件音量正常但 DoP/Native DSD 不响应时设 `false`；确认 DSD 可调时可设 `true` 留档 |
 | `hardwareVolume.featureUnitId` | 描述符漏报、候选不唯一或实现异常时指定硬件音量 Feature Unit |

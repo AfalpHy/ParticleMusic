@@ -15,7 +15,7 @@ class UsbDacQuirksTest {
               "match": { "vid": "0x20b1", "pid": "0x0002", "label": "XMOS XU208" },
               "dop": { "supported": true, "maxDsd": 256 },
               "nativeDsd": { "format": "u32le", "maxDsd": 512 },
-              "clock": { "setCurDelayMs": 50, "skipGetCurValidation": true },
+              "clock": { "setCurDelayMs": 50, "skipGetCurValidation": true, "preRollMs": 200 },
               "flags": ["keep-alt-on-pause"]
             },
             {
@@ -39,6 +39,7 @@ class UsbDacQuirksTest {
         assertEquals(512, quirk.nativeDsdMaxDsd)
         assertEquals(50, quirk.clockSetCurDelayMs)
         assertTrue(quirk.clockSkipGetCurValidation)
+        assertEquals(200, quirk.clockPreRollMs)
         assertEquals(listOf("keep-alt-on-pause"), quirk.flags)
         assertEquals("0x262a:*", entries[1].first)
     }
@@ -76,6 +77,7 @@ class UsbDacQuirksTest {
         assertNull(quirk.nativeDsdFormat)
         assertEquals(0, quirk.clockSetCurDelayMs)
         assertEquals(false, quirk.clockSkipGetCurValidation)
+        assertNull(quirk.clockPreRollMs)
         assertTrue(quirk.flags.isEmpty())
     }
 
