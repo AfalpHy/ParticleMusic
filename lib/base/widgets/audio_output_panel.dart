@@ -879,8 +879,9 @@ class _PulseDot extends StatelessWidget {
   }
 }
 
-/// 胶囊左侧状态指示灯颜色：独占 PCM 绿、独占 DSD 蓝、开了独占却未生效(失败)红、
-/// 非独占(系统输出)白。这是状态语义灯，独立于跟随封面的主题配色。
+/// 胶囊左侧状态指示灯颜色：独占 PCM 绿、独占位深压窄橙、独占 DSD 蓝、
+/// 开了独占却未生效(失败)红、非独占(系统输出)白。这是状态语义灯，
+/// 独立于跟随封面的主题配色。
 Color _outputDotColor(
   UsbAudioStatus status,
   UsbExclusivePlaybackState exclusive,
@@ -891,9 +892,13 @@ Color _outputDotColor(
     if (exclusive.bitDepth == 1) {
       return const Color(0xFF3B82F6); // DSD 蓝
     }
-    // PCM 独占：原始数字电平旁路=位完美紫，启用了数字音量=绿
-    return _exclusiveBitPerfect(exclusive)
-        ? const Color(0xFFAF52DE) // PCM 位完美 紫
+    // PCM 独占：原始数字电平旁路=位完美紫；位深被压窄(真丢数据)=橙警示；
+    // 仅数字音量或无损槽位加宽=绿
+    if (_exclusiveBitPerfect(exclusive)) {
+      return const Color(0xFFAF52DE); // PCM 位完美 紫
+    }
+    return _exclusiveBitDepthNarrowed(exclusive)
+        ? const Color(0xFFFF9500) // PCM 位深压窄 橙
         : const Color(0xFF34C759); // PCM 绿
   }
   // 非独占但系统 Preferred Mixer 真正以 bit-perfect 生效：单纯用 DAC 的无损系统输出。
@@ -916,6 +921,16 @@ bool _exclusiveBitPerfect(UsbExclusivePlaybackState exclusive) {
   if (exclusive.bitDepth == 1) return true;
   if (exclusive.bitPerfect != null) return exclusive.bitPerfect!;
   return !exclusive.digitalVolumeActive;
+}
+
+/// 位深是否被压窄（真丢数据）：解码低于源位深（如 24-bit 源解成 16-bit）
+/// 或 USB 槽位低于解码位深。槽位加宽（16-in-24/32）是补零无损，不算。
+bool _exclusiveBitDepthNarrowed(UsbExclusivePlaybackState exclusive) {
+  final source = exclusive.sourceBitDepth;
+  final decoded = exclusive.decodedBitDepth;
+  final usb = exclusive.usbBitDepth;
+  if (source == null || decoded == null || usb == null) return false;
+  return decoded < source || usb < decoded;
 }
 
 class _InfoRow {
@@ -1033,12 +1048,9 @@ String _bitPerfectStatusLabel(UsbAudioStatus status, AppLocalizations l10n) {
         exclusive.hardwareVolumeUnverified) {
       processing = '$processing (${l10n.hardwareVolumeUnverified})';
     }
-    final bitDepthConverted = exclusive.sourceBitDepth != null &&
-        exclusive.decodedBitDepth != null &&
-        exclusive.usbBitDepth != null &&
-        (exclusive.sourceBitDepth != exclusive.decodedBitDepth ||
-            exclusive.decodedBitDepth != exclusive.usbBitDepth);
-    if (!exclusive.digitalVolumeActive && bitDepthConverted) {
+    // 只在位深真被压窄（丢数据）时提示；槽位无损加宽（16-in-24/32）不算，
+    // 且不被数字音量状态遮蔽——两者是独立的信息。
+    if (_exclusiveBitDepthNarrowed(exclusive)) {
       processing = '$processing · ${l10n.bitDepthConverted}';
     }
     return processing;
