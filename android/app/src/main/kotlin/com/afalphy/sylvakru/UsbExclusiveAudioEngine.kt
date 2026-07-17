@@ -2069,7 +2069,15 @@ class UsbExclusiveAudioEngine(
                 IbassoReaderRecoveryAction.WAIT ->
                     error("WAIT must be resolved by the bounded reader recovery loop.")
                 IbassoReaderRecoveryAction.FREEZE_PCM -> {
-                    verificationAction = IbassoVolumeVerificationAction.FREEZE_PCM
+                    // reader 恢复超时时若用户仍在连续调音量，同样让位给挂起
+                    // 请求重试；停手后的最后一个事务才允许真正冻结。
+                    verificationAction = if (
+                        synchronized(volumeCommandLock) { pendingVolumeRequest != null }
+                    ) {
+                        IbassoVolumeVerificationAction.YIELD_TO_PENDING
+                    } else {
+                        IbassoVolumeVerificationAction.FREEZE_PCM
+                    }
                     break@verificationLoop
                 }
                 IbassoReaderRecoveryAction.CANCEL ->
@@ -2089,6 +2097,9 @@ class UsbExclusiveAudioEngine(
                 readbackRaw = readBack,
                 failureCount = ibassoVerificationFailureCount,
                 isDsd = isDsd,
+                hasPendingRequest = synchronized(volumeCommandLock) {
+                    pendingVolumeRequest != null
+                },
             )
             if (verificationAction == IbassoVolumeVerificationAction.RETRY_READBACK) {
                 SystemClock.sleep(50)
@@ -2116,6 +2127,17 @@ class UsbExclusiveAudioEngine(
             }
             IbassoVolumeVerificationAction.RETRY_READBACK ->
                 error("RETRY_READBACK must be resolved by the bounded verification loop.")
+            IbassoVolumeVerificationAction.YIELD_TO_PENDING -> {
+                // 保持上一个已验证目标的授权状态不变，只标记同步未完成；
+                // 挂起的请求马上会重写并重新验证。
+                ibassoVerificationFailureCount = 0
+                hardwareVolumeSyncPending = true
+                UsbDiagnostics.w(
+                    tag,
+                    "iBasso volume verification yielded to a pending volume request.",
+                )
+                null
+            }
             IbassoVolumeVerificationAction.FREEZE_PCM -> {
                 freezeIbassoPcmVolume(
                     previousAppliedTarget,

@@ -45,6 +45,7 @@ internal enum class IbassoVolumeVerificationAction {
     ACCEPT_TARGET,
     KEEP_PREVIOUS,
     RETRY_READBACK,
+    YIELD_TO_PENDING,
     FREEZE_PCM,
     PAUSE_DSD,
 }
@@ -113,11 +114,15 @@ internal fun ibassoVolumeVerificationAction(
     readbackRaw: Int?,
     failureCount: Int,
     isDsd: Boolean,
+    hasPendingRequest: Boolean = false,
 ): IbassoVolumeVerificationAction = when {
     readbackRaw == targetRaw -> IbassoVolumeVerificationAction.ACCEPT_TARGET
     previousRaw != null && readbackRaw == previousRaw ->
         IbassoVolumeVerificationAction.KEEP_PREVIOUS
     failureCount < 3 -> IbassoVolumeVerificationAction.RETRY_READBACK
+    // 还有挂起的音量请求＝用户仍在连续调音量：读回失败多半是 HID 忙不过来，
+    // 马上会有下一个事务重写覆盖，让位而不是冻结/暂停触发保护。
+    hasPendingRequest -> IbassoVolumeVerificationAction.YIELD_TO_PENDING
     isDsd -> IbassoVolumeVerificationAction.PAUSE_DSD
     else -> IbassoVolumeVerificationAction.FREEZE_PCM
 }

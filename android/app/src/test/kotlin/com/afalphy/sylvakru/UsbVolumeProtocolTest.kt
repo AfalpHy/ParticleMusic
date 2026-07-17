@@ -402,6 +402,35 @@ class UsbVolumeProtocolTest {
     }
 
     @Test
+    fun yieldsVerificationToAPendingRequestInsteadOfFreezing() {
+        assertEquals(
+            IbassoVolumeVerificationAction.YIELD_TO_PENDING,
+            ibassoVolumeVerificationAction(
+                100, 102, null, 3,
+                isDsd = false,
+                hasPendingRequest = true,
+            ),
+        )
+        assertEquals(
+            IbassoVolumeVerificationAction.YIELD_TO_PENDING,
+            ibassoVolumeVerificationAction(
+                100, 102, null, 3,
+                isDsd = true,
+                hasPendingRequest = true,
+            ),
+        )
+        // 读回成功匹配时照常接受，不受挂起请求影响
+        assertEquals(
+            IbassoVolumeVerificationAction.ACCEPT_TARGET,
+            ibassoVolumeVerificationAction(
+                100, 102, 100, 3,
+                isDsd = false,
+                hasPendingRequest = true,
+            ),
+        )
+    }
+
+    @Test
     fun waitsForPcmReaderRestartWithoutVerifyingOrFreezing() {
         assertEquals(
             IbassoReaderRecoveryAction.WAIT,
