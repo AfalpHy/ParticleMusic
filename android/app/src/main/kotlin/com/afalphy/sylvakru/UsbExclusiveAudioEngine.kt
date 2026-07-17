@@ -3482,10 +3482,13 @@ class UsbExclusiveAudioEngine(
                     val seekUs = seekMs * 1000
                     UsbDiagnostics.i(tag, "exclusive decoder seek to ${seekMs}ms.")
                     // seek 不 flush：丢在途 URB 会瞬断 ISO 流出小音爆（与 DoP 同因）。
-                    // 只在解码侧跳位，旧缓冲（约一个水位）放完后无缝续上新位置。
+                    // 只在解码侧跳位，旧缓冲（约一个水位）放完后续上新位置；拼接点
+                    // 旧样本先淡出到零、新位置再淡入，消掉幅度跳变的小咔。
+                    packetizer?.writeTransitionTail(USB_PAUSE_RESUME_FADE_MS, 0)
                     extractor.seekTo(seekUs, MediaExtractor.SEEK_TO_CLOSEST_SYNC)
                     codec.flush()
                     packetizer?.reset()
+                    packetizer?.beginFadeIn(USB_PAUSE_RESUME_FADE_MS)
                     lastPacketizerWithAudio = null
                     sawInputEos = false
                     outputDone = false
@@ -4015,9 +4018,12 @@ class UsbExclusiveAudioEngine(
                 val seekUs = seekMs * 1000
                 UsbDiagnostics.i(tag, "exclusive raw PCM seek to ${seekMs}ms.")
                 // seek 不 flush：丢在途 URB 会瞬断 ISO 流出小音爆（与 DoP 同因）。
-                // 只在解码侧跳位，旧缓冲（约一个水位）放完后无缝续上新位置。
+                // 只在解码侧跳位，旧缓冲（约一个水位）放完后续上新位置；拼接点
+                // 旧样本先淡出到零、新位置再淡入，消掉幅度跳变的小咔。
+                packetizer.writeTransitionTail(USB_PAUSE_RESUME_FADE_MS, 0)
                 extractor.seekTo(seekUs, MediaExtractor.SEEK_TO_CLOSEST_SYNC)
                 packetizer.reset()
+                packetizer.beginFadeIn(USB_PAUSE_RESUME_FADE_MS)
                 lastPositionEmitMs = -1L
                 lastSampleTimeUs = null
                 streamTargetMs = seekMs
