@@ -296,6 +296,13 @@ class UsbExclusiveAudioEngine(
     private var ibassoVerificationFailureCount = 0
     private var volumeRampGeneration = 0
     private val volumeLock = Any()
+    private data class PendingPreservedPcmVerification(
+        val volumeGeneration: Long,
+        val deviceId: Int,
+        val target: UsbVolumeTarget,
+    )
+    @Volatile
+    private var pendingPreservedPcmVerification: PendingPreservedPcmVerification? = null
     private val volumeCommandExecutor = Executors.newSingleThreadExecutor { runnable ->
         Thread(runnable, "usb-volume-command").apply { isDaemon = true }
     }
@@ -673,6 +680,16 @@ class UsbExclusiveAudioEngine(
         }
         val silencePlan = usbTransitionSilencePlan(transitionAction)
         val preRollMs = silencePlan.newPreRollMs
+        val preserveTrustedHardwareTarget =
+            transitionAction == UsbStreamTransitionAction.SILENT_RECONFIGURE &&
+                shouldPreserveTrustedHardwareVolume(
+                    currentDeviceId = sessionDeviceId,
+                    nextDeviceId = device.deviceId,
+                    currentProtocol = hardwareVolumeProtocol,
+                    nextProtocol = quirk.hardwareVolumeProtocol,
+                    readbackVerified = hardwareVolumeReadbackVerifiedState,
+                    writeOnly = hardwareVolumeWriteOnlyState,
+                )
 
         invalidatePendingVolumeRequests()
         transitionCommitted = true
@@ -732,7 +749,10 @@ class UsbExclusiveAudioEngine(
                     "channels=$requestedChannels, bitDepth=${requestedBitDepth ?: "auto"}",
             )
         } else {
-            hardCloseSession("device or stream parameters changed")
+            hardCloseSession(
+                "device or stream parameters changed",
+                preserveTrustedHardwareTarget = preserveTrustedHardwareTarget,
+            )
             updateSessionDiagnostics("transitionStage", "old-session-closed")
             beginSessionDiagnostics(
                 reused = false,
@@ -936,10 +956,10 @@ class UsbExclusiveAudioEngine(
         val reader = dsdReader
         val dsdSuffix = if (nativeDsd) "Native" else "DoP"
         val initialState = mapOf(
+            "playbackId" to playbackId,
             "active" to true,
             "playing" to !paused.get(),
             "positionMs" to 0,
-            "playbackId" to playbackId,
             "durationMs" to reader?.durationMs,
             "sampleRate" to (reader?.sampleRate ?: arguments["sampleRate"]),
             "bitDepth" to if (reader != null) 1 else arguments["bitDepth"],
@@ -1267,6 +1287,7 @@ class UsbExclusiveAudioEngine(
         synchronized(volumeSessionWriteLock) {
             volumeSessionGeneration.incrementAndGet()
         }
+        pendingPreservedPcmVerification = null
         synchronized(volumeCommandLock) {
             pendingVolumeRequest = null
             pendingVolumeRequestUpdatedAtMs = null
@@ -1279,6 +1300,7 @@ class UsbExclusiveAudioEngine(
         isDsd: Boolean,
         quirk: DacQuirk,
         requestSessionGeneration: Long,
+        forceSmoothPcmHandoff: Boolean = false,
     ) {
         synchronized(volumeLock) {
             if (sessionDevice !== device || sessionTarget !== target || connection == null) {
@@ -1487,7 +1509,7 @@ class UsbExclusiveAudioEngine(
                     ?: "Hardware volume readback is unavailable; using safe PCM fallback."
             }
             volumeControlEnabled = if (hardwareVolumeFrozen) {
-                false
+                !isDsd && pcmVolumeGainQ16 < UNITY_GAIN_Q16
             } else {
                 shouldUsePcmDigitalVolumeFallback(
                     isDsd = isDsd,
@@ -1501,12 +1523,13 @@ class UsbExclusiveAudioEngine(
                 val targetPcmGain = if (volumeControlEnabled) effectiveGainQ16 else UNITY_GAIN_Q16
                 setPcmVolumeGain(
                     targetPcmGain,
-                    shouldSmoothPcmVolumeHandoff(
-                        volumeSmoothHandoff,
-                        isDsd,
-                        wasHardwareActive,
-                        hardwareVolumeActive,
-                    ),
+                    forceSmoothPcmHandoff ||
+                        shouldSmoothPcmVolumeHandoff(
+                            volumeSmoothHandoff,
+                            isDsd,
+                            wasHardwareActive,
+                            hardwareVolumeActive,
+                        ),
                 )
             }
             val dsdVolumeError = unsafeDsdVolumeReason(
@@ -1920,7 +1943,10 @@ class UsbExclusiveAudioEngine(
                     hardwareVolumeSyncPending = false
                     hardwareVolumeFrozen = true
                 } else {
-                    freezeIbassoPcmVolume(previousAppliedTarget)
+                    freezeIbassoPcmVolume(
+                        previousAppliedTarget,
+                        effectiveVolumeGainQ16(requestedVolumeGainQ16, requestedReplayGainMilliDb),
+                    )
                 }
                 return "iBasso hardware volume synchronization is still frozen."
             }
@@ -1935,6 +1961,25 @@ class UsbExclusiveAudioEngine(
             readIbassoCurrentBaseRaw(controlConnection)
         } else {
             null
+        }
+        if (
+            newConnection &&
+            shouldReadInitialVolume &&
+            readBaseRaw == null &&
+            previousAppliedTarget != null &&
+            !isDsd
+        ) {
+            freezeIbassoPcmVolume(
+                previousAppliedTarget,
+                effectiveVolumeGainQ16(requestedVolumeGainQ16, requestedReplayGainMilliDb),
+            )
+            pendingPreservedPcmVerification = PendingPreservedPcmVerification(
+                volumeGeneration = volumeSessionGeneration.get(),
+                deviceId = device.deviceId,
+                target = previousAppliedTarget,
+            )
+            updateSessionDiagnostics("transitionStage", "hardware-volume-frozen")
+            return "iBasso hardware volume readback is pending; kept the trusted PCM target."
         }
         val rollbackTarget = ibassoRollbackTarget(
             previousAppliedTarget,
@@ -2072,10 +2117,13 @@ class UsbExclusiveAudioEngine(
             IbassoVolumeVerificationAction.RETRY_READBACK ->
                 error("RETRY_READBACK must be resolved by the bounded verification loop.")
             IbassoVolumeVerificationAction.FREEZE_PCM -> {
-                freezeIbassoPcmVolume(previousAppliedTarget)
+                freezeIbassoPcmVolume(
+                    previousAppliedTarget,
+                    effectiveVolumeGainQ16(requestedVolumeGainQ16, requestedReplayGainMilliDb),
+                )
                 UsbDiagnostics.w(
                     tag,
-                    "iBasso PCM hardware volume synchronization is frozen without digital fallback.",
+                    "iBasso PCM hardware volume synchronization is frozen with bounded compensation.",
                 )
                 "iBasso hardware volume synchronization is frozen."
             }
@@ -2127,7 +2175,10 @@ class UsbExclusiveAudioEngine(
         acceptVerifiedIbassoTarget(device, target, isDsd)
     }
 
-    private fun freezeIbassoPcmVolume(previousTarget: UsbVolumeTarget?) {
+    private fun freezeIbassoPcmVolume(
+        previousTarget: UsbVolumeTarget?,
+        requestedTotalGainQ16: Int,
+    ) {
         if (previousTarget == null) {
             paused.set(true)
             hardwareVolumeActive = false
@@ -2141,13 +2192,120 @@ class UsbExclusiveAudioEngine(
             isDsd = false,
             dsdCompensationDb = 0,
         )
+        val compensationGainQ16 = frozenPcmCompensationGainQ16(
+            trustedHardwareGainQ16 = actual.gainQ16,
+            requestedTotalGainQ16 = requestedTotalGainQ16,
+        )
+        pcmVolumeGainQ16 = minOf(pcmVolumeGainQ16, compensationGainQ16)
         hardwareVolumeActive = true
-        volumeControlEnabled = false
+        volumeControlEnabled = pcmVolumeGainQ16 < UNITY_GAIN_Q16
         hardwareVolumeProtocol = IbassoHidVolumeProtocol.id
         hardwareVolumeRaw = actual.raw
         hardwareVolumeGainQ16 = actual.gainQ16
         hardwareVolumeSyncPending = false
         hardwareVolumeFrozen = true
+    }
+
+    private fun schedulePreservedPcmVerificationAfterPreRoll() {
+        val pending = pendingPreservedPcmVerification ?: return
+        volumeCommandExecutor.execute {
+            val controlConnection = synchronized(volumeLock) {
+                if (
+                    pendingPreservedPcmVerification != pending ||
+                    pending.volumeGeneration != volumeSessionGeneration.get() ||
+                    pending.deviceId != sessionDeviceId ||
+                    sessionDsdKind != null ||
+                    connection == null ||
+                    ibassoVolumeDeviceId != pending.deviceId ||
+                    ibassoLastAppliedTarget != pending.target ||
+                    ibassoLastAppliedDeviceId != pending.deviceId
+                ) {
+                    null
+                } else {
+                    ibassoVolumeConnection
+                }
+            } ?: return@execute
+            val readbackRaw = readIbassoCurrentBaseRaw(
+                controlConnection,
+                failReaderOnTimeout = false,
+            )
+            synchronized(volumeLock) {
+                val device = sessionDevice
+                val target = sessionTarget
+                val generationMatches =
+                    pendingPreservedPcmVerification == pending &&
+                        pending.volumeGeneration == volumeSessionGeneration.get() &&
+                        pending.deviceId == sessionDeviceId &&
+                        sessionDsdKind == null &&
+                        connection != null &&
+                        ibassoVolumeConnection === controlConnection &&
+                        ibassoVolumeDeviceId == pending.deviceId &&
+                        ibassoLastAppliedTarget == pending.target &&
+                        ibassoLastAppliedDeviceId == pending.deviceId &&
+                        device != null &&
+                        target != null
+                when (
+                    preservedVolumeVerificationAction(
+                        generationMatches = generationMatches,
+                        isDsd = sessionDsdKind != null,
+                        readbackRaw = readbackRaw,
+                        trustedRaw = pending.target.baseRaw,
+                    )
+                ) {
+                    PreservedVolumeVerificationAction.IGNORE -> Unit
+                    PreservedVolumeVerificationAction.KEEP_FROZEN -> {
+                        pendingPreservedPcmVerification = null
+                        updateSessionDiagnostics("transitionStage", "hardware-volume-kept-frozen")
+                        UsbDiagnostics.w(
+                            tag,
+                            "Preserved PCM hardware volume readback was not confirmed; kept it frozen.",
+                        )
+                    }
+                    PreservedVolumeVerificationAction.ACCEPT -> {
+                        synchronized(volumeSessionWriteLock) {
+                            if (
+                                pendingPreservedPcmVerification != pending ||
+                                pending.volumeGeneration != volumeSessionGeneration.get()
+                            ) {
+                                return@synchronized
+                            }
+                            val activeDevice = checkNotNull(device)
+                            val activeTarget = checkNotNull(target)
+                            pendingPreservedPcmVerification = null
+                            acceptVerifiedIbassoTarget(activeDevice, pending.target, isDsd = false)
+                            updateSessionDiagnostics("transitionStage", "hardware-volume-verified")
+                            applyVolumeControl(
+                                activeDevice,
+                                activeTarget,
+                                isDsd = false,
+                                quirk = UsbDacQuirks.forDevice(
+                                    context,
+                                    activeDevice.vendorId,
+                                    activeDevice.productId,
+                                ),
+                                requestSessionGeneration = pending.volumeGeneration,
+                                forceSmoothPcmHandoff = true,
+                            )
+                            if (currentState["active"] == true) {
+                                updateState(
+                                    currentState + mapOf(
+                                        "hardwareVolumeActive" to hardwareVolumeActive,
+                                        "digitalVolumeActive" to volumeControlEnabled,
+                                        "hardwareVolumeProtocol" to hardwareVolumeProtocol,
+                                        "hardwareVolumeRaw" to hardwareVolumeRaw,
+                                        "hardwareVolumeGainQ16" to hardwareVolumeGainQ16,
+                                        "hardwareVolumeWriteOnly" to hardwareVolumeWriteOnlyState,
+                                        "hardwareVolumeReadbackVerified" to hardwareVolumeReadbackVerifiedState,
+                                        "hardwareVolumeSyncPending" to hardwareVolumeSyncPending,
+                                        "hardwareVolumeFrozen" to hardwareVolumeFrozen,
+                                    ),
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 
     private fun transferIbassoVolumeTarget(
@@ -2455,6 +2613,7 @@ class UsbExclusiveAudioEngine(
                         ibassoLastAppliedDeviceId,
                         ibassoVolumeDeviceId ?: -1,
                     ),
+                    effectiveVolumeGainQ16(requestedVolumeGainQ16, requestedReplayGainMilliDb),
                 )
             }
             updateState(
@@ -2462,7 +2621,7 @@ class UsbExclusiveAudioEngine(
                     "hardwareVolumeReader" to "writeOnly",
                     "playing" to (currentState["active"] == true && !isDsd && !paused.get()),
                     "hardwareVolumeActive" to hardwareVolumeActive,
-                    "digitalVolumeActive" to false,
+                    "digitalVolumeActive" to volumeControlEnabled,
                     "hardwareVolumeWriteOnly" to true,
                     "hardwareVolumeReadbackVerified" to false,
                     "hardwareVolumeSyncPending" to hardwareVolumeSyncPending,
@@ -2959,7 +3118,10 @@ class UsbExclusiveAudioEngine(
         }
     }
 
-    private fun hardCloseSession(reason: String) {
+    private fun hardCloseSession(
+        reason: String,
+        preserveTrustedHardwareTarget: Boolean = false,
+    ) {
         invalidatePendingVolumeRequests()
         synchronized(volumeLock) {
             pendingHardwareVolumeEvent = null
@@ -2990,7 +3152,10 @@ class UsbExclusiveAudioEngine(
             sessionChannels = null
             sessionBitDepth = null
             volumeRampGeneration += 1
-            closeIbassoVolumeControl()
+            closeIbassoVolumeControl(
+                resetReaderHealth = true,
+                clearTrustedTarget = !preserveTrustedHardwareTarget,
+            )
             UsbExclusiveNative.close()
             connection?.close()
             connection = null
@@ -3151,6 +3316,7 @@ class UsbExclusiveAudioEngine(
             writer.writeUsbSilence(usbSilenceFrames(sampleRate, preRollMs))
             preRollPending = false
             updateSessionDiagnostics("transitionStage", "new-silence-preroll")
+            schedulePreservedPcmVerificationAfterPreRoll()
         }
 
         try {
@@ -3734,6 +3900,7 @@ class UsbExclusiveAudioEngine(
         if (preRollMs > 0) {
             packetizer.writeUsbSilence(usbSilenceFrames(sampleRate, preRollMs))
             updateSessionDiagnostics("transitionStage", "new-silence-preroll")
+            schedulePreservedPcmVerificationAfterPreRoll()
         }
         var transitionAudioStarted = false
         var lastPositionEmitMs = 0L

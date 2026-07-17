@@ -62,6 +62,6 @@ PCM、DoP 和 Native DSD 切歌或停止时都不强制清空 USB 输出 URB，�
 - 超过 1000 ms 的后台缓冲偏好被收敛，原生遥测目标与实际队列能力一致。
 - 旧独占会话回调不会更新当前播放状态。
 
-使用 Flutter 3.44 执行相关 Dart 测试、Android Kotlin 测试和 `analyze`。WebDAV、Subsonic/Navidrome、Emby 的协议行为由本地测试服务器自动验证。随后仅构建 arm64 profile APK，在真机重点手工验证用户实际使用的 Navidrome：后台打开高负载应用、网络短断后恢复、连续快速切歌、暂停恢复和缓存完成后的再次播放。
+使用 Flutter 3.44.5 执行相关 Dart 测试、Android Kotlin 测试和 `analyze`。WebDAV、Subsonic/Navidrome、Emby 的协议行为由本地测试服务器自动验证。随后仅构建 arm64 profile APK，在真机重点手工验证用户实际使用的 Navidrome：后台打开高负载应用、网络短断后恢复、连续快速切歌、暂停恢复和缓存完成后的再次播放。
 
 提交前排除 generated plugin 文件、临时日志、诊断导出和所有非 USB 视觉试验。

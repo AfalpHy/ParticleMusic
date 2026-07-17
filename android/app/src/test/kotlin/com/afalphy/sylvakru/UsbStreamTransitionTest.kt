@@ -167,6 +167,7 @@ class UsbStreamTransitionTest {
         assertEquals(65536, frozenPcmCompensationGainQ16(32768, 65536))
         assertEquals(65536, frozenPcmCompensationGainQ16(32768, 32768))
         assertEquals(0, frozenPcmCompensationGainQ16(65536, 0))
+        assertEquals(0, frozenPcmCompensationGainQ16(0, 32768))
     }
 
     @Test
