@@ -2845,14 +2845,15 @@ class UsbExclusiveAudioEngine(
             pcmVolumeGainQ16 = targetGainQ16
             return
         }
-        repeat(6) { index ->
+        val steps = pcmVolumeRampSteps(startGainQ16, targetGainQ16)
+        repeat(steps) { index ->
             mainHandler.postDelayed({
                 if (generation == volumeRampGeneration) {
                     val step = index + 1
                     pcmVolumeGainQ16 = startGainQ16 +
-                        ((targetGainQ16 - startGainQ16) * step / 6)
+                        ((targetGainQ16 - startGainQ16) * step / steps)
                 }
-            }, (index + 1) * 20L)
+            }, (index + 1) * USB_VOLUME_RAMP_STEP_MS)
         }
     }
 
@@ -3416,12 +3417,20 @@ class UsbExclusiveAudioEngine(
                 val wasPaused = paused.get()
                 if (wasPaused) {
                     UsbDiagnostics.i(tag, "exclusive worker waiting because playback is paused.")
+                    // 暂停淡出到零再垫短静音：任意样本点硬断即咔嗒（与跨参数切歌同因），
+                    // 淡到零后停写 URB，DAC 停在零电平。
+                    packetizer?.writeTransitionTail(
+                        USB_TRANSITION_FADE_MS,
+                        USB_TRANSITION_OLD_SILENCE_MS,
+                    )
                 }
                 while (paused.get() && !stopped.get()) {
                     Thread.sleep(25)
                 }
                 if (wasPaused && !stopped.get()) {
                     UsbDiagnostics.i(tag, "exclusive worker resumed.")
+                    // 恢复从任意样本点续播同样是幅度跳变，做短淡入接回。
+                    packetizer?.beginFadeIn(USB_PAUSE_RESUME_FADE_MS)
                 }
                 if (stopped.get()) break
 
@@ -3942,12 +3951,19 @@ class UsbExclusiveAudioEngine(
             val wasPaused = paused.get()
             if (wasPaused) {
                 UsbDiagnostics.i(tag, "exclusive worker waiting because playback is paused.")
+                // 暂停淡出到零再垫短静音：任意样本点硬断即咔嗒（与跨参数切歌同因）。
+                packetizer.writeTransitionTail(
+                    USB_TRANSITION_FADE_MS,
+                    USB_TRANSITION_OLD_SILENCE_MS,
+                )
             }
             while (paused.get() && !stopped.get()) {
                 Thread.sleep(25)
             }
             if (wasPaused && !stopped.get()) {
                 UsbDiagnostics.i(tag, "exclusive worker resumed.")
+                // 恢复从任意样本点续播同样是幅度跳变，做短淡入接回。
+                packetizer.beginFadeIn(USB_PAUSE_RESUME_FADE_MS)
             }
             if (stopped.get()) break
 
@@ -5556,9 +5572,18 @@ class UsbExclusiveAudioEngine(
         private var pcmPreviewAttempts = 0
         private val lastUsbSamples = IntArray(channels)
         private var hasLastUsbFrame = false
+        private var fadeInTotalFrames = 0
+        private var fadeInFramesDone = 0
+
+        // 暂停恢复时对续播数据做短淡入；seek 的 reset() 不清计数，
+        // 暂停中 seek 再恢复同样有淡入护住拼接点。
+        fun beginFadeIn(durationMs: Int) {
+            fadeInTotalFrames = usbSilenceFrames(sampleRate, durationMs)
+            fadeInFramesDone = 0
+        }
 
         fun write(data: ByteArray) {
-            val converted = convertPcmToUsbSlots(data)
+            val converted = applyFadeInIfNeeded(convertPcmToUsbSlots(data))
             if (!pcmPreviewLogged) {
                 pcmPreviewAttempts++
                 val forcePreview = pcmPreviewAttempts >= 64
@@ -5698,6 +5723,33 @@ class UsbExclusiveAudioEngine(
 
         private fun q16ToFrames(value: Int): String =
             String.format(Locale.US, "%.6f", value.toDouble() / 65536.0)
+
+        // 在 USB slot 域就地施加逐帧淡入；data 是解码侧的临时拷贝，可直接改。
+        private fun applyFadeInIfNeeded(data: ByteArray): ByteArray {
+            if (fadeInTotalFrames == 0 || fadeInFramesDone >= fadeInTotalFrames) {
+                return data
+            }
+            val frames = data.size / bytesPerFrame
+            var offset = 0
+            var frame = 0
+            while (frame < frames && fadeInFramesDone < fadeInTotalFrames) {
+                val gainQ16 = pcmFadeInGainQ16(fadeInFramesDone, fadeInTotalFrames)
+                repeat(channels) {
+                    val sample = readSignedLittleEndian(
+                        data,
+                        offset,
+                        usbBytesPerSample,
+                        usbBitResolution,
+                    )
+                    val faded = ((sample.toLong() * gainQ16) shr 16).toInt()
+                    writeLittleEndian(data, offset, usbBytesPerSample, faded)
+                    offset += usbBytesPerSample
+                }
+                fadeInFramesDone++
+                frame++
+            }
+            return data
+        }
 
         private fun convertPcmToUsbSlots(data: ByteArray): ByteArray {
             val gainQ16 = volumeGainQ16?.invoke() ?: UNITY_GAIN_Q16

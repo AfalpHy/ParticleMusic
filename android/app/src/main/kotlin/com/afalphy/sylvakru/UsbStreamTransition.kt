@@ -4,6 +4,10 @@ internal const val USB_TRANSITION_FADE_MS = 16
 internal const val USB_TRANSITION_OLD_SILENCE_MS = 24
 internal const val USB_TRANSITION_PREROLL_MS = 100
 internal const val USB_TRANSITION_DRAIN_TIMEOUT_MS = 220L
+internal const val USB_PAUSE_RESUME_FADE_MS = 16
+internal const val USB_VOLUME_RAMP_STEP_MS = 20L
+internal const val USB_VOLUME_RAMP_MIN_STEPS = 6
+internal const val USB_VOLUME_RAMP_FULL_RISE_STEPS = 30
 
 internal data class UsbStreamSignature(
     val deviceId: Int,
@@ -28,14 +32,20 @@ internal data class UsbTransitionSilencePlan(
 
 internal fun usbTransitionSilencePlan(
     action: UsbStreamTransitionAction,
-): UsbTransitionSilencePlan = if (action == UsbStreamTransitionAction.SILENT_RECONFIGURE) {
-    UsbTransitionSilencePlan(
+): UsbTransitionSilencePlan = when (action) {
+    UsbStreamTransitionAction.REUSE -> UsbTransitionSilencePlan(0, 0, 0)
+    UsbStreamTransitionAction.SILENT_RECONFIGURE -> UsbTransitionSilencePlan(
         oldFadeMs = USB_TRANSITION_FADE_MS,
         oldSilenceMs = USB_TRANSITION_OLD_SILENCE_MS,
         newPreRollMs = USB_TRANSITION_PREROLL_MS,
     )
-} else {
-    UsbTransitionSilencePlan(0, 0, 0)
+    // 新开流（首播/停止后再播/自然播完切到不同参数）没有旧流要淡出，但 DAC
+    // 同样要重锁时钟：预滚静音让重锁咔嗒不盖到曲子开头。
+    UsbStreamTransitionAction.OPEN_FRESH -> UsbTransitionSilencePlan(
+        oldFadeMs = 0,
+        oldSilenceMs = 0,
+        newPreRollMs = USB_TRANSITION_PREROLL_MS,
+    )
 }
 
 internal fun usbStreamTransitionAction(
@@ -91,6 +101,22 @@ internal fun pcmSampleForUsbTransition(
 
 internal fun usbSilenceFrames(sampleRate: Int, durationMs: Int): Int =
     ((sampleRate.toLong() * durationMs + 999L) / 1000L).coerceAtLeast(1L).toInt()
+
+// 恢复播放的逐帧淡入增益：从 0 线性升到满刻度，消掉任意样本点续播的幅度跳变。
+internal fun pcmFadeInGainQ16(frameIndex: Int, totalFrames: Int): Int {
+    require(totalFrames > 0)
+    if (frameIndex >= totalFrames) return 65536
+    return ((frameIndex.coerceAtLeast(0).toLong() shl 16) / totalFrames).toInt()
+}
+
+// 数字音量渐变步数：上升按跨度限速（满跨度约 600ms）防止误拖滑条炸耳，
+// 下降保持最少步数快速到位。
+internal fun pcmVolumeRampSteps(startGainQ16: Int, targetGainQ16: Int): Int {
+    val riseQ16 = targetGainQ16.toLong() - startGainQ16.toLong()
+    if (riseQ16 <= 0) return USB_VOLUME_RAMP_MIN_STEPS
+    val riseSteps = ((riseQ16 * USB_VOLUME_RAMP_FULL_RISE_STEPS + 65535L) / 65536L).toInt()
+    return riseSteps.coerceAtLeast(USB_VOLUME_RAMP_MIN_STEPS)
+}
 
 internal enum class OutputDrainAction { WAIT, DRAINED, TIMED_OUT }
 

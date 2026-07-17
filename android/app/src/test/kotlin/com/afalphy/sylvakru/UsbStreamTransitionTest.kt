@@ -53,7 +53,7 @@ class UsbStreamTransitionTest {
     }
 
     @Test
-    fun addsSilenceOnlyForCrossParameterReconfiguration() {
+    fun padsPreRollForEveryNewlyOpenedOrReconfiguredStream() {
         assertEquals(
             UsbTransitionSilencePlan(0, 0, 0),
             usbTransitionSilencePlan(UsbStreamTransitionAction.REUSE),
@@ -63,8 +63,30 @@ class UsbStreamTransitionTest {
             usbTransitionSilencePlan(UsbStreamTransitionAction.SILENT_RECONFIGURE),
         )
         assertEquals(
-            UsbTransitionSilencePlan(0, 0, 0),
+            UsbTransitionSilencePlan(0, 0, 100),
             usbTransitionSilencePlan(UsbStreamTransitionAction.OPEN_FRESH),
+        )
+    }
+
+    @Test
+    fun limitsVolumeRiseSpeedButKeepsReductionFast() {
+        assertEquals(6, pcmVolumeRampSteps(65536, 0))
+        assertEquals(6, pcmVolumeRampSteps(65536, 32768))
+        assertEquals(6, pcmVolumeRampSteps(32768, 32768 + 6554))
+        assertEquals(15, pcmVolumeRampSteps(0, 32768))
+        assertEquals(30, pcmVolumeRampSteps(0, 65536))
+    }
+
+    @Test
+    fun fadeInGainRisesMonotonicallyToUnity() {
+        assertEquals(0, pcmFadeInGainQ16(0, 8))
+        assertEquals(32768, pcmFadeInGainQ16(4, 8))
+        assertEquals(65536, pcmFadeInGainQ16(8, 8))
+        assertEquals(65536, pcmFadeInGainQ16(9, 8))
+        assertTrue(
+            (0 until 8).all { index ->
+                pcmFadeInGainQ16(index, 8) <= pcmFadeInGainQ16(index + 1, 8)
+            },
         )
     }
 
