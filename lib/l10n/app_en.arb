@@ -281,6 +281,7 @@
   "volumeControlDac": "DAC hardware volume",
   "volumeControlDigital": "Digital volume",
   "volumeControlRaw": "Raw digital level",
+  "volumeControlRawConfirm": "Full-scale raw output",
   "volumeControlDacFallbackHint": "Falls back to digital volume when DAC hardware volume is unavailable.",
   "hardwareVolumeUnverified": "Unverified",
   "hardwareVolumeSyncPending": "Syncing",

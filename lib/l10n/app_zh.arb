@@ -232,6 +232,7 @@
   "volumeControlDac": "DAC 硬件音量",
   "volumeControlDigital": "数字音量",
   "volumeControlRaw": "原始数字电平",
+  "volumeControlRawConfirm": "原始电平满幅直通",
   "volumeControlDacFallbackHint": "DAC 硬件音量不可用时自动回退为数字音量。",
   "hardwareVolumeUnverified": "未验证",
   "hardwareVolumeSyncPending": "同步中",

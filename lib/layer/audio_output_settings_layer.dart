@@ -11,6 +11,7 @@ import 'package:sylvakru/base/audio_handler.dart';
 import 'package:sylvakru/base/data/setting.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
+import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/services/usb_audio_preferences.dart';
 import 'package:sylvakru/base/services/usb_audio_service.dart';
 import 'package:sylvakru/base/utils/media_query.dart';
@@ -234,6 +235,14 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
                   notifier: prefs.volumeControlModeNotifier,
                   values: UsbVolumeControlMode.values,
                   label: _volumeControlLabel,
+                  // 原始数字电平=满幅直通、音量不受 app 控制，切入前确认一次
+                  confirmValue: (mode) async {
+                    if (mode != UsbVolumeControlMode.raw) return true;
+                    return showConfirmDialog(
+                      context,
+                      _l10n.volumeControlRawConfirm,
+                    );
+                  },
                 ),
                 ValueListenableBuilder<ReplayGainMode>(
                   valueListenable: prefs.replayGainModeNotifier,
@@ -1159,6 +1168,7 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
     required ValueNotifier<T> notifier,
     required List<T> values,
     required String Function(T value) label,
+    Future<bool> Function(T value)? confirmValue,
   }) {
     return ValueListenableBuilder<T>(
       valueListenable: notifier,
@@ -1181,6 +1191,7 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
             notifier: notifier,
             values: values,
             label: label,
+            confirmValue: confirmValue,
           ),
         );
       },
@@ -1192,6 +1203,7 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
     required ValueNotifier<T> notifier,
     required List<T> values,
     required String Function(T value) label,
+    Future<bool> Function(T value)? confirmValue,
   }) {
     showModalBottomSheet<void>(
       context: context,
@@ -1222,10 +1234,17 @@ class _AudioOutputSettingsLayerState extends State<AudioOutputSettingsLayer> {
                               color: highlightTextColor.value,
                             )
                           : null,
-                      onTap: () {
+                      onTap: () async {
+                        if (confirmValue != null &&
+                            value != notifier.value &&
+                            !await confirmValue(value)) {
+                          return;
+                        }
                         notifier.value = value;
                         setting.save();
-                        Navigator.pop(context);
+                        if (context.mounted) {
+                          Navigator.pop(context);
+                        }
                       },
                     );
                   },

@@ -724,6 +724,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get volumeControlRaw => '原始数字电平';
 
   @override
+  String get volumeControlRawConfirm => '原始电平满幅直通';
+
+  @override
   String get volumeControlDacFallbackHint => 'DAC 硬件音量不可用时自动回退为数字音量。';
 
   @override

@@ -1496,6 +1496,12 @@ abstract class AppLocalizations {
   /// **'Raw digital level'**
   String get volumeControlRaw;
 
+  /// No description provided for @volumeControlRawConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Full-scale raw output'**
+  String get volumeControlRawConfirm;
+
   /// No description provided for @volumeControlDacFallbackHint.
   ///
   /// In en, this message translates to:

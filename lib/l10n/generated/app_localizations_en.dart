@@ -735,6 +735,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get volumeControlRaw => 'Raw digital level';
 
   @override
+  String get volumeControlRawConfirm => 'Full-scale raw output';
+
+  @override
   String get volumeControlDacFallbackHint =>
       'Falls back to digital volume when DAC hardware volume is unavailable.';
 
