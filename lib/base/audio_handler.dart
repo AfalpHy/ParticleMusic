@@ -607,6 +607,17 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
       await _openPlayerMedia(currentSong);
       if (generation != _loadGeneration) return;
       if (position > Duration.zero) {
+        // 流式媒体 open 后未就绪时 mpv 会丢弃 seek（进度直接回零），
+        // 等 duration 出来再定位；超时就放弃定位，不卡住回退。
+        if (_player.state.duration <= Duration.zero) {
+          await _player.stream.duration
+              .firstWhere((duration) => duration > Duration.zero)
+              .timeout(
+                const Duration(seconds: 5),
+                onTimeout: () => Duration.zero,
+              );
+        }
+        if (generation != _loadGeneration) return;
         await _player.seek(position);
       }
       _positionController.add(position);

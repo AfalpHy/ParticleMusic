@@ -3018,6 +3018,25 @@ class UsbExclusiveAudioEngine(
         return updateState(inactiveState("USB exclusive playback stopped."))
     }
 
+    // DAC 拔出由 AudioDeviceCallback 通知进来：暂停中写线程不碰 USB，靠 IO
+    // 失败永远发现不了设备没了，会话与音量键接管会一直挂着。确认会话设备
+    // 已不在 UsbManager 列表后硬关会话，失活状态带上当前进度，Dart 侧据此
+    // 保进度回退共享输出。
+    fun handleUsbAudioDeviceRemoved(): Map<String, Any?>? {
+        val device = sessionDevice ?: return null
+        if (currentState["active"] != true) return null
+        val stillAttached = context.getSystemService(UsbManager::class.java)
+            .deviceList.values.any { it.deviceId == device.deviceId }
+        if (stillAttached) return null
+        val positionMs = currentState["positionMs"]
+        UsbDiagnostics.w(tag, "exclusive session device removed, closing session.")
+        stopWorkerKeepingSession()
+        hardCloseSession("USB audio device removed")
+        return updateState(
+            inactiveState("USB audio device removed.") + mapOf("positionMs" to positionMs),
+        )
+    }
+
     // 停写线程；返回 true 表示线程干净退出、USB 会话仍可热复用
     private fun stopWorkerKeepingSession(): Boolean {
         stopped.set(true)

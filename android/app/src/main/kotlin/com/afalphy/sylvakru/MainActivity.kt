@@ -232,9 +232,13 @@ class MainActivity : AudioServiceActivity() {
             }
 
             override fun onAudioDevicesRemoved(removedDevices: Array<out AudioDeviceInfo>) {
-                removedDevices
-                    .filter { it.isUsbAudioOutput() }
-                    .forEach { device -> sendUsbAudioDeviceEvent("removed", device.id) }
+                val usbRemoved = removedDevices.filter { it.isUsbAudioOutput() }
+                // 先让引擎判定并硬关拔出的会话（暂停中不写 USB，只有这里能发现
+                // 设备没了），失活状态带进度发给 Dart，再广播设备事件。
+                if (usbRemoved.isNotEmpty() && ::usbExclusiveAudioEngine.isInitialized) {
+                    usbExclusiveAudioEngine.handleUsbAudioDeviceRemoved()
+                }
+                usbRemoved.forEach { device -> sendUsbAudioDeviceEvent("removed", device.id) }
             }
         }
 
