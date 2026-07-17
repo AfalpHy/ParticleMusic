@@ -555,18 +555,18 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     String? resource;
     bool needHeader = false;
     switch (currentSong.sourceType) {
-        case .webdav:
+      case .webdav:
         final tmpPath = await convertToRealPathIfNeed(currentSong.path!);
         if (tmpPath == null) {
           needHeader = true;
         } else {
           resource = tmpPath;
-          }
-          break;
-        case .subsonic:
-          currentSong.path ??= subsonicClient!.getStreamUrl(currentSong.id);
-          break;
-        case .navidrome:
+        }
+        break;
+      case .subsonic:
+        currentSong.path ??= subsonicClient!.getStreamUrl(currentSong.id);
+        break;
+      case .navidrome:
         currentSong.path ??= navidromeClient!.getStreamUrl(currentSong.id);
         break;
       case .emby:
@@ -1132,8 +1132,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     }
 
     final isDsd = song.isDsd;
-    if (isDsd &&
-        usbAudioPreferences.dsdModeNotifier.value == UsbDsdMode.pcm) {
+    if (isDsd && usbAudioPreferences.dsdModeNotifier.value == UsbDsdMode.pcm) {
       // DSD 模式=PCM：由共享路径（mpv/libavcodec）解码转 PCM，不进独占直驱
       logger.output("usb exclusive skipped:dsd pcm mode -> shared output");
       debugPrint("usb exclusive skipped:dsd pcm mode -> shared output");
@@ -1333,8 +1332,19 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     // wv/ape 等系统无解码器的不在此列，未缓存时先走共享出声，缓存完成后再走独占。
     // 与原生 UsbExclusiveAudioEngine.streamableLossyExts 保持一致。
     const streamableExts = {
-      'flac', 'wav', 'wave', 'dsf', 'dff',
-      'mp3', 'm4a', 'm4b', 'mp4', 'aac', 'ogg', 'oga', 'opus',
+      'flac',
+      'wav',
+      'wave',
+      'dsf',
+      'dff',
+      'mp3',
+      'm4a',
+      'm4b',
+      'mp4',
+      'aac',
+      'ogg',
+      'oga',
+      'opus',
     };
     final ext = _normalizedExclusiveFormat(song)?.toLowerCase();
     if (!streamableExts.contains(ext)) {

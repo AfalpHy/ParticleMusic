@@ -425,9 +425,18 @@ class _UsbAudioDetectedSheetState extends State<_UsbAudioDetectedSheet> {
                 border: border,
                 rows: [
                   _InfoRow(l10n.nameLabel, _shortOutputName(_status, l10n)),
-                  _InfoRow(l10n.outputSampleRate, formatOutputSampleRate(_status, l10n)),
-                  _InfoRow(l10n.supportedSampleRate, _supportedRatesLabel(_status, l10n)),
-                  _InfoRow(l10n.currentSong, formatSampleRate(widget.song?.samplerate, l10n)),
+                  _InfoRow(
+                    l10n.outputSampleRate,
+                    formatOutputSampleRate(_status, l10n),
+                  ),
+                  _InfoRow(
+                    l10n.supportedSampleRate,
+                    _supportedRatesLabel(_status, l10n),
+                  ),
+                  _InfoRow(
+                    l10n.currentSong,
+                    formatSampleRate(widget.song?.samplerate, l10n),
+                  ),
                 ],
               ),
               const SizedBox(height: 12),
@@ -440,7 +449,10 @@ class _UsbAudioDetectedSheetState extends State<_UsbAudioDetectedSheet> {
                 border: border,
                 rows: [
                   _InfoRow('Android', 'API ${_status.androidSdk}'),
-                  _InfoRow('Bit-perfect', _bitPerfectSupportLabel(_status, l10n)),
+                  _InfoRow(
+                    'Bit-perfect',
+                    _bitPerfectSupportLabel(_status, l10n),
+                  ),
                   _InfoRow(
                     l10n.requestSampleRate,
                     formatSampleRate(
@@ -492,7 +504,9 @@ class _UsbAudioDetectedSheetState extends State<_UsbAudioDetectedSheet> {
                               ),
                             )
                           : const Icon(Icons.lock_rounded, size: 18),
-                      label: Text(_applying ? l10n.requesting : l10n.enableExclusive),
+                      label: Text(
+                        _applying ? l10n.requesting : l10n.enableExclusive,
+                      ),
                     ),
                   ),
                 ],
@@ -607,7 +621,10 @@ class _AudioOutputSheetState extends State<_AudioOutputSheet> {
                     surface: surface,
                     border: border,
                     rows: [
-                      _InfoRow(l10n.fileLabel, _sourcePathLabel(widget.song, l10n)),
+                      _InfoRow(
+                        l10n.fileLabel,
+                        _sourcePathLabel(widget.song, l10n),
+                      ),
                       _InfoRow(
                         l10n.inputSampleRate,
                         formatSampleRate(widget.song?.samplerate, l10n),
@@ -616,7 +633,10 @@ class _AudioOutputSheetState extends State<_AudioOutputSheet> {
                         l10n.format,
                         widget.song?.format?.toUpperCase() ?? l10n.unknown,
                       ),
-                      _InfoRow(l10n.bitrate, formatBitrate(widget.song?.bitrate, l10n)),
+                      _InfoRow(
+                        l10n.bitrate,
+                        formatBitrate(widget.song?.bitrate, l10n),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -629,8 +649,14 @@ class _AudioOutputSheetState extends State<_AudioOutputSheet> {
                     border: border,
                     rows: [
                       _InfoRow(l10n.outputPort, _outputPortLabel(status, l10n)),
-                      _InfoRow(l10n.outputSampleRate, formatOutputSampleRate(status, l10n)),
-                      _InfoRow(l10n.encoding, _outputEncodingLabel(status, l10n)),
+                      _InfoRow(
+                        l10n.outputSampleRate,
+                        formatOutputSampleRate(status, l10n),
+                      ),
+                      _InfoRow(
+                        l10n.encoding,
+                        _outputEncodingLabel(status, l10n),
+                      ),
                       if (showPcmDepths)
                         _InfoRow(
                           l10n.sourceBitDepth,
@@ -855,7 +881,10 @@ class _PulseDot extends StatelessWidget {
 
 /// 胶囊左侧状态指示灯颜色：独占 PCM 绿、独占 DSD 蓝、开了独占却未生效(失败)红、
 /// 非独占(系统输出)白。这是状态语义灯，独立于跟随封面的主题配色。
-Color _outputDotColor(UsbAudioStatus status, UsbExclusivePlaybackState exclusive) {
+Color _outputDotColor(
+  UsbAudioStatus status,
+  UsbExclusivePlaybackState exclusive,
+) {
   final perfMode = usbAudioPreferences.performanceModeNotifier.value;
   if (perfMode && exclusive.active) {
     // DoP/Native 的 DSD 是 1-bit 流，恒位完美，走蓝
