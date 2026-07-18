@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.hardware.input.InputManager
 import android.media.AudioDeviceCallback
 import android.media.AudioAttributes
 import android.media.AudioDeviceInfo
@@ -18,6 +19,7 @@ import android.os.Handler
 import android.os.Looper
 import android.util.Log
 import android.view.KeyEvent
+import android.view.MotionEvent
 import android.hardware.usb.UsbConstants
 import android.hardware.usb.UsbDevice
 import android.hardware.usb.UsbDeviceConnection
@@ -31,8 +33,9 @@ import com.ryanheise.audioservice.AudioServiceActivity
 import io.flutter.embedding.engine.FlutterEngine
 import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
+import org.flame_engine.gamepads_android.GamepadsCompatibleActivity
 
-class MainActivity : AudioServiceActivity() {
+class MainActivity : AudioServiceActivity(), GamepadsCompatibleActivity {
     private val tag = "UsbExclusiveAudioEngine"
     private val channelName = "com.afalphy.sylvakru/usb_audio"
     private val superLyricChannelName = "com.afalphy.sylvakru/super_lyric"
@@ -44,6 +47,8 @@ class MainActivity : AudioServiceActivity() {
     private var pendingExclusiveProbeDevice: UsbDevice? = null
     private var usbPermissionReceiver: BroadcastReceiver? = null
     private var lastExclusiveProbeResult: Map<String, Any?>? = null
+    private var gamepadsKeyEventHandler: ((KeyEvent) -> Boolean)? = null
+    private var gamepadsMotionEventHandler: ((MotionEvent) -> Boolean)? = null
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -128,6 +133,22 @@ class MainActivity : AudioServiceActivity() {
         ensureSuperLyricPublisherRegistered()
     }
 
+    override fun registerInputDeviceListener(
+        listener: InputManager.InputDeviceListener,
+        handler: Handler?,
+    ) {
+        val inputManager = getSystemService(Context.INPUT_SERVICE) as InputManager
+        inputManager.registerInputDeviceListener(listener, handler)
+    }
+
+    override fun registerKeyEventHandler(handler: (KeyEvent) -> Boolean) {
+        gamepadsKeyEventHandler = handler
+    }
+
+    override fun registerMotionEventHandler(handler: (MotionEvent) -> Boolean) {
+        gamepadsMotionEventHandler = handler
+    }
+
     // 独占播放的音量由应用接管，仅在 Activity 前台拦截手机物理音量键。
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         val keyCode = event.keyCode
@@ -147,7 +168,17 @@ class MainActivity : AudioServiceActivity() {
             }
             return true
         }
+        if (gamepadsKeyEventHandler?.invoke(event) == true) {
+            return true
+        }
         return super.dispatchKeyEvent(event)
+    }
+
+    override fun dispatchGenericMotionEvent(event: MotionEvent): Boolean {
+        if (gamepadsMotionEventHandler?.invoke(event) == true) {
+            return true
+        }
+        return super.dispatchGenericMotionEvent(event)
     }
 
     override fun onDestroy() {
