@@ -8,6 +8,7 @@ import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/asset_images.dart';
 import 'package:sylvakru/base/services/interaction.dart';
+import 'package:sylvakru/base/widgets/audio_output_panel.dart';
 import 'package:sylvakru/base/widgets/buttons.dart';
 import 'package:sylvakru/base/widgets/cover_art_widget.dart';
 import 'package:sylvakru/base/data/setting.dart';
@@ -69,9 +70,10 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
       builder: (context, currentSong, child) {
         final pageWidth = MediaQuery.widthOf(context);
         final pageHight = MediaQuery.heightOf(context);
+        // 封面适当缩小，为封面下方的输出状态胶囊腾出位置
         final coverArtSize = min(
-          pageWidth * (isMobile ? 0.35 : 0.3),
-          pageHight * (isMobile ? 0.7 : 0.6),
+          pageWidth * (isMobile ? 0.32 : 0.28),
+          pageHight * (isMobile ? 0.6 : 0.55),
         );
 
         return Material(
@@ -127,6 +129,23 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                               elevation: 15,
                               color: colorManager
                                   .getSpecificLyricsPageCoverArtBaseColor(),
+                            ),
+                          ),
+                        ),
+                        // 输出状态胶囊：横屏两种布局都放在封面正下方
+                        Padding(
+                          padding: const EdgeInsets.only(top: 12),
+                          child: SizedBox(
+                            width: coverArtSize,
+                            child: ValueListenableBuilder(
+                              valueListenable:
+                                  lyricsPageForegroundColor.valueNotifier,
+                              builder: (context, value, child) {
+                                return AudioOutputChip(
+                                  song: currentSong,
+                                  color: value,
+                                );
+                              },
                             ),
                           ),
                         ),

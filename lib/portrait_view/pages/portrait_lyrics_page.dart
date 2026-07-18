@@ -10,6 +10,7 @@ import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/asset_images.dart';
 import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/utils/dynamic_lyrics_page_route.dart';
+import 'package:sylvakru/base/widgets/audio_output_panel.dart';
 import 'package:sylvakru/base/widgets/buttons.dart';
 import 'package:sylvakru/base/widgets/cover_art_widget.dart';
 import 'package:sylvakru/base/widgets/my_divider.dart';
@@ -330,6 +331,16 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                       },
                     ),
             ),
+          ),
+        ),
+
+        Padding(
+          padding: const EdgeInsets.fromLTRB(34, 0, 34, 12),
+          child: ValueListenableBuilder(
+            valueListenable: lyricsPageForegroundColor.valueNotifier,
+            builder: (context, value, child) {
+              return AudioOutputChip(song: currentSong, color: value);
+            },
           ),
         ),
 
