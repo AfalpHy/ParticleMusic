@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/audio_handler.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
@@ -10,7 +11,6 @@ import 'package:sylvakru/base/widgets/cover_art_widget.dart';
 import 'package:sylvakru/base/widgets/playlist_widgets.dart';
 import 'package:sylvakru/l10n/generated/app_localizations.dart';
 import 'package:sylvakru/base/services/keyboard.dart';
-import 'package:sylvakru/mini_view/mini_view.dart';
 import 'package:sylvakru/base/utils/metadata_utils.dart';
 
 class PlayQueuePage extends StatefulWidget {
@@ -28,7 +28,6 @@ class PlayQueuePageState extends State<PlayQueuePage> {
 
   final showPlayButtonNotifierMap = <MyAudioMetadata, ValueNotifier<bool>>{};
 
-  late bool isMiniMode;
   double itemExtend = 64;
 
   void jumpToCurrentSong() {
@@ -66,7 +65,6 @@ class PlayQueuePageState extends State<PlayQueuePage> {
   @override
   void initState() {
     super.initState();
-    isMiniMode = miniModeNotifier.value;
     playModeNotifier.addListener(updateQueue);
     isSelectedList = List.generate(
       playQueue.length,
@@ -145,7 +143,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
         Text(
           l10n.playQueue,
           style: TextStyle(
-            fontSize: isMiniMode ? 18 : 20,
+            fontSize: viewModeNotifier.value == .mini ? 18 : 20,
             fontWeight: FontWeight.bold,
             color: specificTextColor,
           ),
@@ -236,7 +234,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
             child: ListTile(
               leading: Stack(
                 children: [
-                  miniModeNotifier.value
+                  viewModeNotifier.value == .mini
                       ? CoverArtWidget(size: 40, borderRadius: 4, song: song)
                       : CoverArtWidget(size: 50, borderRadius: 5, song: song),
                   ValueListenableBuilder(
@@ -252,7 +250,7 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                               icon: Icon(
                                 Icons.play_arrow_rounded,
                                 color: Colors.white,
-                                size: miniModeNotifier.value ? 20 : 30,
+                                size: viewModeNotifier.value == .mini ? 20 : 30,
                               ),
                             )
                           : SizedBox.shrink();

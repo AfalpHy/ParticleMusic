@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:io';
 import 'dart:ui';
 
@@ -9,7 +10,6 @@ import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/asset_images.dart';
 import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/utils/dynamic_lyrics_page_route.dart';
-import 'package:sylvakru/base/widgets/audio_output_panel.dart';
 import 'package:sylvakru/base/widgets/buttons.dart';
 import 'package:sylvakru/base/widgets/cover_art_widget.dart';
 import 'package:sylvakru/base/widgets/my_divider.dart';
@@ -37,66 +37,95 @@ class PortraitLyricsPage extends StatefulWidget {
 class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
   final dragOffsetNotifier = ValueNotifier(0.0);
 
+  final canDragNotifier = ValueNotifier(false);
+
   int _animationDuration = 0;
+
+  Timer? concealRouteTimer;
 
   final enableAllNotifier = ValueNotifier(Platform.isAndroid ? false : true);
 
   @override
   void initState() {
     super.initState();
-    if (Platform.isAndroid) {
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        await Future.delayed(Duration(milliseconds: 500));
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await Future.delayed(Duration(milliseconds: 500));
+      if (Platform.isAndroid) {
         enableAllNotifier.value = true;
-      });
-    }
+      }
+      canDragNotifier.value = true;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    final screenHeight = MediaQuery.of(context).size.height;
+    final screenHeight = MediaQuery.heightOf(context);
 
-    return GestureDetector(
-      onVerticalDragStart: (_) {
-        final route = ModalRoute.of(context);
-        if (route is DynamicLyricsPageRoute) {
-          route.revealRoutesBelow();
-        }
-      },
-      onVerticalDragUpdate: (details) {
-        _animationDuration = 0;
-        dragOffsetNotifier.value += details.delta.dy;
-        dragOffsetNotifier.value = dragOffsetNotifier.value.clamp(
-          0.0,
-          screenHeight,
+    return ValueListenableBuilder(
+      valueListenable: canDragNotifier,
+      builder: (context, value, child) {
+        return GestureDetector(
+          onVerticalDragStart: value
+              ? (_) {
+                  concealRouteTimer?.cancel();
+                  final route = ModalRoute.of(context);
+                  if (route is DynamicLyricsPageRoute) {
+                    route.revealRoutesBelow();
+                  }
+                }
+              : null,
+          onVerticalDragUpdate: value
+              ? (details) {
+                  _animationDuration = 0;
+                  dragOffsetNotifier.value += details.delta.dy;
+                  dragOffsetNotifier.value = dragOffsetNotifier.value.clamp(
+                    0.0,
+                    screenHeight,
+                  );
+                }
+              : null,
+
+          onVerticalDragEnd: value
+              ? (details) {
+                  double velocity = details.primaryVelocity ?? 0;
+
+                  if (dragOffsetNotifier.value * 3 > screenHeight ||
+                      velocity > 500) {
+                    Navigator.pop(context);
+                  } else {
+                    _animationDuration = 250;
+                    dragOffsetNotifier.value = 0.0;
+                    concealRouteTimer = Timer(Duration(milliseconds: 250), () {
+                      final route = ModalRoute.of(context);
+                      if (route is DynamicLyricsPageRoute) {
+                        route.concealRoutesBelow();
+                      }
+                    });
+                  }
+                }
+              : null,
+          onVerticalDragCancel: value
+              ? () {
+                  _animationDuration = 250;
+                  dragOffsetNotifier.value = 0.0;
+                  concealRouteTimer = Timer(Duration(milliseconds: 250), () {
+                    final route = ModalRoute.of(context);
+                    if (route is DynamicLyricsPageRoute) {
+                      route.concealRoutesBelow();
+                    }
+                  });
+                }
+              : null,
+          child: child,
         );
       },
-
-      onVerticalDragEnd: (details) {
-        double velocity = details.primaryVelocity ?? 0;
-
-        if (dragOffsetNotifier.value * 3 > screenHeight || velocity > 500) {
-          Navigator.pop(context);
-        } else {
-          _animationDuration = 250;
-          dragOffsetNotifier.value = 0.0;
-        }
-      },
-
       child: ValueListenableBuilder(
         valueListenable: dragOffsetNotifier,
         builder: (context, value, child) {
           return AnimatedContainer(
             duration: Duration(milliseconds: _animationDuration),
             curve: Curves.easeOutCubic,
-            onEnd: () {
-              if (value == 0.0) {
-                final route = ModalRoute.of(context);
-                if (route is DynamicLyricsPageRoute) {
-                  route.concealRoutesBelow();
-                }
-              }
-            },
             transform: Matrix4.translationValues(0, value, 0),
             child: child,
           );
@@ -166,6 +195,7 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                                 fontWeight: FontWeight.bold,
                                 fontSize: 20,
                                 color: lyricsPageHighlightTextColor.value,
+                                overflow: .ellipsis,
                               );
                               if (!value) {
                                 return Text(data, style: textStyle);
@@ -197,6 +227,7 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                               final textStyle = TextStyle(
                                 fontSize: 14,
                                 color: lyricsPageForegroundColor.value,
+                                overflow: .ellipsis,
                               );
                               if (!value) {
                                 return Text(data, style: textStyle);
@@ -299,16 +330,6 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                       },
                     ),
             ),
-          ),
-        ),
-
-        Padding(
-          padding: const EdgeInsets.fromLTRB(34, 0, 34, 12),
-          child: ValueListenableBuilder(
-            valueListenable: lyricsPageForegroundColor.valueNotifier,
-            builder: (context, value, child) {
-              return AudioOutputChip(song: currentSong, color: value);
-            },
           ),
         ),
 

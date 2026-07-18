@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/data/song_list_manager.dart';
 import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/widgets/cover_art_widget.dart';
@@ -45,20 +46,10 @@ class ArtistAlbumManager {
   }
 
   void classify() {
-    for (final song in library.songListManager.localSongList) {
-      _processSong(song);
-    }
-
-    for (final song in library.songListManager.webdavSongList) {
-      _processSong(song);
-    }
-
-    for (final song in library.songListManager.navidromeSongList) {
-      _processSong(song);
-    }
-
-    for (final song in library.songListManager.embySongList) {
-      _processSong(song);
+    for (final sourceType in SourceType.values) {
+      for (final song in library.songListManager.getSongList2(sourceType)) {
+        _processSong(song);
+      }
     }
 
     sortArtists();
@@ -275,25 +266,12 @@ class Artist extends ArtistAlbumBase {
     });
 
     for (final album in albumList) {
-      _fetchSongs(
-        album.songListManager.localSongList,
-        songListManager.localSongList,
-      );
-
-      _fetchSongs(
-        album.songListManager.webdavSongList,
-        songListManager.webdavSongList,
-      );
-
-      _fetchSongs(
-        album.songListManager.navidromeSongList,
-        songListManager.navidromeSongList,
-      );
-
-      _fetchSongs(
-        album.songListManager.embySongList,
-        songListManager.embySongList,
-      );
+      for (final sourceType in SourceType.values) {
+        _fetchSongs(
+          album.songListManager.getSongList2(sourceType),
+          songListManager.getSongList2(sourceType),
+        );
+      }
     }
   }
 }
@@ -317,10 +295,9 @@ class Album extends ArtistAlbumBase {
   }
 
   void sort() {
-    songListManager.localSongList.sort(_sort);
-    songListManager.webdavSongList.sort(_sort);
-    songListManager.navidromeSongList.sort(_sort);
-    songListManager.embySongList.sort(_sort);
+    for (final sourceType in SourceType.values) {
+      songListManager.getSongList2(sourceType).sort(_sort);
+    }
   }
 }
 

@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:sylvakru/base/services/logger.dart';
+import 'package:sylvakru/base/services/network_error_reporter.dart';
 import 'package:path/path.dart' as p;
 import 'package:xml/xml.dart';
 
@@ -99,9 +100,12 @@ class WebDavClient {
         logger.output(e.response!.data.toString());
       }
 
+      reportNetworkError('WebDAV', e.message ?? 'network error');
+
       return null;
     } catch (e) {
       logger.output('[WebDav] [$mark] Unknown error: $e');
+      reportNetworkError('WebDAV', e.toString());
       return null;
     }
   }
@@ -264,6 +268,7 @@ class WebDavClient {
     required String remotePath,
     required String localPath,
     ProgressCallback? onReceiveProgress,
+    CancelToken? cancelToken,
   }) async {
     return _boolRequest(
       'download $remotePath',
@@ -271,6 +276,9 @@ class WebDavClient {
         remotePath,
         localPath,
         onReceiveProgress: onReceiveProgress,
+        cancelToken: cancelToken,
+        deleteOnError: false,
+        options: Options(receiveTimeout: Duration.zero),
       ),
     );
   }

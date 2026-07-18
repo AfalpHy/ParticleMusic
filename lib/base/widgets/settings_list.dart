@@ -11,6 +11,7 @@ import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/asset_images.dart';
 import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/services/logger.dart';
+import 'package:sylvakru/base/services/subsonic_client.dart';
 import 'package:sylvakru/base/services/webdav_client.dart';
 import 'package:sylvakru/base/utils/media_query.dart';
 import 'package:sylvakru/base/utils/source_type.dart';
@@ -179,9 +180,12 @@ class SettingsList extends StatelessWidget {
         if (library.localFolderList.isNotEmpty) {
           sourceTypes.add(.local);
         }
-
         if (webdavClient != null) {
           sourceTypes.add(.webdav);
+        }
+
+        if (subsonicClient != null) {
+          sourceTypes.add(.subsonic);
         }
 
         if (navidromeClient != null) {
@@ -217,7 +221,7 @@ class SettingsList extends StatelessWidget {
             height: isMobile ? 300 : 280,
             child: Padding(
               padding: const EdgeInsets.all(15),
-              child: Column(
+              child: ListView(
                 children: [
                   // get context
                   Builder(
@@ -321,7 +325,7 @@ class SettingsList extends StatelessWidget {
           context: context,
           child: SizedBox(
             width: 300,
-            height: isMobile ? 200 : 180,
+            height: isMobile ? 255 : 225,
             child: Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: 10.0,
@@ -332,6 +336,7 @@ class SettingsList extends StatelessWidget {
                   return Column(
                     children: [
                       webdavListTile(context, l10n),
+                      subsonicListTile(context, l10n),
                       navidromeListTile(context, l10n),
                       embyListTile(context, l10n),
                     ],
@@ -359,6 +364,19 @@ class SettingsList extends StatelessWidget {
         showAnimationDialog(
           context: context,
           child: ConnectClientWidget(sourceType: .webdav),
+        );
+      },
+    );
+  }
+
+  Widget subsonicListTile(BuildContext context, AppLocalizations l10n) {
+    return ListTile(
+      leading: Image(image: subsonicImage, width: 30, height: 30),
+      title: Text(l10n.connect2Subsonic),
+      onTap: () {
+        showAnimationDialog(
+          context: context,
+          child: ConnectClientWidget(sourceType: .subsonic),
         );
       },
     );

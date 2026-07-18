@@ -133,6 +133,7 @@ Widget skip2PreviousButton(double size, {Color? iconColor}) {
 
 Widget playOrPauseButton(double size, {Color? iconColor}) {
   return IconButton(
+    autofocus: viewModeNotifier.value == .bigPicture,
     color: iconColor,
     icon: ValueListenableBuilder(
       valueListenable: isPlayingNotifier,

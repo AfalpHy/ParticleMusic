@@ -142,18 +142,21 @@ extension _SongListPanel on _SongListState {
                   ),
                   Spacer(),
 
-                  ValueListenableBuilder(
-                    valueListenable: buttonColor.valueNotifier,
-                    builder: (_, value, _) {
+                  ListenableBuilder(
+                    listenable: Listenable.merge([
+                      buttonColor.valueNotifier,
+                      if (folder == null) songListManager.changeNotifier,
+                    ]),
+                    builder: (_, _) {
                       final buttonStyle = ElevatedButton.styleFrom(
-                        backgroundColor: value,
+                        backgroundColor: buttonColor.value,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
                         padding: EdgeInsets.all(10),
                       );
                       return SizedBox(
-                        height: 40,
+                        height: isMobile ? 40 : 35,
                         child: ListView(
                           scrollDirection: .horizontal,
                           children: [
@@ -174,8 +177,8 @@ extension _SongListPanel on _SongListState {
                               style: buttonStyle,
                               child: Text(l10n.playAll),
                             ),
-                            SizedBox(width: 15),
 
+                            SizedBox(width: 15),
                             ElevatedButton(
                               onPressed: () async {
                                 if (currentSongListNotifier.value.isEmpty) {
@@ -221,27 +224,17 @@ extension _SongListPanel on _SongListState {
                               ),
                             ],
 
-                            if (folder == null)
-                              ValueListenableBuilder(
-                                valueListenable: songListManager.changeNotifier,
-                                builder: (context, value, child) {
-                                  if (songListManager.notEmptyCount >= 2) {
-                                    return Row(
-                                      children: [
-                                        SizedBox(width: 15),
-                                        ElevatedButton(
-                                          onPressed: () async {
-                                            widget.switchCallBack!(context);
-                                          },
-                                          style: buttonStyle,
-                                          child: Text(l10n.switch_),
-                                        ),
-                                      ],
-                                    );
-                                  }
-                                  return SizedBox.shrink();
+                            if (folder == null &&
+                                songListManager.notEmptyCount >= 2) ...[
+                              SizedBox(width: 15),
+                              ElevatedButton(
+                                onPressed: () async {
+                                  widget.switchCallBack!(context);
                                 },
+                                style: buttonStyle,
+                                child: Text(l10n.switch_),
                               ),
+                            ],
 
                             if (isLibrary &&
                                     (sourceType == .local ||

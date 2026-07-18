@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/asset_images.dart';
+import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/services/keyboard.dart';
 import 'package:sylvakru/base/services/my_window_listener.dart';
 import 'package:sylvakru/layer/layers_manager.dart';
@@ -280,15 +281,36 @@ class _TitleBarState extends State<TitleBar> {
           builder: (context, _) {
             return Row(
               children: [
+                if (widget.isMainPage)
+                  IconButton(
+                    color: iconColor.value,
+                    onPressed: () async {
+                      if (!await showConfirmDialog(
+                        context,
+                        'Enter big picture mode',
+                      )) {
+                        return;
+                      }
+                      await Future.delayed(Duration(milliseconds: 250));
+                      viewModeNotifier.value = .bigPicture;
+
+                      WidgetsBinding.instance.addPostFrameCallback((_) async {
+                        layersManager.popDetail('artists');
+                        layersManager.popDetail('albums');
+                        layersManager.popDetail('folders');
+                        layersManager.popDetail('playlists');
+                        while (await layersManager.popDetail('settings')) {}
+                      });
+                    },
+                    icon: ImageIcon(bigPictueModeImage),
+                  ),
                 if (widget.isMainPage && !isMaximizedNotifier.value)
                   IconButton(
-                    color: widget.isMainPage
-                        ? iconColor.value
-                        : lyricsPageForegroundColor.value,
+                    color: iconColor.value,
                     onPressed: () async {
                       await windowManager.hide();
                       miniModeSwitching = true;
-                      miniModeNotifier.value = true;
+                      viewModeNotifier.value = .mini;
 
                       await Future.delayed(Duration(milliseconds: 200));
 

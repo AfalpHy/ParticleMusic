@@ -3,6 +3,7 @@ import 'dart:io';
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/audio_handler.dart';
 import 'package:sylvakru/base/asset_images.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
@@ -21,7 +22,6 @@ import 'package:window_manager/window_manager.dart';
 
 final miniModeDisplayOverlayNotifier = ValueNotifier(true);
 Timer? miniModeHideOverlayTimer;
-final miniModeNotifier = ValueNotifier(false);
 late double miniViewMainHeight;
 late bool miniViewDisplayBottom;
 final miniViewDisplayLyricsNotifier = ValueNotifier(true);
@@ -304,7 +304,7 @@ class _MiniViewState extends State<MiniView> {
 
                   miniModeSwitching = true;
                   await windowManager.setSize(mainSize);
-                  miniModeNotifier.value = false;
+                  viewModeNotifier.value = .normal;
                   miniModeSwitching = false;
 
                   if (Platform.isWindows) {

@@ -60,6 +60,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get songs => '所有歌曲';
 
   @override
+  String get home => '主页';
+
+  @override
   String get playlists => '歌单';
 
   @override
@@ -395,6 +398,9 @@ class AppLocalizationsZh extends AppLocalizations {
   String get connect2Navidrome => '连接到Navidrome';
 
   @override
+  String get connect2Subsonic => '连接到Subsonic';
+
+  @override
   String get connect2WebDAV => '连接到WebDAV';
 
   @override
@@ -665,30 +671,6 @@ class AppLocalizationsZh extends AppLocalizations {
   String get outputFormat => '输出格式';
 
   @override
-  String get bitDepthCompat => '位深兼容';
-
-  @override
-  String get bitDepthCompatDesc => '设备不支持源位深时自动回退。';
-
-  @override
-  String get sampleRateCompat => '采样率兼容';
-
-  @override
-  String get sampleRateCompatDesc => '设备不支持源采样率时自动回退。';
-
-  @override
-  String get channelCompat => '声道兼容';
-
-  @override
-  String get channelCompatDesc => '设备不支持源声道时自动回退到可用声道。';
-
-  @override
-  String get tpdfDither => 'TPDF 抖动';
-
-  @override
-  String get tpdfDitherDesc => '高位深转 16-bit 时加入极低电平随机噪声，降低量化失真。';
-
-  @override
   String get pcmBitDepth => 'PCM 位深';
 
   @override
@@ -727,7 +709,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get backgroundBufferDesc =>
-      '后台打开大型 App 出现卡顿时优先提高后台缓冲；数值越大越稳定，切歌与暂停响应可能稍慢。';
+      'USB 缓冲用于吸收短时调度抖动，上限 1000 ms；云端播放另外使用下载水位抵抗网络波动。';
 
   @override
   String get volumeSection => '音量';
@@ -745,7 +727,59 @@ class AppLocalizationsZh extends AppLocalizations {
   String get volumeControlRaw => '原始数字电平';
 
   @override
-  String get volumeControlDacFallbackHint => 'DAC 硬件音量暂未适配，当前回退为数字音量。';
+  String get volumeControlRawConfirm => '原始电平满幅直通';
+
+  @override
+  String get volumeControlDacFallbackHint => 'DAC 硬件音量不可用时自动回退为数字音量。';
+
+  @override
+  String get hardwareVolumeUnverified => '未验证';
+
+  @override
+  String get hardwareVolumeSyncPending => '同步中';
+
+  @override
+  String get hardwareVolumeFrozen => '音量同步失败，控制已冻结';
+
+  @override
+  String audioProcessingWithReplayGain(String processing, String gain) {
+    return '$processing · ReplayGain $gain dB';
+  }
+
+  @override
+  String audioProcessingWithReplayGainNotApplied(String processing) {
+    return '$processing · ReplayGain 未应用';
+  }
+
+  @override
+  String get replayGain => '回放增益';
+
+  @override
+  String get replayGainTrack => '按音轨';
+
+  @override
+  String get replayGainTrackDesc => '优先使用音轨 ReplayGain 标签，缺失时回退为专辑标签。';
+
+  @override
+  String get replayGainAlbum => '按专辑';
+
+  @override
+  String get replayGainAlbumDesc => '优先使用专辑 ReplayGain 标签，缺失时回退为音轨标签。';
+
+  @override
+  String get replayGainOff => '关闭';
+
+  @override
+  String get replayGainOffDesc => '不应用 ReplayGain。';
+
+  @override
+  String get replayGainApplying => '同步中';
+
+  @override
+  String get replayGainNotApplied => '未应用';
+
+  @override
+  String get replayGainNoTag => '无标签';
 
   @override
   String get dsdGainCompensation => 'DSD 增益补偿';
@@ -761,15 +795,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get compatibility => '兼容性';
-
-  @override
-  String get delayUsbLink => '延迟建立 USB 输出链路';
-
-  @override
-  String get delayUsbLinkDesc => '播放开始时再建立独占会话，适合部分 DAC 卡死或控制界面异常的使用场景。';
-
-  @override
-  String get usbBusSpeed => 'USB 总线速度';
 
   @override
   String get releaseUsbBandwidth => '播放后释放 USB 带宽';
@@ -821,6 +846,21 @@ class AppLocalizationsZh extends AppLocalizations {
   String get refreshUsbStatus => '刷新 USB 状态';
 
   @override
+  String get usbExclusiveLabel => 'USB EXCLUSIVE';
+
+  @override
+  String get outputLinkLabel => 'OUTPUT LINK';
+
+  @override
+  String get formatLabel => 'FORMAT';
+
+  @override
+  String get depthLabel => 'DEPTH';
+
+  @override
+  String get usbIdLabel => 'USB ID';
+
+  @override
   String get transportStatus => '传输状态';
 
   @override
@@ -856,6 +896,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get dsdToPcmDesc => '以 PCM 帧封装 DSD，设备支持时使用';
+
+  @override
+  String get dsdToPcmRates => 'DSD 转 PCM 采样率';
 
   @override
   String get dsdNativeDesc => '设备声明 RAW_DATA 或 quirk 指定字节排列时直发 DSD，否则自动回退 DoP';
@@ -978,6 +1021,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get encoding => '编码';
 
   @override
+  String get sourceBitDepth => '源位深';
+
+  @override
+  String get decodedBitDepth => '解码有效位深';
+
+  @override
+  String get usbSlotBitDepth => 'USB 槽位';
+
+  @override
+  String get bitDepthConverted => '位深转换';
+
+  @override
   String get requested => '已请求';
 
   @override
@@ -1021,4 +1076,10 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get connectedNotConfirmed => '已连接 USB DAC，但未确认支持独占';
+
+  @override
+  String get noLyrics => '暂无歌词';
+
+  @override
+  String get lyricsParseFailed => '歌词解析失败';
 }

@@ -3,6 +3,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_gamepads/flutter_gamepads.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/services/logger.dart';
@@ -146,22 +147,95 @@ Future<void> main() async {
           home: child,
         );
       },
-      child: Builder(
-        builder: (context) {
-          return UsbAudioEventListener(
-            child: MediaQuery.removePadding(
-              context: context,
-              removeLeft: true, // for mobile
-              removeRight: true,
-              child: ViewEntry(),
-            ),
-          );
+      child: GamepadControl(
+        shortcuts: {
+          GamepadActivatorButton.a(): const ActivateIntent(),
+          GamepadActivatorButton.b(): const DismissIntent(),
+          GamepadActivatorButton.leftBumper(): const DirectionalFocusIntent(
+            TraversalDirection.left,
+          ),
+          GamepadActivatorButton.rightBumper(): const DirectionalFocusIntent(
+            TraversalDirection.right,
+          ),
+
+          GamepadActivatorButton.dpadUp(): const DirectionalFocusIntent(
+            TraversalDirection.up,
+          ),
+          GamepadActivatorButton.dpadDown(): const DirectionalFocusIntent(
+            TraversalDirection.down,
+          ),
+          GamepadActivatorButton.dpadLeft(): const DirectionalFocusIntent(
+            TraversalDirection.left,
+          ),
+          GamepadActivatorButton.dpadRight(): const DirectionalFocusIntent(
+            TraversalDirection.right,
+          ),
+
+          GamepadActivatorAxis.leftStickUp(): const DirectionalFocusIntent(
+            TraversalDirection.up,
+          ),
+          GamepadActivatorAxis.leftStickDown(): const DirectionalFocusIntent(
+            TraversalDirection.down,
+          ),
+          GamepadActivatorAxis.leftStickLeft(): const DirectionalFocusIntent(
+            TraversalDirection.left,
+          ),
+          GamepadActivatorAxis.leftStickRight(): const DirectionalFocusIntent(
+            TraversalDirection.right,
+          ),
+
+          GamepadActivatorAxis.rightStickUp(): const ScrollIntent(
+            direction: AxisDirection.up,
+          ),
+          GamepadActivatorAxis.rightStickDown(): const ScrollIntent(
+            direction: AxisDirection.down,
+          ),
+          GamepadActivatorAxis.rightStickLeft(): const ScrollIntent(
+            direction: AxisDirection.left,
+          ),
+          GamepadActivatorAxis.rightStickRight(): const ScrollIntent(
+            direction: AxisDirection.right,
+          ),
         },
+        repeatIntents: {
+          // add your new intents for hold repeat
+          const DirectionalFocusIntent(TraversalDirection.up),
+          const DirectionalFocusIntent(TraversalDirection.down),
+          const DirectionalFocusIntent(TraversalDirection.left),
+          const DirectionalFocusIntent(TraversalDirection.right),
+          // keep old ones if you still use them
+          const PreviousFocusIntent(),
+          const NextFocusIntent(),
+
+          const ScrollIntent(direction: AxisDirection.up),
+          const ScrollIntent(direction: AxisDirection.down),
+          const ScrollIntent(direction: AxisDirection.left),
+          const ScrollIntent(direction: AxisDirection.right),
+        },
+        child: Builder(
+          builder: (context) {
+            return UsbAudioEventListener(
+              child: MediaQuery.removePadding(
+                context: context,
+                removeLeft: true, // for mobile
+                removeRight: true,
+                child: ViewEntry(),
+              ),
+            );
+          },
+        ),
       ),
     ),
   );
 
   logger.output('App start');
+  WidgetsBinding.instance.addPostFrameCallback((_) {
+    unawaited(
+      audioHandler.restoreCurrentSong().onError((error, stackTrace) {
+        logger.output('Playback restore failed: $error');
+      }),
+    );
+  });
 }
 
 Future<void> _setupMainWindow() async {

@@ -200,6 +200,12 @@ abstract class AppLocalizations {
   /// **'Songs'**
   String get songs;
 
+  /// No description provided for @home.
+  ///
+  /// In en, this message translates to:
+  /// **'Home'**
+  String get home;
+
   /// No description provided for @playlists.
   ///
   /// In en, this message translates to:
@@ -842,6 +848,12 @@ abstract class AppLocalizations {
   /// **'Connect to Navidrome'**
   String get connect2Navidrome;
 
+  /// No description provided for @connect2Subsonic.
+  ///
+  /// In en, this message translates to:
+  /// **'Connect to Subsonic'**
+  String get connect2Subsonic;
+
   /// No description provided for @connect2WebDAV.
   ///
   /// In en, this message translates to:
@@ -1382,54 +1394,6 @@ abstract class AppLocalizations {
   /// **'Output format'**
   String get outputFormat;
 
-  /// No description provided for @bitDepthCompat.
-  ///
-  /// In en, this message translates to:
-  /// **'Bit-depth fallback'**
-  String get bitDepthCompat;
-
-  /// No description provided for @bitDepthCompatDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Automatically fall back when the device doesn\'t support the source bit depth.'**
-  String get bitDepthCompatDesc;
-
-  /// No description provided for @sampleRateCompat.
-  ///
-  /// In en, this message translates to:
-  /// **'Sample-rate fallback'**
-  String get sampleRateCompat;
-
-  /// No description provided for @sampleRateCompatDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Automatically fall back when the device doesn\'t support the source sample rate.'**
-  String get sampleRateCompatDesc;
-
-  /// No description provided for @channelCompat.
-  ///
-  /// In en, this message translates to:
-  /// **'Channel fallback'**
-  String get channelCompat;
-
-  /// No description provided for @channelCompatDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Fall back to an available channel layout when the source channels aren\'t supported.'**
-  String get channelCompatDesc;
-
-  /// No description provided for @tpdfDither.
-  ///
-  /// In en, this message translates to:
-  /// **'TPDF dither'**
-  String get tpdfDither;
-
-  /// No description provided for @tpdfDitherDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Add very-low-level noise when converting high bit depth to 16-bit to reduce quantization distortion.'**
-  String get tpdfDitherDesc;
-
   /// No description provided for @pcmBitDepth.
   ///
   /// In en, this message translates to:
@@ -1505,7 +1469,7 @@ abstract class AppLocalizations {
   /// No description provided for @backgroundBufferDesc.
   ///
   /// In en, this message translates to:
-  /// **'Raise the background buffer first if playback stutters while a large app runs in the background; higher is more stable but track switches and pause may respond a little slower.'**
+  /// **'The USB buffer absorbs short scheduling jitter up to 1000 ms; cloud playback uses a separate download watermark for network fluctuations.'**
   String get backgroundBufferDesc;
 
   /// No description provided for @volumeSection.
@@ -1538,11 +1502,107 @@ abstract class AppLocalizations {
   /// **'Raw digital level'**
   String get volumeControlRaw;
 
+  /// No description provided for @volumeControlRawConfirm.
+  ///
+  /// In en, this message translates to:
+  /// **'Full-scale raw output'**
+  String get volumeControlRawConfirm;
+
   /// No description provided for @volumeControlDacFallbackHint.
   ///
   /// In en, this message translates to:
-  /// **'DAC hardware volume isn\'t available yet; it currently falls back to digital volume.'**
+  /// **'Falls back to digital volume when DAC hardware volume is unavailable.'**
   String get volumeControlDacFallbackHint;
+
+  /// No description provided for @hardwareVolumeUnverified.
+  ///
+  /// In en, this message translates to:
+  /// **'Unverified'**
+  String get hardwareVolumeUnverified;
+
+  /// No description provided for @hardwareVolumeSyncPending.
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing'**
+  String get hardwareVolumeSyncPending;
+
+  /// No description provided for @hardwareVolumeFrozen.
+  ///
+  /// In en, this message translates to:
+  /// **'Volume sync failed; controls are frozen'**
+  String get hardwareVolumeFrozen;
+
+  /// No description provided for @audioProcessingWithReplayGain.
+  ///
+  /// In en, this message translates to:
+  /// **'{processing} · ReplayGain {gain} dB'**
+  String audioProcessingWithReplayGain(String processing, String gain);
+
+  /// No description provided for @audioProcessingWithReplayGainNotApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'{processing} · ReplayGain not applied'**
+  String audioProcessingWithReplayGainNotApplied(String processing);
+
+  /// No description provided for @replayGain.
+  ///
+  /// In en, this message translates to:
+  /// **'ReplayGain'**
+  String get replayGain;
+
+  /// No description provided for @replayGainTrack.
+  ///
+  /// In en, this message translates to:
+  /// **'By track'**
+  String get replayGainTrack;
+
+  /// No description provided for @replayGainTrackDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Prefer track ReplayGain tags, falling back to album tags when unavailable.'**
+  String get replayGainTrackDesc;
+
+  /// No description provided for @replayGainAlbum.
+  ///
+  /// In en, this message translates to:
+  /// **'By album'**
+  String get replayGainAlbum;
+
+  /// No description provided for @replayGainAlbumDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Prefer album ReplayGain tags, falling back to track tags when unavailable.'**
+  String get replayGainAlbumDesc;
+
+  /// No description provided for @replayGainOff.
+  ///
+  /// In en, this message translates to:
+  /// **'Off'**
+  String get replayGainOff;
+
+  /// No description provided for @replayGainOffDesc.
+  ///
+  /// In en, this message translates to:
+  /// **'Do not apply ReplayGain.'**
+  String get replayGainOffDesc;
+
+  /// No description provided for @replayGainApplying.
+  ///
+  /// In en, this message translates to:
+  /// **'Syncing'**
+  String get replayGainApplying;
+
+  /// No description provided for @replayGainNotApplied.
+  ///
+  /// In en, this message translates to:
+  /// **'Not applied'**
+  String get replayGainNotApplied;
+
+  /// No description provided for @replayGainNoTag.
+  ///
+  /// In en, this message translates to:
+  /// **'No tag'**
+  String get replayGainNoTag;
 
   /// No description provided for @dsdGainCompensation.
   ///
@@ -1573,24 +1633,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Compatibility'**
   String get compatibility;
-
-  /// No description provided for @delayUsbLink.
-  ///
-  /// In en, this message translates to:
-  /// **'Delay establishing the USB output link'**
-  String get delayUsbLink;
-
-  /// No description provided for @delayUsbLinkDesc.
-  ///
-  /// In en, this message translates to:
-  /// **'Establish the exclusive session only when playback starts; useful for DACs that freeze or misbehave.'**
-  String get delayUsbLinkDesc;
-
-  /// No description provided for @usbBusSpeed.
-  ///
-  /// In en, this message translates to:
-  /// **'USB bus speed'**
-  String get usbBusSpeed;
 
   /// No description provided for @releaseUsbBandwidth.
   ///
@@ -1688,6 +1730,36 @@ abstract class AppLocalizations {
   /// **'Refresh USB status'**
   String get refreshUsbStatus;
 
+  /// No description provided for @usbExclusiveLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'USB EXCLUSIVE'**
+  String get usbExclusiveLabel;
+
+  /// No description provided for @outputLinkLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'OUTPUT LINK'**
+  String get outputLinkLabel;
+
+  /// No description provided for @formatLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'FORMAT'**
+  String get formatLabel;
+
+  /// No description provided for @depthLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'DEPTH'**
+  String get depthLabel;
+
+  /// No description provided for @usbIdLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'USB ID'**
+  String get usbIdLabel;
+
   /// No description provided for @transportStatus.
   ///
   /// In en, this message translates to:
@@ -1753,6 +1825,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Wrap DSD in PCM frames; used when the device supports it'**
   String get dsdToPcmDesc;
+
+  /// No description provided for @dsdToPcmRates.
+  ///
+  /// In en, this message translates to:
+  /// **'DSD to PCM sample rates'**
+  String get dsdToPcmRates;
 
   /// No description provided for @dsdNativeDesc.
   ///
@@ -1976,6 +2054,30 @@ abstract class AppLocalizations {
   /// **'Encoding'**
   String get encoding;
 
+  /// No description provided for @sourceBitDepth.
+  ///
+  /// In en, this message translates to:
+  /// **'Source bit depth'**
+  String get sourceBitDepth;
+
+  /// No description provided for @decodedBitDepth.
+  ///
+  /// In en, this message translates to:
+  /// **'Decoded effective depth'**
+  String get decodedBitDepth;
+
+  /// No description provided for @usbSlotBitDepth.
+  ///
+  /// In en, this message translates to:
+  /// **'USB slot'**
+  String get usbSlotBitDepth;
+
+  /// No description provided for @bitDepthConverted.
+  ///
+  /// In en, this message translates to:
+  /// **'Bit-depth conversion'**
+  String get bitDepthConverted;
+
   /// No description provided for @requested.
   ///
   /// In en, this message translates to:
@@ -2065,6 +2167,18 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'USB DAC connected but exclusive support unconfirmed'**
   String get connectedNotConfirmed;
+
+  /// No description provided for @noLyrics.
+  ///
+  /// In en, this message translates to:
+  /// **'There are no lyrics'**
+  String get noLyrics;
+
+  /// No description provided for @lyricsParseFailed.
+  ///
+  /// In en, this message translates to:
+  /// **'Lyrics parsing failed'**
+  String get lyricsParseFailed;
 }
 
 class _AppLocalizationsDelegate

@@ -7,6 +7,7 @@
 #include "generated_plugin_registrant.h"
 
 #include <flutter_secure_storage_linux/flutter_secure_storage_linux_plugin.h>
+#include <gamepads_linux/gamepads_linux_plugin.h>
 #include <media_kit_libs_linux/media_kit_libs_linux_plugin.h>
 #include <screen_retriever_linux/screen_retriever_linux_plugin.h>
 #include <tray_manager/tray_manager_plugin.h>
@@ -17,6 +18,9 @@ void fl_register_plugins(FlPluginRegistry* registry) {
   g_autoptr(FlPluginRegistrar) flutter_secure_storage_linux_registrar =
       fl_plugin_registry_get_registrar_for_plugin(registry, "FlutterSecureStorageLinuxPlugin");
   flutter_secure_storage_linux_plugin_register_with_registrar(flutter_secure_storage_linux_registrar);
+  g_autoptr(FlPluginRegistrar) gamepads_linux_registrar =
+      fl_plugin_registry_get_registrar_for_plugin(registry, "GamepadsLinuxPlugin");
+  gamepads_linux_plugin_register_with_registrar(gamepads_linux_registrar);
   g_autoptr(FlPluginRegistrar) media_kit_libs_linux_registrar =
       fl_plugin_registry_get_registrar_for_plugin(registry, "MediaKitLibsLinuxPlugin");
   media_kit_libs_linux_plugin_register_with_registrar(media_kit_libs_linux_registrar);

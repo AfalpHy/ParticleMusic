@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:sylvakru/base/services/emby_client.dart';
 import 'package:sylvakru/base/services/metadata_service.dart';
+import 'package:sylvakru/base/services/play_queue_logic.dart';
+import 'package:sylvakru/base/services/subsonic_client.dart';
 import 'package:sylvakru/base/services/super_lyric.dart';
 import 'package:sylvakru/base/services/webdav_client.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
@@ -22,10 +24,10 @@ import 'package:sylvakru/base/utils/contrast_color_generator.dart';
 import 'package:sylvakru/base/data/library.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
 import 'package:sylvakru/base/services/navidrome_client.dart';
+import 'package:sylvakru/base/services/replay_gain.dart';
 import 'package:sylvakru/base/services/usb_audio_preferences.dart';
 import 'package:sylvakru/base/services/usb_audio_service.dart';
 import 'package:sylvakru/base/utils/metadata_utils.dart';
-import 'package:sylvakru/mini_view/mini_view.dart';
 import 'dart:async';
 
 import 'package:sylvakru/portrait_view/sleep_timer.dart';
@@ -40,8 +42,69 @@ final ValueNotifier<MyAudioMetadata?> currentSongNotifier = ValueNotifier(null);
 final isPlayingNotifier = ValueNotifier(false);
 final playModeNotifier = ValueNotifier(0);
 final volumeNotifier = ValueNotifier(0.3);
+final usbExclusiveVolumeNotifier = ValueNotifier(
+  UsbAudioPreferences.defaultExclusiveVolume,
+);
+
+const _safeUsbVolumeIncreaseDb = 1.0;
+const _phoneUsbVolumeStepDb = 2.5;
+const _phoneUsbVolumeStep = 0.02;
+
+double dbToUsbVolumeRatio(double db) => math.pow(10, db / 30).toDouble();
+
+double nextSafeUsbVolume(double applied, double requested) {
+  final current = applied.clamp(0.0, 1.0).toDouble();
+  final target = requested.clamp(0.0, 1.0).toDouble();
+  if (target <= current) {
+    return target;
+  }
+  final nextGain = limitedOutputGainIncrease(
+    appliedGain: usbExclusiveDigitalVolumeGain(current),
+    targetGain: usbExclusiveDigitalVolumeGain(target),
+    maxIncreaseDb: _safeUsbVolumeIncreaseDb,
+  );
+  return math.pow(nextGain, 2 / 3).toDouble().clamp(0.0, 1.0);
+}
+
+double adjustedRemoteVolume(double current, AndroidVolumeDirection direction) {
+  final applied = current.clamp(0.0, 1.0).toDouble();
+  if (identical(direction, AndroidVolumeDirection.raise)) {
+    return (applied + _phoneUsbVolumeStep).clamp(0.0, 1.0).toDouble();
+  }
+  if (identical(direction, AndroidVolumeDirection.lower)) {
+    return (applied - _phoneUsbVolumeStep).clamp(0.0, 1.0).toDouble();
+  }
+  return applied;
+}
+
+double outputUserVolume({required bool active, required double requested}) {
+  if (!active) return 1;
+  return requested.clamp(0.0, 1.0).toDouble();
+}
+
+AndroidVolumeDirection? usbExclusiveVolumeKeyDirection({
+  required int delta,
+  required bool active,
+}) {
+  if (delta == 0 || !active) return null;
+  return delta > 0
+      ? AndroidVolumeDirection.raise
+      : AndroidVolumeDirection.lower;
+}
+
+AndroidPlaybackInfo androidPlaybackInfoFor(
+  UsbExclusivePlaybackState _,
+  double _,
+) => LocalAndroidPlaybackInfo();
 
 final autoPlayOnStartupNotifier = ValueNotifier(false);
+
+int? restoredPlaybackIndex(int currentIndex, int queueLength) {
+  if (currentIndex < 0 || queueLength <= 0) {
+    return null;
+  }
+  return currentIndex < queueLength ? currentIndex : 0;
+}
 
 Future<void> initAudioService() async {
   MediaKit.ensureInitialized();
@@ -99,6 +162,19 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
   bool _intentionalExclusiveStop = false;
   bool _suppressPlayerCompleted = false;
   final _positionController = StreamController<Duration>.broadcast();
+  ReplayGainResult _currentReplayGain = const ReplayGainResult(0, null, null);
+  double _sharedUserVolume = 1;
+  double _appliedUserVolume = volumeNotifier.value;
+  double _volumeRampTarget = volumeNotifier.value;
+  Timer? _volumeRampTimer;
+  double? _appliedOutputGain;
+  double _outputGainRampStepDb = _safeUsbVolumeIncreaseDb;
+  Timer? _outputGainRampTimer;
+  String? _usbVolumeDeviceKey;
+  int? _usbAudioDeviceId;
+  bool _usbOutputHandoffInProgress = false;
+  int? _usbOutputHandoffGeneration;
+  int _replayGainApplyGeneration = 0;
 
   late final File _playQueueState;
   late final File _playState;
@@ -110,6 +186,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
   int _loadGeneration = 0;
 
   MyAudioHandler() {
+    _publishAndroidPlaybackInfo();
     // avoid reading .lrc files
     (_player.platform as NativePlayer).setProperty('sub-auto', 'no');
 
@@ -170,13 +247,159 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
 
     usbExclusivePlaybackStateNotifier.addListener(_handleUsbExclusiveState);
     usbExclusiveVolumeKeyNotifier.addListener(_handleUsbExclusiveVolumeKey);
+    usbHardwareVolumeNotifier.addListener(_handleUsbHardwareVolume);
+    usbAudioStatusNotifier.addListener(_handleUsbAudioStatus);
+    usbAudioEventNotifier.addListener(_handleUsbAudioEvent);
+    _handleUsbAudioStatus();
     // 切换音量控制方式后立即按新方式重下发（原始数字电平旁路、其余数字音量）。
     usbAudioPreferences.volumeControlModeNotifier.addListener(() {
-      _applyUsbExclusiveVolume(_perceptualVolumeGain(volumeNotifier.value));
+      _applyUsbExclusiveVolume(
+        usbExclusiveDigitalVolumeGain(volumeNotifier.value),
+      );
     });
+    usbAudioPreferences.dsdGainCompensationNotifier.addListener(() {
+      _applyUsbExclusiveVolume(
+        usbExclusiveDigitalVolumeGain(volumeNotifier.value),
+      );
+    });
+    usbAudioPreferences.volumeSmoothHandoffNotifier.addListener(() {
+      _applyUsbExclusiveVolume(
+        usbExclusiveDigitalVolumeGain(volumeNotifier.value),
+      );
+    });
+    library.replayGainMetadataChangedNotifier.addListener(
+      _handleReplayGainMetadataChanged,
+    );
+    usbAudioPreferences.replayGainModeNotifier.addListener(
+      _handleReplayGainModeChanged,
+    );
     if (Platform.isAndroid) {
       WidgetsBinding.instance.addObserver(this);
     }
+  }
+
+  void _handleReplayGainMetadataChanged() {
+    final event = library.replayGainMetadataChangedNotifier.value;
+    if (event == null) {
+      return;
+    }
+    final refreshed = replayGainForMetadataUpdate(
+      currentSong: currentSongNotifier.value,
+      updatedSongId: event.songId,
+      mode: usbAudioPreferences.replayGainModeNotifier.value,
+    );
+    if (refreshed != null) {
+      _updateCurrentReplayGain(refreshed);
+    }
+  }
+
+  void _handleReplayGainModeChanged() {
+    final song = currentSongNotifier.value;
+    _updateCurrentReplayGain(
+      song == null
+          ? const ReplayGainResult(0, null, null)
+          : replayGainFor(
+              song,
+              usbAudioPreferences.replayGainModeNotifier.value,
+            ),
+    );
+  }
+
+  ReplayGainPlaybackState _pendingReplayGainState(
+    ReplayGainOutputPath path,
+    int generation,
+  ) {
+    final mode = usbAudioPreferences.replayGainModeNotifier.value;
+    if (mode == ReplayGainMode.off) return ReplayGainPlaybackState.off();
+    if (_currentReplayGain.source == null) {
+      return ReplayGainPlaybackState.noTag();
+    }
+    return ReplayGainPlaybackState.pending(
+      selectedDb: _currentReplayGain.gainDb,
+      path: path,
+      generation: generation,
+    );
+  }
+
+  void _updateCurrentReplayGain(ReplayGainResult replayGain) {
+    _currentReplayGain = replayGain;
+    if (_usbExclusiveActive) {
+      _applyUsbExclusiveVolume(
+        usbExclusiveDigitalVolumeGain(volumeNotifier.value),
+        maxIncreaseDb: _safeUsbVolumeIncreaseDb,
+      );
+    } else {
+      unawaited(
+        _applySharedReplayGain(
+          outputUserVolume(active: false, requested: volumeNotifier.value),
+          maxIncreaseDb: _safeUsbVolumeIncreaseDb,
+        ),
+      );
+    }
+  }
+
+  void _handleUsbAudioStatus() {
+    final status = usbAudioStatusNotifier.value;
+    if (status.activeDeviceId != null) {
+      _usbAudioDeviceId = status.activeDeviceId;
+    }
+    final deviceKey = usbExclusiveVolumeDeviceKey(
+      status.vendorId,
+      status.productId,
+    );
+    if (deviceKey != null) {
+      _usbVolumeDeviceKey = deviceKey;
+    }
+    if (!_usbExclusiveActive &&
+        status.hasConnectedUsbAudioDevice &&
+        _usbVolumeDeviceKey != null) {
+      usbExclusiveVolumeNotifier.value = usbAudioPreferences.volumeForDevice(
+        _usbVolumeDeviceKey,
+      );
+    }
+  }
+
+  void _handleUsbAudioEvent() {
+    final event = usbAudioEventNotifier.value;
+    if (event?.type != UsbAudioDeviceEventType.removed ||
+        event?.deviceId != _usbAudioDeviceId ||
+        !_usbExclusiveActive) {
+      return;
+    }
+    final position = _usbExclusivePosition;
+    updateIsPlaying(false);
+    updatePlaybackState(postion: position);
+    usbAudioService.markExclusiveDeviceRemoved(position: position);
+  }
+
+  void _prepareUsbExclusiveVolume() {
+    _handleUsbAudioStatus();
+    final volume = usbAudioPreferences.volumeForDevice(_usbVolumeDeviceKey);
+    _cancelVolumeRamp();
+    _appliedUserVolume = volume;
+    _volumeRampTarget = volume;
+    usbExclusiveVolumeNotifier.value = volume;
+    volumeNotifier.value = volume;
+    _player.setVolume(_perceptualVolumeGain(volume) * 100);
+  }
+
+  void _restoreSharedVolume() {
+    _cancelVolumeRamp();
+    final volume = outputUserVolume(
+      active: false,
+      requested: _sharedUserVolume,
+    );
+    _sharedUserVolume = volume;
+    _appliedUserVolume = volume;
+    _volumeRampTarget = volume;
+    volumeNotifier.value = volume;
+    _player.setVolume(_perceptualVolumeGain(volume) * 100);
+  }
+
+  void _rememberUsbExclusiveVolume(double volume) {
+    final next = volume.clamp(0.0, 1.0).toDouble();
+    usbExclusiveVolumeNotifier.value = next;
+    usbAudioPreferences.setVolumeForDevice(_usbVolumeDeviceKey, next);
   }
 
   void updateIsPlaying(bool isPlaying) {
@@ -213,13 +436,37 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
   void _handleUsbExclusiveState() {
     final state = usbExclusivePlaybackStateNotifier.value;
     final wasActive = _usbExclusiveActive;
-    _usbExclusivePosition = state.position;
+    final interruptedPosition = trustedUsbExclusivePosition(
+      current: _usbExclusivePosition,
+      reported: state.position,
+      stateActive: state.active,
+    );
+    _usbExclusivePosition = interruptedPosition;
     _usbExclusiveActive = state.active;
+    if (wasActive && !state.active) {
+      _cancelVolumeRamp();
+      _cancelOutputGainRamp();
+      _restoreSharedVolume();
+    }
+    _publishAndroidPlaybackInfo();
 
     if (state.active) {
-      // 刚进入独占时把当前音量按当前控制方式下发一次，避免独占起播后音量失控。
+      if (!wasActive &&
+          state.hardwareVolumeActive &&
+          state.hardwareVolumeReadbackVerified &&
+          state.hardwareVolumeGainQ16 != null) {
+        _syncUsbHardwareVolume(
+          gainQ16: state.hardwareVolumeGainQ16!,
+          replayGainDb: state.replayGainMilliDb / 1000,
+          isDsd: currentSongNotifier.value?.isDsd == true,
+          dsdGainCompensationDb:
+              usbAudioPreferences.dsdGainCompensationNotifier.value,
+          showOverlay: false,
+        );
+      }
+      // 起播请求已经带上安全起始增益；激活后按固定节奏继续渐升。
       if (!wasActive) {
-        _applyUsbExclusiveVolume(_perceptualVolumeGain(volumeNotifier.value));
+        _scheduleOutputGainRamp();
       }
       // 独占播放时，位置由独占链路上报，驱动进度流。
       _positionController.add(state.position);
@@ -252,16 +499,21 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
           await pause();
         }
       }());
-    } else if (wasActive && !_intentionalExclusiveStop) {
-      // 独占播放中途意外失活（拔出 DAC / 写失败 ENODEV 等）：回退系统输出，从中断位置续播，
-      // 不再卡住需要手动切歌才恢复。
+    } else if (shouldStartUsbOutputHandoff(
+      wasActive: wasActive,
+      intentionalStop: _intentionalExclusiveStop,
+      handoffInProgress: _usbOutputHandoffInProgress,
+      completed: false,
+    )) {
       logger.output(
-        "usb exclusive interrupted -> system output fallback:${state.message}",
+        "usb exclusive interrupted -> safe system output handoff:${state.message}",
       );
       debugPrint(
-        "usb exclusive interrupted -> system output fallback:${state.message}",
+        "usb exclusive interrupted -> safe system output handoff:${state.message}",
       );
-      unawaited(_resumeOnSystemOutputAfterExclusiveInterrupt(state.position));
+      unawaited(
+        _handoffToSystemOutputAfterExclusiveInterrupt(interruptedPosition),
+      );
     }
   }
 
@@ -290,11 +542,14 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
   /// 用系统输出（media_kit）打开歌曲并按当前播放状态起播。
   /// 供 load() 非独占分支与独占意外中断回退续播复用。
   Future<void> _openPlayerMedia(MyAudioMetadata currentSong) async {
+    final shouldPlay = isPlayingNotifier.value;
     if (currentSong.cacheExist) {
-      await _player.open(
-        Media(currentSong.cachePath!),
-        play: isPlayingNotifier.value,
+      await _player.open(Media(currentSong.cachePath!), play: false);
+      await _applySharedReplayGain(
+        outputUserVolume(active: false, requested: volumeNotifier.value),
+        establishBaseline: true,
       );
+      if (shouldPlay) await _player.play();
       return;
     }
     String? resource;
@@ -308,6 +563,9 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
           resource = tmpPath;
         }
         break;
+      case .subsonic:
+        currentSong.path ??= subsonicClient!.getStreamUrl(currentSong.id);
+        break;
       case .navidrome:
         currentSong.path ??= navidromeClient!.getStreamUrl(currentSong.id);
         break;
@@ -320,31 +578,58 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     resource ??= currentSong.path!;
     await _player.open(
       Media(resource, httpHeaders: needHeader ? webdavClient?.headers : null),
-      play: isPlayingNotifier.value,
+      play: false,
     );
+    await _applySharedReplayGain(
+      outputUserVolume(active: false, requested: volumeNotifier.value),
+      establishBaseline: true,
+    );
+    if (shouldPlay) await _player.play();
   }
 
-  /// 独占播放中途意外中断（拔出 DAC、写失败 ENODEV 等）时回退到系统输出，
-  /// 从中断位置续播，避免卡住需要手动切歌才恢复。
-  Future<void> _resumeOnSystemOutputAfterExclusiveInterrupt(
+  /// 独占播放中途意外中断时切换到共享输出并恢复位置，但保持暂停。
+  Future<void> _handoffToSystemOutputAfterExclusiveInterrupt(
     Duration position,
   ) async {
+    if (_usbOutputHandoffInProgress) return;
     final currentSong = currentSongNotifier.value;
     if (currentSong == null) {
       return;
     }
     final generation = _loadGeneration;
+    _usbOutputHandoffInProgress = true;
+    _usbOutputHandoffGeneration = generation;
+    updateIsPlaying(false);
+    updatePlaybackState(postion: position);
     try {
       await _applyUsbOutputForSong(currentSong);
       if (generation != _loadGeneration) return;
       await _openPlayerMedia(currentSong);
       if (generation != _loadGeneration) return;
       if (position > Duration.zero) {
+        // 流式媒体 open 后未就绪时 mpv 会丢弃 seek（进度直接回零），
+        // 等 duration 出来再定位；超时就放弃定位，不卡住回退。
+        if (_player.state.duration <= Duration.zero) {
+          await _player.stream.duration
+              .firstWhere((duration) => duration > Duration.zero)
+              .timeout(
+                const Duration(seconds: 5),
+                onTimeout: () => Duration.zero,
+              );
+        }
+        if (generation != _loadGeneration) return;
         await _player.seek(position);
       }
+      _positionController.add(position);
+      updatePlaybackState(postion: position);
     } catch (error) {
-      logger.output("usb exclusive interrupt fallback failed:$error");
-      debugPrint("usb exclusive interrupt fallback failed:$error");
+      logger.output("usb exclusive interrupt handoff failed:$error");
+      debugPrint("usb exclusive interrupt handoff failed:$error");
+    } finally {
+      if (_usbOutputHandoffGeneration == generation) {
+        _usbOutputHandoffInProgress = false;
+        _usbOutputHandoffGeneration = null;
+      }
     }
   }
 
@@ -420,11 +705,24 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     final Map<String, dynamic> json =
         jsonDecode(content) as Map<String, dynamic>;
 
+    if (json.containsKey('usbExclusiveDeviceVolumes')) {
+      usbAudioPreferences.loadDeviceVolumes(json['usbExclusiveDeviceVolumes']);
+    }
+    _handleUsbAudioStatus();
+
     currentIndex = json['currentIndex'] as int? ?? -1;
     playModeNotifier.value = json['playMode'] as int? ?? 0;
     _tmpPlayMode = json['tmpPlayMode'] as int? ?? 0;
 
-    volumeNotifier.value = json['volume'] as double? ?? 0.3;
+    final restoredVolume = outputUserVolume(
+      active: false,
+      requested: (json['volume'] as double? ?? 1),
+    );
+    _sharedUserVolume = restoredVolume;
+    _appliedUserVolume = restoredVolume;
+    _volumeRampTarget = restoredVolume;
+    volumeNotifier.value = restoredVolume;
+    _applyUserVolume(restoredVolume);
 
     if (!_started) {
       _started = true;
@@ -441,16 +739,16 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
       }
     }
 
-    if (currentIndex != -1 && playQueue.isNotEmpty) {
-      // reload may make some songs not in the library to be removed
-      if (currentIndex >= playQueue.length) {
-        currentIndex = 0;
-      }
-      await load();
+    currentIndex = restoredPlaybackIndex(currentIndex, playQueue.length) ?? -1;
+  }
+
+  Future<void> restoreCurrentSong() async {
+    final restored = restoredPlaybackIndex(currentIndex, playQueue.length);
+    if (restored == null) {
+      return;
     }
-    if (!isMobile) {
-      setVolume(volumeNotifier.value);
-    }
+    currentIndex = restored;
+    await load();
   }
 
   void savePlayState() {
@@ -459,7 +757,9 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
         'currentIndex': currentIndex,
         'playMode': playModeNotifier.value,
         'tmpPlayMode': _tmpPlayMode,
-        'volume': volumeNotifier.value,
+        'volume': _sharedUserVolume,
+        'usbExclusiveDeviceVolumes':
+            usbAudioPreferences.toMap()['usbExclusiveDeviceVolumes'],
       }),
     );
   }
@@ -480,46 +780,29 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
   }
 
   bool insert2Next(MyAudioMetadata song) {
-    int songIndex = playQueue.indexOf(song);
-    if (songIndex != -1) {
-      if (songIndex == currentIndex) {
-        return false;
-      }
-      if (songIndex < currentIndex) {
-        playQueue.removeAt(songIndex);
-        playQueue.insert(currentIndex, song);
-        currentIndex -= 1;
-      } else {
-        playQueue.removeAt(songIndex);
-        playQueue.insert(currentIndex + 1, song);
-      }
-    } else {
-      playQueue.insert(currentIndex + 1, song);
-      if (playModeNotifier.value == 1 ||
-          (playModeNotifier.value == 2 && audioHandler._tmpPlayMode == 1)) {
-        _playQueueTmp.add(song);
-      }
+    final result = PlayQueueLogic.insert2Next(playQueue, currentIndex, song);
+    if (result == null) {
+      return false;
+    }
+    currentIndex = result.currentIndex;
+    if (result.wasNewlyInserted &&
+        (playModeNotifier.value == 1 ||
+            (playModeNotifier.value == 2 && audioHandler._tmpPlayMode == 1))) {
+      _playQueueTmp.add(song);
     }
     return true;
   }
 
   bool add2Last(MyAudioMetadata song) {
-    int songIndex = playQueue.indexOf(song);
-    if (songIndex != -1) {
-      if (songIndex == currentIndex) {
-        return false;
-      }
-      if (songIndex < currentIndex) {
-        currentIndex -= 1;
-      }
-      playQueue.removeAt(songIndex);
-      playQueue.add(song);
-    } else {
-      playQueue.add(song);
-      if (playModeNotifier.value == 1 ||
-          (playModeNotifier.value == 2 && audioHandler._tmpPlayMode == 1)) {
-        _playQueueTmp.add(song);
-      }
+    final result = PlayQueueLogic.add2Last(playQueue, currentIndex, song);
+    if (result == null) {
+      return false;
+    }
+    currentIndex = result.currentIndex;
+    if (result.wasNewlyInserted &&
+        (playModeNotifier.value == 1 ||
+            (playModeNotifier.value == 2 && audioHandler._tmpPlayMode == 1))) {
+      _playQueueTmp.add(song);
     }
     return true;
   }
@@ -681,24 +964,29 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
       colorManager.updateLyricsPageColors();
     }
 
-    if (miniModeNotifier.value) {
+    if (viewModeNotifier.value == .mini) {
       colorManager.updateMiniViewColors();
     }
   }
 
   Future<void> load() async {
+    _cancelVolumeRamp();
+    _cancelOutputGainRamp();
     final generation = ++_loadGeneration;
-    if (currentSongNotifier.value != null) {
+    final previousSong = currentSongNotifier.value;
+    final previousNext = previousSong == null
+        ? null
+        : playQueue[(playQueue.indexOf(previousSong) + 1) % playQueue.length];
+    if (previousSong != null) {
       if (_playLastSyncTime != null) {
         _playedDuration += DateTime.now().difference(_playLastSyncTime!);
       }
-      if (currentSongNotifier.value!.duration != null) {
+      if (previousSong.duration != null) {
         double times =
-            _playedDuration.inSeconds /
-            currentSongNotifier.value!.duration!.inSeconds;
+            _playedDuration.inSeconds / previousSong.duration!.inSeconds;
         if (times > 0.5) {
-          library.tryAddCache(currentSongNotifier.value!);
-          history.addSongTimes(currentSongNotifier.value!, times.round());
+          library.tryAddCache(previousSong);
+          history.addSongTimes(previousSong, times.round());
         }
       }
     }
@@ -710,23 +998,38 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
 
     final currentSong = playQueue[currentIndex];
 
+    unawaited(library.supplementReplayGainForPlayback(currentSong));
     await _setLyricsAndUpdateColors(currentSong);
     if (generation != _loadGeneration) {
       return;
     }
+    _currentReplayGain = replayGainFor(
+      currentSong,
+      usbAudioPreferences.replayGainModeNotifier.value,
+    );
     _superLyric.updateLines(currentSong.parsedLyrics!.lines);
 
     currentSongNotifier.value = currentSong;
 
     isLoading = true;
+    final replacingUsbExclusive = _usbExclusiveActive;
     try {
-      await _stopExclusiveIntentionally();
-      _usbExclusiveActive = false;
-      _usbExclusivePosition = Duration.zero;
+      if (!replacingUsbExclusive) {
+        await _stopExclusiveIntentionally();
+        _usbExclusiveActive = false;
+        _usbExclusivePosition = Duration.zero;
+      }
+      if (previousSong != null && previousSong != currentSong) {
+        library.cancelCacheDownload(previousSong);
+      }
+      if (previousNext != null && previousNext != currentSong) {
+        library.cancelCacheDownload(previousNext);
+      }
 
       final openedExclusive = await _tryOpenUsbExclusive(
         currentSong,
         generation: generation,
+        replaceActive: replacingUsbExclusive,
       );
       if (generation != _loadGeneration) {
         isLoading = false;
@@ -738,6 +1041,11 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
           _playLastSyncTime = DateTime.now();
         }
       } else {
+        if (replacingUsbExclusive) {
+          await _stopExclusiveIntentionally();
+          _usbExclusiveActive = false;
+          _usbExclusivePosition = Duration.zero;
+        }
         await _applyUsbOutputForSong(currentSong);
         if (generation != _loadGeneration) {
           isLoading = false;
@@ -750,6 +1058,11 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
         _playLastSyncTime = DateTime.now();
       }
     } catch (error) {
+      if (replacingUsbExclusive && generation == _loadGeneration) {
+        await _stopExclusiveIntentionally();
+        _usbExclusiveActive = false;
+        _usbExclusivePosition = Duration.zero;
+      }
       _player.stop();
       logger.output("[${currentSong.title}] $error");
     }
@@ -780,13 +1093,22 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     }
     final current = playQueue[currentIndex];
     final next = playQueue[(currentIndex + 1) % playQueue.length];
+    final generation = _loadGeneration;
     if (next.sourceType == .local || next.cacheExist) {
       return;
     }
     unawaited(() async {
       try {
         await library.tryAddCache(current);
+        if (generation != _loadGeneration ||
+            currentSongNotifier.value != current) {
+          return;
+        }
         await library.tryAddCache(next);
+        if (generation != _loadGeneration ||
+            currentSongNotifier.value != current) {
+          return;
+        }
         logger.output("prefetched next song cache:${next.title}");
       } catch (error) {
         logger.output("prefetch next cache failed:$error");
@@ -797,14 +1119,14 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
   Future<bool> _tryOpenUsbExclusive(
     MyAudioMetadata song, {
     int? generation,
+    bool replaceActive = false,
   }) async {
     if (!_shouldTryUsbExclusive(song)) {
       return false;
     }
 
     final isDsd = song.isDsd;
-    if (isDsd &&
-        usbAudioPreferences.dsdModeNotifier.value == UsbDsdMode.pcm) {
+    if (isDsd && usbAudioPreferences.dsdModeNotifier.value == UsbDsdMode.pcm) {
       // DSD 模式=PCM：由共享路径（mpv/libavcodec）解码转 PCM，不进独占直驱
       logger.output("usb exclusive skipped:dsd pcm mode -> shared output");
       debugPrint("usb exclusive skipped:dsd pcm mode -> shared output");
@@ -859,30 +1181,73 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
       return false;
     }
 
-    final state = await usbAudioService.startExclusivePlayback(
-      UsbExclusivePlaybackRequest(
-        filePath: filePath,
-        title: getTitle(song),
-        sourceFormat: _normalizedExclusiveFormat(song),
-        sampleRate: exclusiveSampleRate,
-        bitDepth: isDsd ? null : _preferredExclusiveBitDepth(),
-        dsdMode: isDsd ? usbAudioPreferences.dsdModeNotifier.value.name : null,
-        targetBufferMs: _exclusiveTargetBufferMsForLifecycle(
-          WidgetsBinding.instance.lifecycleState,
-        ),
-        startPaused: !isPlayingNotifier.value,
-        streaming: streaming,
-        totalBytes: streaming ? _estimateStreamTotalBytes(song) : null,
-      ),
+    _prepareUsbExclusiveVolume();
+    final digitalGain = usbExclusiveDigitalVolumeGain(volumeNotifier.value);
+    final dsdCompensationDb = isDsd
+        ? usbAudioPreferences.dsdGainCompensationNotifier.value
+        : 0;
+    final transition = safeOutputGainTransition(
+      appliedGain: _appliedOutputGain,
+      userGain: digitalGain,
+      adjustmentDb:
+          _effectiveReplayGainDb(digitalGain) + dsdCompensationDb,
     );
+    final previousOutputGain = _appliedOutputGain;
+    _appliedOutputGain = transition.appliedGain;
+    final request = UsbExclusivePlaybackRequest(
+      playbackId: 'load-${generation ?? _loadGeneration}',
+      filePath: filePath,
+      title: getTitle(song),
+      sourceFormat: _normalizedExclusiveFormat(song),
+      sampleRate: exclusiveSampleRate,
+      bitDepth: isDsd ? null : _preferredExclusiveBitDepth(),
+      dsdMode: isDsd
+          ? usbAudioPreferences.dsdModeNotifier.value.name
+          : null,
+      volumeGain: digitalGain,
+      replayGainDb: transition.adjustmentDb - dsdCompensationDb,
+      volumeMode: usbAudioPreferences.volumeControlModeNotifier.value.name,
+      dsdGainCompensationDb: dsdCompensationDb,
+      smoothVolumeHandoff:
+          usbAudioPreferences.volumeSmoothHandoffNotifier.value,
+      targetBufferMs: _exclusiveTargetBufferMsForLifecycle(
+        WidgetsBinding.instance.lifecycleState,
+      ),
+      startPaused: !isPlayingNotifier.value,
+      streaming: streaming,
+      totalBytes: streaming ? _estimateStreamTotalBytes(song) : null,
+      replaceActive: replaceActive,
+    );
+    late final UsbExclusivePlaybackState state;
+    final previousIntentionalStop = _intentionalExclusiveStop;
+    if (replaceActive) {
+      _intentionalExclusiveStop = true;
+    }
+    try {
+      state = await usbAudioService.startExclusivePlayback(request);
+    } catch (_) {
+      _appliedOutputGain = previousOutputGain;
+      _restoreSharedVolume();
+      rethrow;
+    } finally {
+      if (replaceActive) {
+        _intentionalExclusiveStop = previousIntentionalStop;
+      }
+    }
 
     if (!state.active) {
+      _appliedOutputGain = previousOutputGain;
+      _restoreSharedVolume();
       logger.output("usb exclusive fallback:${state.message}");
       debugPrint("usb exclusive fallback:${state.message}");
       return false;
     }
 
     _usbExclusiveActive = true;
+    _publishExclusiveReplayGainState(state);
+    if (transition.needsRamp) {
+      _scheduleOutputGainRamp();
+    }
     _usbExclusivePosition = state.position;
     updateIsPlaying(state.playing);
     updatePlaybackState(postion: state.position);
@@ -916,7 +1281,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
       return format;
     }
 
-    final path = (song.cachePath ?? song.path ?? '').toLowerCase();
+    final path = (song.path ?? song.cachePath ?? '').toLowerCase();
     if (path.endsWith('.flac')) return 'flac';
     if (path.endsWith('.wav') || path.endsWith('.wave')) return 'wav';
     if (path.endsWith('.dsf')) return 'dsf';
@@ -961,10 +1326,21 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     // wv/ape 等系统无解码器的不在此列，未缓存时先走共享出声，缓存完成后再走独占。
     // 与原生 UsbExclusiveAudioEngine.streamableLossyExts 保持一致。
     const streamableExts = {
-      'flac', 'wav', 'wave', 'dsf', 'dff',
-      'mp3', 'm4a', 'm4b', 'mp4', 'aac', 'ogg', 'oga', 'opus',
+      'flac',
+      'wav',
+      'wave',
+      'dsf',
+      'dff',
+      'mp3',
+      'm4a',
+      'm4b',
+      'mp4',
+      'aac',
+      'ogg',
+      'oga',
+      'opus',
     };
-    final ext = (song.cachePath ?? '').toLowerCase().split('.').last;
+    final ext = _normalizedExclusiveFormat(song)?.toLowerCase();
     if (!streamableExts.contains(ext)) {
       // 独占无法流式的格式，没必要等水位
       return null;
@@ -975,9 +1351,8 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     final bytesPerSecond =
         ((song.bitrate ?? 0) > 0 ? song.bitrate! : 2000) * 1000 ~/ 8;
     final startBytes = bytesPerSecond * 10;
-    final deadline = DateTime.now().add(Duration(seconds: 4));
     var lastSize = -1;
-    while (DateTime.now().isBefore(deadline)) {
+    while (true) {
       if (generation != null && generation != _loadGeneration) {
         return null;
       }
@@ -1002,9 +1377,6 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
       lastSize = size;
       await Future.delayed(Duration(milliseconds: 200));
     }
-    logger.output("usb exclusive skipped:below streaming watermark -> shared");
-    debugPrint("usb exclusive skipped:below streaming watermark -> shared");
-    return null;
   }
 
   int? _preferredExclusiveBitDepth() {
@@ -1171,6 +1543,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
         "usb exclusive resume result: active=${state.active}, playing=${state.playing}, position=${state.position.inMilliseconds}, message=${state.message}",
       );
       updateIsPlaying(state.playing);
+      _scheduleOutputGainRamp();
       unawaited(_superLyric.publishAt(state.position));
       updatePlaybackState(postion: state.position);
       return;
@@ -1188,6 +1561,7 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
 
     await _applyUsbOutputForSong(currentSong);
     _player.play();
+    _scheduleOutputGainRamp();
 
     unawaited(_superLyric.publishAt(_player.state.position));
     updatePlaybackState();
@@ -1195,6 +1569,8 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
 
   @override
   Future<void> pause() async {
+    _cancelVolumeRamp();
+    _cancelOutputGainRamp();
     debugPrint(
       "audio handler pause requested: usbExclusiveActive=$_usbExclusiveActive, playing=${isPlayingNotifier.value}",
     );
@@ -1216,6 +1592,8 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
 
   @override
   Future<void> stop() async {
+    _cancelVolumeRamp();
+    _cancelOutputGainRamp();
     if (_usbExclusiveActive) {
       await _stopExclusiveIntentionally();
       _usbExclusiveActive = false;
@@ -1284,9 +1662,114 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
   }
 
   void setVolume(double volume) {
-    final perceptualGain = _perceptualVolumeGain(volume);
+    if (!_usbExclusiveActive) {
+      _restoreSharedVolume();
+      unawaited(_applySharedReplayGain(1));
+      _publishAndroidPlaybackInfo();
+      return;
+    }
+    _volumeRampTarget = outputUserVolume(active: true, requested: volume);
+    if (_volumeRampTarget <= _appliedUserVolume) {
+      _volumeRampTimer?.cancel();
+      _volumeRampTimer = null;
+      _applyUserVolume(_volumeRampTarget);
+      return;
+    }
+
+    _applyUserVolume(
+      nextSafeUsbVolume(_appliedUserVolume, _volumeRampTarget),
+    );
+    if (_appliedUserVolume + 0.000001 >= _volumeRampTarget) {
+      return;
+    }
+    _volumeRampTimer ??= Timer.periodic(
+      const Duration(milliseconds: 100),
+      (_) {
+        _applyUserVolume(
+          nextSafeUsbVolume(_appliedUserVolume, _volumeRampTarget),
+        );
+        if (_appliedUserVolume + 0.000001 >= _volumeRampTarget) {
+          _cancelVolumeRamp();
+          savePlayState();
+        }
+      },
+    );
+  }
+
+  Future<void>? _applyUserVolume(
+    double volume, {
+    double maxOutputGainIncreaseDb = _safeUsbVolumeIncreaseDb,
+  }) {
+    final next = outputUserVolume(
+      active: _usbExclusiveActive,
+      requested: volume,
+    );
+    _appliedUserVolume = next;
+    if (_usbExclusiveActive) {
+      _rememberUsbExclusiveVolume(next);
+    } else {
+      _sharedUserVolume = next;
+    }
+    if ((volumeNotifier.value - next).abs() > 0.000001) {
+      volumeNotifier.value = next;
+    }
+    final perceptualGain = _perceptualVolumeGain(next);
     _player.setVolume(perceptualGain * 100);
-    _applyUsbExclusiveVolume(perceptualGain);
+    Future<void>? write;
+    if (_usbExclusiveActive) {
+      write = _applyUsbExclusiveVolume(
+        usbExclusiveDigitalVolumeGain(next),
+        maxIncreaseDb: maxOutputGainIncreaseDb,
+      );
+    } else {
+      unawaited(
+        _applySharedReplayGain(
+          perceptualGain,
+          maxIncreaseDb: maxOutputGainIncreaseDb,
+        ),
+      );
+    }
+    _publishAndroidPlaybackInfo();
+    return write;
+  }
+
+  void setUsbExclusiveVolume(double volume) {
+    final next = volume.clamp(0.0, 1.0).toDouble();
+    if (_usbExclusiveActive) {
+      setVolume(next);
+      return;
+    }
+    _handleUsbAudioStatus();
+    _rememberUsbExclusiveVolume(next);
+    savePlayState();
+  }
+
+  void _cancelVolumeRamp() {
+    _volumeRampTimer?.cancel();
+    _volumeRampTimer = null;
+    _volumeRampTarget = _appliedUserVolume;
+  }
+
+  void _publishAndroidPlaybackInfo() {
+    final next = androidPlaybackInfoFor(
+      usbExclusivePlaybackStateNotifier.value,
+      volumeNotifier.value,
+    );
+    if (androidPlaybackInfo.hasValue && androidPlaybackInfo.value == next) {
+      return;
+    }
+    androidPlaybackInfo.add(next);
+  }
+
+  Future<void> _setUserVolumeImmediately(double volume) {
+    _cancelVolumeRamp();
+    _volumeRampTarget = volume.clamp(0.0, 1.0).toDouble();
+    final write = _applyUserVolume(
+      _volumeRampTarget,
+      maxOutputGainIncreaseDb: _phoneUsbVolumeStepDb,
+    );
+    savePlayState();
+    return write ?? Future.value();
   }
 
   // 与共享输出一致的感知音量曲线，返回 0..1 的线性幅度。
@@ -1294,36 +1777,222 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     return math.log(volume * 9 + 1) / math.log(10);
   }
 
-  // 把当前音量下发给 USB 独占引擎：原始数字电平旁路（位完美直通），其余模式按感知
-  // 曲线施加数字增益。非独占时为空操作，DSD/DoP 会话由引擎侧强制旁路。
-  void _applyUsbExclusiveVolume(double perceptualGain) {
+  double _effectiveReplayGainDb(double userLinearGain) {
+    return replayGainWithinOutputHeadroom(
+      _currentReplayGain.gainDb,
+      userLinearGain,
+    );
+  }
+
+  Future<void> _applySharedReplayGain(
+    double userLinearGain, {
+    double maxIncreaseDb = _safeUsbVolumeIncreaseDb,
+    bool establishBaseline = false,
+  }) async {
+    final generation = ++_replayGainApplyGeneration;
+    final pending = _pendingReplayGainState(
+      ReplayGainOutputPath.sharedDigital,
+      generation,
+    );
+    replayGainPlaybackStateNotifier.value = pending;
+    final transition = safeOutputGainTransition(
+      appliedGain: _appliedOutputGain,
+      userGain: userLinearGain,
+      adjustmentDb: _effectiveReplayGainDb(userLinearGain),
+      maxIncreaseDb: maxIncreaseDb,
+      establishBaseline: establishBaseline,
+    );
+    _appliedOutputGain = transition.appliedGain;
+    try {
+      await (_player.platform as NativePlayer).setProperty(
+        'volume-gain',
+        transition.adjustmentDb.toStringAsFixed(3),
+      );
+      if (generation != _replayGainApplyGeneration || _usbExclusiveActive) {
+        return;
+      }
+      replayGainPlaybackStateNotifier.value =
+          pending.phase == ReplayGainApplyPhase.pending
+          ? pending.applied(actualDb: transition.adjustmentDb)
+          : pending;
+      if (transition.needsRamp) {
+        _scheduleOutputGainRamp(maxIncreaseDb);
+      } else {
+        _cancelOutputGainRamp();
+      }
+    } on Object catch (error) {
+      if (generation == _replayGainApplyGeneration) {
+        replayGainPlaybackStateNotifier.value =
+            pending.phase == ReplayGainApplyPhase.pending
+            ? pending.failed()
+            : pending;
+      }
+      logger.output("replay gain apply failed:$error");
+    }
+  }
+
+  void _publishExclusiveReplayGainState(UsbExclusivePlaybackState state) {
+    if (!state.active) return;
+    final generation = ++_replayGainApplyGeneration;
+    final path = state.hardwareVolumeActive
+        ? ReplayGainOutputPath.usbHardware
+        : state.digitalVolumeActive
+        ? ReplayGainOutputPath.usbDigital
+        : ReplayGainOutputPath.none;
+    final pending = _pendingReplayGainState(path, generation);
+    if (pending.phase != ReplayGainApplyPhase.pending) {
+      replayGainPlaybackStateNotifier.value = pending;
+      return;
+    }
+    if (path == ReplayGainOutputPath.none) {
+      replayGainPlaybackStateNotifier.value = pending.failed();
+      return;
+    }
+    replayGainPlaybackStateNotifier.value = pending.applied(
+      actualDb: state.replayGainMilliDb / 1000,
+    );
+  }
+
+  // 把当前音量与控制模式下发给 USB 独占引擎，由原生层选择硬件音量或安全回退。
+  Future<void> _applyUsbExclusiveVolume(
+    double digitalGain, {
+    double maxIncreaseDb = _safeUsbVolumeIncreaseDb,
+  }) async {
     if (!_usbExclusiveActive) {
       return;
     }
-    final enabled = usbExclusiveDigitalVolumeEnabled();
-    unawaited(
-      usbAudioService.setExclusiveVolume(
-        gain: enabled ? perceptualGain : 1.0,
-        enabled: enabled,
-      ),
+    final isDsd = currentSongNotifier.value?.isDsd == true;
+    final dsdCompensationDb = isDsd
+        ? usbAudioPreferences.dsdGainCompensationNotifier.value
+        : 0;
+    final transition = safeOutputGainTransition(
+      appliedGain: _appliedOutputGain,
+      userGain: digitalGain,
+      adjustmentDb:
+          _effectiveReplayGainDb(digitalGain) + dsdCompensationDb,
+      maxIncreaseDb: maxIncreaseDb,
     );
+    _appliedOutputGain = transition.appliedGain;
+    await usbAudioService.setExclusiveVolume(
+      gain: digitalGain,
+      replayGainDb: transition.adjustmentDb - dsdCompensationDb,
+      mode: usbAudioPreferences.volumeControlModeNotifier.value.name,
+      dsdGainCompensationDb: dsdCompensationDb,
+      smoothHandoff: usbAudioPreferences.volumeSmoothHandoffNotifier.value,
+    );
+    if (_usbExclusiveActive) {
+      _publishExclusiveReplayGainState(
+        usbExclusivePlaybackStateNotifier.value,
+      );
+    }
+    if (transition.needsRamp) {
+      _scheduleOutputGainRamp(maxIncreaseDb);
+    } else {
+      _cancelOutputGainRamp();
+    }
+  }
+
+  void _scheduleOutputGainRamp([
+    double maxIncreaseDb = _safeUsbVolumeIncreaseDb,
+  ]) {
+    _outputGainRampStepDb = maxIncreaseDb;
+    _outputGainRampTimer ??= Timer.periodic(const Duration(milliseconds: 100), (
+      _,
+    ) {
+      if (_usbExclusiveActive) {
+        _applyUsbExclusiveVolume(
+          usbExclusiveDigitalVolumeGain(volumeNotifier.value),
+          maxIncreaseDb: _outputGainRampStepDb,
+        );
+      } else {
+        unawaited(
+          _applySharedReplayGain(
+            outputUserVolume(active: false, requested: volumeNotifier.value),
+            maxIncreaseDb: _outputGainRampStepDb,
+          ),
+        );
+      }
+    });
+  }
+
+  void _cancelOutputGainRamp() {
+    _outputGainRampTimer?.cancel();
+    _outputGainRampTimer = null;
+    _outputGainRampStepDb = _safeUsbVolumeIncreaseDb;
   }
 
   int _lastVolumeKeyValue = 0;
 
-  // 独占模式下安卓物理音量键：按累计方向差值增减音量，再走 setVolume 下发数字音量。
   void _handleUsbExclusiveVolumeKey() {
     final value = usbExclusiveVolumeKeyNotifier.value;
     final delta = value - _lastVolumeKeyValue;
     _lastVolumeKeyValue = value;
-    if (delta == 0 || !_usbExclusiveActive) {
+    final direction = usbExclusiveVolumeKeyDirection(
+      delta: delta,
+      active: _usbExclusiveActive,
+    );
+    if (direction == null) return;
+    unawaited(_applyPhoneVolumeKey(direction));
+  }
+
+  Future<void> _applyPhoneVolumeKey(AndroidVolumeDirection direction) async {
+    try {
+      await _setUserVolumeImmediately(
+        adjustedRemoteVolume(volumeNotifier.value, direction),
+      );
+      usbVolumeOverlayNotifier.value += 1;
+    } on Object catch (error) {
+      logger.output("usb volume key apply failed:$error");
+    }
+  }
+
+  void _handleUsbHardwareVolume() {
+    final event = usbHardwareVolumeNotifier.value;
+    final state = usbExclusivePlaybackStateNotifier.value;
+    if (!_usbExclusiveActive ||
+        !state.active ||
+        event == null ||
+        event.playbackId != state.playbackId ||
+        event.protocol != state.hardwareVolumeProtocol) {
       return;
     }
-    const step = 0.02; // 每按一次 2%
-    final next = (volumeNotifier.value + delta * step).clamp(0.0, 1.0);
-    volumeNotifier.value = next;
-    setVolume(next);
+    _syncUsbHardwareVolume(
+      gainQ16: event.gainQ16,
+      replayGainDb: event.replayGainMilliDb / 1000,
+      isDsd: event.isDsd,
+      dsdGainCompensationDb: event.dsdGainCompensationDb,
+      showOverlay: true,
+    );
+  }
+
+  void _syncUsbHardwareVolume({
+    required int gainQ16,
+    required double replayGainDb,
+    required bool isDsd,
+    int dsdGainCompensationDb = 0,
+    required bool showOverlay,
+  }) {
+    final volume = usbUserVolumeFromHardwareGain(
+      gainQ16,
+      replayGainDb,
+      isDsd ? dsdGainCompensationDb : 0,
+    );
+    _appliedOutputGain = (gainQ16 / 65536).clamp(0.0, 1.0).toDouble();
+    _cancelVolumeRamp();
+    _cancelOutputGainRamp();
+    _handleUsbAudioStatus();
+    _appliedUserVolume = volume;
+    _volumeRampTarget = volume;
+    _rememberUsbExclusiveVolume(volume);
+    if ((volumeNotifier.value - volume).abs() > 0.000001) {
+      volumeNotifier.value = volume;
+    }
+    _player.setVolume(_perceptualVolumeGain(volume) * 100);
     savePlayState();
+    _publishAndroidPlaybackInfo();
+    if (showOverlay) {
+      usbVolumeOverlayNotifier.value += 1;
+    }
   }
 
   void applyEqualizer() async {

@@ -403,6 +403,13 @@ class UsbDsdTest {
         assertNull(nativeDsdBytesPerSample("dop"))
     }
 
+    @Test
+    fun keepsUsbOutputQueuedWhenPlaybackStops() {
+        assertEquals(false, shouldFlushOutputOnStop(null))
+        assertEquals(false, shouldFlushOutputOnStop("dop"))
+        assertEquals(false, shouldFlushOutputOnStop("native"))
+    }
+
     // ---- 工具 ----
 
     private fun readAll(reader: DsdFileReader): ByteArray {

@@ -21,8 +21,6 @@ class _PortraitViewState extends State<PortraitView>
   late AnimationController _controller;
   late Animation<Offset> _slideAnimation;
 
-  late Animation<Offset> _bottomSlideAnimation;
-
   void slideBegin() {
     _controller.forward(from: 0);
   }
@@ -45,7 +43,7 @@ class _PortraitViewState extends State<PortraitView>
 
     _controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 300),
+      duration: const Duration(milliseconds: 400),
     );
 
     _controller.addStatusListener(statusListener);
@@ -55,18 +53,7 @@ class _PortraitViewState extends State<PortraitView>
           begin: Offset(Platform.isIOS ? 1.0 : -1.0, 0.0),
           end: Offset.zero,
         ).animate(
-          CurvedAnimation(
-            parent: _controller,
-            curve: const Cubic(0.25, 0.10, 0.25, 1.0),
-          ),
-        );
-
-    _bottomSlideAnimation =
-        Tween<Offset>(begin: Offset.zero, end: Offset(-1 / 3, 0)).animate(
-          CurvedAnimation(
-            parent: _controller,
-            curve: const Cubic(0.25, 0.10, 0.25, 1.0),
-          ),
+          CurvedAnimation(parent: _controller, curve: Curves.linearToEaseOut),
         );
 
     layersManager.switchNotifier.addListener(slideBegin);
@@ -117,16 +104,10 @@ class _PortraitViewState extends State<PortraitView>
                     ...layersManager.rootPageMap.values
                         .where((page) => page != layersManager.topRootPage)
                         .map((page) {
-                          final visible = page == layersManager.bottomRootPage;
                           return Visibility(
-                            visible: visible,
+                            visible: page == layersManager.bottomRootPage,
                             maintainState: true,
-                            child: visible && Platform.isIOS
-                                ? SlideTransition(
-                                    position: _bottomSlideAnimation,
-                                    child: page,
-                                  )
-                                : page,
+                            child: page,
                           );
                         }),
 

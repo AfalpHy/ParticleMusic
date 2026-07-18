@@ -72,6 +72,11 @@ class MyAudioMetadata {
   int? get bitrate => _audioMetadata.bitrate;
   int? get samplerate => _audioMetadata.samplerate;
 
+  double? get replayGainTrackGainDb => _audioMetadata.replayGainTrackGainDb;
+  double? get replayGainTrackPeak => _audioMetadata.replayGainTrackPeak;
+  double? get replayGainAlbumGainDb => _audioMetadata.replayGainAlbumGainDb;
+  double? get replayGainAlbumPeak => _audioMetadata.replayGainAlbumPeak;
+
   Duration? get duration => _audioMetadata.duration;
 
   bool get isDsd {
@@ -107,10 +112,42 @@ class MyAudioMetadata {
   set bitrate(int? value) => _audioMetadata.bitrate = value;
   set samplerate(int? value) => _audioMetadata.samplerate = value;
 
+  set replayGainTrackGainDb(double? value) =>
+      _audioMetadata.replayGainTrackGainDb = value;
+  set replayGainTrackPeak(double? value) =>
+      _audioMetadata.replayGainTrackPeak = value;
+  set replayGainAlbumGainDb(double? value) =>
+      _audioMetadata.replayGainAlbumGainDb = value;
+  set replayGainAlbumPeak(double? value) =>
+      _audioMetadata.replayGainAlbumPeak = value;
+
   set lyrics(String? value) => _audioMetadata.lyrics = value;
   set duration(Duration? value) => _audioMetadata.duration = value;
 
-  factory MyAudioMetadata.fromNavidromeMap(Map<String, dynamic> song) {
+  factory MyAudioMetadata.fromOpenSonicMap(
+    Map<String, dynamic> song,
+    SourceType sourceType,
+  ) {
+    final replayGain = song['replayGain'] is Map
+        ? song['replayGain'] as Map
+        : const {};
+    double? parseReplayGain(dynamic value, {bool peak = false}) {
+      final normalized = value is num
+          ? value.toDouble()
+          : double.tryParse(
+              value
+                  .toString()
+                  .replaceFirst(RegExp(r'\s*dB\s*$', caseSensitive: false), '')
+                  .trim(),
+            );
+      if (normalized == null ||
+          !normalized.isFinite ||
+          (peak && normalized <= 0)) {
+        return null;
+      }
+      return normalized;
+    }
+
     return MyAudioMetadata(
       AudioMetadata(
         // suffix 是真实文件扩展名（flac/dsf/…）；contentType 对 DSD 是
@@ -128,11 +165,21 @@ class MyAudioMetadata {
         disc: song['discNumber'],
         bitrate: song['bitRate'],
         samplerate: song['samplingRate'],
+        replayGainTrackGainDb: parseReplayGain(replayGain['trackGain']),
+        replayGainTrackPeak: parseReplayGain(
+          replayGain['trackPeak'],
+          peak: true,
+        ),
+        replayGainAlbumGainDb: parseReplayGain(replayGain['albumGain']),
+        replayGainAlbumPeak: parseReplayGain(
+          replayGain['albumPeak'],
+          peak: true,
+        ),
         duration: song['duration'] != null
             ? Duration(seconds: song['duration'])
             : null,
       ),
-      sourceType: .navidrome,
+      sourceType: sourceType,
       id: song['id'],
       playCount: song['playCount'] as int? ?? 0,
       lastPlayed: song['played'] != null

@@ -1,11 +1,15 @@
 import 'dart:io';
+import 'dart:ui';
 
 import 'package:charset/charset.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
+import 'package:sylvakru/base/services/subsonic_client.dart';
 import 'package:sylvakru/base/services/webdav_client.dart';
 import 'package:sylvakru/base/services/logger.dart';
 import 'package:sylvakru/base/services/navidrome_client.dart';
+import 'package:sylvakru/l10n/generated/app_localizations.dart';
+import 'package:sylvakru/l10n/generated/app_localizations_en.dart';
 
 class LyricToken {
   final Duration start;
@@ -83,14 +87,30 @@ Future<void> setParsedLyrics(MyAudioMetadata song) async {
   song.parsedLyrics = result;
 
   List<String> lines = [];
+  late AppLocalizations l10n;
 
-  if (song.sourceType == .navidrome) {
+  if (localeNotifier.value != null) {
+    l10n = lookupAppLocalizations(localeNotifier.value!);
+  } else {
+    try {
+      l10n = lookupAppLocalizations(PlatformDispatcher.instance.locale);
+    } catch (_) {
+      l10n = AppLocalizationsEn();
+    }
+  }
+
+  if (song.sourceType == .subsonic) {
+    final lyrics = await subsonicClient!.getLyricsById(song.id);
+    if (lyrics != null) {
+      lines = lyrics.split(RegExp(r'[\n]'));
+    }
+  } else if (song.sourceType == .navidrome) {
     final lyrics = await navidromeClient!.getLyricsById(song.id);
     if (lyrics != null) {
       lines = lyrics.split(RegExp(r'[\n]'));
     }
   } else if (song.sourceType == .emby) {
-    result.lines.add(LyricLine(Duration.zero, 'There are no lyrics', []));
+    result.lines.add(LyricLine(Duration.zero, l10n.noLyrics, []));
     return;
   } else {
     if (song.lyrics == null || song.lyrics!.isEmpty) {
@@ -99,7 +119,7 @@ Future<void> setParsedLyrics(MyAudioMetadata song) async {
 
       late File lrcFile;
       if (song.sourceType == .webdav) {
-        lrcFile = File('${tmpDir.path}/particle_music_lyric');
+        lrcFile = File('${tmpDir.path}/sylvakru_lyric');
         await webdavClient?.download(remotePath: path, localPath: lrcFile.path);
       } else {
         lrcFile = File(path);
@@ -120,9 +140,32 @@ Future<void> setParsedLyrics(MyAudioMetadata song) async {
       lines = song.lyrics!.split(RegExp(r'[\n]'));
     }
   }
-  lines.removeWhere((e) => e.isEmpty);
+  applyLrcParsing(
+    result,
+    lines,
+    noLyricsMessage: l10n.noLyrics,
+    parseFailedMessage: l10n.lyricsParseFailed,
+    songDuration: song.duration,
+  );
+}
+
+/// Fills in [result] from already-fetched raw LRC lines: parses word/line
+/// timestamps, detects karaoke (multiple timed tokens per line) and
+/// translation lines (a second line sharing the same timestamp as the one
+/// before it), and falls back to [noLyricsMessage]/[parseFailedMessage]
+/// placeholders when there's nothing to show. Split out from
+/// [setParsedLyrics] so the parsing itself can be unit tested without a
+/// network/file round trip.
+void applyLrcParsing(
+  ParsedLyrics result,
+  List<String> rawLines, {
+  required String noLyricsMessage,
+  required String parseFailedMessage,
+  Duration? songDuration,
+}) {
+  final lines = List<String>.from(rawLines)..removeWhere((e) => e.isEmpty);
   if (lines.isEmpty) {
-    result.lines.add(LyricLine(Duration.zero, 'There are no lyrics', []));
+    result.lines.add(LyricLine(Duration.zero, noLyricsMessage, []));
     return;
   }
 
@@ -175,10 +218,10 @@ Future<void> setParsedLyrics(MyAudioMetadata song) async {
     }
   }
   if (result.lines.isEmpty) {
-    result.lines.add(LyricLine(Duration.zero, 'Lyrics parsing failed', []));
+    result.lines.add(LyricLine(Duration.zero, parseFailedMessage, []));
   } else {
     if (result.lines.last.tokens.last.end == null) {
-      result.lines.last.tokens.last.end = song.duration;
+      result.lines.last.tokens.last.end = songDuration;
     }
   }
 }

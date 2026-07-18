@@ -1,0 +1,682 @@
+package com.afalphy.sylvakru
+
+import kotlin.math.abs
+import kotlin.math.pow
+import kotlin.math.roundToInt
+
+internal fun preferredAutoPcmBitDepth(
+    sourceBitDepth: Int?,
+    availableBitDepths: List<Int>,
+): Int? {
+    val available = availableBitDepths.filter { it > 0 }.distinct()
+    if (sourceBitDepth == null) {
+        return listOf(24, 32, 16).firstOrNull { it in available } ?: available.minOrNull()
+    }
+    return available.firstOrNull { it == sourceBitDepth }
+        ?: available.filter { it > sourceBitDepth }.minOrNull()
+}
+
+internal data class UsbVolumeCapabilities(
+    val readable: Boolean,
+    val unsolicitedEvents: Boolean,
+    val dsdGain: Boolean,
+)
+
+internal data class UsbVolumeEvent(
+    val leftRaw: Int,
+    val rightRaw: Int,
+)
+
+internal data class UsbVolumeTarget(
+    val baseRaw: Int,
+    val dsdRaw: Int,
+)
+
+internal data class UsbVolumeRequest(
+    val gainQ16: Int,
+    val replayGainMilliDb: Int,
+    val mode: String,
+    val dsdCompensationDb: Int,
+    val smoothHandoff: Boolean,
+    val sessionGeneration: Long,
+)
+
+internal enum class IbassoVolumeVerificationAction {
+    ACCEPT_TARGET,
+    KEEP_PREVIOUS,
+    RETRY_READBACK,
+    YIELD_TO_PENDING,
+    FREEZE_PCM,
+    PAUSE_DSD,
+}
+
+internal enum class IbassoReaderRecoveryAction {
+    VERIFY_NOW,
+    WAIT,
+    FREEZE_PCM,
+    CANCEL,
+}
+
+internal fun ibassoReaderRecoveryAction(
+    isDsd: Boolean,
+    health: IbassoReaderHealth,
+    readerRunning: Boolean,
+    generationMatches: Boolean,
+    waitExpired: Boolean,
+): IbassoReaderRecoveryAction = when {
+    !generationMatches -> IbassoReaderRecoveryAction.CANCEL
+    isDsd -> IbassoReaderRecoveryAction.VERIFY_NOW
+    health.writeOnly -> IbassoReaderRecoveryAction.FREEZE_PCM
+    readerRunning && !health.restartRequested -> IbassoReaderRecoveryAction.VERIFY_NOW
+    waitExpired -> IbassoReaderRecoveryAction.FREEZE_PCM
+    else -> IbassoReaderRecoveryAction.WAIT
+}
+
+internal fun coalescedUsbVolumeRequest(
+    running: UsbVolumeRequest,
+    pending: UsbVolumeRequest?,
+    incoming: UsbVolumeRequest,
+    isDsd: Boolean,
+): UsbVolumeRequest = incoming
+
+internal fun usbVolumeProtocolForRequest(
+    mode: String,
+    configuredProtocol: String?,
+    hardwareVolumeEnabled: Boolean,
+    streamSupported: Boolean,
+): String? = configuredProtocol.takeIf {
+    (mode == "auto" || mode == "dac") && hardwareVolumeEnabled && streamSupported
+}
+
+private const val IBASSO_VOLUME_TRANSACTION_SETTLE_MS = 150L
+private const val IBASSO_VOLUME_PENDING_QUIET_MS = 300L
+
+internal fun usbVolumePendingDelayMs(
+    protocol: String?,
+    lastCompletedAtMs: Long?,
+    pendingUpdatedAtMs: Long?,
+    nowMs: Long,
+): Long {
+    if (protocol != IbassoHidVolumeProtocol.id || lastCompletedAtMs == null) return 0L
+    val settleElapsedMs = (nowMs - lastCompletedAtMs).coerceAtLeast(0L)
+    val settleDelayMs =
+        (IBASSO_VOLUME_TRANSACTION_SETTLE_MS - settleElapsedMs).coerceAtLeast(0L)
+    val quietDelayMs = pendingUpdatedAtMs?.let {
+        val quietElapsedMs = (nowMs - it).coerceAtLeast(0L)
+        (IBASSO_VOLUME_PENDING_QUIET_MS - quietElapsedMs).coerceAtLeast(0L)
+    } ?: 0L
+    return maxOf(settleDelayMs, quietDelayMs)
+}
+
+internal fun ibassoVolumeVerificationAction(
+    targetRaw: Int,
+    previousRaw: Int?,
+    readbackRaw: Int?,
+    failureCount: Int,
+    isDsd: Boolean,
+    hasPendingRequest: Boolean = false,
+): IbassoVolumeVerificationAction = when {
+    readbackRaw == targetRaw -> IbassoVolumeVerificationAction.ACCEPT_TARGET
+    previousRaw != null && readbackRaw == previousRaw ->
+        IbassoVolumeVerificationAction.KEEP_PREVIOUS
+    failureCount < 3 -> IbassoVolumeVerificationAction.RETRY_READBACK
+    // 还有挂起的音量请求＝用户仍在连续调音量：读回失败多半是 HID 忙不过来，
+    // 马上会有下一个事务重写覆盖，让位而不是冻结/暂停触发保护。
+    hasPendingRequest -> IbassoVolumeVerificationAction.YIELD_TO_PENDING
+    isDsd -> IbassoVolumeVerificationAction.PAUSE_DSD
+    else -> IbassoVolumeVerificationAction.FREEZE_PCM
+}
+
+internal enum class HardwareVolumeHandoffSource { DEVICE, APP }
+
+internal data class HardwareVolumeHandoffTarget(
+    val gainQ16: Int,
+    val source: HardwareVolumeHandoffSource,
+)
+
+internal data class UsbActualVolume(
+    val raw: Int,
+    val gainQ16: Int,
+)
+
+internal data class HardwareVolumeWriteResult(
+    val error: String? = null,
+    val actual: UsbActualVolume? = null,
+)
+
+internal fun actualHardwareVolume(
+    valuesQ8_8: List<Int>,
+    muteQ8_8: Int,
+): UsbActualVolume? = valuesQ8_8
+    .map { raw -> UsbActualVolume(raw, hardwareVolumeGainQ16(raw, muteQ8_8)) }
+    .minWithOrNull(compareBy<UsbActualVolume> { it.gainQ16 }.thenBy { it.raw })
+
+internal sealed interface UsbVolumeProtocolSelection
+
+internal data object StandardUsbVolumeProtocol : UsbVolumeProtocolSelection
+
+internal data class VendorUsbVolumeProtocol(
+    val protocol: UsbVolumeProtocol,
+) : UsbVolumeProtocolSelection
+
+internal data class UnsupportedUsbVolumeProtocol(
+    val id: String,
+) : UsbVolumeProtocolSelection
+
+internal sealed interface IbassoVolumePacketRoute {
+    data class CommandResponse(
+        val command: Int,
+        val packet: ByteArray,
+    ) : IbassoVolumePacketRoute
+
+    data class Event(
+        val event: UsbVolumeEvent,
+        val isWriteConfirmation: Boolean,
+    ) : IbassoVolumePacketRoute
+
+    data object Unknown : IbassoVolumePacketRoute
+}
+
+internal data class IbassoReaderHealth(
+    val failureCount: Int = 0,
+    val pendingReadFailureCount: Int = 0,
+    val restartRequested: Boolean = false,
+    val writeOnly: Boolean = false,
+    val readbackVerified: Boolean = false,
+) {
+    val readable: Boolean
+        get() = !writeOnly
+
+    fun afterFailure(): IbassoReaderHealth = if (failureCount == 0) {
+        copy(
+            failureCount = 1,
+            pendingReadFailureCount = 0,
+            restartRequested = true,
+            writeOnly = false,
+            readbackVerified = false,
+        )
+    } else {
+        copy(
+            failureCount = failureCount + 1,
+            pendingReadFailureCount = 0,
+            restartRequested = false,
+            writeOnly = true,
+            readbackVerified = false,
+        )
+    }
+
+    fun afterReadResult(readLength: Int, hasPendingResponse: Boolean): IbassoReaderHealth =
+        if (readLength > 0 || !hasPendingResponse) {
+            copy(pendingReadFailureCount = 0)
+        } else {
+            copy(pendingReadFailureCount = pendingReadFailureCount + 1)
+        }
+
+    fun hasPersistentPendingFailure(limit: Int): Boolean =
+        pendingReadFailureCount >= limit.coerceAtLeast(1)
+
+    fun afterRestart(): IbassoReaderHealth = copy(
+        pendingReadFailureCount = 0,
+        restartRequested = false,
+    )
+
+    fun afterVerifiedReadback(): IbassoReaderHealth = copy(
+        failureCount = 0,
+        pendingReadFailureCount = 0,
+        restartRequested = false,
+        writeOnly = false,
+        readbackVerified = true,
+    )
+}
+
+internal fun shouldResumeIbassoReaderHealth(
+    health: IbassoReaderHealth,
+    healthDeviceId: Int?,
+    deviceId: Int,
+): Boolean = health.failureCount > 0 && healthDeviceId == deviceId
+
+internal fun isCurrentIbassoReaderGeneration(
+    readerGeneration: Long,
+    currentGeneration: Long,
+    running: Boolean,
+    threadMatches: Boolean,
+    connectionMatches: Boolean,
+    endpointMatches: Boolean,
+): Boolean = readerGeneration == currentGeneration &&
+    running &&
+    threadMatches &&
+    connectionMatches &&
+    endpointMatches
+
+internal fun shouldRestartIbassoReaderGeneration(
+    readerGeneration: Long,
+    currentGeneration: Long,
+    running: Boolean,
+    readerThreadExited: Boolean,
+    connectionMatches: Boolean,
+    endpointMatches: Boolean,
+    volumeConnectionMatches: Boolean,
+    restartRequested: Boolean,
+): Boolean = isFailedIbassoReaderGenerationCurrent(
+    readerGeneration,
+    currentGeneration,
+    running,
+    failedThreadNotReplaced = readerThreadExited,
+    connectionMatches,
+    endpointMatches,
+    volumeConnectionMatches,
+) && restartRequested
+
+internal fun isFailedIbassoReaderGenerationCurrent(
+    readerGeneration: Long,
+    currentGeneration: Long,
+    running: Boolean,
+    failedThreadNotReplaced: Boolean,
+    connectionMatches: Boolean,
+    endpointMatches: Boolean,
+    volumeConnectionMatches: Boolean,
+): Boolean = readerGeneration == currentGeneration &&
+    !running &&
+    failedThreadNotReplaced &&
+    connectionMatches &&
+    endpointMatches &&
+    volumeConnectionMatches
+
+internal fun hardwareVolumeWriteOnlyForState(
+    protocol: String?,
+    ibassoHealth: IbassoReaderHealth,
+): Boolean = protocol == "ibassoHid" && ibassoHealth.writeOnly
+
+internal fun hardwareVolumeReadbackVerifiedForState(
+    protocol: String?,
+    standardReadbackVerified: Boolean,
+    ibassoHealth: IbassoReaderHealth,
+): Boolean = when (protocol) {
+    null -> false
+    "ibassoHid" -> ibassoHealth.readbackVerified && !ibassoHealth.writeOnly
+    else -> standardReadbackVerified
+}
+
+internal fun shouldUseDirectIbassoSetReport(
+    writeOnly: Boolean,
+    readerAvailable: Boolean,
+    allowWhenReaderUnavailable: Boolean,
+): Boolean = writeOnly || (!readerAvailable && allowWhenReaderUnavailable)
+
+internal class IbassoVolumeEventDebouncer {
+    private val lock = Any()
+    private var token = 0L
+    private var event: UsbVolumeEvent? = null
+
+    fun submit(value: UsbVolumeEvent): Long = synchronized(lock) {
+        event = value
+        ++token
+    }
+
+    fun consume(expectedToken: Long): UsbVolumeEvent? = synchronized(lock) {
+        if (expectedToken != token) {
+            null
+        } else {
+            event.also { event = null }
+        }
+    }
+
+    fun clear() = synchronized(lock) {
+        event = null
+        token += 1
+    }
+}
+
+internal interface UsbVolumeProtocol {
+    val id: String
+    val capabilities: UsbVolumeCapabilities
+
+    fun appGainToRaw(
+        gainQ16: Int,
+        replayGainMilliDb: Int,
+        dsdCompensationDb: Int,
+    ): UsbVolumeTarget
+
+    fun rawToLinearGainQ16(raw: Int): Int
+
+    fun decodeEvent(packet: ByteArray): UsbVolumeEvent?
+
+    fun isWriteConfirmation(event: UsbVolumeEvent, lastWrittenRaw: Int?): Boolean =
+        lastWrittenRaw != null &&
+            event.leftRaw == lastWrittenRaw &&
+            event.rightRaw == lastWrittenRaw
+}
+
+internal object IbassoHidVolumeProtocol : UsbVolumeProtocol {
+    override val id = "ibassoHid"
+    override val capabilities = UsbVolumeCapabilities(
+        readable = true,
+        unsolicitedEvents = true,
+        dsdGain = true,
+    )
+
+    override fun appGainToRaw(
+        gainQ16: Int,
+        replayGainMilliDb: Int,
+        dsdCompensationDb: Int,
+    ): UsbVolumeTarget {
+        val adjustedGain = effectiveVolumeGainQ16(gainQ16, replayGainMilliDb)
+        if (adjustedGain <= 0) {
+            return UsbVolumeTarget(baseRaw = 255, dsdRaw = 255)
+        }
+        val baseRaw = ibassoDeviceVolume(ibassoVolumeIndex(adjustedGain))
+        return UsbVolumeTarget(
+            baseRaw = baseRaw,
+            dsdRaw = ibassoDsdVolume(baseRaw, dsdCompensationDb),
+        )
+    }
+
+    override fun rawToLinearGainQ16(raw: Int): Int {
+        val index = ibassoVolumeTable.indices.minByOrNull {
+            abs(ibassoVolumeTable[it] - raw.coerceIn(0, 255))
+        } ?: return 0
+        return ((index.toDouble() / ibassoVolumeTable.lastIndex).pow(1.5) *
+            IBASSO_UNITY_GAIN_Q16)
+            .roundToInt()
+            .coerceIn(0, IBASSO_UNITY_GAIN_Q16)
+    }
+
+    override fun decodeEvent(packet: ByteArray): UsbVolumeEvent? {
+        if (packet.size < IBASSO_EVENT_MIN_PACKET_SIZE) {
+            return null
+        }
+        val endpointPrefixed = packet[4].toInt() and 0xff == 0xfe &&
+            packet[5].toInt() and 0xff == 0x01
+        val legacy = packet[0].toInt() and 0xff == 0xfe &&
+            packet[1].toInt() and 0xff == 0x01
+        if (!endpointPrefixed && !legacy) {
+            return null
+        }
+        return UsbVolumeEvent(
+            leftRaw = packet[8].toInt() and 0xff,
+            rightRaw = packet[9].toInt() and 0xff,
+        )
+    }
+}
+
+internal fun usbVolumeProtocolFor(id: String?): UsbVolumeProtocol? =
+    when (id?.trim()) {
+        "ibassoHid" -> IbassoHidVolumeProtocol
+        else -> null
+    }
+
+internal fun usbVolumeProtocolSelection(id: String?): UsbVolumeProtocolSelection {
+    val normalized = id?.trim()?.takeIf { it.isNotEmpty() }
+    return when (normalized) {
+        null, "uac1", "uac2" -> StandardUsbVolumeProtocol
+        "ibassoHid" -> VendorUsbVolumeProtocol(IbassoHidVolumeProtocol)
+        else -> UnsupportedUsbVolumeProtocol(normalized)
+    }
+}
+
+internal fun hardwareVolumeSupportedForStream(
+    protocolSelection: UsbVolumeProtocolSelection,
+    isDsd: Boolean,
+    quirkDsdSupported: Boolean?,
+): Boolean {
+    if (!isDsd) return true
+    return when (protocolSelection) {
+        StandardUsbVolumeProtocol -> quirkDsdSupported == true
+        is VendorUsbVolumeProtocol ->
+            protocolSelection.protocol.capabilities.dsdGain && quirkDsdSupported != false
+        is UnsupportedUsbVolumeProtocol -> false
+    }
+}
+
+internal fun effectiveVolumeGainQ16(userGainQ16: Int, replayGainMilliDb: Int): Int {
+    val userGain = userGainQ16.coerceIn(0, IBASSO_UNITY_GAIN_Q16)
+    if (userGain == 0) return 0
+    val factor = 10.0.pow(replayGainMilliDb.toDouble() / 20000.0)
+    val adjusted = userGain * factor
+    return when {
+        adjusted.isNaN() || adjusted <= 0 -> 0
+        !adjusted.isFinite() || adjusted >= IBASSO_UNITY_GAIN_Q16 -> IBASSO_UNITY_GAIN_Q16
+        else -> adjusted.roundToInt()
+    }
+}
+
+internal fun effectiveHardwareVolumeGainQ16(
+    userGainQ16: Int,
+    replayGainMilliDb: Int,
+    dsdCompensationDb: Int,
+    isDsd: Boolean,
+): Int {
+    val combinedGainMilliDb = (
+        replayGainMilliDb.toLong() +
+            if (isDsd) dsdCompensationDb.toLong() * 1000L else 0L
+        ).coerceIn(Int.MIN_VALUE.toLong(), Int.MAX_VALUE.toLong()).toInt()
+    return effectiveVolumeGainQ16(userGainQ16, combinedGainMilliDb)
+}
+
+internal fun pcmBitPerfect(
+    sourceBitDepth: Int?,
+    decodedBitDepth: Int?,
+    usbBitDepth: Int?,
+    digitalVolumeActive: Boolean,
+): Boolean = !digitalVolumeActive &&
+    sourceBitDepth != null &&
+    sourceBitDepth == decodedBitDepth &&
+    decodedBitDepth == usbBitDepth
+
+internal fun shouldSkipIbassoVolumeWrite(
+    target: UsbVolumeTarget,
+    previousTarget: UsbVolumeTarget?,
+    readbackVerified: Boolean,
+): Boolean = readbackVerified && target == previousTarget
+
+internal fun unsafeDsdVolumeReason(
+    isDsd: Boolean,
+    hardwareVolumeActive: Boolean,
+    readbackVerified: Boolean,
+    writeOnly: Boolean,
+): String? {
+    if (!isDsd) return null
+    if (!hardwareVolumeActive) {
+        return "DSD playback requires active hardware volume."
+    }
+    if (writeOnly || !readbackVerified) {
+        return "DSD playback requires readable hardware volume confirmation."
+    }
+    return null
+}
+
+internal fun shouldUsePcmDigitalVolumeFallback(
+    isDsd: Boolean,
+    volumeMode: String,
+    hardwareVolumeActive: Boolean,
+    readbackVerified: Boolean,
+    writeOnly: Boolean,
+): Boolean = !isDsd &&
+    volumeMode != "raw" &&
+    (!hardwareVolumeActive || !readbackVerified || writeOnly)
+
+internal fun shouldSmoothPcmVolumeHandoff(
+    smoothHandoff: Boolean,
+    isDsd: Boolean,
+    wasHardwareActive: Boolean,
+    hardwareVolumeActive: Boolean,
+): Boolean = smoothHandoff &&
+    !isDsd &&
+    !wasHardwareActive &&
+    hardwareVolumeActive
+
+internal fun routeIbassoVolumePacket(
+    packet: ByteArray,
+    pendingCommands: Set<Int>,
+    lastWrittenRaw: Int?,
+): IbassoVolumePacketRoute {
+    val event = IbassoHidVolumeProtocol.decodeEvent(packet)
+    if (event != null) {
+        return IbassoVolumePacketRoute.Event(
+            event = event,
+            isWriteConfirmation =
+                IbassoHidVolumeProtocol.isWriteConfirmation(event, lastWrittenRaw),
+        )
+    }
+    val command = packet.getOrNull(6)?.toInt()?.and(0xff)
+    val pendingCommand = command?.takeIf { it in pendingCommands }
+    val responseCommand = pendingCommand ?: ibassoResponseCommand(packet)
+    return if (responseCommand != null) {
+        IbassoVolumePacketRoute.CommandResponse(responseCommand, packet)
+    } else {
+        IbassoVolumePacketRoute.Unknown
+    }
+}
+
+private fun ibassoResponseCommand(packet: ByteArray): Int? {
+    if (packet.size <= 8) return null
+    val payloadLength = packet[7].toInt() and 0xff
+    if (payloadLength > packet.size - 8) return null
+    return packet[6].toInt() and 0xff
+}
+
+internal fun recentIbassoWrittenRaw(
+    lastWrittenRaw: Int?,
+    lastWrittenAtMs: Long,
+    nowMs: Long,
+    windowMs: Long,
+): Int? = lastWrittenRaw?.takeIf {
+    nowMs - lastWrittenAtMs in 0..windowMs
+}
+
+internal fun hardwareVolumeHandoffTarget(
+    smooth: Boolean,
+    readGainQ16: Int?,
+    appTargetQ16: Int,
+): HardwareVolumeHandoffTarget {
+    val safeAppTarget = appTargetQ16.coerceIn(0, IBASSO_UNITY_GAIN_Q16)
+    return if (
+        smooth &&
+        readGainQ16 != null &&
+        readGainQ16 in 0..safeAppTarget
+    ) {
+        HardwareVolumeHandoffTarget(readGainQ16, HardwareVolumeHandoffSource.DEVICE)
+    } else {
+        HardwareVolumeHandoffTarget(safeAppTarget, HardwareVolumeHandoffSource.APP)
+    }
+}
+
+internal fun shouldReadInitialHardwareVolume(
+    isNewConnection: Boolean,
+    readable: Boolean,
+): Boolean = isNewConnection && readable
+
+internal fun ibassoActualEventGainQ16(
+    baseRaw: Int,
+    isDsd: Boolean,
+    dsdCompensationDb: Int,
+): UsbActualVolume {
+    val actualRaw = if (isDsd) {
+        ibassoDsdVolume(baseRaw, dsdCompensationDb)
+    } else {
+        baseRaw.coerceIn(0, 255)
+    }
+    return UsbActualVolume(
+        raw = actualRaw,
+        gainQ16 = IbassoHidVolumeProtocol.rawToLinearGainQ16(actualRaw),
+    )
+}
+
+private const val IBASSO_UNITY_GAIN_Q16 = 65536
+private const val IBASSO_EVENT_MIN_PACKET_SIZE = 10
+
+private val ibassoVolumeTable = intArrayOf(
+    255, 155, 150, 145, 140, 135, 130, 125, 120, 115, 110, 109, 108, 107, 106, 105,
+    104, 103, 102, 101, 100, 99, 98, 97, 96, 95, 94, 93, 92, 91, 90, 88, 86, 84,
+    82, 80, 78, 76, 74, 72, 70, 68, 66, 64, 62, 60, 58, 56, 54, 52, 50, 49, 48,
+    47, 46, 45, 44, 43, 42, 41, 40, 39, 38, 37, 36, 35, 34, 33, 32, 31, 30, 29,
+    28, 27, 26, 25, 24, 23, 22, 21, 20, 19, 18, 17, 16, 15, 14, 13, 12, 11, 10,
+    9, 8, 7, 6, 5, 4, 3, 2, 1, 0,
+)
+
+internal fun ibassoVolumeIndex(gainQ16: Int): Int {
+    if (gainQ16 <= 0) return 0
+    val digitalGain = gainQ16.coerceAtMost(IBASSO_UNITY_GAIN_Q16).toDouble() /
+        IBASSO_UNITY_GAIN_Q16
+    return (digitalGain.pow(2.0 / 3.0) * (ibassoVolumeTable.size - 1))
+        .roundToInt()
+        .coerceIn(0, ibassoVolumeTable.lastIndex)
+}
+
+internal fun ibassoDeviceVolume(index: Int): Int =
+    ibassoVolumeTable[index.coerceIn(0, ibassoVolumeTable.lastIndex)]
+
+internal fun ibassoDsdVolume(baseVolume: Int, compensationDb: Int): Int =
+    (baseVolume - compensationDb.coerceIn(-12, 6) * 2).coerceIn(0, 255)
+
+internal fun ibassoI2cWritePacket(
+    command: Int,
+    slave: Int,
+    offset: Int,
+    byteOffset: Int,
+    value: Int,
+): ByteArray = ByteArray(16).also {
+    it[0] = command.toByte()
+    it[1] = 0x11
+    it[2] = 0x88.toByte()
+    it[3] = slave.toByte()
+    it[6] = 5
+    it[7] = offset.toByte()
+    it[9] = byteOffset.toByte()
+    it[11] = value.toByte()
+}
+
+internal fun ibassoRoomWritePacket(command: Int, register: Int, value: Int): ByteArray =
+    ByteArray(16).also {
+        it[0] = command.toByte()
+        it[1] = 0x11
+        it[2] = 0xa0.toByte()
+        it[3] = 0xa2.toByte()
+        it[5] = register.toByte()
+        it[6] = 1
+        it[7] = value.toByte()
+    }
+
+internal fun ibassoVolumePackets(target: UsbVolumeTarget): List<ByteArray> = listOf(
+    ibassoI2cWritePacket(1, 0x60, 9, 1, target.baseRaw),
+    ibassoI2cWritePacket(2, 0x60, 9, 2, target.baseRaw),
+    ibassoI2cWritePacket(3, 0x62, 9, 1, target.baseRaw),
+    ibassoI2cWritePacket(4, 0x62, 9, 2, target.baseRaw),
+    ibassoI2cWritePacket(9, 0x60, 7, 0, target.dsdRaw),
+    ibassoI2cWritePacket(10, 0x60, 7, 1, target.dsdRaw),
+    ibassoRoomWritePacket(19, 16, target.baseRaw),
+    ibassoI2cWritePacket(11, 0x62, 7, 0, target.dsdRaw),
+    ibassoI2cWritePacket(12, 0x62, 7, 1, target.dsdRaw),
+    ibassoRoomWritePacket(20, 17, target.baseRaw),
+)
+
+internal fun ibassoRollbackTarget(
+    lastAppliedTarget: UsbVolumeTarget?,
+    initialBaseRaw: Int?,
+    dsdCompensationDb: Int,
+): UsbVolumeTarget? = lastAppliedTarget ?: initialBaseRaw?.coerceIn(0, 255)?.let { baseRaw ->
+    UsbVolumeTarget(baseRaw, ibassoDsdVolume(baseRaw, dsdCompensationDb))
+}
+
+internal fun trustedIbassoTargetForDevice(
+    target: UsbVolumeTarget?,
+    targetDeviceId: Int?,
+    deviceId: Int,
+): UsbVolumeTarget? = target.takeIf { targetDeviceId == deviceId }
+
+internal fun ibassoTargetFromEvent(
+    baseRaw: Int,
+    dsdCompensationDb: Int,
+): UsbVolumeTarget = UsbVolumeTarget(
+    baseRaw.coerceIn(0, 255),
+    ibassoDsdVolume(baseRaw, dsdCompensationDb),
+)
+
+internal fun ibassoVolumeReadPacket(): ByteArray = ByteArray(16).also {
+    it[0] = 65
+    it[1] = 0x12
+    it[2] = 0xe4.toByte()
+    it[3] = 0xa2.toByte()
+    it[5] = 0x11
+    it[6] = 1
+}

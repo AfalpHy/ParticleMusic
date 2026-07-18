@@ -17,7 +17,7 @@ class History {
     List<MyAudioMetadata> toRecentlySongList,
   ) {
     for (final song in fromSongList) {
-      if (song.playCount > 0) {
+      if (song.playCount > 0 && song.lastPlayed != null) {
         toRankingSongList.add(song);
         toRecentlySongList.add(song);
       }
@@ -31,29 +31,13 @@ class History {
   }
 
   void load() {
-    _fetchSongs(
-      library.songListManager.localSongList,
-      rankingSongListManager.localSongList,
-      recentlySongListManager.localSongList,
-    );
-
-    _fetchSongs(
-      library.songListManager.webdavSongList,
-      rankingSongListManager.webdavSongList,
-      recentlySongListManager.webdavSongList,
-    );
-
-    _fetchSongs(
-      library.songListManager.navidromeSongList,
-      rankingSongListManager.navidromeSongList,
-      recentlySongListManager.navidromeSongList,
-    );
-
-    _fetchSongs(
-      library.songListManager.embySongList,
-      rankingSongListManager.embySongList,
-      recentlySongListManager.embySongList,
-    );
+    for (final sourceType in SourceType.values) {
+      _fetchSongs(
+        library.songListManager.getSongList2(sourceType),
+        rankingSongListManager.getSongList2(sourceType),
+        recentlySongListManager.getSongList2(sourceType),
+      );
+    }
 
     rankingSongListManager.resetSourceType();
     recentlySongListManager.resetSourceType();

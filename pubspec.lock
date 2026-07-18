@@ -93,11 +93,12 @@ packages:
   audio_tags_lofty:
     dependency: "direct main"
     description:
-      name: audio_tags_lofty
-      sha256: a4f8309d362c448f12b07b52102eaf3678b51b8b40204e4d04ebdff3649d58b1
-      url: "https://pub.dev"
-    source: hosted
-    version: "0.0.6"
+      path: "."
+      ref: "65671b508897f6b248e5e479adae7d3f95e72474"
+      resolved-ref: "65671b508897f6b248e5e479adae7d3f95e72474"
+      url: "https://github.com/huya688zdx/audio_tags_lofty.git"
+    source: git
+    version: "0.0.7"
   auto_size_text:
     dependency: "direct main"
     description:
@@ -322,6 +323,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.2.0"
+  ffi_leak_tracker:
+    dependency: transitive
+    description:
+      name: ffi_leak_tracker
+      sha256: "4093d4ef9ca06ffe2786e73bfb25e22aa92112b9bb4ec941f11e3e6b61489a97"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.2"
   file:
     dependency: transitive
     description:
@@ -333,11 +342,12 @@ packages:
   file_picker:
     dependency: "direct main"
     description:
-      name: file_picker
-      sha256: f13a03000d942e476bc1ff0a736d2e9de711d2f89a95cd4c1d88f861c3348387
-      url: "https://pub.dev"
-    source: hosted
-    version: "11.0.2"
+      path: "."
+      ref: "v12.0.0-beta.7"
+      resolved-ref: "7fbe3adab03d890d306b197e9244ac6f7f165391"
+      url: "https://github.com/miguelpruivo/flutter_file_picker.git"
+    source: git
+    version: "12.0.0-beta.7"
   fixnum:
     dependency: transitive
     description:
@@ -375,6 +385,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "3.4.1"
+  flutter_gamepads:
+    dependency: "direct main"
+    description:
+      name: flutter_gamepads
+      sha256: b350fef39477a1187ddb769dac8d35673ca1572454e5d39300fb99460483fa00
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.11+4"
   flutter_lints:
     dependency: "direct dev"
     description:
@@ -440,10 +458,10 @@ packages:
     dependency: transitive
     description:
       name: flutter_secure_storage_windows
-      sha256: "3b7c8e068875dfd46719ff57c90d8c459c87f2302ed6b00ff006b3c9fcad1613"
+      sha256: "471951813a97006d899db4948acc654a4f28c440083ea08178935ce20b173ec1"
       url: "https://pub.dev"
     source: hosted
-    version: "4.1.0"
+    version: "4.2.2"
   flutter_switch:
     dependency: "direct main"
     description:
@@ -462,6 +480,70 @@ packages:
     description: flutter
     source: sdk
     version: "0.0.0"
+  gamepads:
+    dependency: transitive
+    description:
+      name: gamepads
+      sha256: bc2b4368f7f01e0390187f63c063f1fa26f420224e159fed1aaa2c449f5a1125
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.10+5"
+  gamepads_android:
+    dependency: transitive
+    description:
+      name: gamepads_android
+      sha256: "8d8430deab5c35bafee3124bec0db19d3df605bb8f42da9ba188e826fda551e2"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.8+2"
+  gamepads_darwin:
+    dependency: transitive
+    description:
+      name: gamepads_darwin
+      sha256: a7668dc17f2e4b95c29c54e961c3ef6e34e3997718383e96dd0bdf5a5c3b03c8
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.2+4"
+  gamepads_ios:
+    dependency: transitive
+    description:
+      name: gamepads_ios
+      sha256: "514a37d4b1b17bf47fe911ee1b750eca6be2b8abbdb71f200b9ad3186014d413"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.3+3"
+  gamepads_linux:
+    dependency: transitive
+    description:
+      name: gamepads_linux
+      sha256: "80bf70df6da6185926e6d8b2feb98e725e6fe99290afafaea91dba471e8c1c1e"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.2"
+  gamepads_platform_interface:
+    dependency: transitive
+    description:
+      name: gamepads_platform_interface
+      sha256: "9ddb3b61c780284a17739d759929d2e32b912d12d9145ee493ffe2b43fc6256a"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.3"
+  gamepads_web:
+    dependency: transitive
+    description:
+      name: gamepads_web
+      sha256: "860eb4f11fdb6dfcf18f793a491282747007909075d161373df7f067dfddb9a4"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.1.1+1"
+  gamepads_windows:
+    dependency: transitive
+    description:
+      name: gamepads_windows
+      sha256: "650b68a4bc5d729abf12f0d2d3a53c05e4070a288c7e5575edfd485774550d8c"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.3.0+1"
   glob:
     dependency: transitive
     description:
@@ -1413,10 +1495,10 @@ packages:
     dependency: transitive
     description:
       name: win32
-      sha256: d7cb55e04cd34096cd3a79b3330245f54cb96a370a1c27adb3c84b917de8b08e
+      sha256: ba6f4bba816c8d7e3c1580e170f3786d216951cc6b94babc3b814c08d2cb2738
       url: "https://pub.dev"
     source: hosted
-    version: "5.15.0"
+    version: "6.3.0"
   window_manager:
     dependency: "direct main"
     description:
@@ -1452,4 +1534,4 @@ packages:
     version: "3.1.3"
 sdks:
   dart: ">=3.12.0 <4.0.0"
-  flutter: "3.44.0"
+  flutter: "3.44.5"

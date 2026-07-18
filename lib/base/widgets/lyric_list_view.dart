@@ -8,7 +8,6 @@ import 'package:sylvakru/base/audio_handler.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/services/lyric.dart';
-import 'package:sylvakru/mini_view/mini_view.dart';
 import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
@@ -31,7 +30,7 @@ class LyricsListView extends StatefulWidget {
 }
 
 class LyricsListViewState extends State<LyricsListView>
-    with WidgetsBindingObserver, SingleTickerProviderStateMixin {
+    with WidgetsBindingObserver {
   final ItemScrollController itemScrollController = ItemScrollController();
   final ValueNotifier<int> currentIndexNotifier = ValueNotifier<int>(-1);
   StreamSubscription<Duration>? positionSub;
@@ -254,7 +253,7 @@ class LyricLineWidget extends StatelessWidget {
 
                   fontSize += fontSizeOffset;
 
-                  final textColor = miniModeNotifier.value
+                  final textColor = viewModeNotifier.value == .mini
                       ? miniViewForegroundColor.value
                       : lyricsPageForegroundColor.value;
 
@@ -377,7 +376,7 @@ class KaraokeTextState extends State<KaraokeText>
 
     textColor = widget.isDesktopLyrics
         ? Colors.white
-        : miniModeNotifier.value
+        : viewModeNotifier.value == .mini
         ? miniViewHighlightTextColor.value
         : lyricsPageHighlightTextColor.value;
   }

@@ -1,382 +1,56 @@
-import 'dart:convert';
-import 'dart:math';
-import 'dart:typed_data';
-
-import 'package:crypto/crypto.dart';
-import 'package:dio/dio.dart';
 import 'package:sylvakru/base/services/logger.dart';
+import 'package:sylvakru/base/services/open_sonic_client.dart';
 
 NavidromeClient? navidromeClient;
 
-class NavidromeClient {
-  final String baseUrl;
-  final String username;
-  final String password;
-
-  late final Dio dio;
-
+class NavidromeClient extends OpenSubsonicClient {
   NavidromeClient({
-    required this.baseUrl,
-    required this.username,
-    required this.password,
-  }) {
-    dio = Dio(
-      BaseOptions(
-        baseUrl: baseUrl,
-        connectTimeout: const Duration(seconds: 5),
-        receiveTimeout: const Duration(seconds: 10),
-        sendTimeout: const Duration(seconds: 10),
-      ),
-    );
-  }
+    required super.baseUrl,
+    required super.username,
+    required super.password,
+  });
 
-  String _randomSalt() {
-    final rand = Random();
-    return List.generate(8, (_) => rand.nextInt(36).toRadixString(36)).join();
-  }
-
-  Map<String, String> _buildParams() {
-    final salt = _randomSalt();
-    final token = md5.convert(utf8.encode(password + salt)).toString();
-
-    return {
-      'u': username,
-      't': token,
-      's': salt,
-      'v': '1.16.1',
-      'c': 'Sylvakru',
-      'f': 'json',
-    };
-  }
-
-  Map<String, dynamic> _params([Map<String, dynamic>? extra]) {
-    return {..._buildParams(), ...?extra};
-  }
-
-  bool _ok(dynamic data) {
-    final res = data['subsonic-response'];
-    if (res['status'] != 'ok') {
-      logger.output(res['error']?['message'] ?? 'Unknown error');
-      return false;
-    }
-    return true;
-  }
-
-  List<Map<String, dynamic>> _normalize(dynamic data) {
-    if (data is List) {
-      return List<Map<String, dynamic>>.from(data);
-    } else if (data is Map) {
-      return [Map<String, dynamic>.from(data)];
-    }
-    return [];
-  }
-
-  Future<T?> _safeRequest<T>(
-    Future<Response> Function() request,
-    T Function(dynamic data) parser,
-  ) async {
-    try {
-      final res = await request();
-
-      if (!_ok(res.data)) return null;
-
-      return parser(res.data);
-    } on DioException catch (e) {
-      logger.output(
-        '[Navidrome] Dio error: ${e.message} '
-        '(${e.response?.statusCode})',
-      );
-
-      if (e.response?.data != null) {
-        logger.output(e.response!.data.toString());
-      }
-
-      return null;
-    } catch (e) {
-      logger.output('[Navidrome] Unknown error: $e');
-      return null;
-    }
-  }
-
-  Future<bool> ping() async {
-    final res = await _safeRequest(
-      () => dio.get('/rest/ping.view', queryParameters: _params()),
-      (_) => true,
-    );
-    return res ?? false;
-  }
-
+  @override
   Stream<List<Map<String, dynamic>>> getSongs({int limit = 50}) async* {
     int offset = 0;
-    int cnt = 0;
+    int count = 0;
+
     while (true) {
-      final res = await _safeRequest(
-        () => dio.get(
+      final res = await safeRequest(
+        () => get(
           '/rest/search3.view',
-          queryParameters: _params({
-            'query': '',
-            'songCount': limit,
-            'songOffset': offset,
-          }),
+          query: {'query': '', 'songCount': limit, 'songOffset': offset},
         ),
         (data) => data,
       );
 
-      if (res == null) break;
+      if (res == null) {
+        break;
+      }
 
-      final songs = res['subsonic-response']['searchResult3']['song'];
+      final songs = normalize(
+        res['subsonic-response']['searchResult3']['song'],
+      );
 
-      final normalized = _normalize(songs);
+      if (songs.isEmpty) {
+        break;
+      }
 
-      if (normalized.isEmpty) break;
+      yield songs;
 
-      yield normalized;
-
-      cnt += normalized.length;
+      count += songs.length;
       offset += limit;
 
-      logger.output('[Navidrome] Fetched $cnt songs...');
+      logger.output('[Navidrome] Fetched $count songs...');
     }
   }
 
-  Future<List<String>> getFavoriteSongIds() async {
-    return await _safeRequest(
-          () => dio.get('/rest/getStarred2.view', queryParameters: _params()),
-          (data) {
-            final songs = _normalize(
-              data['subsonic-response']['starred2']['song'],
-            );
-            return songs.map((e) => e['id'] as String).toList();
-          },
-        ) ??
-        [];
-  }
-
-  Future<bool> starSongs(List<String> songIds) async {
-    final res = await _safeRequest(
-      () =>
-          dio.get('/rest/star.view', queryParameters: _params({'id': songIds})),
-      (_) => true,
-    );
-
-    return res ?? false;
-  }
-
-  Future<bool> unstarAllSongs() async {
-    final starredIds = await getFavoriteSongIds();
-    final res = await _safeRequest(
-      () => dio.get(
-        '/rest/unstar.view',
-        queryParameters: _params({'id': starredIds}),
-      ),
-      (_) => true,
-    );
-
-    return res ?? false;
-  }
-
-  Future<List<Map<String, dynamic>>> getPlaylists() async {
-    return await _safeRequest(
-          () => dio.get('/rest/getPlaylists.view', queryParameters: _params()),
-          (data) =>
-              _normalize(data['subsonic-response']['playlists']['playlist']),
-        ) ??
-        [];
-  }
-
-  Future<List<String>> getPlaylistSongIds(String id) async {
-    return await _safeRequest(
-          () => dio.get(
-            '/rest/getPlaylist.view',
-            queryParameters: _params({'id': id}),
-          ),
-          (data) {
-            final entries = _normalize(
-              data['subsonic-response']['playlist']['entry'],
-            );
-            return entries.map((e) => e['id'] as String).toList();
-          },
-        ) ??
-        [];
-  }
-
-  Future<String?> createPlaylistAndGetId(String name) async {
-    return await _safeRequest(
-      () => dio.get(
-        '/rest/createPlaylist.view',
-        queryParameters: _params({'name': name}),
-      ),
-      (data) => data['subsonic-response']['playlist']['id'],
-    );
-  }
-
-  Future<bool> deletePlaylist(String playlistId) async {
-    final res = await _safeRequest(
-      () => dio.get(
-        '/rest/deletePlaylist.view',
-        queryParameters: _params({'id': playlistId}),
-      ),
-      (_) => true,
-    );
-
-    return res ?? false;
-  }
-
-  Future<bool> addSongsToPlaylist(
-    String playlistId,
-    List<String> songIds,
-  ) async {
-    final res = await _safeRequest(
-      () => dio.get(
-        '/rest/updatePlaylist.view',
-        queryParameters: _params({
-          'playlistId': playlistId,
-          'songIdToAdd': songIds,
-        }),
-      ),
-      (_) => true,
-    );
-
-    return res ?? false;
-  }
-
-  String getStreamUrl(String id) {
-    return Uri.parse(baseUrl)
-        .resolve('rest/stream.view')
-        .replace(queryParameters: _params({'id': id}))
-        .toString();
-  }
-
-  Future<Uint8List?> getPictureBytes(String id) async {
-    int maxRetries = 5;
-    int attempt = 0;
-
-    while (attempt < maxRetries) {
-      try {
-        final res = await dio.get(
-          '/rest/getCoverArt.view',
-          queryParameters: _params({'id': id}),
-          options: Options(
-            responseType: ResponseType.bytes,
-            validateStatus: (status) =>
-                status == 429 || (status != null && status < 400),
-          ),
-        );
-
-        if (res.statusCode == 429) {
-          attempt++;
-          final delay = Duration(milliseconds: 200 * attempt);
-          logger.output(
-            'Rate limit hit for $id, retrying in ${delay.inMilliseconds}ms (attempt $attempt)',
-          );
-          await Future.delayed(delay);
-          continue;
-        }
-
-        return res.data;
-      } catch (e) {
-        logger.output('Cover load failed on attempt ${attempt + 1}: $e');
-        attempt++;
-        await Future.delayed(Duration(milliseconds: 200 * attempt));
-      }
-    }
-
-    logger.output('Failed to load cover for $id after $maxRetries attempts.');
-    return null;
-  }
-
+  @override
   Future<bool> scrobble(String songId) async {
-    return await _safeRequest(
-          () => dio.get(
-            '/rest/scrobble.view',
-            queryParameters: _params({'id': songId}),
-          ),
+    return await safeRequest(
+          () => get('/rest/scrobble.view', query: {'id': songId}),
           (_) => true,
         ) ??
         false;
-  }
-
-  Future<String?> getLyricsById(String songId) async {
-    return await _safeRequest(
-      () => dio.get(
-        '/rest/getLyricsBySongId.view',
-        queryParameters: _params({'id': songId}),
-      ),
-      (data) {
-        final response = data['subsonic-response'];
-        if (response == null) return '';
-
-        final lyricsList = response['lyricsList'];
-        if (lyricsList != null && lyricsList['structuredLyrics'] != null) {
-          final List structured = lyricsList['structuredLyrics'];
-          if (structured.isNotEmpty) {
-            int index = 0;
-            int maxLength = 0;
-            for (int i = 0; i < structured.length; i++) {
-              final item = structured[i];
-              final lines = item['line'];
-              if (lines != null && lines is List && lines.isNotEmpty) {
-                final value = lines[0]['value'];
-                if (value != null &&
-                    value is String &&
-                    value.length > maxLength) {
-                  index = i;
-                  maxLength = value.length;
-                }
-              }
-            }
-            final List lines = structured[index]['line'] ?? [];
-            final buffer = StringBuffer();
-
-            for (var l in lines) {
-              final int startMs = l['start'] ?? 0;
-              final String value = l['value'] ?? '';
-
-              // Convert ms to [mm:ss.SSS]
-              final minutes = (startMs ~/ 60000).toString().padLeft(2, '0');
-              final seconds = ((startMs % 60000) ~/ 1000).toString().padLeft(
-                2,
-                '0',
-              );
-              final millis = (startMs % 1000).toString().padLeft(3, '0');
-
-              final timestamp = '[$minutes:$seconds.$millis]';
-
-              buffer.writeln('$timestamp$value');
-            }
-            return buffer.toString();
-          }
-        }
-
-        final lyricsData = response['lyrics'];
-        if (lyricsData != null) {
-          return lyricsData['value'] as String? ?? '';
-        }
-
-        return '';
-      },
-    );
-  }
-
-  Future<void> downloadSong({
-    required String songId,
-    required String savePath,
-    ProgressCallback? onProgress,
-  }) async {
-    try {
-      final uri = Uri.parse(baseUrl)
-          .resolve('/rest/download.view')
-          .replace(queryParameters: _params({'id': songId}));
-
-      await dio.download(
-        uri.toString(),
-        savePath,
-        onReceiveProgress: onProgress,
-      );
-    } on DioException catch (e) {
-      logger.output('Download failed: ${e.message}');
-    } catch (e) {
-      logger.output('Download failed: $e');
-    }
   }
 }

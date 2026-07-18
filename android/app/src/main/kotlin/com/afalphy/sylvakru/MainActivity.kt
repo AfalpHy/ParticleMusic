@@ -61,6 +61,11 @@ class MainActivity : AudioServiceActivity() {
                     usbAudioChannel.invokeMethod("onUsbTransportTelemetryChanged", telemetry)
                 }
             },
+            emitHardwareVolume = { event ->
+                runOnUiThread {
+                    usbAudioChannel.invokeMethod("onUsbHardwareVolumeChanged", event)
+                }
+            },
         )
         usbAudioChannel.setMethodCallHandler { call, result ->
             when (call.method) {
@@ -78,8 +83,19 @@ class MainActivity : AudioServiceActivity() {
                 }
                 "setExclusiveVolume" -> {
                     val gainQ16 = call.argument<Number>("gainQ16")?.toInt() ?: 65536
-                    val enabled = call.argument<Boolean>("enabled") ?: false
-                    usbExclusiveAudioEngine.setVolume(gainQ16, enabled)
+                    val replayGainMilliDb =
+                        call.argument<Number>("replayGainMilliDb")?.toInt() ?: 0
+                    val mode = call.argument<String>("mode") ?: "auto"
+                    val dsdGainCompensationDb =
+                        call.argument<Number>("dsdGainCompensationDb")?.toInt() ?: 0
+                    val smoothHandoff = call.argument<Boolean>("smoothHandoff") ?: true
+                    usbExclusiveAudioEngine.setVolume(
+                        gainQ16,
+                        replayGainMilliDb,
+                        mode,
+                        dsdGainCompensationDb,
+                        smoothHandoff,
+                    )
                     result.success(null)
                 }
                 "seekExclusivePlayback" -> {
@@ -112,8 +128,7 @@ class MainActivity : AudioServiceActivity() {
         ensureSuperLyricPublisherRegistered()
     }
 
-    // 独占播放且启用软件音量时，接管安卓物理音量键：把方向上报给 Dart 调节独占数字
-    // 音量，并吞掉按键，避免系统去改对独占输出无效的 STREAM_MUSIC。其余情况交回系统。
+    // 独占播放的音量由应用接管，仅在 Activity 前台拦截手机物理音量键。
     override fun dispatchKeyEvent(event: KeyEvent): Boolean {
         val keyCode = event.keyCode
         val isVolumeKey =
@@ -217,9 +232,13 @@ class MainActivity : AudioServiceActivity() {
             }
 
             override fun onAudioDevicesRemoved(removedDevices: Array<out AudioDeviceInfo>) {
-                removedDevices
-                    .filter { it.isUsbAudioOutput() }
-                    .forEach { device -> sendUsbAudioDeviceEvent("removed", device.id) }
+                val usbRemoved = removedDevices.filter { it.isUsbAudioOutput() }
+                // 先让引擎判定并硬关拔出的会话（暂停中不写 USB，只有这里能发现
+                // 设备没了），失活状态带进度发给 Dart，再广播设备事件。
+                if (usbRemoved.isNotEmpty() && ::usbExclusiveAudioEngine.isInitialized) {
+                    usbExclusiveAudioEngine.handleUsbAudioDeviceRemoved()
+                }
+                usbRemoved.forEach { device -> sendUsbAudioDeviceEvent("removed", device.id) }
             }
         }
 
@@ -613,6 +632,8 @@ class MainActivity : AudioServiceActivity() {
         message: String? = null,
     ): Map<String, Any?> {
         val audioManager = getSystemService(Context.AUDIO_SERVICE) as AudioManager
+        val usbManager = getSystemService(Context.USB_SERVICE) as UsbManager
+        val usbDevice = findUsbAudioDevice(usbManager)
         val devices = getUsbAudioDevices(audioManager)
         val activeDevice = getActiveUsbAudioDevice(audioManager, devices)
         val outputDevice = activeDevice ?: getActiveOutputDevice(audioManager)
@@ -641,6 +662,10 @@ class MainActivity : AudioServiceActivity() {
             "outputDeviceName" to outputDevice?.productName?.toString(),
             "outputSampleRate" to outputSampleRate(outputDevice),
             "outputEncoding" to outputEncoding(outputDevice),
+            "manufacturerName" to usbDevice?.manufacturerName,
+            "productName" to usbDevice?.productName,
+            "vendorId" to usbDevice?.vendorId,
+            "productId" to usbDevice?.productId,
             "message" to (message ?: defaultStatusMessage(devices)),
             "devices" to devices.map { it.toMap(audioManager) },
         )
@@ -711,8 +736,13 @@ class MainActivity : AudioServiceActivity() {
             if (bitPerfect) {
                 val supported = audioManager.getSupportedMixerAttributes(device)
                     .filter { it.mixerBehavior == AudioMixerAttributes.MIXER_BEHAVIOR_BIT_PERFECT }
-                val chosen = supported.firstOrNull { it.format.sampleRate == sampleRate }
-                    ?: supported.maxByOrNull { it.format.sampleRate }
+                val chosenRate = chooseBitPerfectMixerSampleRate(
+                    requestedSampleRate,
+                    supported.map { it.format.sampleRate },
+                )
+                val chosen = chosenRate?.let { rate ->
+                    supported.firstOrNull { it.format.sampleRate == rate }
+                }
                 if (chosen != null) {
                     UsbDiagnostics.i(
                         tag,
@@ -734,7 +764,7 @@ class MainActivity : AudioServiceActivity() {
                 }
                 UsbDiagnostics.i(
                     tag,
-                    "applyPreferredOutputApi34: device has no bit-perfect mixer attributes, using default behavior.",
+                    "applyPreferredOutputApi34: device has no matching bit-perfect mixer attributes, using default behavior.",
                 )
             }
             UsbDiagnostics.i(tag, "applyPreferredOutputApi34: requesting sampleRate=$sampleRate, encoding=$encoding.")

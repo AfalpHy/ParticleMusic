@@ -2,6 +2,7 @@ package com.afalphy.sylvakru
 
 import android.content.Context
 import java.io.File
+import kotlin.math.roundToInt
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -22,6 +23,20 @@ data class DacQuirk(
     val clockSetCurDelayMs: Int = 0,
     // 个别设备 GET_CUR 返回垃圾但 SET_CUR 实际生效
     val clockSkipGetCurValidation: Boolean = false,
+    // 新流出声前的预滚静音时长覆盖；null=默认 100ms，重锁慢的 DAC 可加长
+    val clockPreRollMs: Int? = null,
+    // 标准 Feature Unit 或厂商协议的硬件音量覆盖。
+    val hardwareVolumeFeatureUnitId: Int? = null,
+    val hardwareVolumeControlInterface: Int? = null,
+    val hardwareVolumeChannels: List<Int> = emptyList(),
+    val hardwareVolumeProtocol: String? = null,
+    val hardwareVolumeRecipient: String = "interface",
+    val hardwareVolumeMinQ8_8: Int? = null,
+    val hardwareVolumeMaxQ8_8: Int? = null,
+    val hardwareVolumeStepQ8_8: Int? = null,
+    val hardwareVolumeMuteQ8_8: Int? = null,
+    val hardwareVolumeEnabled: Boolean? = null,
+    val hardwareVolumeDsdSupported: Boolean? = null,
     val flags: List<String> = emptyList(),
 )
 
@@ -185,12 +200,38 @@ object UsbDacQuirks {
 
     fun parseEntries(json: String): List<Pair<String, DacQuirk>> {
         val root = JSONObject(json)
-        val devices = root.optJSONArray("devices") ?: return emptyList()
         val result = mutableListOf<Pair<String, DacQuirk>>()
+        appendEntries(result, root.optJSONArray("devices"))
+        val vendors = root.optJSONArray("vendors")
+        if (vendors != null) {
+            for (index in 0 until vendors.length()) {
+                val vendor = vendors.optJSONObject(index) ?: continue
+                val match = vendor.optJSONObject("match") ?: continue
+                val vid = normalizeId(match.optString("vid")) ?: continue
+                appendEntries(
+                    result,
+                    vendor.optJSONArray("devices"),
+                    vendorVid = vid,
+                    vendorLabel = match.optString("label").takeIf { it.isNotEmpty() },
+                )
+            }
+        }
+        return result
+    }
+
+    private fun appendEntries(
+        result: MutableList<Pair<String, DacQuirk>>,
+        devices: JSONArray?,
+        vendorVid: String? = null,
+        vendorLabel: String? = null,
+    ) {
+        if (devices == null) {
+            return
+        }
         for (index in 0 until devices.length()) {
             val device = devices.optJSONObject(index) ?: continue
             val match = device.optJSONObject("match") ?: continue
-            val vid = normalizeId(match.optString("vid")) ?: continue
+            val vid = vendorVid ?: normalizeId(match.optString("vid")) ?: continue
             val rawPid = match.optString("pid")
             val pid = if (rawPid == "*" || rawPid.isEmpty()) {
                 "*"
@@ -200,9 +241,11 @@ object UsbDacQuirks {
             val dop = device.optJSONObject("dop")
             val nativeDsd = device.optJSONObject("nativeDsd")
             val clock = device.optJSONObject("clock")
+            val hardwareVolume = device.optJSONObject("hardwareVolume")
+            val hardwareVolumeRange = hardwareVolume?.optJSONObject("range")
             val flagsArray = device.optJSONArray("flags")
             result += "$vid:$pid" to DacQuirk(
-                label = match.optString("label").takeIf { it.isNotEmpty() },
+                label = match.optString("label").takeIf { it.isNotEmpty() } ?: vendorLabel,
                 dopSupported = if (dop?.has("supported") == true) {
                     dop.optBoolean("supported")
                 } else {
@@ -213,6 +256,42 @@ object UsbDacQuirks {
                 nativeDsdMaxDsd = nativeDsd?.optInt("maxDsd", 0)?.takeIf { it > 0 },
                 clockSetCurDelayMs = clock?.optInt("setCurDelayMs", 0) ?: 0,
                 clockSkipGetCurValidation = clock?.optBoolean("skipGetCurValidation") == true,
+                clockPreRollMs = clock?.optInt("preRollMs", -1)?.takeIf { it >= 0 },
+                hardwareVolumeFeatureUnitId = hardwareVolume
+                    ?.optInt("featureUnitId", 0)
+                    ?.takeIf { it in 1..255 },
+                hardwareVolumeControlInterface = hardwareVolume
+                    ?.optInt("controlInterface", -1)
+                    ?.takeIf { it >= 0 },
+                hardwareVolumeChannels = buildList {
+                    val channels = hardwareVolume?.optJSONArray("channels") ?: return@buildList
+                    for (channelIndex in 0 until channels.length()) {
+                        val channel = channels.optInt(channelIndex, -1)
+                        if (channel >= 0) add(channel)
+                    }
+                },
+                hardwareVolumeProtocol = hardwareVolume
+                    ?.optString("protocol")
+                    ?.trim()
+                    ?.takeIf { it.isNotEmpty() },
+                hardwareVolumeRecipient = hardwareVolume
+                    ?.optString("recipient")
+                    ?.takeIf { it == "device" || it == "interface" }
+                    ?: "interface",
+                hardwareVolumeMinQ8_8 = hardwareVolumeRange.q8_8("minDb"),
+                hardwareVolumeMaxQ8_8 = hardwareVolumeRange.q8_8("maxDb"),
+                hardwareVolumeStepQ8_8 = hardwareVolumeRange.q8_8("stepDb"),
+                hardwareVolumeMuteQ8_8 = hardwareVolumeRange.q8_8("muteDb"),
+                hardwareVolumeEnabled = if (hardwareVolume?.has("enabled") == true) {
+                    hardwareVolume.optBoolean("enabled")
+                } else {
+                    null
+                },
+                hardwareVolumeDsdSupported = if (hardwareVolume?.has("dsdSupported") == true) {
+                    hardwareVolume.optBoolean("dsdSupported")
+                } else {
+                    null
+                },
                 flags = buildList {
                     if (flagsArray != null) {
                         for (flagIndex in 0 until flagsArray.length()) {
@@ -222,7 +301,6 @@ object UsbDacQuirks {
                 },
             )
         }
-        return result
     }
 
     fun matchQuirk(
@@ -248,5 +326,11 @@ object UsbDacQuirks {
         val parsed = raw.trim().removePrefix("0x").removePrefix("0X").toIntOrNull(16)
             ?: return null
         return hex(parsed)
+    }
+
+    private fun JSONObject?.q8_8(key: String): Int? {
+        if (this?.has(key) != true) return null
+        val value = optDouble(key, Double.NaN)
+        return value.takeIf { it.isFinite() }?.let { (it * 256.0).roundToInt() }
     }
 }

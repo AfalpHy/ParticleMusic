@@ -20,6 +20,7 @@ final Set<String> _loftySupportedExts = {
   '.mp3',
   '.flac',
   '.m4a',
+  '.m4b',
   '.m4r',
   '.mp4',
   '.aac',
@@ -165,9 +166,7 @@ class Folder {
   }
 
   Future<void> sync() async {
-    final List<dynamic> songIdList = jsonDecode(
-      await _songIdListFile.readAsString(),
-    );
+    final songIdList = await readJsonListFile(_songIdListFile);
 
     for (final id in songIdList) {
       final song = library.id2Song[id];

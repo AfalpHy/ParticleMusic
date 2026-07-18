@@ -60,6 +60,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get songs => 'Songs';
 
   @override
+  String get home => 'Home';
+
+  @override
   String get playlists => 'Playlists';
 
   @override
@@ -395,6 +398,9 @@ class AppLocalizationsEn extends AppLocalizations {
   String get connect2Navidrome => 'Connect to Navidrome';
 
   @override
+  String get connect2Subsonic => 'Connect to Subsonic';
+
+  @override
   String get connect2WebDAV => 'Connect to WebDAV';
 
   @override
@@ -674,34 +680,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get outputFormat => 'Output format';
 
   @override
-  String get bitDepthCompat => 'Bit-depth fallback';
-
-  @override
-  String get bitDepthCompatDesc =>
-      'Automatically fall back when the device doesn\'t support the source bit depth.';
-
-  @override
-  String get sampleRateCompat => 'Sample-rate fallback';
-
-  @override
-  String get sampleRateCompatDesc =>
-      'Automatically fall back when the device doesn\'t support the source sample rate.';
-
-  @override
-  String get channelCompat => 'Channel fallback';
-
-  @override
-  String get channelCompatDesc =>
-      'Fall back to an available channel layout when the source channels aren\'t supported.';
-
-  @override
-  String get tpdfDither => 'TPDF dither';
-
-  @override
-  String get tpdfDitherDesc =>
-      'Add very-low-level noise when converting high bit depth to 16-bit to reduce quantization distortion.';
-
-  @override
   String get pcmBitDepth => 'PCM bit depth';
 
   @override
@@ -742,7 +720,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get backgroundBufferDesc =>
-      'Raise the background buffer first if playback stutters while a large app runs in the background; higher is more stable but track switches and pause may respond a little slower.';
+      'The USB buffer absorbs short scheduling jitter up to 1000 ms; cloud playback uses a separate download watermark for network fluctuations.';
 
   @override
   String get volumeSection => 'Volume';
@@ -760,8 +738,62 @@ class AppLocalizationsEn extends AppLocalizations {
   String get volumeControlRaw => 'Raw digital level';
 
   @override
+  String get volumeControlRawConfirm => 'Full-scale raw output';
+
+  @override
   String get volumeControlDacFallbackHint =>
-      'DAC hardware volume isn\'t available yet; it currently falls back to digital volume.';
+      'Falls back to digital volume when DAC hardware volume is unavailable.';
+
+  @override
+  String get hardwareVolumeUnverified => 'Unverified';
+
+  @override
+  String get hardwareVolumeSyncPending => 'Syncing';
+
+  @override
+  String get hardwareVolumeFrozen => 'Volume sync failed; controls are frozen';
+
+  @override
+  String audioProcessingWithReplayGain(String processing, String gain) {
+    return '$processing · ReplayGain $gain dB';
+  }
+
+  @override
+  String audioProcessingWithReplayGainNotApplied(String processing) {
+    return '$processing · ReplayGain not applied';
+  }
+
+  @override
+  String get replayGain => 'ReplayGain';
+
+  @override
+  String get replayGainTrack => 'By track';
+
+  @override
+  String get replayGainTrackDesc =>
+      'Prefer track ReplayGain tags, falling back to album tags when unavailable.';
+
+  @override
+  String get replayGainAlbum => 'By album';
+
+  @override
+  String get replayGainAlbumDesc =>
+      'Prefer album ReplayGain tags, falling back to track tags when unavailable.';
+
+  @override
+  String get replayGainOff => 'Off';
+
+  @override
+  String get replayGainOffDesc => 'Do not apply ReplayGain.';
+
+  @override
+  String get replayGainApplying => 'Syncing';
+
+  @override
+  String get replayGainNotApplied => 'Not applied';
+
+  @override
+  String get replayGainNoTag => 'No tag';
 
   @override
   String get dsdGainCompensation => 'DSD gain compensation';
@@ -778,16 +810,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get compatibility => 'Compatibility';
-
-  @override
-  String get delayUsbLink => 'Delay establishing the USB output link';
-
-  @override
-  String get delayUsbLinkDesc =>
-      'Establish the exclusive session only when playback starts; useful for DACs that freeze or misbehave.';
-
-  @override
-  String get usbBusSpeed => 'USB bus speed';
 
   @override
   String get releaseUsbBandwidth => 'Release USB bandwidth after playback';
@@ -842,6 +864,21 @@ class AppLocalizationsEn extends AppLocalizations {
   String get refreshUsbStatus => 'Refresh USB status';
 
   @override
+  String get usbExclusiveLabel => 'USB EXCLUSIVE';
+
+  @override
+  String get outputLinkLabel => 'OUTPUT LINK';
+
+  @override
+  String get formatLabel => 'FORMAT';
+
+  @override
+  String get depthLabel => 'DEPTH';
+
+  @override
+  String get usbIdLabel => 'USB ID';
+
+  @override
   String get transportStatus => 'Transport status';
 
   @override
@@ -880,6 +917,9 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get dsdToPcmDesc =>
       'Wrap DSD in PCM frames; used when the device supports it';
+
+  @override
+  String get dsdToPcmRates => 'DSD to PCM sample rates';
 
   @override
   String get dsdNativeDesc =>
@@ -1004,6 +1044,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get encoding => 'Encoding';
 
   @override
+  String get sourceBitDepth => 'Source bit depth';
+
+  @override
+  String get decodedBitDepth => 'Decoded effective depth';
+
+  @override
+  String get usbSlotBitDepth => 'USB slot';
+
+  @override
+  String get bitDepthConverted => 'Bit-depth conversion';
+
+  @override
   String get requested => 'Requested';
 
   @override
@@ -1050,4 +1102,10 @@ class AppLocalizationsEn extends AppLocalizations {
   @override
   String get connectedNotConfirmed =>
       'USB DAC connected but exclusive support unconfirmed';
+
+  @override
+  String get noLyrics => 'There are no lyrics';
+
+  @override
+  String get lyricsParseFailed => 'Lyrics parsing failed';
 }

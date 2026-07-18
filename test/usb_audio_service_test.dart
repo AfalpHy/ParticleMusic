@@ -1,9 +1,36 @@
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:sylvakru/base/services/replay_gain.dart';
 import 'package:sylvakru/base/services/usb_audio_service.dart';
+import 'package:sylvakru/base/widgets/audio_output_panel.dart';
+import 'package:sylvakru/l10n/generated/app_localizations_zh.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
+
+  test('源位深未知时不使用 USB 槽位冒充', () {
+    final l10n = AppLocalizationsZh();
+    expect(formatUsbBitDepth(16, l10n), '16 bits');
+    expect(formatUsbBitDepth(null, l10n), l10n.unknown);
+  });
+
+  test('ReplayGain 输出文案使用实际应用值并区分状态', () {
+    final l10n = AppLocalizationsZh();
+    expect(
+      formatReplayGainStatus(ReplayGainPlaybackState.off(), l10n),
+      l10n.replayGainOff,
+    );
+    expect(
+      formatReplayGainStatus(ReplayGainPlaybackState.noTag(), l10n),
+      l10n.replayGainNoTag,
+    );
+    final applied = ReplayGainPlaybackState.pending(
+      selectedDb: -8.4,
+      path: ReplayGainOutputPath.sharedDigital,
+      generation: 2,
+    ).applied(actualDb: -8.4);
+    expect(formatReplayGainStatus(applied, l10n), '-8.4 dB');
+  });
 
   const channel = MethodChannel('com.afalphy.sylvakru/usb_audio');
   final messenger =
@@ -11,7 +38,11 @@ void main() {
 
   tearDown(() {
     messenger.setMockMethodCallHandler(channel, null);
+    usbExclusivePlaybackStateNotifier.value =
+        UsbExclusivePlaybackState.inactive();
     usbTransportTelemetryNotifier.value = UsbTransportTelemetry.inactive();
+    usbHardwareVolumeNotifier.value = null;
+    usbExclusiveVolumeKeyNotifier.value = 0;
   });
 
   test(
@@ -32,6 +63,10 @@ void main() {
             'outputDeviceName': 'USB DAC',
             'outputSampleRate': 96000,
             'outputEncoding': 'pcm_24bit_packed',
+            'manufacturerName': 'iBasso',
+            'productName': 'DC04U',
+            'vendorId': 0x0661,
+            'productId': 0x0883,
             'message': 'USB audio device detected',
             'devices': [
               {
@@ -62,6 +97,10 @@ void main() {
       expect(status.outputDeviceName, 'USB DAC');
       expect(status.outputSampleRate, 96000);
       expect(status.outputEncoding, 'pcm_24bit_packed');
+      expect(status.manufacturerName, 'iBasso');
+      expect(status.productName, 'DC04U');
+      expect(status.vendorId, 0x0661);
+      expect(status.productId, 0x0883);
       expect(status.devices, hasLength(1));
       expect(status.devices.single.name, 'USB DAC');
       expect(status.devices.single.sampleRates, [44100, 48000, 96000]);
@@ -69,6 +108,32 @@ void main() {
       expect(usbAudioStatusNotifier.value, status);
     },
   );
+
+  test('USB 音频状态区分已连接设备与移除状态', () {
+    final connected = UsbAudioStatus.fromMap({
+      'supported': true,
+      'activeDeviceId': 18,
+      'vendorId': 0x0661,
+      'productId': 0x0883,
+      'devices': [
+        {
+          'id': 18,
+          'name': 'USB DAC',
+          'type': 'usb_device',
+          'sampleRates': [48000],
+          'encodings': ['pcm_24bit_packed'],
+          'channelCounts': [2],
+        },
+      ],
+    });
+    final removed = UsbAudioStatus.fromMap({
+      'supported': true,
+      'devices': const [],
+    });
+
+    expect(connected.hasConnectedUsbAudioDevice, isTrue);
+    expect(removed.hasConnectedUsbAudioDevice, isFalse);
+  });
 
   test(
     'applyPreferredOutput requests requested sample rate and device id',
@@ -159,6 +224,44 @@ void main() {
     expect(usbAudioStatusNotifier.value.activeDeviceId, 18);
   });
 
+  test('设备移除立即发布保留最后位置的非活动状态', () {
+    final service = UsbAudioService(channel: channel, isAndroid: true);
+    usbExclusivePlaybackStateNotifier.value =
+        UsbExclusivePlaybackState.fromMap({
+          'playbackId': 'load-7',
+          'active': true,
+          'playing': false,
+          'positionMs': 120000,
+          'durationMs': 240000,
+        });
+
+    service.markExclusiveDeviceRemoved(position: const Duration(minutes: 2));
+
+    final state = usbExclusivePlaybackStateNotifier.value;
+    expect(state.playbackId, 'load-7');
+    expect(state.active, isFalse);
+    expect(state.playing, isFalse);
+    expect(state.position, const Duration(minutes: 2));
+    expect(state.duration, const Duration(minutes: 4));
+  });
+
+  test('重复设备移除不重复发布独占状态', () {
+    final service = UsbAudioService(channel: channel, isAndroid: true);
+    usbExclusivePlaybackStateNotifier.value =
+        UsbExclusivePlaybackState.inactive(
+          playbackId: 'load-7',
+          position: const Duration(minutes: 2),
+        );
+    final previous = usbExclusivePlaybackStateNotifier.value;
+
+    service.markExclusiveDeviceRemoved(position: const Duration(minutes: 3));
+
+    expect(
+      identical(usbExclusivePlaybackStateNotifier.value, previous),
+      isTrue,
+    );
+  });
+
   test('probeExclusiveAccess maps native USB claim result', () async {
     final service = UsbAudioService(channel: channel, isAndroid: true);
 
@@ -241,6 +344,7 @@ void main() {
         if (call.method == 'startExclusivePlayback') {
           receivedArguments = call.arguments;
           return {
+            'playbackId': 'load-7',
             'active': true,
             'playing': true,
             'positionMs': 0,
@@ -248,6 +352,8 @@ void main() {
             'sampleRate': 44100,
             'bitDepth': 24,
             'format': 'flac',
+            'hardwareVolumeActive': true,
+            'digitalVolumeActive': false,
             'message': 'USB exclusive playback started.',
           };
         }
@@ -256,37 +362,91 @@ void main() {
 
       final state = await service.startExclusivePlayback(
         const UsbExclusivePlaybackRequest(
+          playbackId: 'load-7',
           filePath: '/music/test.flac',
           title: 'Test',
           sourceFormat: 'flac',
           sampleRate: 44100,
           bitDepth: 24,
+          volumeGain: 0.5,
+          replayGainDb: -5.5,
+          volumeMode: 'auto',
+          dsdGainCompensationDb: 6,
+          smoothVolumeHandoff: false,
           targetBufferMs: 320,
           startPaused: false,
+          replaceActive: true,
         ),
       );
 
       expect(receivedArguments, {
+        'playbackId': 'load-7',
         'filePath': '/music/test.flac',
         'title': 'Test',
         'sourceFormat': 'flac',
         'sampleRate': 44100,
         'bitDepth': 24,
         'dsdMode': null,
+        'volumeGainQ16': 32768,
+        'replayGainMilliDb': -5500,
+        'volumeMode': 'auto',
+        'dsdGainCompensationDb': 6,
+        'smoothHandoff': false,
         'targetBufferMs': 320,
         'startPaused': false,
         'streaming': false,
+        'totalBytes': null,
+        'replaceActive': true,
       });
       expect(state.active, isTrue);
+      expect(state.playbackId, 'load-7');
       expect(state.playing, isTrue);
       expect(state.position, Duration.zero);
       expect(state.duration, const Duration(minutes: 3));
       expect(state.sampleRate, 44100);
       expect(state.bitDepth, 24);
       expect(state.format, 'flac');
+      expect(state.hardwareVolumeActive, isTrue);
+      expect(state.digitalVolumeActive, isFalse);
       expect(usbExclusivePlaybackStateNotifier.value, state);
     },
   );
+
+  test(
+    'transport health reflects current level instead of latched history',
+    () {
+      final telemetry = UsbTransportTelemetry.fromMap({
+        'active': true,
+        'bufferLevelMs': 196,
+        'minimumBufferLevelMs': 0,
+        'targetBufferMs': 200,
+        'underrunCount': 1,
+        'lastUnderrunAtMs': 1000,
+        'updatedAtMs': 4000,
+      });
+
+      expect(
+        telemetry.health(playing: true, targetMs: 200),
+        UsbTransportHealth.stable,
+      );
+    },
+  );
+
+  test('transport health reports only a recent underrun', () {
+    final telemetry = UsbTransportTelemetry.fromMap({
+      'active': true,
+      'bufferLevelMs': 196,
+      'targetBufferMs': 200,
+      'underrunCount': 1,
+      'lastUnderrunAtMs': 3000,
+      'updatedAtMs': 4000,
+    });
+
+    expect(
+      telemetry.health(playing: true, targetMs: 200),
+      UsbTransportHealth.underrun,
+    );
+  });
 
   test('setExclusiveTargetBufferMs updates native exclusive buffer', () async {
     final service = UsbAudioService(channel: channel, isAndroid: true);
@@ -302,8 +462,70 @@ void main() {
 
     await service.setExclusiveTargetBufferMs(2400);
 
-    expect(receivedArguments, {'targetBufferMs': 2400});
+    expect(receivedArguments, {'targetBufferMs': 1000});
   });
+
+  test('setExclusiveVolume sends gain and control mode', () async {
+    final service = UsbAudioService(channel: channel, isAndroid: true);
+    Object? receivedArguments;
+
+    messenger.setMockMethodCallHandler(channel, (call) async {
+      if (call.method == 'setExclusiveVolume') {
+        receivedArguments = call.arguments;
+        return null;
+      }
+      throw PlatformException(code: 'unexpected_method');
+    });
+
+    await service.setExclusiveVolume(
+      gain: 0.5,
+      replayGainDb: -5.5,
+      mode: 'dac',
+      dsdGainCompensationDb: -6,
+      smoothHandoff: false,
+    );
+
+    expect(receivedArguments, {
+      'gainQ16': 32768,
+      'replayGainMilliDb': -5500,
+      'mode': 'dac',
+      'dsdGainCompensationDb': -6,
+      'smoothHandoff': false,
+    });
+  });
+
+  test(
+    'playback request safely maps zero, non-finite and extreme ReplayGain',
+    () {
+      UsbExclusivePlaybackRequest request(double replayGainDb) {
+        return UsbExclusivePlaybackRequest(
+          playbackId: 'load-safe-gain',
+          filePath: '/music/safe.flac',
+          title: 'Safe',
+          sourceFormat: 'flac',
+          sampleRate: 44100,
+          bitDepth: 24,
+          volumeGain: 1,
+          replayGainDb: replayGainDb,
+          volumeMode: 'auto',
+          targetBufferMs: 200,
+          startPaused: false,
+        );
+      }
+
+      expect(request(0).toMap()['replayGainMilliDb'], 0);
+      expect(request(double.nan).toMap()['replayGainMilliDb'], 0);
+      expect(request(double.infinity).toMap()['replayGainMilliDb'], 0);
+      expect(
+        request(double.maxFinite).toMap()['replayGainMilliDb'],
+        2147483647,
+      );
+      expect(
+        request(-double.maxFinite).toMap()['replayGainMilliDb'],
+        -2147483648,
+      );
+    },
+  );
 
   test('native exclusive state event updates playback notifier', () async {
     UsbAudioService(channel: channel, isAndroid: true);
@@ -318,7 +540,15 @@ void main() {
           'durationMs': 240000,
           'sampleRate': 48000,
           'bitDepth': 24,
+          'sourceBitDepth': 24,
+          'decodedBitDepth': 16,
+          'usbBitDepth': 24,
+          'bitPerfect': false,
           'format': 'flac',
+          'hardwareVolumeProtocol': 'ibassoHid',
+          'hardwareVolumeRaw': 97,
+          'hardwareVolumeGainQ16': 32768,
+          'replayGainMilliDb': -3500,
           'message': 'Paused.',
         }),
       ),
@@ -332,6 +562,167 @@ void main() {
     expect(state.duration, const Duration(minutes: 4));
     expect(state.sampleRate, 48000);
     expect(state.bitDepth, 24);
+    expect(state.sourceBitDepth, 24);
+    expect(state.decodedBitDepth, 16);
+    expect(state.usbBitDepth, 24);
+    expect(state.bitPerfect, isFalse);
+    expect(state.hardwareVolumeProtocol, 'ibassoHid');
+    expect(state.hardwareVolumeRaw, 97);
+    expect(state.hardwareVolumeGainQ16, 32768);
+    expect(state.replayGainMilliDb, -3500);
+  });
+
+  test('原生独占音量键事件累加按键方向', () async {
+    UsbAudioService(channel: channel, isAndroid: true);
+
+    await messenger.handlePlatformMessage(
+      channel.name,
+      const StandardMethodCodec().encodeMethodCall(
+        MethodCall('onUsbExclusiveVolumeKey', {'direction': -1}),
+      ),
+      (_) {},
+    );
+
+    expect(usbExclusiveVolumeKeyNotifier.value, -1);
+  });
+
+  test('exclusive playback state maps actual volume processing fields', () {
+    final state = UsbExclusivePlaybackState.fromMap({
+      'hardwareVolumeActive': true,
+      'digitalVolumeActive': false,
+      'hardwareVolumeWriteOnly': true,
+      'hardwareVolumeReadbackVerified': true,
+      'hardwareVolumeSyncPending': true,
+      'hardwareVolumeFrozen': false,
+      'hardwareVolumeProtocol': 'ibassoHid',
+      'hardwareVolumeRaw': 97,
+      'hardwareVolumeGainQ16': 32768,
+      'replayGainMilliDb': -3500,
+    });
+    final inactive = UsbExclusivePlaybackState.inactive();
+    final frozen = UsbExclusivePlaybackState.fromMap({
+      'hardwareVolumeFrozen': true,
+    });
+
+    expect(state.hardwareVolumeActive, isTrue);
+    expect(state.digitalVolumeActive, isFalse);
+    expect(state.hardwareVolumeWriteOnly, isTrue);
+    expect(state.hardwareVolumeReadbackVerified, isTrue);
+    expect(state.hardwareVolumeSyncPending, isTrue);
+    expect(state.hardwareVolumeFrozen, isFalse);
+    expect(state.hardwareVolumeProtocol, 'ibassoHid');
+    expect(state.hardwareVolumeRaw, 97);
+    expect(state.hardwareVolumeGainQ16, 32768);
+    expect(state.replayGainMilliDb, -3500);
+    expect(inactive.hardwareVolumeWriteOnly, isFalse);
+    expect(inactive.hardwareVolumeReadbackVerified, isFalse);
+    expect(inactive.hardwareVolumeSyncPending, isFalse);
+    expect(inactive.hardwareVolumeFrozen, isFalse);
+    expect(frozen.hardwareVolumeFrozen, isTrue);
+  });
+
+  test(
+    'exclusive playback state derives unverified hardware volume honestly',
+    () {
+      UsbExclusivePlaybackState state({
+        required bool active,
+        required String protocol,
+        required bool writeOnly,
+        required bool readbackVerified,
+      }) => UsbExclusivePlaybackState.fromMap({
+        'hardwareVolumeActive': active,
+        'hardwareVolumeProtocol': protocol,
+        'hardwareVolumeWriteOnly': writeOnly,
+        'hardwareVolumeReadbackVerified': readbackVerified,
+      });
+
+      expect(
+        state(
+          active: true,
+          protocol: 'ibassoHid',
+          writeOnly: true,
+          readbackVerified: false,
+        ).hardwareVolumeUnverified,
+        isTrue,
+      );
+      expect(
+        state(
+          active: true,
+          protocol: 'uac2',
+          writeOnly: false,
+          readbackVerified: false,
+        ).hardwareVolumeUnverified,
+        isTrue,
+      );
+      expect(
+        state(
+          active: false,
+          protocol: 'uac2',
+          writeOnly: true,
+          readbackVerified: false,
+        ).hardwareVolumeUnverified,
+        isFalse,
+      );
+      expect(
+        state(
+          active: true,
+          protocol: 'uac2',
+          writeOnly: false,
+          readbackVerified: true,
+        ).hardwareVolumeUnverified,
+        isFalse,
+      );
+    },
+  );
+
+  test('ignores an exclusive callback from an older playback', () async {
+    final service = UsbAudioService(channel: channel, isAndroid: true);
+    messenger.setMockMethodCallHandler(channel, (call) async {
+      if (call.method == 'startExclusivePlayback') {
+        return {
+          'playbackId': 'load-8',
+          'active': true,
+          'playing': true,
+          'positionMs': 1000,
+        };
+      }
+      throw PlatformException(code: 'unexpected_method');
+    });
+    await service.startExclusivePlayback(
+      const UsbExclusivePlaybackRequest(
+        playbackId: 'load-8',
+        filePath: '/music/current.flac',
+        title: 'Current',
+        sourceFormat: 'flac',
+        sampleRate: 48000,
+        bitDepth: 24,
+        volumeGain: 1,
+        volumeMode: 'raw',
+        targetBufferMs: 200,
+        startPaused: false,
+      ),
+    );
+
+    await messenger.handlePlatformMessage(
+      channel.name,
+      const StandardMethodCodec().encodeMethodCall(
+        MethodCall('onUsbExclusiveStateChanged', {
+          'playbackId': 'load-7',
+          'active': false,
+          'playing': false,
+          'positionMs': 0,
+          'message': 'USB exclusive playback completed.',
+        }),
+      ),
+      (_) {},
+    );
+
+    expect(usbExclusivePlaybackStateNotifier.value.playbackId, 'load-8');
+    expect(usbExclusivePlaybackStateNotifier.value.active, isTrue);
+    expect(
+      usbExclusivePlaybackStateNotifier.value.position,
+      const Duration(seconds: 1),
+    );
   });
 
   test('native transport telemetry event updates transport notifier', () async {
@@ -365,69 +756,184 @@ void main() {
     expect(telemetry.updatedAtMs, 123456);
   });
 
-  test('getDiagnosticsReport assembles native data into a text report', () async {
-    final service = UsbAudioService(channel: channel, isAndroid: true);
+  test(
+    'getDiagnosticsReport assembles native data into a text report',
+    () async {
+      final service = UsbAudioService(channel: channel, isAndroid: true);
 
-    messenger.setMockMethodCallHandler(channel, (call) async {
-      if (call.method == 'getUsbDiagnosticsReport') {
-        return {
-          'generatedAtMs': 1751414400000,
-          'androidSdk': 34,
-          'androidRelease': '14',
-          'manufacturer': 'Pixel',
-          'model': 'Test',
-          'permissionGranted': true,
-          'device': {
-            'vendorIdHex': '0x2972',
-            'productIdHex': '0x0047',
-            'manufacturerName': 'FiiO',
-            'productName': 'FiiO KA13',
-            'deviceClass': 0,
-            'deviceSubclass': 0,
-            'interfaceCount': 4,
-            'audioInterfaceCount': 2,
-            'serialTail': '****9F2A',
-          },
-          'diagnostics': {
-            'available': true,
-            'rawDescriptorLength': 32,
-            'rawDescriptorsHex': '0000: 12 01 00 02',
-            'streamingFormats': ['StreamingFormatInfo(alt=1)'],
-            'outputCandidates': ['alt=1/max=294/bits=32'],
-            'clockSourceId': 41,
-          },
-          'lastProbe': {'message': 'ok'},
-          'systemStatus': {
-            'devices': [
-              {'id': 10, 'name': 'FiiO KA13'},
-            ],
-          },
-          'nativeLogcat': ['01-01 00:00:00.000 I native line'],
-          'logs': ['00:00:00.000 I/UsbExclusiveAudioEngine: open ok'],
-        };
-      }
-      throw PlatformException(code: 'unexpected_method');
-    });
+      messenger.setMockMethodCallHandler(channel, (call) async {
+        if (call.method == 'getUsbDiagnosticsReport') {
+          return {
+            'generatedAtMs': 1751414400000,
+            'androidSdk': 34,
+            'androidRelease': '14',
+            'manufacturer': 'Pixel',
+            'model': 'Test',
+            'permissionGranted': true,
+            'device': {
+              'vendorIdHex': '0x2972',
+              'productIdHex': '0x0047',
+              'manufacturerName': 'FiiO',
+              'productName': 'FiiO KA13',
+              'deviceClass': 0,
+              'deviceSubclass': 0,
+              'interfaceCount': 4,
+              'audioInterfaceCount': 2,
+              'serialTail': '****9F2A',
+            },
+            'diagnostics': {
+              'available': true,
+              'rawDescriptorLength': 32,
+              'rawDescriptorsHex': '0000: 12 01 00 02',
+              'streamingFormats': ['StreamingFormatInfo(alt=1)'],
+              'outputCandidates': ['alt=1/max=294/bits=32'],
+              'clockSourceId': 41,
+              'session': {
+                'id': 'usb-session-42',
+                'input': {
+                  'sourceFormat': 'dsf',
+                  'mode': 'native',
+                  'sampleRate': 176400,
+                  'channels': 2,
+                  'bitDepth': 32,
+                },
+                'outputSelections': [
+                  {'sampleRate': 176400, 'selected': 'alt=2/max=768/bits=32'},
+                ],
+                'clock': {
+                  'protocol': 'uac2',
+                  'setCurResult': 4,
+                  'readBack': 176400,
+                },
+                'feedback': {
+                  'actualFrames': 22.05,
+                  'nominalFrames': 22.05,
+                  'ignoredCount': 0,
+                },
+                'transport': {
+                  'submittedBytes': 1411200,
+                  'pendingUrbs': 7,
+                  'underrunCount': 0,
+                },
+              },
+              'hardwareVolume': {
+                'protocol': 'uac2',
+                'controlInterface': 0,
+                'featureUnits': ['unit=7/channel=0/volume=read-write'],
+              },
+            },
+            'lastProbe': {'message': 'ok'},
+            'systemStatus': {
+              'devices': [
+                {'id': 10, 'name': 'FiiO KA13'},
+              ],
+            },
+            'nativeLogcat': ['01-01 00:00:00.000 I native line'],
+            'logs': ['00:00:00.000 I/UsbExclusiveAudioEngine: open ok'],
+          };
+        }
+        throw PlatformException(code: 'unexpected_method');
+      });
 
-    final report = await service.getDiagnosticsReport();
+      final report = await service.getDiagnosticsReport();
 
-    expect(report, startsWith('Sylvakru USB Diagnostics Report v1'));
-    expect(report, contains('App version'));
-    expect(report, contains('0x2972 / 0x0047'));
-    expect(report, contains('****9F2A'));
-    expect(report, contains('## Raw descriptors (hex dump)'));
-    expect(report, contains('0000: 12 01 00 02'));
-    expect(report, contains('alt=1/max=294/bits=32'));
-    expect(report, contains('UAC2 clock source id: 41'));
-    expect(report, contains('## Preferences snapshot'));
-    expect(report, contains('open ok'));
-    expect(report, contains('native line'));
+      expect(report, startsWith('Sylvakru USB Diagnostics Report v2'));
+      expect(report, contains('App version'));
+      expect(report, contains('0x2972 / 0x0047'));
+      expect(report, contains('****9F2A'));
+      expect(report, contains('## Raw descriptors (hex dump)'));
+      expect(report, contains('0000: 12 01 00 02'));
+      expect(report, contains('alt=1/max=294/bits=32'));
+      expect(report, contains('UAC2 clock source id: 41'));
+      expect(report, contains('## Preferences snapshot'));
+      expect(report, contains('## Exclusive session'));
+      expect(report, contains('usb-session-42'));
+      expect(report, contains('alt=2/max=768/bits=32'));
+      expect(report, contains('submittedBytes=1411200'));
+      expect(report, contains('## Hardware volume probe'));
+      expect(report, contains('unit=7/channel=0/volume=read-write'));
+      expect(report, contains('Volume processing: hardware=false, digital=false'));
+      expect(report, contains('writeOnly=false, readbackVerified=false'));
+      expect(report, contains('replayGainMilliDb=0'));
+      expect(report, contains('open ok'));
+      expect(report, contains('native line'));
+    },
+  );
+
+  test(
+    'native hardware volume event publishes validated immutable data',
+    () async {
+      UsbAudioService(channel: channel, isAndroid: true);
+
+      await messenger.handlePlatformMessage(
+        channel.name,
+        const StandardMethodCodec().encodeMethodCall(
+          MethodCall('onUsbHardwareVolumeChanged', {
+            'playbackId': 'load-9',
+            'gainQ16': 32768,
+            'leftRaw': 97,
+            'rightRaw': 98,
+            'protocol': 'ibassoHid',
+            'isDsd': true,
+            'replayGainMilliDb': -3500,
+            'dsdGainCompensationDb': 6,
+          }),
+        ),
+        (_) {},
+      );
+
+      final event = usbHardwareVolumeNotifier.value;
+      expect(event, isNotNull);
+      expect(event!.playbackId, 'load-9');
+      expect(event.gainQ16, 32768);
+      expect(event.leftRaw, 97);
+      expect(event.rightRaw, 98);
+      expect(event.protocol, 'ibassoHid');
+      expect(event.isDsd, isTrue);
+      expect(event.replayGainMilliDb, -3500);
+      expect(event.dsdGainCompensationDb, 6);
+    },
+  );
+
+  test('invalid native hardware volume events are ignored', () async {
+    UsbAudioService(channel: channel, isAndroid: true);
+
+    for (final arguments in [
+      <String, Object?>{
+        'playbackId': 'load-9',
+        'gainQ16': 32768,
+        'leftRaw': 97,
+        'rightRaw': 98,
+        'isDsd': false,
+        'replayGainMilliDb': 0,
+        'dsdGainCompensationDb': 0,
+      },
+      <String, Object?>{
+        'playbackId': 'load-9',
+        'gainQ16': 65537,
+        'leftRaw': 97,
+        'rightRaw': 98,
+        'protocol': 'ibassoHid',
+        'isDsd': false,
+        'replayGainMilliDb': 0,
+        'dsdGainCompensationDb': 0,
+      },
+    ]) {
+      await messenger.handlePlatformMessage(
+        channel.name,
+        const StandardMethodCodec().encodeMethodCall(
+          MethodCall('onUsbHardwareVolumeChanged', arguments),
+        ),
+        (_) {},
+      );
+      expect(usbHardwareVolumeNotifier.value, isNull);
+    }
   });
 
   test('buildUsbDiagnosticsReport handles missing device data', () {
     final report = buildUsbDiagnosticsReport(const {}, platformSupported: true);
 
-    expect(report, startsWith('Sylvakru USB Diagnostics Report v1'));
+    expect(report, startsWith('Sylvakru USB Diagnostics Report v2'));
     expect(report, contains('No USB audio device detected.'));
     expect(report, contains('Descriptors unavailable.'));
   });

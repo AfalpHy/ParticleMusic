@@ -33,14 +33,14 @@
 	<key>NSLocalNetworkUsageDescription</key>
 	<string>We need access to your local network to discover and connect to your Navidrome, WebDAV, or Emby media servers.</string>
 
-	<key>NSCameraUsageDescription</key>
-	<string>Allows you to select or capture images when needed.</string>
-
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>Allows you to select images for album artwork.</string>
 
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Allows location access when required by app features.</string>
+	<string>This app does not collect or use your location.</string>
+
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>This app does not collect or use your location.</string>
 
 	<key>UIApplicationSceneManifest</key>
 	<dict>

@@ -60,25 +60,22 @@ class CoverArtWidget extends StatelessWidget {
         if (asyncSnapshot.hasError) {
           return musicNote();
         }
-        return Image.file(
-          File(song!.picturePath),
-          width: size,
-          height: size,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return musicNote();
-          },
-        );
+        return imageWidget(song!.picturePath);
       },
     );
   }
 
   Widget imageWidget(String path) {
-    return Image.file(
-      File(path),
+    final ImageProvider imageProvider = size != null
+        ? ResizeImage(FileImage(File(path)), width: (size! * 4).toInt())
+        : FileImage(File(path));
+
+    return Image(
+      image: imageProvider,
       width: size,
       height: size,
       fit: BoxFit.cover,
+      gaplessPlayback: true,
       errorBuilder: (context, error, stackTrace) {
         return musicNote();
       },

@@ -102,10 +102,14 @@ class Loader {
     }
 
     if ((syncBitMask & 4) == 4) {
-      await _prepareForSync(.navidrome);
+      await _prepareForSync(.subsonic);
     }
 
     if ((syncBitMask & 8) == 8) {
+      await _prepareForSync(.navidrome);
+    }
+
+    if ((syncBitMask & 16) == 16) {
       await _prepareForSync(.emby);
     }
 
@@ -118,10 +122,14 @@ class Loader {
     }
 
     if ((syncBitMask & 4) == 4) {
-      await _sync(.navidrome);
+      await _sync(.subsonic);
     }
 
     if ((syncBitMask & 8) == 8) {
+      await _sync(.navidrome);
+    }
+
+    if ((syncBitMask & 16) == 16) {
       await _sync(.emby);
     }
 

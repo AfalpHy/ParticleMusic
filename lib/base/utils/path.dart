@@ -1,8 +1,10 @@
+import 'dart:convert';
 import 'dart:io';
 
 import 'package:http/http.dart' as http;
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/data/library.dart';
+import 'package:sylvakru/base/services/logger.dart';
 import 'package:sylvakru/base/services/webdav_client.dart';
 
 bool isFileProviderStorePath(String path) {
@@ -45,6 +47,54 @@ void initFile(File file, bool isList) {
   if (!file.existsSync()) {
     file.createSync(recursive: true);
     file.writeAsStringSync(isList ? '[]' : '{}');
+  }
+}
+
+/// Decodes [file] as a JSON list, resetting it to `[]` and returning an
+/// empty list if the content is missing or corrupted (e.g. a crash mid-write)
+/// instead of letting the exception crash startup.
+List<dynamic> readJsonListFileSync(File file) {
+  try {
+    return jsonDecode(file.readAsStringSync()) as List<dynamic>;
+  } catch (e) {
+    logger.output('Corrupted JSON file ${file.path}, resetting: $e');
+    file.writeAsStringSync('[]');
+    return [];
+  }
+}
+
+/// Async counterpart of [readJsonListFileSync].
+Future<List<dynamic>> readJsonListFile(File file) async {
+  try {
+    return jsonDecode(await file.readAsString()) as List<dynamic>;
+  } catch (e) {
+    logger.output('Corrupted JSON file ${file.path}, resetting: $e');
+    await file.writeAsString('[]');
+    return [];
+  }
+}
+
+/// Decodes [file] as a JSON map, resetting it to `{}` and returning an empty
+/// map if the content is missing or corrupted, instead of letting the
+/// exception crash startup.
+Map<String, dynamic> readJsonMapFileSync(File file) {
+  try {
+    return jsonDecode(file.readAsStringSync()) as Map<String, dynamic>;
+  } catch (e) {
+    logger.output('Corrupted JSON file ${file.path}, resetting: $e');
+    file.writeAsStringSync('{}');
+    return {};
+  }
+}
+
+/// Async counterpart of [readJsonMapFileSync].
+Future<Map<String, dynamic>> readJsonMapFile(File file) async {
+  try {
+    return jsonDecode(await file.readAsString()) as Map<String, dynamic>;
+  } catch (e) {
+    logger.output('Corrupted JSON file ${file.path}, resetting: $e');
+    await file.writeAsString('{}');
+    return {};
   }
 }
 

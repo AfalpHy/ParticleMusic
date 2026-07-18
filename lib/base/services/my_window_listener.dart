@@ -99,7 +99,7 @@ class MyWindowListener extends WindowListener {
 
   @override
   void onWindowMoved() async {
-    if (miniModeNotifier.value) {
+    if (viewModeNotifier.value == .mini) {
       miniPosition = await windowManager.getPosition();
     } else {
       mainPosition = await windowManager.getPosition();
@@ -133,7 +133,7 @@ class MyWindowListener extends WindowListener {
   @override
   void onWindowResized() async {
     final size = await windowManager.getSize();
-    if (miniModeNotifier.value) {
+    if (viewModeNotifier.value == .mini) {
       miniSize = size;
       final gap =
           size.height - (Platform.isWindows ? 9 : 0) - miniViewMainHeight;

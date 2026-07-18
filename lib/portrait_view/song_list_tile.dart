@@ -335,7 +335,7 @@ class SongListTile extends StatelessWidget {
                           },
                         ),
 
-                        if (song.sourceType != .navidrome)
+                        if (song.sourceType == .local)
                           ListTile(
                             leading: Icon(Icons.edit_rounded),
                             title: Text(

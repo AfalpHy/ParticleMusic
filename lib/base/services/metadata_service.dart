@@ -8,6 +8,7 @@ import 'package:image/image.dart' as img;
 import 'package:sylvakru/base/my_audio_metadata.dart';
 import 'package:sylvakru/base/services/emby_client.dart';
 import 'package:sylvakru/base/services/navidrome_client.dart';
+import 'package:sylvakru/base/services/subsonic_client.dart';
 import 'package:sylvakru/base/services/webdav_client.dart';
 import 'package:sylvakru/base/services/logger.dart';
 import 'package:sylvakru/base/services/picture_load_scheduler.dart';
@@ -38,6 +39,9 @@ Future<void> _loadPicture(MyAudioMetadata song) async {
         } else {
           bytes = await readPictureAsync(tmpPath);
         }
+        break;
+      case .subsonic:
+        bytes = await subsonicClient!.getPictureBytes(song.id);
         break;
       case .navidrome:
         bytes = await navidromeClient!.getPictureBytes(song.id);

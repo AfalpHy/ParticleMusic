@@ -90,6 +90,20 @@ import UIKit
       guard let self = self else { return }
 
       switch call.method {
+      case "initNativeMenu":
+        // Global Initialization: Attach interaction to FlutterView at startup to ensure immediate response on first long press.
+        guard
+          let windowScene = UIApplication.shared.connectedScenes
+            .first(where: { $0.activationState == .foregroundActive })
+            as? UIWindowScene,
+          let window = windowScene.windows.first(where: { $0.isKeyWindow }),
+          let rootVC = window.rootViewController,
+          let flutterView = rootVC.view
+        else { return }
+
+        self.flutterView = flutterView
+        flutterView.addInteraction(UIContextMenuInteraction(delegate: self))
+        result(nil)
       case "showNativeMenu":
         guard let args = call.arguments as? [String: Any],
           let items = args["items"] as? [[String: Any]]
@@ -116,21 +130,6 @@ import UIKit
         result(FlutterMethodNotImplemented)
       }
     })
-
-    // Global Initialization: Attach interaction to FlutterView at startup to ensure immediate response on first long press.
-    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { [weak self] in
-      guard let self = self,
-        let windowScene = UIApplication.shared.connectedScenes
-          .first(where: { $0.activationState == .foregroundActive })
-          as? UIWindowScene,
-        let window = windowScene.windows.first(where: { $0.isKeyWindow }),
-        let rootVC = window.rootViewController,
-        let flutterView = rootVC.view
-      else { return }
-
-      self.flutterView = flutterView
-      flutterView.addInteraction(UIContextMenuInteraction(delegate: self))
-    }
 
     GeneratedPluginRegistrant.register(with: self)
     return super.application(application, didFinishLaunchingWithOptions: launchOptions)

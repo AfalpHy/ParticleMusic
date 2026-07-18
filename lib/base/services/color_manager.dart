@@ -3,7 +3,6 @@ import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/utils/contrast_color_generator.dart';
 import 'package:sylvakru/layer/layers_manager.dart';
 import 'package:sylvakru/layer/lyrics_page_layer.dart';
-import 'package:sylvakru/mini_view/mini_view.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
 
 final colorManager = ColorManager();
@@ -329,13 +328,13 @@ class ColorManager {
   }
 
   Color getSpecificBgBaseColor() {
-    return miniModeNotifier.value || displayLyricsPage
+    return viewModeNotifier.value == .mini || displayLyricsPage
         ? currentCoverArtColor
         : backgroundCoverArtColor;
   }
 
   Color getSpecificBgColor() {
-    return miniModeNotifier.value
+    return viewModeNotifier.value == .mini
         ? Colors.transparent
         : displayLyricsPage
         ? lyricsPageBackgroundColor.value
@@ -345,7 +344,7 @@ class ColorManager {
   }
 
   Color getSpecificTextColor() {
-    return miniModeNotifier.value
+    return viewModeNotifier.value == .mini
         ? miniViewForegroundColor.value
         : displayLyricsPage
         ? lyricsPageForegroundColor.value
@@ -353,7 +352,7 @@ class ColorManager {
   }
 
   Color getSpecificHighlightTextColor() {
-    return miniModeNotifier.value
+    return viewModeNotifier.value == .mini
         ? miniViewHighlightTextColor.value
         : displayLyricsPage
         ? lyricsPageHighlightTextColor.value
@@ -361,7 +360,7 @@ class ColorManager {
   }
 
   Color getSpecificIconColor() {
-    return miniModeNotifier.value
+    return viewModeNotifier.value == .mini
         ? miniViewForegroundColor.value
         : displayLyricsPage
         ? lyricsPageForegroundColor.value
@@ -369,7 +368,7 @@ class ColorManager {
   }
 
   Color getSpecificButtonColor() {
-    return miniModeNotifier.value
+    return viewModeNotifier.value == .mini
         ? miniViewButtonColor.value
         : displayLyricsPage
         ? lyricsPageButtonColor.value
@@ -377,7 +376,7 @@ class ColorManager {
   }
 
   Color getSpecificDividerColor() {
-    return miniModeNotifier.value
+    return viewModeNotifier.value == .mini
         ? miniViewDividerColor.value
         : displayLyricsPage
         ? lyricsPageDividerColor.value
@@ -385,7 +384,7 @@ class ColorManager {
   }
 
   Color getSpecificSelectedItemColor() {
-    return miniModeNotifier.value
+    return viewModeNotifier.value == .mini
         ? miniViewSelectedItemColor.value
         : displayLyricsPage
         ? lyricsPageSelectedItemColor.value
@@ -393,7 +392,7 @@ class ColorManager {
   }
 
   Color getSpecificMenuColor() {
-    if (miniModeNotifier.value) {
+    if (viewModeNotifier.value == .mini) {
       return miniViewMenuColor.value;
     }
     return displayLyricsPage ? lyricsPageMenuColor.value : menuColor.value;

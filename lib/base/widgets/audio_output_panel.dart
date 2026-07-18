@@ -2,9 +2,24 @@ import 'package:flutter/material.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/services/interaction.dart';
+import 'package:sylvakru/base/services/replay_gain.dart';
 import 'package:sylvakru/base/services/usb_audio_preferences.dart';
 import 'package:sylvakru/base/services/usb_audio_service.dart';
 import 'package:sylvakru/l10n/generated/app_localizations.dart';
+
+String formatReplayGainStatus(
+  ReplayGainPlaybackState state,
+  AppLocalizations l10n,
+) {
+  return switch (state.phase) {
+    ReplayGainApplyPhase.off => l10n.replayGainOff,
+    ReplayGainApplyPhase.noTag => l10n.replayGainNoTag,
+    ReplayGainApplyPhase.pending => l10n.replayGainApplying,
+    ReplayGainApplyPhase.failed => l10n.replayGainNotApplied,
+    ReplayGainApplyPhase.applied =>
+      '${state.actualDb!.toStringAsFixed(3).replaceFirst(RegExp(r'\.?0+$'), '')} dB',
+  };
+}
 
 String formatSampleRate(int? sampleRate, AppLocalizations l10n) {
   if (sampleRate == null || sampleRate <= 0) {
@@ -410,9 +425,18 @@ class _UsbAudioDetectedSheetState extends State<_UsbAudioDetectedSheet> {
                 border: border,
                 rows: [
                   _InfoRow(l10n.nameLabel, _shortOutputName(_status, l10n)),
-                  _InfoRow(l10n.outputSampleRate, formatOutputSampleRate(_status, l10n)),
-                  _InfoRow(l10n.supportedSampleRate, _supportedRatesLabel(_status, l10n)),
-                  _InfoRow(l10n.currentSong, formatSampleRate(widget.song?.samplerate, l10n)),
+                  _InfoRow(
+                    l10n.outputSampleRate,
+                    formatOutputSampleRate(_status, l10n),
+                  ),
+                  _InfoRow(
+                    l10n.supportedSampleRate,
+                    _supportedRatesLabel(_status, l10n),
+                  ),
+                  _InfoRow(
+                    l10n.currentSong,
+                    formatSampleRate(widget.song?.samplerate, l10n),
+                  ),
                 ],
               ),
               const SizedBox(height: 12),
@@ -425,7 +449,10 @@ class _UsbAudioDetectedSheetState extends State<_UsbAudioDetectedSheet> {
                 border: border,
                 rows: [
                   _InfoRow('Android', 'API ${_status.androidSdk}'),
-                  _InfoRow('Bit-perfect', _bitPerfectSupportLabel(_status, l10n)),
+                  _InfoRow(
+                    'Bit-perfect',
+                    _bitPerfectSupportLabel(_status, l10n),
+                  ),
                   _InfoRow(
                     l10n.requestSampleRate,
                     formatSampleRate(
@@ -477,7 +504,9 @@ class _UsbAudioDetectedSheetState extends State<_UsbAudioDetectedSheet> {
                               ),
                             )
                           : const Icon(Icons.lock_rounded, size: 18),
-                      label: Text(_applying ? l10n.requesting : l10n.enableExclusive),
+                      label: Text(
+                        _applying ? l10n.requesting : l10n.enableExclusive,
+                      ),
                     ),
                   ),
                 ],
@@ -510,9 +539,17 @@ class _AudioOutputSheetState extends State<_AudioOutputSheet> {
     final border = foreground.withAlpha(28);
     final muted = foreground.withAlpha(150);
 
-    return ValueListenableBuilder(
-      valueListenable: usbAudioStatusNotifier,
-      builder: (context, status, child) {
+    return ListenableBuilder(
+      listenable: Listenable.merge([
+        usbAudioStatusNotifier,
+        usbExclusivePlaybackStateNotifier,
+        replayGainPlaybackStateNotifier,
+      ]),
+      builder: (context, child) {
+        final status = usbAudioStatusNotifier.value;
+        final exclusive = usbExclusivePlaybackStateNotifier.value;
+        final replayGain = replayGainPlaybackStateNotifier.value;
+        final showPcmDepths = exclusive.active && exclusive.bitDepth != 1;
         return Padding(
           padding: EdgeInsets.only(
             left: 12,
@@ -584,7 +621,10 @@ class _AudioOutputSheetState extends State<_AudioOutputSheet> {
                     surface: surface,
                     border: border,
                     rows: [
-                      _InfoRow(l10n.fileLabel, _sourcePathLabel(widget.song, l10n)),
+                      _InfoRow(
+                        l10n.fileLabel,
+                        _sourcePathLabel(widget.song, l10n),
+                      ),
                       _InfoRow(
                         l10n.inputSampleRate,
                         formatSampleRate(widget.song?.samplerate, l10n),
@@ -593,7 +633,10 @@ class _AudioOutputSheetState extends State<_AudioOutputSheet> {
                         l10n.format,
                         widget.song?.format?.toUpperCase() ?? l10n.unknown,
                       ),
-                      _InfoRow(l10n.bitrate, formatBitrate(widget.song?.bitrate, l10n)),
+                      _InfoRow(
+                        l10n.bitrate,
+                        formatBitrate(widget.song?.bitrate, l10n),
+                      ),
                     ],
                   ),
                   const SizedBox(height: 12),
@@ -606,11 +649,36 @@ class _AudioOutputSheetState extends State<_AudioOutputSheet> {
                     border: border,
                     rows: [
                       _InfoRow(l10n.outputPort, _outputPortLabel(status, l10n)),
-                      _InfoRow(l10n.outputSampleRate, formatOutputSampleRate(status, l10n)),
-                      _InfoRow(l10n.encoding, _outputEncodingLabel(status, l10n)),
+                      _InfoRow(
+                        l10n.outputSampleRate,
+                        formatOutputSampleRate(status, l10n),
+                      ),
+                      _InfoRow(
+                        l10n.encoding,
+                        _outputEncodingLabel(status, l10n),
+                      ),
+                      if (showPcmDepths)
+                        _InfoRow(
+                          l10n.sourceBitDepth,
+                          formatUsbBitDepth(exclusive.sourceBitDepth, l10n),
+                        ),
+                      if (showPcmDepths)
+                        _InfoRow(
+                          l10n.decodedBitDepth,
+                          formatUsbBitDepth(exclusive.decodedBitDepth, l10n),
+                        ),
+                      if (showPcmDepths)
+                        _InfoRow(
+                          l10n.usbSlotBitDepth,
+                          formatUsbBitDepth(exclusive.usbBitDepth, l10n),
+                        ),
                       _InfoRow(
                         'Bit-perfect',
                         _bitPerfectStatusLabel(status, l10n),
+                      ),
+                      _InfoRow(
+                        l10n.replayGain,
+                        formatReplayGainStatus(replayGain, l10n),
                       ),
                     ],
                   ),
@@ -811,18 +879,26 @@ class _PulseDot extends StatelessWidget {
   }
 }
 
-/// 胶囊左侧状态指示灯颜色：独占 PCM 绿、独占 DSD 蓝、开了独占却未生效(失败)红、
-/// 非独占(系统输出)白。这是状态语义灯，独立于跟随封面的主题配色。
-Color _outputDotColor(UsbAudioStatus status, UsbExclusivePlaybackState exclusive) {
+/// 胶囊左侧状态指示灯颜色：独占 PCM 绿、独占位深压窄橙、独占 DSD 蓝、
+/// 开了独占却未生效(失败)红、非独占(系统输出)白。这是状态语义灯，
+/// 独立于跟随封面的主题配色。
+Color _outputDotColor(
+  UsbAudioStatus status,
+  UsbExclusivePlaybackState exclusive,
+) {
   final perfMode = usbAudioPreferences.performanceModeNotifier.value;
   if (perfMode && exclusive.active) {
     // DoP/Native 的 DSD 是 1-bit 流，恒位完美，走蓝
     if (exclusive.bitDepth == 1) {
       return const Color(0xFF3B82F6); // DSD 蓝
     }
-    // PCM 独占：原始数字电平旁路=位完美紫，启用了数字音量=绿
-    return _exclusiveBitPerfect(exclusive)
-        ? const Color(0xFFAF52DE) // PCM 位完美 紫
+    // PCM 独占：原始数字电平旁路=位完美紫；位深被压窄(真丢数据)=橙警示；
+    // 仅数字音量或无损槽位加宽=绿
+    if (_exclusiveBitPerfect(exclusive)) {
+      return const Color(0xFFAF52DE); // PCM 位完美 紫
+    }
+    return _exclusiveBitDepthNarrowed(exclusive)
+        ? const Color(0xFFFF9500) // PCM 位深压窄 橙
         : const Color(0xFF34C759); // PCM 绿
   }
   // 非独占但系统 Preferred Mixer 真正以 bit-perfect 生效：单纯用 DAC 的无损系统输出。
@@ -843,7 +919,18 @@ Color _outputDotColor(UsbAudioStatus status, UsbExclusivePlaybackState exclusive
 bool _exclusiveBitPerfect(UsbExclusivePlaybackState exclusive) {
   if (!exclusive.active) return false;
   if (exclusive.bitDepth == 1) return true;
-  return !usbExclusiveDigitalVolumeEnabled();
+  if (exclusive.bitPerfect != null) return exclusive.bitPerfect!;
+  return !exclusive.digitalVolumeActive;
+}
+
+/// 位深是否被压窄（真丢数据）：解码低于源位深（如 24-bit 源解成 16-bit）
+/// 或 USB 槽位低于解码位深。槽位加宽（16-in-24/32）是补零无损，不算。
+bool _exclusiveBitDepthNarrowed(UsbExclusivePlaybackState exclusive) {
+  final source = exclusive.sourceBitDepth;
+  final decoded = exclusive.decodedBitDepth;
+  final usb = exclusive.usbBitDepth;
+  if (source == null || decoded == null || usb == null) return false;
+  return decoded < source || usb < decoded;
 }
 
 class _InfoRow {
@@ -911,7 +998,11 @@ String _bitDepthLabel(UsbAudioStatus status, AppLocalizations l10n) {
   final exclusive = usbExclusivePlaybackStateNotifier.value;
   if (exclusive.active && exclusive.bitDepth != null) {
     // DoP 激活时 bitDepth=1（DSD 是 1-bit 流）
-    return exclusive.bitDepth == 1 ? '1 bit' : '${exclusive.bitDepth} bits';
+    if (exclusive.bitDepth == 1) return '1 bit';
+    return formatUsbBitDepth(
+      exclusive.decodedBitDepth ?? exclusive.bitDepth,
+      l10n,
+    );
   }
 
   final encoding = status.preferredEncoding ?? status.outputEncoding;
@@ -920,6 +1011,10 @@ String _bitDepthLabel(UsbAudioStatus status, AppLocalizations l10n) {
   if (encoding == 'pcm_24bit_packed') return '24 bits';
   if (encoding == 'pcm_16bit') return '16 bits';
   return l10n.unknown;
+}
+
+String formatUsbBitDepth(int? bitDepth, AppLocalizations l10n) {
+  return bitDepth == null ? l10n.unknown : '$bitDepth bits';
 }
 
 String _outputEncodingLabel(UsbAudioStatus status, AppLocalizations l10n) {
@@ -940,9 +1035,25 @@ String _bitPerfectStatusLabel(UsbAudioStatus status, AppLocalizations l10n) {
   final exclusive = usbExclusivePlaybackStateNotifier.value;
   // 独占直驱时反映独占真实位完美状态；非独占回退系统共享链路偏好
   if (exclusive.active) {
-    return _exclusiveBitPerfect(exclusive)
-        ? l10n.bitPerfectDirect
-        : l10n.bitPerfectVolume;
+    var processing = exclusive.hardwareVolumeActive
+        ? l10n.volumeControlDac
+        : exclusive.digitalVolumeActive
+        ? l10n.volumeControlDigital
+        : l10n.volumeControlRaw;
+    if (exclusive.hardwareVolumeFrozen) {
+      processing = '$processing (${l10n.hardwareVolumeFrozen})';
+    } else if (exclusive.hardwareVolumeSyncPending) {
+      processing = '$processing (${l10n.hardwareVolumeSyncPending})';
+    } else if (exclusive.hardwareVolumeActive &&
+        exclusive.hardwareVolumeUnverified) {
+      processing = '$processing (${l10n.hardwareVolumeUnverified})';
+    }
+    // 只在位深真被压窄（丢数据）时提示；槽位无损加宽（16-in-24/32）不算，
+    // 且不被数字音量状态遮蔽——两者是独立的信息。
+    if (_exclusiveBitDepthNarrowed(exclusive)) {
+      processing = '$processing · ${l10n.bitDepthConverted}';
+    }
+    return processing;
   }
   return status.preferredBitPerfect
       ? l10n.requested

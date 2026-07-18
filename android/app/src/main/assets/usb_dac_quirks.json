@@ -1,4 +1,18 @@
 {
-  "version": 1,
-  "devices": []
+  "version": 2,
+  "vendors": [
+    {
+      "match": { "vid": "0x262a", "label": "iBasso / SAVITECH" },
+      "devices": [
+        {
+          "match": { "pid": "0x1a0b", "label": "iBasso Macaron" },
+          "hardwareVolume": {
+            "enabled": true,
+            "protocol": "ibassoHid",
+            "dsdSupported": true
+          }
+        }
+      ]
+    }
+  ]
 }

@@ -15,10 +15,30 @@ final usbExclusivePlaybackStateNotifier = ValueNotifier(
 final usbTransportTelemetryNotifier = ValueNotifier(
   UsbTransportTelemetry.inactive(),
 );
-
-/// 独占模式下安卓物理音量键的累计方向：+1 表示按了一次音量加，-1 表示音量减。
-/// 每次按键都会改变数值，监听方按前后差值增减独占音量（见 audio_handler）。
+final usbHardwareVolumeNotifier = ValueNotifier<UsbHardwareVolumeEvent?>(null);
+final usbVolumeOverlayNotifier = ValueNotifier<int>(0);
 final usbExclusiveVolumeKeyNotifier = ValueNotifier<int>(0);
+
+Duration trustedUsbExclusivePosition({
+  required Duration current,
+  required Duration reported,
+  required bool stateActive,
+}) {
+  if (stateActive) return reported;
+  return reported > current ? reported : current;
+}
+
+bool shouldStartUsbOutputHandoff({
+  required bool wasActive,
+  required bool intentionalStop,
+  required bool handoffInProgress,
+  required bool completed,
+}) {
+  return wasActive &&
+      !intentionalStop &&
+      !handoffInProgress &&
+      !completed;
+}
 
 enum UsbAudioDeviceEventType { added, removed }
 
@@ -29,6 +49,7 @@ class UsbAudioService {
 
   final MethodChannel _channel;
   final bool _isAndroid;
+  String? _currentPlaybackId;
 
   UsbAudioService({MethodChannel channel = _defaultChannel, bool? isAndroid})
     : _channel = channel,
@@ -146,6 +167,7 @@ class UsbAudioService {
   Future<UsbExclusivePlaybackState> startExclusivePlayback(
     UsbExclusivePlaybackRequest request,
   ) {
+    _currentPlaybackId = request.playbackId;
     return _invokeExclusiveState('startExclusivePlayback', request.toMap());
   }
 
@@ -157,21 +179,36 @@ class UsbAudioService {
     return _invokeExclusiveState('resumeExclusivePlayback');
   }
 
+  void markExclusiveDeviceRemoved({required Duration position}) {
+    final current = usbExclusivePlaybackStateNotifier.value;
+    if (!current.active) return;
+    _publishExclusiveState(
+      UsbExclusivePlaybackState.inactive(
+        playbackId: current.playbackId,
+        position: position,
+        duration: current.duration,
+        message: 'USB audio device removed.',
+      ),
+    );
+  }
+
   Future<void> setExclusiveTargetBufferMs(int targetBufferMs) async {
     if (!_isAndroid) {
       return;
     }
 
     await _channel.invokeMethod<void>('setExclusiveTargetBufferMs', {
-      'targetBufferMs': targetBufferMs.clamp(50, 5000),
+      'targetBufferMs': targetBufferMs.clamp(50, 1000),
     });
   }
 
-  /// 设置独占数字音量。gain 为 0..1 的线性幅度，enabled=false 时旁路（原始数字电平，
-  /// 位完美直通）。DSD/DoP 会话由引擎侧强制旁路，不受此值影响。
+  /// 设置独占音量。原生层按 mode 选择 DAC 硬件音量、PCM 数字音量或原始电平。
   Future<void> setExclusiveVolume({
     required double gain,
-    required bool enabled,
+    required double replayGainDb,
+    required String mode,
+    required int dsdGainCompensationDb,
+    required bool smoothHandoff,
   }) async {
     if (!_isAndroid) {
       return;
@@ -179,7 +216,10 @@ class UsbAudioService {
 
     await _channel.invokeMethod<void>('setExclusiveVolume', {
       'gainQ16': (gain.clamp(0.0, 1.0) * 65536).round(),
-      'enabled': enabled,
+      'replayGainMilliDb': _replayGainMilliDb(replayGainDb),
+      'mode': mode,
+      'dsdGainCompensationDb': dsdGainCompensationDb.clamp(-12, 6),
+      'smoothHandoff': smoothHandoff,
     });
   }
 
@@ -260,6 +300,7 @@ class UsbAudioService {
   ]) async {
     if (!_isAndroid) {
       final state = UsbExclusivePlaybackState.inactive(
+        playbackId: _currentPlaybackId,
         message: 'USB exclusive playback is only available on Android.',
       );
       usbExclusivePlaybackStateNotifier.value = state;
@@ -272,11 +313,14 @@ class UsbAudioService {
         arguments,
       );
       final state = UsbExclusivePlaybackState.fromMap(result ?? const {});
-      usbExclusivePlaybackStateNotifier.value = state;
+      _publishExclusiveState(state);
       return state;
     } on PlatformException catch (error) {
-      final state = UsbExclusivePlaybackState.inactive(message: error.message);
-      usbExclusivePlaybackStateNotifier.value = state;
+      final state = UsbExclusivePlaybackState.inactive(
+        playbackId: _currentPlaybackId,
+        message: error.message,
+      );
+      _publishExclusiveState(state);
       return state;
     }
   }
@@ -297,7 +341,7 @@ class UsbAudioService {
       final state = UsbExclusivePlaybackState.fromMap(
         (call.arguments as Map?)?.cast<String, Object?>() ?? const {},
       );
-      usbExclusivePlaybackStateNotifier.value = state;
+      _publishExclusiveState(state);
       return null;
     }
 
@@ -306,6 +350,16 @@ class UsbAudioService {
           _asInt((call.arguments as Map?)?['direction'] as Object?) ?? 0;
       if (direction != 0) {
         usbExclusiveVolumeKeyNotifier.value += direction;
+      }
+      return null;
+    }
+
+    if (call.method == 'onUsbHardwareVolumeChanged') {
+      final event = UsbHardwareVolumeEvent.fromMap(
+        (call.arguments as Map?)?.cast<String, Object?>() ?? const {},
+      );
+      if (event != null) {
+        usbHardwareVolumeNotifier.value = event;
       }
       return null;
     }
@@ -321,6 +375,74 @@ class UsbAudioService {
     throw PlatformException(
       code: 'unimplemented',
       message: 'Unknown USB audio callback: ${call.method}',
+    );
+  }
+
+  void _publishExclusiveState(UsbExclusivePlaybackState state) {
+    final playbackId = state.playbackId;
+    if (playbackId != null &&
+        _currentPlaybackId != null &&
+        playbackId != _currentPlaybackId) {
+      return;
+    }
+    usbExclusivePlaybackStateNotifier.value = state;
+  }
+}
+
+@immutable
+class UsbHardwareVolumeEvent {
+  final String playbackId;
+  final int gainQ16;
+  final int leftRaw;
+  final int rightRaw;
+  final String protocol;
+  final bool isDsd;
+  final int replayGainMilliDb;
+  final int dsdGainCompensationDb;
+
+  const UsbHardwareVolumeEvent({
+    required this.playbackId,
+    required this.gainQ16,
+    required this.leftRaw,
+    required this.rightRaw,
+    required this.protocol,
+    required this.isDsd,
+    required this.replayGainMilliDb,
+    required this.dsdGainCompensationDb,
+  });
+
+  static UsbHardwareVolumeEvent? fromMap(Map<String, Object?> map) {
+    final playbackId = map['playbackId'];
+    final gainQ16 = _asInt(map['gainQ16']);
+    final leftRaw = _asInt(map['leftRaw']);
+    final rightRaw = _asInt(map['rightRaw']);
+    final protocol = map['protocol'];
+    final isDsd = map['isDsd'];
+    final replayGainMilliDb = _asInt(map['replayGainMilliDb']);
+    final dsdGainCompensationDb = _asInt(map['dsdGainCompensationDb']);
+    if (playbackId is! String ||
+        playbackId.isEmpty ||
+        gainQ16 == null ||
+        gainQ16 < 0 ||
+        gainQ16 > 65536 ||
+        leftRaw == null ||
+        rightRaw == null ||
+        protocol is! String ||
+        protocol.isEmpty ||
+        isDsd is! bool ||
+        replayGainMilliDb == null ||
+        dsdGainCompensationDb == null) {
+      return null;
+    }
+    return UsbHardwareVolumeEvent(
+      playbackId: playbackId,
+      gainQ16: gainQ16,
+      leftRaw: leftRaw,
+      rightRaw: rightRaw,
+      protocol: protocol,
+      isDsd: isDsd,
+      replayGainMilliDb: replayGainMilliDb,
+      dsdGainCompensationDb: dsdGainCompensationDb,
     );
   }
 }
@@ -392,6 +514,7 @@ class UsbExclusiveCapability {
 
 @immutable
 class UsbExclusivePlaybackRequest {
+  final String playbackId;
   final String filePath;
   final String? title;
   final String? sourceFormat;
@@ -400,8 +523,14 @@ class UsbExclusivePlaybackRequest {
 
   /// DSD 文件的输出模式（UsbDsdMode.name：dop/native），非 DSD 为 null
   final String? dsdMode;
+  final double volumeGain;
+  final double replayGainDb;
+  final String volumeMode;
+  final int dsdGainCompensationDb;
+  final bool smoothVolumeHandoff;
   final int? targetBufferMs;
   final bool startPaused;
+  final bool replaceActive;
 
   /// filePath 是仍在下载增长中的 .part 缓存文件（流式独占）
   final bool streaming;
@@ -411,71 +540,150 @@ class UsbExclusivePlaybackRequest {
   final int? totalBytes;
 
   const UsbExclusivePlaybackRequest({
+    required this.playbackId,
     required this.filePath,
     required this.title,
     required this.sourceFormat,
     required this.sampleRate,
     required this.bitDepth,
     this.dsdMode,
+    required this.volumeGain,
+    this.replayGainDb = 0,
+    required this.volumeMode,
+    this.dsdGainCompensationDb = 0,
+    this.smoothVolumeHandoff = true,
     required this.targetBufferMs,
     required this.startPaused,
+    this.replaceActive = false,
     this.streaming = false,
     this.totalBytes,
   });
 
   Map<String, Object?> toMap() {
     return {
+      'playbackId': playbackId,
       'filePath': filePath,
       'title': title,
       'sourceFormat': sourceFormat,
       'sampleRate': sampleRate,
       'bitDepth': bitDepth,
       'dsdMode': dsdMode,
+      'volumeGainQ16': (volumeGain.clamp(0.0, 1.0) * 65536).round(),
+      'replayGainMilliDb': _replayGainMilliDb(replayGainDb),
+      'volumeMode': volumeMode,
+      'dsdGainCompensationDb': dsdGainCompensationDb.clamp(-12, 6),
+      'smoothHandoff': smoothVolumeHandoff,
       'targetBufferMs': targetBufferMs,
       'startPaused': startPaused,
       'streaming': streaming,
       'totalBytes': totalBytes,
+      'replaceActive': replaceActive,
     };
   }
 }
 
+int _replayGainMilliDb(double gainDb) {
+  if (!gainDb.isFinite) {
+    return 0;
+  }
+  const maximum = 2147483647;
+  const minimum = -2147483648;
+  if (gainDb >= maximum / 1000) {
+    return maximum;
+  }
+  if (gainDb <= minimum / 1000) {
+    return minimum;
+  }
+  return (gainDb * 1000).round();
+}
+
 @immutable
 class UsbExclusivePlaybackState {
+  final String? playbackId;
   final bool active;
   final bool playing;
   final Duration position;
   final Duration? duration;
   final int? sampleRate;
   final int? bitDepth;
+  final int? sourceBitDepth;
+  final int? decodedBitDepth;
+  final int? usbBitDepth;
+  final bool? bitPerfect;
   final String? format;
+  final bool hardwareVolumeActive;
+  final bool digitalVolumeActive;
+  final bool hardwareVolumeWriteOnly;
+  final bool hardwareVolumeReadbackVerified;
+  final bool hardwareVolumeSyncPending;
+  final bool hardwareVolumeFrozen;
+  final String? hardwareVolumeProtocol;
+  final int? hardwareVolumeRaw;
+  final int? hardwareVolumeGainQ16;
+  final int replayGainMilliDb;
   final String? message;
 
+  bool get hardwareVolumeUnverified =>
+      hardwareVolumeActive && !hardwareVolumeReadbackVerified;
+
   const UsbExclusivePlaybackState({
+    required this.playbackId,
     required this.active,
     required this.playing,
     required this.position,
     required this.duration,
     required this.sampleRate,
     required this.bitDepth,
+    this.sourceBitDepth,
+    this.decodedBitDepth,
+    this.usbBitDepth,
+    this.bitPerfect,
     required this.format,
+    required this.hardwareVolumeActive,
+    required this.digitalVolumeActive,
+    required this.hardwareVolumeWriteOnly,
+    required this.hardwareVolumeReadbackVerified,
+    required this.hardwareVolumeSyncPending,
+    required this.hardwareVolumeFrozen,
+    required this.hardwareVolumeProtocol,
+    required this.hardwareVolumeRaw,
+    required this.hardwareVolumeGainQ16,
+    required this.replayGainMilliDb,
     required this.message,
   });
 
-  factory UsbExclusivePlaybackState.inactive({String? message}) {
+  factory UsbExclusivePlaybackState.inactive({
+    String? playbackId,
+    Duration position = Duration.zero,
+    Duration? duration,
+    String? message,
+  }) {
     return UsbExclusivePlaybackState(
+      playbackId: playbackId,
       active: false,
       playing: false,
-      position: Duration.zero,
-      duration: null,
+      position: position,
+      duration: duration,
       sampleRate: null,
       bitDepth: null,
       format: null,
+      hardwareVolumeActive: false,
+      digitalVolumeActive: false,
+      hardwareVolumeWriteOnly: false,
+      hardwareVolumeReadbackVerified: false,
+      hardwareVolumeSyncPending: false,
+      hardwareVolumeFrozen: false,
+      hardwareVolumeProtocol: null,
+      hardwareVolumeRaw: null,
+      hardwareVolumeGainQ16: null,
+      replayGainMilliDb: 0,
       message: message,
     );
   }
 
   factory UsbExclusivePlaybackState.fromMap(Map<String, Object?> map) {
     return UsbExclusivePlaybackState(
+      playbackId: map['playbackId'] as String?,
       active: map['active'] == true,
       playing: map['playing'] == true,
       position: Duration(milliseconds: _asInt(map['positionMs']) ?? 0),
@@ -484,7 +692,22 @@ class UsbExclusivePlaybackState {
           : Duration(milliseconds: _asInt(map['durationMs'])!),
       sampleRate: _asInt(map['sampleRate']),
       bitDepth: _asInt(map['bitDepth']),
+      sourceBitDepth: _asInt(map['sourceBitDepth']),
+      decodedBitDepth: _asInt(map['decodedBitDepth']),
+      usbBitDepth: _asInt(map['usbBitDepth']),
+      bitPerfect: map['bitPerfect'] as bool?,
       format: map['format'] as String?,
+      hardwareVolumeActive: map['hardwareVolumeActive'] == true,
+      digitalVolumeActive: map['digitalVolumeActive'] == true,
+      hardwareVolumeWriteOnly: map['hardwareVolumeWriteOnly'] == true,
+      hardwareVolumeReadbackVerified:
+          map['hardwareVolumeReadbackVerified'] == true,
+      hardwareVolumeSyncPending: map['hardwareVolumeSyncPending'] == true,
+      hardwareVolumeFrozen: map['hardwareVolumeFrozen'] == true,
+      hardwareVolumeProtocol: map['hardwareVolumeProtocol'] as String?,
+      hardwareVolumeRaw: _asInt(map['hardwareVolumeRaw']),
+      hardwareVolumeGainQ16: _asInt(map['hardwareVolumeGainQ16']),
+      replayGainMilliDb: _asInt(map['replayGainMilliDb']) ?? 0,
       message: map['message'] as String?,
     );
   }
@@ -499,6 +722,7 @@ class UsbTransportTelemetry {
   final int isoPacketCount;
   final int pendingUrbs;
   final int underrunCount;
+  final int? lastUnderrunAtMs;
   final int updatedAtMs;
 
   const UsbTransportTelemetry({
@@ -509,6 +733,7 @@ class UsbTransportTelemetry {
     required this.isoPacketCount,
     required this.pendingUrbs,
     required this.underrunCount,
+    required this.lastUnderrunAtMs,
     required this.updatedAtMs,
   });
 
@@ -521,6 +746,7 @@ class UsbTransportTelemetry {
       isoPacketCount: 0,
       pendingUrbs: 0,
       underrunCount: 0,
+      lastUnderrunAtMs: null,
       updatedAtMs: 0,
     );
   }
@@ -536,10 +762,28 @@ class UsbTransportTelemetry {
       isoPacketCount: _asInt(map['isoPacketCount']) ?? 0,
       pendingUrbs: _asInt(map['pendingUrbs']) ?? 0,
       underrunCount: _asInt(map['underrunCount']) ?? 0,
+      lastUnderrunAtMs: _asInt(map['lastUnderrunAtMs']),
       updatedAtMs: _asInt(map['updatedAtMs']) ?? 0,
     );
   }
+
+  UsbTransportHealth health({required bool playing, required int targetMs}) {
+    if (!active) return UsbTransportHealth.idle;
+    if (!playing) return UsbTransportHealth.paused;
+    if (lastUnderrunAtMs != null &&
+        updatedAtMs >= lastUnderrunAtMs! &&
+        updatedAtMs - lastUnderrunAtMs! <= 1500) {
+      return UsbTransportHealth.underrun;
+    }
+
+    final lowWatermark = (targetMs * 0.35).round().clamp(20, 250);
+    return bufferLevel.inMilliseconds < lowWatermark
+        ? UsbTransportHealth.low
+        : UsbTransportHealth.stable;
+  }
 }
+
+enum UsbTransportHealth { idle, paused, stable, low, underrun }
 
 @immutable
 class UsbExclusiveProbeResult {
@@ -616,6 +860,10 @@ class UsbAudioStatus {
   final String? outputDeviceName;
   final int? outputSampleRate;
   final String? outputEncoding;
+  final String? manufacturerName;
+  final String? productName;
+  final int? vendorId;
+  final int? productId;
   final String? message;
   final List<UsbAudioDevice> devices;
 
@@ -630,6 +878,10 @@ class UsbAudioStatus {
     required this.outputDeviceName,
     required this.outputSampleRate,
     required this.outputEncoding,
+    required this.manufacturerName,
+    required this.productName,
+    required this.vendorId,
+    required this.productId,
     required this.message,
     required this.devices,
   });
@@ -646,6 +898,10 @@ class UsbAudioStatus {
       outputDeviceName: null,
       outputSampleRate: null,
       outputEncoding: null,
+      manufacturerName: null,
+      productName: null,
+      vendorId: null,
+      productId: null,
       message: message,
       devices: const [],
     );
@@ -674,6 +930,10 @@ class UsbAudioStatus {
       outputDeviceName: map['outputDeviceName'] as String?,
       outputSampleRate: _asInt(map['outputSampleRate']),
       outputEncoding: map['outputEncoding'] as String?,
+      manufacturerName: map['manufacturerName'] as String?,
+      productName: map['productName'] as String?,
+      vendorId: _asInt(map['vendorId']),
+      productId: _asInt(map['productId']),
       message: map['message'] as String?,
       devices: devices,
     );
@@ -684,6 +944,11 @@ class UsbAudioStatus {
       return activeDeviceId;
     }
     return devices.isEmpty ? null : devices.first.id;
+  }
+
+  bool get hasConnectedUsbAudioDevice {
+    if (devices.isNotEmpty) return true;
+    return activeDeviceId != null && vendorId != null && productId != null;
   }
 
   int? get bestAvailableSampleRate {
@@ -766,7 +1031,7 @@ String buildUsbDiagnosticsReport(
   bool platformSupported = true,
 }) {
   final buffer = StringBuffer();
-  buffer.writeln('Sylvakru USB Diagnostics Report v1');
+  buffer.writeln('Sylvakru USB Diagnostics Report v2');
 
   final error = native['error'];
   if (error != null) {
@@ -788,7 +1053,9 @@ String buildUsbDiagnosticsReport(
       '- Device: ${'${native['manufacturer'] ?? 'unknown'} ${native['model'] ?? ''}'.trim()}',
     );
   }
-  buffer.writeln('- Generated at: ${_formatTimestamp(native['generatedAtMs'])}');
+  buffer.writeln(
+    '- Generated at: ${_formatTimestamp(native['generatedAtMs'])}',
+  );
 
   // 2. USB device identity
   buffer.writeln();
@@ -839,9 +1106,13 @@ String buildUsbDiagnosticsReport(
   buffer.writeln('## App parse result');
   buffer.writeln('### AS formats');
   _writeListSection(buffer, diagnostics['streamingFormats']);
-  buffer.writeln('### Output candidates (alt/maxPacket/attr/feedback/bits/format)');
+  buffer.writeln(
+    '### Output candidates (alt/maxPacket/attr/feedback/bits/format)',
+  );
   _writeListSection(buffer, diagnostics['outputCandidates']);
-  buffer.writeln('- UAC2 clock source id: ${diagnostics['clockSourceId'] ?? 'unknown'}');
+  buffer.writeln(
+    '- UAC2 clock source id: ${diagnostics['clockSourceId'] ?? 'unknown'}',
+  );
   buffer.writeln('- Last probe: ${native['lastProbe'] ?? 'none'}');
   buffer.writeln('### Quirk');
   buffer.writeln('- Match: ${diagnostics['quirkMatch'] ?? 'unknown'}');
@@ -851,7 +1122,17 @@ String buildUsbDiagnosticsReport(
     buffer.writeln('- Load errors: $quirkErrors');
   }
 
-  // 5. System-side capability
+  // 5. Exclusive session snapshot
+  buffer.writeln();
+  buffer.writeln('## Exclusive session');
+  _writeDiagnosticsSnapshot(buffer, diagnostics['session']);
+
+  // 6. Hardware volume probe
+  buffer.writeln();
+  buffer.writeln('## Hardware volume probe');
+  _writeDiagnosticsSnapshot(buffer, diagnostics['hardwareVolume']);
+
+  // 7. System-side capability
   buffer.writeln();
   buffer.writeln('## System-side capability');
   final status = (native['systemStatus'] as Map?)?.cast<String, Object?>();
@@ -864,21 +1145,33 @@ String buildUsbDiagnosticsReport(
     buffer.writeln('- No USB audio output device.');
   }
 
-  // 6. Preferences snapshot
+  // 8. Preferences snapshot
   buffer.writeln();
   buffer.writeln('## Preferences snapshot');
   usbAudioPreferences.toMap().forEach((key, value) {
     buffer.writeln('- $key: $value');
   });
 
-  // 7. Runtime state snapshot
+  // 9. Runtime state snapshot
   buffer.writeln();
   buffer.writeln('## Runtime state snapshot');
   final state = usbExclusivePlaybackStateNotifier.value;
   buffer.writeln(
     '- Exclusive: active=${state.active}, playing=${state.playing}, '
     'format=${state.format}, sampleRate=${state.sampleRate}, '
-    'bitDepth=${state.bitDepth}, position=${state.position.inMilliseconds}ms',
+    'bitDepth=${state.bitDepth}, sourceBitDepth=${state.sourceBitDepth}, '
+    'decodedBitDepth=${state.decodedBitDepth}, usbBitDepth=${state.usbBitDepth}, '
+    'bitPerfect=${state.bitPerfect}, '
+    'position=${state.position.inMilliseconds}ms',
+  );
+  buffer.writeln(
+    '- Volume processing: hardware=${state.hardwareVolumeActive}, '
+    'digital=${state.digitalVolumeActive}, '
+    'protocol=${state.hardwareVolumeProtocol}, raw=${state.hardwareVolumeRaw}, '
+    'gainQ16=${state.hardwareVolumeGainQ16}, '
+    'writeOnly=${state.hardwareVolumeWriteOnly}, '
+    'readbackVerified=${state.hardwareVolumeReadbackVerified}, '
+    'replayGainMilliDb=${state.replayGainMilliDb}',
   );
   buffer.writeln('  message=${state.message}');
   final telemetry = usbTransportTelemetryNotifier.value;
@@ -891,7 +1184,7 @@ String buildUsbDiagnosticsReport(
     'underrun=${telemetry.underrunCount}',
   );
 
-  // 8. Recent logs
+  // 10. Recent logs
   buffer.writeln();
   buffer.writeln('## Recent logs (Kotlin/native)');
   _writeLogLines(buffer, native['logs']);
@@ -923,6 +1216,26 @@ void _writeListSection(StringBuffer buffer, Object? value) {
     }
   } else {
     buffer.writeln('- none');
+  }
+}
+
+void _writeDiagnosticsSnapshot(StringBuffer buffer, Object? value) {
+  if (value is! Map || value.isEmpty) {
+    buffer.writeln('- none');
+    return;
+  }
+  for (final entry in value.entries) {
+    final key = entry.key.toString();
+    final item = entry.value;
+    if (item is Map) {
+      buffer.writeln('### $key');
+      _writeDiagnosticsSnapshot(buffer, item);
+    } else if (item is List) {
+      buffer.writeln('### $key');
+      _writeListSection(buffer, item);
+    } else {
+      buffer.writeln('- $key=$item');
+    }
   }
 }
 
