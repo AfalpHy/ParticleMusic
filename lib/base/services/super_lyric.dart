@@ -1,5 +1,4 @@
-import 'dart:io';
-
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:sylvakru/base/services/lyric.dart';
 
@@ -7,7 +6,7 @@ import 'package:sylvakru/base/services/lyric.dart';
 /// 合并了原先的行定位与通道发送两层，去掉多余的中间封装。
 class SuperLyric {
   static const _channel = MethodChannel('com.afalphy.sylvakru/super_lyric');
-  static final bool _isAndroid = Platform.isAndroid;
+  static bool get _isAndroid => defaultTargetPlatform == TargetPlatform.android;
 
   List<LyricLine> _lines = const [];
   int? _lastPublishedIndex;
@@ -21,6 +20,8 @@ class SuperLyric {
 
   void reset() {
     _lastPublishedIndex = null;
+    _lastSent = null;
+    _hasSentStop = false;
   }
 
   Future<void> publishAt(Duration position) async {
@@ -43,11 +44,11 @@ class SuperLyric {
     if (_hasSentStop) {
       return;
     }
+    if (_isAndroid && !await _invoke('sendStop', null)) {
+      return;
+    }
     _lastSent = null;
     _hasSentStop = true;
-    if (_isAndroid) {
-      await _invoke('sendStop', null);
-    }
   }
 
   Future<void> _sendLine(LyricLine line) async {
@@ -62,20 +63,22 @@ class SuperLyric {
     if (key == _lastSent) {
       return;
     }
+    if (_isAndroid && !await _invoke('sendLyric', arguments)) {
+      return;
+    }
     _lastSent = key;
     _hasSentStop = false;
-    if (_isAndroid) {
-      await _invoke('sendLyric', arguments);
-    }
   }
 
-  Future<void> _invoke(String method, Object? arguments) async {
+  Future<bool> _invoke(String method, Object? arguments) async {
     try {
-      await _channel.invokeMethod<void>(method, arguments);
+      return await _channel.invokeMethod<bool>(method, arguments) == true;
     } on PlatformException {
       // 外部歌词插件调用失败，忽略即可。
+      return false;
     } on MissingPluginException {
       // 没有对应插件实现，忽略。
+      return false;
     }
   }
 

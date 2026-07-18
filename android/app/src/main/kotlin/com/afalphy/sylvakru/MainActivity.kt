@@ -49,6 +49,7 @@ class MainActivity : AudioServiceActivity(), GamepadsCompatibleActivity {
     private var lastExclusiveProbeResult: Map<String, Any?>? = null
     private var gamepadsKeyEventHandler: ((KeyEvent) -> Boolean)? = null
     private var gamepadsMotionEventHandler: ((MotionEvent) -> Boolean)? = null
+    private var superLyricManualStateConfigured = false
 
     override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
         super.configureFlutterEngine(flutterEngine)
@@ -650,6 +651,11 @@ class MainActivity : AudioServiceActivity(), GamepadsCompatibleActivity {
 
             if (!SuperLyricHelper.isPublisherRegistered()) {
                 SuperLyricHelper.registerPublisher()
+                superLyricManualStateConfigured = false
+            }
+            if (!superLyricManualStateConfigured) {
+                SuperLyricHelper.setSystemPlayStateListenerEnabled(false)
+                superLyricManualStateConfigured = true
             }
             true
         } catch (error: Throwable) {

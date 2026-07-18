@@ -150,6 +150,7 @@ Future<void> initAudioService() async {
 class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
   final _player = Player();
   final _superLyric = SuperLyric();
+  bool _superLyricPublishedInBackground = false;
   bool _started = false;
   int currentIndex = -1;
   List<MyAudioMetadata> _playQueueTmp = [];
@@ -635,12 +636,26 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
-    if (!_usbExclusiveActive) {
+    if (_usbExclusiveActive) {
+      final targetBufferMs = _exclusiveTargetBufferMsForLifecycle(state);
+      debugPrint(
+        "usb exclusive lifecycle=$state targetBufferMs=$targetBufferMs",
+      );
+      unawaited(usbAudioService.setExclusiveTargetBufferMs(targetBufferMs));
+    }
+
+    if (state == AppLifecycleState.resumed) {
+      _superLyricPublishedInBackground = false;
       return;
     }
-    final targetBufferMs = _exclusiveTargetBufferMsForLifecycle(state);
-    debugPrint("usb exclusive lifecycle=$state targetBufferMs=$targetBufferMs");
-    unawaited(usbAudioService.setExclusiveTargetBufferMs(targetBufferMs));
+    if ((state == AppLifecycleState.hidden ||
+            state == AppLifecycleState.paused) &&
+        !_superLyricPublishedInBackground &&
+        isPlayingNotifier.value) {
+      _superLyricPublishedInBackground = true;
+      _superLyric.reset();
+      unawaited(_superLyric.publishAt(getPosition()));
+    }
   }
 
   int _exclusiveTargetBufferMsForLifecycle(AppLifecycleState? state) {
@@ -1576,7 +1591,6 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     );
     if (_usbExclusiveActive) {
       final state = await usbAudioService.pauseExclusivePlayback();
-      unawaited(_superLyric.sendStop());
       _superLyric.reset();
       updateIsPlaying(state.playing);
       updatePlaybackState(postion: state.position);
@@ -1584,7 +1598,6 @@ class MyAudioHandler extends BaseAudioHandler with WidgetsBindingObserver {
     }
 
     _player.pause();
-    unawaited(_superLyric.sendStop());
     _superLyric.reset();
     updateIsPlaying(false);
     updatePlaybackState();
