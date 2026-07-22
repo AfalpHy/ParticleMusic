@@ -283,6 +283,14 @@ class _SongListState extends State<SongList> {
                     : Hero(
                         tag: (song == null ? sourceType.name : song.id) + title,
                         transitionOnUserGestures: true,
+                        flightShuttleBuilder:
+                            (
+                              flightContext,
+                              animation,
+                              flightDirection,
+                              fromHeroContext,
+                              toHeroContext,
+                            ) => FittedBox(child: toHeroContext.widget),
                         child: coverArt,
                       );
               },
