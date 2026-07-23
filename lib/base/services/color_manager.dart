@@ -10,6 +10,8 @@ MyAudioMetadata? backgroundSong;
 Color backgroundCoverArtColor = Colors.grey;
 Color currentCoverArtColor = Colors.grey;
 
+bool useCurrentSongForBg = true;
+
 ContrastColorTextTheme contrastColorTheme = ContrastColorGenerator.generate(
   currentCoverArtColor,
 );

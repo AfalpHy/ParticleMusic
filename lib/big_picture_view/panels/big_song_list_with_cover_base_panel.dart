@@ -23,7 +23,6 @@ import 'package:sylvakru/base/widgets/big_play_bar.dart';
 import 'package:sylvakru/base/widgets/cover_art_widget.dart';
 import 'package:sylvakru/base/widgets/my_divider.dart';
 import 'package:sylvakru/base/widgets/selectable_song_list_page.dart';
-import 'package:sylvakru/big_picture_view/panels/big_single_album_panel.dart';
 import 'package:sylvakru/l10n/generated/app_localizations.dart';
 
 abstract class BigSongListWithCoverBasePanel extends StatefulWidget {

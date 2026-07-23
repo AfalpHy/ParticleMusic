@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:rive_animated_icon/rive_animated_icon.dart';
 import 'package:smooth_corner/smooth_corner.dart';
@@ -21,7 +22,6 @@ import 'package:sylvakru/base/widgets/big_play_bar.dart';
 import 'package:sylvakru/base/widgets/cover_art_widget.dart';
 import 'package:sylvakru/base/widgets/my_divider.dart';
 import 'package:sylvakru/base/widgets/selectable_song_list_page.dart';
-import 'package:sylvakru/big_picture_view/panels/big_single_album_panel.dart';
 import 'package:sylvakru/l10n/generated/app_localizations.dart';
 
 class BigSingleArtistPanel extends StatefulWidget {
@@ -35,6 +35,8 @@ class BigSingleArtistPanel extends StatefulWidget {
 class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
   late final bool useCurrentSongForBgTmp;
   late final MyAudioMetadata? backgroundSongTmp;
+  final _scrollController = ScrollController();
+
   @override
   void initState() {
     useCurrentSongForBgTmp = useCurrentSongForBg;
@@ -56,6 +58,7 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
         useCurrentSongForBg ? currentSongNotifier.value : backgroundSongTmp,
       );
     });
+    _scrollController.dispose();
     super.dispose();
   }
 
@@ -173,6 +176,7 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
               SizedBox(height: 10),
               Expanded(
                 child: CustomScrollView(
+                  controller: _scrollController,
                   slivers: [
                     const SliverToBoxAdapter(child: SizedBox(height: 20)),
 
@@ -327,30 +331,55 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
                 if (!artist.contains(widget.artist.name)) {
                   return SizedBox.shrink();
                 }
-                return Material(
-                  color: Colors.transparent,
-                  shape: SmoothRectangleBorder(
-                    smoothness: 1,
-                    borderRadius: .circular(15),
-                  ),
-                  clipBehavior: .antiAlias,
-                  child: InkWell(
-                    mouseCursor: SystemMouseCursors.click,
-                    onTap: () {
-                      showOptions(
-                        context: context,
-                        song: song,
-                        includeGoToArtist: artist != widget.artist.name,
-                        excludedArtist: widget.artist.name,
-                        includeGoToAlbum: true,
-                      );
-                    },
+                return Builder(
+                  builder: (itemContext) {
+                    return Material(
+                      color: Colors.transparent,
+                      shape: SmoothRectangleBorder(
+                        smoothness: 1,
+                        borderRadius: .circular(15),
+                      ),
+                      clipBehavior: .antiAlias,
+                      child: InkWell(
+                        mouseCursor: SystemMouseCursors.click,
+                        onTap: () {
+                          showOptions(
+                            context: context,
+                            song: song,
+                            includeGoToArtist: artist != widget.artist.name,
+                            excludedArtist: widget.artist.name,
+                            includeGoToAlbum: true,
+                          );
+                        },
 
-                    child: Padding(
-                      padding: EdgeInsets.only(right: 20.0),
-                      child: songInfo(song),
-                    ),
-                  ),
+                        onFocusChange: (value) {
+                          if (value) {
+                            final box =
+                                itemContext.findRenderObject() as RenderBox;
+                            final viewport = RenderAbstractViewport.of(box);
+
+                            final target =
+                                viewport.getOffsetToReveal(box, 0.5).offset +
+                                40;
+
+                            _scrollController.animateTo(
+                              target.clamp(
+                                _scrollController.position.minScrollExtent,
+                                _scrollController.position.maxScrollExtent,
+                              ),
+                              duration: const Duration(milliseconds: 250),
+                              curve: Curves.easeOut,
+                            );
+                          }
+                        },
+
+                        child: Padding(
+                          padding: EdgeInsets.only(right: 20.0),
+                          child: songInfo(song),
+                        ),
+                      ),
+                    );
+                  },
                 );
               },
             ),

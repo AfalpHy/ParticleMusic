@@ -2,6 +2,7 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:rive_animated_icon/rive_animated_icon.dart';
 import 'package:smooth_corner/smooth_corner.dart';
@@ -24,8 +25,6 @@ import 'package:sylvakru/base/widgets/cover_art_widget.dart';
 import 'package:sylvakru/base/widgets/selectable_song_list_page.dart';
 import 'package:sylvakru/l10n/generated/app_localizations.dart';
 
-bool useCurrentSongForBg = true;
-
 class BigSingleAlbumPanel extends StatefulWidget {
   final Album album;
   final Color baseColor;
@@ -47,6 +46,8 @@ class _BigSingleAlbumPanelState extends State<BigSingleAlbumPanel> {
   late final SongListManager songListManager;
 
   late Color baseColor;
+
+  final _scrollController = ScrollController();
 
   void updateSongList() async {
     currentSongList = songListManager.getSongList();
@@ -182,76 +183,101 @@ class _BigSingleAlbumPanelState extends State<BigSingleAlbumPanel> {
             valueListenable: currentSongNotifier,
             builder: (context, currentSong, child) {
               return ListView.builder(
+                controller: _scrollController,
                 padding: EdgeInsets.symmetric(horizontal: 30),
                 itemExtent: 50,
                 itemCount: currentSongList.length,
                 itemBuilder: (_, index) {
                   final song = currentSongList[index];
-                  return Material(
-                    color: Colors.transparent,
-                    shape: SmoothRectangleBorder(
-                      smoothness: 1,
-                      borderRadius: .circular(15),
-                    ),
-                    clipBehavior: .antiAlias,
-                    child: InkWell(
-                      mouseCursor: SystemMouseCursors.click,
-                      onTap: () {
-                        showOptions(
-                          context: context,
-                          song: song,
-                          includeGoToArtist: true,
-                        );
-                      },
-                      child: Padding(
-                        padding: EdgeInsets.only(right: 20.0),
-                        child: Row(
-                          children: [
-                            SizedBox(
-                              width: 50,
-                              child: Center(
-                                child: currentSong == song
-                                    ? ValueListenableBuilder(
-                                        valueListenable: isPlayingNotifier,
-                                        builder: (context, value, child) {
-                                          return RiveAnimatedIcon(
-                                            key: ValueKey(value),
-                                            riveIcon: .sound,
-                                            width: 35,
-                                            height: 35,
-                                            loopAnimation: value,
-                                            enableAbsorbPointer: true,
-                                          );
-                                        },
-                                      )
-                                    : Text(
-                                        song.track != null
-                                            ? song.track.toString()
-                                            : '#',
-                                      ),
-                              ),
-                            ),
-                            Expanded(
-                              child: Align(
-                                alignment: .centerLeft,
-                                child: Text(
-                                  getTitle(song),
-                                  style: .new(overflow: .ellipsis),
-                                ),
-                              ),
-                            ),
-
-                            Expanded(
-                              child: Text(
-                                getArtist(song),
-                                style: .new(overflow: .ellipsis),
-                              ),
-                            ),
-                            Text(formatDuration(getDuration(song))),
-                          ],
+                  return Builder(
+                    builder: (itemContext) {
+                      return Material(
+                        color: Colors.transparent,
+                        shape: SmoothRectangleBorder(
+                          smoothness: 1,
+                          borderRadius: .circular(15),
                         ),
-                      ),
-                    ),
+                        clipBehavior: .antiAlias,
+                        child: InkWell(
+                          mouseCursor: SystemMouseCursors.click,
+                          onTap: () {
+                            showOptions(
+                              context: context,
+                              song: song,
+                              includeGoToArtist: true,
+                            );
+                          },
+                          onFocusChange: (value) {
+                            if (value) {
+                              final box =
+                                  itemContext.findRenderObject() as RenderBox;
+                              final viewport = RenderAbstractViewport.of(box);
+
+                              final target =
+                                  viewport.getOffsetToReveal(box, 0.5).offset +
+                                  40;
+
+                              _scrollController.animateTo(
+                                target.clamp(
+                                  _scrollController.position.minScrollExtent,
+                                  _scrollController.position.maxScrollExtent,
+                                ),
+                                duration: const Duration(milliseconds: 250),
+                                curve: Curves.easeOut,
+                              );
+                            }
+                          },
+                          child: Padding(
+                            padding: EdgeInsets.only(right: 20.0),
+                            child: Row(
+                              children: [
+                                SizedBox(
+                                  width: 50,
+                                  child: Center(
+                                    child: currentSong == song
+                                        ? ValueListenableBuilder(
+                                            valueListenable: isPlayingNotifier,
+                                            builder: (context, value, child) {
+                                              return RiveAnimatedIcon(
+                                                key: ValueKey(value),
+                                                riveIcon: .sound,
+                                                width: 35,
+                                                height: 35,
+                                                loopAnimation: value,
+                                                enableAbsorbPointer: true,
+                                              );
+                                            },
+                                          )
+                                        : Text(
+                                            song.track != null
+                                                ? song.track.toString()
+                                                : '#',
+                                          ),
+                                  ),
+                                ),
+                                Expanded(
+                                  child: Align(
+                                    alignment: .centerLeft,
+                                    child: Text(
+                                      getTitle(song),
+                                      style: .new(overflow: .ellipsis),
+                                    ),
+                                  ),
+                                ),
+
+                                Expanded(
+                                  child: Text(
+                                    getArtist(song),
+                                    style: .new(overflow: .ellipsis),
+                                  ),
+                                ),
+                                Text(formatDuration(getDuration(song))),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    },
                   );
                 },
               );
