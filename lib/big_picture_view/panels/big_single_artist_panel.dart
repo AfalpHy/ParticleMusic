@@ -223,7 +223,7 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
             mainAxisAlignment: .center,
             children: [
               Expanded(flex: 1, child: SizedBox.shrink()),
-              Expanded(flex: 8, child: Center(child: BigPlayBar())),
+              Expanded(flex: 6, child: Center(child: BigPlayBar())),
               Expanded(flex: 1, child: SizedBox.shrink()),
             ],
           ),
