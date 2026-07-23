@@ -40,7 +40,8 @@ class BigSingleAlbumPanel extends StatefulWidget {
 }
 
 class _BigSingleAlbumPanelState extends State<BigSingleAlbumPanel> {
-  FocusNode currentSongNode = FocusNode();
+  late final bool useCurrentSongForBgTmp;
+  late final MyAudioMetadata? backgroundSongTmp;
 
   List<MyAudioMetadata> currentSongList = [];
   late final SongListManager songListManager;
@@ -50,12 +51,16 @@ class _BigSingleAlbumPanelState extends State<BigSingleAlbumPanel> {
   void updateSongList() async {
     currentSongList = songListManager.getSongList();
     baseColor = await computeCoverArtColor(currentSongList.first);
+    colorManager.updateBigPictureRelatedColors(currentSongList.first);
     setState(() {});
   }
 
   @override
   void initState() {
+    useCurrentSongForBgTmp = useCurrentSongForBg;
+    backgroundSongTmp = backgroundSong;
     useCurrentSongForBg = false;
+
     songListManager = widget.album.songListManager;
     currentSongList = songListManager.getSongList();
     baseColor = widget.baseColor;
@@ -70,12 +75,13 @@ class _BigSingleAlbumPanelState extends State<BigSingleAlbumPanel> {
 
   @override
   void dispose() {
-    currentSongNode.dispose();
-    useCurrentSongForBg = true;
+    useCurrentSongForBg = useCurrentSongForBgTmp;
     songListManager.sourceTypeNotifier.removeListener(updateSongList);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      colorManager.updateBigPictureRelatedColors(currentSongNotifier.value);
+      colorManager.updateBigPictureRelatedColors(
+        useCurrentSongForBg ? currentSongNotifier.value : backgroundSongTmp,
+      );
     });
     super.dispose();
   }
@@ -158,10 +164,7 @@ class _BigSingleAlbumPanelState extends State<BigSingleAlbumPanel> {
             mainAxisAlignment: .center,
             children: [
               Expanded(flex: 1, child: SizedBox.shrink()),
-              Expanded(
-                flex: 8,
-                child: Center(child: BigPlayBar(focusNode: currentSongNode)),
-              ),
+              Expanded(flex: 8, child: Center(child: BigPlayBar())),
               Expanded(flex: 1, child: SizedBox.shrink()),
             ],
           ),
@@ -211,14 +214,13 @@ class _BigSingleAlbumPanelState extends State<BigSingleAlbumPanel> {
                                     ? ValueListenableBuilder(
                                         valueListenable: isPlayingNotifier,
                                         builder: (context, value, child) {
-                                          return ExcludeFocus(
-                                            child: RiveAnimatedIcon(
-                                              key: ValueKey(value),
-                                              riveIcon: .sound,
-                                              width: 35,
-                                              height: 35,
-                                              loopAnimation: value,
-                                            ),
+                                          return RiveAnimatedIcon(
+                                            key: ValueKey(value),
+                                            riveIcon: .sound,
+                                            width: 35,
+                                            height: 35,
+                                            loopAnimation: value,
+                                            enableAbsorbPointer: true,
                                           );
                                         },
                                       )

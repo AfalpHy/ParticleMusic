@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:sylvakru/base/data/artist_album.dart';
+import 'package:sylvakru/base/data/folder.dart';
 import 'package:sylvakru/base/data/history.dart';
 import 'package:sylvakru/base/data/library.dart';
 import 'package:sylvakru/base/data/playlist.dart';
@@ -13,6 +14,8 @@ import 'package:sylvakru/base/widgets/cover_art_widget.dart';
 import 'package:sylvakru/base/widgets/scale_widget.dart';
 import 'package:sylvakru/big_picture_view/panels/big_single_album_panel.dart';
 import 'package:sylvakru/big_picture_view/panels/big_single_artist_panel.dart';
+import 'package:sylvakru/big_picture_view/panels/big_single_folder_panel.dart';
+import 'package:sylvakru/big_picture_view/panels/big_single_playlist_panel.dart';
 import 'package:sylvakru/l10n/generated/app_localizations.dart';
 
 class BigHomePanel extends StatefulWidget {
@@ -51,6 +54,10 @@ class _BigHomePanelState extends State<BigHomePanel> {
           },
           getBottomTitle: (index) => artistAlbumManager.artistList[index].name,
           verticalController: verticalController,
+          changeNotifier: (index) => artistAlbumManager
+              .artistList[index]
+              .songListManager
+              .changeNotifier,
         ),
 
         _ListView(
@@ -81,16 +88,73 @@ class _BigHomePanelState extends State<BigHomePanel> {
               'big${artistAlbumManager.albumList[index].getCoverSong().id}${artistAlbumManager.albumList[index].name}',
 
           verticalController: verticalController,
+          changeNotifier: (index) => artistAlbumManager
+              .albumList[index]
+              .songListManager
+              .changeNotifier,
         ),
 
         _ListView(
           title: l10n.folders,
-          count: library.localFolderList.length,
-          getCoverSong: (index) =>
-              getFirstSong(library.localFolderList[index].songList),
-          onTap: (index) {},
+          count:
+              library.localFolderList.length + library.webdavFolderList.length,
+          getCoverSong: (index) {
+            late Folder folder;
+            if (index < library.localFolderList.length) {
+              folder = library.localFolderList[index];
+            } else {
+              folder = library
+                  .webdavFolderList[index - library.localFolderList.length];
+            }
+            return getFirstSong(folder.songList);
+          },
+          onTap: (index) async {
+            late Folder folder;
+            if (index < library.localFolderList.length) {
+              folder = library.localFolderList[index];
+            } else {
+              folder = library
+                  .webdavFolderList[index - library.localFolderList.length];
+            }
+            final baseColor = await computeCoverArtColor(
+              getFirstSong(folder.songList),
+            );
+            if (!context.mounted) {
+              return;
+            }
+            Navigator.of(context).push(
+              ZoomPageRoute(
+                builder: (context) {
+                  return BigSingleFolderPanel(
+                    folder: folder,
+                    baseColor: baseColor,
+                  );
+                },
+              ),
+            );
+          },
           getBottomTitle: (index) => library.localFolderList[index].id,
+          getTag: (index) {
+            late Folder folder;
+            if (index < library.localFolderList.length) {
+              folder = library.localFolderList[index];
+            } else {
+              folder = library
+                  .webdavFolderList[index - library.localFolderList.length];
+            }
+            return 'big${getFirstSong(folder.songList)?.id}${folder.id}';
+          },
           verticalController: verticalController,
+          changeNotifier: (index) {
+            late Folder folder;
+            if (index < library.localFolderList.length) {
+              folder = library.localFolderList[index];
+            } else {
+              folder = library
+                  .webdavFolderList[index - library.localFolderList.length];
+            }
+            return folder.changeNotifier;
+          },
         ),
 
         _ListView(
@@ -130,9 +194,30 @@ class _BigHomePanelState extends State<BigHomePanel> {
           count: playlistManager.playlists.length,
           getCoverSong: (index) =>
               playlistManager.playlists[index].getCoverSong(),
-          onTap: (index) {},
+          onTap: (index) async {
+            final baseColor = await computeCoverArtColor(
+              playlistManager.playlists[index].getCoverSong(),
+            );
+            if (!context.mounted) {
+              return;
+            }
+            Navigator.of(context).push(
+              ZoomPageRoute(
+                builder: (context) {
+                  return BigSinglePlaylistPanel(
+                    playlist: playlistManager.playlists[index],
+                    baseColor: baseColor,
+                  );
+                },
+              ),
+            );
+          },
           getBottomTitle: (index) => playlistManager.playlists[index].name,
+          getTag: (index) =>
+              'big${playlistManager.playlists[index].getCoverSong()?.id}${playlistManager.playlists[index].name}',
           verticalController: verticalController,
+          changeNotifier: (index) =>
+              playlistManager.playlists[index].songListManager.changeNotifier,
         ),
       ],
     );
@@ -147,6 +232,7 @@ class _ListView extends StatefulWidget {
   final String Function(int)? getBottomTitle;
   final String Function(int)? getTag;
   final ScrollController verticalController;
+  final ValueNotifier Function(int)? changeNotifier;
 
   const _ListView({
     required this.title,
@@ -156,6 +242,7 @@ class _ListView extends StatefulWidget {
     this.getBottomTitle,
     this.getTag,
     required this.verticalController,
+    this.changeNotifier,
   });
 
   @override
@@ -200,9 +287,12 @@ class _ListViewState extends State<_ListView> {
               return const SizedBox(width: 30);
             },
             itemBuilder: (context, index) {
-              final song = widget.getCoverSong(index);
-              return Builder(
-                builder: (context) {
+              return ListenableBuilder(
+                listenable: Listenable.merge([
+                  widget.changeNotifier?.call(index),
+                ]),
+                builder: (context, _) {
+                  final song = widget.getCoverSong(index);
                   return ScaleWidget(
                     onTap: () {
                       widget.onTap.call(index);

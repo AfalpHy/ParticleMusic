@@ -39,23 +39,23 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
   void initState() {
     useCurrentSongForBgTmp = useCurrentSongForBg;
     backgroundSongTmp = backgroundSong;
-    if (!useCurrentSongForBg) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        colorManager.updateBigPictureRelatedColors(currentSongNotifier.value);
-      });
-    }
     useCurrentSongForBg = true;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      colorManager.updateBigPictureRelatedColors(currentSongNotifier.value);
+    });
+
     super.initState();
   }
 
   @override
   void dispose() {
     useCurrentSongForBg = useCurrentSongForBgTmp;
-    if (!useCurrentSongForBg) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        colorManager.updateBigPictureRelatedColors(backgroundSongTmp);
-      });
-    }
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      colorManager.updateBigPictureRelatedColors(
+        useCurrentSongForBg ? currentSongNotifier.value : backgroundSongTmp,
+      );
+    });
     super.dispose();
   }
 
@@ -379,14 +379,13 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
                     ? ValueListenableBuilder(
                         valueListenable: isPlayingNotifier,
                         builder: (context, value, child) {
-                          return ExcludeFocus(
-                            child: RiveAnimatedIcon(
-                              key: ValueKey(value),
-                              riveIcon: .sound,
-                              width: 35,
-                              height: 35,
-                              loopAnimation: value,
-                            ),
+                          return RiveAnimatedIcon(
+                            key: ValueKey(value),
+                            riveIcon: .sound,
+                            width: 35,
+                            height: 35,
+                            loopAnimation: value,
+                            enableAbsorbPointer: true,
                           );
                         },
                       )

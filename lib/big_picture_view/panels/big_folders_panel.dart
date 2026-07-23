@@ -2,8 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 import 'package:sylvakru/base/data/folder.dart';
 import 'package:sylvakru/base/data/library.dart';
+import 'package:sylvakru/base/services/metadata_service.dart';
 import 'package:sylvakru/base/utils/metadata_utils.dart';
+import 'package:sylvakru/base/utils/zoom_page_route.dart';
 import 'package:sylvakru/base/widgets/cover_art_widget.dart';
+import 'package:sylvakru/big_picture_view/panels/big_single_folder_panel.dart';
 
 class BigFoldersPanel extends StatefulWidget {
   const BigFoldersPanel({super.key});
@@ -46,7 +49,7 @@ class _BigFoldersPanelState extends State<BigFoldersPanel> {
                       listenable: Listenable.merge([coverSong?.updateNotifier]),
                       builder: (_, _) {
                         return Hero(
-                          tag: 'big${coverSong?.id ?? ''}${folder.id}',
+                          tag: 'big${coverSong?.id}${folder.id}',
                           child: CoverArtWidget(
                             size: 100,
                             borderRadius: 10,
@@ -65,7 +68,24 @@ class _BigFoldersPanelState extends State<BigFoldersPanel> {
                     ),
                   ],
                 ),
-                onTap: () {},
+                onTap: () async {
+                  final baseColor = await computeCoverArtColor(
+                    getFirstSong(folder.songList),
+                  );
+                  if (!context.mounted) {
+                    return;
+                  }
+                  Navigator.of(context).push(
+                    ZoomPageRoute(
+                      builder: (context) {
+                        return BigSingleFolderPanel(
+                          folder: folder,
+                          baseColor: baseColor,
+                        );
+                      },
+                    ),
+                  );
+                },
               ),
             );
           },

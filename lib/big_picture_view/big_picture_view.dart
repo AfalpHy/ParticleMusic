@@ -20,6 +20,7 @@ import 'package:sylvakru/big_picture_view/panels/big_albums_panel.dart';
 import 'package:sylvakru/big_picture_view/panels/big_artists_panel.dart';
 import 'package:sylvakru/big_picture_view/panels/big_folders_panel.dart';
 import 'package:sylvakru/big_picture_view/panels/big_home_panel.dart';
+import 'package:sylvakru/big_picture_view/panels/big_playlists_panel.dart';
 import 'package:sylvakru/big_picture_view/panels/big_ranking_panel.dart';
 import 'package:sylvakru/big_picture_view/panels/big_recently_panel.dart';
 import 'package:sylvakru/big_picture_view/panels/big_songs_panel.dart';
@@ -49,6 +50,7 @@ class _BigPictureViewState extends State<BigPictureView> {
     BigFoldersPanel(),
     BigRankingPanel(),
     BigRecentlyPanel(),
+    BigPlaylistsPanel(),
   ];
 
   final topNode = FocusScopeNode();
