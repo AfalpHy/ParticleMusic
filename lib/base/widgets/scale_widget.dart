@@ -3,12 +3,15 @@ import 'package:flutter/material.dart';
 class ScaleWidget extends StatefulWidget {
   final Widget child;
   final void Function()? onTap;
+  final void Function()? onFocus;
+
   final bool needFocusColor;
   final bool autoFocus;
   const ScaleWidget({
     super.key,
     required this.child,
     this.onTap,
+    this.onFocus,
     this.needFocusColor = false,
     this.autoFocus = false,
   });
@@ -35,8 +38,12 @@ class _ScaleWidgetState extends State<ScaleWidget> {
             highlightColor: Colors.transparent,
             onFocusChange: (value) {
               focusNotifier.value = !focusNotifier.value;
+              if (value) {
+                widget.onFocus?.call();
+              }
             },
             onTap: widget.onTap ?? () {},
+
             child: widget.child,
           ),
         );

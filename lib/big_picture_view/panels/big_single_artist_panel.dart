@@ -9,6 +9,7 @@ import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/asset_images.dart';
 import 'package:sylvakru/base/audio_handler.dart';
 import 'package:sylvakru/base/data/artist_album.dart';
+import 'package:sylvakru/base/my_audio_metadata.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/utils/format_duration.dart';
@@ -33,9 +34,16 @@ class BigSingleArtistPanel extends StatefulWidget {
 
 class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
   late final bool useCurrentSongForBgTmp;
+  late final MyAudioMetadata? backgroundSongTmp;
   @override
   void initState() {
     useCurrentSongForBgTmp = useCurrentSongForBg;
+    backgroundSongTmp = backgroundSong;
+    if (!useCurrentSongForBg) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        colorManager.updateBigPictureRelatedColors(currentSongNotifier.value);
+      });
+    }
     useCurrentSongForBg = true;
     super.initState();
   }
@@ -43,6 +51,11 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
   @override
   void dispose() {
     useCurrentSongForBg = useCurrentSongForBgTmp;
+    if (!useCurrentSongForBg) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        colorManager.updateBigPictureRelatedColors(backgroundSongTmp);
+      });
+    }
     super.dispose();
   }
 
@@ -54,46 +67,32 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
     return Stack(
       fit: .expand,
       children: [
-        ListenableBuilder(
-          listenable: Listenable.merge([
-            currentSongNotifier,
-            mainPageThemeNotifier,
-          ]),
-          builder: (context, _) {
-            if (mainPageThemeNotifier.value != .vivid) {
-              return SizedBox.shrink();
-            }
-            return CoverArtWidget(
-              song: currentSongNotifier.value,
-              color: currentCoverArtColor,
-            );
-          },
-        ),
-        ListenableBuilder(
-          listenable: Listenable.merge([
-            currentSongNotifier,
-            mainPageThemeNotifier,
-          ]),
-          builder: (context, child) {
-            if (mainPageThemeNotifier.value != .vivid) {
-              return SizedBox.shrink();
-            }
-
-            return RepaintBoundary(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(
-                  sigmaX: panelWidth * 0.03,
-                  sigmaY: panelHeight * 0.03,
+        if (mainPageThemeNotifier.value == .vivid) ...[
+          ValueListenableBuilder(
+            valueListenable: currentSongNotifier,
+            builder: (context, value, child) {
+              return CoverArtWidget(song: value, color: currentCoverArtColor);
+            },
+          ),
+          ValueListenableBuilder(
+            valueListenable: currentSongNotifier,
+            builder: (context, value, child) {
+              return RepaintBoundary(
+                child: BackdropFilter(
+                  filter: ImageFilter.blur(
+                    sigmaX: panelWidth * 0.03,
+                    sigmaY: panelHeight * 0.03,
+                  ),
+                  child: AnimatedContainer(
+                    duration: Duration(milliseconds: 500),
+                    curve: Curves.easeInOutCubic,
+                    color: currentCoverArtColor.withAlpha(180),
+                  ),
                 ),
-                child: AnimatedContainer(
-                  duration: Duration(milliseconds: 500),
-                  curve: Curves.easeInOutCubic,
-                  color: currentCoverArtColor.withAlpha(180),
-                ),
-              ),
-            );
-          },
-        ),
+              );
+            },
+          ),
+        ],
 
         Scaffold(
           backgroundColor: panelColor.value,
@@ -180,234 +179,7 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
                     for (final album in widget.artist.albumList)
                       SliverMainAxisGroup(
                         slivers: [
-                          SliverCrossAxisGroup(
-                            slivers: [
-                              SliverConstrainedCrossAxis(
-                                maxExtent: 40,
-                                sliver: SliverToBoxAdapter(child: SizedBox()),
-                              ),
-                              SliverConstrainedCrossAxis(
-                                maxExtent: panelWidth * 0.2,
-                                sliver: SliverToBoxAdapter(
-                                  child: CoverArtWidget(
-                                    song: album.getCoverSong(),
-                                    size: panelWidth * 0.2,
-                                    borderRadius: panelWidth * 0.01,
-                                  ),
-                                ),
-                              ),
-                              SliverConstrainedCrossAxis(
-                                maxExtent: panelWidth * 0.02,
-                                sliver: SliverToBoxAdapter(child: SizedBox()),
-                              ),
-                              SliverMainAxisGroup(
-                                slivers: [
-                                  SliverToBoxAdapter(
-                                    child: Row(
-                                      children: [
-                                        SizedBox(width: 20),
-                                        Expanded(
-                                          child: Column(
-                                            crossAxisAlignment: .start,
-                                            children: [
-                                              Text(
-                                                album.name,
-                                                style: .new(
-                                                  fontWeight: .bold,
-                                                  fontSize: 20,
-                                                  overflow: .ellipsis,
-                                                ),
-                                              ),
-                                              if (album.year != null)
-                                                Text(
-                                                  album.year.toString(),
-                                                  style: .new(
-                                                    overflow: .ellipsis,
-                                                  ),
-                                                ),
-                                            ],
-                                          ),
-                                        ),
-                                        IconButton(
-                                          onPressed: () async {
-                                            final songList = album
-                                                .songListManager
-                                                .getSongList()
-                                                .where(
-                                                  (song) =>
-                                                      getArtist(song).contains(
-                                                        widget.artist.name,
-                                                      ),
-                                                )
-                                                .toList();
-                                            audioHandler.currentIndex = Random()
-                                                .nextInt(songList.length);
-                                            playModeNotifier.value = 1;
-                                            await audioHandler.setPlayQueue(
-                                              songList,
-                                            );
-                                            await audioHandler.load();
-                                            audioHandler.play();
-                                          },
-                                          icon: ImageIcon(shuffleImage),
-                                        ),
-                                        IconButton(
-                                          onPressed: () async {
-                                            final songList = album
-                                                .songListManager
-                                                .getSongList()
-                                                .where(
-                                                  (song) =>
-                                                      getArtist(song).contains(
-                                                        widget.artist.name,
-                                                      ),
-                                                )
-                                                .toList();
-                                            audioHandler.currentIndex = 0;
-                                            playModeNotifier.value = 0;
-                                            await audioHandler.setPlayQueue(
-                                              songList,
-                                            );
-                                            await audioHandler.load();
-                                            audioHandler.play();
-                                          },
-                                          icon: Icon(Icons.play_arrow_rounded),
-                                          iconSize: 30,
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                  SliverToBoxAdapter(
-                                    child: MyDivider(
-                                      color: dividerColor,
-                                      indent: 10,
-                                    ),
-                                  ),
-                                  SliverList.builder(
-                                    itemCount: album.songListManager
-                                        .getSongList()
-                                        .length,
-                                    itemBuilder: (context, index) {
-                                      final song = album.songListManager
-                                          .getSongList()[index];
-                                      final artist = getArtist(song);
-
-                                      if (!artist.contains(
-                                        widget.artist.name,
-                                      )) {
-                                        return SizedBox.shrink();
-                                      }
-                                      return Material(
-                                        color: Colors.transparent,
-                                        shape: SmoothRectangleBorder(
-                                          smoothness: 1,
-                                          borderRadius: .circular(15),
-                                        ),
-                                        clipBehavior: .antiAlias,
-                                        child: InkWell(
-                                          mouseCursor: SystemMouseCursors.click,
-                                          onTap: () {
-                                            showOptions(
-                                              context: context,
-                                              song: song,
-                                              includeGoToArtist: true,
-                                              includeGoToAlbum: true,
-                                            );
-                                          },
-
-                                          child: Padding(
-                                            padding: EdgeInsets.only(
-                                              right: 20.0,
-                                            ),
-                                            child: Row(
-                                              children: [
-                                                SizedBox(
-                                                  height: 50,
-                                                  width: 50,
-                                                  child: ValueListenableBuilder(
-                                                    valueListenable:
-                                                        currentSongNotifier,
-                                                    builder: (context, currentSong, child) {
-                                                      return Center(
-                                                        child:
-                                                            currentSong == song
-                                                            ? ValueListenableBuilder(
-                                                                valueListenable:
-                                                                    isPlayingNotifier,
-                                                                builder:
-                                                                    (
-                                                                      context,
-                                                                      value,
-                                                                      child,
-                                                                    ) {
-                                                                      return ExcludeFocus(
-                                                                        child: RiveAnimatedIcon(
-                                                                          key: ValueKey(
-                                                                            value,
-                                                                          ),
-                                                                          riveIcon:
-                                                                              .sound,
-                                                                          width:
-                                                                              35,
-                                                                          height:
-                                                                              35,
-                                                                          loopAnimation:
-                                                                              value,
-                                                                        ),
-                                                                      );
-                                                                    },
-                                                              )
-                                                            : Text(
-                                                                song.track !=
-                                                                        null
-                                                                    ? song.track
-                                                                          .toString()
-                                                                    : '#',
-                                                              ),
-                                                      );
-                                                    },
-                                                  ),
-                                                ),
-                                                Expanded(
-                                                  child: Text(
-                                                    getTitle(song),
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                  ),
-                                                ),
-                                                SizedBox(width: 15),
-                                                Expanded(
-                                                  child: Text(
-                                                    getArtist(song),
-                                                    overflow:
-                                                        TextOverflow.ellipsis,
-                                                  ),
-                                                ),
-                                                SizedBox(width: 15),
-                                                Text(
-                                                  formatDuration(
-                                                    getDuration(song),
-                                                  ),
-
-                                                  overflow:
-                                                      TextOverflow.ellipsis,
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
-                                      );
-                                    },
-                                  ),
-                                ],
-                              ),
-
-                              SliverConstrainedCrossAxis(
-                                maxExtent: 40,
-                                sliver: SliverToBoxAdapter(child: SizedBox()),
-                              ),
-                            ],
-                          ),
+                          albumContent(album, panelWidth),
                           SliverToBoxAdapter(child: SizedBox(height: 50)),
                         ],
                       ),
@@ -451,6 +223,186 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
               Expanded(flex: 1, child: SizedBox.shrink()),
             ],
           ),
+        ),
+      ],
+    );
+  }
+
+  Widget albumContent(Album album, double panelWidth) {
+    return SliverCrossAxisGroup(
+      slivers: [
+        SliverConstrainedCrossAxis(
+          maxExtent: 40,
+          sliver: SliverToBoxAdapter(child: SizedBox()),
+        ),
+        SliverConstrainedCrossAxis(
+          maxExtent: panelWidth * 0.2,
+          sliver: SliverToBoxAdapter(
+            child: CoverArtWidget(
+              song: album.getCoverSong(),
+              size: panelWidth * 0.2,
+              borderRadius: panelWidth * 0.01,
+            ),
+          ),
+        ),
+        SliverConstrainedCrossAxis(
+          maxExtent: panelWidth * 0.02,
+          sliver: SliverToBoxAdapter(child: SizedBox()),
+        ),
+        SliverMainAxisGroup(
+          slivers: [
+            SliverToBoxAdapter(
+              child: Row(
+                children: [
+                  SizedBox(width: 20),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: .start,
+                      children: [
+                        Text(
+                          album.name,
+                          style: .new(
+                            fontWeight: .bold,
+                            fontSize: 20,
+                            overflow: .ellipsis,
+                          ),
+                        ),
+                        if (album.year != null)
+                          Text(
+                            album.year.toString(),
+                            style: .new(overflow: .ellipsis),
+                          ),
+                      ],
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () async {
+                      final songList = album.songListManager
+                          .getSongList()
+                          .where(
+                            (song) =>
+                                getArtist(song).contains(widget.artist.name),
+                          )
+                          .toList();
+                      audioHandler.currentIndex = Random().nextInt(
+                        songList.length,
+                      );
+                      playModeNotifier.value = 1;
+                      await audioHandler.setPlayQueue(songList);
+                      await audioHandler.load();
+                      audioHandler.play();
+                    },
+                    icon: ImageIcon(shuffleImage),
+                  ),
+                  IconButton(
+                    onPressed: () async {
+                      final songList = album.songListManager
+                          .getSongList()
+                          .where(
+                            (song) =>
+                                getArtist(song).contains(widget.artist.name),
+                          )
+                          .toList();
+                      audioHandler.currentIndex = 0;
+                      playModeNotifier.value = 0;
+                      await audioHandler.setPlayQueue(songList);
+                      await audioHandler.load();
+                      audioHandler.play();
+                    },
+                    icon: Icon(Icons.play_arrow_rounded),
+                    iconSize: 30,
+                  ),
+                ],
+              ),
+            ),
+            SliverToBoxAdapter(
+              child: MyDivider(color: dividerColor, indent: 10),
+            ),
+            SliverList.builder(
+              itemCount: album.songListManager.getSongList().length,
+              itemBuilder: (context, index) {
+                final song = album.songListManager.getSongList()[index];
+                final artist = getArtist(song);
+
+                if (!artist.contains(widget.artist.name)) {
+                  return SizedBox.shrink();
+                }
+                return Material(
+                  color: Colors.transparent,
+                  shape: SmoothRectangleBorder(
+                    smoothness: 1,
+                    borderRadius: .circular(15),
+                  ),
+                  clipBehavior: .antiAlias,
+                  child: InkWell(
+                    mouseCursor: SystemMouseCursors.click,
+                    onTap: () {
+                      showOptions(
+                        context: context,
+                        song: song,
+                        includeGoToArtist: artist != widget.artist.name,
+                        excludedArtist: widget.artist.name,
+                        includeGoToAlbum: true,
+                      );
+                    },
+
+                    child: Padding(
+                      padding: EdgeInsets.only(right: 20.0),
+                      child: songInfo(song),
+                    ),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+
+        SliverConstrainedCrossAxis(
+          maxExtent: 40,
+          sliver: SliverToBoxAdapter(child: SizedBox()),
+        ),
+      ],
+    );
+  }
+
+  Widget songInfo(MyAudioMetadata song) {
+    return Row(
+      children: [
+        SizedBox(
+          height: 50,
+          width: 50,
+          child: ValueListenableBuilder(
+            valueListenable: currentSongNotifier,
+            builder: (context, currentSong, child) {
+              return Center(
+                child: currentSong == song
+                    ? ValueListenableBuilder(
+                        valueListenable: isPlayingNotifier,
+                        builder: (context, value, child) {
+                          return ExcludeFocus(
+                            child: RiveAnimatedIcon(
+                              key: ValueKey(value),
+                              riveIcon: .sound,
+                              width: 35,
+                              height: 35,
+                              loopAnimation: value,
+                            ),
+                          );
+                        },
+                      )
+                    : Text(song.track != null ? song.track.toString() : '#'),
+              );
+            },
+          ),
+        ),
+        Expanded(child: Text(getTitle(song), overflow: TextOverflow.ellipsis)),
+        SizedBox(width: 15),
+        Expanded(child: Text(getArtist(song), overflow: TextOverflow.ellipsis)),
+        SizedBox(width: 15),
+        Text(
+          formatDuration(getDuration(song)),
+
+          overflow: TextOverflow.ellipsis,
         ),
       ],
     );

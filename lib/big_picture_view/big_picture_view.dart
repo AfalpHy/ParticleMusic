@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
@@ -37,6 +38,9 @@ class _BigPictureViewState extends State<BigPictureView> {
   final _pageController = PageController();
   final _currentIndexNotifier = ValueNotifier(0);
 
+  Timer? immersiveModeTimer;
+  final ValueNotifier<bool> immersiveModeNotifier = ValueNotifier(false);
+
   final pages = const [
     BigHomePanel(),
     BigSongsPanel(),
@@ -56,11 +60,37 @@ class _BigPictureViewState extends State<BigPictureView> {
     topNode.dispose();
     pageViewNode.dispose();
     bottomNode.dispose();
+    immersiveModeTimer?.cancel();
+    immersiveModeNotifier.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    immersiveModeTimer?.cancel();
+    immersiveModeTimer = Timer(const Duration(milliseconds: 3000), () {
+      immersiveModeNotifier.value = true;
+    });
+    return ValueListenableBuilder(
+      valueListenable: immersiveModeNotifier,
+      builder: (context, value, child) {
+        return MouseRegion(
+          cursor: value ? SystemMouseCursors.none : MouseCursor.defer,
+          onHover: (event) {
+            immersiveModeNotifier.value = false;
+            immersiveModeTimer?.cancel();
+            immersiveModeTimer = Timer(const Duration(milliseconds: 3000), () {
+              immersiveModeNotifier.value = true;
+            });
+          },
+          child: child,
+        );
+      },
+      child: content(context),
+    );
+  }
+
+  Widget content(BuildContext context) {
     return Stack(
       fit: StackFit.expand,
       children: [
@@ -109,23 +139,23 @@ class _BigPictureViewState extends State<BigPictureView> {
 
         Material(
           color: panelColor.value,
-          child: GamepadInterceptor(
-            onBeforeIntent: (activator, intent) {
-              if (intent is DismissIntent) {
+          child: KeyboardListener(
+            focusNode: pageViewNode,
+            onKeyEvent: (value) {
+              if (value is KeyUpEvent) {
+                return;
+              }
+              if (value.logicalKey == .goBack) {
                 topNode.requestFocus();
               }
-              return true;
             },
-            child: KeyboardListener(
-              focusNode: pageViewNode,
-              onKeyEvent: (value) {
-                if (value is KeyUpEvent) {
-                  return;
-                }
-
-                if (value.logicalKey == .goBack) {
+            child: GamepadInterceptor(
+              onBeforeIntent: (activator, intent) {
+                if (intent is DismissIntent) {
                   topNode.requestFocus();
+                  return false;
                 }
+                return true;
               },
               child: PageView(
                 controller: _pageController,
@@ -443,9 +473,14 @@ class _BigPictureViewState extends State<BigPictureView> {
             if (intent is DirectionalFocusIntent) {
               if (intent.direction == .down) {
                 topNode.requestFocus();
+                return false;
               } else if (intent.direction == .up) {
                 pageViewNode.requestFocus();
+                return false;
               }
+            } else if (intent is DismissIntent) {
+              topNode.requestFocus();
+              return false;
             }
             return true;
           },

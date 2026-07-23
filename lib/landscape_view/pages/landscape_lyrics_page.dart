@@ -28,13 +28,13 @@ class LandscapeLyricsPage extends StatefulWidget {
 }
 
 class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
-  final ValueNotifier<bool> immersiveModeNotifier = ValueNotifier(false);
   Timer? immersiveModeTimer;
+  final ValueNotifier<bool> immersiveModeNotifier = ValueNotifier(false);
 
   @override
   void dispose() {
-    immersiveModeNotifier.dispose();
     immersiveModeTimer?.cancel();
+    immersiveModeNotifier.dispose();
     super.dispose();
   }
 

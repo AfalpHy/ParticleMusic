@@ -2,7 +2,6 @@ import 'dart:math';
 import 'dart:ui';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_gamepads/flutter_gamepads.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:rive_animated_icon/rive_animated_icon.dart';
 import 'package:smooth_corner/smooth_corner.dart';
@@ -195,7 +194,11 @@ class _BigSingleAlbumPanelState extends State<BigSingleAlbumPanel> {
                     child: InkWell(
                       mouseCursor: SystemMouseCursors.click,
                       onTap: () {
-                        showOptions(context: context, song: song);
+                        showOptions(
+                          context: context,
+                          song: song,
+                          includeGoToArtist: true,
+                        );
                       },
                       child: Padding(
                         padding: EdgeInsets.only(right: 20.0),
@@ -299,13 +302,28 @@ class _BigSingleAlbumPanelState extends State<BigSingleAlbumPanel> {
             if (songListManager.notEmptyCount > 1) ...[
               SizedBox(width: 10),
               GlassContainer(
-                child: TextButton(
-                  onPressed: () {
-                    showSwitchDialogIfNeed(context, songListManager);
-                  },
-                  child: Text(
-                    AppLocalizations.of(context).switch_,
-                    style: .new(color: textColor.value),
+                settings: LiquidGlassSettings(glassColor: glassColor.value),
+                child: Material(
+                  color: Colors.transparent,
+                  shape: SmoothRectangleBorder(
+                    smoothness: 1,
+                    borderRadius: .circular(5),
+                  ),
+                  clipBehavior: .antiAlias,
+                  child: InkWell(
+                    onTap: () {
+                      showSwitchDialogIfNeed(context, songListManager);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 8.0,
+                        vertical: 4.0,
+                      ),
+                      child: Text(
+                        AppLocalizations.of(context).switch_,
+                        style: .new(color: textColor.value, fontWeight: .bold),
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -313,62 +331,48 @@ class _BigSingleAlbumPanelState extends State<BigSingleAlbumPanel> {
           ],
         ),
         SizedBox(height: 10),
-        GamepadInterceptor(
-          onBeforeIntent: (activator, intent) {
-            if (intent is DirectionalFocusIntent) {
-              if (intent.direction == .up) {
-                currentSongNode.requestFocus();
-                return false;
-              }
-            }
-            return true;
-          },
-          child: Row(
-            mainAxisAlignment: .center,
-            children: [
-              IconButton(
-                onPressed: () async {
-                  audioHandler.currentIndex = Random().nextInt(
-                    currentSongList.length,
-                  );
-                  playModeNotifier.value = 1;
-                  await audioHandler.setPlayQueue(currentSongList);
-                  await audioHandler.load();
-                  audioHandler.play();
-                },
-                icon: ImageIcon(shuffleImage),
-                iconSize: 30,
-              ),
-              IconButton(
-                onPressed: () async {
-                  audioHandler.currentIndex = 0;
-                  playModeNotifier.value = 0;
-                  await audioHandler.setPlayQueue(currentSongList);
-                  await audioHandler.load();
-                  audioHandler.play();
-                },
-                icon: Icon(Icons.play_circle_fill_rounded),
-                iconSize: 50,
-              ),
-              IconButton(
-                onPressed: () {
-                  Navigator.of(context).push(
-                    ZoomPageRoute(
-                      builder: (_) => SelectableSongListPage(
-                        songList: songListManager.getSongList(),
-                        reorderable: false,
-                      ),
+        Row(
+          mainAxisAlignment: .center,
+          children: [
+            IconButton(
+              onPressed: () async {
+                audioHandler.currentIndex = Random().nextInt(
+                  currentSongList.length,
+                );
+                playModeNotifier.value = 1;
+                await audioHandler.setPlayQueue(currentSongList);
+                await audioHandler.load();
+                audioHandler.play();
+              },
+              icon: ImageIcon(shuffleImage),
+              iconSize: 30,
+            ),
+            IconButton(
+              onPressed: () async {
+                audioHandler.currentIndex = 0;
+                playModeNotifier.value = 0;
+                await audioHandler.setPlayQueue(currentSongList);
+                await audioHandler.load();
+                audioHandler.play();
+              },
+              icon: Icon(Icons.play_circle_fill_rounded),
+              iconSize: 50,
+            ),
+            IconButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  ZoomPageRoute(
+                    builder: (_) => SelectableSongListPage(
+                      songList: songListManager.getSongList(),
+                      reorderable: false,
                     ),
-                  );
-                },
-                icon: Transform.scale(
-                  scale: 0.95,
-                  child: ImageIcon(selectImage),
-                ),
-                iconSize: 30,
-              ),
-            ],
-          ),
+                  ),
+                );
+              },
+              icon: Transform.scale(scale: 0.95, child: ImageIcon(selectImage)),
+              iconSize: 30,
+            ),
+          ],
         ),
       ],
     );

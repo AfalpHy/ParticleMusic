@@ -1,6 +1,8 @@
 import 'dart:math';
 
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_gamepads/flutter_gamepads.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/widgets/cover_art_widget.dart';
@@ -20,11 +22,46 @@ class SongInfo extends StatefulWidget {
 
 class _SongInfoState extends State<SongInfo> {
   late final MyAudioMetadata song;
+  final _scrollController = ScrollController();
+
+  static const double _step = 80;
+
+  void _scroll(AxisDirection direction) {
+    if (!_scrollController.hasClients) return;
+
+    final position = _scrollController.position;
+
+    final target = switch (direction) {
+      AxisDirection.up => (position.pixels - _step).clamp(
+        position.minScrollExtent,
+        position.maxScrollExtent,
+      ),
+
+      AxisDirection.down => (position.pixels + _step).clamp(
+        position.minScrollExtent,
+        position.maxScrollExtent,
+      ),
+
+      _ => position.pixels,
+    };
+
+    _scrollController.animateTo(
+      target,
+      duration: const Duration(milliseconds: 120),
+      curve: Curves.easeOut,
+    );
+  }
 
   @override
   void initState() {
     super.initState();
     song = widget.song;
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
   }
 
   @override
@@ -56,99 +93,126 @@ class _SongInfoState extends State<SongInfo> {
           paddingDivider(verticalPadding),
 
           Expanded(
-            child: ListView(
-              padding: .symmetric(horizontal: isMobile ? 5 : 15),
-              children: [
-                SizedBox(height: 10),
+            child: GamepadInterceptor(
+              onBeforeIntent: (activator, intent) {
+                if (intent is ScrollIntent) {
+                  _scroll(intent.direction);
+                  return false;
+                }
+                return true;
+              },
+              child: KeyboardListener(
+                focusNode: FocusNode(),
+                autofocus: true,
+                onKeyEvent: (event) {
+                  if (event is! KeyRepeatEvent && event is! KeyDownEvent) {
+                    return;
+                  }
 
-                Row(
+                  switch (event.logicalKey) {
+                    case .arrowUp:
+                      _scroll(AxisDirection.up);
+                      break;
+
+                    case .arrowDown:
+                      _scroll(AxisDirection.down);
+                      break;
+                  }
+                },
+                child: ListView(
+                  controller: _scrollController,
+                  padding: .symmetric(horizontal: isMobile ? 5 : 15),
                   children: [
-                    Focus(
-                      // for scroll
-                      autofocus: true,
-                      child: CoverArtWidget(
-                        size: isPhone ? 150 : 180,
-                        borderRadius: 10,
-                        song: song,
-                      ),
+                    SizedBox(height: 10),
+
+                    Row(
+                      children: [
+                        CoverArtWidget(
+                          size: isPhone ? 150 : 180,
+                          borderRadius: 10,
+                          song: song,
+                        ),
+                        SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: isPhone ? .start : .center,
+                            children: [
+                              Text('${l10n.format}:'),
+                              Text(song.format?.toUpperCase() ?? "Unknown"),
+
+                              paddingDivider(verticalPadding),
+
+                              Text('${l10n.bitrate}:'),
+                              Text('${song.bitrate?.toString() ?? ''} Kbps'),
+
+                              paddingDivider(verticalPadding),
+
+                              Text('${l10n.samplerate}:'),
+                              if (song.samplerate == null)
+                                Text('')
+                              else
+                                Text(
+                                  '${(song.samplerate! / 1000.0).toString()} KHz',
+                                ),
+                            ],
+                          ),
+                        ),
+                      ],
                     ),
-                    SizedBox(width: 10),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: isPhone ? .start : .center,
-                        children: [
-                          Text('${l10n.format}:'),
-                          Text(song.format?.toUpperCase() ?? "Unknown"),
 
-                          paddingDivider(verticalPadding),
+                    SizedBox(height: 10),
+                    paddingDivider(verticalPadding),
 
-                          Text('${l10n.bitrate}:'),
-                          Text('${song.bitrate?.toString() ?? ''} Kbps'),
+                    Text('${l10n.title}: ${getTitle(song)}'),
 
-                          paddingDivider(verticalPadding),
+                    paddingDivider(verticalPadding),
 
-                          Text('${l10n.samplerate}:'),
-                          if (song.samplerate == null)
-                            Text('')
-                          else
-                            Text(
-                              '${(song.samplerate! / 1000.0).toString()} KHz',
-                            ),
-                        ],
-                      ),
+                    Text('${l10n.artist}: ${getArtist(song)}'),
+
+                    paddingDivider(verticalPadding),
+
+                    Text('${l10n.album}: ${getAlbum(song)}'),
+
+                    paddingDivider(verticalPadding),
+
+                    Text('${l10n.albumArtist}: ${getAlbumArtist(song)}'),
+
+                    paddingDivider(verticalPadding),
+
+                    Text('${l10n.genre}: ${getGenre(song)}'),
+
+                    paddingDivider(verticalPadding),
+
+                    Text('${l10n.year}: ${song.year?.toString() ?? ''}'),
+
+                    paddingDivider(verticalPadding),
+
+                    Text('${l10n.track}: ${song.track?.toString() ?? ''}'),
+
+                    paddingDivider(verticalPadding),
+
+                    Text('${l10n.disc}: ${song.disc?.toString() ?? ''}'),
+
+                    paddingDivider(verticalPadding),
+
+                    Text(
+                      '${l10n.duration}: ${song.duration?.toString() ?? ''}',
                     ),
+
+                    paddingDivider(verticalPadding),
+
+                    Text('${l10n.path}:'),
+
+                    Text(song.path ?? ''),
+
+                    paddingDivider(verticalPadding),
+
+                    Text('${l10n.lyrics}:'),
+
+                    Text(song.lyrics ?? ''),
                   ],
                 ),
-
-                SizedBox(height: 10),
-                paddingDivider(verticalPadding),
-
-                Text('${l10n.title}: ${getTitle(song)}'),
-
-                paddingDivider(verticalPadding),
-
-                Text('${l10n.artist}: ${getArtist(song)}'),
-
-                paddingDivider(verticalPadding),
-
-                Text('${l10n.album}: ${getAlbum(song)}'),
-
-                paddingDivider(verticalPadding),
-
-                Text('${l10n.albumArtist}: ${getAlbumArtist(song)}'),
-
-                paddingDivider(verticalPadding),
-
-                Text('${l10n.genre}: ${getGenre(song)}'),
-
-                paddingDivider(verticalPadding),
-
-                Text('${l10n.year}: ${song.year?.toString() ?? ''}'),
-
-                paddingDivider(verticalPadding),
-
-                Text('${l10n.track}: ${song.track?.toString() ?? ''}'),
-
-                paddingDivider(verticalPadding),
-
-                Text('${l10n.disc}: ${song.disc?.toString() ?? ''}'),
-
-                paddingDivider(verticalPadding),
-
-                Text('${l10n.duration}: ${song.duration?.toString() ?? ''}'),
-
-                paddingDivider(verticalPadding),
-
-                Text('${l10n.path}:'),
-
-                Text(song.path ?? ''),
-
-                paddingDivider(verticalPadding),
-
-                Text('${l10n.lyrics}:'),
-
-                Text(song.lyrics ?? ''),
-              ],
+              ),
             ),
           ),
         ],

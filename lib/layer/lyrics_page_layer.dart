@@ -19,7 +19,7 @@ class _LyricsPageLayerState extends State<LyricsPageLayer> {
     super.initState();
     displayLyricsPage = true;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      await Future.delayed(Duration(seconds: 1));
+      await Future.delayed(Duration(milliseconds: 600));
       updateHoverFocusColor();
     });
   }

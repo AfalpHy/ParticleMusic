@@ -22,6 +22,7 @@ import 'package:sylvakru/base/widgets/my_divider.dart';
 import 'package:sylvakru/base/widgets/playlist_widgets.dart';
 import 'package:sylvakru/base/widgets/song_info.dart';
 import 'package:sylvakru/big_picture_view/panels/big_single_album_panel.dart';
+import 'package:sylvakru/big_picture_view/panels/big_single_artist_panel.dart';
 import 'package:sylvakru/l10n/generated/app_localizations.dart';
 import 'package:sylvakru/layer/layers_manager.dart';
 import 'package:smooth_corner/smooth_corner.dart';
@@ -728,68 +729,48 @@ void showOptions({
   required MyAudioMetadata song,
   void Function()? moveToTop,
   bool includeGoToArtist = false,
+  String? excludedArtist,
   bool includeGoToAlbum = false,
   Playlist? playlist,
 }) {
   final l10n = AppLocalizations.of(context);
   showAnimationDialog(
     context: context,
-    child: SizedBox(
-      width: max(320, min(MediaQuery.widthOf(context) / 3, 400)),
+    child: Builder(
+      builder: (context) {
+        return ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: max(320, min(MediaQuery.widthOf(context) / 3, 400)),
+            maxHeight: MediaQuery.sizeOf(context).height * 0.8,
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              SizedBox(height: 5),
 
-      child: Builder(
-        builder: (context) {
-          return ConstrainedBox(
-            constraints: BoxConstraints(
-              maxHeight: MediaQuery.sizeOf(context).height * 0.8,
-            ),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                SizedBox(height: 5),
-
-                ListTile(
-                  leading: CoverArtWidget(
-                    size: 50,
-                    borderRadius: 5,
-                    song: song,
-                  ),
-                  title: Text(getTitle(song), overflow: TextOverflow.ellipsis),
-                  subtitle: Text(
-                    "${getArtist(song)} - ${getAlbum(song)}",
-                    overflow: TextOverflow.ellipsis,
-                  ),
+              ListTile(
+                leading: CoverArtWidget(size: 50, borderRadius: 5, song: song),
+                title: Text(getTitle(song), overflow: TextOverflow.ellipsis),
+                subtitle: Text(
+                  "${getArtist(song)} - ${getAlbum(song)}",
+                  overflow: TextOverflow.ellipsis,
                 ),
+              ),
 
-                SizedBox(height: 5),
-                MyDivider(color: dividerColor, thickness: 0.5, height: 1),
-                SizedBox(height: 5),
+              SizedBox(height: 5),
+              MyDivider(color: dividerColor, thickness: 0.5, height: 1),
+              SizedBox(height: 5),
 
-                Flexible(
-                  child: ListView(
-                    physics: const ClampingScrollPhysics(),
-                    shrinkWrap: true,
-                    children: [
-                      if (moveToTop != null)
-                        ListTile(
-                          leading: Icon(Icons.vertical_align_top_rounded),
-                          title: Text(
-                            l10n.move2Top,
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          visualDensity: const VisualDensity(
-                            horizontal: 0,
-                            vertical: -4,
-                          ),
-                          onTap: () {
-                            Navigator.pop(context);
-                            moveToTop.call();
-                          },
-                        ),
+              Flexible(
+                child: ListView(
+                  physics: const ClampingScrollPhysics(),
+                  shrinkWrap: true,
+                  children: [
+                    if (moveToTop != null)
                       ListTile(
-                        leading: Icon(Icons.play_arrow_rounded),
+                        leading: Icon(Icons.vertical_align_top_rounded),
                         title: Text(
-                          l10n.playNow,
+                          l10n.move2Top,
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                         visualDensity: const VisualDensity(
@@ -797,169 +778,238 @@ void showOptions({
                           vertical: -4,
                         ),
                         onTap: () {
+                          Navigator.pop(context);
+                          moveToTop.call();
+                        },
+                      ),
+                    ListTile(
+                      leading: Icon(Icons.play_arrow_rounded),
+                      title: Text(
+                        l10n.playNow,
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      visualDensity: const VisualDensity(
+                        horizontal: 0,
+                        vertical: -4,
+                      ),
+                      onTap: () {
+                        audioHandler.singlePlay(song);
+                        Navigator.pop(context);
+                        audioHandler.saveAllStates();
+                      },
+                    ),
+                    ListTile(
+                      leading: Icon(Icons.navigate_next_rounded),
+                      title: Text(
+                        l10n.playNext,
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      visualDensity: const VisualDensity(
+                        horizontal: 0,
+                        vertical: -4,
+                      ),
+                      onTap: () {
+                        if (playQueue.isEmpty) {
                           audioHandler.singlePlay(song);
-                          Navigator.pop(context);
-                          audioHandler.saveAllStates();
-                        },
+                        } else {
+                          audioHandler.insert2Next(song);
+                        }
+                        Navigator.pop(context);
+                        audioHandler.saveAllStates();
+                      },
+                    ),
+                    ListTile(
+                      leading: Icon(Icons.playlist_add_rounded),
+                      title: Text(
+                        l10n.add2Queue,
+                        style: TextStyle(fontWeight: FontWeight.bold),
                       ),
+                      visualDensity: const VisualDensity(
+                        horizontal: 0,
+                        vertical: -4,
+                      ),
+                      onTap: () {
+                        if (playQueue.isEmpty) {
+                          audioHandler.singlePlay(song);
+                        } else {
+                          audioHandler.add2Last(song);
+                        }
+                        Navigator.pop(context);
+                        audioHandler.saveAllStates();
+                      },
+                    ),
+                    ListTile(
+                      leading: Icon(Icons.add_rounded),
+                      title: Text(
+                        l10n.add2Playlist,
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      visualDensity: const VisualDensity(
+                        horizontal: 0,
+                        vertical: -4,
+                      ),
+                      onTap: () {
+                        Navigator.pop(context);
+
+                        showAddPlaylistDialog(context, [song]);
+                      },
+                    ),
+
+                    if (includeGoToArtist)
                       ListTile(
-                        leading: Icon(Icons.navigate_next_rounded),
+                        leading: Icon(Icons.people),
                         title: Text(
-                          l10n.playNext,
+                          l10n.go2Artist,
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                         visualDensity: const VisualDensity(
                           horizontal: 0,
                           vertical: -4,
                         ),
-                        onTap: () {
-                          if (playQueue.isEmpty) {
-                            audioHandler.singlePlay(song);
-                          } else {
-                            audioHandler.insert2Next(song);
-                          }
+                        onTap: () async {
                           Navigator.pop(context);
-                          audioHandler.saveAllStates();
-                        },
-                      ),
-                      ListTile(
-                        leading: Icon(Icons.playlist_add_rounded),
-                        title: Text(
-                          l10n.add2Queue,
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        visualDensity: const VisualDensity(
-                          horizontal: 0,
-                          vertical: -4,
-                        ),
-                        onTap: () {
-                          if (playQueue.isEmpty) {
-                            audioHandler.singlePlay(song);
-                          } else {
-                            audioHandler.add2Last(song);
-                          }
-                          Navigator.pop(context);
-                          audioHandler.saveAllStates();
-                        },
-                      ),
-                      ListTile(
-                        leading: Icon(Icons.add_rounded),
-                        title: Text(
-                          l10n.add2Playlist,
-                          style: TextStyle(fontWeight: FontWeight.bold),
-                        ),
-                        visualDensity: const VisualDensity(
-                          horizontal: 0,
-                          vertical: -4,
-                        ),
-                        onTap: () {
-                          Navigator.pop(context);
+                          final artists = getArtists(getArtist(song));
 
-                          showAddPlaylistDialog(context, [song]);
-                        },
-                      ),
-
-                      if (includeGoToArtist)
-                        ListTile(
-                          leading: Icon(Icons.people),
-                          title: Text(
-                            l10n.go2Artist,
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          visualDensity: const VisualDensity(
-                            horizontal: 0,
-                            vertical: -4,
-                          ),
-                          onTap: () async {
-                            Navigator.pop(context);
-                            // TODO:
-                          },
-                        ),
-
-                      if (includeGoToAlbum)
-                        ListTile(
-                          leading: Icon(Icons.album_rounded),
-                          title: Text(
-                            l10n.go2Album,
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          visualDensity: const VisualDensity(
-                            horizontal: 0,
-                            vertical: -4,
-                          ),
-                          onTap: () async {
-                            Navigator.pop(context);
-                            await Future.delayed(Duration(milliseconds: 250));
-                            final album =
-                                artistAlbumManager.name2Album[getAlbum(song)]!;
-                            final baseColor = await computeCoverArtColor(
-                              album.getCoverSong(),
-                            );
-                            if (!context.mounted) {
-                              return;
-                            }
+                          if (artists.length == 1) {
                             Navigator.of(context).push(
                               ZoomPageRoute(
                                 builder: (context) {
-                                  return BigSingleAlbumPanel(
-                                    album: album,
-                                    baseColor: baseColor,
+                                  return BigSingleArtistPanel(
+                                    artist: artistAlbumManager
+                                        .name2Artist[artists.first]!,
                                   );
                                 },
                               ),
                             );
-                          },
-                        ),
+                          } else {
+                            showAnimationDialog(
+                              context: context,
+                              child: ConstrainedBox(
+                                constraints: BoxConstraints(
+                                  maxWidth: max(
+                                    320,
+                                    min(MediaQuery.widthOf(context) / 3, 400),
+                                  ),
+                                  maxHeight:
+                                      MediaQuery.sizeOf(context).height * 0.8,
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.all(10),
+                                  child: ListView.builder(
+                                    shrinkWrap: true,
+                                    itemCount: artists.length,
+                                    itemBuilder: (context, index) {
+                                      final name = artists[index];
+                                      return ListTile(
+                                        title: Text(name),
+                                        onTap: name == excludedArtist
+                                            ? null
+                                            : () {
+                                                Navigator.of(context).pop();
+                                                Navigator.of(context).push(
+                                                  ZoomPageRoute(
+                                                    builder: (context) {
+                                                      return BigSingleArtistPanel(
+                                                        artist: artistAlbumManager
+                                                            .name2Artist[name]!,
+                                                      );
+                                                    },
+                                                  ),
+                                                );
+                                              },
+                                      );
+                                    },
+                                  ),
+                                ),
+                              ),
+                            );
+                          }
+                        },
+                      ),
 
+                    if (includeGoToAlbum)
                       ListTile(
-                        leading: Icon(Icons.info_outline_rounded),
+                        leading: Icon(Icons.album_rounded),
                         title: Text(
-                          l10n.songInfo,
+                          l10n.go2Album,
                           style: TextStyle(fontWeight: FontWeight.bold),
                         ),
                         visualDensity: const VisualDensity(
                           horizontal: 0,
                           vertical: -4,
                         ),
-                        onTap: () {
+                        onTap: () async {
                           Navigator.pop(context);
-                          showAnimationDialog(
-                            context: context,
-                            child: SongInfo(song: song),
+                          await Future.delayed(Duration(milliseconds: 250));
+                          final album =
+                              artistAlbumManager.name2Album[getAlbum(song)]!;
+                          final baseColor = await computeCoverArtColor(
+                            album.getCoverSong(),
+                          );
+                          if (!context.mounted) {
+                            return;
+                          }
+                          Navigator.of(context).push(
+                            ZoomPageRoute(
+                              builder: (context) {
+                                return BigSingleAlbumPanel(
+                                  album: album,
+                                  baseColor: baseColor,
+                                );
+                              },
+                            ),
                           );
                         },
                       ),
 
-                      if (playlist != null)
-                        ListTile(
-                          leading: Icon(Icons.delete_rounded),
-                          title: Text(
-                            l10n.delete,
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          visualDensity: const VisualDensity(
-                            horizontal: 0,
-                            vertical: -4,
-                          ),
-                          onTap: () async {
-                            if (await showConfirmDialog(context, l10n.delete)) {
-                              playlist.remove([song]);
-                              if (context.mounted) {
-                                Navigator.pop(context);
-                              }
-                            }
-                          },
-                        ),
-                    ],
-                  ),
-                ),
+                    ListTile(
+                      leading: Icon(Icons.info_outline_rounded),
+                      title: Text(
+                        l10n.songInfo,
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      visualDensity: const VisualDensity(
+                        horizontal: 0,
+                        vertical: -4,
+                      ),
+                      onTap: () {
+                        Navigator.pop(context);
+                        showAnimationDialog(
+                          context: context,
+                          child: SongInfo(song: song),
+                        );
+                      },
+                    ),
 
-                SizedBox(height: 10),
-              ],
-            ),
-          );
-        },
-      ),
+                    if (playlist != null)
+                      ListTile(
+                        leading: Icon(Icons.delete_rounded),
+                        title: Text(
+                          l10n.delete,
+                          style: TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                        visualDensity: const VisualDensity(
+                          horizontal: 0,
+                          vertical: -4,
+                        ),
+                        onTap: () async {
+                          if (await showConfirmDialog(context, l10n.delete)) {
+                            playlist.remove([song]);
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                            }
+                          }
+                        },
+                      ),
+                  ],
+                ),
+              ),
+
+              SizedBox(height: 10),
+            ],
+          ),
+        );
+      },
     ),
   );
 }

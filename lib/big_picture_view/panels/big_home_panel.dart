@@ -1,15 +1,18 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart';
 import 'package:sylvakru/base/data/artist_album.dart';
 import 'package:sylvakru/base/data/history.dart';
 import 'package:sylvakru/base/data/library.dart';
 import 'package:sylvakru/base/data/playlist.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
+import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/services/metadata_service.dart';
 import 'package:sylvakru/base/utils/metadata_utils.dart';
 import 'package:sylvakru/base/utils/zoom_page_route.dart';
 import 'package:sylvakru/base/widgets/cover_art_widget.dart';
 import 'package:sylvakru/base/widgets/scale_widget.dart';
 import 'package:sylvakru/big_picture_view/panels/big_single_album_panel.dart';
+import 'package:sylvakru/big_picture_view/panels/big_single_artist_panel.dart';
 import 'package:sylvakru/l10n/generated/app_localizations.dart';
 
 class BigHomePanel extends StatefulWidget {
@@ -20,26 +23,41 @@ class BigHomePanel extends StatefulWidget {
 }
 
 class _BigHomePanelState extends State<BigHomePanel> {
+  final verticalController = ScrollController();
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context);
     return ListView(
+      controller: verticalController,
       padding: const EdgeInsets.symmetric(vertical: 75),
       children: [
-        _listView(
+        _ListView(
           title: l10n.artists,
+          count: artistAlbumManager.artistList.length,
           getCoverSong: (index) {
             return artistAlbumManager.artistList[index].getCoverSong();
           },
-          count: artistAlbumManager.artistList.length,
-          onTap: (index) {},
+          onTap: (index) {
+            Navigator.of(context).push(
+              ZoomPageRoute(
+                builder: (context) {
+                  return BigSingleArtistPanel(
+                    artist: artistAlbumManager.artistList[index],
+                  );
+                },
+              ),
+            );
+          },
+          getBottomTitle: (index) => artistAlbumManager.artistList[index].name,
+          verticalController: verticalController,
         ),
 
-        _listView(
+        _ListView(
           title: l10n.albums,
+          count: artistAlbumManager.albumList.length,
           getCoverSong: (index) =>
               artistAlbumManager.albumList[index].getCoverSong(),
-          count: artistAlbumManager.albumList.length,
           onTap: (index) async {
             final baseColor = await computeCoverArtColor(
               artistAlbumManager.albumList[index].getCoverSong(),
@@ -58,53 +76,104 @@ class _BigHomePanelState extends State<BigHomePanel> {
               ),
             );
           },
-          tag: (index) =>
+          getBottomTitle: (index) => artistAlbumManager.albumList[index].name,
+          getTag: (index) =>
               'big${artistAlbumManager.albumList[index].getCoverSong().id}${artistAlbumManager.albumList[index].name}',
+
+          verticalController: verticalController,
         ),
 
-        _listView(
+        _ListView(
           title: l10n.folders,
+          count: library.localFolderList.length,
           getCoverSong: (index) =>
               getFirstSong(library.localFolderList[index].songList),
-          count: library.localFolderList.length,
           onTap: (index) {},
+          getBottomTitle: (index) => library.localFolderList[index].id,
+          verticalController: verticalController,
         ),
 
-        _listView(
+        _ListView(
           title: l10n.ranking,
+          count: history.rankingSongListManager.getSongList().length,
           getCoverSong: (index) =>
               history.rankingSongListManager.getSongList()[index],
-          count: history.rankingSongListManager.getSongList().length,
-          onTap: (index) {},
+          onTap: (index) {
+            showOptions(
+              context: context,
+              song: history.rankingSongListManager.getSongList()[index],
+              includeGoToArtist: true,
+              includeGoToAlbum: true,
+            );
+          },
+          verticalController: verticalController,
         ),
 
-        _listView(
+        _ListView(
           title: l10n.recently,
+          count: history.recentlySongListManager.getSongList().length,
           getCoverSong: (index) =>
               history.recentlySongListManager.getSongList()[index],
-          count: history.recentlySongListManager.getSongList().length,
-          onTap: (index) {},
+          onTap: (index) {
+            showOptions(
+              context: context,
+              song: history.recentlySongListManager.getSongList()[index],
+              includeGoToArtist: true,
+              includeGoToAlbum: true,
+            );
+          },
+          verticalController: verticalController,
         ),
 
-        _listView(
+        _ListView(
           title: l10n.playlists,
+          count: playlistManager.playlists.length,
           getCoverSong: (index) =>
               playlistManager.playlists[index].getCoverSong(),
-          count: playlistManager.playlists.length,
           onTap: (index) {},
+          getBottomTitle: (index) => playlistManager.playlists[index].name,
+          verticalController: verticalController,
         ),
       ],
     );
   }
+}
 
-  Widget _listView({
-    required String title,
-    required MyAudioMetadata? Function(int) getCoverSong,
-    required int count,
-    required void Function(int) onTap,
-    String Function(int)? tag,
-  }) {
-    if (count == 0) {
+class _ListView extends StatefulWidget {
+  final String title;
+  final int count;
+  final MyAudioMetadata? Function(int) getCoverSong;
+  final void Function(int) onTap;
+  final String Function(int)? getBottomTitle;
+  final String Function(int)? getTag;
+  final ScrollController verticalController;
+
+  const _ListView({
+    required this.title,
+    required this.count,
+    required this.getCoverSong,
+    required this.onTap,
+    this.getBottomTitle,
+    this.getTag,
+    required this.verticalController,
+  });
+
+  @override
+  State<StatefulWidget> createState() => _ListViewState();
+}
+
+class _ListViewState extends State<_ListView> {
+  final rowKey = GlobalKey();
+  final controller = ScrollController();
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    if (widget.count == 0) {
       return SizedBox.shrink();
     }
     return Column(
@@ -112,7 +181,7 @@ class _BigHomePanelState extends State<BigHomePanel> {
         Row(
           children: [
             SizedBox(width: 40),
-            Text(title, style: .new(fontSize: 24, fontWeight: .bold)),
+            Text(widget.title, style: .new(fontSize: 24, fontWeight: .bold)),
             IconButton(
               onPressed: () {},
               icon: Icon(Icons.arrow_forward_ios_rounded),
@@ -120,55 +189,108 @@ class _BigHomePanelState extends State<BigHomePanel> {
           ],
         ),
         SizedBox(
-          height: 280,
+          height: widget.getBottomTitle == null ? 280 : 260,
           child: ListView.separated(
+            key: rowKey,
+            controller: controller,
             padding: EdgeInsets.symmetric(horizontal: 40),
             scrollDirection: .horizontal,
-            itemCount: count,
+            itemCount: widget.count,
             separatorBuilder: (context, index) {
               return const SizedBox(width: 30);
             },
             itemBuilder: (context, index) {
-              final song = getCoverSong(index);
-              return ScaleWidget(
-                onTap: () {
-                  onTap.call(index);
-                },
-                child: Column(
-                  children: [
-                    SizedBox(height: 15),
-                    tag != null
-                        ? Hero(
-                            tag: tag(index),
-                            child: CoverArtWidget(
-                              size: 200,
-                              borderRadius: 20,
-                              song: song,
+              final song = widget.getCoverSong(index);
+              return Builder(
+                builder: (context) {
+                  return ScaleWidget(
+                    onTap: () {
+                      widget.onTap.call(index);
+                    },
+                    onFocus: () {
+                      final itemBox = context.findRenderObject() as RenderBox;
+                      final horizontalViewport = RenderAbstractViewport.of(
+                        itemBox,
+                      );
+
+                      final horizontalTarget =
+                          horizontalViewport
+                              .getOffsetToReveal(itemBox, 0.5)
+                              .offset +
+                          itemBox.size.width / 2;
+
+                      controller.animateTo(
+                        horizontalTarget.clamp(
+                          controller.position.minScrollExtent,
+                          controller.position.maxScrollExtent,
+                        ),
+                        duration: const Duration(milliseconds: 150),
+                        curve: Curves.easeOut,
+                      );
+
+                      final rowBox =
+                          rowKey.currentContext!.findRenderObject()
+                              as RenderBox;
+                      final verticalViewport = RenderAbstractViewport.of(
+                        rowBox,
+                      );
+
+                      final verticalTarget =
+                          verticalViewport
+                              .getOffsetToReveal(rowBox, 0.5)
+                              .offset +
+                          rowBox.size.height / 2;
+
+                      widget.verticalController.animateTo(
+                        verticalTarget.clamp(
+                          widget.verticalController.position.minScrollExtent,
+                          widget.verticalController.position.maxScrollExtent,
+                        ),
+                        duration: const Duration(milliseconds: 150),
+                        curve: Curves.easeOut,
+                      );
+                    },
+                    child: Column(
+                      children: [
+                        SizedBox(height: 15),
+                        widget.getTag != null
+                            ? Hero(
+                                tag: widget.getTag!.call(index),
+                                child: CoverArtWidget(
+                                  size: 200,
+                                  borderRadius: 20,
+                                  song: song,
+                                ),
+                              )
+                            : CoverArtWidget(
+                                size: 200,
+                                borderRadius: 20,
+                                song: song,
+                              ),
+                        SizedBox(
+                          width: 180,
+                          child: ListTile(
+                            contentPadding: .zero,
+                            mouseCursor: SystemMouseCursors.click,
+                            title: Text(
+                              widget.getBottomTitle == null
+                                  ? getTitle(song)
+                                  : widget.getBottomTitle!.call(index),
+                              style: .new(overflow: .ellipsis),
                             ),
-                          )
-                        : CoverArtWidget(
-                            size: 200,
-                            borderRadius: 20,
-                            song: song,
+                            subtitle: widget.getBottomTitle == null
+                                ? Text(
+                                    '${getArtist(song)} - ${getAlbum(song)}',
+                                    style: .new(overflow: .ellipsis),
+                                  )
+                                : null,
+                            visualDensity: .new(vertical: -4),
                           ),
-                    SizedBox(
-                      width: 180,
-                      child: ListTile(
-                        contentPadding: .zero,
-                        mouseCursor: SystemMouseCursors.click,
-                        title: Text(
-                          getTitle(song),
-                          style: .new(overflow: .ellipsis),
                         ),
-                        subtitle: Text(
-                          '${getArtist(song)} - ${getAlbum(song)}',
-                          style: .new(overflow: .ellipsis),
-                        ),
-                        visualDensity: .new(vertical: -4),
-                      ),
+                      ],
                     ),
-                  ],
-                ),
+                  );
+                },
               );
             },
           ),
