@@ -40,7 +40,10 @@ class SettingsList extends StatelessWidget {
     bool isLandscape = !isTooNarrow(context);
     return CustomScrollView(
       slivers: [
-        if (isLandscape)
+        if (viewModeNotifier.value == .bigPicture)
+          sliverBox(const SizedBox(height: 10)),
+
+        if (isLandscape && viewModeNotifier.value != .bigPicture)
           sliverBox(
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20),
@@ -67,7 +70,7 @@ class SettingsList extends StatelessWidget {
             ),
           ),
 
-        if (isLandscape)
+        if (isLandscape && viewModeNotifier.value != .bigPicture)
           sliverBox(
             MyDivider(
               thickness: 0.5,
@@ -78,7 +81,8 @@ class SettingsList extends StatelessWidget {
             ),
           ),
 
-        if (isLandscape) sliverBox(const SizedBox(height: 10)),
+        if (isLandscape && viewModeNotifier.value != .bigPicture)
+          sliverBox(const SizedBox(height: 10)),
 
         if (Platform.isIOS)
           sliverBox(
@@ -103,9 +107,10 @@ class SettingsList extends StatelessWidget {
 
         sliverBox(paddingIfNeed(isLandscape, languageListTile(context, l10n))),
 
-        sliverBox(paddingIfNeed(isLandscape, fontListTile(context, l10n))),
+        if (viewModeNotifier.value != .bigPicture)
+          sliverBox(paddingIfNeed(isLandscape, fontListTile(context, l10n))),
 
-        if (isMobile)
+        if (isMobile && !isTV)
           sliverBox(paddingIfNeed(isLandscape, vibrationListTile(l10n))),
 
         if (isMobile)
@@ -133,20 +138,24 @@ class SettingsList extends StatelessWidget {
             paddingIfNeed(isLandscape, exportLogListTile(context, l10n)),
           ),
 
-        sliverBox(
-          paddingIfNeed(
-            isLandscape,
-            ListTile(
-              leading: ImageIcon(infoImage, size: iconSize),
-              title: Text(l10n.about),
-              onTap: () {
-                layersManager.pushDetail('settings', 'about');
-              },
+        if (viewModeNotifier.value != .bigPicture)
+          sliverBox(
+            paddingIfNeed(
+              isLandscape,
+              ListTile(
+                leading: ImageIcon(infoImage, size: iconSize),
+                title: Text(l10n.about),
+                onTap: () {
+                  layersManager.pushDetail('settings', 'about');
+                },
+              ),
             ),
           ),
-        ),
 
         if (!isLandscape) sliverBox(const SizedBox(height: 100)),
+
+        if (viewModeNotifier.value == .bigPicture)
+          sliverBox(const SizedBox(height: 75)),
       ],
     );
   }
@@ -159,7 +168,9 @@ class SettingsList extends StatelessWidget {
 
   Widget paddingForLandscape(Widget child) {
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 30),
+      padding: EdgeInsets.symmetric(
+        horizontal: viewModeNotifier.value == .bigPicture ? 50 : 30,
+      ),
       child: SmoothClipRRect(
         smoothness: 1,
         borderRadius: BorderRadius.circular(10),

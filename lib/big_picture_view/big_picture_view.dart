@@ -23,6 +23,7 @@ import 'package:sylvakru/big_picture_view/panels/big_home_panel.dart';
 import 'package:sylvakru/big_picture_view/panels/big_playlists_panel.dart';
 import 'package:sylvakru/big_picture_view/panels/big_ranking_panel.dart';
 import 'package:sylvakru/big_picture_view/panels/big_recently_panel.dart';
+import 'package:sylvakru/big_picture_view/panels/big_settings_panel.dart';
 import 'package:sylvakru/big_picture_view/panels/big_songs_panel.dart';
 import 'package:sylvakru/l10n/generated/app_localizations.dart';
 import 'package:sylvakru/layer/layers_manager.dart';
@@ -51,6 +52,7 @@ class _BigPictureViewState extends State<BigPictureView> {
     BigRankingPanel(),
     BigRecentlyPanel(),
     BigPlaylistsPanel(),
+    BigSettingsPanel(),
   ];
 
   final topNode = FocusScopeNode();
@@ -93,86 +95,85 @@ class _BigPictureViewState extends State<BigPictureView> {
   }
 
   Widget content(BuildContext context) {
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        ListenableBuilder(
-          listenable: Listenable.merge([
-            currentSongNotifier,
-            mainPageThemeNotifier,
-          ]),
-          builder: (context, _) {
-            if (mainPageThemeNotifier.value != .vivid) {
-              return SizedBox.shrink();
-            }
-            return CoverArtWidget(
-              song: currentSongNotifier.value,
-              color: currentCoverArtColor,
-            );
-          },
-        ),
-        ListenableBuilder(
-          listenable: Listenable.merge([
-            currentSongNotifier,
-            mainPageThemeNotifier,
-          ]),
-          builder: (context, child) {
-            if (mainPageThemeNotifier.value != .vivid) {
-              return SizedBox.shrink();
-            }
-            final pageWidth = MediaQuery.widthOf(context);
-            final pageHight = MediaQuery.heightOf(context);
-
-            return RepaintBoundary(
-              child: BackdropFilter(
-                filter: ImageFilter.blur(
-                  sigmaX: pageWidth * 0.03,
-                  sigmaY: pageHight * 0.03,
-                ),
-                child: AnimatedContainer(
-                  duration: Duration(milliseconds: 500),
-                  curve: Curves.easeInOutCubic,
-                  color: currentCoverArtColor.withAlpha(180),
-                ),
-              ),
-            );
-          },
-        ),
-
-        Material(
-          color: panelColor.value,
-          child: KeyboardListener(
-            focusNode: pageViewNode,
-            onKeyEvent: (value) {
-              if (value is KeyUpEvent) {
-                return;
-              }
-              if (value.logicalKey == .goBack) {
-                topNode.requestFocus();
-              }
-            },
-            child: GamepadInterceptor(
-              onBeforeIntent: (activator, intent) {
-                if (intent is DismissIntent) {
-                  topNode.requestFocus();
-                  return false;
+    return ValueListenableBuilder(
+      valueListenable: mainPageThemeNotifier,
+      builder: (context, value, child) {
+        return Stack(
+          fit: StackFit.expand,
+          children: [
+            ListenableBuilder(
+              listenable: Listenable.merge([currentSongNotifier]),
+              builder: (context, _) {
+                if (mainPageThemeNotifier.value != .vivid) {
+                  return SizedBox.shrink();
                 }
-                return true;
+                return CoverArtWidget(
+                  song: currentSongNotifier.value,
+                  color: currentCoverArtColor,
+                );
               },
-              child: PageView(
-                controller: _pageController,
-                onPageChanged: (value) {
-                  _currentIndexNotifier.value = value;
+            ),
+            ListenableBuilder(
+              listenable: Listenable.merge([currentSongNotifier]),
+              builder: (context, child) {
+                if (mainPageThemeNotifier.value != .vivid) {
+                  return SizedBox.shrink();
+                }
+                final pageWidth = MediaQuery.widthOf(context);
+                final pageHight = MediaQuery.heightOf(context);
+
+                return RepaintBoundary(
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(
+                      sigmaX: pageWidth * 0.03,
+                      sigmaY: pageHight * 0.03,
+                    ),
+                    child: AnimatedContainer(
+                      duration: Duration(milliseconds: 500),
+                      curve: Curves.easeInOutCubic,
+                      color: currentCoverArtColor.withAlpha(180),
+                    ),
+                  ),
+                );
+              },
+            ),
+
+            Material(
+              color: panelColor.value,
+              child: KeyboardListener(
+                focusNode: pageViewNode,
+                onKeyEvent: (value) {
+                  if (value is KeyUpEvent) {
+                    return;
+                  }
+                  if (value.logicalKey == .goBack) {
+                    topNode.requestFocus();
+                  }
                 },
-                children: pages,
+                child: GamepadInterceptor(
+                  onBeforeIntent: (activator, intent) {
+                    if (intent is DismissIntent) {
+                      topNode.requestFocus();
+                      return false;
+                    }
+                    return true;
+                  },
+                  child: PageView(
+                    controller: _pageController,
+                    onPageChanged: (value) {
+                      _currentIndexNotifier.value = value;
+                    },
+                    children: pages,
+                  ),
+                ),
               ),
             ),
-          ),
-        ),
 
-        topBar(context),
-        bottomBar(context),
-      ],
+            topBar(context),
+            bottomBar(context),
+          ],
+        );
+      },
     );
   }
 
@@ -326,7 +327,7 @@ class _BigPictureViewState extends State<BigPictureView> {
                                             child: Text(
                                               tabs[index],
                                               style: TextStyle(
-                                                fontSize: 20,
+                                                fontSize: 18,
                                                 fontWeight: FontWeight.bold,
                                                 color: index == value
                                                     ? textColor.value

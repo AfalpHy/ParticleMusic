@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_switch/flutter_switch.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/services/interaction.dart';
+import 'package:sylvakru/base/widgets/scale_widget.dart';
 
 class MySwitch extends StatelessWidget {
   final String? trueText;
@@ -50,18 +51,24 @@ class MySwitch extends StatelessWidget {
         return ValueListenableBuilder(
           valueListenable: switchColor.valueNotifier,
           builder: (_, _, _) {
-            return FlutterSwitch(
-              width: 45,
-              height: 20,
-              toggleSize: 15,
-              activeColor: switchColor.value,
-              inactiveColor: Colors.grey.shade300,
-              value: value,
-              onToggle: (value) {
-                tryVibrate();
-                valueNotifier.value = value;
+            return ScaleWidget(
+              onTap: () {
+                valueNotifier.value = !valueNotifier.value;
                 onToggleCallBack?.call();
               },
+              child: FlutterSwitch(
+                width: 45,
+                height: 20,
+                toggleSize: 15,
+                activeColor: switchColor.value,
+                inactiveColor: Colors.grey.shade300,
+                value: value,
+                onToggle: (value) {
+                  tryVibrate();
+                  valueNotifier.value = !valueNotifier.value;
+                  onToggleCallBack?.call();
+                },
+              ),
             );
           },
         );

@@ -209,6 +209,9 @@ class LayersManager {
   }
 
   void pushDetail(String label, dynamic detail) async {
+    if (viewModeNotifier.value == .bigPicture) {
+      return;
+    }
     final rootLayer = getRootLayer(label);
 
     late GlobalKey<NavigatorState> rootKey;
