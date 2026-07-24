@@ -1147,18 +1147,7 @@ void showPlayQueueItemOptions(
               ),
 
               ListTile(
-                leading: Icon(Icons.close_rounded, color: iconColor),
-                title: Text(l10n.remove, style: .new(color: textColor)),
-                onTap: () async {
-                  Navigator.pop(context);
-                  await Future.delayed(Duration(milliseconds: 250));
-
-                  removeCallback.call();
-                },
-              ),
-
-              ListTile(
-                leading: Icon(Icons.info, color: iconColor),
+                leading: Icon(Icons.info_outline_rounded, color: iconColor),
                 title: Text(l10n.songInfo, style: .new(color: textColor)),
                 onTap: () async {
                   Navigator.pop(context);
@@ -1172,6 +1161,16 @@ void showPlayQueueItemOptions(
                 },
               ),
 
+              ListTile(
+                leading: Icon(Icons.close_rounded, color: iconColor),
+                title: Text(l10n.remove, style: .new(color: textColor)),
+                onTap: () async {
+                  Navigator.pop(context);
+                  await Future.delayed(Duration(milliseconds: 250));
+
+                  removeCallback.call();
+                },
+              ),
               SizedBox(height: 10),
             ],
           );

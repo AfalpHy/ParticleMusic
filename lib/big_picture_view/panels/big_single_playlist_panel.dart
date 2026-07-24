@@ -25,6 +25,9 @@ class _BigSinglePlaylistPanelState
   String get title => widget.playlist.name;
 
   @override
+  Playlist? get playlist => widget.playlist;
+
+  @override
   void moveToTop(MyAudioMetadata song) {
     currentSongList.remove(song);
     currentSongList.insert(0, song);

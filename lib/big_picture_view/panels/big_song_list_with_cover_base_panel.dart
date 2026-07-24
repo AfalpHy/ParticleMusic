@@ -9,6 +9,7 @@ import 'package:smooth_corner/smooth_corner.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/asset_images.dart';
 import 'package:sylvakru/base/audio_handler.dart';
+import 'package:sylvakru/base/data/playlist.dart';
 import 'package:sylvakru/base/data/song_list_manager.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
@@ -47,6 +48,8 @@ abstract class BigSongListWithCoverBasePanelState<
   final _scrollController = ScrollController();
 
   void moveToTop(MyAudioMetadata song);
+
+  Playlist? playlist;
 
   void updateSongList() async {
     baseColor = await computeCoverArtColor(getFirstSong(currentSongList));
@@ -342,6 +345,7 @@ abstract class BigSongListWithCoverBasePanelState<
                 moveToTop: () => moveToTop(song),
                 includeGoToArtist: true,
                 includeGoToAlbum: true,
+                playlist: playlist,
               );
             },
             onFocusChange: (value) {
