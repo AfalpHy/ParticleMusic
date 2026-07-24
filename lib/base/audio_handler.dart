@@ -207,12 +207,16 @@ class MyAudioHandler extends BaseAudioHandler {
     await _loadEqualizerState();
     if (currentSongNotifier.value != null) {
       final positionMs = await _positionState.readAsString();
-      seek(Duration(milliseconds: int.tryParse(positionMs) ?? 0));
-      if (isPlayingNotifier.value) {
-        _positionTimer ??= Timer.periodic(Duration(seconds: 1), (_) {
-          _positionState.writeAsString(getPosition().inMilliseconds.toString());
-        });
-      }
+      WidgetsBinding.instance.addPostFrameCallback((_) async {
+        await seek(Duration(milliseconds: int.tryParse(positionMs) ?? 0));
+        if (isPlayingNotifier.value) {
+          _positionTimer ??= Timer.periodic(Duration(seconds: 1), (_) {
+            _positionState.writeAsString(
+              getPosition().inMilliseconds.toString(),
+            );
+          });
+        }
+      });
     }
   }
 
@@ -563,7 +567,7 @@ class MyAudioHandler extends BaseAudioHandler {
         _playLastSyncTime = DateTime.now();
       }
     } catch (error) {
-      _player.stop();
+      stop();
       logger.output("[${currentSong.title}] $error");
     }
     isLoading = false;
@@ -619,6 +623,8 @@ class MyAudioHandler extends BaseAudioHandler {
     _player.stop();
     updateIsPlaying(false);
     updatePlaybackState(stop: true);
+    _positionTimer?.cancel();
+    _positionTimer = null;
   }
 
   @override
