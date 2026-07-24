@@ -37,6 +37,13 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
   late final MyAudioMetadata? backgroundSongTmp;
   final _scrollController = ScrollController();
 
+  SourceType get sourceType =>
+      widget.artist.songListManager.sourceTypeNotifier.value;
+
+  void update() {
+    setState(() {});
+  }
+
   @override
   void initState() {
     useCurrentSongForBgTmp = useCurrentSongForBg;
@@ -46,7 +53,7 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       colorManager.updateBigPictureRelatedColors(currentSongNotifier.value);
     });
-
+    widget.artist.songListManager.changeNotifier.addListener(update);
     super.initState();
   }
 
@@ -59,6 +66,7 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
       );
     });
     _scrollController.dispose();
+    widget.artist.songListManager.changeNotifier.removeListener(update);
     super.dispose();
   }
 
@@ -177,6 +185,44 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
                         Text(
                           '${getSourceTypeName(l10n, widget.artist.songListManager.sourceTypeNotifier.value)}: ${widget.artist.albumList.length} ${l10n.albums}, ${l10n.songCount(widget.artist.songListManager.getSongList().length)}',
                         ),
+                        if (widget.artist.songListManager.notEmptyCount >
+                            1) ...[
+                          SizedBox(width: 10),
+                          GlassContainer(
+                            settings: LiquidGlassSettings(
+                              glassColor: glassColor.value,
+                            ),
+                            child: Material(
+                              color: Colors.transparent,
+                              shape: SmoothRectangleBorder(
+                                smoothness: 1,
+                                borderRadius: .circular(5),
+                              ),
+                              clipBehavior: .antiAlias,
+                              child: InkWell(
+                                onTap: () {
+                                  showSwitchDialogIfNeed(
+                                    context,
+                                    widget.artist.songListManager,
+                                  );
+                                },
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 8.0,
+                                    vertical: 4.0,
+                                  ),
+                                  child: Text(
+                                    AppLocalizations.of(context).switch_,
+                                    style: .new(
+                                      color: textColor.value,
+                                      fontWeight: .bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                     SizedBox(height: 10),
@@ -243,13 +289,14 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
   }
 
   Widget albumContent(Album album, double panelWidth) {
+    final coverSong = album.songListManager.getSongList2(sourceType).first;
     if (isTooNarrow(context)) {
       return SliverMainAxisGroup(
         slivers: [
           SliverToBoxAdapter(
             child: Center(
               child: CoverArtWidget(
-                song: album.getCoverSong(),
+                song: coverSong,
                 size: panelWidth * 0.6,
                 borderRadius: panelWidth * 0.06,
               ),
@@ -270,7 +317,7 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
           maxExtent: panelWidth * 0.2,
           sliver: SliverToBoxAdapter(
             child: CoverArtWidget(
-              song: album.getCoverSong(),
+              song: coverSong,
               size: panelWidth * 0.2,
               borderRadius: panelWidth * 0.01,
             ),
@@ -287,6 +334,11 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
   }
 
   Widget albumTitleAndSongList(Album album) {
+    final songList = album.songListManager
+        .getSongList2(sourceType)
+        .where((song) => getArtist(song).contains(widget.artist.name))
+        .toList();
+
     return SliverMainAxisGroup(
       slivers: [
         SliverPadding(
@@ -316,13 +368,6 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
                 ),
                 IconButton(
                   onPressed: () async {
-                    final songList = album.songListManager
-                        .getSongList()
-                        .where(
-                          (song) =>
-                              getArtist(song).contains(widget.artist.name),
-                        )
-                        .toList();
                     audioHandler.currentIndex = Random().nextInt(
                       songList.length,
                     );
@@ -335,13 +380,6 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
                 ),
                 IconButton(
                   onPressed: () async {
-                    final songList = album.songListManager
-                        .getSongList()
-                        .where(
-                          (song) =>
-                              getArtist(song).contains(widget.artist.name),
-                        )
-                        .toList();
                     audioHandler.currentIndex = 0;
                     playModeNotifier.value = 0;
                     await audioHandler.setPlayQueue(songList);
@@ -362,14 +400,11 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
           padding: .symmetric(horizontal: isTooNarrow(context) ? 0 : 10),
 
           sliver: SliverList.builder(
-            itemCount: album.songListManager.getSongList().length,
+            itemCount: songList.length,
             itemBuilder: (context, index) {
-              final song = album.songListManager.getSongList()[index];
+              final song = songList[index];
               final artist = getArtist(song);
 
-              if (!artist.contains(widget.artist.name)) {
-                return SizedBox.shrink();
-              }
               return Builder(
                 builder: (itemContext) {
                   return Material(

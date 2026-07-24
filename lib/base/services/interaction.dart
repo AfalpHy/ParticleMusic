@@ -1155,6 +1155,21 @@ void showPlayQueueItemOptions(
                 },
               ),
 
+              ListTile(
+                leading: Icon(Icons.info, color: iconColor),
+                title: Text(l10n.songInfo, style: .new(color: textColor)),
+                onTap: () async {
+                  Navigator.pop(context);
+                  await Future.delayed(Duration(milliseconds: 250));
+                  if (context.mounted) {
+                    showAnimationDialog(
+                      context: context,
+                      child: SongInfo(song: song),
+                    );
+                  }
+                },
+              ),
+
               SizedBox(height: 10),
             ],
           );
