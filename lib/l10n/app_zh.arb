@@ -196,5 +196,6 @@
   "checkingPurchase": "正在检查购买记录...",
   "noLyrics": "暂无歌词",
   "lyricsParseFailed": "歌词解析失败",
-  "switchMode": "切换模式"
+  "switchMode": "切换模式",
+  "viewLog": "查看日志"
 }

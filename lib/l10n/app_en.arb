@@ -245,5 +245,6 @@
   "checkingPurchase": "Checking purchase history...",
   "noLyrics": "There are no lyrics",
   "lyricsParseFailed": "Lyrics parsing failed",
-  "switchMode": "Switch Mode"
+  "switchMode": "Switch Mode",
+  "viewLog": "View Log"
 }

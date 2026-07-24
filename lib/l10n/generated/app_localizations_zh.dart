@@ -615,4 +615,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get switchMode => '切换模式';
+
+  @override
+  String get viewLog => '查看日志';
 }

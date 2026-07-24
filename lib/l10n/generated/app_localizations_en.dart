@@ -622,4 +622,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get switchMode => 'Switch Mode';
+
+  @override
+  String get viewLog => 'View Log';
 }

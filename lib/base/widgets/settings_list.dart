@@ -133,10 +133,7 @@ class SettingsList extends StatelessWidget {
         if (!Platform.isIOS)
           sliverBox(paddingIfNeed(isLandscape, checkUpdate(context, l10n))),
 
-        if (isMobile)
-          sliverBox(
-            paddingIfNeed(isLandscape, exportLogListTile(context, l10n)),
-          ),
+        sliverBox(paddingIfNeed(isLandscape, viewLogListTile(context, l10n))),
 
         if (viewModeNotifier.value != .bigPicture)
           sliverBox(
@@ -913,27 +910,69 @@ class SettingsList extends StatelessWidget {
     );
   }
 
-  Widget exportLogListTile(BuildContext context, AppLocalizations l10n) {
+  Widget viewLogListTile(BuildContext context, AppLocalizations l10n) {
     return ListTile(
       leading: ImageIcon(exportLogImage, size: iconSize),
 
-      title: Text(l10n.exportLog),
+      title: Text(l10n.viewLog),
       onTap: () async {
-        String? result;
-        if (Platform.isAndroid) {
-          result = await FilePicker.getDirectoryPath();
-          if (result == null) {
-            return;
-          }
-          logger.export2Directory(result);
-          if (context.mounted) {
-            showCenterMessage(context, 'Export to $result');
-          }
-        } else {
-          result = '${appDocsDir.path}/logs';
-          logger.export2Directory(result);
-          showCenterMessage(context, 'Export to Sylvakru/logs');
-        }
+        showAnimationDialog(
+          context: context,
+          child: SizedBox(
+            width: isTooNarrow(context) ? 300 : 400,
+            height: MediaQuery.heightOf(context) * 0.8,
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      padding: const EdgeInsets.all(16),
+                      child: SelectableText(logger.logContent),
+                    ),
+                  ),
+                  SizedBox(height: 20),
+                  if (isMobile)
+                    ValueListenableBuilder(
+                      valueListenable: buttonColor.valueNotifier,
+                      builder: (context, value, child) {
+                        return ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: buttonColor.value,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10),
+                            ),
+                            padding: EdgeInsets.all(10),
+                          ),
+                          onPressed: () async {
+                            String? result;
+                            if (Platform.isAndroid) {
+                              result = await FilePicker.getDirectoryPath();
+                              if (result == null) {
+                                return;
+                              }
+                              logger.export2Directory(result);
+                              if (context.mounted) {
+                                showCenterMessage(context, 'Export to $result');
+                              }
+                            } else {
+                              result = '${appDocsDir.path}/logs';
+                              logger.export2Directory(result);
+                              showCenterMessage(
+                                context,
+                                'Export to Sylvakru/logs',
+                              );
+                            }
+                          },
+                          child: Text(l10n.exportLog),
+                        );
+                      },
+                    ),
+                ],
+              ),
+            ),
+          ),
+        );
       },
     );
   }

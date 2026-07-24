@@ -1285,6 +1285,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Switch Mode'**
   String get switchMode;
+
+  /// No description provided for @viewLog.
+  ///
+  /// In en, this message translates to:
+  /// **'View Log'**
+  String get viewLog;
 }
 
 class _AppLocalizationsDelegate

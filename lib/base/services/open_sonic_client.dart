@@ -257,6 +257,10 @@ abstract class OpenSubsonicClient {
 
         return res.data;
       } catch (e) {
+        reportNetworkError(
+          '[$runtimeType]',
+          'Network error, failed to load cover',
+        );
         logger.output('[$runtimeType] Failed to load cover: $id, Error: $e');
         break;
       }
