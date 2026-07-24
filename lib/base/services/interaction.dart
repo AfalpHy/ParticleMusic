@@ -1227,27 +1227,28 @@ void showSongListOptions(
                   audioHandler.play();
                 },
               ),
-              ListTile(
-                leading: Transform.scale(
-                  scale: 1.2,
-                  child: Image(
-                    image: getSourceTypeImage(
-                      songListManager.sourceTypeNotifier.value,
+              if (songListManager.notEmptyCount > 1)
+                ListTile(
+                  leading: Transform.scale(
+                    scale: 1.2,
+                    child: Image(
+                      image: getSourceTypeImage(
+                        songListManager.sourceTypeNotifier.value,
+                      ),
+                      width: 20,
+                      height: 20,
                     ),
-                    width: 20,
-                    height: 20,
                   ),
-                ),
-                title: Text(l10n.switch_),
-                onTap: () async {
-                  Navigator.pop(context);
-                  await Future.delayed(Duration(milliseconds: 250));
+                  title: Text(l10n.switch_),
+                  onTap: () async {
+                    Navigator.pop(context);
+                    await Future.delayed(Duration(milliseconds: 250));
 
-                  if (context.mounted && songListManager.notEmptyCount > 1) {
-                    showSwitchDialogIfNeed(context, songListManager);
-                  }
-                },
-              ),
+                    if (context.mounted) {
+                      showSwitchDialogIfNeed(context, songListManager);
+                    }
+                  },
+                ),
 
               ListTile(
                 leading: ImageIcon(selectImage),
