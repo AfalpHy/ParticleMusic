@@ -46,6 +46,8 @@ abstract class BigSongListWithCoverBasePanelState<
 
   final _scrollController = ScrollController();
 
+  void moveToTop(MyAudioMetadata song);
+
   void updateSongList() async {
     baseColor = await computeCoverArtColor(getFirstSong(currentSongList));
     colorManager.updateBigPictureRelatedColors(getFirstSong(currentSongList));
@@ -337,6 +339,7 @@ abstract class BigSongListWithCoverBasePanelState<
               showOptions(
                 context: context,
                 song: song,
+                moveToTop: () => moveToTop(song),
                 includeGoToArtist: true,
                 includeGoToAlbum: true,
               );

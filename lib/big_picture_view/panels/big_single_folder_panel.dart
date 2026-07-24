@@ -1,5 +1,6 @@
 import 'package:flutter/widgets.dart';
 import 'package:sylvakru/base/data/folder.dart';
+import 'package:sylvakru/base/my_audio_metadata.dart';
 import 'package:sylvakru/big_picture_view/panels/big_song_list_with_cover_base_panel.dart';
 
 class BigSingleFolderPanel extends BigSongListWithCoverBasePanel {
@@ -18,6 +19,13 @@ class _BigSingleFolderPanelState
     extends BigSongListWithCoverBasePanelState<BigSingleFolderPanel> {
   @override
   String get title => widget.folder.id;
+
+  @override
+  void moveToTop(MyAudioMetadata song) {
+    widget.folder.songList.remove(song);
+    widget.folder.songList.insert(0, song);
+    widget.folder.changeNotifier.value++;
+  }
 
   @override
   void initState() {
