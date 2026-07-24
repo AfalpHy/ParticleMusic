@@ -80,6 +80,9 @@ class MyAudioHandler extends BaseAudioHandler {
   late final File _playQueueState;
   late final File _playState;
   late final File _equalizerState;
+  late final File _positionState;
+
+  Timer? _positionTimer;
 
   bool isLoading = false;
   bool isSyncing = false;
@@ -180,6 +183,11 @@ class MyAudioHandler extends BaseAudioHandler {
     if (!(_equalizerState.existsSync())) {
       saveEqualizerState();
     }
+
+    _positionState = File("${appSupportDir.path}/position_state.json");
+    if (!(_positionState.existsSync())) {
+      _positionState.writeAsString(Duration.zero.inMilliseconds.toString());
+    }
   }
 
   List<MyAudioMetadata> _restoreQueue(List<dynamic>? rawList) {
@@ -193,7 +201,22 @@ class MyAudioHandler extends BaseAudioHandler {
     return result;
   }
 
-  Future<void> loadPlayQueueState() async {
+  Future<void> loadStates() async {
+    await _loadPlayQueueState();
+    await _loadPlayState();
+    await _loadEqualizerState();
+    if (currentSongNotifier.value != null) {
+      final positionMs = await _positionState.readAsString();
+      seek(Duration(milliseconds: int.tryParse(positionMs) ?? 0));
+      if (isPlayingNotifier.value) {
+        _positionTimer ??= Timer.periodic(Duration(seconds: 1), (_) {
+          _positionState.writeAsString(getPosition().inMilliseconds.toString());
+        });
+      }
+    }
+  }
+
+  Future<void> _loadPlayQueueState() async {
     final content = await _playQueueState.readAsString();
 
     final json = jsonDecode(content) as Map<String, dynamic>;
@@ -211,7 +234,7 @@ class MyAudioHandler extends BaseAudioHandler {
     );
   }
 
-  Future<void> loadPlayState() async {
+  Future<void> _loadPlayState() async {
     final content = await _playState.readAsString();
     final Map<String, dynamic> json =
         jsonDecode(content) as Map<String, dynamic>;
@@ -260,7 +283,7 @@ class MyAudioHandler extends BaseAudioHandler {
     );
   }
 
-  Future<void> loadEqualizerState() async {
+  Future<void> _loadEqualizerState() async {
     final content = await _equalizerState.readAsString();
     gains = (jsonDecode(content) as List<dynamic>).cast();
     applyEqualizer();
@@ -576,6 +599,10 @@ class MyAudioHandler extends BaseAudioHandler {
 
     updateIsPlaying(true);
     updatePlaybackState();
+
+    _positionTimer ??= Timer.periodic(Duration(seconds: 1), (_) {
+      _positionState.writeAsString(getPosition().inMilliseconds.toString());
+    });
   }
 
   @override
@@ -583,6 +610,8 @@ class MyAudioHandler extends BaseAudioHandler {
     _player.pause();
     updateIsPlaying(false);
     updatePlaybackState();
+    _positionTimer?.cancel();
+    _positionTimer = null;
   }
 
   @override

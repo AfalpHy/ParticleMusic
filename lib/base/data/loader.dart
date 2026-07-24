@@ -59,9 +59,7 @@ class Loader {
 
     await playlistManager.load();
 
-    await audioHandler.loadPlayQueueState();
-    await audioHandler.loadPlayState();
-    await audioHandler.loadEqualizerState();
+    await audioHandler.loadStates();
 
     if (!isTV) {
       layersManager.switchRootLayer('songs');
