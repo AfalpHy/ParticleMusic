@@ -164,7 +164,7 @@ class _BigHomePanelState extends State<BigHomePanel> {
           getCoverSong: (index) =>
               history.rankingSongListManager.getSongList()[index],
           onTap: (index) {
-            showOptions(
+            showSongOptions(
               context: context,
               song: history.rankingSongListManager.getSongList()[index],
               includeGoToArtist: true,
@@ -180,7 +180,7 @@ class _BigHomePanelState extends State<BigHomePanel> {
           getCoverSong: (index) =>
               history.recentlySongListManager.getSongList()[index],
           onTap: (index) {
-            showOptions(
+            showSongOptions(
               context: context,
               song: history.recentlySongListManager.getSongList()[index],
               includeGoToArtist: true,

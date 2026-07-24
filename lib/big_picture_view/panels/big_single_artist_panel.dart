@@ -417,7 +417,7 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
                     child: InkWell(
                       mouseCursor: SystemMouseCursors.click,
                       onTap: () {
-                        showOptions(
+                        showSongOptions(
                           context: context,
                           song: song,
                           includeGoToArtist: artist != widget.artist.name,

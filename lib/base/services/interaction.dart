@@ -6,6 +6,7 @@ import 'dart:ui' as ui;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sylvakru/base/app.dart';
+import 'package:sylvakru/base/asset_images.dart';
 import 'package:sylvakru/base/audio_handler.dart';
 import 'package:sylvakru/base/data/artist_album.dart';
 import 'package:sylvakru/base/data/playlist.dart';
@@ -20,6 +21,7 @@ import 'package:sylvakru/base/widgets/cover_art_widget.dart';
 import 'package:sylvakru/base/widgets/custom_text_field.dart';
 import 'package:sylvakru/base/widgets/my_divider.dart';
 import 'package:sylvakru/base/widgets/playlist_widgets.dart';
+import 'package:sylvakru/base/widgets/selectable_song_list_page.dart';
 import 'package:sylvakru/base/widgets/song_info.dart';
 import 'package:sylvakru/big_picture_view/panels/big_single_album_panel.dart';
 import 'package:sylvakru/big_picture_view/panels/big_single_artist_panel.dart';
@@ -732,7 +734,7 @@ Future<void> showPremiumDialog(BuildContext context) async {
   );
 }
 
-void showOptions({
+void showSongOptions({
   required BuildContext context,
   required MyAudioMetadata song,
   void Function()? moveToTop,
@@ -1167,6 +1169,147 @@ void showPlayQueueItemOptions(
                       child: SongInfo(song: song),
                     );
                   }
+                },
+              ),
+
+              SizedBox(height: 10),
+            ],
+          );
+        },
+      ),
+    ),
+  );
+}
+
+void showSongListOptions(
+  BuildContext context,
+  SongListManager songListManager,
+) {
+  final l10n = AppLocalizations.of(context);
+  showAnimationDialog(
+    context: context,
+    child: SizedBox(
+      width: 300,
+      child: Builder(
+        builder: (context) {
+          final currentSongList = songListManager.getSongList();
+          return Column(
+            mainAxisSize: .min,
+            children: [
+              SizedBox(height: 10),
+
+              ListTile(
+                leading: Icon(Icons.play_arrow_rounded),
+                title: Text(l10n.playAll),
+                onTap: () async {
+                  Navigator.pop(context);
+                  await Future.delayed(Duration(milliseconds: 250));
+
+                  audioHandler.currentIndex = 0;
+                  playModeNotifier.value = 0;
+                  await audioHandler.setPlayQueue(currentSongList);
+                  await audioHandler.load();
+                  audioHandler.play();
+                },
+              ),
+              ListTile(
+                leading: ImageIcon(shuffleImage),
+                title: Text(l10n.shuffle),
+                onTap: () async {
+                  Navigator.pop(context);
+                  await Future.delayed(Duration(milliseconds: 250));
+
+                  audioHandler.currentIndex = Random().nextInt(
+                    currentSongList.length,
+                  );
+                  playModeNotifier.value = 1;
+                  await audioHandler.setPlayQueue(currentSongList);
+                  await audioHandler.load();
+                  audioHandler.play();
+                },
+              ),
+              ListTile(
+                leading: Transform.scale(
+                  scale: 1.2,
+                  child: Image(
+                    image: getSourceTypeImage(
+                      songListManager.sourceTypeNotifier.value,
+                    ),
+                    width: 20,
+                    height: 20,
+                  ),
+                ),
+                title: Text(l10n.switch_),
+                onTap: () async {
+                  Navigator.pop(context);
+                  await Future.delayed(Duration(milliseconds: 250));
+
+                  if (context.mounted && songListManager.notEmptyCount > 1) {
+                    showSwitchDialogIfNeed(context, songListManager);
+                  }
+                },
+              ),
+
+              ListTile(
+                leading: ImageIcon(selectImage),
+                title: Text(l10n.select),
+                onTap: () async {
+                  Navigator.pop(context);
+                  await Future.delayed(Duration(milliseconds: 250));
+                  if (context.mounted) {
+                    Navigator.of(context).push(
+                      ZoomPageRoute(
+                        builder: (_) => SelectableSongListPage(
+                          songList: currentSongList,
+                          reorderable: false,
+                        ),
+                      ),
+                    );
+                  }
+                },
+              ),
+
+              SizedBox(height: 10),
+            ],
+          );
+        },
+      ),
+    ),
+  );
+}
+
+void showArtistsAlbumsOptions(BuildContext context, bool isArtist) {
+  final l10n = AppLocalizations.of(context);
+  showAnimationDialog(
+    context: context,
+    child: SizedBox(
+      width: 300,
+      child: Builder(
+        builder: (context) {
+          final isAscending = artistAlbumManager.getIsAscendingNotifier(
+            isArtist,
+          );
+          return Column(
+            mainAxisSize: .min,
+            children: [
+              SizedBox(height: 10),
+
+              ListTile(
+                leading: ImageIcon(sequenceImage),
+                title: Text(
+                  isAscending.value ? l10n.descending : l10n.ascending,
+                ),
+                onTap: () async {
+                  Navigator.pop(context);
+                  await Future.delayed(Duration(milliseconds: 250));
+
+                  isAscending.value = !isAscending.value;
+                  if (isArtist) {
+                    artistAlbumManager.sortArtists();
+                  } else {
+                    artistAlbumManager.sortAlbums();
+                  }
+                  artistAlbumManager.updateNotifier.value++;
                 },
               ),
 

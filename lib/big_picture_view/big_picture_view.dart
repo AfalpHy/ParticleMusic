@@ -9,6 +9,8 @@ import 'package:smooth_corner/smooth_corner.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/asset_images.dart';
 import 'package:sylvakru/base/audio_handler.dart';
+import 'package:sylvakru/base/data/history.dart';
+import 'package:sylvakru/base/data/library.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/services/my_window_listener.dart';
@@ -465,7 +467,7 @@ class _BigPictureViewState extends State<BigPictureView> {
                 child: ValueListenableBuilder(
                   valueListenable: _currentIndexNotifier,
                   builder: (context, value, child) {
-                    if (value == 0 || value == 4 || value == 8) {
+                    if (value == 0 || value == 4 || value >= 7) {
                       return SizedBox.shrink();
                     }
                     return Row(
@@ -479,7 +481,30 @@ class _BigPictureViewState extends State<BigPictureView> {
                             borderRadius: 30,
                           ),
                           child: IconButton(
-                            onPressed: () {},
+                            onPressed: () {
+                              switch (value) {
+                                case 1:
+                                  showSongListOptions(
+                                    context,
+                                    library.songListManager,
+                                  );
+                                case 2:
+                                  showArtistsAlbumsOptions(context, true);
+                                case 3:
+                                  showArtistsAlbumsOptions(context, false);
+                                case 5:
+                                  showSongListOptions(
+                                    context,
+                                    history.rankingSongListManager,
+                                  );
+                                case 6:
+                                  showSongListOptions(
+                                    context,
+                                    history.recentlySongListManager,
+                                  );
+                                default:
+                              }
+                            },
                             icon: ImageIcon(optionImage),
                           ),
                         ),

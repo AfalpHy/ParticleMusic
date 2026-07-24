@@ -336,7 +336,7 @@ abstract class BigSongListWithCoverBasePanelState<
           child: InkWell(
             mouseCursor: SystemMouseCursors.click,
             onTap: () {
-              showOptions(
+              showSongOptions(
                 context: context,
                 song: song,
                 moveToTop: () => moveToTop(song),

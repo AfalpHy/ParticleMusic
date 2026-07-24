@@ -54,7 +54,7 @@ abstract class BigSongListBasePanelState extends State<BigSongListBasePanel> {
                   child: InkWell(
                     mouseCursor: SystemMouseCursors.click,
                     onTap: () {
-                      showOptions(
+                      showSongOptions(
                         context: itemContext,
                         song: song,
                         includeGoToArtist: true,
