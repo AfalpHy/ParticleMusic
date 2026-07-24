@@ -68,7 +68,7 @@ abstract class BigArtistsAlbumsBasePanelState
             vertical: 75 + getTopOffset(context),
           ),
           gridDelegate: MyGirdDelegate(
-            maxCrossAxisExtent: 210,
+            maxCrossAxisExtent: 200,
             crossAxisSpacing: 20,
             mainAxisSpacing: 10,
             textExtent: 30,

@@ -61,7 +61,7 @@ class SettingsList extends StatelessWidget {
                           ? 14
                           : Platform.isIOS
                           ? 14
-                          : 12,
+                          : 13,
                     ),
                     style: TextStyle(fontSize: 12),
                   ),
