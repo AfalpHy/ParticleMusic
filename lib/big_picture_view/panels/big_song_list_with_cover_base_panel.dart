@@ -110,15 +110,17 @@ abstract class BigSongListWithCoverBasePanelState<
                 padding: EdgeInsets.symmetric(horizontal: horizontalPadding),
                 child: Row(
                   children: [
-                    Text(
-                      title,
-                      style: .new(
-                        fontWeight: .bold,
-                        fontSize: 24,
-                        overflow: .ellipsis,
+                    Expanded(
+                      child: Text(
+                        title,
+                        style: .new(
+                          fontWeight: .bold,
+                          fontSize: 24,
+                          overflow: .ellipsis,
+                        ),
                       ),
                     ),
-                    Spacer(),
+
                     IconButton(
                       onPressed: () async {
                         audioHandler.currentIndex = Random().nextInt(

@@ -60,8 +60,8 @@ class _BigPlaylistsPanelState extends State<BigPlaylistsPanel> {
             vertical: 75 + getTopOffset(context),
           ),
           gridDelegate: MyGirdDelegate(
-            maxCrossAxisExtent: 200,
-            crossAxisSpacing: isTooNarrow(context) ? 20 : 30,
+            maxCrossAxisExtent: 210,
+            crossAxisSpacing: 20,
             mainAxisSpacing: 10,
             textExtent: 30,
           ),

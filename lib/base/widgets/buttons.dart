@@ -191,15 +191,7 @@ Widget showPlayQueueButton(double size, {Color? iconColor}) {
           if (playQueue.isEmpty) {
             return;
           }
-          if (isMobile) {
-            showModalBottomSheet(
-              context: context,
-              isScrollControlled: true,
-              builder: (context) {
-                return PlayQueueSheet();
-              },
-            );
-          } else {
+          if (!isMobile || isTV) {
             Navigator.push(
               context,
               _NoSecondaryAnimationPageRoute(
@@ -256,7 +248,15 @@ Widget showPlayQueueButton(double size, {Color? iconColor}) {
                 },
               ),
             );
+            return;
           }
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled: true,
+            builder: (context) {
+              return PlayQueueSheet();
+            },
+          );
         },
       );
     },

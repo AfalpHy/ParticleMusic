@@ -13,6 +13,7 @@ import 'package:sylvakru/base/utils/path.dart';
 import 'package:sylvakru/base/services/webdav_client.dart';
 import 'package:sylvakru/base/widgets/my_divider.dart';
 import 'package:sylvakru/base/widgets/my_switch.dart';
+import 'package:sylvakru/base/widgets/tv_dir_picker.dart';
 import 'package:sylvakru/base/widgets/webdav_dir_picker.dart';
 import 'package:sylvakru/base/data/setting.dart';
 import 'package:sylvakru/l10n/generated/app_localizations.dart';
@@ -437,7 +438,18 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
   void _addFolder(BuildContext context) async {
     String? result;
 
-    result = await FilePicker.getDirectoryPath();
+    if (isTV) {
+      result = await showAnimationDialog(
+        context: context,
+        child: SizedBox(
+          height: MediaQuery.heightOf(context) * 0.8,
+          width: 300,
+          child: TvDirPicker(),
+        ),
+      );
+    } else {
+      result = await FilePicker.getDirectoryPath();
+    }
 
     if (result == null || !context.mounted) {
       return;
@@ -464,8 +476,18 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
 
   void _addFolders(BuildContext context) async {
     String? result;
-
-    result = await FilePicker.getDirectoryPath();
+    if (isTV) {
+      result = await showAnimationDialog(
+        context: context,
+        child: SizedBox(
+          height: MediaQuery.heightOf(context) * 0.8,
+          width: 300,
+          child: TvDirPicker(),
+        ),
+      );
+    } else {
+      result = await FilePicker.getDirectoryPath();
+    }
 
     if (result == null || !context.mounted) {
       return;

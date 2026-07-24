@@ -117,7 +117,8 @@ class _BigPictureViewState extends State<BigPictureView> {
                   if (value is KeyUpEvent) {
                     return;
                   }
-                  if (value.logicalKey == .goBack) {
+                  if (value.logicalKey == .goBack ||
+                      value.logicalKey == .keyT) {
                     topNode.requestFocus();
                   }
                 },

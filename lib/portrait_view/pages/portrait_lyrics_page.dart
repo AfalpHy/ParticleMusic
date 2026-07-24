@@ -19,7 +19,6 @@ import 'package:sylvakru/portrait_view/sleep_timer.dart';
 import 'package:sylvakru/base/widgets/my_sheet.dart';
 import 'package:sylvakru/l10n/generated/app_localizations.dart';
 import 'package:sylvakru/base/widgets/lyric_list_view.dart';
-import 'package:sylvakru/base/widgets/play_queue_sheet.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
 import 'package:sylvakru/base/data/playlist.dart';
 import 'package:sylvakru/base/widgets/seekbar.dart';
@@ -491,22 +490,8 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
 
                 Spacer(),
 
-                IconButton(
-                  color: value,
+                showPlayQueueButton(32, iconColor: value),
 
-                  icon: const ImageIcon(playQueueImage, size: 32),
-
-                  onPressed: () {
-                    tryVibrate();
-                    showModalBottomSheet(
-                      context: context,
-                      isScrollControlled: true,
-                      builder: (context) {
-                        return PlayQueueSheet();
-                      },
-                    );
-                  },
-                ),
                 SizedBox(width: 25),
               ],
             );

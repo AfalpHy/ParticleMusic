@@ -70,7 +70,10 @@ Future<void> main() async {
   await Loader.init();
   await Loader.load();
   await LiquidGlassWidgets.initialize();
-
+  if (isTV) {
+    FocusManager.instance.highlightStrategy =
+        FocusHighlightStrategy.alwaysTraditional;
+  }
   runApp(
     ListenableBuilder(
       listenable: Listenable.merge([

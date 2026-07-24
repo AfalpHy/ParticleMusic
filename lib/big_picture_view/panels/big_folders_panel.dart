@@ -39,7 +39,7 @@ class _BigFoldersPanelState extends State<BigFoldersPanel> {
           builder: (context, value, child) {
             final coverSong = getFirstSong(folder.songList);
             return SizedBox(
-              height: 150,
+              height: 120,
               child: InkWell(
                 customBorder: SmoothRectangleBorder(
                   smoothness: 1,

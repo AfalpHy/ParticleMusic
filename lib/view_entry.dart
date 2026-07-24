@@ -139,6 +139,7 @@ class _ViewEntryState extends State<ViewEntry> with WidgetsBindingObserver {
           return MiniView();
         }
         if (viewMode == .bigPicture) {
+          SystemChrome.setEnabledSystemUIMode(SystemUiMode.immersive);
           return BigPictureView();
         }
         if (isTooNarrow(context)) {
