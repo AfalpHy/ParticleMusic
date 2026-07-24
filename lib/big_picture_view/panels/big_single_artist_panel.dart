@@ -183,7 +183,7 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
                     Row(
                       children: [
                         Text(
-                          '${getSourceTypeName(l10n, widget.artist.songListManager.sourceTypeNotifier.value)}: ${widget.artist.albumList.length} ${l10n.albums}, ${l10n.songCount(widget.artist.songListManager.getSongList().length)}',
+                          '${getSourceTypeName(l10n, widget.artist.songListManager.sourceTypeNotifier.value)}: ${widget.artist.albumList.where((album) => album.songListManager.getSongList2(sourceType).isNotEmpty).toList().length} ${l10n.albums}, ${l10n.songCount(widget.artist.songListManager.getSongList().length)}',
                         ),
                         if (widget.artist.songListManager.notEmptyCount >
                             1) ...[
@@ -237,16 +237,7 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
                     const SliverToBoxAdapter(child: SizedBox(height: 10)),
 
                     for (final album in widget.artist.albumList)
-                      SliverMainAxisGroup(
-                        slivers: [
-                          albumContent(album, panelWidth),
-                          SliverToBoxAdapter(
-                            child: SizedBox(
-                              height: isTooNarrow(context) ? 10 : 40,
-                            ),
-                          ),
-                        ],
-                      ),
+                      albumContent(album, panelWidth),
                   ],
                 ),
               ),
@@ -289,56 +280,67 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
   }
 
   Widget albumContent(Album album, double panelWidth) {
-    final coverSong = album.songListManager.getSongList2(sourceType).first;
+    final songList = album.songListManager
+        .getSongList2(sourceType)
+        .where((song) => getArtist(song).contains(widget.artist.name))
+        .toList();
+    if (songList.isEmpty) {
+      return SliverToBoxAdapter(child: SizedBox());
+    }
     if (isTooNarrow(context)) {
       return SliverMainAxisGroup(
         slivers: [
           SliverToBoxAdapter(
             child: Center(
               child: CoverArtWidget(
-                song: coverSong,
+                song: songList.first,
                 size: panelWidth * 0.6,
                 borderRadius: panelWidth * 0.06,
               ),
             ),
           ),
           SliverToBoxAdapter(child: SizedBox(height: 10)),
-          albumTitleAndSongList(album),
+          albumTitleAndSongList(album, songList),
+          SliverToBoxAdapter(
+            child: SizedBox(height: isTooNarrow(context) ? 10 : 40),
+          ),
         ],
       );
     }
-    return SliverCrossAxisGroup(
+    return SliverMainAxisGroup(
       slivers: [
-        SliverConstrainedCrossAxis(
-          maxExtent: 40,
-          sliver: SliverToBoxAdapter(child: SizedBox()),
-        ),
-        SliverConstrainedCrossAxis(
-          maxExtent: panelWidth * 0.2,
-          sliver: SliverToBoxAdapter(
-            child: CoverArtWidget(
-              song: coverSong,
-              size: panelWidth * 0.2,
-              borderRadius: panelWidth * 0.01,
+        SliverCrossAxisGroup(
+          slivers: [
+            SliverConstrainedCrossAxis(
+              maxExtent: 40,
+              sliver: SliverToBoxAdapter(child: SizedBox()),
             ),
-          ),
-        ),
+            SliverConstrainedCrossAxis(
+              maxExtent: panelWidth * 0.2,
+              sliver: SliverToBoxAdapter(
+                child: CoverArtWidget(
+                  song: songList.first,
+                  size: panelWidth * 0.2,
+                  borderRadius: panelWidth * 0.01,
+                ),
+              ),
+            ),
 
-        albumTitleAndSongList(album),
-        SliverConstrainedCrossAxis(
-          maxExtent: 20,
-          sliver: SliverToBoxAdapter(child: SizedBox()),
+            albumTitleAndSongList(album, songList),
+            SliverConstrainedCrossAxis(
+              maxExtent: 20,
+              sliver: SliverToBoxAdapter(child: SizedBox()),
+            ),
+          ],
+        ),
+        SliverToBoxAdapter(
+          child: SizedBox(height: isTooNarrow(context) ? 10 : 40),
         ),
       ],
     );
   }
 
-  Widget albumTitleAndSongList(Album album) {
-    final songList = album.songListManager
-        .getSongList2(sourceType)
-        .where((song) => getArtist(song).contains(widget.artist.name))
-        .toList();
-
+  Widget albumTitleAndSongList(Album album, List<MyAudioMetadata> songList) {
     return SliverMainAxisGroup(
       slivers: [
         SliverPadding(
