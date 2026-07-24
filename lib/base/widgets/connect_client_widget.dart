@@ -76,18 +76,24 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
             ),
 
             SizedBox(height: 10),
-            CustomTextField('Url', baseUrlTmp, compact: false),
+            isTV
+                ? fakeTextField('Url', baseUrlTmp)
+                : CustomTextField('Url', baseUrlTmp, compact: false),
 
             SizedBox(height: 10),
-            CustomTextField(l10n.username, usernameTmp, compact: false),
+            isTV
+                ? fakeTextField(l10n.username, usernameTmp)
+                : CustomTextField(l10n.username, usernameTmp, compact: false),
 
             SizedBox(height: 10),
-            CustomTextField(
-              l10n.password,
-              passwordTmp,
-              needObscure: true,
-              compact: false,
-            ),
+            isTV
+                ? fakeTextField(l10n.password, passwordTmp)
+                : CustomTextField(
+                    l10n.password,
+                    passwordTmp,
+                    needObscure: true,
+                    compact: false,
+                  ),
 
             SizedBox(height: isMobile ? 10 : 25),
 
@@ -95,6 +101,36 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
           ],
         ),
       ),
+    );
+  }
+
+  Widget fakeTextField(String title, TextEditingController textController) {
+    return Column(
+      children: [
+        Align(
+          alignment: Alignment.centerLeft,
+          child: Text('$title:', style: TextStyle(fontWeight: FontWeight.bold)),
+        ),
+        InkWell(
+          onTap: () async {
+            textController.text = await getInputTextDialog(
+              context,
+              title,
+              needConfirm: false,
+            );
+            setState(() {});
+          },
+          child: Container(
+            height: 44,
+            padding: const EdgeInsets.symmetric(horizontal: 12),
+            alignment: Alignment.centerLeft,
+            decoration: BoxDecoration(
+              border: Border.all(color: textColor.value),
+            ),
+            child: Text(textController.text, overflow: TextOverflow.ellipsis),
+          ),
+        ),
+      ],
     );
   }
 

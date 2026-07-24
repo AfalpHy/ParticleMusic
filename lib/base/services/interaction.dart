@@ -147,7 +147,11 @@ Future<bool> showConfirmDialog(BuildContext context, String action) async {
   return result ?? false;
 }
 
-Future<String> getInputTextDialog(BuildContext context, String title) async {
+Future<String> getInputTextDialog(
+  BuildContext context,
+  String title, {
+  bool needConfirm = true,
+}) async {
   final l10n = AppLocalizations.of(context);
 
   final controller = TextEditingController();
@@ -179,26 +183,27 @@ Future<String> getInputTextDialog(BuildContext context, String title) async {
                   autoFocus: true,
                 ),
                 SizedBox(height: 30),
-                Center(
-                  child: ListenableBuilder(
-                    listenable: Listenable.merge([
-                      buttonColor.valueNotifier,
-                      lyricsPageButtonColor.valueNotifier,
-                    ]),
-                    builder: (context, _) {
-                      return ElevatedButton(
-                        onPressed: () =>
-                            Navigator.pop(context, controller.text),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: colorManager
-                              .getSpecificButtonColor(),
-                          foregroundColor: specificTextcolor,
-                        ),
-                        child: Text(l10n.confirm),
-                      );
-                    },
+                if (needConfirm)
+                  Center(
+                    child: ListenableBuilder(
+                      listenable: Listenable.merge([
+                        buttonColor.valueNotifier,
+                        lyricsPageButtonColor.valueNotifier,
+                      ]),
+                      builder: (context, _) {
+                        return ElevatedButton(
+                          onPressed: () =>
+                              Navigator.pop(context, controller.text),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: colorManager
+                                .getSpecificButtonColor(),
+                            foregroundColor: specificTextcolor,
+                          ),
+                          child: Text(l10n.confirm),
+                        );
+                      },
+                    ),
                   ),
-                ),
               ],
             );
           },
@@ -206,8 +211,11 @@ Future<String> getInputTextDialog(BuildContext context, String title) async {
       ),
     ),
   );
-
-  return result ?? '';
+  if (needConfirm) {
+    return result ?? '';
+  } else {
+    return controller.text;
+  }
 }
 
 Future<T?> showAnimationDialog<T>({
