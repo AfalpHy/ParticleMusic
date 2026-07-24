@@ -3,6 +3,7 @@ import 'package:smooth_corner/smooth_corner.dart';
 import 'package:sylvakru/base/data/folder.dart';
 import 'package:sylvakru/base/data/library.dart';
 import 'package:sylvakru/base/services/metadata_service.dart';
+import 'package:sylvakru/base/utils/media_query.dart';
 import 'package:sylvakru/base/utils/metadata_utils.dart';
 import 'package:sylvakru/base/utils/zoom_page_route.dart';
 import 'package:sylvakru/base/widgets/cover_art_widget.dart';
@@ -19,7 +20,10 @@ class _BigFoldersPanelState extends State<BigFoldersPanel> {
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-      padding: EdgeInsets.symmetric(horizontal: 40, vertical: 75),
+      padding: EdgeInsets.symmetric(
+        horizontal: isTooNarrow(context) ? 20 : 40,
+        vertical: 75 + getTopOffset(context),
+      ),
       itemCount:
           library.localFolderList.length + library.webdavFolderList.length,
       itemBuilder: (_, index) {

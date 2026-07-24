@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:sylvakru/base/data/playlist.dart';
 import 'package:sylvakru/base/services/metadata_service.dart';
+import 'package:sylvakru/base/utils/media_query.dart';
 import 'package:sylvakru/base/utils/my_gird_delegate.dart';
 import 'package:sylvakru/base/utils/zoom_page_route.dart';
 import 'package:sylvakru/base/widgets/cover_art_widget.dart';
@@ -54,10 +55,13 @@ class _BigPlaylistsPanelState extends State<BigPlaylistsPanel> {
       builder: (context, list, child) {
         return GridView.builder(
           controller: _scrollController,
-          padding: const EdgeInsets.symmetric(horizontal: 40, vertical: 75),
+          padding: EdgeInsets.symmetric(
+            horizontal: isTooNarrow(context) ? 20 : 40,
+            vertical: 75 + getTopOffset(context),
+          ),
           gridDelegate: MyGirdDelegate(
             maxCrossAxisExtent: 200,
-            crossAxisSpacing: 30,
+            crossAxisSpacing: isTooNarrow(context) ? 20 : 30,
             mainAxisSpacing: 10,
             textExtent: 30,
           ),

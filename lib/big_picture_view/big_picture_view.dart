@@ -40,9 +40,6 @@ class _BigPictureViewState extends State<BigPictureView> {
   final _pageController = PageController();
   final _currentIndexNotifier = ValueNotifier(0);
 
-  Timer? immersiveModeTimer;
-  final ValueNotifier<bool> immersiveModeNotifier = ValueNotifier(false);
-
   final pages = const [
     BigHomePanel(),
     BigSongsPanel(),
@@ -64,37 +61,11 @@ class _BigPictureViewState extends State<BigPictureView> {
     topNode.dispose();
     pageViewNode.dispose();
     bottomNode.dispose();
-    immersiveModeTimer?.cancel();
-    immersiveModeNotifier.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    immersiveModeTimer?.cancel();
-    immersiveModeTimer = Timer(const Duration(milliseconds: 3000), () {
-      immersiveModeNotifier.value = true;
-    });
-    return ValueListenableBuilder(
-      valueListenable: immersiveModeNotifier,
-      builder: (context, value, child) {
-        return MouseRegion(
-          cursor: value ? SystemMouseCursors.none : MouseCursor.defer,
-          onHover: (event) {
-            immersiveModeNotifier.value = false;
-            immersiveModeTimer?.cancel();
-            immersiveModeTimer = Timer(const Duration(milliseconds: 3000), () {
-              immersiveModeNotifier.value = true;
-            });
-          },
-          child: child,
-        );
-      },
-      child: content(context),
-    );
-  }
-
-  Widget content(BuildContext context) {
     return ValueListenableBuilder(
       valueListenable: mainPageThemeNotifier,
       builder: (context, value, child) {
@@ -252,7 +223,7 @@ class _BigPictureViewState extends State<BigPictureView> {
           );
 
     return Positioned(
-      top: isTooNarrow(context) ? 40 : 0,
+      top: getTopOffset(context),
       left: 0,
       right: 0,
 
@@ -381,13 +352,14 @@ class _BigPictureViewState extends State<BigPictureView> {
                                           needFocusColor: true,
                                           autoFocus: index == 0,
                                           child: Padding(
-                                            padding: const EdgeInsets.symmetric(
+                                            padding: EdgeInsets.symmetric(
                                               horizontal: 15,
+                                              vertical: isMobile ? 4 : 0,
                                             ),
                                             child: Text(
                                               tabs[index],
                                               style: TextStyle(
-                                                fontSize: 18,
+                                                fontSize: 18.5,
                                                 fontWeight: FontWeight.bold,
                                                 color: index == value
                                                     ? textColor.value
@@ -486,7 +458,7 @@ class _BigPictureViewState extends State<BigPictureView> {
             mainAxisAlignment: .center,
             children: [
               Expanded(flex: 1, child: SizedBox.shrink()),
-              Expanded(flex: 6, child: Center(child: BigPlayBar())),
+              Expanded(flex: 3, child: Center(child: BigPlayBar())),
               Expanded(
                 flex: 1,
                 child: ValueListenableBuilder(

@@ -31,9 +31,9 @@ class BigPlayBar extends StatelessWidget {
                   builder: (context, constraints) {
                     return Row(
                       children: [
-                        SizedBox(width: constraints.maxWidth > 500 ? 10 : 15),
+                        SizedBox(width: constraints.maxWidth > 450 ? 10 : 15),
 
-                        if (constraints.maxWidth > 500) ...[
+                        if (constraints.maxWidth > 450) ...[
                           playModeButton(20),
                           skip2PreviousButton(20),
                           playOrPauseButton(30),

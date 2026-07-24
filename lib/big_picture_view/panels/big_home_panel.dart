@@ -8,6 +8,7 @@ import 'package:sylvakru/base/data/playlist.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
 import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/services/metadata_service.dart';
+import 'package:sylvakru/base/utils/media_query.dart';
 import 'package:sylvakru/base/utils/metadata_utils.dart';
 import 'package:sylvakru/base/utils/zoom_page_route.dart';
 import 'package:sylvakru/base/widgets/cover_art_widget.dart';
@@ -33,7 +34,7 @@ class _BigHomePanelState extends State<BigHomePanel> {
     final l10n = AppLocalizations.of(context);
     return ListView(
       controller: verticalController,
-      padding: const EdgeInsets.symmetric(vertical: 75),
+      padding: EdgeInsets.symmetric(vertical: 75 + getTopOffset(context)),
       children: [
         _ListView(
           title: l10n.artists,
@@ -267,8 +268,8 @@ class _ListViewState extends State<_ListView> {
       children: [
         Row(
           children: [
-            SizedBox(width: 40),
-            Text(widget.title, style: .new(fontSize: 24, fontWeight: .bold)),
+            SizedBox(width: isTooNarrow(context) ? 20 : 40),
+            Text(widget.title, style: .new(fontSize: 22, fontWeight: .bold)),
             IconButton(
               onPressed: () {},
               icon: Icon(Icons.arrow_forward_ios_rounded),
@@ -280,7 +281,9 @@ class _ListViewState extends State<_ListView> {
           child: ListView.separated(
             key: rowKey,
             controller: controller,
-            padding: EdgeInsets.symmetric(horizontal: 40),
+            padding: EdgeInsets.symmetric(
+              horizontal: isTooNarrow(context) ? 20 : 40,
+            ),
             scrollDirection: .horizontal,
             itemCount: widget.count,
             separatorBuilder: (context, index) {

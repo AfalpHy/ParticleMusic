@@ -84,7 +84,7 @@ class SettingsList extends StatelessWidget {
         if (isLandscape && viewModeNotifier.value != .bigPicture)
           sliverBox(const SizedBox(height: 10)),
 
-        if (Platform.isIOS)
+        if (Platform.isIOS && viewModeNotifier.value != .bigPicture)
           sliverBox(
             paddingIfNeed(isLandscape, premiumFeaturesListTile(context, l10n)),
           ),
