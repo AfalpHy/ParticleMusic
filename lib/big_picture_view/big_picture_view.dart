@@ -179,7 +179,7 @@ class _BigPictureViewState extends State<BigPictureView> {
                     viewModeNotifier.value = .normal;
                     layersManager.updateBackground();
                   },
-                  icon: ImageIcon(bigPictueModeImage),
+                  icon: ImageIcon(bigPictureModeImage),
                 ),
               if (!isMobile && !isMaximizedNotifier.value)
                 IconButton(

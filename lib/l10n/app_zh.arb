@@ -197,5 +197,9 @@
   "noLyrics": "暂无歌词",
   "lyricsParseFailed": "歌词解析失败",
   "switchMode": "切换模式",
-  "viewLog": "查看日志"
+  "viewLog": "查看日志",
+  "trialRemainingStatus": "高级功能试用中\n剩余 {count} 分钟",
+  "trialRemaining": "试用剩余时间",
+  "bigPictureMode": "大图模式",
+  "bigPictureModeDescription": "解锁大图模式"
 }

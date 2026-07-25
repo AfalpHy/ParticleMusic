@@ -120,6 +120,9 @@ class Library {
   }
 
   Future<void> loadFonts() async {
+    if (!isPremiumNotifier.value) {
+      return;
+    }
     _fontMap = readJsonMapFileSync(
       _fontMapFile,
     ).map((key, value) => MapEntry(key, List<String>.from(value)));

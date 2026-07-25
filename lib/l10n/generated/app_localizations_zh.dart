@@ -618,4 +618,18 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get viewLog => '查看日志';
+
+  @override
+  String trialRemainingStatus(int count) {
+    return '高级功能试用中\n剩余 $count 分钟';
+  }
+
+  @override
+  String get trialRemaining => '试用剩余时间';
+
+  @override
+  String get bigPictureMode => '大图模式';
+
+  @override
+  String get bigPictureModeDescription => '解锁大图模式';
 }

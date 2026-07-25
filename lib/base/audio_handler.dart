@@ -288,6 +288,9 @@ class MyAudioHandler extends BaseAudioHandler {
   }
 
   Future<void> _loadEqualizerState() async {
+    if (!isPremiumNotifier.value) {
+      return;
+    }
     final content = await _equalizerState.readAsString();
     gains = (jsonDecode(content) as List<dynamic>).cast();
     applyEqualizer();

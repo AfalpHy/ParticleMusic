@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
@@ -8,6 +9,7 @@ import 'package:sylvakru/base/services/logger.dart';
 import 'package:sylvakru/base/services/navidrome_client.dart';
 import 'package:sylvakru/base/services/subsonic_client.dart';
 import 'package:sylvakru/base/services/webdav_client.dart';
+import 'package:sylvakru/layer/premium_layer.dart';
 
 final config = Config();
 
@@ -23,6 +25,42 @@ class Config {
       final isPremiumTmp = await _trySecureRead('isPremium');
       if (isPremiumTmp != 'true') {
         isPremiumNotifier.value = false;
+        final now = DateTime.now();
+        try {
+          final trialBeginMs = await _secureStorage.read(key: 'trialBeginMs');
+          if (trialBeginMs == null) {
+            if (await _trySecureWrite(
+              'trialBeginMs',
+              now.millisecondsSinceEpoch.toString(),
+            )) {
+              trialRemainingMinNotifier.value = 4320; // 3 days
+            }
+          } else {
+            final trialBeginTime = DateTime.fromMillisecondsSinceEpoch(
+              int.tryParse(trialBeginMs) ?? 0,
+            );
+            final diff = now.difference(trialBeginTime);
+            if (diff.inMinutes < 4320) {
+              trialRemainingMinNotifier.value = 4320 - diff.inMinutes;
+            }
+          }
+          if (trialRemainingMinNotifier.value > 0) {
+            isPremiumNotifier.value = true;
+            Timer.periodic(Duration(minutes: 1), (timer) {
+              if (trialRemainingMinNotifier.value <= 0) {
+                timer.cancel();
+                return;
+              }
+              trialRemainingMinNotifier.value--;
+            });
+          }
+        } catch (e) {
+          logger.output(e.toString());
+        }
+      }
+
+      if (!isPremiumNotifier.value) {
+        viewModeNotifier.value = .normal;
       }
     }
 

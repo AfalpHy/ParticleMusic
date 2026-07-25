@@ -1291,6 +1291,30 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'View Log'**
   String get viewLog;
+
+  /// No description provided for @trialRemainingStatus.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium trial active\n{count} min remaining'**
+  String trialRemainingStatus(int count);
+
+  /// No description provided for @trialRemaining.
+  ///
+  /// In en, this message translates to:
+  /// **'Trial Remaining'**
+  String get trialRemaining;
+
+  /// No description provided for @bigPictureMode.
+  ///
+  /// In en, this message translates to:
+  /// **'Big Picture Mode'**
+  String get bigPictureMode;
+
+  /// No description provided for @bigPictureModeDescription.
+  ///
+  /// In en, this message translates to:
+  /// **'Unlock Big Picture Mode'**
+  String get bigPictureModeDescription;
 }
 
 class _AppLocalizationsDelegate

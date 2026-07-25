@@ -12,6 +12,8 @@ import 'package:sylvakru/layer/layers_manager.dart';
 import 'package:sylvakru/layer/settings_layer.dart';
 import 'package:sylvakru/portrait_view/custom_appbar_leading.dart';
 
+final trialRemainingMinNotifier = ValueNotifier(-1);
+
 class PremiumLayer extends StatefulWidget {
   const PremiumLayer({super.key});
 
@@ -105,9 +107,15 @@ class _PremiumLayerState extends State<PremiumLayer> {
 
                 const SizedBox(height: 16),
 
-                ValueListenableBuilder(
-                  valueListenable: isPremiumNotifier,
-                  builder: (context, isPremium, child) {
+                ListenableBuilder(
+                  listenable: Listenable.merge([
+                    isPremiumNotifier,
+                    trialRemainingMinNotifier,
+                  ]),
+                  builder: (context, _) {
+                    bool canPurchase =
+                        !isPremiumNotifier.value ||
+                        trialRemainingMinNotifier.value >= 0;
                     return Column(
                       children: [
                         Card(
@@ -125,7 +133,7 @@ class _PremiumLayerState extends State<PremiumLayer> {
                           clipBehavior: .antiAlias,
                           child: InkWell(
                             onTap: () async {
-                              if (isPremium | isProcessing) {
+                              if (!canPurchase || isProcessing) {
                                 return;
                               }
                               isProcessing = true;
@@ -140,12 +148,12 @@ class _PremiumLayerState extends State<PremiumLayer> {
                               child: Row(
                                 mainAxisAlignment: .center,
                                 children: [
-                                  if (isPremium) ...[
+                                  if (!canPurchase) ...[
                                     const Icon(Icons.check_circle, size: 20),
                                     const SizedBox(width: 8),
                                   ],
                                   Text(
-                                    isPremium
+                                    !canPurchase
                                         ? l10n.alreadyPremium
                                         : l10n.unlockPremium,
                                     style: .new(
@@ -158,7 +166,7 @@ class _PremiumLayerState extends State<PremiumLayer> {
                             ),
                           ),
                         ),
-                        if (!isPremium) ...[
+                        if (canPurchase) ...[
                           const SizedBox(height: 8),
 
                           Card(
@@ -221,6 +229,12 @@ class _PremiumLayerState extends State<PremiumLayer> {
                   icon: ImageIcon(themeImage, size: 30),
                   title: l10n.theme,
                   description: l10n.themeDescription,
+                ),
+
+                FeatureCard(
+                  icon: ImageIcon(bigPictureModeImage, size: 30),
+                  title: l10n.bigPictureMode,
+                  description: l10n.bigPictureModeDescription,
                 ),
 
                 FeatureCard(

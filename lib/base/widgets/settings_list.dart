@@ -13,6 +13,7 @@ import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/services/logger.dart';
 import 'package:sylvakru/base/services/subsonic_client.dart';
 import 'package:sylvakru/base/services/webdav_client.dart';
+import 'package:sylvakru/base/utils/format_duration.dart';
 import 'package:sylvakru/base/utils/media_query.dart';
 import 'package:sylvakru/base/utils/source_type.dart';
 import 'package:sylvakru/base/widgets/connect_client_widget.dart';
@@ -23,6 +24,7 @@ import 'package:sylvakru/layer/layers_manager.dart';
 import 'package:sylvakru/base/widgets/manage_music_folders.dart';
 import 'package:sylvakru/base/data/library.dart';
 import 'package:sylvakru/base/data/loader.dart';
+import 'package:sylvakru/layer/premium_layer.dart';
 import 'package:sylvakru/portrait_view/sleep_timer.dart';
 import 'package:sylvakru/l10n/generated/app_localizations.dart';
 import 'package:sylvakru/base/widgets/my_switch.dart';
@@ -318,6 +320,21 @@ class SettingsList extends StatelessWidget {
       onTap: () {
         layersManager.pushDetail('settings', 'premium');
       },
+      trailing: ValueListenableBuilder(
+        valueListenable: trialRemainingMinNotifier,
+        builder: (context, value, child) {
+          if (value <= 0) {
+            return SizedBox.shrink();
+          }
+          return Row(
+            mainAxisSize: .min,
+            children: [
+              Text("${l10n.trialRemaining}: "),
+              Text(formatDuration(Duration(minutes: value), ms: false)),
+            ],
+          );
+        },
+      ),
     );
   }
 

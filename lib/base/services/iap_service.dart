@@ -4,6 +4,7 @@ import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/data/config.dart';
 import 'package:sylvakru/base/services/logger.dart';
 import 'package:sylvakru/l10n/generated/app_localizations.dart';
+import 'package:sylvakru/layer/premium_layer.dart';
 
 class IAPService {
   final InAppPurchase _iap = InAppPurchase.instance;
@@ -110,6 +111,7 @@ class IAPService {
   void _grantAppFeatures(String productId) async {
     await config.savePremium();
     isPremiumNotifier.value = true;
+    trialRemainingMinNotifier.value = -1;
   }
 
   void _showPendingUI() => onMessage?.call(l10n.pendingPurchase);

@@ -4,7 +4,7 @@ const AssetImage addImage = AssetImage('assets/images/add.png');
 const AssetImage albumImage = AssetImage('assets/images/album.png');
 const AssetImage arrowDownImage = AssetImage('assets/images/arrow_down.png');
 const AssetImage artistImage = AssetImage('assets/images/artist.png');
-const AssetImage bigPictueModeImage = AssetImage(
+const AssetImage bigPictureModeImage = AssetImage(
   'assets/images/big_picture_mode.png',
 );
 const AssetImage cacheImage = AssetImage('assets/images/cache.png');

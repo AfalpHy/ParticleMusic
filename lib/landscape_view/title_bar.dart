@@ -203,6 +203,10 @@ class _TitleBarState extends State<TitleBar> {
         if (widget.isMainPage)
           IconButton(
             onPressed: () async {
+              if (!isPremiumNotifier.value) {
+                showPremiumDialog(context);
+                return;
+              }
               if (!await showConfirmDialog(
                 context,
                 AppLocalizations.of(context).switchMode,
@@ -224,7 +228,7 @@ class _TitleBarState extends State<TitleBar> {
                 while (await layersManager.popDetail('settings')) {}
               });
             },
-            icon: ImageIcon(bigPictueModeImage),
+            icon: ImageIcon(bigPictureModeImage),
           ),
 
         if (!isMobile) windowControls(),

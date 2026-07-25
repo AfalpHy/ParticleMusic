@@ -16,6 +16,7 @@ import 'package:sylvakru/landscape_view/landscape_view.dart';
 import 'package:sylvakru/landscape_view/sidebar.dart';
 import 'package:sylvakru/layer/layers_manager.dart';
 import 'package:sylvakru/layer/lyrics_page_layer.dart';
+import 'package:sylvakru/layer/premium_layer.dart';
 import 'package:sylvakru/mini_view/mini_view.dart';
 import 'package:sylvakru/portrait_view/portrait_view.dart';
 
@@ -46,14 +47,22 @@ class _ViewEntryState extends State<ViewEntry> with WidgetsBindingObserver {
       });
     }
 
-    if (Platform.isIOS || Platform.isMacOS) {
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        if (Platform.isIOS) {
-          await NativeMenu.init();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (Platform.isIOS) {
+        if (trialRemainingMinNotifier.value > 0) {
+          showCenterMessage(
+            context,
+            AppLocalizations.of(
+              context,
+            ).trialRemainingStatus(trialRemainingMinNotifier.value),
+            duration: 5000,
+          );
         }
+        await NativeMenu.init();
+      } else if (Platform.isMacOS) {
         await NativeMenu.initIcons();
-      });
-    }
+      }
+    });
 
     networkErrorNotifier.addListener(_onNetworkError);
   }

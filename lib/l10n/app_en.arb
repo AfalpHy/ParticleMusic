@@ -246,5 +246,16 @@
   "noLyrics": "There are no lyrics",
   "lyricsParseFailed": "Lyrics parsing failed",
   "switchMode": "Switch Mode",
-  "viewLog": "View Log"
+  "viewLog": "View Log",
+  "trialRemainingStatus": "Premium trial active\n{count} min remaining",
+  "@trialRemainingStatus": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "trialRemaining": "Trial Remaining",
+  "bigPictureMode": "Big Picture Mode",
+  "bigPictureModeDescription": "Unlock Big Picture Mode"
 }
