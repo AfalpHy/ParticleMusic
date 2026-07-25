@@ -329,8 +329,9 @@ class SettingsList extends StatelessWidget {
           return Row(
             mainAxisSize: .min,
             children: [
-              Text("${l10n.trialRemaining}: "),
-              Text(formatDuration(Duration(minutes: value), ms: false)),
+              Text(
+                "${l10n.trialRemaining}:${formatDuration(Duration(minutes: value), ms: false)}",
+              ),
             ],
           );
         },

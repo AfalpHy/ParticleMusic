@@ -6,5 +6,5 @@ String formatDuration(Duration duration, {bool ms = true}) {
     return "$minutes:$seconds";
   }
 
-  return "${twoDigits((duration.inMinutes / 60).toInt())}:${twoDigits((duration.inMinutes.remainder(60)).toInt())}";
+  return "${twoDigits((duration.inMinutes / 60).toInt())}:${twoDigits(duration.inMinutes.remainder(60))}";
 }
