@@ -38,6 +38,8 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
 
   final canDragNotifier = ValueNotifier(false);
 
+  final draggingNotifier = ValueNotifier(false);
+
   int _animationDuration = 0;
 
   Timer? concealRouteTimer;
@@ -67,6 +69,7 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
         return GestureDetector(
           onVerticalDragStart: value
               ? (_) {
+                  draggingNotifier.value = true;
                   concealRouteTimer?.cancel();
                   final route = ModalRoute.of(context);
                   if (route is DynamicLyricsPageRoute) {
@@ -95,6 +98,7 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                   } else {
                     _animationDuration = 250;
                     dragOffsetNotifier.value = 0.0;
+                    draggingNotifier.value = false;
                     concealRouteTimer = Timer(Duration(milliseconds: 250), () {
                       final route = ModalRoute.of(context);
                       if (route is DynamicLyricsPageRoute) {
@@ -108,6 +112,7 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
               ? () {
                   _animationDuration = 250;
                   dragOffsetNotifier.value = 0.0;
+                  draggingNotifier.value = false;
                   concealRouteTimer = Timer(Duration(milliseconds: 250), () {
                     final route = ModalRoute.of(context);
                     if (route is DynamicLyricsPageRoute) {
@@ -143,17 +148,17 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
               ? SystemUiOverlayStyle.light
               : SystemUiOverlayStyle.dark,
           child: ValueListenableBuilder(
-            valueListenable: dragOffsetNotifier,
+            valueListenable: draggingNotifier,
             builder: (context, value, child) {
               return Material(
                 color: Colors.transparent,
                 shape: SmoothRectangleBorder(
                   smoothness: 1,
                   borderRadius: .circular(
-                    value > 0 ? screenRadius?.topLeft ?? 0 : 0,
+                    value ? screenRadius?.topLeft ?? 0 : 0,
                   ),
                 ),
-                clipBehavior: .antiAliasWithSaveLayer,
+                clipBehavior: value ? .antiAliasWithSaveLayer : .antiAlias,
                 child: child,
               );
             },
@@ -282,6 +287,14 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
       children: [
         Hero(
           tag: 'cover',
+          flightShuttleBuilder:
+              (
+                flightContext,
+                animation,
+                flightDirection,
+                fromHeroContext,
+                toHeroContext,
+              ) => FittedBox(child: toHeroContext.widget),
           child: CoverArtWidget(
             size: mobileWidth * 0.84,
             borderRadius: mobileWidth * 0.04,

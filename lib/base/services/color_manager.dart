@@ -19,19 +19,8 @@ ContrastColorTextTheme contrastColorTheme = ContrastColorGenerator.generate(
 final lightHoverFocusColorNotifier = ValueNotifier(false);
 
 void updateHoverFocusColor() {
-  if (displayLyricsPage) {
-    if (lyricsPageThemeNotifier.value == .vivid) {
-      double r = currentCoverArtColor.r;
-      double g = currentCoverArtColor.g;
-      double b = currentCoverArtColor.b;
-      final luminance = 0.299 * r + 0.587 * g + 0.114 * b;
-
-      lightHoverFocusColorNotifier.value = luminance < 0.5;
-    } else {
-      lightHoverFocusColorNotifier.value =
-          lyricsPageThemeNotifier.value == .dark;
-    }
-  } else if (viewModeNotifier.value == .mini) {
+  if ((displayLyricsPage && lyricsPageThemeNotifier.value == .vivid) ||
+      viewModeNotifier.value == .mini) {
     double r = currentCoverArtColor.r;
     double g = currentCoverArtColor.g;
     double b = currentCoverArtColor.b;

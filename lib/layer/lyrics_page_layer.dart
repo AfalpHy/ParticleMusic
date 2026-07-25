@@ -27,7 +27,8 @@ class _LyricsPageLayerState extends State<LyricsPageLayer> {
   @override
   void dispose() {
     displayLyricsPage = false;
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      await Future.delayed(Duration(milliseconds: 600));
       updateHoverFocusColor();
     });
     super.dispose();
