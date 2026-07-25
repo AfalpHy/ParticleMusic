@@ -98,8 +98,8 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                   } else {
                     _animationDuration = 250;
                     dragOffsetNotifier.value = 0.0;
-                    draggingNotifier.value = false;
                     concealRouteTimer = Timer(Duration(milliseconds: 250), () {
+                      draggingNotifier.value = false;
                       final route = ModalRoute.of(context);
                       if (route is DynamicLyricsPageRoute) {
                         route.concealRoutesBelow();
@@ -112,8 +112,8 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
               ? () {
                   _animationDuration = 250;
                   dragOffsetNotifier.value = 0.0;
-                  draggingNotifier.value = false;
                   concealRouteTimer = Timer(Duration(milliseconds: 250), () {
+                    draggingNotifier.value = false;
                     final route = ModalRoute.of(context);
                     if (route is DynamicLyricsPageRoute) {
                       route.concealRoutesBelow();
