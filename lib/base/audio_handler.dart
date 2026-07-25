@@ -205,19 +205,6 @@ class MyAudioHandler extends BaseAudioHandler {
     await _loadPlayQueueState();
     await _loadPlayState();
     await _loadEqualizerState();
-    if (currentSongNotifier.value != null) {
-      final positionMs = await _positionState.readAsString();
-      WidgetsBinding.instance.addPostFrameCallback((_) async {
-        await seek(Duration(milliseconds: int.tryParse(positionMs) ?? 0));
-        if (isPlayingNotifier.value) {
-          _positionTimer ??= Timer.periodic(Duration(seconds: 1), (_) {
-            _positionState.writeAsString(
-              getPosition().inMilliseconds.toString(),
-            );
-          });
-        }
-      });
-    }
   }
 
   Future<void> _loadPlayQueueState() async {
@@ -269,7 +256,16 @@ class MyAudioHandler extends BaseAudioHandler {
       if (currentIndex >= playQueue.length) {
         currentIndex = 0;
       }
-      await load();
+
+      final positionMs = await _positionState.readAsString();
+
+      await load(start: Duration(milliseconds: int.tryParse(positionMs) ?? 0));
+
+      if (isPlayingNotifier.value) {
+        _positionTimer ??= Timer.periodic(Duration(seconds: 1), (_) {
+          _positionState.writeAsString(getPosition().inMilliseconds.toString());
+        });
+      }
     }
     if (!isMobile) {
       setVolume(volumeNotifier.value);
@@ -496,7 +492,7 @@ class MyAudioHandler extends BaseAudioHandler {
     }
   }
 
-  Future<void> load() async {
+  Future<void> load({Duration? start}) async {
     if (currentSongNotifier.value != null) {
       if (_playLastSyncTime != null) {
         _playedDuration += DateTime.now().difference(_playLastSyncTime!);
@@ -527,7 +523,7 @@ class MyAudioHandler extends BaseAudioHandler {
     try {
       if (currentSong.cacheExist) {
         await _player.open(
-          Media(currentSong.cachePath!),
+          Media(currentSong.cachePath!, start: start),
           play: isPlayingNotifier.value,
         );
       } else {
@@ -561,6 +557,7 @@ class MyAudioHandler extends BaseAudioHandler {
           Media(
             resource,
             httpHeaders: needHeader ? webdavClient?.headers : null,
+            start: start,
           ),
           play: isPlayingNotifier.value,
         );
