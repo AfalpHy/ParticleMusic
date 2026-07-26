@@ -105,8 +105,6 @@ git clone https://github.com/AfalpHy/sylvakru.git
 cd sylvakru
 
 # install CocoaPods
-sudo gem install cocoapods
-# or
 brew install cocoapods
 
 # check the development environment
