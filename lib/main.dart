@@ -237,7 +237,8 @@ Future<void> main() async {
               context: context,
               removeLeft: true, // for mobile
               removeRight: true,
-              child: ViewEntry(),
+              // semantics sometimes crash on ios simulator, I don't know why
+              child: ExcludeSemantics(child: ViewEntry()),
             ),
           );
         },
