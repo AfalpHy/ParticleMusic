@@ -74,7 +74,7 @@ class _ViewEntryState extends State<ViewEntry> with WidgetsBindingObserver {
             AppLocalizations.of(
               context,
             ).trialRemainingStatus(trialRemainingMinNotifier.value),
-            duration: 5000,
+            duration: 3000,
           );
         }
         await NativeMenu.init();

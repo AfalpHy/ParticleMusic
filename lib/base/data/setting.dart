@@ -45,7 +45,9 @@ class Setting {
     autoPlayOnStartupNotifier.value =
         json['autoPlayOnStartup'] as bool? ?? false;
 
-    fontFamilyNotifier.value = json['fontFamily'] as String?;
+    if (isPremiumNotifier.value) {
+      fontFamilyNotifier.value = json['fontFamily'] as String?;
+    }
 
     mainPageThemeNotifier.value = ThemeType.values.firstWhere(
       (e) => e.name == json['mainPageTheme'],
