@@ -387,6 +387,7 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                   isScrollControlled: true,
                   builder: (context) {
                     return MySheet(
+                      height: 350,
                       ValueListenableBuilder(
                         valueListenable:
                             lyricsPageForegroundColor.valueNotifier,
@@ -451,9 +452,12 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                                     ),
 
                                     ListTile(
-                                      leading: Icon(
-                                        Icons.info_outline_rounded,
-                                        color: value,
+                                      leading: Transform.scale(
+                                        scale: 0.9,
+                                        child: Icon(
+                                          Icons.info_outline_rounded,
+                                          color: value,
+                                        ),
                                       ),
                                       title: Text(
                                         l10n.songInfo,
@@ -472,6 +476,28 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                                           context: context,
                                           child: SongInfo(song: currentSong!),
                                         );
+                                      },
+                                    ),
+
+                                    ListTile(
+                                      leading: ImageIcon(
+                                        desktopLyricsImage,
+                                        color: value,
+                                      ),
+                                      title: Text(
+                                        l10n.adjustLyrics,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: value,
+                                        ),
+                                      ),
+                                      visualDensity: const VisualDensity(
+                                        horizontal: 0,
+                                        vertical: -4,
+                                      ),
+                                      onTap: () {
+                                        Navigator.pop(context);
+                                        // TODO
                                       },
                                     ),
                                   ],

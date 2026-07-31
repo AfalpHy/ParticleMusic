@@ -201,5 +201,6 @@
   "trialRemainingStatus": "高级功能试用中\n剩余 {count} 分钟",
   "trialRemaining": "试用剩余时间",
   "bigPictureMode": "大图模式",
-  "bigPictureModeDescription": "解锁大图模式"
+  "bigPictureModeDescription": "解锁大图模式",
+  "adjustLyrics": "调整歌词"
 }

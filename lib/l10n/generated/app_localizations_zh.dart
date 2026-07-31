@@ -632,4 +632,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get bigPictureModeDescription => '解锁大图模式';
+
+  @override
+  String get adjustLyrics => '调整歌词';
 }

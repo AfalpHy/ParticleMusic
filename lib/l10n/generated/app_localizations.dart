@@ -1315,6 +1315,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Unlock Big Picture Mode'**
   String get bigPictureModeDescription;
+
+  /// No description provided for @adjustLyrics.
+  ///
+  /// In en, this message translates to:
+  /// **'Adjust Lyrics'**
+  String get adjustLyrics;
 }
 
 class _AppLocalizationsDelegate

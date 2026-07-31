@@ -639,4 +639,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get bigPictureModeDescription => 'Unlock Big Picture Mode';
+
+  @override
+  String get adjustLyrics => 'Adjust Lyrics';
 }
