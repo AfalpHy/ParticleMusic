@@ -936,59 +936,68 @@ class SettingsList extends StatelessWidget {
       onTap: () async {
         showAnimationDialog(
           context: context,
-          child: SizedBox(
-            width: isTooNarrow(context) ? 300 : 400,
-            height: MediaQuery.heightOf(context) * 0.8,
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  Expanded(
-                    child: SingleChildScrollView(
-                      padding: const EdgeInsets.all(16),
-                      child: SelectableText(logger.logContent),
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  if (isMobile)
-                    ValueListenableBuilder(
-                      valueListenable: buttonColor.valueNotifier,
-                      builder: (context, value, child) {
-                        return ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: buttonColor.value,
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            padding: EdgeInsets.all(10),
-                          ),
-                          onPressed: () async {
-                            String? result;
-                            if (Platform.isAndroid) {
-                              result = await FilePicker.getDirectoryPath();
-                              if (result == null) {
-                                return;
-                              }
-                              logger.export2Directory(result);
-                              if (context.mounted) {
-                                showCenterMessage(context, 'Export to $result');
-                              }
-                            } else {
-                              result = '${appDocsDir.path}/logs';
-                              logger.export2Directory(result);
-                              showCenterMessage(
-                                context,
-                                'Export to Sylvakru/logs',
-                              );
-                            }
+          child: Builder(
+            builder: (context) {
+              return ConstrainedBox(
+                constraints: BoxConstraints(
+                  maxHeight: MediaQuery.heightOf(context) * 0.75,
+                  maxWidth: isTooNarrow(context) ? 300 : 400,
+                ),
+                child: Padding(
+                  padding: const EdgeInsets.all(16),
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.all(16),
+                          child: SelectableText(logger.logContent),
+                        ),
+                      ),
+                      SizedBox(height: 20),
+                      if (isMobile)
+                        ValueListenableBuilder(
+                          valueListenable: buttonColor.valueNotifier,
+                          builder: (context, value, child) {
+                            return ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: buttonColor.value,
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                padding: EdgeInsets.all(10),
+                              ),
+                              onPressed: () async {
+                                String? result;
+                                if (Platform.isAndroid) {
+                                  result = await FilePicker.getDirectoryPath();
+                                  if (result == null) {
+                                    return;
+                                  }
+                                  logger.export2Directory(result);
+                                  if (context.mounted) {
+                                    showCenterMessage(
+                                      context,
+                                      'Export to $result',
+                                    );
+                                  }
+                                } else {
+                                  result = '${appDocsDir.path}/logs';
+                                  logger.export2Directory(result);
+                                  showCenterMessage(
+                                    context,
+                                    'Export to Sylvakru/logs',
+                                  );
+                                }
+                              },
+                              child: Text(l10n.exportLog),
+                            );
                           },
-                          child: Text(l10n.exportLog),
-                        );
-                      },
-                    ),
-                ],
-              ),
-            ),
+                        ),
+                    ],
+                  ),
+                ),
+              );
+            },
           ),
         );
       },
