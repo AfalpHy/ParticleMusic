@@ -15,6 +15,7 @@ import 'package:sylvakru/base/widgets/cover_art_widget.dart';
 import 'package:sylvakru/base/widgets/my_divider.dart';
 import 'package:sylvakru/base/widgets/playlist_widgets.dart';
 import 'package:sylvakru/base/data/setting.dart';
+import 'package:sylvakru/base/widgets/song_info.dart';
 import 'package:sylvakru/portrait_view/sleep_timer.dart';
 import 'package:sylvakru/base/widgets/my_sheet.dart';
 import 'package:sylvakru/l10n/generated/app_localizations.dart';
@@ -446,6 +447,31 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                                         showAddPlaylistDialog(context, [
                                           currentSong!,
                                         ]);
+                                      },
+                                    ),
+
+                                    ListTile(
+                                      leading: Icon(
+                                        Icons.info_outline_rounded,
+                                        color: value,
+                                      ),
+                                      title: Text(
+                                        l10n.songInfo,
+                                        style: TextStyle(
+                                          fontWeight: FontWeight.bold,
+                                          color: value,
+                                        ),
+                                      ),
+                                      visualDensity: const VisualDensity(
+                                        horizontal: 0,
+                                        vertical: -4,
+                                      ),
+                                      onTap: () {
+                                        Navigator.pop(context);
+                                        showAnimationDialog(
+                                          context: context,
+                                          child: SongInfo(song: currentSong!),
+                                        );
                                       },
                                     ),
                                   ],
