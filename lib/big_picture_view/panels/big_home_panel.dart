@@ -213,7 +213,9 @@ class _BigHomePanelState extends State<BigHomePanel> {
               ),
             );
           },
-          getBottomTitle: (index) => playlistManager.playlists[index].name,
+          getBottomTitle: (index) => index == 0
+              ? l10n.favorites
+              : playlistManager.playlists[index].name,
           getTag: (index) =>
               'big${playlistManager.playlists[index].getCoverSong()?.id}${playlistManager.playlists[index].name}',
           verticalController: verticalController,

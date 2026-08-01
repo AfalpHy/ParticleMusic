@@ -3,6 +3,7 @@ import 'package:sylvakru/base/data/playlist.dart';
 import 'package:sylvakru/base/data/song_list_manager.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
 import 'package:sylvakru/big_picture_view/panels/big_song_list_with_cover_base_panel.dart';
+import 'package:sylvakru/l10n/generated/app_localizations.dart';
 
 class BigSinglePlaylistPanel extends BigSongListWithCoverBasePanel {
   final Playlist playlist;
@@ -22,7 +23,9 @@ class _BigSinglePlaylistPanelState
   SongListManager get songListManager => widget.playlist.songListManager;
 
   @override
-  String get title => widget.playlist.name;
+  String get title => widget.playlist.isFavorite
+      ? AppLocalizations.of(context).favorites
+      : widget.playlist.name;
 
   @override
   Playlist? get playlist => widget.playlist;
