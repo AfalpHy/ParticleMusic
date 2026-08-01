@@ -66,7 +66,7 @@ class CoverArtWidget extends StatelessWidget {
   }
 
   Widget imageWidget(String path) {
-    final ImageProvider imageProvider = size != null
+    final ImageProvider imageProvider = size != null && size! <= 256
         ? ResizeImage(FileImage(File(path)), width: (size! * 4).toInt())
         : FileImage(File(path));
 
