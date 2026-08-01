@@ -387,7 +387,7 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                   isScrollControlled: true,
                   builder: (context) {
                     return MySheet(
-                      height: 350,
+                      height: 300,
                       ValueListenableBuilder(
                         valueListenable:
                             lyricsPageForegroundColor.valueNotifier,
@@ -453,7 +453,7 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
 
                                     ListTile(
                                       leading: Transform.scale(
-                                        scale: 0.9,
+                                        scale: 0.85,
                                         child: Icon(
                                           Icons.info_outline_rounded,
                                           color: value,

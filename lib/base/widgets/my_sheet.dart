@@ -27,7 +27,7 @@ class MySheet extends StatelessWidget {
           ),
           clipBehavior: .antiAlias,
           child: SizedBox(
-            height: height ?? min(500, MediaQuery.heightOf(context) * 0.6),
+            height: min(height ?? 500, MediaQuery.heightOf(context) * 0.6),
             child: MediaQuery.removePadding(
               context: context,
               removeLeft: true, // for mobile

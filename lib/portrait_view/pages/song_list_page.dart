@@ -66,34 +66,31 @@ extension _SongListPage on _SongListState {
     final l10n = AppLocalizations.of(context);
 
     return MySheet(
+      height: 300,
       Column(
         children: [
           ListTile(
-            title: SizedBox(
-              height: 40,
-              width: MediaQuery.widthOf(context) * 0.9,
-              child: Row(
-                children: [
-                  if (playlist != null)
-                    Text("${l10n.playlists}: ", style: TextStyle(fontSize: 15)),
-                  if (artist != null)
-                    Text("${l10n.artists}: ", style: TextStyle(fontSize: 15)),
-                  if (album != null)
-                    Text("${l10n.albums}: ", style: TextStyle(fontSize: 15)),
-                  if (folder != null)
-                    Text("${l10n.folders}: ", style: TextStyle(fontSize: 15)),
+            title: Row(
+              children: [
+                if (playlist != null)
+                  Text("${l10n.playlists}: ", style: TextStyle(fontSize: 15)),
+                if (artist != null)
+                  Text("${l10n.artists}: ", style: TextStyle(fontSize: 15)),
+                if (album != null)
+                  Text("${l10n.albums}: ", style: TextStyle(fontSize: 15)),
+                if (folder != null)
+                  Text("${l10n.folders}: ", style: TextStyle(fontSize: 15)),
 
-                  Expanded(
-                    child: TextScroll(
-                      getTitleText(l10n),
-                      style: TextStyle(fontSize: 15),
-                      velocity: const .new(pixelsPerSecond: .new(40, 0)),
-                      intervalSpaces: 10,
-                      pauseBetween: Duration(seconds: 1),
-                    ),
+                Expanded(
+                  child: TextScroll(
+                    getTitleText(l10n),
+                    style: TextStyle(fontSize: 15),
+                    velocity: const .new(pixelsPerSecond: .new(40, 0)),
+                    intervalSpaces: 10,
+                    pauseBetween: Duration(seconds: 1),
                   ),
-                ],
-              ),
+                ),
+              ],
             ),
           ),
           MyDivider(thickness: 0.5, height: 1, color: dividerColor),

@@ -64,29 +64,32 @@ extension _ArtistsPage on _ArtistsLayerState {
     final l10n = AppLocalizations.of(context);
 
     return MySheet(
+      height: 300,
       Column(
         children: [
           ListTile(title: Text(l10n.settings)),
           MyDivider(thickness: 0.5, height: 1, color: dividerColor),
-          ListTile(
-            leading: ValueListenableBuilder(
-              valueListenable: artistAlbumManager.artistsIsListViewNotifier,
-              builder: (context, value, child) {
-                return ImageIcon(value ? listImage : gridImage);
-              },
-            ),
-            title: Text(
-              l10n.view,
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-            trailing: SizedBox(
-              width: 100,
-              child: Row(
-                children: [
-                  Spacer(),
 
-                  MySwitch(
+          Expanded(
+            child: ListView(
+              children: [
+                ListTile(
+                  leading: ValueListenableBuilder(
+                    valueListenable:
+                        artistAlbumManager.artistsIsListViewNotifier,
+                    builder: (context, value, child) {
+                      return ImageIcon(value ? listImage : gridImage);
+                    },
+                  ),
+                  title: Text(
+                    l10n.view,
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  visualDensity: const VisualDensity(
+                    horizontal: 0,
+                    vertical: -4,
+                  ),
+                  trailing: MySwitch(
                     trueText: l10n.list,
                     falseText: l10n.grid,
                     valueNotifier: artistAlbumManager.artistsIsListViewNotifier,
@@ -94,30 +97,21 @@ extension _ArtistsPage on _ArtistsLayerState {
                       setting.save();
                     },
                   ),
-                ],
-              ),
-            ),
-          ),
-
-          ValueListenableBuilder(
-            valueListenable: artistAlbumManager.artistsIsListViewNotifier,
-            builder: (context, value, child) {
-              if (value) {
-                return SizedBox.shrink();
-              }
-              return ListTile(
-                leading: ImageIcon(pictureImage),
-                title: Text(
-                  l10n.pictureSize,
-                  style: TextStyle(fontWeight: FontWeight.bold),
                 ),
-                trailing: SizedBox(
-                  width: 100,
 
-                  child: Row(
-                    children: [
-                      Spacer(),
-                      MySwitch(
+                ValueListenableBuilder(
+                  valueListenable: artistAlbumManager.artistsIsListViewNotifier,
+                  builder: (context, value, child) {
+                    if (value) {
+                      return SizedBox.shrink();
+                    }
+                    return ListTile(
+                      leading: ImageIcon(pictureImage),
+                      title: Text(
+                        l10n.pictureSize,
+                        style: TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                      trailing: MySwitch(
                         trueText: l10n.large,
                         falseText: l10n.small,
                         valueNotifier: useLargePictureNotifier,
@@ -125,27 +119,21 @@ extension _ArtistsPage on _ArtistsLayerState {
                           setting.save();
                         },
                       ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
-              );
-            },
-          ),
 
-          ListTile(
-            leading: ImageIcon(sequenceImage),
-            title: Text(
-              l10n.order,
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-            trailing: SizedBox(
-              width: 120,
-
-              child: Row(
-                children: [
-                  Spacer(),
-                  MySwitch(
+                ListTile(
+                  leading: ImageIcon(sequenceImage),
+                  title: Text(
+                    l10n.order,
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  visualDensity: const VisualDensity(
+                    horizontal: 0,
+                    vertical: -4,
+                  ),
+                  trailing: MySwitch(
                     trueText: l10n.randomize,
                     falseText: l10n.normal,
                     valueNotifier: randomizeNotifier,
@@ -153,26 +141,20 @@ extension _ArtistsPage on _ArtistsLayerState {
                       updateCurrentList();
                     },
                   ),
-                ],
-              ),
-            ),
-          ),
+                ),
 
-          ValueListenableBuilder(
-            valueListenable: randomizeNotifier,
-            builder: (_, randomize, _) {
-              if (randomize) {
-                return SizedBox();
-              }
-              return ListTile(
-                visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-                trailing: SizedBox(
-                  width: 120,
-
-                  child: Row(
-                    children: [
-                      Spacer(),
-                      MySwitch(
+                ValueListenableBuilder(
+                  valueListenable: randomizeNotifier,
+                  builder: (_, randomize, _) {
+                    if (randomize) {
+                      return SizedBox();
+                    }
+                    return ListTile(
+                      visualDensity: const VisualDensity(
+                        horizontal: 0,
+                        vertical: -4,
+                      ),
+                      trailing: MySwitch(
                         trueText: l10n.ascending,
                         falseText: l10n.descending,
                         valueNotifier: isAscendingNotifier,
@@ -182,11 +164,11 @@ extension _ArtistsPage on _ArtistsLayerState {
                           updateCurrentList();
                         },
                       ),
-                    ],
-                  ),
+                    );
+                  },
                 ),
-              );
-            },
+              ],
+            ),
           ),
         ],
       ),

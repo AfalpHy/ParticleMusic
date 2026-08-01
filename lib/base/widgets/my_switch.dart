@@ -26,6 +26,7 @@ class MySwitch extends StatelessWidget {
       return switcher();
     }
     return Row(
+      mainAxisSize: .min,
       children: [
         ValueListenableBuilder(
           valueListenable: valueNotifier,
