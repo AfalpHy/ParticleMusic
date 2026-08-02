@@ -12,6 +12,7 @@ import 'package:scrollable_positioned_list/scrollable_positioned_list.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 
 final lyricsFontSizeOffsetNotifier = ValueNotifier(0.0);
+final lyricsTimeOffsetNotifier = ValueNotifier(0);
 final updateLyricsNotifier = ValueNotifier(0);
 
 class LyricsListView extends StatefulWidget {
@@ -42,6 +43,7 @@ class LyricsListViewState extends State<LyricsListView>
   Timer? timer;
 
   void scroll2CurrentIndex(Duration position) async {
+    position += Duration(milliseconds: lyricsTimeOffsetNotifier.value);
     // it's weird that the position is sometimes negative
     if (audioHandler.isLoading || position < Duration.zero) {
       return;
@@ -401,14 +403,16 @@ class KaraokeTextState extends State<KaraokeText>
     final end = token.end;
 
     double progress;
-    if (displayPosition <= start) {
+    final position =
+        displayPosition +
+        Duration(milliseconds: lyricsTimeOffsetNotifier.value);
+    if (position <= start) {
       progress = 0;
-    } else if (displayPosition >= end!) {
+    } else if (position >= end!) {
       progress = 1;
     } else {
       progress =
-          (displayPosition - start).inMilliseconds /
-          (end - start).inMilliseconds;
+          (position - start).inMilliseconds / (end - start).inMilliseconds;
     }
 
     final style = TextStyle(

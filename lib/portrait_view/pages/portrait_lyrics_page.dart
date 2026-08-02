@@ -281,7 +281,6 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
   }
 
   Widget artPage(BuildContext context, MyAudioMetadata? currentSong) {
-    final l10n = AppLocalizations.of(context);
     final mobileWidth = MediaQuery.widthOf(context);
 
     return Column(
@@ -379,145 +378,8 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
               icon: Icon(Icons.text_decrease_rounded),
             ),
 
-            IconButton(
-              onPressed: () {
-                tryVibrate();
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  builder: (context) {
-                    return MySheet(
-                      height: 300,
-                      ValueListenableBuilder(
-                        valueListenable:
-                            lyricsPageForegroundColor.valueNotifier,
-                        builder: (context, value, child) {
-                          return Column(
-                            children: [
-                              SizedBox(height: 5),
+            moreButton(currentSong),
 
-                              ListTile(
-                                leading: CoverArtWidget(
-                                  size: 50,
-                                  borderRadius: 5,
-                                  song: currentSong,
-                                ),
-                                title: Text(
-                                  getTitle(currentSong),
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(color: value),
-                                ),
-                                subtitle: Text(
-                                  "${getArtist(currentSong)} - ${getAlbum(currentSong)}",
-                                  overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(color: value),
-                                ),
-                              ),
-
-                              SizedBox(height: 5),
-                              MyDivider(
-                                color: lyricsPageDividerColor,
-                                thickness: 0.5,
-                                height: 1,
-                              ),
-                              SizedBox(height: 5),
-
-                              Expanded(
-                                child: ListView(
-                                  physics: const ClampingScrollPhysics(),
-                                  children: [
-                                    ListTile(
-                                      leading: Icon(
-                                        Icons.add_rounded,
-                                        color: value,
-                                      ),
-                                      title: Text(
-                                        l10n.add2Playlist,
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: value,
-                                        ),
-                                      ),
-                                      visualDensity: const VisualDensity(
-                                        horizontal: 0,
-                                        vertical: -4,
-                                      ),
-                                      onTap: () {
-                                        Navigator.pop(context);
-
-                                        showAddPlaylistDialog(context, [
-                                          currentSong!,
-                                        ]);
-                                      },
-                                    ),
-
-                                    ListTile(
-                                      leading: Transform.scale(
-                                        scale: 0.85,
-                                        child: Icon(
-                                          Icons.info_outline_rounded,
-                                          color: value,
-                                        ),
-                                      ),
-                                      title: Text(
-                                        l10n.songInfo,
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: value,
-                                        ),
-                                      ),
-                                      visualDensity: const VisualDensity(
-                                        horizontal: 0,
-                                        vertical: -4,
-                                      ),
-                                      onTap: () {
-                                        Navigator.pop(context);
-                                        showAnimationDialog(
-                                          context: context,
-                                          child: SongInfo(song: currentSong!),
-                                        );
-                                      },
-                                    ),
-
-                                    ListTile(
-                                      leading: ImageIcon(
-                                        desktopLyricsImage,
-                                        color: value,
-                                      ),
-                                      title: Text(
-                                        l10n.adjustLyrics,
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.bold,
-                                          color: value,
-                                        ),
-                                      ),
-                                      visualDensity: const VisualDensity(
-                                        horizontal: 0,
-                                        vertical: -4,
-                                      ),
-                                      onTap: () {
-                                        Navigator.pop(context);
-                                        // TODO
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            ],
-                          );
-                        },
-                      ),
-                    );
-                  },
-                );
-              },
-              icon: ValueListenableBuilder(
-                valueListenable: lyricsPageForegroundColor.valueNotifier,
-                builder: (context, value, child) {
-                  return Icon(Icons.more_vert, color: value);
-                },
-              ),
-            ),
             SizedBox(width: 25),
           ],
         ),
@@ -531,39 +393,244 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
           ),
         ),
 
-        // -------- Play Controls --------
-        ValueListenableBuilder(
-          valueListenable: lyricsPageForegroundColor.valueNotifier,
-          builder: (context, value, child) {
-            return Row(
-              children: [
-                SizedBox(width: 25),
-
-                playModeButton(32, iconColor: value),
-
-                Spacer(),
-
-                skip2PreviousButton(32, iconColor: value),
-
-                Spacer(),
-
-                playOrPauseButton(50, iconColor: value),
-
-                Spacer(),
-
-                skip2NextButton(32, iconColor: value),
-
-                Spacer(),
-
-                showPlayQueueButton(32, iconColor: value),
-
-                SizedBox(width: 25),
-              ],
-            );
-          },
-        ),
+        playControls(),
 
         SizedBox(height: 40),
+      ],
+    );
+  }
+
+  Widget moreButton(MyAudioMetadata? currentSong) {
+    final l10n = AppLocalizations.of(context);
+    return IconButton(
+      onPressed: () {
+        tryVibrate();
+        showModalBottomSheet(
+          context: context,
+          isScrollControlled: true,
+          builder: (context) {
+            return MySheet(
+              height: 250,
+              ValueListenableBuilder(
+                valueListenable: lyricsPageForegroundColor.valueNotifier,
+                builder: (context, value, child) {
+                  return Column(
+                    children: [
+                      SizedBox(height: 5),
+
+                      ListTile(
+                        leading: CoverArtWidget(
+                          size: 50,
+                          borderRadius: 5,
+                          song: currentSong,
+                        ),
+                        title: Text(
+                          getTitle(currentSong),
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(color: value),
+                        ),
+                        subtitle: Text(
+                          "${getArtist(currentSong)} - ${getAlbum(currentSong)}",
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(color: value),
+                        ),
+                      ),
+
+                      SizedBox(height: 5),
+                      MyDivider(
+                        color: lyricsPageDividerColor,
+                        thickness: 0.5,
+                        height: 1,
+                      ),
+                      SizedBox(height: 5),
+
+                      Expanded(
+                        child: ListView(
+                          physics: const ClampingScrollPhysics(),
+                          children: [
+                            ListTile(
+                              leading: Icon(Icons.add_rounded, color: value),
+                              title: Text(
+                                l10n.add2Playlist,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: value,
+                                ),
+                              ),
+                              visualDensity: const VisualDensity(
+                                horizontal: 0,
+                                vertical: -4,
+                              ),
+                              onTap: () {
+                                Navigator.pop(context);
+
+                                showAddPlaylistDialog(context, [currentSong!]);
+                              },
+                            ),
+
+                            ListTile(
+                              leading: Transform.scale(
+                                scale: 0.85,
+                                child: Icon(
+                                  Icons.info_outline_rounded,
+                                  color: value,
+                                ),
+                              ),
+                              title: Text(
+                                l10n.songInfo,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: value,
+                                ),
+                              ),
+                              visualDensity: const VisualDensity(
+                                horizontal: 0,
+                                vertical: -4,
+                              ),
+                              onTap: () {
+                                Navigator.pop(context);
+                                showAnimationDialog(
+                                  context: context,
+                                  child: SongInfo(song: currentSong!),
+                                );
+                              },
+                            ),
+
+                            ListTile(
+                              leading: ImageIcon(
+                                desktopLyricsImage,
+                                color: value,
+                              ),
+                              title: Text(
+                                l10n.adjustLyrics,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.bold,
+                                  color: value,
+                                ),
+                              ),
+                              visualDensity: const VisualDensity(
+                                horizontal: 0,
+                                vertical: -4,
+                              ),
+                              onTap: () {
+                                Navigator.pop(context);
+                                showAdjustLyrics();
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                },
+              ),
+            );
+          },
+        );
+      },
+      icon: Icon(Icons.more_vert, color: lyricsPageForegroundColor.value),
+    );
+  }
+
+  void showAdjustLyrics() {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        return MySheet(
+          height: 200,
+          ValueListenableBuilder(
+            valueListenable: lyricsPageForegroundColor.valueNotifier,
+            builder: (context, value, child) {
+              return Column(
+                children: [
+                  SizedBox(height: 10),
+                  ListTile(
+                    title: Text('Text Size', style: .new(color: value)),
+                    trailing: Text(
+                      '+',
+                      style: .new(fontSize: 18, color: value),
+                    ),
+                    onTap: () {
+                      lyricsFontSizeOffsetNotifier.value += 2;
+                      setting.save();
+                    },
+                    visualDensity: .new(horizontal: 0, vertical: -4),
+                  ),
+
+                  ListTile(
+                    title: Text('Text Size', style: .new(color: value)),
+                    onTap: () {
+                      if (lyricsFontSizeOffsetNotifier.value < -2) {
+                        return;
+                      }
+                      lyricsFontSizeOffsetNotifier.value -= 2;
+                      setting.save();
+                    },
+                    trailing: Text(
+                      '-',
+                      style: .new(fontSize: 18, color: value),
+                    ),
+                    visualDensity: .new(horizontal: 0, vertical: -4),
+                  ),
+
+                  ListTile(
+                    title: Text('Offset', style: .new(color: value)),
+                    trailing: Text(
+                      '+ 0.1 s',
+                      style: .new(fontSize: 16, color: value),
+                    ),
+                    onTap: () {
+                      lyricsTimeOffsetNotifier.value += 100;
+                    },
+                    visualDensity: .new(horizontal: 0, vertical: -4),
+                  ),
+
+                  ListTile(
+                    title: Text('Offset', style: .new(color: value)),
+                    trailing: Text(
+                      '- 0.1 s',
+                      style: .new(fontSize: 16, color: value),
+                    ),
+                    onTap: () {
+                      lyricsTimeOffsetNotifier.value -= 100;
+                    },
+                    visualDensity: .new(horizontal: 0, vertical: -4),
+                  ),
+                ],
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget playControls() {
+    final value = lyricsPageForegroundColor.value;
+    return Row(
+      children: [
+        SizedBox(width: 25),
+
+        playModeButton(32, iconColor: value),
+
+        Spacer(),
+
+        skip2PreviousButton(32, iconColor: value),
+
+        Spacer(),
+
+        playOrPauseButton(50, iconColor: value),
+
+        Spacer(),
+
+        skip2NextButton(32, iconColor: value),
+
+        Spacer(),
+
+        showPlayQueueButton(32, iconColor: value),
+
+        SizedBox(width: 25),
       ],
     );
   }
