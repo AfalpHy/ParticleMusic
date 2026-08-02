@@ -1321,6 +1321,24 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Adjust Lyrics'**
   String get adjustLyrics;
+
+  /// No description provided for @fontSize.
+  ///
+  /// In en, this message translates to:
+  /// **'Font Size'**
+  String get fontSize;
+
+  /// No description provided for @fontWeight.
+  ///
+  /// In en, this message translates to:
+  /// **'Font Weight'**
+  String get fontWeight;
+
+  /// No description provided for @offset.
+  ///
+  /// In en, this message translates to:
+  /// **'Offset'**
+  String get offset;
 }
 
 class _AppLocalizationsDelegate

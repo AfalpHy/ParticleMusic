@@ -642,4 +642,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get adjustLyrics => 'Adjust Lyrics';
+
+  @override
+  String get fontSize => 'Font Size';
+
+  @override
+  String get fontWeight => 'Font Weight';
+
+  @override
+  String get offset => 'Offset';
 }

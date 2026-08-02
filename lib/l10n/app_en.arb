@@ -258,5 +258,8 @@
   "trialRemaining": "Trial Remaining",
   "bigPictureMode": "Big Picture Mode",
   "bigPictureModeDescription": "Unlock Big Picture Mode",
-  "adjustLyrics": "Adjust Lyrics"
+  "adjustLyrics": "Adjust Lyrics",
+  "fontSize": "Font Size",
+  "fontWeight": "Font Weight",
+  "offset": "Offset"
 }

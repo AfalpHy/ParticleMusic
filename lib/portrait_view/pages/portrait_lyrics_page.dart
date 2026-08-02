@@ -533,6 +533,8 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
   }
 
   void showAdjustLyrics() {
+    final l10n = AppLocalizations.of(context);
+
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -545,57 +547,160 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
               return Column(
                 children: [
                   SizedBox(height: 10),
-                  ListTile(
-                    title: Text('Text Size', style: .new(color: value)),
-                    trailing: Text(
-                      '+',
-                      style: .new(fontSize: 18, color: value),
-                    ),
-                    onTap: () {
-                      lyricsFontSizeOffsetNotifier.value += 2;
-                      setting.save();
-                    },
-                    visualDensity: .new(horizontal: 0, vertical: -4),
+                  Row(
+                    children: [
+                      SizedBox(width: 20),
+                      Text(
+                        l10n.fontSize,
+                        style: .new(fontWeight: .bold, color: value),
+                      ),
+                      Spacer(),
+
+                      IconButton(
+                        color: value,
+                        onPressed: () {
+                          if (lyricsFontSizeOffsetNotifier.value < -2) {
+                            return;
+                          }
+                          lyricsFontSizeOffsetNotifier.value -= 2;
+                          setting.save();
+                        },
+                        icon: ImageIcon(minimizeImage),
+                      ),
+                      ValueListenableBuilder(
+                        valueListenable: lyricsFontSizeOffsetNotifier,
+                        builder: (context, fontSizeOffset, child) {
+                          return SizedBox(
+                            width: 40,
+                            child: Text(
+                              textAlign: .center,
+                              fontSizeOffset.toString(),
+                              style: .new(fontWeight: .bold, color: value),
+                            ),
+                          );
+                        },
+                      ),
+                      IconButton(
+                        color: value,
+                        onPressed: () {
+                          lyricsFontSizeOffsetNotifier.value += 2;
+                          setting.save();
+                        },
+                        icon: Icon(Icons.add),
+                      ),
+                      SizedBox(width: 20),
+                    ],
                   ),
 
-                  ListTile(
-                    title: Text('Text Size', style: .new(color: value)),
-                    onTap: () {
-                      if (lyricsFontSizeOffsetNotifier.value < -2) {
-                        return;
-                      }
-                      lyricsFontSizeOffsetNotifier.value -= 2;
-                      setting.save();
-                    },
-                    trailing: Text(
-                      '-',
-                      style: .new(fontSize: 18, color: value),
-                    ),
-                    visualDensity: .new(horizontal: 0, vertical: -4),
+                  Row(
+                    children: [
+                      SizedBox(width: 20),
+                      Text(
+                        l10n.offset,
+                        style: .new(fontWeight: .bold, color: value),
+                      ),
+                      Spacer(),
+
+                      IconButton(
+                        color: value,
+                        onPressed: () {
+                          lyricsTimeOffsetNotifier.value -= 100;
+                        },
+                        icon: ImageIcon(minimizeImage),
+                      ),
+                      ValueListenableBuilder(
+                        valueListenable: lyricsTimeOffsetNotifier,
+                        builder: (context, timeOffset, child) {
+                          return SizedBox(
+                            width: 40,
+                            child: Text(
+                              textAlign: .center,
+                              '${timeOffset / 1000} s',
+                              style: .new(fontWeight: .bold, color: value),
+                            ),
+                          );
+                        },
+                      ),
+                      IconButton(
+                        color: value,
+                        onPressed: () {
+                          lyricsTimeOffsetNotifier.value += 100;
+                        },
+                        icon: Icon(Icons.add),
+                      ),
+
+                      SizedBox(width: 20),
+                    ],
                   ),
 
-                  ListTile(
-                    title: Text('Offset', style: .new(color: value)),
-                    trailing: Text(
-                      '+ 0.1 s',
-                      style: .new(fontSize: 16, color: value),
-                    ),
-                    onTap: () {
-                      lyricsTimeOffsetNotifier.value += 100;
-                    },
-                    visualDensity: .new(horizontal: 0, vertical: -4),
-                  ),
+                  Row(
+                    children: [
+                      SizedBox(width: 20),
+                      Text(
+                        l10n.fontWeight,
+                        style: .new(fontWeight: .bold, color: value),
+                      ),
+                      Expanded(
+                        child: ValueListenableBuilder<FontWeight>(
+                          valueListenable: lyricsFontWeightNotifier,
+                          builder: (context, weight, _) {
+                            final fontWeights = [
+                              FontWeight.w100,
+                              FontWeight.w200,
+                              FontWeight.w300,
+                              FontWeight.w400,
+                              FontWeight.w500,
+                              FontWeight.w600,
+                              FontWeight.w700,
+                              FontWeight.w800,
+                              FontWeight.w900,
+                            ];
+                            final index = fontWeights.indexOf(weight);
 
-                  ListTile(
-                    title: Text('Offset', style: .new(color: value)),
-                    trailing: Text(
-                      '- 0.1 s',
-                      style: .new(fontSize: 16, color: value),
-                    ),
-                    onTap: () {
-                      lyricsTimeOffsetNotifier.value -= 100;
-                    },
-                    visualDensity: .new(horizontal: 0, vertical: -4),
+                            return SliderTheme(
+                              data: SliderTheme.of(context).copyWith(
+                                trackHeight: 3,
+
+                                activeTrackColor: value,
+                                inactiveTrackColor: value,
+
+                                thumbColor: value,
+
+                                overlayColor: Colors.transparent,
+
+                                tickMarkShape: const RoundSliderTickMarkShape(
+                                  tickMarkRadius: 1.5,
+                                ),
+                                activeTickMarkColor:
+                                    value.computeLuminance() > 0.5
+                                    ? Colors.black
+                                    : Colors.white,
+                                inactiveTickMarkColor:
+                                    value.computeLuminance() > 0.5
+                                    ? Colors.black
+                                    : Colors.white,
+
+                                thumbShape: const RoundSliderThumbShape(
+                                  enabledThumbRadius: 4,
+                                ),
+                              ),
+                              child: Slider(
+                                value: index.toDouble(),
+                                min: 0,
+                                max: (fontWeights.length - 1).toDouble(),
+                                divisions: fontWeights.length - 1,
+                                onChanged: (value) {
+                                  lyricsFontWeightNotifier.value =
+                                      fontWeights[value.round()];
+                                },
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+
+                      SizedBox(width: 5),
+                    ],
                   ),
                 ],
               );

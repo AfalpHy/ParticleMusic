@@ -202,5 +202,8 @@
   "trialRemaining": "试用剩余时间",
   "bigPictureMode": "大图模式",
   "bigPictureModeDescription": "解锁大图模式",
-  "adjustLyrics": "调整歌词"
+  "adjustLyrics": "调整歌词",
+  "fontSize": "字体大小",
+  "fontWeight": "字体粗细",
+  "offset": "偏移"
 }

@@ -635,4 +635,13 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get adjustLyrics => '调整歌词';
+
+  @override
+  String get fontSize => '字体大小';
+
+  @override
+  String get fontWeight => '字体粗细';
+
+  @override
+  String get offset => '偏移';
 }
