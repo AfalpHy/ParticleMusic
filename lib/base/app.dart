@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:screen_corner_radius/screen_corner_radius.dart';
 
-const String versionNumber = '3.5.1';
+const String versionNumber = '3.5.2';
 
 late final Directory appDocsDir;
 late final Directory appSupportDir;
