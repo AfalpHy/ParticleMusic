@@ -16,7 +16,7 @@ class BigPlayBar extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return ConstrainedBox(
-      constraints: BoxConstraints(maxWidth: 700),
+      constraints: BoxConstraints(maxWidth: 750),
       child: ValueListenableBuilder(
         valueListenable: currentSongNotifier,
         builder: (_, currentSong, _) {

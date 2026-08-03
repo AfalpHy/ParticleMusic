@@ -471,10 +471,8 @@ extension _SongListPanel on _SongListState {
           ),
 
           SizedBox(
-            width: 80,
-            child: Center(
-              child: Text(l10n.favorited, overflow: TextOverflow.ellipsis),
-            ),
+            width: 60,
+            child: Icon(Icons.star_outline_rounded, size: 22),
           ),
 
           SizedBox(
@@ -593,7 +591,7 @@ extension _SongListPanel on _SongListState {
                         ),
 
                         SizedBox(
-                          width: 80,
+                          width: 60,
                           child: Center(
                             child: IconButton(
                               onPressed: () {
@@ -604,11 +602,14 @@ extension _SongListPanel on _SongListState {
                                 builder: (context, value, child) {
                                   return value
                                       ? Icon(
-                                          Icons.favorite_rounded,
+                                          Icons.star_rounded,
                                           color: Colors.red,
-                                          size: 20,
+                                          size: 22,
                                         )
-                                      : Icon(Icons.favorite_outline, size: 20);
+                                      : Icon(
+                                          Icons.star_outline_rounded,
+                                          size: 22,
+                                        );
                                 },
                               ),
                             ),

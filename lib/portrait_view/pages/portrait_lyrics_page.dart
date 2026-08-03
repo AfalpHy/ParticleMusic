@@ -808,8 +808,7 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
 }
 
 class FavoriteButton extends StatelessWidget {
-  final double? size;
-  const FavoriteButton({super.key, this.size});
+  const FavoriteButton({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -821,19 +820,16 @@ class FavoriteButton extends StatelessWidget {
           valueListenable: currentSong.isFavoriteNotifier,
           builder: (_, value, _) {
             return IconButton(
+              color: lyricsPageForegroundColor.value,
+
               onPressed: () {
                 tryVibrate();
                 toggleFavoriteState(currentSong);
               },
-              icon: ValueListenableBuilder(
-                valueListenable: lyricsPageForegroundColor.valueNotifier,
-                builder: (context, color, child) {
-                  return Icon(
-                    value ? Icons.favorite : Icons.favorite_outline,
-                    color: value ? Colors.red : color,
-                    size: size,
-                  );
-                },
+              icon: Icon(
+                value ? Icons.star : Icons.star_outline,
+                color: value ? Colors.red : null,
+                size: 25,
               ),
             );
           },

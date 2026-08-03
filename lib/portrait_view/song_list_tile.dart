@@ -77,11 +77,7 @@ class SongListTile extends StatelessWidget {
                   return value
                       ? SizedBox(
                           width: 20,
-                          child: Icon(
-                            Icons.favorite,
-                            color: Colors.red,
-                            size: 15,
-                          ),
+                          child: Icon(Icons.star, color: Colors.red, size: 15),
                         )
                       : SizedBox();
                 },

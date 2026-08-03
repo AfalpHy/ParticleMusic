@@ -75,7 +75,7 @@ class SelectableSongListTile extends StatelessWidget {
                           ? SizedBox(
                               width: 20,
                               child: Icon(
-                                Icons.favorite,
+                                Icons.star,
                                 color: Colors.red,
                                 size: 15,
                               ),
