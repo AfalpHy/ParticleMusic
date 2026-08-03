@@ -9,6 +9,7 @@ import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/asset_images.dart';
 import 'package:sylvakru/base/audio_handler.dart';
 import 'package:sylvakru/base/data/artist_album.dart';
+import 'package:sylvakru/base/data/loader.dart';
 import 'package:sylvakru/base/data/playlist.dart';
 import 'package:sylvakru/base/data/song_list_manager.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
@@ -349,10 +350,12 @@ Future<T?> showAnimationDialog<T>({
                                 smoothness: 1,
                                 borderRadius: BorderRadius.circular(10),
                               ),
-                              color: Color.alphaBlend(
-                                colorManager.getSpecificBgColor(),
-                                colorManager.getSpecificBgBaseColor(),
-                              ),
+                              color: firstLaunch
+                                  ? null
+                                  : Color.alphaBlend(
+                                      colorManager.getSpecificBgColor(),
+                                      colorManager.getSpecificBgBaseColor(),
+                                    ),
                               clipBehavior: Clip.antiAliasWithSaveLayer,
                               child: MediaQuery.removePadding(
                                 context: context,

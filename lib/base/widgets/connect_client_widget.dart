@@ -169,7 +169,9 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
                 await config.save();
                 await Loader.sync(getSourceTypeBitMask(widget.sourceType));
               },
-              style: ElevatedButton.styleFrom(backgroundColor: value),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: firstLaunch ? null : value,
+              ),
               child: Text(l10n.clear),
             ),
 
@@ -252,7 +254,9 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
                   await Loader.sync(getSourceTypeBitMask(widget.sourceType));
                 }
               },
-              style: ElevatedButton.styleFrom(backgroundColor: value),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: firstLaunch ? null : value,
+              ),
               child: Text(l10n.confirm),
             ),
             Spacer(),
