@@ -497,10 +497,20 @@ class MyAudioHandler extends BaseAudioHandler {
       if (_playLastSyncTime != null) {
         _playedDuration += DateTime.now().difference(_playLastSyncTime!);
       }
-      if (currentSongNotifier.value!.duration != null) {
-        double times =
-            _playedDuration.inSeconds /
-            currentSongNotifier.value!.duration!.inSeconds;
+
+      int durationSeconds = getDuration(currentSongNotifier.value).inSeconds;
+      // fix wrong duration
+      if (durationSeconds <= 0) {
+        durationSeconds = _player.state.duration.inSeconds;
+        if (durationSeconds > 0) {
+          await library.updateDuration(
+            currentSongNotifier.value!,
+            _player.state.duration,
+          );
+        }
+      }
+      if (durationSeconds > 0) {
+        double times = _playedDuration.inSeconds / durationSeconds;
         if (times > 0.5) {
           library.tryAddCache(currentSongNotifier.value!);
           history.addSongTimes(currentSongNotifier.value!, times.round());
@@ -664,8 +674,16 @@ class MyAudioHandler extends BaseAudioHandler {
     return _player.stream.position;
   }
 
+  Stream<Duration> getDurationStream() {
+    return _player.stream.duration;
+  }
+
   Duration getPosition() {
     return _player.state.position;
+  }
+
+  Duration getCurrentDuration() {
+    return _player.state.duration;
   }
 
   void setVolume(double volume) {

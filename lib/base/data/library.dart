@@ -444,6 +444,18 @@ class Library {
     );
   }
 
+  Future<void> updateDuration(MyAudioMetadata song, Duration duration) async {
+    final metadataDB = _getMetadataDB(song.sourceType);
+
+    await (metadataDB.update(
+      metadataDB.metadataItems,
+    )..where((t) => t.id.equals(song.id))).write(
+      MetadataItemsCompanion(duration: Value(duration.inMilliseconds)),
+    );
+    song.duration = duration;
+    song.updateNotifier.value++;
+  }
+
   Future<void> updateMetadata(MyAudioMetadata song) async {
     final metadataDB = _getMetadataDB(song.sourceType);
 
