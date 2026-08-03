@@ -564,6 +564,8 @@ class Library {
             ? localFolderList
             : webdavFolderList;
 
+        final updateCount = sourceType == .local ? 100 : 25;
+
         for (final folder in folderList) {
           await folder.setFileAndModified();
           pathAndModified.addAll(folder.pathAndModified);
@@ -584,7 +586,7 @@ class Library {
           if (song != null) {
             validId.add(id);
             songListManager.getSongList2(sourceType).add(song);
-            if (validId.length % 25 == 0) {
+            if (validId.length % updateCount == 0) {
               _syncNotify(sourceType);
             }
           }

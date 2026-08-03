@@ -1339,6 +1339,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Offset'**
   String get offset;
+
+  /// No description provided for @getStart.
+  ///
+  /// In en, this message translates to:
+  /// **'Get Start'**
+  String get getStart;
 }
 
 class _AppLocalizationsDelegate

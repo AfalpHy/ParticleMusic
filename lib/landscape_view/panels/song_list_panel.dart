@@ -710,16 +710,23 @@ extension _SongListPanel on _SongListState {
       valueListenable: currentSongNotifier,
       builder: (context, currentSong, child) {
         if (currentSong == song) {
-          return ValueListenableBuilder(
-            valueListenable: isPlayingNotifier,
-            builder: (context, value, child) {
+          return ListenableBuilder(
+            listenable: Listenable.merge([
+              isPlayingNotifier,
+              iconColor.valueNotifier,
+            ]),
+            builder: (context, child) {
               return RiveAnimatedIcon(
-                key: ValueKey(value),
+                key: ValueKey(
+                  isPlayingNotifier.value.toString() +
+                      iconColor.value.toString(),
+                ),
                 riveIcon: .sound,
                 width: 30,
                 height: 30,
-                loopAnimation: value,
+                loopAnimation: isPlayingNotifier.value,
                 enableAbsorbPointer: true,
+                color: iconColor.value,
               );
             },
           );

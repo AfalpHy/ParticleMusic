@@ -651,4 +651,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get offset => 'Offset';
+
+  @override
+  String get getStart => 'Get Start';
 }

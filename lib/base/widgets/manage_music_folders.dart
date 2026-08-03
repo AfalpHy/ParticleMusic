@@ -24,7 +24,8 @@ import 'package:smooth_corner/smooth_corner.dart';
 final ValueNotifier<bool> recursiveScanNotifier = ValueNotifier(false);
 
 class ManageMusicFolders extends StatefulWidget {
-  const ManageMusicFolders({super.key});
+  final bool inSetting;
+  const ManageMusicFolders({super.key, this.inSetting = true});
 
   @override
   State<StatefulWidget> createState() => _ManageMusicFoldersState();
@@ -37,6 +38,11 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
   final updateNotifier = ValueNotifier(0);
   late ValueNotifier<bool> tmpRecursiveScanNotifier;
 
+  void updateFolders() async {
+    await library.updateFolders(currentLocalFolderIdList, true);
+    await library.updateFolders(currentWebdavFolderIdList, false);
+  }
+
   @override
   void initState() {
     super.initState();
@@ -48,15 +54,29 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
         .map((e) => e.id)
         .toList();
     tmpRecursiveScanNotifier = ValueNotifier(recursiveScanNotifier.value);
+
+    if (!widget.inSetting) {
+      updateNotifier.addListener(updateFolders);
+      tmpRecursiveScanNotifier.addListener(() {
+        recursiveScanNotifier.value = tmpRecursiveScanNotifier.value;
+        setting.save();
+      });
+    }
   }
 
   @override
   void dispose() {
+    updateNotifier.dispose();
+    tmpRecursiveScanNotifier.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (!widget.inSetting) {
+      return _notInSettingView(context);
+    }
+
     final appWidth = MediaQuery.widthOf(context);
     final appHeight = MediaQuery.heightOf(context);
 
@@ -68,6 +88,54 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
       );
     }
     return SizedBox(height: 320, width: 600, child: _landscapeView(context));
+  }
+
+  Widget _notInSettingView(BuildContext context) {
+    return ValueListenableBuilder(
+      valueListenable: updateNotifier,
+      builder: (context, value, child) {
+        int count =
+            currentLocalFolderIdList.length + currentWebdavFolderIdList.length;
+        return Column(
+          children: [
+            options(context),
+
+            if (count > 0) ...[
+              SizedBox(height: 10),
+
+              MyDivider(thickness: 0.5, height: 1, color: dividerColor),
+
+              SizedBox(height: 10),
+            ],
+
+            for (int index = 0; index < count; index++)
+              ListTile(
+                contentPadding: .fromLTRB(20, 0, 0, 0),
+                title: Text(
+                  index < currentLocalFolderIdList.length
+                      ? currentLocalFolderIdList[index]
+                      : currentWebdavFolderIdList[index -
+                            currentLocalFolderIdList.length],
+                ),
+                trailing: IconButton(
+                  onPressed: () {
+                    if (index < currentLocalFolderIdList.length) {
+                      currentLocalFolderIdList.removeAt(index);
+                    } else {
+                      currentWebdavFolderIdList.removeAt(
+                        index - currentLocalFolderIdList.length,
+                      );
+                    }
+                    updateNotifier.value++;
+                  },
+                  icon: ImageIcon(deleteImage),
+                  iconSize: 20,
+                ),
+              ),
+          ],
+        );
+      },
+    );
   }
 
   Widget _portraitView(BuildContext context) {
@@ -94,19 +162,20 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
 
               folderListSliver(),
 
-              SliverFillRemaining(
-                hasScrollBody: false,
-                child: Column(
-                  children: [
-                    const Spacer(),
+              if (widget.inSetting)
+                SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Column(
+                    children: [
+                      const Spacer(),
 
-                    Align(
-                      alignment: Alignment.centerRight,
-                      child: confirmButton(context),
-                    ),
-                  ],
+                      Align(
+                        alignment: Alignment.centerRight,
+                        child: confirmButton(context),
+                      ),
+                    ],
+                  ),
                 ),
-              ),
             ],
           ),
         );
@@ -251,7 +320,7 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
           child: ListTile(
             title: Text(l10n.recursiveScan),
             contentPadding: .fromLTRB(15, 0, 0, 0),
-            dense: true,
+            dense: widget.inSetting,
             trailing: SizedBox(
               width: 70,
               child: MySwitch(valueNotifier: tmpRecursiveScanNotifier),
@@ -268,7 +337,7 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
           clipBehavior: .antiAlias,
           child: ListTile(
             contentPadding: .fromLTRB(15, 0, 0, 0),
-            dense: true,
+            dense: widget.inSetting,
             onTap: () {
               _addFolder(context);
             },
@@ -285,7 +354,7 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
           clipBehavior: .antiAlias,
           child: ListTile(
             contentPadding: .fromLTRB(15, 0, 0, 0),
-            dense: true,
+            dense: widget.inSetting,
             onTap: () {
               _addFolders(context);
             },
@@ -302,7 +371,7 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
           clipBehavior: .antiAlias,
           child: ListTile(
             contentPadding: .fromLTRB(15, 0, 0, 0),
-            dense: true,
+            dense: widget.inSetting,
             onTap: () {
               _addWebdavFolder(context);
             },
@@ -319,7 +388,7 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
           clipBehavior: .antiAlias,
           child: ListTile(
             contentPadding: .fromLTRB(15, 0, 0, 0),
-            dense: true,
+            dense: widget.inSetting,
             onTap: () {
               _addWebdavFolders(context);
             },
@@ -331,82 +400,70 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
   }
 
   Widget folderListSliver() {
-    return ValueListenableBuilder(
-      valueListenable: updateNotifier,
-      builder: (context, value, child) {
-        return SliverList(
-          delegate: SliverChildBuilderDelegate(
-            (context, index) {
-              return ListTile(
-                dense: true,
-                contentPadding: .fromLTRB(15, 0, 0, 0),
-                title: Text(
-                  index < currentLocalFolderIdList.length
-                      ? currentLocalFolderIdList[index]
-                      : currentWebdavFolderIdList[index -
-                            currentLocalFolderIdList.length],
-                ),
-                trailing: IconButton(
-                  onPressed: () {
-                    if (index < currentLocalFolderIdList.length) {
-                      currentLocalFolderIdList.removeAt(index);
-                    } else {
-                      currentWebdavFolderIdList.removeAt(
-                        index - currentLocalFolderIdList.length,
-                      );
-                    }
-                    updateNotifier.value++;
-                  },
-                  icon: ImageIcon(deleteImage),
-                  iconSize: 20,
-                ),
-              );
-            },
-            childCount:
-                currentLocalFolderIdList.length +
-                currentWebdavFolderIdList.length,
-          ),
-        );
-      },
+    return SliverList(
+      delegate: SliverChildBuilderDelegate(
+        (context, index) {
+          return ListTile(
+            dense: true,
+            contentPadding: .fromLTRB(15, 0, 0, 0),
+            title: Text(
+              index < currentLocalFolderIdList.length
+                  ? currentLocalFolderIdList[index]
+                  : currentWebdavFolderIdList[index -
+                        currentLocalFolderIdList.length],
+            ),
+            trailing: IconButton(
+              onPressed: () {
+                if (index < currentLocalFolderIdList.length) {
+                  currentLocalFolderIdList.removeAt(index);
+                } else {
+                  currentWebdavFolderIdList.removeAt(
+                    index - currentLocalFolderIdList.length,
+                  );
+                }
+                updateNotifier.value++;
+              },
+              icon: ImageIcon(deleteImage),
+              iconSize: 20,
+            ),
+          );
+        },
+        childCount:
+            currentLocalFolderIdList.length + currentWebdavFolderIdList.length,
+      ),
     );
   }
 
   Widget folderList() {
-    return ValueListenableBuilder(
-      valueListenable: updateNotifier,
-      builder: (context, value, child) {
-        return ListView.builder(
-          itemBuilder: (context, index) {
-            return ListTile(
-              dense: true,
-              contentPadding: .fromLTRB(20, 0, 0, 0),
-              title: Text(
-                index < currentLocalFolderIdList.length
-                    ? currentLocalFolderIdList[index]
-                    : currentWebdavFolderIdList[index -
-                          currentLocalFolderIdList.length],
-              ),
-              trailing: IconButton(
-                onPressed: () {
-                  if (index < currentLocalFolderIdList.length) {
-                    currentLocalFolderIdList.removeAt(index);
-                  } else {
-                    currentWebdavFolderIdList.removeAt(
-                      index - currentLocalFolderIdList.length,
-                    );
-                  }
-                  updateNotifier.value++;
-                },
-                icon: ImageIcon(deleteImage),
-                iconSize: 20,
-              ),
-            );
-          },
-          itemCount:
-              currentLocalFolderIdList.length +
-              currentWebdavFolderIdList.length,
+    return ListView.builder(
+      itemBuilder: (context, index) {
+        return ListTile(
+          dense: true,
+          contentPadding: .fromLTRB(20, 0, 0, 0),
+          title: Text(
+            index < currentLocalFolderIdList.length
+                ? currentLocalFolderIdList[index]
+                : currentWebdavFolderIdList[index -
+                      currentLocalFolderIdList.length],
+          ),
+          trailing: IconButton(
+            onPressed: () {
+              if (index < currentLocalFolderIdList.length) {
+                currentLocalFolderIdList.removeAt(index);
+              } else {
+                currentWebdavFolderIdList.removeAt(
+                  index - currentLocalFolderIdList.length,
+                );
+              }
+              updateNotifier.value++;
+            },
+            icon: ImageIcon(deleteImage),
+            iconSize: 20,
+          ),
         );
       },
+      itemCount:
+          currentLocalFolderIdList.length + currentWebdavFolderIdList.length,
     );
   }
 
@@ -416,6 +473,7 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
   ) async {
     final l10n = AppLocalizations.of(context);
     bool isOnMyiPhone = isFileProviderStorePath(path);
+
     if (!isOnMyiPhone && !path.contains(appDocsDir.path)) {
       if (context.mounted) {
         showCenterMessage(context, l10n.folderNotSupportedYet);
@@ -469,7 +527,6 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
       }
       return;
     }
-
     currentLocalFolderIdList.add(id);
     updateNotifier.value++;
   }
@@ -492,7 +549,7 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
     if (result == null || !context.mounted) {
       return;
     }
-    if (Platform.isIOS && await _checkAndConfigureIOSPath(context, result)) {
+    if (Platform.isIOS && !await _checkAndConfigureIOSPath(context, result)) {
       return;
     }
 
@@ -521,7 +578,7 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
 
   Future<bool> _isWebdavValid(BuildContext context) async {
     if (webdavClient == null) {
-      showCenterMessage(context, 'There is no connected WebDAV');
+      showCenterMessage(context, 'Please connect to WebDAV first');
       return false;
     }
     try {

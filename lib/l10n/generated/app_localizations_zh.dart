@@ -644,4 +644,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get offset => '偏移';
+
+  @override
+  String get getStart => '开始使用';
 }

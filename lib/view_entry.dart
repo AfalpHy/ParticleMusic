@@ -4,12 +4,17 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:sylvakru/base/app.dart';
+import 'package:sylvakru/base/asset_images.dart';
 import 'package:sylvakru/base/audio_handler.dart';
+import 'package:sylvakru/base/data/loader.dart';
+import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/services/keyboard.dart';
 import 'package:sylvakru/base/services/network_error_reporter.dart';
 import 'package:sylvakru/base/utils/dynamic_lyrics_page_route.dart';
 import 'package:sylvakru/base/utils/media_query.dart';
+import 'package:sylvakru/base/widgets/connect_client_widget.dart';
+import 'package:sylvakru/base/widgets/manage_music_folders.dart';
 import 'package:sylvakru/big_picture_view/big_picture_view.dart';
 import 'package:sylvakru/l10n/generated/app_localizations.dart';
 import 'package:sylvakru/landscape_view/landscape_view.dart';
@@ -166,6 +171,9 @@ class _ViewEntryState extends State<ViewEntry> with WidgetsBindingObserver {
   }
 
   Widget view() {
+    if (firstLaunch) {
+      return firstLaunchView();
+    }
     return ValueListenableBuilder(
       valueListenable: viewModeNotifier,
       builder: (context, viewMode, child) {
@@ -185,6 +193,131 @@ class _ViewEntryState extends State<ViewEntry> with WidgetsBindingObserver {
         _applySystemUiMode(SystemUiMode.immersiveSticky);
         return LandscapeView();
       },
+    );
+  }
+
+  Widget firstLaunchView() {
+    final l10n = AppLocalizations.of(context);
+    return Material(
+      child: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 500),
+          child: Padding(
+            padding: .symmetric(horizontal: 20),
+            child: Column(
+              children: [
+                SizedBox(height: MediaQuery.of(context).padding.top + 20),
+                Expanded(
+                  child: ListView(
+                    padding: .zero,
+                    children: [
+                      Card(
+                        child: Column(
+                          children: [
+                            ListTile(
+                              leading: Image(
+                                image: webdavImage,
+                                width: 30,
+                                height: 30,
+                                color: iconColor.value,
+                              ),
+
+                              title: Text(l10n.connect2WebDAV),
+                              onTap: () {
+                                showAnimationDialog(
+                                  context: context,
+                                  child: ConnectClientWidget(
+                                    sourceType: .webdav,
+                                  ),
+                                );
+                              },
+                            ),
+                            ListTile(
+                              leading: Image(
+                                image: subsonicImage,
+                                width: 30,
+                                height: 30,
+                              ),
+
+                              title: Text(l10n.connect2Subsonic),
+                              onTap: () {
+                                showAnimationDialog(
+                                  context: context,
+                                  child: ConnectClientWidget(
+                                    sourceType: .subsonic,
+                                  ),
+                                );
+                              },
+                            ),
+                            ListTile(
+                              leading: Image(
+                                image: navidromeImage,
+                                width: 30,
+                                height: 30,
+                              ),
+
+                              title: Text(l10n.connect2Navidrome),
+                              onTap: () {
+                                showAnimationDialog(
+                                  context: context,
+                                  child: ConnectClientWidget(
+                                    sourceType: .navidrome,
+                                  ),
+                                );
+                              },
+                            ),
+                            ListTile(
+                              leading: Image(
+                                image: embyImage,
+                                width: 30,
+                                height: 30,
+                              ),
+
+                              title: Text(l10n.connect2Emby),
+                              onTap: () {
+                                showAnimationDialog(
+                                  context: context,
+                                  child: ConnectClientWidget(sourceType: .emby),
+                                );
+                              },
+                            ),
+                          ],
+                        ),
+                      ),
+
+                      SizedBox(height: 10),
+
+                      Card(child: ManageMusicFolders(inSetting: false)),
+                    ],
+                  ),
+                ),
+                SizedBox(height: 10),
+
+                Card(
+                  clipBehavior: .antiAlias,
+                  child: InkWell(
+                    mouseCursor: SystemMouseCursors.click,
+                    onTap: () async {
+                      setState(() {
+                        firstLaunch = false;
+                      });
+                      await Loader.sync(3);
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 18.0,
+                        vertical: 12.0,
+                      ),
+                      child: Text(l10n.getStart),
+                    ),
+                  ),
+                ),
+                SizedBox(height: 20),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }

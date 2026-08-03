@@ -95,7 +95,12 @@ extension FoldersPanel on FoldersLayer {
                             ]),
                             builder: (_, _) {
                               return Hero(
-                                tag: (coverSong?.id ?? '') + folder.id,
+                                tag:
+                                    (coverSong?.id ??
+                                        (folder.isWebdav
+                                            ? 'webdav'
+                                            : 'local')) +
+                                    folder.id,
                                 child: CoverArtWidget(
                                   size: 50,
                                   borderRadius: 5,

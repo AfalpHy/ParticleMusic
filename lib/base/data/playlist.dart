@@ -379,12 +379,7 @@ class Playlist {
   Future<void> sync(SourceType sourceType) async {
     switch (sourceType) {
       case .local:
-        await _load(sourceType);
-        break;
       case .webdav:
-        if (webdavFile == null) {
-          return;
-        }
         await _load(sourceType);
         break;
       case .subsonic:

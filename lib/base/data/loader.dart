@@ -9,12 +9,13 @@ import 'package:sylvakru/base/services/bookmark_service.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/data/history.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
-import 'package:sylvakru/base/utils/path.dart';
 import 'package:sylvakru/layer/layers_manager.dart';
 import 'package:sylvakru/base/data/library.dart';
 import 'package:sylvakru/base/data/playlist.dart';
 import 'package:sylvakru/base/data/setting.dart';
 import 'package:permission_handler/permission_handler.dart';
+
+bool firstLaunch = true;
 
 class Loader {
   static bool _syncing = false;
@@ -134,17 +135,9 @@ class Loader {
 
   static void _handleLegacyVersionData() {
     File tmp = File('${appSupportDir.path}/version.json');
-    tmp.writeAsStringSync(jsonEncode(versionNumber));
-
-    for (final sourceType in SourceType.values) {
-      File tmpPlaylistFile = File(
-        "${getPlaylistConfigPath(sourceType)}/particle_music_playlists.json",
-      );
-      if (tmpPlaylistFile.existsSync()) {
-        tmpPlaylistFile.rename(
-          '${getPlaylistConfigPath(sourceType)}/sylvakru_playlists.json',
-        );
-      }
+    if (tmp.existsSync()) {
+      firstLaunch = false;
     }
+    tmp.writeAsStringSync(jsonEncode(versionNumber));
   }
 }

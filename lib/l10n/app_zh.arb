@@ -205,5 +205,6 @@
   "adjustLyrics": "调整歌词",
   "fontSize": "字体大小",
   "fontWeight": "字体粗细",
-  "offset": "偏移"
+  "offset": "偏移",
+  "getStart": "开始使用"
 }

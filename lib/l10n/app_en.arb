@@ -261,5 +261,7 @@
   "adjustLyrics": "Adjust Lyrics",
   "fontSize": "Font Size",
   "fontWeight": "Font Weight",
-  "offset": "Offset"
+  "offset": "Offset",
+  "getStart": "Get Start"
+
 }

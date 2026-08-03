@@ -39,7 +39,10 @@ extension FoldersPage on FoldersLayer {
                   listenable: Listenable.merge([coverSong?.updateNotifier]),
                   builder: (_, _) {
                     return Hero(
-                      tag: (coverSong?.id ?? '') + folder.id,
+                      tag:
+                          (coverSong?.id ??
+                              (folder.isWebdav ? 'webdav' : 'local')) +
+                          folder.id,
                       transitionOnUserGestures: true,
                       child: CoverArtWidget(
                         size: 50,

@@ -388,16 +388,23 @@ abstract class BigSongListWithCoverBasePanelState<
               builder: (context, currentSong, child) {
                 return Center(
                   child: currentSong == song
-                      ? ValueListenableBuilder(
-                          valueListenable: isPlayingNotifier,
-                          builder: (context, value, child) {
+                      ? ListenableBuilder(
+                          listenable: Listenable.merge([
+                            isPlayingNotifier,
+                            iconColor.valueNotifier,
+                          ]),
+                          builder: (context, child) {
                             return RiveAnimatedIcon(
-                              key: ValueKey(value),
+                              key: ValueKey(
+                                isPlayingNotifier.value.toString() +
+                                    iconColor.value.toString(),
+                              ),
                               riveIcon: .sound,
                               width: 35,
                               height: 35,
-                              loopAnimation: value,
+                              loopAnimation: isPlayingNotifier.value,
                               enableAbsorbPointer: true,
+                              color: iconColor.value,
                             );
                           },
                         )
