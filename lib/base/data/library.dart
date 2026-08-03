@@ -572,7 +572,7 @@ class Library {
           if (song != null) {
             validId.add(id);
             songListManager.getSongList2(sourceType).add(song);
-            if (validId.length % 50 == 0) {
+            if (validId.length % 25 == 0) {
               _syncNotify(sourceType);
             }
           }

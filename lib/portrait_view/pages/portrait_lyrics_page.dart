@@ -826,10 +826,13 @@ class FavoriteButton extends StatelessWidget {
                 tryVibrate();
                 toggleFavoriteState(currentSong);
               },
-              icon: Icon(
-                value ? Icons.star : Icons.star_outline,
-                color: value ? Colors.red : null,
-                size: 25,
+              icon: Transform.scale(
+                scale: 1.1,
+                child: Icon(
+                  value ? Icons.star_rounded : Icons.star_outline_rounded,
+                  color: value ? Colors.red : null,
+                  size: 25,
+                ),
               ),
             );
           },
