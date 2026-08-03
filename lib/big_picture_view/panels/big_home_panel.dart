@@ -217,7 +217,7 @@ class _BigHomePanelState extends State<BigHomePanel> {
               ? l10n.favorites
               : playlistManager.playlists[index].name,
           getTag: (index) =>
-              'big${playlistManager.playlists[index].getCoverSong()?.id}${playlistManager.playlists[index].name}',
+              'big${playlistManager.playlists[index].getCoverSong()?.id}${index == 0 ? l10n.favorites : playlistManager.playlists[index].name}',
           verticalController: verticalController,
           changeNotifier: (index) =>
               playlistManager.playlists[index].songListManager.changeNotifier,
