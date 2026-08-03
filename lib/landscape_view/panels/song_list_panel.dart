@@ -571,9 +571,10 @@ extension _SongListPanel on _SongListState {
                         SizedBox(
                           width: 60,
                           child: Center(
-                            child: indexOrPlayButton(
+                            child: indexOrIcon(
                               showPlayButtonNotifier,
                               index,
+                              song,
                             ),
                           ),
                         ),
@@ -700,69 +701,61 @@ extension _SongListPanel on _SongListState {
     );
   }
 
-  Widget indexOrPlayButton(ValueNotifier<bool> showPlayButtonNotifier, index) {
+  Widget indexOrIcon(
+    ValueNotifier<bool> showPlayButtonNotifier,
+    int index,
+    MyAudioMetadata song,
+  ) {
     return ValueListenableBuilder(
-      valueListenable: showPlayButtonNotifier,
-      builder: (context, value, child) {
-        return value
-            ? IconButton(
-                onPressed: () async {
-                  audioHandler.currentIndex = index;
-                  await audioHandler.setPlayQueue(
-                    currentSongListNotifier.value,
-                  );
-                  await audioHandler.load();
-                  audioHandler.play();
-                },
-                icon: Icon(Icons.play_arrow_rounded),
-              )
-            : Text((index + 1).toString(), overflow: TextOverflow.ellipsis);
+      valueListenable: currentSongNotifier,
+      builder: (context, currentSong, child) {
+        if (currentSong == song) {
+          return ValueListenableBuilder(
+            valueListenable: isPlayingNotifier,
+            builder: (context, value, child) {
+              return RiveAnimatedIcon(
+                key: ValueKey(value),
+                riveIcon: .sound,
+                width: 30,
+                height: 30,
+                loopAnimation: value,
+                enableAbsorbPointer: true,
+              );
+            },
+          );
+        }
+        return ValueListenableBuilder(
+          valueListenable: showPlayButtonNotifier,
+          builder: (context, value, child) {
+            return value
+                ? IconButton(
+                    onPressed: () {
+                      audioHandler.singlePlay(song);
+                    },
+                    icon: Icon(Icons.play_arrow_rounded),
+                  )
+                : Text((index + 1).toString(), overflow: TextOverflow.ellipsis);
+          },
+        );
       },
     );
   }
 
   Widget mainInfo(MyAudioMetadata song) {
-    return ValueListenableBuilder(
-      valueListenable: currentSongNotifier,
-      builder: (_, currentSong, _) {
-        return ListTile(
-          contentPadding: .zero,
-          visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-          leading: CoverArtWidget(size: 40, borderRadius: 4, song: song),
-          title: ValueListenableBuilder(
-            valueListenable: highlightTextColor.valueNotifier,
-            builder: (context, value, child) {
-              return Text(
-                getTitle(song),
-                overflow: TextOverflow.ellipsis,
-                style: song == currentSong
-                    ? TextStyle(
-                        color: value,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 15,
-                      )
-                    : TextStyle(fontSize: 15),
-              );
-            },
-          ),
-          subtitle: ValueListenableBuilder(
-            valueListenable: highlightTextColor.valueNotifier,
-            builder: (context, value, child) {
-              return Text(
-                getArtist(song),
-                overflow: TextOverflow.ellipsis,
-                style: song == currentSong
-                    ? TextStyle(
-                        color: value,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 12,
-                      )
-                    : TextStyle(fontSize: 12),
-              );
-            },
-          ),
-        );
-      },
+    return ListTile(
+      contentPadding: .zero,
+      visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
+      leading: CoverArtWidget(size: 40, borderRadius: 4, song: song),
+      title: Text(
+        getTitle(song),
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(fontSize: 15),
+      ),
+      subtitle: Text(
+        getArtist(song),
+        overflow: TextOverflow.ellipsis,
+        style: TextStyle(fontSize: 12),
+      ),
     );
   }
 
