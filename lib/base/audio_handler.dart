@@ -585,6 +585,10 @@ class MyAudioHandler extends BaseAudioHandler {
     updateServiceMediaItem(currentSong);
 
     updatePlaybackState(postion: Duration.zero);
+
+    if (start == null) {
+      _positionState.writeAsString(Duration.zero.inMilliseconds.toString());
+    }
   }
 
   void updateServiceMediaItem(MyAudioMetadata currentSong) {
@@ -626,6 +630,7 @@ class MyAudioHandler extends BaseAudioHandler {
     updatePlaybackState();
     _positionTimer?.cancel();
     _positionTimer = null;
+    _positionState.writeAsString(getPosition().inMilliseconds.toString());
   }
 
   @override
@@ -635,6 +640,7 @@ class MyAudioHandler extends BaseAudioHandler {
     updatePlaybackState(stop: true);
     _positionTimer?.cancel();
     _positionTimer = null;
+    _positionState.writeAsString(Duration.zero.inMilliseconds.toString());
   }
 
   @override
@@ -644,6 +650,7 @@ class MyAudioHandler extends BaseAudioHandler {
     // ensure position is updated
     await Future.delayed(Duration(milliseconds: 50));
     updateLyricsNotifier.value++;
+    _positionState.writeAsString(getPosition().inMilliseconds.toString());
   }
 
   @override
