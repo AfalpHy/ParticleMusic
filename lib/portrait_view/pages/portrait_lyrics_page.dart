@@ -514,7 +514,7 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                               ),
                               onTap: () {
                                 Navigator.pop(context);
-                                showAdjustLyrics();
+                                showAdjustLyrics(context);
                               },
                             ),
                           ],
@@ -532,13 +532,13 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
     );
   }
 
-  void showAdjustLyrics() {
-    final l10n = AppLocalizations.of(context);
-
+  void showAdjustLyrics(BuildContext context) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
       builder: (context) {
+        final l10n = AppLocalizations.of(context);
+
         return MySheet(
           height: 200,
           ValueListenableBuilder(
