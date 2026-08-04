@@ -171,7 +171,7 @@ import UIKit
         var iconImage: UIImage? = nil
 
         if let iconBytesData = actionData["iconBytes"] as? FlutterStandardTypedData {
-          iconImage = UIImage(data: iconBytesData.data)
+          iconImage = UIImage(data: iconBytesData.data, scale: 4.0)
         }
 
         let action = UIAction(title: title, image: iconImage, identifier: nil) { [weak self] _ in

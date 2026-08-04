@@ -592,7 +592,7 @@ class NativeMenu {
         style: TextStyle(
           fontFamily: icon.fontFamily,
           package: icon.fontPackage,
-          fontSize: Platform.isMacOS ? 18 : 24,
+          fontSize: 96,
           color: Colors.black,
         ),
       ),
