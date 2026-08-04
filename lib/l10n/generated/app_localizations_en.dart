@@ -627,9 +627,15 @@ class AppLocalizationsEn extends AppLocalizations {
   String get viewLog => 'View Log';
 
   @override
+  String get premiumTrialActive => 'Premium Trial Active';
+
+  @override
   String trialRemainingStatus(int count) {
-    return 'Premium trial active\n$count min remaining';
+    return 'You have $count min of Premium access remaining\nPurchase Premium to continue after your trial ends';
   }
+
+  @override
+  String get gotIt => 'Got it';
 
   @override
   String get trialRemaining => 'Trial Remaining';

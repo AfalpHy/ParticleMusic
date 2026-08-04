@@ -73,14 +73,8 @@ class _ViewEntryState extends State<ViewEntry> with WidgetsBindingObserver {
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (Platform.isIOS) {
-        if (trialRemainingMinNotifier.value > 0) {
-          showCenterMessage(
-            context,
-            AppLocalizations.of(
-              context,
-            ).trialRemainingStatus(trialRemainingMinNotifier.value),
-            duration: 3000,
-          );
+        if (!firstLaunch && trialRemainingMinNotifier.value > 0) {
+          showTrialDialog(context);
         }
         await NativeMenu.init();
         await NativeMenu.initIcons();
@@ -302,6 +296,12 @@ class _ViewEntryState extends State<ViewEntry> with WidgetsBindingObserver {
                       setState(() {
                         firstLaunch = false;
                       });
+                      if (Platform.isIOS &&
+                          trialRemainingMinNotifier.value > 0) {
+                        WidgetsBinding.instance.addPostFrameCallback((_) {
+                          showTrialDialog(context);
+                        });
+                      }
                       await Loader.sync(3);
                     },
                     child: Padding(

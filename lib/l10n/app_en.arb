@@ -247,7 +247,8 @@
   "lyricsParseFailed": "Lyrics parsing failed",
   "switchMode": "Switch Mode",
   "viewLog": "View Log",
-  "trialRemainingStatus": "Premium trial active\n{count} min remaining",
+  "premiumTrialActive": "Premium Trial Active",
+  "trialRemainingStatus": "You have {count} min of Premium access remaining\nPurchase Premium to continue after your trial ends",
   "@trialRemainingStatus": {
     "placeholders": {
       "count": {
@@ -255,6 +256,7 @@
       }
     }
   },
+  "gotIt": "Got it",
   "trialRemaining": "Trial Remaining",
   "bigPictureMode": "Big Picture Mode",
   "bigPictureModeDescription": "Unlock Big Picture Mode",
@@ -263,5 +265,4 @@
   "fontWeight": "Font Weight",
   "offset": "Offset",
   "getStart": "Get Start"
-
 }

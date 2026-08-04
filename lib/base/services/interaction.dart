@@ -29,6 +29,7 @@ import 'package:sylvakru/big_picture_view/panels/big_single_artist_panel.dart';
 import 'package:sylvakru/l10n/generated/app_localizations.dart';
 import 'package:sylvakru/layer/layers_manager.dart';
 import 'package:smooth_corner/smooth_corner.dart';
+import 'package:sylvakru/layer/premium_layer.dart';
 
 void showCenterMessage(
   BuildContext context,
@@ -659,6 +660,67 @@ class NativeMenu {
       'height': size.height,
     });
   }
+}
+
+Future<void> showTrialDialog(BuildContext context) async {
+  final l10n = AppLocalizations.of(context);
+
+  await showAnimationDialog(
+    context: context,
+    child: Builder(
+      builder: (context) {
+        return ConstrainedBox(
+          constraints: BoxConstraints(
+            maxWidth: MediaQuery.widthOf(context) * 0.8,
+          ),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: ListenableBuilder(
+              listenable: Listenable.merge([
+                buttonColor.valueNotifier,
+                lyricsPageForegroundColor.valueNotifier,
+                lyricsPageButtonColor.valueNotifier,
+              ]),
+              builder: (context, _) {
+                return Column(
+                  mainAxisSize: MainAxisSize.min,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      l10n.premiumTrialActive,
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: .bold,
+                        color: colorManager.getSpecificTextColor(),
+                      ),
+                    ),
+                    SizedBox(height: 15),
+                    Text(
+                      l10n.trialRemainingStatus(
+                        trialRemainingMinNotifier.value,
+                      ),
+                      style: TextStyle(
+                        color: colorManager.getSpecificTextColor(),
+                      ),
+                    ),
+                    SizedBox(height: 15),
+                    ElevatedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: colorManager.getSpecificButtonColor(),
+                        foregroundColor: colorManager.getSpecificTextColor(),
+                      ),
+                      child: Text(l10n.gotIt),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
+        );
+      },
+    ),
+  );
 }
 
 Future<void> showPremiumDialog(BuildContext context) async {

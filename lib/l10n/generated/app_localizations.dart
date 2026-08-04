@@ -1292,11 +1292,23 @@ abstract class AppLocalizations {
   /// **'View Log'**
   String get viewLog;
 
+  /// No description provided for @premiumTrialActive.
+  ///
+  /// In en, this message translates to:
+  /// **'Premium Trial Active'**
+  String get premiumTrialActive;
+
   /// No description provided for @trialRemainingStatus.
   ///
   /// In en, this message translates to:
-  /// **'Premium trial active\n{count} min remaining'**
+  /// **'You have {count} min of Premium access remaining\nPurchase Premium to continue after your trial ends'**
   String trialRemainingStatus(int count);
+
+  /// No description provided for @gotIt.
+  ///
+  /// In en, this message translates to:
+  /// **'Got it'**
+  String get gotIt;
 
   /// No description provided for @trialRemaining.
   ///

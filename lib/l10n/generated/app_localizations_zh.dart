@@ -620,12 +620,18 @@ class AppLocalizationsZh extends AppLocalizations {
   String get viewLog => '查看日志';
 
   @override
+  String get premiumTrialActive => '高级功能试用已开启';
+
+  @override
   String trialRemainingStatus(int count) {
-    return '高级功能试用中\n剩余 $count 分钟';
+    return '剩余试用时间：$count 分钟\n试用结束后, 购买高级功能即可继续使用';
   }
 
   @override
-  String get trialRemaining => '试用剩余时间';
+  String get gotIt => '好的';
+
+  @override
+  String get trialRemaining => '剩余试用时间';
 
   @override
   String get bigPictureMode => '大图模式';
