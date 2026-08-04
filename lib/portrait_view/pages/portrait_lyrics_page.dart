@@ -213,7 +213,7 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                                 ),
                                 style: textStyle,
                                 intervalSpaces: 10,
-                                pauseBetween: Duration(seconds: 1),
+                                pauseBetween: Duration(seconds: 2),
                               );
                             },
                           ),
@@ -245,7 +245,7 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                                 ),
                                 style: textStyle,
                                 intervalSpaces: 10,
-                                pauseBetween: Duration(seconds: 1),
+                                pauseBetween: Duration(seconds: 2),
                               );
                             },
                           ),

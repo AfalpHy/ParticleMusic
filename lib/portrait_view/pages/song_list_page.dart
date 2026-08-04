@@ -87,7 +87,7 @@ extension _SongListPage on _SongListState {
                     style: TextStyle(fontSize: 15),
                     velocity: const .new(pixelsPerSecond: .new(40, 0)),
                     intervalSpaces: 10,
-                    pauseBetween: Duration(seconds: 1),
+                    pauseBetween: Duration(seconds: 2),
                   ),
                 ),
               ],

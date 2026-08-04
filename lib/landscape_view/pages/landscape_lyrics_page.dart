@@ -278,7 +278,7 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                   ),
                   velocity: const .new(pixelsPerSecond: .new(40, 0)),
                   intervalSpaces: 10,
-                  pauseBetween: Duration(seconds: 1),
+                  pauseBetween: Duration(seconds: 2),
                 );
               },
             ),
@@ -298,7 +298,7 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                   style: TextStyle(fontSize: 14, color: value),
                   velocity: const .new(pixelsPerSecond: .new(40, 0)),
                   intervalSpaces: 10,
-                  pauseBetween: Duration(seconds: 1),
+                  pauseBetween: Duration(seconds: 2),
                 );
               },
             ),
