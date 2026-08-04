@@ -151,52 +151,32 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                       width: pageWidth * 0.45,
                       child: Column(
                         children: [
-                          SizedBox(height: isMobile ? 25 : 75),
-                          if (pageHight < 600)
+                          if (!isMobile) SizedBox(height: 75),
+
+                          if (pageHight < 600) ...[
+                            SizedBox(height: 15),
+
                             information(
                               pageWidth * 0.4,
                               pageHight,
                               currentSong,
                             ),
+                          ],
 
                           Expanded(
-                            child: ShaderMask(
-                              shaderCallback: (rect) {
-                                return LinearGradient(
-                                  begin: Alignment.topCenter,
-                                  end: Alignment.bottomCenter,
-                                  colors: [
-                                    Colors.transparent, // fade out at top
-                                    Colors.black, // fully visible
-                                    Colors.black, // fully visible
-                                    Colors.transparent, // fade out at bottom
-                                  ],
-                                  stops: [
-                                    0.0,
-                                    0.05,
-                                    0.95,
-                                    1.0,
-                                  ], // adjust fade height
-                                ).createShader(rect);
-                              },
-                              blendMode: BlendMode.dstIn,
-                              // use key to force update
-                              child: ScrollConfiguration(
-                                behavior: ScrollConfiguration.of(
-                                  context,
-                                ).copyWith(scrollbars: false),
-                                child: currentSong == null
-                                    ? SizedBox()
-                                    : LyricsListView(
-                                        key: ValueKey(currentSong),
-                                        expanded: pageHight < 600
-                                            ? false
-                                            : true,
-                                        lines: currentSong.parsedLyrics!.lines,
-                                        isKaraoke:
-                                            currentSong.parsedLyrics!.isKaraoke,
-                                      ),
-                              ),
+                            child: ScrollConfiguration(
+                              behavior: ScrollConfiguration.of(
+                                context,
+                              ).copyWith(scrollbars: false),
+                              child: currentSong == null
+                                  ? SizedBox()
+                                  : LyricsListView(
+                                      key: ValueKey(currentSong),
+                                      expanded: pageHight < 600 ? false : true,
+                                      lines: currentSong.parsedLyrics!.lines,
+                                      isKaraoke:
+                                          currentSong.parsedLyrics!.isKaraoke,
+                                    ),
                             ),
                           ),
 
@@ -206,7 +186,7 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                               pageHight,
                               currentSong,
                             ),
-                            SizedBox(height: 15),
+                            SizedBox(height: 10),
                           ],
                         ],
                       ),
