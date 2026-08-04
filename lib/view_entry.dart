@@ -83,6 +83,7 @@ class _ViewEntryState extends State<ViewEntry> with WidgetsBindingObserver {
           );
         }
         await NativeMenu.init();
+        await NativeMenu.initIcons();
       } else if (Platform.isMacOS) {
         await NativeMenu.initIcons();
       }
