@@ -8,6 +8,7 @@ import 'package:sylvakru/base/utils/zoom_page_route.dart';
 import 'package:sylvakru/base/widgets/cover_art_widget.dart';
 import 'package:sylvakru/base/widgets/scale_widget.dart';
 import 'package:sylvakru/big_picture_view/panels/big_single_playlist_panel.dart';
+import 'package:sylvakru/l10n/generated/app_localizations.dart';
 
 class BigPlaylistsPanel extends StatefulWidget {
   const BigPlaylistsPanel({super.key});
@@ -71,6 +72,9 @@ class _BigPlaylistsPanelState extends State<BigPlaylistsPanel> {
               valueListenable: list[index].songListManager.sourceTypeNotifier,
               builder: (context, value, child) {
                 final coverSong = list[index].getCoverSong();
+                final name = index == 0
+                    ? AppLocalizations.of(context).favorites
+                    : list[index].name;
                 return ListenableBuilder(
                   listenable: Listenable.merge([coverSong?.updateNotifier]),
                   builder: (context, _) {
@@ -80,7 +84,7 @@ class _BigPlaylistsPanelState extends State<BigPlaylistsPanel> {
                           return Column(
                             children: [
                               Hero(
-                                tag: 'big${coverSong?.id}${list[index].name}',
+                                tag: 'big${coverSong?.id}$name',
                                 child: CoverArtWidget(
                                   size: constraints.maxWidth,
                                   borderRadius: constraints.maxWidth * 0.1,
@@ -96,7 +100,7 @@ class _BigPlaylistsPanelState extends State<BigPlaylistsPanel> {
                                   child: Align(
                                     alignment: .centerLeft,
                                     child: Text(
-                                      list[index].name,
+                                      name,
                                       style: TextStyle(
                                         overflow: TextOverflow.ellipsis,
                                       ),
