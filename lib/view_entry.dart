@@ -73,10 +73,13 @@ class _ViewEntryState extends State<ViewEntry> with WidgetsBindingObserver {
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (Platform.isIOS) {
-        if (!firstLaunch && trialRemainingMinNotifier.value > 0) {
-          showTrialDialog(context);
+        if (!firstLaunch) {
+          if (trialRemainingMinNotifier.value > 0) {
+            showTrialDialog(context);
+          }
+          await Future.delayed(Duration(milliseconds: 500));
+          await NativeMenu.init();
         }
-        await NativeMenu.init();
         await NativeMenu.initIcons();
       } else if (Platform.isMacOS) {
         await NativeMenu.initIcons();
@@ -296,10 +299,12 @@ class _ViewEntryState extends State<ViewEntry> with WidgetsBindingObserver {
                       setState(() {
                         firstLaunch = false;
                       });
-                      if (Platform.isIOS &&
-                          trialRemainingMinNotifier.value > 0) {
-                        WidgetsBinding.instance.addPostFrameCallback((_) {
-                          showTrialDialog(context);
+                      if (Platform.isIOS) {
+                        WidgetsBinding.instance.addPostFrameCallback((_) async {
+                          if (trialRemainingMinNotifier.value > 0) {
+                            showTrialDialog(context);
+                          }
+                          await NativeMenu.init();
                         });
                       }
                       await Loader.sync(3);

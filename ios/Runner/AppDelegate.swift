@@ -87,7 +87,10 @@ import UIKit
 
     menuChannel.setMethodCallHandler({
       [weak self] (call: FlutterMethodCall, result: @escaping FlutterResult) -> Void in
-      guard let self = self else { return }
+      guard let self = self else {
+        result(nil)
+        return
+      }
 
       switch call.method {
       case "initNativeMenu":
@@ -99,7 +102,10 @@ import UIKit
           let window = windowScene.windows.first(where: { $0.isKeyWindow }),
           let rootVC = window.rootViewController,
           let flutterView = rootVC.view
-        else { return }
+        else {
+          result(nil)
+          return
+        }
 
         self.flutterView = flutterView
         flutterView.addInteraction(UIContextMenuInteraction(delegate: self))
