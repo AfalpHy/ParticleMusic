@@ -6,6 +6,7 @@ import 'package:sylvakru/base/data/loader.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/services/emby_client.dart';
 import 'package:sylvakru/base/services/interaction.dart';
+import 'package:sylvakru/base/services/logger.dart';
 import 'package:sylvakru/base/services/navidrome_client.dart';
 import 'package:sylvakru/base/services/subsonic_client.dart';
 import 'package:sylvakru/base/services/webdav_client.dart';
@@ -183,68 +184,61 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
                   showCenterMessage(context, l10n.syncingTryLater);
                   return;
                 }
+                try {
+                  if (widget.sourceType == .webdav) {
+                    final tmp = webdavClient;
+                    webdavClient = WebDavClient(
+                      baseUrl: baseUrlTmp.text,
+                      username: usernameTmp.text,
+                      password: passwordTmp.text,
+                    );
+                    if (!await webdavClient!.ping()) {
+                      webdavClient = tmp;
+                      return;
+                    }
+                  } else if (widget.sourceType == .subsonic) {
+                    final tmp = subsonicClient;
+                    subsonicClient = SubsonicClient(
+                      baseUrl: baseUrlTmp.text,
+                      username: usernameTmp.text,
+                      password: passwordTmp.text,
+                    );
+                    if (!await subsonicClient!.ping()) {
+                      subsonicClient = tmp;
+                      return;
+                    }
+                  } else if (widget.sourceType == .navidrome) {
+                    final tmp = navidromeClient;
+                    navidromeClient = NavidromeClient(
+                      baseUrl: baseUrlTmp.text,
+                      username: usernameTmp.text,
+                      password: passwordTmp.text,
+                    );
+                    if (!await navidromeClient!.ping()) {
+                      navidromeClient = tmp;
+                      return;
+                    }
+                  } else {
+                    final tmp = embyClient;
+                    embyClient = EmbyClient(
+                      baseUrl: baseUrlTmp.text,
+                      username: usernameTmp.text,
+                      password: passwordTmp.text,
+                    );
 
-                if (widget.sourceType == .webdav) {
-                  final tmp = webdavClient;
-                  webdavClient = WebDavClient(
-                    baseUrl: baseUrlTmp.text,
-                    username: usernameTmp.text,
-                    password: passwordTmp.text,
-                  );
-                  if (!await webdavClient!.ping()) {
-                    if (context.mounted) {
-                      showCenterMessage(context, 'Can not connect to WebDAV');
+                    if (!await embyClient!.login()) {
+                      embyClient = tmp;
+                      return;
                     }
-                    webdavClient = tmp;
-                    return;
                   }
-                } else if (widget.sourceType == .subsonic) {
-                  final tmp = subsonicClient;
-                  subsonicClient = SubsonicClient(
-                    baseUrl: baseUrlTmp.text,
-                    username: usernameTmp.text,
-                    password: passwordTmp.text,
-                  );
-                  if (!await subsonicClient!.ping()) {
-                    if (context.mounted) {
-                      showCenterMessage(context, 'Can not connect to Subsonic');
-                    }
-                    subsonicClient = tmp;
-                    return;
+                } catch (e) {
+                  if (context.mounted) {
+                    showCenterMessage(context, e.toString(), duration: 5000);
                   }
-                } else if (widget.sourceType == .navidrome) {
-                  final tmp = navidromeClient;
-                  navidromeClient = NavidromeClient(
-                    baseUrl: baseUrlTmp.text,
-                    username: usernameTmp.text,
-                    password: passwordTmp.text,
-                  );
-                  if (!await navidromeClient!.ping()) {
-                    if (context.mounted) {
-                      showCenterMessage(
-                        context,
-                        'Can not connect to Navidrome',
-                      );
-                    }
-                    navidromeClient = tmp;
-                    return;
-                  }
-                } else {
-                  final tmp = embyClient;
-                  embyClient = EmbyClient(
-                    baseUrl: baseUrlTmp.text,
-                    username: usernameTmp.text,
-                    password: passwordTmp.text,
-                  );
-
-                  if (!await embyClient!.login()) {
-                    if (context.mounted) {
-                      showCenterMessage(context, 'Can not connect to Emby');
-                    }
-                    embyClient = tmp;
-                    return;
-                  }
+                  logger.output(e.toString());
+                  return;
                 }
+
                 if (context.mounted) {
                   Navigator.pop(context);
                   showCenterMessage(context, 'Connected successfully');
