@@ -24,9 +24,9 @@ Currently supports:
 
 ## USB Exclusive Mode(Android)
 
-Special thanks to [huya688zdx](https://github.com/huya688zdx) for making USB Exclusive Mode possible.
+Special thanks to [huya688zdx](https://github.com/huya688zdx) for maintaining USB Exclusive Mode support.
 
-If you need USB Exclusive Mode, download the dedicated build from the [usb-exclusive-beta](https://github.com/AfalpHy/sylvakru/releases#release-usb-exclusive-beta).
+If you need USB Exclusive Mode, please check out this [fork](https://github.com/huya688zdx/sylvakru)
 
 
 ## Supported Formats
@@ -146,7 +146,9 @@ flutter build apk --dart-define=TV=true
 ```
 ## Screenshots
 
-### On iOS
+### On Mobile
+
+- iPhone
 <div>
     <img src="./screenshots/mobile0.png" width="270" height="540" />
     <img src="./screenshots/mobile1.png" width="270" height="540" />
@@ -159,30 +161,18 @@ flutter build apk --dart-define=TV=true
     <img src="./screenshots/mobile5.png" width="270" height="540" />
 </div>
 
-<div>
-    <img src="./screenshots/mobile6.png" width="270" height="540" />
-    <img src="./screenshots/mobile7.png" width="270" height="540" />
-    <img src="./screenshots/mobile8.png" width="270" height="540" />
-</div>
+![](./screenshots/mobile6.png)
+![](./screenshots/mobile7.png)
+![](./screenshots/mobile8.png)
 
-<div>
-    <img src="./screenshots/mobile9.png" width="270" height="540" />
-    <img src="./screenshots/mobile10.png" width="270" height="540" />
-    <img src="./screenshots/mobile11.png" width="270" height="540" />
-</div>
+- iPad
 
-<div>
-    <img src="./screenshots/mobile12.png" width="270" height="540" />
-    <img src="./screenshots/mobile13.png" width="270" height="540" />
-    <img src="./screenshots/mobile14.png" width="270" height="540" />
-</div>
+![](./screenshots/mobile9.png)
+![](./screenshots/mobile10.png)
+![](./screenshots/mobile11.png)
+![](./screenshots/mobile12.png)
 
-<div>
-    <img src="./screenshots/mobile15.png" width="270" height="540" />
-    <img src="./screenshots/mobile16.png" width="270" height="540" />
-</div>
-
-### On Windows
+### On Desktop
 
 ![](./screenshots/desktop0.png)
 ![](./screenshots/desktop1.png)
@@ -191,4 +181,3 @@ flutter build apk --dart-define=TV=true
 ![](./screenshots/desktop4.png)
 ![](./screenshots/desktop5.png)
 ![](./screenshots/desktop6.png)
-![](./screenshots/desktop7.png)
