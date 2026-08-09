@@ -9,6 +9,7 @@ import 'package:sylvakru/base/services/emby_client.dart';
 import 'package:sylvakru/base/services/metadata_service.dart';
 import 'package:sylvakru/base/services/play_queue_logic.dart';
 import 'package:sylvakru/base/services/subsonic_client.dart';
+import 'package:sylvakru/base/services/taskbar_service.dart';
 import 'package:sylvakru/base/services/webdav_client.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/app.dart';
@@ -151,6 +152,9 @@ class MyAudioHandler extends BaseAudioHandler {
     }
     needPause = false;
     isPlayingNotifier.value = isPlaying;
+    if (Platform.isWindows) {
+      setupTaskbar();
+    }
   }
 
   void updatePlaybackState({Duration? postion, bool stop = false}) {

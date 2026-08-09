@@ -11,6 +11,7 @@ import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/services/keyboard.dart';
 import 'package:sylvakru/base/services/network_error_reporter.dart';
+import 'package:sylvakru/base/services/taskbar_service.dart';
 import 'package:sylvakru/base/utils/dynamic_lyrics_page_route.dart';
 import 'package:sylvakru/base/utils/media_query.dart';
 import 'package:sylvakru/base/widgets/connect_client_widget.dart';
@@ -83,6 +84,8 @@ class _ViewEntryState extends State<ViewEntry> with WidgetsBindingObserver {
         await NativeMenu.initIcons();
       } else if (Platform.isMacOS) {
         await NativeMenu.initIcons();
+      } else if (Platform.isWindows) {
+        setupTaskbar();
       }
     });
 

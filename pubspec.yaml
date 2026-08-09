@@ -94,6 +94,7 @@ dependencies:
   flutter_gamepads: ^0.1.11+4
   liquid_glass_widgets: ^0.21.6
   rive_animated_icon: ^2.1.0
+  windows_taskbar: ^1.1.2
 
 dependency_overrides:
   media_kit_libs_windows_audio:
