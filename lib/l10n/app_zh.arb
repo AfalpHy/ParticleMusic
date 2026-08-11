@@ -208,5 +208,6 @@
   "fontSize": "字体大小",
   "fontWeight": "字体粗细",
   "offset": "偏移",
-  "getStart": "开始使用"
+  "getStart": "开始使用",
+  "immersiveWideLayout": "宽布局启用沉浸模式"
 }

@@ -42,6 +42,9 @@ class Setting {
       localeNotifier.value = Locale(languageCode);
     }
 
+    immersiveWideLayoutNotifier.value =
+        json['immersiveWideLayout'] as bool? ?? true;
+
     autoPlayOnStartupNotifier.value =
         json['autoPlayOnStartup'] as bool? ?? false;
 
@@ -86,6 +89,7 @@ class Setting {
         'vibrationOn': vibrationOnNoitifier.value,
         'language': localeNotifier.value?.languageCode,
 
+        'immersiveWideLayout': immersiveWideLayoutNotifier.value,
         'autoPlayOnStartup': autoPlayOnStartupNotifier.value,
 
         'fontFamily': fontFamilyNotifier.value,

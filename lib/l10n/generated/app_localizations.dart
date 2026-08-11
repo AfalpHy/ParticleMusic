@@ -1357,6 +1357,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Get Start'**
   String get getStart;
+
+  /// No description provided for @immersiveWideLayout.
+  ///
+  /// In en, this message translates to:
+  /// **'Immersive for Wide Layout'**
+  String get immersiveWideLayout;
 }
 
 class _AppLocalizationsDelegate

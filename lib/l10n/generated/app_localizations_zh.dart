@@ -653,4 +653,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get getStart => '开始使用';
+
+  @override
+  String get immersiveWideLayout => '宽布局启用沉浸模式';
 }

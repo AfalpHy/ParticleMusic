@@ -32,3 +32,5 @@ final isPremiumNotifier = ValueNotifier(true);
 enum ViewMode { normal, mini, bigPicture }
 
 final viewModeNotifier = ValueNotifier(ViewMode.normal);
+
+final immersiveWideLayoutNotifier = ValueNotifier(true);

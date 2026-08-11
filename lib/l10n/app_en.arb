@@ -264,5 +264,6 @@
   "fontSize": "Font Size",
   "fontWeight": "Font Weight",
   "offset": "Offset",
-  "getStart": "Get Start"
+  "getStart": "Get Start",
+  "immersiveWideLayout": "Immersive for Wide Layout"
 }

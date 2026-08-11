@@ -12,6 +12,7 @@ import 'package:sylvakru/base/asset_images.dart';
 import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/services/logger.dart';
 import 'package:sylvakru/base/services/subsonic_client.dart';
+import 'package:sylvakru/base/services/system_ui_service.dart';
 import 'package:sylvakru/base/services/webdav_client.dart';
 import 'package:sylvakru/base/utils/format_duration.dart';
 import 'package:sylvakru/base/utils/media_query.dart';
@@ -60,7 +61,7 @@ class SettingsList extends StatelessWidget {
                   subtitle: Text(
                     l10n.settingCount(
                       Platform.isAndroid
-                          ? 14
+                          ? 15
                           : Platform.isIOS
                           ? 14
                           : 13,
@@ -124,6 +125,11 @@ class SettingsList extends StatelessWidget {
           ),
 
         sliverBox(paddingIfNeed(isLandscape, equalizerListTile(context, l10n))),
+
+        if (Platform.isAndroid && !isTV)
+          sliverBox(
+            paddingIfNeed(isLandscape, immersiveWideLayoutListTile(l10n)),
+          ),
 
         sliverBox(paddingIfNeed(isLandscape, autoPlayOnStartupListTile(l10n))),
 
@@ -749,6 +755,38 @@ class SettingsList extends StatelessWidget {
           }
           return Icon(Icons.lock);
         },
+      ),
+    );
+  }
+
+  Widget immersiveWideLayoutListTile(AppLocalizations l10n) {
+    return ListTile(
+      leading: Transform.scale(
+        scale: 0.9,
+        child: ImageIcon(fullscreenImage, size: iconSize),
+      ),
+
+      title: Text(l10n.immersiveWideLayout),
+      trailing: SizedBox(
+        width: 50,
+        child: Builder(
+          builder: (context) {
+            return MySwitch(
+              valueNotifier: immersiveWideLayoutNotifier,
+              onToggleCallBack: () {
+                if (viewModeNotifier.value == .bigPicture ||
+                    !isTooNarrow(context)) {
+                  applySystemUiMode(
+                    mode: immersiveWideLayoutNotifier.value
+                        ? .immersiveSticky
+                        : .manual,
+                  );
+                }
+                setting.save();
+              },
+            );
+          },
+        ),
       ),
     );
   }

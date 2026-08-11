@@ -660,4 +660,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get getStart => 'Get Start';
+
+  @override
+  String get immersiveWideLayout => 'Immersive for Wide Layout';
 }
