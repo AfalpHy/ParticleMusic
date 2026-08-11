@@ -75,7 +75,6 @@ Future<bool> showConfirmDialog(BuildContext context, String action) async {
       builder: (context) {
         return SizedBox(
           width: 300,
-          height: isMobile ? 180 : 170,
           child: Padding(
             padding: const EdgeInsets.all(20),
             child: ListenableBuilder(
@@ -87,6 +86,7 @@ Future<bool> showConfirmDialog(BuildContext context, String action) async {
               ]),
               builder: (context, _) {
                 return Column(
+                  mainAxisSize: .min,
                   children: [
                     Align(
                       alignment: .centerLeft,
@@ -164,7 +164,6 @@ Future<String> getInputTextDialog(
     context: context,
     child: SizedBox(
       width: 300,
-      height: isMobile ? 220 : 200,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(30, 20, 30, 20),
         child: ValueListenableBuilder(
@@ -172,6 +171,7 @@ Future<String> getInputTextDialog(
           builder: (context, value, child) {
             final specificTextcolor = colorManager.getSpecificTextColor();
             return Column(
+              mainAxisSize: .min,
               children: [
                 Center(
                   child: Text(
@@ -1108,12 +1108,12 @@ void showSwitchDialogIfNeed(
     context: context,
     child: SizedBox(
       width: 300,
-      height: isMobile ? 280 : 260,
       child: Padding(
         padding: const EdgeInsets.all(10),
         child: Builder(
           builder: (context) {
             return ListView(
+              shrinkWrap: true,
               children: [
                 for (final sourceType in SourceType.values)
                   if (songListManager.getSongList2(sourceType).isNotEmpty)

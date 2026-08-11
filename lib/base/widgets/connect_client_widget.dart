@@ -63,11 +63,11 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
 
     return SizedBox(
       width: 300,
-      height: isMobile ? 345 : 320,
       child: Padding(
         padding: .fromLTRB(20, 15, 20, 15),
         child: Column(
           mainAxisAlignment: .center,
+          mainAxisSize: .min,
           children: [
             SizedBox(
               child: Text(

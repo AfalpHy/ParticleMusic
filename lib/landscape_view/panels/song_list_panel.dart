@@ -250,12 +250,12 @@ extension _SongListPanel on _SongListState {
                                     context: context,
                                     child: SizedBox(
                                       width: 300,
-                                      height: isMobile ? 300 : 280,
                                       child: Padding(
                                         padding: const EdgeInsets.all(10),
                                         child: Builder(
                                           builder: (context) {
                                             return ListView(
+                                              shrinkWrap: true,
                                               children: [
                                                 ListTile(
                                                   title: Text(l10n.defaultText),

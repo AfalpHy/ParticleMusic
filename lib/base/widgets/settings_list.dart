@@ -354,7 +354,6 @@ class SettingsList extends StatelessWidget {
           context: context,
           child: SizedBox(
             width: 300,
-            height: isMobile ? 255 : 225,
             child: Padding(
               padding: const EdgeInsets.symmetric(
                 horizontal: 10.0,
@@ -363,6 +362,7 @@ class SettingsList extends StatelessWidget {
               child: Builder(
                 builder: (context) {
                   return Column(
+                    mainAxisSize: .min,
                     children: [
                       webdavListTile(context, l10n),
                       subsonicListTile(context, l10n),
