@@ -9,6 +9,7 @@ import 'package:smooth_corner/smooth_corner.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/asset_images.dart';
 import 'package:sylvakru/base/audio_handler.dart';
+import 'package:sylvakru/base/data/folder.dart';
 import 'package:sylvakru/base/data/playlist.dart';
 import 'package:sylvakru/base/data/song_list_manager.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
@@ -49,6 +50,7 @@ abstract class BigSongListWithCoverBasePanelState<
 
   void moveToTop(MyAudioMetadata song);
 
+  Folder? folder;
   Playlist? playlist;
 
   void updateSongList() async {
@@ -156,6 +158,8 @@ abstract class BigSongListWithCoverBasePanelState<
                             builder: (_) => SelectableSongListPage(
                               songList: currentSongList,
                               reorderable: true,
+                              folder: folder,
+                              playlist: playlist,
                             ),
                           ),
                         );

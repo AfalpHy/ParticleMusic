@@ -21,6 +21,9 @@ class _BigSingleFolderPanelState
   String get title => widget.folder.id;
 
   @override
+  Folder? get folder => widget.folder;
+
+  @override
   void moveToTop(MyAudioMetadata song) {
     widget.folder.songList.remove(song);
     widget.folder.songList.insert(0, song);
