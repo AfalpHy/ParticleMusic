@@ -1,7 +1,7 @@
 import 'dart:io';
-import 'package:flutter/cupertino.dart';
+import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_gamepads/flutter_gamepads.dart';
 import 'package:liquid_glass_widgets/liquid_glass_setup.dart';
@@ -86,7 +86,10 @@ Future<void> main() async {
         return MaterialApp(
           locale: localeNotifier.value,
           supportedLocales: AppLocalizations.supportedLocales,
-          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          localizationsDelegates: [
+            AppLocalizations.delegate,
+            ...GlobalMaterialLocalizations.delegates,
+          ],
           title: 'Sylvaklu',
           theme: ThemeData(
             focusColor: lightHoverFocusColorNotifier.value
@@ -237,10 +240,7 @@ Future<void> main() async {
               context: context,
               removeLeft: true, // for mobile
               removeRight: true,
-              // semantics sometimes crash on ios simulator, I don't know why
-              child: Platform.isIOS
-                  ? ExcludeSemantics(child: ViewEntry())
-                  : ViewEntry(),
+              child: ViewEntry(),
             ),
           );
         },

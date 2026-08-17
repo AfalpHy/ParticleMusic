@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
 
 class MyDivider extends StatelessWidget {

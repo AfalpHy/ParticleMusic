@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:sylvakru/base/data/artist_album.dart';
 import 'package:sylvakru/big_picture_view/panels/big_artists_albums_base_panel.dart';
 

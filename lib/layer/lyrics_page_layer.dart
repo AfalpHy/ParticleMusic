@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/utils/media_query.dart';
 import 'package:sylvakru/landscape_view/pages/landscape_lyrics_page.dart';

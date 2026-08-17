@@ -21,7 +21,7 @@ class Config {
   );
 
   Future<void> load() async {
-    if (Platform.isIOS) {
+    if (!Platform.isIOS) {
       final isPremiumTmp = await _trySecureRead('isPremium');
       if (isPremiumTmp != 'true') {
         isPremiumNotifier.value = false;

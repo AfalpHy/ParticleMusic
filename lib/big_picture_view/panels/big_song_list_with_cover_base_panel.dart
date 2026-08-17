@@ -1,7 +1,7 @@
 import 'dart:math';
 import 'dart:ui';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:liquid_glass_widgets/liquid_glass_widgets.dart';
 import 'package:rive_animated_icon/rive_animated_icon.dart';
@@ -407,7 +407,6 @@ abstract class BigSongListWithCoverBasePanelState<
                               width: 35,
                               height: 35,
                               loopAnimation: isPlayingNotifier.value,
-                              enableAbsorbPointer: true,
                               color: iconColor.value,
                             );
                           },

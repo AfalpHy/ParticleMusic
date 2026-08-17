@@ -1,6 +1,6 @@
 import 'dart:io';
 
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:screen_corner_radius/screen_corner_radius.dart';
 
 const String versionNumber = '3.6.0';

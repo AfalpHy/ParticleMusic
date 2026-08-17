@@ -1,4 +1,4 @@
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 
 bool isTooNarrow(BuildContext context) {
   return MediaQuery.widthOf(context) < 800;

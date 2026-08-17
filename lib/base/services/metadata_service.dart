@@ -3,7 +3,7 @@ import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:audio_tags_lofty/audio_tags_lofty.dart';
-import 'package:flutter/material.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:image/image.dart' as img;
 import 'package:sylvakru/base/my_audio_metadata.dart';
 import 'package:sylvakru/base/services/emby_client.dart';

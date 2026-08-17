@@ -725,7 +725,6 @@ extension _SongListPanel on _SongListState {
                 width: 30,
                 height: 30,
                 loopAnimation: isPlayingNotifier.value,
-                enableAbsorbPointer: true,
                 color: iconColor.value,
               );
             },

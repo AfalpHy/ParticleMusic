@@ -21,7 +21,7 @@ class PictureLoadScheduler {
       try {
         await loader();
         completer.complete();
-      } catch (_, _) {
+      } catch (_) {
         completer.complete();
       } finally {
         _inFlight.remove(key);
