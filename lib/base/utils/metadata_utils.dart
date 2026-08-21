@@ -26,10 +26,11 @@ String getArtist(MyAudioMetadata? song) {
 List<String> getArtists(String artist) {
   List<String> artists = [];
   for (String artistName in artist.split(RegExp(r'[/&,]'))) {
-    if (artistName.isEmpty) {
+    final tmp = artistName.trim();
+    if (tmp.isEmpty) {
       return [artist];
     }
-    artists.add(artistName.trim());
+    artists.add(tmp);
   }
   return artists;
 }
@@ -75,6 +76,9 @@ List<MyAudioMetadata> filterSongList(
   List<MyAudioMetadata> songList,
   String value,
 ) {
+  if (value.isEmpty) {
+    return List.from(songList);
+  }
   return songList.where((song) {
     final songTitle = getTitle(song);
     final songArtist = getArtist(song);

@@ -32,7 +32,7 @@ abstract class OpenSubsonicClient {
   @protected
   Dio get dio => _dio;
 
-  Stream<List<Map<String, dynamic>>> getSongs({int limit = 50});
+  Stream<List<Map<String, dynamic>>> getSongs({int limit});
 
   Future<bool> scrobble(String songId);
 

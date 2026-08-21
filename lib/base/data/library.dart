@@ -3,7 +3,7 @@ import 'dart:io';
 
 import 'package:audio_tags_lofty/audio_tags_lofty.dart';
 import 'package:drift/drift.dart';
-import 'package:material_ui/material_ui.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/data/database.dart';

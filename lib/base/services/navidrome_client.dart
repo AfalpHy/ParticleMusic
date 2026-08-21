@@ -11,7 +11,7 @@ class NavidromeClient extends OpenSubsonicClient {
   });
 
   @override
-  Stream<List<Map<String, dynamic>>> getSongs({int limit = 50}) async* {
+  Stream<List<Map<String, dynamic>>> getSongs({int limit = 50000}) async* {
     int offset = 0;
     int count = 0;
 
