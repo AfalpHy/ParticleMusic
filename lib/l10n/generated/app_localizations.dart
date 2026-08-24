@@ -1363,6 +1363,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Immersive for Wide Layout'**
   String get immersiveWideLayout;
+
+  /// No description provided for @menuOnRight.
+  ///
+  /// In en, this message translates to:
+  /// **'Menu on Right'**
+  String get menuOnRight;
 }
 
 class _AppLocalizationsDelegate

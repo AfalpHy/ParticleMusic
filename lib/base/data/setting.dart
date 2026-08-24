@@ -11,6 +11,7 @@ import 'package:sylvakru/base/data/artist_album.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/utils/path.dart';
 import 'package:sylvakru/base/widgets/manage_music_folders.dart';
+import 'package:sylvakru/portrait_view/portrait_view.dart';
 
 final exitOnCloseNotifier = ValueNotifier(false);
 
@@ -32,6 +33,8 @@ class Setting {
     playlistManager.useLargePictureNotifier.value =
         json['playlistsUseLargePicture'] as bool? ??
         playlistManager.useLargePictureNotifier.value;
+
+    endDrawerNotifier.value = json['endDrawer'] as bool? ?? Platform.isIOS;
 
     vibrationOnNoitifier.value =
         json['vibrationOn'] as bool? ?? vibrationOnNoitifier.value;
@@ -85,6 +88,8 @@ class Setting {
 
         'playlistsUseLargePicture':
             playlistManager.useLargePictureNotifier.value,
+
+        'endDrawer': endDrawerNotifier.value,
 
         'vibrationOn': vibrationOnNoitifier.value,
         'language': localeNotifier.value?.languageCode,

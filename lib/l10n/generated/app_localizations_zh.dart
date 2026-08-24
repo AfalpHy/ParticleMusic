@@ -656,4 +656,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get immersiveWideLayout => '宽布局启用沉浸模式';
+
+  @override
+  String get menuOnRight => '菜单显示在右侧';
 }

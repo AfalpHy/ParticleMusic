@@ -8,6 +8,7 @@ import 'package:sylvakru/portrait_view/play_bar.dart';
 
 final GlobalKey<ScaffoldState> portraitKey = GlobalKey();
 bool isDrawerOpen = false;
+final endDrawerNotifier = ValueNotifier(false);
 
 class PortraitView extends StatefulWidget {
   const PortraitView({super.key});
@@ -37,6 +38,25 @@ class _PortraitViewState extends State<PortraitView>
     }
   }
 
+  void updateDrawerSetting() {
+    _slideAnimation =
+        Tween<Offset>(
+          begin: Offset(endDrawerNotifier.value ? 1.0 : -1.0, 0.0),
+          end: Offset.zero,
+        ).animate(
+          CurvedAnimation(parent: _controller, curve: Curves.linearToEaseOut),
+        );
+    setState(() {
+      _slideAnimation =
+          Tween<Offset>(
+            begin: Offset(endDrawerNotifier.value ? 1.0 : -1.0, 0.0),
+            end: Offset.zero,
+          ).animate(
+            CurvedAnimation(parent: _controller, curve: Curves.linearToEaseOut),
+          );
+    });
+  }
+
   @override
   void initState() {
     super.initState();
@@ -50,18 +70,20 @@ class _PortraitViewState extends State<PortraitView>
 
     _slideAnimation =
         Tween<Offset>(
-          begin: Offset(Platform.isIOS ? 1.0 : -1.0, 0.0),
+          begin: Offset(endDrawerNotifier.value ? 1.0 : -1.0, 0.0),
           end: Offset.zero,
         ).animate(
           CurvedAnimation(parent: _controller, curve: Curves.linearToEaseOut),
         );
 
+    endDrawerNotifier.addListener(updateDrawerSetting);
     layersManager.switchNotifier.addListener(slideBegin);
     _controller.forward(from: 1);
   }
 
   @override
   void dispose() {
+    endDrawerNotifier.removeListener(updateDrawerSetting);
     layersManager.switchNotifier.removeListener(slideBegin);
     _controller.dispose();
     super.dispose();
@@ -74,8 +96,9 @@ class _PortraitViewState extends State<PortraitView>
       extendBodyBehindAppBar: true,
       backgroundColor: Colors.transparent,
       resizeToAvoidBottomInset: false,
-      drawer: Platform.isAndroid ? myDrawer() : null,
-      endDrawer: Platform.isIOS ? myDrawer() : null,
+      drawer: !endDrawerNotifier.value ? myDrawer() : null,
+      endDrawer: endDrawerNotifier.value ? myDrawer() : null,
+      drawerEnableOpenDragGesture: !Platform.isIOS,
       onDrawerChanged: (isOpened) async {
         // ensure popscope gets correct drawer state
         if (!isOpened) {
@@ -93,9 +116,9 @@ class _PortraitViewState extends State<PortraitView>
                 onHorizontalDragEnd: (details) {
                   final velocity = (details.primaryVelocity ?? 0);
 
-                  if (Platform.isAndroid && velocity > 500) {
+                  if (!endDrawerNotifier.value && velocity > 500) {
                     portraitKey.currentState?.openDrawer();
-                  } else if (Platform.isIOS && velocity < -500) {
+                  } else if (endDrawerNotifier.value && velocity < -500) {
                     portraitKey.currentState?.openEndDrawer();
                   }
                 },

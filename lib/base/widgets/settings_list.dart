@@ -26,6 +26,7 @@ import 'package:sylvakru/base/widgets/manage_music_folders.dart';
 import 'package:sylvakru/base/data/library.dart';
 import 'package:sylvakru/base/data/loader.dart';
 import 'package:sylvakru/layer/premium_layer.dart';
+import 'package:sylvakru/portrait_view/portrait_view.dart';
 import 'package:sylvakru/portrait_view/sleep_timer.dart';
 import 'package:sylvakru/l10n/generated/app_localizations.dart';
 import 'package:sylvakru/base/widgets/my_switch.dart';
@@ -112,6 +113,11 @@ class SettingsList extends StatelessWidget {
 
         if (viewModeNotifier.value != .bigPicture)
           sliverBox(paddingIfNeed(isLandscape, fontListTile(context, l10n))),
+
+        if (Platform.isIOS &&
+            !isLandscape &&
+            viewModeNotifier.value != .bigPicture)
+          sliverBox(paddingIfNeed(isLandscape, drawerListTile(l10n))),
 
         if (isMobile && !isTV)
           sliverBox(paddingIfNeed(isLandscape, vibrationListTile(l10n))),
@@ -515,6 +521,25 @@ class SettingsList extends StatelessWidget {
           ),
         );
       },
+    );
+  }
+
+  Widget drawerListTile(AppLocalizations l10n) {
+    return ListTile(
+      leading: Transform.scale(
+        scale: 0.95,
+        child: Icon(Icons.menu_rounded, size: iconSize),
+      ),
+      title: Text(l10n.menuOnRight),
+      trailing: SizedBox(
+        width: 50,
+        child: MySwitch(
+          valueNotifier: endDrawerNotifier,
+          onToggleCallBack: () {
+            setting.save();
+          },
+        ),
+      ),
     );
   }
 
