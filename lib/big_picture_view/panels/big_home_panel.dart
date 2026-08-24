@@ -160,13 +160,13 @@ class _BigHomePanelState extends State<BigHomePanel> {
 
         _ListView(
           title: l10n.ranking,
-          count: history.rankingSongListManager.getSongList().length,
+          count: history.rankingSongListManager.currentSongList.length,
           getCoverSong: (index) =>
-              history.rankingSongListManager.getSongList()[index],
+              history.rankingSongListManager.currentSongList[index],
           onTap: (index) {
             showSongOptions(
               context: context,
-              song: history.rankingSongListManager.getSongList()[index],
+              song: history.rankingSongListManager.currentSongList[index],
               includeGoToArtist: true,
               includeGoToAlbum: true,
             );
@@ -176,13 +176,13 @@ class _BigHomePanelState extends State<BigHomePanel> {
 
         _ListView(
           title: l10n.recently,
-          count: history.recentlySongListManager.getSongList().length,
+          count: history.recentlySongListManager.currentSongList.length,
           getCoverSong: (index) =>
-              history.recentlySongListManager.getSongList()[index],
+              history.recentlySongListManager.currentSongList[index],
           onTap: (index) {
             showSongOptions(
               context: context,
-              song: history.recentlySongListManager.getSongList()[index],
+              song: history.recentlySongListManager.currentSongList[index],
               includeGoToArtist: true,
               includeGoToAlbum: true,
             );

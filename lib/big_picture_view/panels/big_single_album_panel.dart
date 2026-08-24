@@ -50,7 +50,7 @@ class _BigSingleAlbumPanelState extends State<BigSingleAlbumPanel> {
   final _scrollController = ScrollController();
 
   void updateSongList() async {
-    currentSongList = songListManager.getSongList();
+    currentSongList = songListManager.currentSongList;
     baseColor = await computeCoverArtColor(currentSongList.first);
     colorManager.updateBigPictureRelatedColors(currentSongList.first);
     setState(() {});
@@ -63,7 +63,7 @@ class _BigSingleAlbumPanelState extends State<BigSingleAlbumPanel> {
     useCurrentSongForBg = false;
 
     songListManager = widget.album.songListManager;
-    currentSongList = songListManager.getSongList();
+    currentSongList = songListManager.currentSongList;
     baseColor = widget.baseColor;
     songListManager.sourceTypeNotifier.addListener(updateSongList);
 
@@ -427,7 +427,7 @@ class _BigSingleAlbumPanelState extends State<BigSingleAlbumPanel> {
               Navigator.of(context).push(
                 ZoomPageRoute(
                   builder: (_) => SelectableSongListPage(
-                    songList: songListManager.getSongList(),
+                    songList: songListManager.currentSongList,
                     reorderable: false,
                   ),
                 ),

@@ -33,9 +33,9 @@ class History {
   void load() {
     for (final sourceType in SourceType.values) {
       _fetchSongs(
-        library.songListManager.getSongList2(sourceType),
-        rankingSongListManager.getSongList2(sourceType),
-        recentlySongListManager.getSongList2(sourceType),
+        library.songListManager.getSongList(sourceType),
+        rankingSongListManager.getSongList(sourceType),
+        recentlySongListManager.getSongList(sourceType),
       );
     }
 
@@ -44,7 +44,7 @@ class History {
   }
 
   void _addSongTimes(MyAudioMetadata song, int times) {
-    final currentRankingSongList = rankingSongListManager.getSongList2(
+    final currentRankingSongList = rankingSongListManager.getSongList(
       song.sourceType,
     );
     int index = -1;
@@ -86,7 +86,7 @@ class History {
     song.lastPlayed = DateTime.now();
     await library.updatePlayCount(song);
 
-    rankingSongListManager.getChangeNotifier2(song.sourceType).value++;
+    rankingSongListManager.getChangeNotifier(song.sourceType).value++;
     rankingSongListManager.resetSourceType();
 
     _add2Recently(song);
@@ -95,10 +95,10 @@ class History {
   }
 
   void _add2Recently(MyAudioMetadata song) {
-    final songList = recentlySongListManager.getSongList2(song.sourceType);
+    final songList = recentlySongListManager.getSongList(song.sourceType);
     songList.remove(song);
     songList.insert(0, song);
-    recentlySongListManager.getChangeNotifier2(song.sourceType).value++;
+    recentlySongListManager.getChangeNotifier(song.sourceType).value++;
     recentlySongListManager.resetSourceType();
   }
 
@@ -114,15 +114,15 @@ class History {
 
   void sync(SourceType sourceType) {
     _fetchSongs(
-      library.songListManager.getSongList2(sourceType),
-      rankingSongListManager.getSongList2(sourceType),
-      recentlySongListManager.getSongList2(sourceType),
+      library.songListManager.getSongList(sourceType),
+      rankingSongListManager.getSongList(sourceType),
+      recentlySongListManager.getSongList(sourceType),
     );
 
-    rankingSongListManager.getChangeNotifier2(sourceType).value++;
+    rankingSongListManager.getChangeNotifier(sourceType).value++;
     rankingSongListManager.resetSourceType();
 
-    recentlySongListManager.getChangeNotifier2(sourceType).value++;
+    recentlySongListManager.getChangeNotifier(sourceType).value++;
     recentlySongListManager.resetSourceType();
   }
 }

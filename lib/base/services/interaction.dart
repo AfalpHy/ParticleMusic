@@ -1096,7 +1096,7 @@ void showSwitchDialogIfNeed(
   if (songListManager.notEmptyCount == 2) {
     for (final sourceType in SourceType.values) {
       if (sourceType != songListManager.sourceTypeNotifier.value &&
-          songListManager.getSongList2(sourceType).isNotEmpty) {
+          songListManager.getSongList(sourceType).isNotEmpty) {
         songListManager.sourceTypeNotifier.value = sourceType;
         layersManager.updateBackground();
         break;
@@ -1116,7 +1116,7 @@ void showSwitchDialogIfNeed(
               shrinkWrap: true,
               children: [
                 for (final sourceType in SourceType.values)
-                  if (songListManager.getSongList2(sourceType).isNotEmpty)
+                  if (songListManager.getSongList(sourceType).isNotEmpty)
                     ListTile(
                       leading: Image(
                         image: getSourceTypeImage(sourceType),
@@ -1256,7 +1256,7 @@ void showSongListOptions(
       width: 300,
       child: Builder(
         builder: (context) {
-          final currentSongList = songListManager.getSongList();
+          final currentSongList = songListManager.currentSongList;
           return Column(
             mainAxisSize: .min,
             children: [

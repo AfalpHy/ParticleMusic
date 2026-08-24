@@ -343,7 +343,7 @@ class Library {
   }
 
   Future<void> clearCache(SourceType sourceType) async {
-    for (final song in songListManager.getSongList2(sourceType)) {
+    for (final song in songListManager.getSongList(sourceType)) {
       song.cacheExist = false;
     }
 
@@ -362,7 +362,7 @@ class Library {
   }
 
   Future<void> clearPicture(SourceType sourceType) async {
-    for (final song in songListManager.getSongList2(sourceType)) {
+    for (final song in songListManager.getSongList(sourceType)) {
       song.pictureLoaded = false;
       song.pictureExist = false;
     }
@@ -408,7 +408,7 @@ class Library {
   Future<void> _saveSongIdList(SourceType sourceType) async {
     await _getSongIdListFile(sourceType).writeAsString(
       jsonEncode(
-        songListManager.getSongList2(sourceType).map((e) => e.id).toList(),
+        songListManager.getSongList(sourceType).map((e) => e.id).toList(),
       ),
     );
   }
@@ -423,7 +423,7 @@ class Library {
         batch.insertAll(
           metadataDB.metadataItems,
           songListManager
-              .getSongList2(sourceType)
+              .getSongList(sourceType)
               .map((e) => e.toCompanion())
               .toList(),
         );
@@ -476,18 +476,18 @@ class Library {
   }
 
   void shuffle(SourceType sourceType) {
-    songListManager.getSongList2(sourceType).shuffle();
+    songListManager.getSongList(sourceType).shuffle();
     update(sourceType);
   }
 
   void update(SourceType sourceType) {
-    songListManager.getChangeNotifier2(sourceType).value++;
+    songListManager.getChangeNotifier(sourceType).value++;
     layersManager.updateBackground();
     _saveSongIdList(sourceType);
   }
 
   void _syncNotify(SourceType sourceType) {
-    songListManager.getChangeNotifier2(sourceType).value++;
+    songListManager.getChangeNotifier(sourceType).value++;
     songListManager.resetSourceType();
     layersManager.updateBackground();
   }
@@ -585,7 +585,7 @@ class Library {
           final song = await _parseMetadataIfNeed(id, path, modified);
           if (song != null) {
             validId.add(id);
-            songListManager.getSongList2(sourceType).add(song);
+            songListManager.getSongList(sourceType).add(song);
             if (validId.length % updateCount == 0) {
               _syncNotify(sourceType);
             }

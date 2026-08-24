@@ -329,7 +329,7 @@ class Playlist {
   }
 
   MyAudioMetadata? getCoverSong() {
-    return getFirstSong(songListManager.getSongList());
+    return getFirstSong(songListManager.currentSongList);
   }
 
   int get totalCount => songListManager.totalCount;
@@ -360,12 +360,12 @@ class Playlist {
       if (song == null) {
         continue;
       }
-      songListManager.getSongList2(sourceType).add(song);
+      songListManager.getSongList(sourceType).add(song);
       if (isFavorite) {
         song.isFavoriteNotifier.value = true;
       }
     }
-    songListManager.getChangeNotifier2(sourceType).value++;
+    songListManager.getChangeNotifier(sourceType).value++;
   }
 
   Future<void> load() async {
@@ -458,7 +458,7 @@ class Playlist {
     int sourceTypeBitMask = 0;
 
     for (MyAudioMetadata song in songList) {
-      final targetSongList = songListManager.getSongList2(song.sourceType);
+      final targetSongList = songListManager.getSongList(song.sourceType);
       if (targetSongList.contains(song)) {
         continue;
       }
@@ -476,7 +476,7 @@ class Playlist {
   Future<void> remove(List<MyAudioMetadata> songList) async {
     int sourceTypeBitMask = 0;
     for (MyAudioMetadata song in songList) {
-      final targetSongList = songListManager.getSongList2(song.sourceType);
+      final targetSongList = songListManager.getSongList(song.sourceType);
       targetSongList.remove(song);
 
       if (isFavorite) {
@@ -614,7 +614,7 @@ class Playlist {
     final json = readJsonMapFileSync(_settingFile);
 
     for (final sourceType in SourceType.values) {
-      songListManager.getSortTypeNotifier2(sourceType).value =
+      songListManager.getSortTypeNotifier(sourceType).value =
           json[sourceType.name] ?? 0;
     }
   }
@@ -624,7 +624,7 @@ class Playlist {
       jsonEncode({
         for (final sourceType in SourceType.values)
           sourceType.name: songListManager
-              .getSortTypeNotifier2(sourceType)
+              .getSortTypeNotifier(sourceType)
               .value,
       }),
     );

@@ -245,7 +245,7 @@ class MyAudioHandler extends BaseAudioHandler {
       if (autoPlayOnStartupNotifier.value) {
         if (playQueue.isEmpty) {
           currentIndex = 0;
-          playQueue = List.from(library.songListManager.getSongList());
+          playQueue = List.from(library.songListManager.currentSongList);
         }
         if (playQueue.isNotEmpty) {
           isPlayingNotifier.value = true;

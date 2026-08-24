@@ -133,13 +133,15 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
                         IconButton(
                           onPressed: () async {
                             audioHandler.currentIndex = Random().nextInt(
-                              widget.artist.songListManager
-                                  .getSongList()
+                              widget
+                                  .artist
+                                  .songListManager
+                                  .currentSongList
                                   .length,
                             );
                             playModeNotifier.value = 1;
                             await audioHandler.setPlayQueue(
-                              widget.artist.songListManager.getSongList(),
+                              widget.artist.songListManager.currentSongList,
                             );
                             await audioHandler.load();
                             audioHandler.play();
@@ -151,7 +153,7 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
                             audioHandler.currentIndex = 0;
                             playModeNotifier.value = 0;
                             await audioHandler.setPlayQueue(
-                              widget.artist.songListManager.getSongList(),
+                              widget.artist.songListManager.currentSongList,
                             );
                             await audioHandler.load();
                             audioHandler.play();
@@ -164,8 +166,10 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
                             Navigator.of(context).push(
                               ZoomPageRoute(
                                 builder: (_) => SelectableSongListPage(
-                                  songList: widget.artist.songListManager
-                                      .getSongList(),
+                                  songList: widget
+                                      .artist
+                                      .songListManager
+                                      .currentSongList,
                                   reorderable: false,
                                 ),
                               ),
@@ -183,7 +187,7 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
                     Row(
                       children: [
                         Text(
-                          '${getSourceTypeName(l10n, widget.artist.songListManager.sourceTypeNotifier.value)}: ${widget.artist.albumList.where((album) => album.songListManager.getSongList2(sourceType).isNotEmpty).toList().length} ${l10n.albums}, ${l10n.songCount(widget.artist.songListManager.getSongList().length)}',
+                          '${getSourceTypeName(l10n, widget.artist.songListManager.sourceTypeNotifier.value)}: ${widget.artist.albumList.where((album) => album.songListManager.getSongList(sourceType).isNotEmpty).toList().length} ${l10n.albums}, ${l10n.songCount(widget.artist.songListManager.currentSongList.length)}',
                         ),
                         if (widget.artist.songListManager.notEmptyCount >
                             1) ...[
@@ -281,7 +285,7 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
 
   Widget albumContent(Album album, double panelWidth) {
     final songList = album.songListManager
-        .getSongList2(sourceType)
+        .getSongList(sourceType)
         .where((song) => getArtist(song).contains(widget.artist.name))
         .toList();
     if (songList.isEmpty) {

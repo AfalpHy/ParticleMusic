@@ -34,12 +34,12 @@ class _BigSinglePlaylistPanelState
   void moveToTop(MyAudioMetadata song) {
     currentSongList.remove(song);
     currentSongList.insert(0, song);
-    songListManager.getChangeNotifier().value++;
+    songListManager.currentChangeNotifier.value++;
   }
 
   @override
   void updateSongList() {
-    currentSongList = songListManager.getSongList();
+    currentSongList = songListManager.currentSongList;
     sourceCount = songListManager.notEmptyCount;
     sourceType = songListManager.sourceTypeNotifier.value;
     super.updateSongList();
@@ -47,7 +47,7 @@ class _BigSinglePlaylistPanelState
 
   @override
   void initState() {
-    currentSongList = songListManager.getSongList();
+    currentSongList = songListManager.currentSongList;
     sourceCount = songListManager.notEmptyCount;
     sourceType = songListManager.sourceTypeNotifier.value;
     songListManager.changeNotifier.addListener(updateSongList);

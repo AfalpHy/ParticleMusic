@@ -178,7 +178,7 @@ class SongListTile extends StatelessWidget {
 
                               if (isLibrary) {
                                 final targetSongList = library.songListManager
-                                    .getSongList2(song.sourceType);
+                                    .getSongList(song.sourceType);
 
                                 final item = targetSongList.removeAt(index);
                                 targetSongList.insert(0, item);
@@ -189,7 +189,7 @@ class SongListTile extends StatelessWidget {
                                 folder!.update();
                               } else {
                                 final targetSongList = playlist!.songListManager
-                                    .getSongList2(song.sourceType);
+                                    .getSongList(song.sourceType);
                                 final item = targetSongList.removeAt(index);
                                 targetSongList.insert(0, item);
                                 playlist!.update(

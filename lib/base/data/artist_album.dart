@@ -47,7 +47,7 @@ class ArtistAlbumManager {
 
   void classify() {
     for (final sourceType in SourceType.values) {
-      for (final song in library.songListManager.getSongList2(sourceType)) {
+      for (final song in library.songListManager.getSongList(sourceType)) {
         _processSong(song);
       }
     }
@@ -82,7 +82,7 @@ class ArtistAlbumManager {
       album.year = song.year;
     }
 
-    album.songListManager.getSongList2(song.sourceType).add(song);
+    album.songListManager.getSongList(song.sourceType).add(song);
 
     for (String artistName in getArtists(getArtist(song))) {
       Artist? artist = name2Artist[artistName];
@@ -120,63 +120,7 @@ class ArtistAlbumManager {
     String originArtist,
     String originAlbum,
   ) {
-    final currentArtist = getArtist(song);
-    final currentAlbum = getAlbum(song);
-
-    final oldAlbum = name2Album[originAlbum]!;
-    oldAlbum.songListManager.localSongList.remove(song);
-
-    _processSong(song);
-
-    oldAlbum.sort();
-    oldAlbum.songListManager.localChangeNotifier.value++;
-
-    oldAlbum.songListManager.resetSourceType();
-
-    if (currentAlbum != originAlbum) {
-      if (oldAlbum.isEmpty) {
-        albumList.remove(oldAlbum);
-        name2Album.remove(originAlbum);
-        layersManager.removeLayerIfNeed(oldAlbum);
-      }
-      final newAlbum = name2Album[currentAlbum]!;
-      newAlbum.sort();
-      newAlbum.songListManager.localChangeNotifier.value++;
-      newAlbum.songListManager.resetSourceType();
-    }
-
-    sortAlbums();
-
-    Set<Artist> needProcess = {};
-
-    for (String artistName in getArtists(originArtist)) {
-      Artist artist = name2Artist[artistName]!;
-      needProcess.add(artist);
-    }
-
-    for (String artistName in getArtists(currentArtist)) {
-      Artist artist = name2Artist[artistName]!;
-      needProcess.add(artist);
-    }
-
-    for (final artist in needProcess) {
-      artist.combineAlbums();
-      artist.songListManager.localChangeNotifier.value++;
-
-      if (artist.songListManager.getSongList().isEmpty) {
-        artist.songListManager.resetSourceType();
-      }
-
-      if (artist.isEmpty) {
-        artistList.remove(artist);
-        name2Artist.remove(artist.name);
-        layersManager.removeLayerIfNeed(artist);
-      }
-    }
-
-    sortArtists();
-
-    updateNotifier.value++;
+    // TODO
   }
 
   Map<String, bool> settingToMap() {
@@ -229,7 +173,7 @@ abstract class ArtistAlbumBase {
   bool get isEmpty => songListManager.isEmpty;
 
   MyAudioMetadata getCoverSong() {
-    return songListManager.getSongList().first;
+    return songListManager.currentSongList.first;
   }
 
   int get totalCount => songListManager.totalCount;
@@ -270,8 +214,8 @@ class Artist extends ArtistAlbumBase {
     for (final album in albumList) {
       for (final sourceType in SourceType.values) {
         _fetchSongs(
-          album.songListManager.getSongList2(sourceType),
-          songListManager.getSongList2(sourceType),
+          album.songListManager.getSongList(sourceType),
+          songListManager.getSongList(sourceType),
         );
       }
     }
@@ -298,7 +242,7 @@ class Album extends ArtistAlbumBase {
 
   void sort() {
     for (final sourceType in SourceType.values) {
-      songListManager.getSongList2(sourceType).sort(_sort);
+      songListManager.getSongList(sourceType).sort(_sort);
     }
   }
 }

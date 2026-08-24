@@ -30,7 +30,7 @@ abstract class BigSongListBasePanelState extends State<BigSongListBasePanel> {
     return ValueListenableBuilder(
       valueListenable: songListManager.changeNotifier,
       builder: (context, value, child) {
-        final currentSongList = songListManager.getSongList();
+        final currentSongList = songListManager.currentSongList;
         final itemExtent = isTooNarrow(context) ? 60.0 : 80.0;
         return ListView.builder(
           padding: EdgeInsets.symmetric(

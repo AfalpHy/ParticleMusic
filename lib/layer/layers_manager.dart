@@ -348,11 +348,11 @@ class LayersManager {
       final songList = layer.folder.songList;
       return getFirstSong(songList);
     } else if (layer is SongsLayer) {
-      return getFirstSong(library.songListManager.getSongList());
+      return getFirstSong(library.songListManager.currentSongList);
     } else if (layer is RankingLayer) {
-      return getFirstSong(history.rankingSongListManager.getSongList());
+      return getFirstSong(history.rankingSongListManager.currentSongList);
     } else if (layer is RecentlyLayer) {
-      return getFirstSong(history.recentlySongListManager.getSongList());
+      return getFirstSong(history.recentlySongListManager.currentSongList);
     } else if (layer is SinglePlaylistLayer) {
       return layer.playlist.getCoverSong();
     } else {

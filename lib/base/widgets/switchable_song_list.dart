@@ -38,7 +38,7 @@ class SwitchableSongList extends StatelessWidget {
               for (int i = 0; i < SourceType.values.length; i++) {
                 final tmpSourcetype = SourceType.values[i];
                 final songListIsNotEmpty = songListManager
-                    .getSongList2(tmpSourcetype)
+                    .getSongList(tmpSourcetype)
                     .isNotEmpty;
 
                 if (tmpSourcetype == sourceType || songListIsNotEmpty) {

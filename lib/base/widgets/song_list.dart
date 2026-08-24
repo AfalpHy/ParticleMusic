@@ -222,11 +222,9 @@ class _SongListState extends State<SongList> {
       reorderable = sourceType == .local || sourceType == .webdav;
     }
     if (folder == null) {
-      songList = songListManager.getSongList2(sourceType);
-      sortTypeNotifier = songListManager.getSortTypeNotifier2(sourceType);
-      songListManager
-          .getChangeNotifier2(sourceType)
-          .addListener(updateSongList);
+      songList = songListManager.getSongList(sourceType);
+      sortTypeNotifier = songListManager.getSortTypeNotifier(sourceType);
+      songListManager.getChangeNotifier(sourceType).addListener(updateSongList);
     } else {
       songList = folder!.songList;
       sortTypeNotifier = folder!.sortTypeNotifier;
@@ -243,7 +241,7 @@ class _SongListState extends State<SongList> {
   void dispose() {
     if (folder == null) {
       songListManager
-          .getChangeNotifier2(sourceType)
+          .getChangeNotifier(sourceType)
           .removeListener(updateSongList);
     } else {
       folder!.changeNotifier.removeListener(updateSongList);
