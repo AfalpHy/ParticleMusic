@@ -4,7 +4,7 @@ import 'package:sylvakru/base/audio_handler.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/asset_images.dart';
-import 'package:sylvakru/base/utils/format_duration.dart';
+import 'package:sylvakru/base/utils/common_utils.dart';
 import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/widgets/buttons.dart';
 import 'package:sylvakru/base/widgets/cover_art_widget.dart';
@@ -236,8 +236,16 @@ class PlayQueuePageState extends State<PlayQueuePage> {
               leading: Stack(
                 children: [
                   viewModeNotifier.value == .mini
-                      ? CoverArtWidget(size: 40, borderRadius: 4, song: song)
-                      : CoverArtWidget(size: 50, borderRadius: 5, song: song),
+                      ? CoverArtWidget(
+                          size: 40,
+                          borderRadius: 4,
+                          picture: song.picture,
+                        )
+                      : CoverArtWidget(
+                          size: 50,
+                          borderRadius: 5,
+                          picture: song.picture,
+                        ),
                   ValueListenableBuilder(
                     valueListenable: showPlayButtonNotifier,
                     builder: (context, value, child) {

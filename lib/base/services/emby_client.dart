@@ -3,23 +3,20 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:sylvakru/base/services/logger.dart';
 import 'package:sylvakru/base/services/network_error_reporter.dart';
+import 'package:sylvakru/base/services/stream_client.dart';
 
 EmbyClient? embyClient;
 
-class EmbyClient {
-  final String baseUrl;
-  final String username;
-  final String password;
-
-  late final Dio dio;
-
+class EmbyClient extends StreamClient {
   String? accessToken;
   String? userId;
 
+  late String _libraryId;
+
   EmbyClient({
-    required this.baseUrl,
-    required this.username,
-    required this.password,
+    required super.baseUrl,
+    required super.username,
+    required super.password,
   }) {
     dio = Dio(
       BaseOptions(
@@ -108,10 +105,20 @@ class EmbyClient {
         return true;
       },
     );
+    if (result == null || !result) {
+      return false;
+    }
+    final libraries = await _getMusicLibraries();
 
-    return result ?? false;
+    if (libraries.isEmpty) {
+      return false;
+    }
+
+    _libraryId = libraries.first['Id'];
+    return true;
   }
 
+  @override
   Future<bool> ping() async {
     final result = await _safeRequest(
       () => dio.get('/System/Info/Public'),
@@ -122,7 +129,7 @@ class EmbyClient {
   }
 
   /// Get all libraries
-  Future<List<dynamic>> getLibraries() async {
+  Future<List<dynamic>> _getLibraries() async {
     final result = await _safeRequest(
       () => dio.get('/Users/$userId/Views'),
       (response) => response.data['Items'] as List<dynamic>,
@@ -132,9 +139,9 @@ class EmbyClient {
   }
 
   /// Get music libraries only
-  Future<List<dynamic>> getMusicLibraries() async {
+  Future<List<dynamic>> _getMusicLibraries() async {
     try {
-      final libraries = await getLibraries();
+      final libraries = await _getLibraries();
 
       return libraries.where((e) {
         return e['CollectionType'] == 'music';
@@ -145,60 +152,46 @@ class EmbyClient {
     }
   }
 
-  Stream<List<Map<String, dynamic>>> getAllSongs({int limit = 50}) async* {
-    final libraries = await getMusicLibraries();
+  @override
+  Future<List<Map<String, dynamic>>?> getSongs(int size, int offset) async {
+    final items = await _safeRequest(
+      () => dio.get(
+        '/Users/$userId/Items',
+        queryParameters: {
+          'ParentId': _libraryId,
+          'Recursive': true,
+          'IncludeItemTypes': 'Audio',
 
-    if (libraries.isEmpty) {
-      return;
-    }
+          'StartIndex': offset,
+          'Limit': size,
 
-    final libraryId = libraries.first['Id'];
+          'Fields':
+              'Id,Name,Album,Artists,AlbumArtist,RunTimeTicks,Genres,ProductionYear,IndexNumber,ParentIndexNumber,MediaSources,UserData',
 
-    int startIndex = 0;
-    int cnt = 0;
-
-    while (true) {
-      final items = await _safeRequest(
-        () => dio.get(
-          '/Users/$userId/Items',
-          queryParameters: {
-            'ParentId': libraryId,
-            'Recursive': true,
-            'IncludeItemTypes': 'Audio',
-
-            'StartIndex': startIndex,
-            'Limit': limit,
-
-            'Fields':
-                'Id,Name,Album,Artists,AlbumArtist,RunTimeTicks,Genres,ProductionYear,IndexNumber,ParentIndexNumber,MediaSources,UserData',
-
-            'EnableImages': false,
-          },
-        ),
-        (response) {
-          return (response.data['Items'] as List).cast<Map<String, dynamic>>();
+          'EnableImages': false,
         },
-      );
+      ),
+      (response) {
+        return (response.data['Items'] as List).cast<Map<String, dynamic>>();
+      },
+    );
 
-      if (items == null || items.isEmpty) {
-        break;
-      }
-
-      yield items;
-
-      cnt += items.length;
-      startIndex += limit;
-
-      logger.output('[Emby] Fetched $cnt songs...');
+    if (items == null || items.isEmpty) {
+      return null;
     }
+
+    logger.output('[Emby] Fetched ${offset + items.length} songs...');
+    return items;
   }
 
   /// Audio stream URL
-  String audioUrl(String songId) {
+  @override
+  String getStreamUrl(String songId) {
     return '${dio.options.baseUrl}/Audio/$songId/stream'
         '?UserId=$userId&api_key=$accessToken&static=true';
   }
 
+  @override
   Future<Uint8List?> getPictureBytes(String itemId) async {
     return _safeRequest(
       () => dio.get<List<int>>(
@@ -211,21 +204,20 @@ class EmbyClient {
     );
   }
 
-  Future<bool> downloadSong({
-    required String itemId,
-    required String savePath,
-  }) async {
+  @override
+  Future<bool> downloadSong(String songId, String savePath) async {
     return _boolRequest(
       () => dio.download(
-        '/Items/$itemId/Download',
+        '/Items/$songId/Download',
         savePath,
         queryParameters: {'api_key': accessToken},
       ),
     );
   }
 
-  Future<List<String>> getFavoriteSongIds() async {
-    final result = await _safeRequest(
+  @override
+  Future<List<Map<String, dynamic>>?> getStarredSongs() {
+    return _safeRequest(
       () => dio.get(
         '/Users/$userId/Items',
         queryParameters: {
@@ -235,18 +227,14 @@ class EmbyClient {
         },
       ),
       (response) {
-        return (response.data['Items'] as List)
-            .map((e) => e['Id'].toString())
-            .toList();
+        return normalize(response.data['Items']);
       },
     );
-
-    return result ?? [];
   }
 
-  Future<bool> clearFavorites() async {
+  Future<bool> _clearFavorites() async {
     try {
-      final ids = await getFavoriteSongIds();
+      final ids = (await getStarredSongs())!.map((e) => e['id']).toList();
 
       for (final id in ids) {
         final success = await _boolRequest(
@@ -265,9 +253,10 @@ class EmbyClient {
     }
   }
 
-  Future<bool> rebuildFavorites(List<String> songIds) async {
+  @override
+  Future<bool> updateStarredSongs(List<String> songIds) async {
     try {
-      final cleared = await clearFavorites();
+      final cleared = await _clearFavorites();
 
       if (!cleared) {
         return false;
@@ -290,51 +279,61 @@ class EmbyClient {
     }
   }
 
-  Future<List<dynamic>> getPlaylists() async {
-    final result = await _safeRequest(
+  @override
+  Future<List<Map<String, dynamic>>?> getPlaylists() {
+    return _safeRequest(
       () => dio.get(
         '/Users/$userId/Items',
         queryParameters: {'IncludeItemTypes': 'Playlist', 'Recursive': true},
       ),
       (response) {
-        return response.data['Items'] as List<dynamic>;
+        return normalize(response.data['Items']);
       },
     );
-
-    return result ?? [];
   }
 
-  Future<List<String>> getPlaylistItems(String playlistId) async {
-    final result = await _safeRequest(
-      () => dio.get('/Playlists/$playlistId/Items'),
-      (response) {
-        return (response.data['Items'] as List)
-            .map((e) => e['Id'].toString())
-            .toList();
-      },
-    );
-
-    return result ?? [];
+  @override
+  Future<List<Map<String, dynamic>>?> getPlaylistSongs(String playlistId) {
+    return _safeRequest(() => dio.get('/Playlists/$playlistId/Items'), (
+      response,
+    ) {
+      return normalize(response.data['Items']);
+    });
   }
 
-  Future<String?> createPlaylist({
-    required String name,
-    required List<String> songIds,
-  }) async {
+  @override
+  Future<String?> createPlaylist(String name) async {
     return _safeRequest(
       () => dio.post(
         '/Playlists',
-        queryParameters: {
-          'Name': name,
-          'Ids': songIds.join(','),
-          'MediaType': 'Audio',
-        },
+        queryParameters: {'Name': name, 'Ids': '', 'MediaType': 'Audio'},
       ),
       (response) => response.data['Id']?.toString(),
     );
   }
 
+  @override
+  Future<bool> updatePlaylistSongs(
+    String playlistId,
+    List<String> songIds,
+  ) async {
+    return true;
+  }
+
+  @override
   Future<bool> deletePlaylist(String playlistId) async {
     return _boolRequest(() => dio.delete('/Items/$playlistId'));
+  }
+
+  @override
+  Future<String> getLyricsById(String songId) {
+    // TODO: implement getLyricsById
+    throw UnimplementedError();
+  }
+
+  @override
+  Future<bool> scrobble(String songId) {
+    // TODO: implement scrobble
+    throw UnimplementedError();
   }
 }

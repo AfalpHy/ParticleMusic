@@ -9,10 +9,6 @@ class SingleFolderLayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SongList(
-      folder: folder,
-      isRoot: false,
-      sourceType: folder.isWebdav ? .webdav : .local,
-    );
+    return SongList(folder: folder, isRoot: false);
   }
 }

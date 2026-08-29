@@ -42,7 +42,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get folder => '文件夹';
 
   @override
-  String get ranking => '听歌排行';
+  String get ranking => '最多播放';
 
   @override
   String get recently => '最近播放';

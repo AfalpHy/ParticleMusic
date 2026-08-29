@@ -20,16 +20,9 @@ extension FoldersPage on FoldersLayer {
         centerTitle: true,
       ),
       body: ListView.builder(
-        itemCount:
-            library.localFolderList.length + library.webdavFolderList.length,
+        itemCount: library.folderList.length,
         itemBuilder: (_, index) {
-          late Folder folder;
-          if (index < library.localFolderList.length) {
-            folder = library.localFolderList[index];
-          } else {
-            folder = library
-                .webdavFolderList[index - library.localFolderList.length];
-          }
+          final folder = library.folderList[index];
           return ListTile(
             leading: ValueListenableBuilder(
               valueListenable: folder.changeNotifier,
@@ -39,15 +32,12 @@ extension FoldersPage on FoldersLayer {
                   listenable: Listenable.merge([coverSong?.updateNotifier]),
                   builder: (_, _) {
                     return Hero(
-                      tag:
-                          (coverSong?.id ??
-                              (folder.isWebdav ? 'webdav' : 'local')) +
-                          folder.id,
+                      tag: (coverSong?.picture.id ?? '') + folder.id,
                       transitionOnUserGestures: true,
                       child: CoverArtWidget(
                         size: 50,
                         borderRadius: 5,
-                        song: coverSong,
+                        picture: coverSong?.picture,
                       ),
                     );
                   },

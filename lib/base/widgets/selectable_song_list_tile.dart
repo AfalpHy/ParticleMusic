@@ -49,7 +49,11 @@ class SelectableSongListTile extends StatelessWidget {
           child: GestureDetector(
             child: ListTile(
               contentPadding: EdgeInsets.fromLTRB(0, 0, 0, 0),
-              leading: CoverArtWidget(size: 40, borderRadius: 4, song: song),
+              leading: CoverArtWidget(
+                size: 40,
+                borderRadius: 4,
+                picture: song.picture,
+              ),
               title: ValueListenableBuilder(
                 valueListenable: currentSongNotifier,
                 builder: (_, currentSong, _) {

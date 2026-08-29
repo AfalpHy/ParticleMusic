@@ -11,11 +11,12 @@ import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/asset_images.dart';
 import 'package:sylvakru/base/audio_handler.dart';
 import 'package:sylvakru/base/data/artist_album.dart';
-import 'package:sylvakru/base/data/song_list_manager.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/services/keyboard.dart';
-import 'package:sylvakru/base/utils/format_duration.dart';
+import 'package:sylvakru/base/services/navidrome_client.dart';
+import 'package:sylvakru/base/services/picture_service.dart';
+import 'package:sylvakru/base/utils/common_utils.dart';
 import 'package:sylvakru/base/utils/media_query.dart';
 import 'package:sylvakru/base/utils/source_type.dart';
 import 'package:sylvakru/base/widgets/cover_art_widget.dart';
@@ -39,6 +40,8 @@ import 'package:sylvakru/layer/artists_layer.dart';
 import 'package:sylvakru/layer/folders_layer.dart';
 import 'package:sylvakru/layer/layers_manager.dart';
 import 'package:sylvakru/layer/playlists_layer.dart';
+import 'package:sylvakru/layer/ranking_layer.dart';
+import 'package:sylvakru/layer/recently_layer.dart';
 import 'package:sylvakru/portrait_view/custom_appbar_leading.dart';
 import 'package:sylvakru/portrait_view/my_search_field.dart';
 import 'package:sylvakru/portrait_view/song_list_tile.dart';
@@ -57,7 +60,7 @@ class SongList extends StatefulWidget {
 
   final bool isRoot;
 
-  final SourceType sourceType;
+  final String? albumRootLabel;
 
   const SongList({
     super.key,
@@ -68,7 +71,8 @@ class SongList extends StatefulWidget {
     this.isRanking = false,
     this.isRecently = false,
     this.isRoot = true,
-    this.sourceType = .local,
+
+    this.albumRootLabel,
   });
 
   @override
@@ -77,8 +81,9 @@ class SongList extends StatefulWidget {
 
 class _SongListState extends State<SongList> {
   String title = '';
-  late SongListManager songListManager;
-  late List<MyAudioMetadata> songList;
+  List<MyAudioMetadata> songList = [];
+  List<MyAudioMetadata> tmpSongList = [];
+
   Playlist? playlist;
   Artist? artist;
   Album? album;
@@ -89,13 +94,14 @@ class _SongListState extends State<SongList> {
   bool isRecently = false;
 
   bool reorderable = false;
-
-  late SourceType sourceType;
+  bool canModify = false;
 
   Timer? timer;
 
   bool waitForSecondClick = false;
   Timer? doubleClicktimer;
+
+  Timer? searchTimer;
 
   final currentSongListNotifier = ValueNotifier<List<MyAudioMetadata>>([]);
 
@@ -103,7 +109,10 @@ class _SongListState extends State<SongList> {
   final scrollController = ScrollController();
   final textController = TextEditingController();
 
+  String get searchValue => textController.text;
+
   ValueNotifier<int> sortTypeNotifier = ValueNotifier(0);
+  ValueNotifier<int> changeNotifier = ValueNotifier(0);
 
   List<ValueNotifier<bool>> isSelectedList = [];
   bool isFixed = false;
@@ -121,6 +130,8 @@ class _SongListState extends State<SongList> {
   bool hideOthers = false;
 
   String rootLabel = '';
+
+  bool firstLoading = false;
 
   void updateHideOthers() {
     setState(() {
@@ -140,28 +151,111 @@ class _SongListState extends State<SongList> {
         : title;
   }
 
+  int currentRequestId = 0;
+  Future<List<MyAudioMetadata>?> _fetchSongList(int offset) async {
+    currentRequestId++;
+    int tmp = currentRequestId;
+    final result = (await navidromeClient?.search(
+      searchValue,
+      100,
+      offset,
+    ))?.map((e) => MyAudioMetadata.fromMap(e, sourceType)).toList();
+    if (!mounted) {
+      return null;
+    }
+    if (tmp == currentRequestId) {
+      return result;
+    }
+    return null;
+  }
+
   void updateSongList() {
-    final value = textController.text;
-    final filteredSongList = filterSongList(songList, value);
-    sortSongList(sortTypeNotifier.value, filteredSongList);
-    currentSongListNotifier.value = filteredSongList;
+    final currentSongList = List<MyAudioMetadata>.from(
+      searchValue.isEmpty ? songList : tmpSongList,
+    );
 
     isSelectedList = List.generate(
-      filteredSongList.length,
+      currentSongList.length,
       (_) => ValueNotifier(false),
     );
     isFixed =
         isMobile ||
         !reorderable ||
-        textController.text.isNotEmpty ||
+        searchValue.isNotEmpty ||
         sortTypeNotifier.value > 0;
 
     continuousSelectBeginIndex = 0;
 
     showPlayButtonNotifierMap.clear();
-    for (var e in filteredSongList) {
+    for (var e in currentSongList) {
       showPlayButtonNotifierMap[e] = ValueNotifier(false);
     }
+
+    if (playlist != null) {
+      canModify = playlist!.canModify;
+    } else if (folder != null) {
+      canModify = folder!.canModify;
+    } else if (isLibrary) {
+      canModify = library.canModify;
+    }
+    sortSongList(sortTypeNotifier.value, currentSongList);
+    currentSongListNotifier.value = currentSongList;
+  }
+
+  void startNewSearchIfNeed() {
+    searchTimer?.cancel();
+    searchTimer = Timer(Duration(milliseconds: 300), () async {
+      if (searchValue.isNotEmpty) {
+        tmpSongList.clear();
+        if (isLibrary) {
+          tmpSongList = await _fetchSongList(0) ?? [];
+          if (!mounted) {
+            return;
+          }
+        } else {
+          tmpSongList = filterSongList(songList, searchValue);
+        }
+      }
+      updateSongList();
+    });
+  }
+
+  bool _isLoadingMoreData = false;
+  bool _reachEnd = false;
+  void _onScroll() async {
+    if (_isLoadingMoreData | _reachEnd) {
+      return;
+    }
+    _isLoadingMoreData = true;
+
+    if (scrollController.position.pixels >=
+        scrollController.position.maxScrollExtent) {
+      if (searchValue.isEmpty) {
+        final fetchedSongList = await _fetchSongList(songList.length);
+        if (!mounted) {
+          return;
+        }
+        if (fetchedSongList == null) {
+          _isLoadingMoreData = false;
+          return;
+        }
+        _reachEnd = fetchedSongList.isEmpty;
+        songList.addAll(fetchedSongList);
+      } else {
+        final fetchedSongList = await _fetchSongList(tmpSongList.length);
+        if (!mounted) {
+          return;
+        }
+        if (fetchedSongList == null) {
+          _isLoadingMoreData = false;
+          return;
+        }
+        _reachEnd = fetchedSongList.isEmpty;
+        tmpSongList.addAll(fetchedSongList);
+      }
+      updateSongList();
+    }
+    _isLoadingMoreData = false;
   }
 
   @override
@@ -175,11 +269,11 @@ class _SongListState extends State<SongList> {
     isRanking = widget.isRanking;
     isRecently = widget.isRecently;
 
-    sourceType = widget.sourceType;
-
     if (playlist != null) {
       title = playlist!.name;
-      songListManager = playlist!.songListManager;
+      songList = playlist!.songList;
+      sortTypeNotifier = playlist!.sortTypeNotifier;
+      changeNotifier = playlist!.changeNotifier;
       reorderable = true;
       if (!widget.isRoot) {
         rootVisibleNotifier = playlistsVisibleNotifier;
@@ -190,7 +284,7 @@ class _SongListState extends State<SongList> {
       }
     } else if (artist != null) {
       title = artist!.name;
-      songListManager = artist!.songListManager;
+      songList = artist!.songList;
       rootVisibleNotifier = artistsVisibleNotifier;
       backToRoot = () {
         layersManager.popDetail('artists');
@@ -198,14 +292,23 @@ class _SongListState extends State<SongList> {
       rootLabel = 'artists';
     } else if (album != null) {
       title = album!.name;
-      songListManager = album!.songListManager;
-      rootVisibleNotifier = albumsVisibleNotifier;
+      songList = album!.songList;
+      rootLabel = widget.albumRootLabel!;
+      if (rootLabel == 'albums') {
+        rootVisibleNotifier = albumsVisibleNotifier;
+      } else if (rootLabel == 'ranking') {
+        rootVisibleNotifier = rankingVisibleNotifier;
+      } else {
+        rootVisibleNotifier = recentlyVisibleNotifier;
+      }
       backToRoot = () {
-        layersManager.popDetail('albums');
+        layersManager.popDetail(widget.albumRootLabel!);
       };
-      rootLabel = 'albums';
     } else if (folder != null) {
       title = folder!.id;
+      songList = folder!.songList;
+      sortTypeNotifier = folder!.sortTypeNotifier;
+      changeNotifier = folder!.changeNotifier;
       reorderable = true;
       rootVisibleNotifier = foldersVisibleNotifier;
       backToRoot = () {
@@ -213,47 +316,68 @@ class _SongListState extends State<SongList> {
       };
       rootLabel = 'folders';
     } else if (isRanking) {
-      songListManager = history.rankingSongListManager;
+      songList = history.rankingSongList;
+      history.rankingChangeNotifier.addListener(updateSongList);
     } else if (isRecently) {
-      songListManager = history.recentlySongListManager;
+      songList = history.recentlySongList;
+      history.recentlyChangeNotifier.addListener(updateSongList);
     } else {
       isLibrary = true;
-      songListManager = library.songListManager;
-      reorderable = sourceType == .local || sourceType == .webdav;
+      songList = library.songList;
+      library.changeNotifier.addListener(updateSongList);
+      reorderable = isNotStreamSource;
+      if (isStreamSource) {
+        scrollController.addListener(_onScroll);
+      }
     }
-    if (folder == null) {
-      songList = songListManager.getSongList(sourceType);
-      sortTypeNotifier = songListManager.getSortTypeNotifier(sourceType);
-      songListManager.getChangeNotifier(sourceType).addListener(updateSongList);
-    } else {
-      songList = folder!.songList;
-      sortTypeNotifier = folder!.sortTypeNotifier;
-      folder!.changeNotifier.addListener(updateSongList);
-    }
+
     rootVisibleNotifier?.addListener(updateHideOthers);
 
-    updateSongList();
+    firstLoading = true;
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (isStreamSource) {
+        if (songList.isEmpty) {
+          currentSongListNotifier.value = [];
+          if (isLibrary) {
+            songList.addAll(await _fetchSongList(0) ?? []);
+            layersManager.updateBackground();
+          } else if (album != null) {
+            songList.addAll(
+              (await navidromeClient!.getAlbumSongs(
+                    album!.id!,
+                  ))?.map((e) => MyAudioMetadata.fromMap(e, sourceType)) ??
+                  [],
+            );
+          } else if (artist != null) {
+            songList.addAll(
+              (await navidromeClient!.getArtistSongs(
+                    artist!.id!,
+                  ))?.map((e) => MyAudioMetadata.fromMap(e, sourceType)) ??
+                  [],
+            );
+          }
+        }
+      }
+      firstLoading = false;
+      updateSongList();
+    });
+
     sortTypeNotifier.addListener(updateSongList);
-    textController.addListener(updateSongList);
+    changeNotifier.addListener(updateSongList);
+    textController.addListener(startNewSearchIfNeed);
   }
 
   @override
   void dispose() {
-    if (folder == null) {
-      songListManager
-          .getChangeNotifier(sourceType)
-          .removeListener(updateSongList);
-    } else {
-      folder!.changeNotifier.removeListener(updateSongList);
-    }
-
     rootVisibleNotifier?.removeListener(updateHideOthers);
 
     sortTypeNotifier.removeListener(updateSongList);
-    textController.removeListener(updateSongList);
+    changeNotifier.removeListener(updateSongList);
+    textController.removeListener(startNewSearchIfNeed);
     scrollController.dispose();
     timer?.cancel();
     doubleClicktimer?.cancel();
+    searchTimer?.cancel();
     super.dispose();
   }
 
@@ -262,6 +386,14 @@ class _SongListState extends State<SongList> {
       valueListenable: currentSongListNotifier,
       builder: (_, _, _) {
         final song = getFirstSong(songList);
+        MyPicture? picture = song?.picture;
+        if (isStreamSource) {
+          if (artist != null) {
+            picture = artist!.picture;
+          } else if (album != null) {
+            picture = album!.picture;
+          }
+        }
         return ListenableBuilder(
           listenable: Listenable.merge([song?.updateNotifier]),
           builder: (_, _) {
@@ -271,16 +403,20 @@ class _SongListState extends State<SongList> {
                 final coverArt = CoverArtWidget(
                   size: size,
                   borderRadius: size / 10,
-                  song: song,
+                  picture: picture,
                   elevation: 5,
                   color: colorManager.getSpecificMainPageCoverArtBaseColorForm(
                     song,
                   ), // keep stable color
                 );
+
                 return widget.isRoot
                     ? coverArt
                     : Hero(
-                        tag: (song == null ? sourceType.name : song.id) + title,
+                        tag:
+                            (picture?.id ?? '') +
+                            (album != null ? rootLabel : '') +
+                            getTitleText(AppLocalizations.of(context)),
                         transitionOnUserGestures: true,
                         flightShuttleBuilder:
                             (

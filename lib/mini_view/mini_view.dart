@@ -174,7 +174,7 @@ class _MiniViewState extends State<MiniView> {
                   fit: StackFit.expand,
 
                   children: [
-                    CoverArtWidget(song: currentSong),
+                    CoverArtWidget(picture: currentSong?.picture),
 
                     if (displayOverlay || miniViewDisplayBottom)
                       Positioned(
@@ -370,7 +370,7 @@ class _MiniViewState extends State<MiniView> {
         builder: (context, foregroundColor, child) {
           return ListTile(
             leading: CoverArtWidget(
-              song: currentSong,
+              picture: currentSong?.picture,
               size: 50,
               borderRadius: 5,
             ),

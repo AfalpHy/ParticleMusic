@@ -81,7 +81,7 @@ class _BigPictureViewState extends State<BigPictureView> {
                   return SizedBox.shrink();
                 }
                 return CoverArtWidget(
-                  song: currentSongNotifier.value,
+                  picture: currentSongNotifier.value?.picture,
                   color: currentCoverArtColor,
                 );
               },
@@ -486,7 +486,7 @@ class _BigPictureViewState extends State<BigPictureView> {
                                 case 1:
                                   showSongListOptions(
                                     context,
-                                    library.songListManager,
+                                    library.songList,
                                   );
                                 case 2:
                                   showArtistsAlbumsOptions(context, true);
@@ -495,12 +495,12 @@ class _BigPictureViewState extends State<BigPictureView> {
                                 case 5:
                                   showSongListOptions(
                                     context,
-                                    history.rankingSongListManager,
+                                    history.rankingSongList,
                                   );
                                 case 6:
                                   showSongListOptions(
                                     context,
-                                    history.recentlySongListManager,
+                                    history.recentlySongList,
                                   );
                                 default:
                               }

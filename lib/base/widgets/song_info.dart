@@ -140,7 +140,7 @@ class _SongInfoState extends State<SongInfo> {
                         CoverArtWidget(
                           size: isPhone ? 150 : 180,
                           borderRadius: 10,
-                          song: song,
+                          picture: song.picture,
                         ),
                         SizedBox(width: 10),
                         Expanded(

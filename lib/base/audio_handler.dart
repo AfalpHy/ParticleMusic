@@ -5,10 +5,10 @@ import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:media_kit/media_kit.dart';
-import 'package:sylvakru/base/services/emby_client.dart';
-import 'package:sylvakru/base/services/metadata_service.dart';
+import 'package:sylvakru/base/services/navidrome_client.dart';
+import 'package:sylvakru/base/services/picture_service.dart';
 import 'package:sylvakru/base/services/play_queue_logic.dart';
-import 'package:sylvakru/base/services/subsonic_client.dart';
+import 'package:sylvakru/base/services/stream_client.dart';
 import 'package:sylvakru/base/services/taskbar_service.dart';
 import 'package:sylvakru/base/services/webdav_client.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
@@ -23,7 +23,6 @@ import 'package:sylvakru/layer/layers_manager.dart';
 import 'package:sylvakru/base/utils/contrast_color_generator.dart';
 import 'package:sylvakru/base/data/library.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
-import 'package:sylvakru/base/services/navidrome_client.dart';
 import 'package:sylvakru/base/utils/metadata_utils.dart';
 import 'dart:async';
 
@@ -78,7 +77,7 @@ class MyAudioHandler extends BaseAudioHandler {
   DateTime? _playLastSyncTime;
   Duration _playedDuration = Duration.zero;
 
-  late final File _playQueueState;
+  File? _playQueueState;
   late final File _playState;
   late final File _equalizerState;
   late final File _positionState;
@@ -110,7 +109,7 @@ class MyAudioHandler extends BaseAudioHandler {
         bool needPauseTmp = needPause;
 
         while (isSyncing) {
-          await Future.delayed(Duration(milliseconds: 50));
+          await Future.delayed(Duration(milliseconds: 500));
         }
         if (playModeNotifier.value == 2) {
           // repeat
@@ -129,7 +128,9 @@ class MyAudioHandler extends BaseAudioHandler {
       needPause = false;
       if (viewModeNotifier.value == .bigPicture) {
         if (useCurrentSongForBg) {
-          colorManager.updateBigPictureRelatedColors(currentSongNotifier.value);
+          colorManager.updateBigPictureRelatedColors(
+            currentSongNotifier.value?.picture,
+          );
         }
         return;
       }
@@ -175,9 +176,11 @@ class MyAudioHandler extends BaseAudioHandler {
   }
 
   void initStateFiles() {
-    _playQueueState = File("${appSupportDir.path}/play_queue_state.json");
-    if (!(_playQueueState.existsSync())) {
-      _savePlayQueueState();
+    if (isNotStreamSource) {
+      _playQueueState = File("${appSupportDir.path}/play_queue_state.json");
+      if (!(_playQueueState!.existsSync())) {
+        _savePlayQueueState();
+      }
     }
     _playState = File("${appSupportDir.path}/play_state.json");
     if (!(_playState.existsSync())) {
@@ -212,21 +215,33 @@ class MyAudioHandler extends BaseAudioHandler {
   }
 
   Future<void> _loadPlayQueueState() async {
-    final content = await _playQueueState.readAsString();
+    if (isNotStreamSource) {
+      final content = await _playQueueState!.readAsString();
 
-    final json = jsonDecode(content) as Map<String, dynamic>;
+      final json = jsonDecode(content) as Map<String, dynamic>;
 
-    _playQueueTmp.addAll(_restoreQueue(json['playQueueTmp']));
-    playQueue.addAll(_restoreQueue(json['playQueue']));
+      _playQueueTmp.addAll(_restoreQueue(json['playQueueTmp']));
+      playQueue.addAll(_restoreQueue(json['playQueue']));
+    } else {
+      playQueue.clear();
+      for (final song in await navidromeClient?.getPlayQueue() ?? []) {
+        playQueue.add(MyAudioMetadata.fromMap(song, sourceType));
+      }
+      _playQueueTmp = List.from(playQueue);
+    }
   }
 
   void _savePlayQueueState() {
-    _playQueueState.writeAsStringSync(
-      jsonEncode({
-        'playQueueTmp': _playQueueTmp.map((e) => e.id).toList(),
-        'playQueue': playQueue.map((e) => e.id).toList(),
-      }),
-    );
+    if (isNotStreamSource) {
+      _playQueueState!.writeAsStringSync(
+        jsonEncode({
+          'playQueueTmp': _playQueueTmp.map((e) => e.id).toList(),
+          'playQueue': playQueue.map((e) => e.id).toList(),
+        }),
+      );
+    } else {
+      navidromeClient?.savePlayQueue(playQueue.map((e) => e.id).toList());
+    }
   }
 
   Future<void> _loadPlayState() async {
@@ -245,7 +260,7 @@ class MyAudioHandler extends BaseAudioHandler {
       if (autoPlayOnStartupNotifier.value) {
         if (playQueue.isEmpty) {
           currentIndex = 0;
-          playQueue = List.from(library.songListManager.currentSongList);
+          playQueue = List.from(library.songList);
         }
         if (playQueue.isNotEmpty) {
           isPlayingNotifier.value = true;
@@ -253,6 +268,10 @@ class MyAudioHandler extends BaseAudioHandler {
           currentIndex = -1;
         }
       }
+    }
+
+    if (currentIndex == -1 && playQueue.isNotEmpty) {
+      currentIndex = 0;
     }
 
     if (currentIndex != -1 && playQueue.isNotEmpty) {
@@ -457,34 +476,53 @@ class MyAudioHandler extends BaseAudioHandler {
 
   Future<void> sync() async {
     isSyncing = true;
-    playQueue = getNewQueue(playQueue);
-    _playQueueTmp = getNewQueue(_playQueueTmp);
-    final currentSong = currentSongNotifier.value;
-    if (currentSong != null) {
-      final tmpCurrentSong = library.id2Song[currentSong.id];
-      if (tmpCurrentSong != null) {
-        await _setLyricsAndUpdateColors(tmpCurrentSong);
-        currentSongNotifier.value = tmpCurrentSong;
-        currentIndex = playQueue.indexOf(tmpCurrentSong);
-        updateServiceMediaItem(tmpCurrentSong);
-      } else {
-        currentSongNotifier.value = null;
-        currentIndex = -1;
-        if (playQueue.isNotEmpty) {
-          await skipToNext();
+    if (isNotStreamSource) {
+      playQueue = getNewQueue(playQueue);
+      _playQueueTmp = getNewQueue(_playQueueTmp);
+      final currentSong = currentSongNotifier.value;
+      if (currentSong != null) {
+        final tmpCurrentSong = library.id2Song[currentSong.id];
+        if (tmpCurrentSong != null) {
+          await _setLyricsAndUpdateColors(tmpCurrentSong);
+          currentSongNotifier.value = tmpCurrentSong;
+          currentIndex = playQueue.indexOf(tmpCurrentSong);
+          updateServiceMediaItem(tmpCurrentSong);
         } else {
-          await stop();
+          currentSongNotifier.value = null;
+          currentIndex = -1;
+          if (playQueue.isNotEmpty) {
+            await skipToNext();
+          } else {
+            await stop();
+          }
         }
       }
+      _savePlayQueueState();
+      savePlayState();
+    } else {
+      await _loadPlayQueueState();
+      currentIndex = playQueue.indexWhere(
+        (e) => e.id == currentSongNotifier.value?.id,
+      );
+      if (currentIndex != -1) {
+        final tmpCurrentSong = playQueue[currentIndex];
+        await _setLyricsAndUpdateColors(tmpCurrentSong);
+        currentSongNotifier.value = tmpCurrentSong;
+        updateServiceMediaItem(tmpCurrentSong);
+      } else if (playQueue.isNotEmpty) {
+        await skipToNext();
+      } else {
+        currentSongNotifier.value = null;
+        await stop();
+      }
     }
+
     isSyncing = false;
-    _savePlayQueueState();
-    savePlayState();
   }
 
   Future<void> _setLyricsAndUpdateColors(MyAudioMetadata song) async {
     await setParsedLyrics(song);
-    currentCoverArtColor = await computeCoverArtColor(song);
+    currentCoverArtColor = await computeColor(song.picture);
     updateHoverFocusColor();
     contrastColorTheme = ContrastColorGenerator.generate(currentCoverArtColor);
     if (lyricsPageThemeNotifier.value == .vivid) {
@@ -506,7 +544,7 @@ class MyAudioHandler extends BaseAudioHandler {
       // fix wrong duration
       if (durationSeconds <= 0) {
         durationSeconds = _player.state.duration.inSeconds;
-        if (durationSeconds > 0) {
+        if (durationSeconds > 0 && isNotStreamSource) {
           await library.updateDuration(
             currentSongNotifier.value!,
             _player.state.duration,
@@ -552,19 +590,15 @@ class MyAudioHandler extends BaseAudioHandler {
               resource = tmpPath;
             }
             break;
-          case .subsonic:
-            currentSong.path ??= subsonicClient!.getStreamUrl(currentSong.id);
-            break;
           case .navidrome:
-            currentSong.path ??= navidromeClient!.getStreamUrl(currentSong.id);
-            break;
           case .emby:
-            currentSong.path ??= embyClient!.audioUrl(currentSong.id);
+            resource = getStreamClient(
+              currentSong.sourceType,
+            )!.getStreamUrl(currentSong.id);
             break;
           default:
             break;
         }
-
         resource ??= currentSong.path!;
 
         await _player.open(
@@ -598,8 +632,8 @@ class MyAudioHandler extends BaseAudioHandler {
   void updateServiceMediaItem(MyAudioMetadata currentSong) {
     Uri? artUri;
 
-    if (currentSong.pictureExist) {
-      artUri = File(currentSong.picturePath).uri;
+    if (currentSong.picture.isExist) {
+      artUri = File(currentSong.picture.path).uri;
     }
 
     mediaItem.add(

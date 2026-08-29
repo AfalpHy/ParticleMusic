@@ -11,12 +11,11 @@ import 'package:sylvakru/base/asset_images.dart';
 import 'package:sylvakru/base/audio_handler.dart';
 import 'package:sylvakru/base/data/folder.dart';
 import 'package:sylvakru/base/data/playlist.dart';
-import 'package:sylvakru/base/data/song_list_manager.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/services/interaction.dart';
-import 'package:sylvakru/base/services/metadata_service.dart';
-import 'package:sylvakru/base/utils/format_duration.dart';
+import 'package:sylvakru/base/services/picture_service.dart';
+import 'package:sylvakru/base/utils/common_utils.dart';
 import 'package:sylvakru/base/utils/media_query.dart';
 import 'package:sylvakru/base/utils/metadata_utils.dart';
 import 'package:sylvakru/base/utils/source_type.dart';
@@ -38,13 +37,10 @@ abstract class BigSongListWithCoverBasePanelState<
 >
     extends State<T> {
   late final String title;
+  List<MyAudioMetadata> songList = [];
   List<MyAudioMetadata> currentSongList = [];
-  late final SongListManager? songListManager;
 
   late Color baseColor;
-
-  late int sourceCount;
-  late SourceType sourceType;
 
   final _scrollController = ScrollController();
 
@@ -54,8 +50,14 @@ abstract class BigSongListWithCoverBasePanelState<
   Playlist? playlist;
 
   void updateSongList() async {
-    baseColor = await computeCoverArtColor(getFirstSong(currentSongList));
-    colorManager.updateBigPictureRelatedColors(getFirstSong(currentSongList));
+    baseColor = await computeColor(getFirstSong(currentSongList)?.picture);
+    colorManager.updateBigPictureRelatedColors(
+      getFirstSong(currentSongList)?.picture,
+    );
+    if (!mounted) {
+      return;
+    }
+    currentSongList = List.from(songList);
     setState(() {});
   }
 
@@ -64,7 +66,9 @@ abstract class BigSongListWithCoverBasePanelState<
     useCurrentSongForBg = false;
     baseColor = widget.baseColor;
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      colorManager.updateBigPictureRelatedColors(getFirstSong(currentSongList));
+      colorManager.updateBigPictureRelatedColors(
+        getFirstSong(currentSongList)?.picture,
+      );
     });
     super.initState();
   }
@@ -74,7 +78,9 @@ abstract class BigSongListWithCoverBasePanelState<
     useCurrentSongForBg = true;
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      colorManager.updateBigPictureRelatedColors(currentSongNotifier.value);
+      colorManager.updateBigPictureRelatedColors(
+        currentSongNotifier.value?.picture,
+      );
     });
     _scrollController.dispose();
     super.dispose();
@@ -90,7 +96,10 @@ abstract class BigSongListWithCoverBasePanelState<
       fit: .expand,
       children: [
         if (mainPageThemeNotifier.value == .vivid) ...[
-          CoverArtWidget(song: getFirstSong(currentSongList), color: baseColor),
+          CoverArtWidget(
+            picture: getFirstSong(currentSongList)?.picture,
+            color: baseColor,
+          ),
           RepaintBoundary(
             child: BackdropFilter(
               filter: ImageFilter.blur(
@@ -180,42 +189,9 @@ abstract class BigSongListWithCoverBasePanelState<
               Row(
                 children: [
                   SizedBox(width: horizontalPadding),
-                  Text(getSourceTypeName(l10n, sourceType)),
-
-                  if (sourceCount > 1) ...[
-                    SizedBox(width: 10),
-                    GlassContainer(
-                      settings: LiquidGlassSettings(
-                        glassColor: glassColor.value,
-                      ),
-                      child: Material(
-                        color: Colors.transparent,
-                        shape: SmoothRectangleBorder(
-                          smoothness: 1,
-                          borderRadius: .circular(5),
-                        ),
-                        clipBehavior: .antiAlias,
-                        child: InkWell(
-                          onTap: () {
-                            showSwitchDialogIfNeed(context, songListManager!);
-                          },
-                          child: Padding(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8.0,
-                              vertical: 4.0,
-                            ),
-                            child: Text(
-                              AppLocalizations.of(context).switch_,
-                              style: .new(
-                                color: textColor.value,
-                                fontWeight: .bold,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                  ],
+                  Text(
+                    '${getSourceTypeDisplayName(l10n, sourceType)}: ${l10n.songCount(currentSongList.length)}',
+                  ),
                 ],
               ),
               SizedBox(height: 10),
@@ -276,7 +252,7 @@ abstract class BigSongListWithCoverBasePanelState<
                       toHeroContext,
                     ) => FittedBox(child: toHeroContext.widget),
                 child: CoverArtWidget(
-                  song: getFirstSong(currentSongList),
+                  picture: getFirstSong(currentSongList)?.picture,
                   size: panelWidth * 0.6,
                   borderRadius: panelWidth * 0.06,
                 ),
@@ -303,7 +279,7 @@ abstract class BigSongListWithCoverBasePanelState<
                 toHeroContext,
               ) => FittedBox(child: toHeroContext.widget),
           child: CoverArtWidget(
-            song: getFirstSong(currentSongList),
+            picture: getFirstSong(currentSongList)?.picture,
             size: panelWidth * 0.2,
             borderRadius: panelWidth * 0.01,
           ),
@@ -417,7 +393,7 @@ abstract class BigSongListWithCoverBasePanelState<
             ),
           ),
           CoverArtWidget(
-            song: song,
+            picture: song.picture,
             size: isNarrow ? 40 : 60,
             borderRadius: isNarrow ? 4 : 8,
           ),

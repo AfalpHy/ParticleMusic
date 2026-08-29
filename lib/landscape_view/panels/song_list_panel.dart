@@ -22,8 +22,8 @@ extension _SongListPanel on _SongListState {
               if (currentSongNotifier.value == null) {
                 return;
               }
-              final index = currentSongListNotifier.value.indexOf(
-                currentSongNotifier.value!,
+              final index = currentSongListNotifier.value.indexWhere(
+                (e) => currentSongNotifier.value!.id == e.id,
               );
               if (index == -1) {
                 showCenterMessage(context, 'Current song not found');
@@ -68,6 +68,14 @@ extension _SongListPanel on _SongListState {
           sliver: ValueListenableBuilder(
             valueListenable: currentSongListNotifier,
             builder: (context, currentSongList, child) {
+              if (firstLoading) {
+                return SliverFillRemaining(
+                  hasScrollBody: false,
+                  child: Center(
+                    child: CircularProgressIndicator(color: iconColor.value),
+                  ),
+                );
+              }
               return SliverReorderableList(
                 itemExtent: 60,
                 itemBuilder: (context, index) {
@@ -76,7 +84,7 @@ extension _SongListPanel on _SongListState {
                   }
                   return ReorderableDragStartListener(
                     key: ValueKey(currentSongList[index]),
-                    enabled: !isFixed,
+                    enabled: !isFixed & canModify,
                     index: index,
                     child: songListItem(index),
                   );
@@ -87,11 +95,11 @@ extension _SongListPanel on _SongListState {
                   songList.insert(newIndex, item);
 
                   if (isLibrary) {
-                    library.update(sourceType);
+                    library.update();
                   } else if (folder != null) {
                     folder!.update();
                   } else {
-                    playlist!.update(getSourceTypeBitMask(sourceType));
+                    playlist!.update();
                   }
                 },
               );
@@ -133,7 +141,10 @@ extension _SongListPanel on _SongListState {
                     subtitle: ValueListenableBuilder(
                       valueListenable: currentSongListNotifier,
                       builder: (context, currentSongList, child) {
-                        String prefix = getSourceTypeName(l10n, sourceType);
+                        String prefix = getSourceTypeDisplayName(
+                          l10n,
+                          sourceType,
+                        );
                         return Text(
                           "$prefix: ${l10n.songCount(currentSongList.length)}",
                         );
@@ -143,10 +154,7 @@ extension _SongListPanel on _SongListState {
                   Spacer(),
 
                   ListenableBuilder(
-                    listenable: Listenable.merge([
-                      buttonColor.valueNotifier,
-                      if (folder == null) songListManager.changeNotifier,
-                    ]),
+                    listenable: Listenable.merge([buttonColor.valueNotifier]),
                     builder: (_, _) {
                       final buttonStyle = ElevatedButton.styleFrom(
                         backgroundColor: buttonColor.value,
@@ -224,24 +232,7 @@ extension _SongListPanel on _SongListState {
                               ),
                             ],
 
-                            if (folder == null &&
-                                songListManager.notEmptyCount >= 2) ...[
-                              SizedBox(width: 15),
-                              ElevatedButton(
-                                onPressed: () {
-                                  showSwitchDialogIfNeed(
-                                    context,
-                                    songListManager,
-                                  );
-                                },
-                                style: buttonStyle,
-                                child: Text(l10n.switch_),
-                              ),
-                            ],
-
-                            if (isLibrary &&
-                                    (sourceType == .local ||
-                                        sourceType == .webdav) ||
+                            if (isLibrary && isNotStreamSource ||
                                 folder != null) ...[
                               SizedBox(width: 15),
                               ElevatedButton(
@@ -325,9 +316,7 @@ extension _SongListPanel on _SongListState {
                                                     }
                                                     sortTypeNotifier.value = 0;
                                                     if (isLibrary) {
-                                                      library.shuffle(
-                                                        sourceType,
-                                                      );
+                                                      library.shuffle();
                                                     } else {
                                                       folder!.shuffle();
                                                     }
@@ -389,7 +378,6 @@ extension _SongListPanel on _SongListState {
                       } else {
                         sortTypeNotifier.value = 0;
                       }
-                      playlist?.saveSetting();
                     }
                   : null,
               child: Padding(
@@ -444,7 +432,6 @@ extension _SongListPanel on _SongListState {
                       } else {
                         sortTypeNotifier.value = 5;
                       }
-                      playlist?.saveSetting();
                     }
                   : null,
               child: Padding(
@@ -491,7 +478,6 @@ extension _SongListPanel on _SongListState {
                       } else {
                         sortTypeNotifier.value = 7;
                       }
-                      playlist?.saveSetting();
                     }
                   : null,
               child: Padding(
@@ -751,7 +737,7 @@ extension _SongListPanel on _SongListState {
     return ListTile(
       contentPadding: .zero,
       visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
-      leading: CoverArtWidget(size: 40, borderRadius: 4, song: song),
+      leading: CoverArtWidget(size: 40, borderRadius: 4, picture: song.picture),
       title: Text(
         getTitle(song),
         overflow: TextOverflow.ellipsis,
@@ -801,11 +787,11 @@ extension _SongListPanel on _SongListState {
             songList.insert(0, item);
 
             if (isLibrary) {
-              library.update(sourceType);
+              library.update();
             } else if (folder != null) {
               folder!.update();
             } else {
-              playlist!.update(getSourceTypeBitMask(item.sourceType));
+              playlist!.update();
             }
           },
         ),
@@ -892,7 +878,7 @@ extension _SongListPanel on _SongListState {
               await Future.delayed(Duration(milliseconds: 250));
               layersManager.switchRootLayer('artists');
               layersManager.pushDetailIfNeed(
-                artistAlbumManager.name2Artist[artists[0]],
+                artistAlbumManager.artistMap[artists[0]],
               );
             }
           },
@@ -907,7 +893,7 @@ extension _SongListPanel on _SongListState {
             await Future.delayed(Duration(milliseconds: 250));
             layersManager.switchRootLayer('albums');
             layersManager.pushDetailIfNeed(
-              artistAlbumManager.name2Album[getAlbum(currentSongList[index])],
+              artistAlbumManager.albumMap[getAlbum(currentSongList[index])],
             );
           },
         ),

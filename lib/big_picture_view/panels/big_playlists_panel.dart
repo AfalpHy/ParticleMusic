@@ -1,7 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:sylvakru/base/data/playlist.dart';
-import 'package:sylvakru/base/services/metadata_service.dart';
+import 'package:sylvakru/base/services/picture_service.dart';
 import 'package:sylvakru/base/utils/media_query.dart';
 import 'package:sylvakru/base/utils/my_gird_delegate.dart';
 import 'package:sylvakru/base/utils/zoom_page_route.dart';
@@ -68,87 +68,80 @@ class _BigPlaylistsPanelState extends State<BigPlaylistsPanel> {
           ),
           itemCount: list.length,
           itemBuilder: (context, index) {
-            return ValueListenableBuilder(
-              valueListenable: list[index].songListManager.sourceTypeNotifier,
-              builder: (context, value, child) {
-                final coverSong = list[index].getCoverSong();
-                final name = index == 0
-                    ? AppLocalizations.of(context).favorites
-                    : list[index].name;
-                return ListenableBuilder(
-                  listenable: Listenable.merge([coverSong?.updateNotifier]),
-                  builder: (context, _) {
-                    return ScaleWidget(
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          return Column(
-                            children: [
-                              Hero(
-                                tag: 'big${coverSong?.id}$name',
-                                child: CoverArtWidget(
-                                  size: constraints.maxWidth,
-                                  borderRadius: constraints.maxWidth * 0.1,
-                                  song: coverSong,
-                                ),
+            final coverSong = list[index].getCoverSong();
+            final name = index == 0
+                ? AppLocalizations.of(context).favorites
+                : list[index].name;
+            return ListenableBuilder(
+              listenable: Listenable.merge([coverSong?.updateNotifier]),
+              builder: (context, _) {
+                return ScaleWidget(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return Column(
+                        children: [
+                          Hero(
+                            tag: 'big${coverSong?.id}$name',
+                            child: CoverArtWidget(
+                              size: constraints.maxWidth,
+                              borderRadius: constraints.maxWidth * 0.1,
+                              picture: coverSong?.picture,
+                            ),
+                          ),
+                          Transform.translate(
+                            offset: Offset(0, 5),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
                               ),
-                              Transform.translate(
-                                offset: Offset(0, 5),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                  ),
-                                  child: Align(
-                                    alignment: .centerLeft,
-                                    child: Text(
-                                      name,
-                                      style: TextStyle(
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
+                              child: Align(
+                                alignment: .centerLeft,
+                                child: Text(
+                                  name,
+                                  style: TextStyle(
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                               ),
-                            ],
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+
+                  onTap: () async {
+                    final baseColor = await computeColor(
+                      list[index].getCoverSong()?.picture,
+                    );
+                    if (!context.mounted) {
+                      return;
+                    }
+                    Navigator.of(context).push(
+                      ZoomPageRoute(
+                        builder: (context) {
+                          return BigSinglePlaylistPanel(
+                            playlist: list[index],
+                            baseColor: baseColor,
                           );
                         },
                       ),
+                    );
+                  },
 
-                      onTap: () async {
-                        final baseColor = await computeCoverArtColor(
-                          list[index].getCoverSong(),
-                        );
-                        if (!context.mounted) {
-                          return;
-                        }
-                        Navigator.of(context).push(
-                          ZoomPageRoute(
-                            builder: (context) {
-                              return BigSinglePlaylistPanel(
-                                playlist: list[index],
-                                baseColor: baseColor,
-                              );
-                            },
-                          ),
-                        );
-                      },
+                  onFocus: () {
+                    final box = context.findRenderObject() as RenderBox;
+                    final viewport = RenderAbstractViewport.of(box);
 
-                      onFocus: () {
-                        final box = context.findRenderObject() as RenderBox;
-                        final viewport = RenderAbstractViewport.of(box);
+                    final target = viewport.getOffsetToReveal(box, 0.5).offset;
 
-                        final target = viewport
-                            .getOffsetToReveal(box, 0.5)
-                            .offset;
-
-                        _scrollController.animateTo(
-                          target.clamp(
-                            _scrollController.position.minScrollExtent,
-                            _scrollController.position.maxScrollExtent,
-                          ),
-                          duration: const Duration(milliseconds: 150),
-                          curve: Curves.easeOut,
-                        );
-                      },
+                    _scrollController.animateTo(
+                      target.clamp(
+                        _scrollController.position.minScrollExtent,
+                        _scrollController.position.maxScrollExtent,
+                      ),
+                      duration: const Duration(milliseconds: 150),
+                      curve: Curves.easeOut,
                     );
                   },
                 );

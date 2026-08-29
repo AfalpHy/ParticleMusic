@@ -21,20 +21,21 @@ class _BigSingleFolderPanelState
   String get title => widget.folder.id;
 
   @override
+  List<MyAudioMetadata> get songList => widget.folder.songList;
+
+  @override
   Folder? get folder => widget.folder;
 
   @override
   void moveToTop(MyAudioMetadata song) {
     widget.folder.songList.remove(song);
     widget.folder.songList.insert(0, song);
-    widget.folder.changeNotifier.value++;
+    widget.folder.update();
   }
 
   @override
   void initState() {
-    currentSongList = widget.folder.songList;
-    sourceCount = 1;
-    sourceType = widget.folder.isWebdav ? .webdav : .local;
+    currentSongList = List.from(songList);
     widget.folder.changeNotifier.addListener(updateSongList);
     super.initState();
   }

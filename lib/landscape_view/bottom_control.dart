@@ -91,7 +91,7 @@ class BottomControl extends StatelessWidget {
                     child: CoverArtWidget(
                       size: 50,
                       borderRadius: 5,
-                      song: currentSong,
+                      picture: currentSong?.picture,
                     ),
                   ),
                   title: Text(

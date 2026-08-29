@@ -133,11 +133,13 @@ class _PortraitViewState extends State<PortraitView>
                             child: page,
                           );
                         }),
-
-                    SlideTransition(
-                      position: _slideAnimation,
-                      child: layersManager.topRootPage,
-                    ),
+                    if (layersManager.bottomRootPage == null)
+                      layersManager.topRootPage!
+                    else
+                      SlideTransition(
+                        position: _slideAnimation,
+                        child: layersManager.topRootPage,
+                      ),
                   ],
                 ),
               );

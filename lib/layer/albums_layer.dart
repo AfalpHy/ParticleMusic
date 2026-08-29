@@ -1,90 +1,121 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/data/artist_album.dart';
-import 'package:sylvakru/base/data/loader.dart';
-import 'package:sylvakru/base/services/interaction.dart';
-import 'package:sylvakru/base/widgets/my_navigator.dart';
-import 'package:sylvakru/base/widgets/my_sheet.dart';
+import 'package:sylvakru/base/services/navidrome_client.dart';
+import 'package:sylvakru/base/widgets/collection_list.dart';
 import 'package:sylvakru/l10n/generated/app_localizations.dart';
-import 'package:sylvakru/landscape_view/title_bar.dart';
-import 'package:sylvakru/layer/layers_manager.dart';
-import 'package:sylvakru/base/data/setting.dart';
-import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/asset_images.dart';
-import 'package:sylvakru/base/widgets/cover_art_widget.dart';
-import 'package:sylvakru/base/widgets/my_divider.dart';
-import 'package:sylvakru/base/widgets/my_switch.dart';
-import 'package:sylvakru/portrait_view/custom_appbar_leading.dart';
-import 'package:sylvakru/portrait_view/my_search_field.dart';
-
-part '../landscape_view/panels/albums_panel.dart';
-part '../portrait_view/pages/albums_page.dart';
+import 'package:sylvakru/layer/layers_manager.dart';
 
 final GlobalKey<NavigatorState> albumsKey = GlobalKey();
 final albumsVisibleNotifier = ValueNotifier(true);
 
-class AlbumsLayer extends StatefulWidget {
+class AlbumsLayer extends CollectionList {
   const AlbumsLayer({super.key});
 
   @override
   State<StatefulWidget> createState() => _AlbumsLayerState();
 }
 
-class _AlbumsLayerState extends State<AlbumsLayer> {
-  late final ValueNotifier<List<Album>> currentAlbumListNotifier;
+class _AlbumsLayerState extends CollectionListState {
+  @override
+  GlobalKey<NavigatorState> get globalKey => albumsKey;
 
-  final textController = TextEditingController();
+  @override
+  ValueNotifier<bool> get visibleNotifier => albumsVisibleNotifier;
 
-  final ScrollController scrollController = ScrollController();
+  @override
+  AssetImage get image => albumImage;
 
-  late ValueNotifier<bool> randomizeNotifier;
-  late ValueNotifier<bool> isAscendingNotifier;
-  late ValueNotifier<bool> useLargePictureNotifier;
+  @override
+  String Function(int) get countFunction =>
+      AppLocalizations.of(context).albumCount;
 
-  final ValueNotifier<bool> isSearchNotifier = ValueNotifier(false);
+  @override
+  String get label => 'albums';
 
+  @override
   void updateCurrentList() {
     final value = textController.text;
-    currentAlbumListNotifier.value = artistAlbumManager.albumList
+    artistAlbumManager.sortAlbums();
+    final list = artistAlbumManager.albumList
         .where((e) => (e.name.toLowerCase().contains(value.toLowerCase())))
         .toList();
-    if (randomizeNotifier.value) {
-      currentAlbumListNotifier.value.shuffle();
+    if (randomizeNotifier!.value) {
+      list.shuffle();
     }
+    currentPictureList = list.map((e) => e.picture).toList();
+    currentTextList = list.map((e) => e.name).toList();
+    currentOnTapList = list
+        .map(
+          (e) => () {
+            if (e.picture.isLoaded) {
+              layersManager.pushDetail('albums', e);
+            }
+          },
+        )
+        .toList();
+    changeNotifier.value++;
+  }
+
+  @override
+  Future<void> fetchCollectionList() async {
+    final albumList = await navidromeClient!.getAlbumList(
+      artistAlbumManager.albumList.length,
+    );
+    if (!mounted || albumList == null) {
+      return;
+    }
+
+    if (albumList.isEmpty) {
+      reachEnd = true;
+    }
+
+    for (final map in albumList) {
+      final name = map['name'];
+      final id = map['id'];
+      final album = artistAlbumManager.albumMap.putIfAbsent(
+        id,
+        () => Album(name, id: id, coverArtId: map['coverArt']),
+      );
+      artistAlbumManager.albumList.add(album);
+    }
+    artistAlbumManager.sortAlbums();
+    artistAlbumManager.updateNotifier.value++;
   }
 
   @override
   void initState() {
     super.initState();
-    currentAlbumListNotifier = ValueNotifier(artistAlbumManager.albumList);
 
     randomizeNotifier = artistAlbumManager.getIsRandomizeNotifier(false);
-
     isAscendingNotifier = artistAlbumManager.getIsAscendingNotifier(false);
-
     useLargePictureNotifier = artistAlbumManager.getUseLargePictureNotifier(
       false,
     );
 
-    updateCurrentList();
-    textController.addListener(updateCurrentList);
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (isStreamSource) {
+        if (artistAlbumManager.albumList.isEmpty) {
+          await fetchCollectionList();
+        }
+      }
+      updateCurrentList();
+    });
     artistAlbumManager.updateNotifier.addListener(updateCurrentList);
   }
 
   @override
   void dispose() {
-    textController.dispose();
     artistAlbumManager.updateNotifier.removeListener(updateCurrentList);
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    return myNavigator(
-      key: albumsKey,
-      visibleNotifier: albumsVisibleNotifier,
-      pageViewBuilder: () => pageView(context),
-      panelViewBuilder: () => panelView(context),
-    );
+    final l10n = AppLocalizations.of(context);
+    title = l10n.albums;
+    searchHint = l10n.searchAlbums;
+    return super.build(context);
   }
 }

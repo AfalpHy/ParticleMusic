@@ -62,7 +62,7 @@ class PlayBar extends StatelessWidget {
                   child: CoverArtWidget(
                     size: 35,
                     borderRadius: 3,
-                    song: currentSong,
+                    picture: currentSong.picture,
                   ),
                 ),
 

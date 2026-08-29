@@ -1,7 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:sylvakru/base/data/artist_album.dart';
-import 'package:sylvakru/base/services/metadata_service.dart';
+import 'package:sylvakru/base/services/picture_service.dart';
 import 'package:sylvakru/base/utils/media_query.dart';
 import 'package:sylvakru/base/utils/my_gird_delegate.dart';
 import 'package:sylvakru/base/utils/zoom_page_route.dart';
@@ -75,96 +75,90 @@ abstract class BigArtistsAlbumsBasePanelState
           ),
           itemCount: list.length,
           itemBuilder: (context, index) {
+            final coverSong = list[index].getCoverSong();
+
             return ValueListenableBuilder(
-              valueListenable: list[index].songListManager.sourceTypeNotifier,
-              builder: (context, value, child) {
-                final coverSong = list[index].getCoverSong();
-                return ValueListenableBuilder(
-                  valueListenable: coverSong.updateNotifier,
-                  builder: (context, _, _) {
-                    return ScaleWidget(
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          return Column(
-                            children: [
-                              Hero(
-                                tag: 'big${coverSong.id}${list[index].name}',
-                                child: CoverArtWidget(
-                                  size: constraints.maxWidth,
-                                  borderRadius: constraints.maxWidth * 0.1,
-                                  song: coverSong,
-                                ),
+              valueListenable: coverSong.updateNotifier,
+              builder: (context, _, _) {
+                return ScaleWidget(
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      return Column(
+                        children: [
+                          Hero(
+                            tag: 'big${coverSong.id}${list[index].name}',
+                            child: CoverArtWidget(
+                              size: constraints.maxWidth,
+                              borderRadius: constraints.maxWidth * 0.1,
+                              picture: coverSong.picture,
+                            ),
+                          ),
+                          Transform.translate(
+                            offset: Offset(0, 5),
+                            child: Padding(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
                               ),
-                              Transform.translate(
-                                offset: Offset(0, 5),
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 10,
-                                  ),
-                                  child: Align(
-                                    alignment: .centerLeft,
-                                    child: Text(
-                                      list[index].name,
-                                      style: TextStyle(
-                                        overflow: TextOverflow.ellipsis,
-                                      ),
-                                    ),
+                              child: Align(
+                                alignment: .centerLeft,
+                                child: Text(
+                                  list[index].name,
+                                  style: TextStyle(
+                                    overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
                               ),
-                            ],
+                            ),
+                          ),
+                        ],
+                      );
+                    },
+                  ),
+
+                  onTap: () async {
+                    if (isArtist) {
+                      Navigator.of(context).push(
+                        ZoomPageRoute(
+                          builder: (context) {
+                            return BigSingleArtistPanel(
+                              artist: list[index] as Artist,
+                            );
+                          },
+                        ),
+                      );
+                      return;
+                    }
+                    final baseColor = await computeColor(
+                      list[index].getCoverSong().picture,
+                    );
+                    if (!context.mounted) {
+                      return;
+                    }
+                    Navigator.of(context).push(
+                      ZoomPageRoute(
+                        builder: (context) {
+                          return BigSingleAlbumPanel(
+                            album: list[index] as Album,
+                            baseColor: baseColor,
                           );
                         },
                       ),
+                    );
+                  },
 
-                      onTap: () async {
-                        if (isArtist) {
-                          Navigator.of(context).push(
-                            ZoomPageRoute(
-                              builder: (context) {
-                                return BigSingleArtistPanel(
-                                  artist: list[index] as Artist,
-                                );
-                              },
-                            ),
-                          );
-                          return;
-                        }
-                        final baseColor = await computeCoverArtColor(
-                          list[index].getCoverSong(),
-                        );
-                        if (!context.mounted) {
-                          return;
-                        }
-                        Navigator.of(context).push(
-                          ZoomPageRoute(
-                            builder: (context) {
-                              return BigSingleAlbumPanel(
-                                album: list[index] as Album,
-                                baseColor: baseColor,
-                              );
-                            },
-                          ),
-                        );
-                      },
+                  onFocus: () {
+                    final box = context.findRenderObject() as RenderBox;
+                    final viewport = RenderAbstractViewport.of(box);
 
-                      onFocus: () {
-                        final box = context.findRenderObject() as RenderBox;
-                        final viewport = RenderAbstractViewport.of(box);
+                    final target = viewport.getOffsetToReveal(box, 0.5).offset;
 
-                        final target = viewport
-                            .getOffsetToReveal(box, 0.5)
-                            .offset;
-
-                        _scrollController.animateTo(
-                          target.clamp(
-                            _scrollController.position.minScrollExtent,
-                            _scrollController.position.maxScrollExtent,
-                          ),
-                          duration: const Duration(milliseconds: 150),
-                          curve: Curves.easeOut,
-                        );
-                      },
+                    _scrollController.animateTo(
+                      target.clamp(
+                        _scrollController.position.minScrollExtent,
+                        _scrollController.position.maxScrollExtent,
+                      ),
+                      duration: const Duration(milliseconds: 150),
+                      curve: Curves.easeOut,
                     );
                   },
                 );

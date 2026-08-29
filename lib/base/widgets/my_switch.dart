@@ -39,7 +39,7 @@ class MySwitch extends StatelessWidget {
             );
           },
         ),
-        SizedBox(width: 10),
+        SizedBox(width: 5),
         switcher(),
       ],
     );

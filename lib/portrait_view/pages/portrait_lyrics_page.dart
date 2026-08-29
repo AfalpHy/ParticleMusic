@@ -168,7 +168,7 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
               children: [
                 if (lyricsPageThemeNotifier.value == .vivid) ...[
                   CoverArtWidget(
-                    song: currentSong,
+                    picture: currentSong?.picture,
                     color: colorManager
                         .getSpecificLyricsPageCoverArtBaseColor(),
                   ),
@@ -298,7 +298,7 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
           child: CoverArtWidget(
             size: mobileWidth * 0.84,
             borderRadius: mobileWidth * 0.04,
-            song: currentSong,
+            picture: currentSong?.picture,
             elevation: 15,
             color: colorManager.getSpecificLyricsPageCoverArtBaseColor(),
           ),
@@ -422,7 +422,7 @@ class _PortraitLyricsPageState extends State<PortraitLyricsPage> {
                         leading: CoverArtWidget(
                           size: 50,
                           borderRadius: 5,
-                          song: currentSong,
+                          picture: currentSong?.picture,
                         ),
                         title: Text(
                           getTitle(currentSong),

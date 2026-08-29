@@ -218,23 +218,6 @@ class _ViewEntryState extends State<ViewEntry> with WidgetsBindingObserver {
                             ),
                             ListTile(
                               leading: Image(
-                                image: subsonicImage,
-                                width: 30,
-                                height: 30,
-                              ),
-
-                              title: Text(l10n.connect2Subsonic),
-                              onTap: () {
-                                showAnimationDialog(
-                                  context: context,
-                                  child: ConnectClientWidget(
-                                    sourceType: .subsonic,
-                                  ),
-                                );
-                              },
-                            ),
-                            ListTile(
-                              leading: Image(
                                 image: navidromeImage,
                                 width: 30,
                                 height: 30,
@@ -293,7 +276,7 @@ class _ViewEntryState extends State<ViewEntry> with WidgetsBindingObserver {
                           await NativeMenu.init();
                         });
                       }
-                      await Loader.sync(3);
+                      await Loader.sync();
                     },
                     child: Padding(
                       padding: const EdgeInsets.symmetric(

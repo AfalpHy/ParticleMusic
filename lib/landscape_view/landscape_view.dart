@@ -27,7 +27,7 @@ class LandscapeView extends StatelessWidget {
               valueListenable: layersManager.backgroundChangeNotifier,
               builder: (context, value, child) {
                 return CoverArtWidget(
-                  song: backgroundSong,
+                  picture: backgroundPicture,
                   color: colorManager.getSpecificBgBaseColor(),
                 );
               },

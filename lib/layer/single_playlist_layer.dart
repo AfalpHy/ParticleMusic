@@ -1,5 +1,5 @@
 import 'package:material_ui/material_ui.dart';
-import 'package:sylvakru/base/widgets/switchable_song_list.dart';
+import 'package:sylvakru/base/widgets/song_list.dart';
 import 'package:sylvakru/base/data/playlist.dart';
 
 class SinglePlaylistLayer extends StatelessWidget {
@@ -14,10 +14,6 @@ class SinglePlaylistLayer extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SwitchableSongList(
-      playlist: playlist,
-      songListManager: playlist.songListManager,
-      isRoot: isRoot,
-    );
+    return SongList(playlist: playlist, isRoot: isRoot);
   }
 }

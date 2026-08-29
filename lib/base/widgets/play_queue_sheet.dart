@@ -181,7 +181,7 @@ class PlayQueueSheetState extends State<PlayQueueSheet> {
                         leading: CoverArtWidget(
                           size: 40,
                           borderRadius: 4,
-                          song: song,
+                          picture: song.picture,
                         ),
                         title: ValueListenableBuilder(
                           valueListenable: currentSongNotifier,

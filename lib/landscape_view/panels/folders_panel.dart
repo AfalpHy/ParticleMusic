@@ -38,10 +38,7 @@ extension FoldersPanel on FoldersLayer {
                   style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
                 ),
                 subtitle: Text(
-                  l10n.folderCount(
-                    library.localFolderList.length +
-                        library.webdavFolderList.length,
-                  ),
+                  l10n.folderCount(library.folderList.length),
                   style: TextStyle(fontSize: 12),
                 ),
               ),
@@ -63,17 +60,9 @@ extension FoldersPanel on FoldersLayer {
           padding: const EdgeInsets.symmetric(horizontal: 40),
 
           sliver: SliverList.builder(
-            itemCount:
-                library.localFolderList.length +
-                library.webdavFolderList.length,
+            itemCount: library.folderList.length,
             itemBuilder: (_, index) {
-              late Folder folder;
-              if (index < library.localFolderList.length) {
-                folder = library.localFolderList[index];
-              } else {
-                folder = library
-                    .webdavFolderList[index - library.localFolderList.length];
-              }
+              final folder = library.folderList[index];
               return ValueListenableBuilder(
                 valueListenable: folder.changeNotifier,
                 builder: (context, value, child) {
@@ -95,16 +84,11 @@ extension FoldersPanel on FoldersLayer {
                             ]),
                             builder: (_, _) {
                               return Hero(
-                                tag:
-                                    (coverSong?.id ??
-                                        (folder.isWebdav
-                                            ? 'webdav'
-                                            : 'local')) +
-                                    folder.id,
+                                tag: (coverSong?.picture.id ?? '') + folder.id,
                                 child: CoverArtWidget(
                                   size: 50,
                                   borderRadius: 5,
-                                  song: coverSong,
+                                  picture: coverSong?.picture,
                                 ),
                               );
                             },

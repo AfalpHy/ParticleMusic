@@ -8,7 +8,6 @@ import 'package:sylvakru/base/services/emby_client.dart';
 import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/services/logger.dart';
 import 'package:sylvakru/base/services/navidrome_client.dart';
-import 'package:sylvakru/base/services/subsonic_client.dart';
 import 'package:sylvakru/base/services/webdav_client.dart';
 import 'package:sylvakru/base/utils/source_type.dart';
 import 'package:sylvakru/base/widgets/custom_text_field.dart';
@@ -34,10 +33,6 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
       baseUrlTmp.text = webdavClient?.baseUrl ?? '';
       usernameTmp.text = webdavClient?.username ?? '';
       passwordTmp.text = webdavClient?.password ?? '';
-    } else if (widget.sourceType == .subsonic) {
-      baseUrlTmp.text = subsonicClient?.baseUrl ?? '';
-      usernameTmp.text = subsonicClient?.username ?? '';
-      passwordTmp.text = subsonicClient?.password ?? '';
     } else if (widget.sourceType == .navidrome) {
       baseUrlTmp.text = navidromeClient?.baseUrl ?? '';
       usernameTmp.text = navidromeClient?.username ?? '';
@@ -71,7 +66,7 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
           children: [
             SizedBox(
               child: Text(
-                getSourceTypeName(l10n, widget.sourceType),
+                getSourceTypeDisplayName(l10n, widget.sourceType),
                 style: .new(fontWeight: .bold, fontSize: 18),
               ),
             ),
@@ -146,7 +141,7 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
             Spacer(),
             ElevatedButton(
               onPressed: () async {
-                if (Loader.syncing) {
+                if (Loader.busy) {
                   showCenterMessage(context, l10n.syncingTryLater);
                   return;
                 }
@@ -154,12 +149,10 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
                 if (!await showConfirmDialog(context, l10n.clear)) {
                   return;
                 }
-                if (widget.sourceType == .webdav) {
-                  await library.updateFolders([], false);
+                if (sourceType == .webdav) {
+                  await library.updateFolders([]);
                   webdavClient = null;
-                } else if (widget.sourceType == .subsonic) {
-                  subsonicClient = null;
-                } else if (widget.sourceType == .navidrome) {
+                } else if (sourceType == .navidrome) {
                   navidromeClient = null;
                 } else {
                   embyClient = null;
@@ -168,7 +161,7 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
                   Navigator.pop(context);
                 }
                 await config.save();
-                await Loader.sync(getSourceTypeBitMask(widget.sourceType));
+                await Loader.sync();
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: firstLaunch ? null : value,
@@ -180,7 +173,7 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
 
             ElevatedButton(
               onPressed: () async {
-                if (Loader.syncing) {
+                if (Loader.busy) {
                   showCenterMessage(context, l10n.syncingTryLater);
                   return;
                 }
@@ -194,17 +187,6 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
                     );
                     if (!await webdavClient!.ping()) {
                       webdavClient = tmp;
-                      return;
-                    }
-                  } else if (widget.sourceType == .subsonic) {
-                    final tmp = subsonicClient;
-                    subsonicClient = SubsonicClient(
-                      baseUrl: baseUrlTmp.text,
-                      username: usernameTmp.text,
-                      password: passwordTmp.text,
-                    );
-                    if (!await subsonicClient!.ping()) {
-                      subsonicClient = tmp;
                       return;
                     }
                   } else if (widget.sourceType == .navidrome) {
@@ -245,7 +227,7 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
                 }
                 await config.save();
                 if (widget.sourceType != .webdav) {
-                  await Loader.sync(getSourceTypeBitMask(widget.sourceType));
+                  await Loader.sync();
                 }
               },
               style: ElevatedButton.styleFrom(

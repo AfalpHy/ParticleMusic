@@ -167,13 +167,13 @@ abstract class AppLocalizations {
   /// No description provided for @ranking.
   ///
   /// In en, this message translates to:
-  /// **'Ranking'**
+  /// **'Most Played'**
   String get ranking;
 
   /// No description provided for @recently.
   ///
   /// In en, this message translates to:
-  /// **'Recents'**
+  /// **'Recently Played'**
   String get recently;
 
   /// No description provided for @artists.

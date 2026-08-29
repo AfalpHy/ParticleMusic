@@ -10,12 +10,11 @@ import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/asset_images.dart';
 import 'package:sylvakru/base/audio_handler.dart';
 import 'package:sylvakru/base/data/artist_album.dart';
-import 'package:sylvakru/base/data/song_list_manager.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/services/interaction.dart';
-import 'package:sylvakru/base/services/metadata_service.dart';
-import 'package:sylvakru/base/utils/format_duration.dart';
+import 'package:sylvakru/base/services/picture_service.dart';
+import 'package:sylvakru/base/utils/common_utils.dart';
 import 'package:sylvakru/base/utils/media_query.dart';
 import 'package:sylvakru/base/utils/metadata_utils.dart';
 import 'package:sylvakru/base/utils/source_type.dart';
@@ -40,35 +39,30 @@ class BigSingleAlbumPanel extends StatefulWidget {
 
 class _BigSingleAlbumPanelState extends State<BigSingleAlbumPanel> {
   late final bool useCurrentSongForBgTmp;
-  late final MyAudioMetadata? backgroundSongTmp;
+  late final MyPicture? backgroundPictureTmp;
 
   List<MyAudioMetadata> currentSongList = [];
-  late final SongListManager songListManager;
 
   late Color baseColor;
 
   final _scrollController = ScrollController();
 
   void updateSongList() async {
-    currentSongList = songListManager.currentSongList;
-    baseColor = await computeCoverArtColor(currentSongList.first);
-    colorManager.updateBigPictureRelatedColors(currentSongList.first);
+    baseColor = await computeColor(widget.album.picture);
+    colorManager.updateBigPictureRelatedColors(widget.album.picture);
     setState(() {});
   }
 
   @override
   void initState() {
     useCurrentSongForBgTmp = useCurrentSongForBg;
-    backgroundSongTmp = backgroundSong;
+    backgroundPictureTmp = backgroundPicture;
     useCurrentSongForBg = false;
 
-    songListManager = widget.album.songListManager;
-    currentSongList = songListManager.currentSongList;
     baseColor = widget.baseColor;
-    songListManager.sourceTypeNotifier.addListener(updateSongList);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      colorManager.updateBigPictureRelatedColors(widget.album.getCoverSong());
+      colorManager.updateBigPictureRelatedColors(widget.album.picture);
     });
 
     super.initState();
@@ -77,11 +71,12 @@ class _BigSingleAlbumPanelState extends State<BigSingleAlbumPanel> {
   @override
   void dispose() {
     useCurrentSongForBg = useCurrentSongForBgTmp;
-    songListManager.sourceTypeNotifier.removeListener(updateSongList);
 
     WidgetsBinding.instance.addPostFrameCallback((_) {
       colorManager.updateBigPictureRelatedColors(
-        useCurrentSongForBg ? currentSongNotifier.value : backgroundSongTmp,
+        useCurrentSongForBg
+            ? currentSongNotifier.value?.picture
+            : backgroundPictureTmp,
       );
     });
     super.dispose();
@@ -96,7 +91,7 @@ class _BigSingleAlbumPanelState extends State<BigSingleAlbumPanel> {
       fit: .expand,
       children: [
         if (mainPageThemeNotifier.value == .vivid) ...[
-          CoverArtWidget(song: currentSongList.first, color: baseColor),
+          CoverArtWidget(picture: widget.album.picture, color: baseColor),
           RepaintBoundary(
             child: BackdropFilter(
               filter: ImageFilter.blur(
@@ -329,7 +324,7 @@ class _BigSingleAlbumPanelState extends State<BigSingleAlbumPanel> {
     return [
       SizedBox(height: 120),
       Hero(
-        tag: 'big${currentSongList.first.id}${widget.album.name}',
+        tag: 'big${widget.album.id}${widget.album.name}',
         flightShuttleBuilder:
             (
               flightContext,
@@ -341,7 +336,7 @@ class _BigSingleAlbumPanelState extends State<BigSingleAlbumPanel> {
         child: CoverArtWidget(
           size: width,
           borderRadius: width * 0.05,
-          song: currentSongList.first,
+          picture: widget.album.picture,
         ),
       ),
       SizedBox(height: 10),
@@ -358,40 +353,8 @@ class _BigSingleAlbumPanelState extends State<BigSingleAlbumPanel> {
         mainAxisAlignment: .center,
         children: [
           Text(
-            getSourceTypeName(
-              AppLocalizations.of(context),
-              songListManager.sourceTypeNotifier.value,
-            ),
+            getSourceTypeDisplayName(AppLocalizations.of(context), sourceType),
           ),
-          if (songListManager.notEmptyCount > 1) ...[
-            SizedBox(width: 10),
-            GlassContainer(
-              settings: LiquidGlassSettings(glassColor: glassColor.value),
-              child: Material(
-                color: Colors.transparent,
-                shape: SmoothRectangleBorder(
-                  smoothness: 1,
-                  borderRadius: .circular(5),
-                ),
-                clipBehavior: .antiAlias,
-                child: InkWell(
-                  onTap: () {
-                    showSwitchDialogIfNeed(context, songListManager);
-                  },
-                  child: Padding(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 8.0,
-                      vertical: 4.0,
-                    ),
-                    child: Text(
-                      AppLocalizations.of(context).switch_,
-                      style: .new(color: textColor.value, fontWeight: .bold),
-                    ),
-                  ),
-                ),
-              ),
-            ),
-          ],
         ],
       ),
       SizedBox(height: 10),
@@ -427,7 +390,7 @@ class _BigSingleAlbumPanelState extends State<BigSingleAlbumPanel> {
               Navigator.of(context).push(
                 ZoomPageRoute(
                   builder: (_) => SelectableSongListPage(
-                    songList: songListManager.currentSongList,
+                    songList: currentSongList,
                     reorderable: false,
                   ),
                 ),

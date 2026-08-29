@@ -75,7 +75,7 @@ class BigPlayBar extends StatelessWidget {
                                     child: CoverArtWidget(
                                       size: 40,
                                       borderRadius: 4,
-                                      song: currentSong,
+                                      picture: currentSong?.picture,
                                     ),
                                   ),
                                   SizedBox(width: 10),

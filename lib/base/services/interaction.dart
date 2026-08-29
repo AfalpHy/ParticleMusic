@@ -11,10 +11,9 @@ import 'package:sylvakru/base/audio_handler.dart';
 import 'package:sylvakru/base/data/artist_album.dart';
 import 'package:sylvakru/base/data/loader.dart';
 import 'package:sylvakru/base/data/playlist.dart';
-import 'package:sylvakru/base/data/song_list_manager.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
-import 'package:sylvakru/base/services/metadata_service.dart';
+import 'package:sylvakru/base/services/picture_service.dart';
 import 'package:sylvakru/base/utils/metadata_utils.dart';
 import 'package:sylvakru/base/utils/source_type.dart';
 import 'package:sylvakru/base/utils/zoom_page_route.dart';
@@ -824,7 +823,11 @@ void showSongOptions({
               SizedBox(height: 5),
 
               ListTile(
-                leading: CoverArtWidget(size: 50, borderRadius: 5, song: song),
+                leading: CoverArtWidget(
+                  size: 50,
+                  borderRadius: 5,
+                  picture: song.picture,
+                ),
                 title: Text(getTitle(song), overflow: TextOverflow.ellipsis),
                 subtitle: Text(
                   "${getArtist(song)} - ${getAlbum(song)}",
@@ -951,7 +954,7 @@ void showSongOptions({
                                 builder: (context) {
                                   return BigSingleArtistPanel(
                                     artist: artistAlbumManager
-                                        .name2Artist[artists.first]!,
+                                        .artistMap[artists.first]!,
                                   );
                                 },
                               ),
@@ -986,7 +989,7 @@ void showSongOptions({
                                                     builder: (context) {
                                                       return BigSingleArtistPanel(
                                                         artist: artistAlbumManager
-                                                            .name2Artist[name]!,
+                                                            .artistMap[name]!,
                                                       );
                                                     },
                                                   ),
@@ -1017,9 +1020,9 @@ void showSongOptions({
                           Navigator.pop(context);
                           await Future.delayed(Duration(milliseconds: 250));
                           final album =
-                              artistAlbumManager.name2Album[getAlbum(song)]!;
-                          final baseColor = await computeCoverArtColor(
-                            album.getCoverSong(),
+                              artistAlbumManager.albumMap[getAlbum(song)]!;
+                          final baseColor = await computeColor(
+                            album.getCoverSong().picture,
                           );
                           if (!context.mounted) {
                             return;
@@ -1089,21 +1092,7 @@ void showSongOptions({
   );
 }
 
-void showSwitchDialogIfNeed(
-  BuildContext context,
-  SongListManager songListManager,
-) {
-  if (songListManager.notEmptyCount == 2) {
-    for (final sourceType in SourceType.values) {
-      if (sourceType != songListManager.sourceTypeNotifier.value &&
-          songListManager.getSongList(sourceType).isNotEmpty) {
-        songListManager.sourceTypeNotifier.value = sourceType;
-        layersManager.updateBackground();
-        break;
-      }
-    }
-    return;
-  }
+void showSwitchDialogIfNeed(BuildContext context) {
   showAnimationDialog(
     context: context,
     child: SizedBox(
@@ -1115,31 +1104,29 @@ void showSwitchDialogIfNeed(
             return ListView(
               shrinkWrap: true,
               children: [
-                for (final sourceType in SourceType.values)
-                  if (songListManager.getSongList(sourceType).isNotEmpty)
-                    ListTile(
-                      leading: Image(
-                        image: getSourceTypeImage(sourceType),
-                        height: 30,
-                        width: 30,
-                      ),
-                      title: Text(
-                        getSourceTypeName(
-                          AppLocalizations.of(context),
-                          sourceType,
-                        ),
-                      ),
-                      onTap: () async {
-                        Navigator.pop(context);
-                        await Future.delayed(Duration(milliseconds: 250));
-                        songListManager.sourceTypeNotifier.value = sourceType;
-                        layersManager.updateBackground();
-                      },
-                      trailing:
-                          songListManager.sourceTypeNotifier.value == sourceType
-                          ? Icon(Icons.check)
-                          : null,
+                for (final tmpSourceType in SourceType.values)
+                  ListTile(
+                    leading: Image(
+                      image: getSourceTypeImage(tmpSourceType),
+                      height: 30,
+                      width: 30,
                     ),
+                    title: Text(
+                      getSourceTypeDisplayName(
+                        AppLocalizations.of(context),
+                        tmpSourceType,
+                      ),
+                    ),
+                    onTap: () async {
+                      Navigator.pop(context);
+                      await Future.delayed(Duration(milliseconds: 250));
+
+                      layersManager.updateBackground();
+                    },
+                    trailing: tmpSourceType == sourceType
+                        ? Icon(Icons.check)
+                        : null,
+                  ),
               ],
             );
           },
@@ -1245,10 +1232,7 @@ void showPlayQueueItemOptions(
   );
 }
 
-void showSongListOptions(
-  BuildContext context,
-  SongListManager songListManager,
-) {
+void showSongListOptions(BuildContext context, List<MyAudioMetadata> songList) {
   final l10n = AppLocalizations.of(context);
   showAnimationDialog(
     context: context,
@@ -1256,7 +1240,6 @@ void showSongListOptions(
       width: 300,
       child: Builder(
         builder: (context) {
-          final currentSongList = songListManager.currentSongList;
           return Column(
             mainAxisSize: .min,
             children: [
@@ -1271,7 +1254,7 @@ void showSongListOptions(
 
                   audioHandler.currentIndex = 0;
                   playModeNotifier.value = 0;
-                  await audioHandler.setPlayQueue(currentSongList);
+                  await audioHandler.setPlayQueue(songList);
                   await audioHandler.load();
                   audioHandler.play();
                 },
@@ -1283,37 +1266,13 @@ void showSongListOptions(
                   Navigator.pop(context);
                   await Future.delayed(Duration(milliseconds: 250));
 
-                  audioHandler.currentIndex = Random().nextInt(
-                    currentSongList.length,
-                  );
+                  audioHandler.currentIndex = Random().nextInt(songList.length);
                   playModeNotifier.value = 1;
-                  await audioHandler.setPlayQueue(currentSongList);
+                  await audioHandler.setPlayQueue(songList);
                   await audioHandler.load();
                   audioHandler.play();
                 },
               ),
-              if (songListManager.notEmptyCount > 1)
-                ListTile(
-                  leading: Transform.scale(
-                    scale: 1.2,
-                    child: Image(
-                      image: getSourceTypeImage(
-                        songListManager.sourceTypeNotifier.value,
-                      ),
-                      width: 20,
-                      height: 20,
-                    ),
-                  ),
-                  title: Text(l10n.switch_),
-                  onTap: () async {
-                    Navigator.pop(context);
-                    await Future.delayed(Duration(milliseconds: 250));
-
-                    if (context.mounted) {
-                      showSwitchDialogIfNeed(context, songListManager);
-                    }
-                  },
-                ),
 
               ListTile(
                 leading: ImageIcon(selectImage),
@@ -1325,7 +1284,7 @@ void showSongListOptions(
                     Navigator.of(context).push(
                       ZoomPageRoute(
                         builder: (_) => SelectableSongListPage(
-                          songList: currentSongList,
+                          songList: songList,
                           reorderable: false,
                         ),
                       ),

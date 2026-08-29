@@ -4,7 +4,6 @@ import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/data/artist_album.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/asset_images.dart';
-import 'package:sylvakru/base/utils/source_type.dart';
 import 'package:sylvakru/base/widgets/my_divider.dart';
 import 'package:sylvakru/base/widgets/my_sheet.dart';
 import 'package:sylvakru/base/widgets/playlist_widgets.dart';
@@ -49,7 +48,11 @@ class SongListTile extends StatelessWidget {
       builder: (context, value, child) {
         return ListTile(
           contentPadding: EdgeInsets.fromLTRB(20, 0, 0, 0),
-          leading: CoverArtWidget(size: 40, borderRadius: 4, song: song),
+          leading: CoverArtWidget(
+            size: 40,
+            borderRadius: 4,
+            picture: song.picture,
+          ),
           title: ValueListenableBuilder(
             valueListenable: currentSongNotifier,
             builder: (_, currentSong, _) {
@@ -142,7 +145,7 @@ class SongListTile extends StatelessWidget {
                     leading: CoverArtWidget(
                       size: 50,
                       borderRadius: 5,
-                      song: song,
+                      picture: song.picture,
                     ),
                     title: Text(
                       getTitle(song),
@@ -177,24 +180,20 @@ class SongListTile extends StatelessWidget {
                               Navigator.pop(context);
 
                               if (isLibrary) {
-                                final targetSongList = library.songListManager
-                                    .getSongList(song.sourceType);
+                                final targetSongList = library.songList;
 
                                 final item = targetSongList.removeAt(index);
                                 targetSongList.insert(0, item);
-                                library.update(item.sourceType);
+                                // library.update(item.sourceType);
                               } else if (folder != null) {
                                 final item = folder!.songList.removeAt(index);
                                 folder!.songList.insert(0, item);
                                 folder!.update();
                               } else {
-                                final targetSongList = playlist!.songListManager
-                                    .getSongList(song.sourceType);
+                                final targetSongList = playlist!.songList;
                                 final item = targetSongList.removeAt(index);
                                 targetSongList.insert(0, item);
-                                playlist!.update(
-                                  getSourceTypeBitMask(song.sourceType),
-                                );
+                                playlist!.update();
                               }
                             },
                           ),
@@ -290,7 +289,7 @@ class SongListTile extends StatelessWidget {
                               await Future.delayed(Duration(milliseconds: 250));
                               layersManager.switchRootLayer('artists');
                               layersManager.pushDetailIfNeed(
-                                artistAlbumManager.name2Artist[artists[0]],
+                                artistAlbumManager.artistMap[artists[0]],
                               );
                             }
                           },
@@ -311,7 +310,7 @@ class SongListTile extends StatelessWidget {
                             await Future.delayed(Duration(milliseconds: 250));
                             layersManager.switchRootLayer('albums');
                             layersManager.pushDetailIfNeed(
-                              artistAlbumManager.name2Album[getAlbum(song)],
+                              artistAlbumManager.albumMap[getAlbum(song)],
                             );
                           },
                         ),

@@ -9,20 +9,22 @@ import 'package:sylvakru/base/services/bookmark_service.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/data/history.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
-import 'package:sylvakru/layer/layers_manager.dart';
 import 'package:sylvakru/base/data/library.dart';
 import 'package:sylvakru/base/data/playlist.dart';
 import 'package:sylvakru/base/data/setting.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:sylvakru/base/utils/common_utils.dart';
+import 'package:sylvakru/base/utils/path.dart';
+import 'package:sylvakru/layer/layers_manager.dart';
 
 bool firstLaunch = true;
 
 class Loader {
-  static bool _syncing = false;
+  static bool _busy = false;
 
-  static bool get syncing => _syncing;
+  static bool get busy => _busy;
 
-  static final syncStateNotifier = ValueNotifier(0);
+  static final stateNotifier = ValueNotifier(0);
 
   static Future<void> init() async {
     if (Platform.isAndroid) {
@@ -44,17 +46,14 @@ class Loader {
     colorManager.updateColors();
 
     await library.loadFonts();
-    await library.initAllFolders();
-
-    await playlistManager.initAllPlaylists();
 
     audioHandler.initStateFiles();
   }
 
   static Future<void> load() async {
+    _busy = true;
+    stateNotifier.value++;
     await library.load();
-
-    artistAlbumManager.classify();
 
     history.load();
 
@@ -62,81 +61,79 @@ class Loader {
 
     await audioHandler.loadStates();
 
-    if (!isTV) {
-      layersManager.switchRootLayer('songs');
+    if (isNotStreamSource) {
+      artistAlbumManager.classify();
     }
+    _busy = false;
+    stateNotifier.value++;
   }
 
-  static Future<void> _prepareForSync(SourceType sourceType) async {
-    await library.prepareForSync(sourceType);
-    history.prepareForSync(sourceType);
-    await playlistManager.prepareForSync(sourceType);
-  }
+  static Future<void> sync() async {
+    _busy = true;
+    stateNotifier.value++;
 
-  static Future<void> _sync(SourceType sourceType) async {
-    await library.sync(sourceType);
-    history.sync(sourceType);
-    await playlistManager.sync(sourceType);
-  }
-
-  static Future<void> sync(int syncBitMask) async {
-    _syncing = true;
-    syncStateNotifier.value++;
+    layersManager.perpareForSync();
 
     artistAlbumManager.clear();
+    history.clear();
 
-    if ((syncBitMask & 1) == 1) {
-      await _prepareForSync(.local);
-    }
-
-    if ((syncBitMask & 2) == 2) {
-      await _prepareForSync(.webdav);
-    }
-
-    if ((syncBitMask & 4) == 4) {
-      await _prepareForSync(.subsonic);
-    }
-
-    if ((syncBitMask & 8) == 8) {
-      await _prepareForSync(.navidrome);
-    }
-
-    if ((syncBitMask & 16) == 16) {
-      await _prepareForSync(.emby);
-    }
-
-    if ((syncBitMask & 1) == 1) {
-      await _sync(.local);
-    }
-
-    if ((syncBitMask & 2) == 2) {
-      await _sync(.webdav);
-    }
-
-    if ((syncBitMask & 4) == 4) {
-      await _sync(.subsonic);
-    }
-
-    if ((syncBitMask & 8) == 8) {
-      await _sync(.navidrome);
-    }
-
-    if ((syncBitMask & 16) == 16) {
-      await _sync(.emby);
-    }
+    await library.sync();
+    history.load();
+    await playlistManager.sync();
 
     await audioHandler.sync();
 
-    artistAlbumManager.classify();
+    if (isNotStreamSource) {
+      artistAlbumManager.classify();
+    }
 
-    _syncing = false;
-    syncStateNotifier.value++;
+    _busy = false;
+    stateNotifier.value++;
   }
 
   static void _handleLegacyVersionData() {
     File tmp = File('${appSupportDir.path}/version.json');
     if (tmp.existsSync()) {
       firstLaunch = false;
+      if (compareVersion(versionNumber, jsonDecode(tmp.readAsStringSync())) >
+          0) {
+        File playlistsFile = File(
+          "${getPlaylistConfigPath(.local)}/sylvakru_playlists.json",
+        );
+        if (playlistsFile.existsSync()) {
+          final content = playlistsFile.readAsStringSync();
+          final list = jsonDecode(content) as List;
+          if (list.isNotEmpty && list[0] == 'Favorite') {
+            playlistsFile.writeAsStringSync(jsonEncode(list.skip(1).toList()));
+          }
+        }
+
+        playlistsFile = File(
+          "${getPlaylistConfigPath(.webdav)}/sylvakru_playlists.json",
+        );
+        if (playlistsFile.existsSync()) {
+          final content = playlistsFile.readAsStringSync();
+          final list = jsonDecode(content) as List;
+          if (list.isNotEmpty && list[0] == 'Favorite') {
+            playlistsFile.writeAsStringSync(jsonEncode(list.skip(1).toList()));
+          }
+        }
+
+        Directory tmpDir = Directory('${appSupportDir.path}/subsonic');
+        if (tmpDir.existsSync()) {
+          tmpDir.deleteSync(recursive: true);
+        }
+
+        tmpDir = Directory('${appSupportDir.path}/navidrome');
+        if (tmpDir.existsSync()) {
+          tmpDir.deleteSync(recursive: true);
+        }
+
+        tmpDir = Directory('${appSupportDir.path}/emby');
+        if (tmpDir.existsSync()) {
+          tmpDir.deleteSync(recursive: true);
+        }
+      }
     }
     tmp.writeAsStringSync(jsonEncode(versionNumber));
   }

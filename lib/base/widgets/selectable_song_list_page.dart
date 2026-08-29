@@ -4,7 +4,6 @@ import 'package:sylvakru/base/audio_handler.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/asset_images.dart';
 import 'package:sylvakru/base/services/interaction.dart';
-import 'package:sylvakru/base/utils/source_type.dart';
 import 'package:sylvakru/base/widgets/my_divider.dart';
 import 'package:sylvakru/base/widgets/playlist_widgets.dart';
 import 'package:sylvakru/base/data/folder.dart';
@@ -157,8 +156,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                       l10n.durationDescending,
                     ];
 
-                    if (isLibrary &&
-                            songList == library.songListManager.localSongList ||
+                    if (isLibrary && songList == library.songList ||
                         folder != null) {
                       orderText.add(l10n.modifiedTimeAscending);
                       orderText.add(l10n.modifiedTimedescending);
@@ -300,13 +298,11 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                               currentSongListNotifier.value = songList;
 
                               if (isLibrary) {
-                                library.update(item.sourceType);
+                                library.update();
                               } else if (folder != null) {
                                 folder!.update();
                               } else {
-                                playlist!.update(
-                                  getSourceTypeBitMask(item.sourceType),
-                                );
+                                playlist!.update();
                               }
                             },
                             onReorderStart: (_) {

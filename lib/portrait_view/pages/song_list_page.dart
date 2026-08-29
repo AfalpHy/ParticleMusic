@@ -144,9 +144,7 @@ extension _SongListPage on _SongListState {
                       l10n.durationAscending,
                       l10n.durationDescending,
                     ];
-                    if (isLibrary &&
-                            (sourceType == .local || sourceType == .webdav) ||
-                        folder != null) {
+                    if (isLibrary && (isNotStreamSource) || folder != null) {
                       orderText.add(l10n.modifiedTimeAscending);
                       orderText.add(l10n.modifiedTimedescending);
                       orderText.add(l10n.randomizeTemp);
@@ -171,7 +169,7 @@ extension _SongListPage on _SongListState {
                                   }
                                   sortTypeNotifier.value = 0;
                                   if (isLibrary) {
-                                    library.shuffle(sourceType);
+                                    library.shuffle();
                                   } else {
                                     folder!.shuffle();
                                   }
@@ -180,8 +178,6 @@ extension _SongListPage on _SongListState {
                                     updateSongList();
                                   }
                                   sortTypeNotifier.value = i;
-
-                                  playlist?.saveSetting();
                                 }
                               },
                               trailing: value == i ? Icon(Icons.check) : null,
@@ -217,30 +213,6 @@ extension _SongListPage on _SongListState {
               },
             ),
 
-          if (folder == null)
-            ValueListenableBuilder(
-              valueListenable: songListManager.changeNotifier,
-              builder: (context, value, child) {
-                if (songListManager.notEmptyCount < 2) {
-                  return SizedBox.shrink();
-                }
-                return ListTile(
-                  leading: ImageIcon(serverImage),
-                  title: Text(
-                    l10n.switch_,
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                  ),
-                  visualDensity: const VisualDensity(
-                    horizontal: 0,
-                    vertical: -4,
-                  ),
-                  onTap: () {
-                    Navigator.of(context).pop();
-                    showSwitchDialogIfNeed(context, songListManager);
-                  },
-                );
-              },
-            ),
           if (playlist != null && playlist!.isNotFavorite)
             ListTile(
               leading: ImageIcon(deleteImage),
@@ -351,7 +323,7 @@ extension _SongListPage on _SongListState {
                 subtitle: ValueListenableBuilder(
                   valueListenable: currentSongListNotifier,
                   builder: (context, currentSongList, child) {
-                    String prefix = getSourceTypeName(l10n, sourceType);
+                    String prefix = getSourceTypeDisplayName(l10n, sourceType);
                     return Text(
                       "$prefix: ${l10n.songCount(currentSongList.length)}",
                     );
@@ -374,6 +346,14 @@ extension _SongListPage on _SongListState {
         ValueListenableBuilder(
           valueListenable: currentSongListNotifier,
           builder: (context, currentSongList, child) {
+            if (firstLoading) {
+              return SliverFillRemaining(
+                hasScrollBody: false,
+                child: Center(
+                  child: CircularProgressIndicator(color: iconColor.value),
+                ),
+              );
+            }
             return SliverFixedExtentList.builder(
               itemExtent: 60,
               itemCount: currentSongList.length,

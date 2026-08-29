@@ -4,9 +4,9 @@ import 'package:material_ui/material_ui.dart';
 import 'package:sylvakru/base/audio_handler.dart';
 import 'package:sylvakru/base/data/artist_album.dart';
 import 'package:sylvakru/base/data/folder.dart';
-import 'package:sylvakru/base/services/metadata_service.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/app.dart';
+import 'package:sylvakru/base/services/picture_service.dart';
 import 'package:sylvakru/base/utils/dynamic_detail_route.dart';
 import 'package:sylvakru/base/utils/media_query.dart';
 import 'package:sylvakru/base/widgets/cover_art_widget.dart';
@@ -29,17 +29,16 @@ import 'package:sylvakru/layer/single_folder_layer.dart';
 import 'package:sylvakru/layer/single_playlist_layer.dart';
 import 'package:sylvakru/layer/songs_layer.dart';
 import 'package:sylvakru/base/data/library.dart';
-import 'package:sylvakru/base/my_audio_metadata.dart';
 import 'package:sylvakru/base/data/playlist.dart';
 import 'package:sylvakru/base/utils/metadata_utils.dart';
 
 final layersManager = LayersManager();
 
 class LayerInfo {
-  MyAudioMetadata? backgroundSong;
+  MyPicture? backgroundPicture;
   Color backgroundCoverArtColor;
   final changeNotifier = ValueNotifier(0);
-  LayerInfo(this.backgroundSong, this.backgroundCoverArtColor);
+  LayerInfo(this.backgroundPicture, this.backgroundCoverArtColor);
 }
 
 class LayersManager {
@@ -55,7 +54,6 @@ class LayersManager {
   final Map<Widget, Widget> parentWidgetMap = {};
 
   Widget? topRootLayer;
-  Widget? bottomRootLayer;
 
   Widget? topRootPage;
   Widget? bottomRootPage;
@@ -82,7 +80,7 @@ class LayersManager {
               valueListenable: layerInfo.changeNotifier,
               builder: (context, value, child) {
                 return CoverArtWidget(
-                  song: layerInfo.backgroundSong,
+                  picture: layerInfo.backgroundPicture,
                   color: layerInfo.backgroundCoverArtColor,
                 );
               },
@@ -156,7 +154,6 @@ class LayersManager {
       return;
     }
 
-    bottomRootLayer = topRootLayer;
     topRootLayer = layer;
     if (isMobile) {
       bottomRootPage = topRootPage;
@@ -229,6 +226,14 @@ class LayersManager {
       rootKey = foldersKey;
       visibleNotifier = foldersVisibleNotifier;
       detailLayer = SingleFolderLayer(folder: detail);
+    } else if (label == 'ranking') {
+      rootKey = rankingKey;
+      visibleNotifier = rankingVisibleNotifier;
+      detailLayer = SingleAlbumLayer(album: detail, rootLabel: 'ranking');
+    } else if (label == 'recently') {
+      rootKey = recentlyKey;
+      visibleNotifier = recentlyVisibleNotifier;
+      detailLayer = SingleAlbumLayer(album: detail, rootLabel: 'recently');
     } else if (label == 'playlists') {
       rootKey = playlistsKey;
       visibleNotifier = playlistsVisibleNotifier;
@@ -290,6 +295,12 @@ class LayersManager {
     } else if (label == 'albums') {
       rootKey = albumsKey;
       visibleNotifier = albumsVisibleNotifier;
+    } else if (label == 'ranking') {
+      rootKey = rankingKey;
+      visibleNotifier = rankingVisibleNotifier;
+    } else if (label == 'recently') {
+      rootKey = recentlyKey;
+      visibleNotifier = recentlyVisibleNotifier;
     } else if (label == 'folders') {
       rootKey = foldersKey;
       visibleNotifier = foldersVisibleNotifier;
@@ -339,39 +350,39 @@ class LayersManager {
     }
   }
 
-  MyAudioMetadata? _getBackgroundSong(Widget layer) {
+  MyPicture? _getBackgroundPicture(Widget layer) {
     if (layer is SingleArtistLayer) {
-      return layer.artist.getCoverSong();
+      return layer.artist.picture;
     } else if (layer is SingleAlbumLayer) {
-      return layer.album.getCoverSong();
+      return layer.album.picture;
     } else if (layer is SingleFolderLayer) {
       final songList = layer.folder.songList;
-      return getFirstSong(songList);
+      return getFirstSong(songList)?.picture;
     } else if (layer is SongsLayer) {
-      return getFirstSong(library.songListManager.currentSongList);
-    } else if (layer is RankingLayer) {
-      return getFirstSong(history.rankingSongListManager.currentSongList);
-    } else if (layer is RecentlyLayer) {
-      return getFirstSong(history.recentlySongListManager.currentSongList);
+      return getFirstSong(library.songList)?.picture;
+    } else if (layer is RankingLayer && isNotStreamSource) {
+      return getFirstSong(history.rankingSongList)?.picture;
+    } else if (layer is RecentlyLayer && isNotStreamSource) {
+      return getFirstSong(history.recentlySongList)?.picture;
     } else if (layer is SinglePlaylistLayer) {
-      return layer.playlist.getCoverSong();
+      return layer.playlist.getCoverSong()?.picture;
     } else {
-      return currentSongNotifier.value;
+      return currentSongNotifier.value?.picture;
     }
   }
 
   void _updateLayerInfo(
     Widget layer,
-    MyAudioMetadata? bgSong,
+    MyPicture? bgPicture,
     Color bgCoverArtColor,
   ) {
     final layerInfo = layerInfoMap.putIfAbsent(
       layer,
-      () => LayerInfo(bgSong, bgCoverArtColor),
+      () => LayerInfo(bgPicture, bgCoverArtColor),
     );
-    if (layerInfo.backgroundSong != bgSong ||
+    if (layerInfo.backgroundPicture != bgPicture ||
         layerInfo.backgroundCoverArtColor != bgCoverArtColor) {
-      layerInfo.backgroundSong = bgSong;
+      layerInfo.backgroundPicture = bgPicture;
       layerInfo.backgroundCoverArtColor = bgCoverArtColor;
       layerInfo.changeNotifier.value++;
     }
@@ -387,15 +398,15 @@ class LayersManager {
     if (tmpLayer != null) {
       displayLayer = tmpLayer;
       while ((tmpLayer = parentWidgetMap[tmpLayer]) != null) {
-        final tmpBgSong = _getBackgroundSong(tmpLayer!);
-        final tmpBgCoverArtColor = await computeCoverArtColor(tmpBgSong);
-        _updateLayerInfo(tmpLayer, tmpBgSong, tmpBgCoverArtColor);
+        final tmpBgPicture = _getBackgroundPicture(tmpLayer!);
+        final tmpBgCoverArtColor = await computeColor(tmpBgPicture);
+        _updateLayerInfo(tmpLayer, tmpBgPicture, tmpBgCoverArtColor);
       }
     }
 
-    backgroundSong = _getBackgroundSong(displayLayer);
-    backgroundCoverArtColor = await computeCoverArtColor(backgroundSong);
-    _updateLayerInfo(displayLayer, backgroundSong, backgroundCoverArtColor);
+    backgroundPicture = _getBackgroundPicture(displayLayer);
+    backgroundCoverArtColor = await computeColor(backgroundPicture);
+    _updateLayerInfo(displayLayer, backgroundPicture, backgroundCoverArtColor);
 
     if (mainPageThemeNotifier.value == .vivid) {
       searchFieldColor.updateColor();
@@ -404,5 +415,20 @@ class LayersManager {
       selectedItemColor.updateColor();
       backgroundChangeNotifier.value++;
     }
+  }
+
+  void perpareForSync() {
+    popDetail('artists', executePop: false);
+    popDetail('albums', executePop: false);
+    popDetail('folders', executePop: false);
+    popDetail('playlists', executePop: false);
+
+    layerInfoMap.removeWhere((k, v) => k != topRootLayer);
+    rootLayerMap.removeWhere((k, v) => k != 'settings');
+    rootPageMap.removeWhere((k, v) => k != topRootLayer);
+
+    switchNotifier.value++;
+
+    bottomRootPage = null;
   }
 }

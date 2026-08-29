@@ -22,9 +22,7 @@ class Setting {
 
   Future<void> load() async {
     file = File("${appSupportDir.path}/setting.json");
-    if (!(file.existsSync())) {
-      save();
-    }
+    initFile(file, false);
 
     final json = await readJsonMapFile(file);
 

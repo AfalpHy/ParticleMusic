@@ -3,9 +3,13 @@ import 'dart:io';
 
 import 'package:audio_tags_lofty/audio_tags_lofty.dart';
 import 'package:crypto/crypto.dart';
+import 'package:lpinyin/lpinyin.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:sylvakru/base/app.dart';
+import 'package:sylvakru/base/data/library.dart';
 import 'package:sylvakru/base/services/lyric.dart';
+import 'package:sylvakru/base/services/picture_service.dart';
+import 'package:sylvakru/base/utils/metadata_utils.dart';
 import 'package:sylvakru/base/utils/path.dart';
 
 class MyAudioMetadata {
@@ -18,11 +22,7 @@ class MyAudioMetadata {
 
   final AudioMetadata _audioMetadata;
 
-  bool pictureLoaded = false;
-  late bool pictureExist;
-  late String picturePath;
-  Color? coverArtColor;
-  Color? lowerLuminance;
+  late MyPicture picture;
 
   ParsedLyrics? parsedLyrics;
 
@@ -35,6 +35,10 @@ class MyAudioMetadata {
   int playCount;
   DateTime? lastPlayed;
 
+  late String compareTitle;
+  late String compareArtist;
+  late String compareAlbum;
+
   MyAudioMetadata(
     this._audioMetadata, {
     required this.id,
@@ -45,18 +49,16 @@ class MyAudioMetadata {
     this.lastPlayed,
   }) {
     final md5Hash = md5.convert(utf8.encode(id)).toString();
-    picturePath = '${getPicturesPath(sourceType)}/$md5Hash';
-    if (File(picturePath).existsSync()) {
-      pictureLoaded = true;
-      pictureExist = true;
-    } else {
-      pictureExist = false;
-    }
+    picture = MyPicture(id, md5Hash: md5Hash);
 
     if (sourceType != .local) {
       cachePath = '${getCachesPath(sourceType)}/$md5Hash';
       cacheExist = File(cachePath!).existsSync();
     }
+
+    compareTitle = PinyinHelper.getPinyinE(getTitle(this));
+    compareArtist = PinyinHelper.getPinyinE(getArtist(this));
+    compareAlbum = PinyinHelper.getPinyinE(getAlbum(this));
   }
 
   String? get format => _audioMetadata.format;
@@ -91,37 +93,41 @@ class MyAudioMetadata {
   set lyrics(String? value) => _audioMetadata.lyrics = value;
   set duration(Duration? value) => _audioMetadata.duration = value;
 
-  factory MyAudioMetadata.fromOpenSonicMap(
+  factory MyAudioMetadata.fromMap(
     Map<String, dynamic> song,
     SourceType sourceType,
   ) {
-    return MyAudioMetadata(
-      AudioMetadata(
-        format: (song['contentType'] as String?)?.split('audio/').last,
-        title: song['title'],
-        artist: song['artist'],
-        album: song['album'],
-        albumArtist: song['displayAlbumArtist'],
-        genre: song['genre'],
-        year: song['year'],
-        track: song['track'],
-        disc: song['discNumber'],
-        bitrate: song['bitRate'],
-        samplerate: song['samplingRate'],
-        duration: song['duration'] != null
-            ? Duration(seconds: song['duration'])
-            : null,
-      ),
-      sourceType: sourceType,
-      id: song['id'],
-      playCount: song['playCount'] as int? ?? 0,
-      lastPlayed: song['played'] != null
-          ? DateTime.parse(song['played'])
-          : null,
-    );
-  }
+    if (sourceType == .navidrome) {
+      return library.id2Song.putIfAbsent(
+        song['id'],
+        () => MyAudioMetadata(
+          AudioMetadata(
+            format: (song['contentType'] as String?)?.split('audio/').last,
+            title: song['title'],
+            artist: song['artist'],
+            album: song['album'],
+            albumArtist: song['displayAlbumArtist'],
+            genre: song['genre'],
+            year: song['year'],
+            track: song['track'],
+            disc: song['discNumber'],
+            bitrate: song['bitRate'],
+            samplerate: song['samplingRate'],
+            duration: song['duration'] != null
+                ? Duration(seconds: song['duration'])
+                : null,
+          ),
+          sourceType: sourceType,
+          id: song['id'],
+          path: song['path'],
+          playCount: song['playCount'] as int? ?? 0,
+          lastPlayed: song['played'] != null
+              ? DateTime.parse(song['played'])
+              : null,
+        ),
+      );
+    }
 
-  factory MyAudioMetadata.fromEmbyMap(Map<String, dynamic> song) {
     final mediaSources = (song['MediaSources'] as List?) ?? [];
     final primarySource = mediaSources.isNotEmpty ? mediaSources.first : null;
     final streams = (primarySource?['MediaStreams'] as List?) ?? [];
@@ -136,48 +142,51 @@ class MyAudioMetadata {
       orElse: () => null,
     );
 
-    return MyAudioMetadata(
-      AudioMetadata(
-        format: audioStream?['Codec'] ?? primarySource?['Container'],
+    return library.id2Song.putIfAbsent(
+      song['Id'],
+      () => MyAudioMetadata(
+        AudioMetadata(
+          format: audioStream?['Codec'] ?? primarySource?['Container'],
 
-        title: song['Name'],
+          title: song['Name'],
 
-        artist:
-            (song['ArtistItems'] as List?)?.map((a) => a['Name']).join('/') ??
-            (song['Artists'] as List?)?.join('/'),
+          artist:
+              (song['ArtistItems'] as List?)?.map((a) => a['Name']).join('/') ??
+              (song['Artists'] as List?)?.join('/'),
 
-        album: song['Album'],
+          album: song['Album'],
 
-        albumArtist: song['AlbumArtist'],
+          albumArtist: song['AlbumArtist'],
 
-        genre: (song['Genres'] as List?)?.join('/'),
+          genre: (song['Genres'] as List?)?.join('/'),
 
-        year: song['ProductionYear'],
+          year: song['ProductionYear'],
 
-        track: song['IndexNumber'],
+          track: song['IndexNumber'],
 
-        disc: song['ParentIndexNumber'],
+          disc: song['ParentIndexNumber'],
 
-        bitrate: audioStream?['BitRate'] ?? primarySource?['Bitrate'],
+          bitrate: audioStream?['BitRate'] ?? primarySource?['Bitrate'],
 
-        samplerate: audioStream?['SampleRate'],
+          samplerate: audioStream?['SampleRate'],
 
-        duration: song['RunTimeTicks'] != null
-            ? Duration(microseconds: song['RunTimeTicks'] ~/ 10)
-            : null,
+          duration: song['RunTimeTicks'] != null
+              ? Duration(microseconds: song['RunTimeTicks'] ~/ 10)
+              : null,
 
-        lyrics: lyricStream?['Extradata'],
+          lyrics: lyricStream?['Extradata'],
+        ),
+
+        sourceType: SourceType.emby,
+
+        id: song['Id'],
+
+        playCount: song['UserData']?['PlayCount'] as int? ?? 0,
+
+        lastPlayed: song['UserData']?['LastPlayedDate'] != null
+            ? DateTime.parse(song['UserData']['LastPlayedDate'])
+            : DateTime.fromMillisecondsSinceEpoch(0),
       ),
-
-      sourceType: SourceType.emby,
-
-      id: song['Id'],
-
-      playCount: song['UserData']?['PlayCount'] as int? ?? 0,
-
-      lastPlayed: song['UserData']?['LastPlayedDate'] != null
-          ? DateTime.parse(song['UserData']['LastPlayedDate'])
-          : DateTime.fromMillisecondsSinceEpoch(0),
     );
   }
 

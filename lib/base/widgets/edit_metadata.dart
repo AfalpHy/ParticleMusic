@@ -7,7 +7,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:sylvakru/base/audio_handler.dart';
 import 'package:sylvakru/base/data/library.dart';
-import 'package:sylvakru/base/services/metadata_service.dart';
+import 'package:sylvakru/base/services/picture_service.dart';
 import 'package:sylvakru/base/services/webdav_client.dart';
 import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/services/logger.dart';
@@ -62,7 +62,7 @@ class _EditMetadataState extends State<EditMetadata> {
     _trackTextController.text = song.track?.toString() ?? '';
     _discTextController.text = song.disc?.toString() ?? '';
     _lyricsTextController.text = song.lyrics ?? '';
-    _picturePathNotifier = ValueNotifier(song.picturePath);
+    _picturePathNotifier = ValueNotifier(song.picture.path);
   }
 
   @override
@@ -236,7 +236,7 @@ class _EditMetadataState extends State<EditMetadata> {
                   _picturePathNotifier.value = result.path;
                 },
                 child: CoverArtWidget(
-                  song: song,
+                  picture: song.picture,
                   picturePath: picturePath,
                   size: isPhone ? 150 : 180,
                   borderRadius: 10,
@@ -324,18 +324,15 @@ class _EditMetadataState extends State<EditMetadata> {
 
         await library.updateMetadata(song);
 
-        song.pictureLoaded = false;
-        song.pictureExist = false;
-        song.coverArtColor = null;
-        song.lowerLuminance = null;
+        song.picture.reset();
         // clear cache
         final imageCache = PaintingBinding.instance.imageCache;
         imageCache.clear();
         imageCache.clearLiveImages();
 
-        await computeCoverArtColor(song);
+        await computeColor(song.picture);
         if (song == currentSongNotifier.value) {
-          currentCoverArtColor = song.coverArtColor!;
+          currentCoverArtColor = song.picture.color!;
           contrastColorTheme = ContrastColorGenerator.generate(
             currentCoverArtColor,
           );

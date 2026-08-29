@@ -5,18 +5,14 @@ import 'package:file_picker/file_picker.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:http/http.dart' as http;
 import 'package:sylvakru/base/audio_handler.dart';
-import 'package:sylvakru/base/services/emby_client.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/asset_images.dart';
 import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/services/logger.dart';
-import 'package:sylvakru/base/services/subsonic_client.dart';
 import 'package:sylvakru/base/services/system_ui_service.dart';
-import 'package:sylvakru/base/services/webdav_client.dart';
-import 'package:sylvakru/base/utils/format_duration.dart';
+import 'package:sylvakru/base/utils/common_utils.dart';
 import 'package:sylvakru/base/utils/media_query.dart';
-import 'package:sylvakru/base/utils/source_type.dart';
 import 'package:sylvakru/base/widgets/connect_client_widget.dart';
 import 'package:sylvakru/base/widgets/equalizer.dart';
 import 'package:sylvakru/base/widgets/my_divider.dart';
@@ -30,7 +26,6 @@ import 'package:sylvakru/portrait_view/portrait_view.dart';
 import 'package:sylvakru/portrait_view/sleep_timer.dart';
 import 'package:sylvakru/l10n/generated/app_localizations.dart';
 import 'package:sylvakru/base/widgets/my_switch.dart';
-import 'package:sylvakru/base/services/navidrome_client.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 import 'package:url_launcher/url_launcher.dart';
 
@@ -195,119 +190,15 @@ class SettingsList extends StatelessWidget {
       leading: ImageIcon(reloadImage, size: iconSize),
       title: Text(l10n.syncLibrary),
       onTap: () async {
-        final sourceTypes = <SourceType>[];
-        if (library.localFolderList.isNotEmpty) {
-          sourceTypes.add(.local);
-        }
-        if (webdavClient != null) {
-          sourceTypes.add(.webdav);
-        }
-
-        if (subsonicClient != null) {
-          sourceTypes.add(.subsonic);
-        }
-
-        if (navidromeClient != null) {
-          sourceTypes.add(.navidrome);
-        }
-
-        if (embyClient != null) {
-          sourceTypes.add(.emby);
-        }
-
-        if (sourceTypes.isEmpty) {
-          return;
-        }
-
-        if (sourceTypes.length == 1) {
-          if (await showConfirmDialog(context, l10n.syncLibrary)) {
-            if (Loader.syncing) {
-              if (context.mounted) {
-                showCenterMessage(context, l10n.syncingTryLater);
-              }
-              return;
+        if (await showConfirmDialog(context, l10n.syncLibrary)) {
+          if (Loader.busy) {
+            if (context.mounted) {
+              showCenterMessage(context, l10n.syncingTryLater);
             }
-            await Loader.sync(getSourceTypeBitMask(sourceTypes.first));
+            return;
           }
-
-          return;
+          await Loader.sync();
         }
-
-        showAnimationDialog(
-          context: context,
-          child: SizedBox(
-            width: 300,
-            height: isMobile ? 300 : 280,
-            child: Padding(
-              padding: const EdgeInsets.all(15),
-              child: ListView(
-                children: [
-                  // get context
-                  Builder(
-                    builder: (context) {
-                      return ListTile(
-                        title: Text(l10n.all),
-                        onTap: () async {
-                          if (await showConfirmDialog(
-                            context,
-                            l10n.syncLibrary,
-                          )) {
-                            if (context.mounted) {
-                              Navigator.pop(context);
-                            }
-                            if (Loader.syncing) {
-                              if (context.mounted) {
-                                showCenterMessage(
-                                  context,
-                                  l10n.syncingTryLater,
-                                );
-                              }
-                              return;
-                            }
-                            await Loader.sync(15);
-                          }
-                        },
-                      );
-                    },
-                  ),
-
-                  for (final sourceType in sourceTypes)
-                    Builder(
-                      builder: (context) {
-                        return ListTile(
-                          leading: Image(
-                            image: getSourceTypeImage(sourceType),
-                            width: 30,
-                            height: 30,
-                          ),
-                          title: Text(getSourceTypeName(l10n, sourceType)),
-                          onTap: () async {
-                            if (await showConfirmDialog(
-                              context,
-                              l10n.syncLibrary,
-                            )) {
-                              if (Loader.syncing) {
-                                if (context.mounted) {
-                                  showCenterMessage(
-                                    context,
-                                    l10n.syncingTryLater,
-                                  );
-                                }
-                                return;
-                              }
-                              await Loader.sync(
-                                getSourceTypeBitMask(sourceType),
-                              );
-                            }
-                          },
-                        );
-                      },
-                    ),
-                ],
-              ),
-            ),
-          ),
-        );
       },
     );
   }
@@ -371,7 +262,6 @@ class SettingsList extends StatelessWidget {
                     mainAxisSize: .min,
                     children: [
                       webdavListTile(context, l10n),
-                      subsonicListTile(context, l10n),
                       navidromeListTile(context, l10n),
                       embyListTile(context, l10n),
                     ],
@@ -399,19 +289,6 @@ class SettingsList extends StatelessWidget {
         showAnimationDialog(
           context: context,
           child: ConnectClientWidget(sourceType: .webdav),
-        );
-      },
-    );
-  }
-
-  Widget subsonicListTile(BuildContext context, AppLocalizations l10n) {
-    return ListTile(
-      leading: Image(image: subsonicImage, width: 30, height: 30),
-      title: Text(l10n.connect2Subsonic),
-      onTap: () {
-        showAnimationDialog(
-          context: context,
-          child: ConnectClientWidget(sourceType: .subsonic),
         );
       },
     );
@@ -450,9 +327,7 @@ class SettingsList extends StatelessWidget {
       title: Text(l10n.clearCache),
       onTap: () async {
         if (await showConfirmDialog(context, l10n.clear)) {
-          for (final sourceType in SourceType.values) {
-            await library.clearCache(sourceType);
-          }
+          await library.clearCache();
         }
       },
       trailing: ValueListenableBuilder(
@@ -857,25 +732,6 @@ class SettingsList extends StatelessWidget {
     );
   }
 
-  int _compareVersion(String a, String b) {
-    final aParts = a.split('.').map(int.parse).toList();
-    final bParts = b.split('.').map(int.parse).toList();
-
-    final length = aParts.length > bParts.length
-        ? aParts.length
-        : bParts.length;
-
-    for (int i = 0; i < length; i++) {
-      final aVal = i < aParts.length ? aParts[i] : 0;
-      final bVal = i < bParts.length ? bParts[i] : 0;
-
-      if (aVal != bVal) {
-        return aVal.compareTo(bVal);
-      }
-    }
-    return 0;
-  }
-
   Widget checkUpdate(BuildContext context, AppLocalizations l10n) {
     return ListTile(
       leading: ImageIcon(checkUpdateImage, size: iconSize),
@@ -903,7 +759,7 @@ class SettingsList extends StatelessWidget {
             'v',
             '',
           );
-          if (_compareVersion(latestVersion, versionNumber) > 0) {
+          if (compareVersion(latestVersion, versionNumber) > 0) {
             if (context.mounted) {
               showAnimationDialog(
                 context: context,

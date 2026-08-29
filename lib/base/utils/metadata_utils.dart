@@ -1,4 +1,3 @@
-import 'package:lpinyin/lpinyin.dart';
 import 'package:sylvakru/base/data/artist_album.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
 import 'package:path/path.dart';
@@ -95,22 +94,22 @@ void sortSongList(int sortType, List<MyAudioMetadata> songList) {
   switch (sortType) {
     case 1: // Title Ascending
       songList.sort((a, b) {
-        return compareMixed(getTitle(a), getTitle(b));
+        return a.compareTitle.compareTo(b.compareTitle);
       });
       break;
     case 2: // Title Descending
       songList.sort((a, b) {
-        return compareMixed(getTitle(b), getTitle(a));
+        return b.compareTitle.compareTo(a.compareTitle);
       });
       break;
     case 3: // Artist Ascending
       songList.sort((a, b) {
-        final tmp = compareMixed(getArtist(a), getArtist(b));
+        final tmp = a.compareArtist.compareTo(b.compareArtist);
         if (tmp != 0) {
           return tmp;
         }
-        final albumA = artistAlbumManager.name2Album[getAlbum(a)];
-        final albumB = artistAlbumManager.name2Album[getAlbum(b)];
+        final albumA = artistAlbumManager.albumMap[getAlbum(a)];
+        final albumB = artistAlbumManager.albumMap[getAlbum(b)];
         if (albumA != albumB) {
           int aYear = albumA!.year ?? 9999;
           int bYear = albumB!.year ?? 9999;
@@ -119,7 +118,7 @@ void sortSongList(int sortType, List<MyAudioMetadata> songList) {
           if (yearTmp != 0) {
             return yearTmp;
           }
-          return albumA.name.compareTo(albumB.name);
+          return albumA.compareName.compareTo(albumB.compareName);
         }
         final discA = a.disc ?? 9999;
         final discB = b.disc ?? 9999;
@@ -135,12 +134,12 @@ void sortSongList(int sortType, List<MyAudioMetadata> songList) {
       break;
     case 4: // Artist Descending
       songList.sort((a, b) {
-        final tmp = compareMixed(getArtist(b), getArtist(a));
+        final tmp = b.compareArtist.compareTo(a.compareArtist);
         if (tmp != 0) {
           return tmp;
         }
-        final albumA = artistAlbumManager.name2Album[getAlbum(a)];
-        final albumB = artistAlbumManager.name2Album[getAlbum(b)];
+        final albumA = artistAlbumManager.albumMap[getAlbum(a)];
+        final albumB = artistAlbumManager.albumMap[getAlbum(b)];
         if (albumA != albumB) {
           int aYear = albumA!.year ?? 9999;
           int bYear = albumB!.year ?? 9999;
@@ -149,7 +148,7 @@ void sortSongList(int sortType, List<MyAudioMetadata> songList) {
           if (yearTmp != 0) {
             return yearTmp;
           }
-          return albumA.name.compareTo(albumB.name);
+          return albumA.compareName.compareTo(albumB.compareName);
         }
         final discA = a.disc ?? 9999;
         final discB = b.disc ?? 9999;
@@ -165,7 +164,7 @@ void sortSongList(int sortType, List<MyAudioMetadata> songList) {
       break;
     case 5: // Album Ascending
       songList.sort((a, b) {
-        final tmp = compareMixed(getAlbum(a), getAlbum(b));
+        final tmp = a.compareAlbum.compareTo(b.compareAlbum);
         if (tmp != 0) {
           return tmp;
         }
@@ -183,7 +182,7 @@ void sortSongList(int sortType, List<MyAudioMetadata> songList) {
       break;
     case 6: // Album Descending
       songList.sort((a, b) {
-        final tmp = compareMixed(getAlbum(b), getAlbum(a));
+        final tmp = b.compareAlbum.compareTo(a.compareAlbum);
         if (tmp != 0) {
           return tmp;
         }
@@ -223,27 +222,6 @@ void sortSongList(int sortType, List<MyAudioMetadata> songList) {
     default:
       break;
   }
-}
-
-bool _isEnglish(String s) {
-  final c = s[0];
-  return RegExp(r'^[A-Za-z]').hasMatch(c);
-}
-
-int compareMixed(String a, String b) {
-  final aIsEng = _isEnglish(a);
-  final bIsEng = _isEnglish(b);
-
-  if (aIsEng && !bIsEng) return -1;
-  if (!aIsEng && bIsEng) return 1;
-
-  if (aIsEng && bIsEng) {
-    return a.toLowerCase().compareTo(b.toLowerCase());
-  }
-
-  final pa = PinyinHelper.getPinyinE(a);
-  final pb = PinyinHelper.getPinyinE(b);
-  return pa.compareTo(pb);
 }
 
 MyAudioMetadata? getFirstSong(List<MyAudioMetadata> songList) {

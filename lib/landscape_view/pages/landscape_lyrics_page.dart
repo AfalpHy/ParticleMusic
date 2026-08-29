@@ -81,7 +81,7 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
             children: [
               if (lyricsPageThemeNotifier.value == .vivid) ...[
                 CoverArtWidget(
-                  song: currentSong,
+                  picture: currentSong?.picture,
                   color: colorManager.getSpecificLyricsPageCoverArtBaseColor(),
                 ),
                 RepaintBoundary(
@@ -131,7 +131,7 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                             child: CoverArtWidget(
                               size: coverArtSize,
                               borderRadius: coverArtSize * 0.05,
-                              song: currentSong,
+                              picture: currentSong?.picture,
                               elevation: 15,
                               color: colorManager
                                   .getSpecificLyricsPageCoverArtBaseColor(),

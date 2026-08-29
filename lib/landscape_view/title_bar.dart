@@ -216,7 +216,7 @@ class _TitleBarState extends State<TitleBar> {
               await Future.delayed(Duration(milliseconds: 250));
 
               colorManager.updateBigPictureRelatedColors(
-                currentSongNotifier.value,
+                currentSongNotifier.value?.picture,
               );
               viewModeNotifier.value = .bigPicture;
 

@@ -5,7 +5,6 @@ import 'package:crypto/crypto.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:sylvakru/base/services/bookmark_service.dart';
 import 'package:sylvakru/base/app.dart';
-import 'package:sylvakru/base/services/song_list_service.dart';
 import 'package:sylvakru/base/utils/path.dart';
 import 'package:sylvakru/base/services/logger.dart';
 import 'package:sylvakru/base/services/webdav_client.dart';
@@ -49,6 +48,8 @@ class Folder {
   ValueNotifier<int> sortTypeNotifier = ValueNotifier(0);
 
   final changeNotifier = ValueNotifier(0);
+
+  bool canModify = false;
 
   Folder(this.id, this.path, {this.isWebdav = false}) {
     if (!isWebdav) {
@@ -134,7 +135,16 @@ class Folder {
   }
 
   Future<void> load() async {
-    await loadSongList(_songIdListFile, songList);
+    final List<dynamic> songIdList = jsonDecode(
+      await _songIdListFile.readAsString(),
+    );
+    for (final id in songIdList) {
+      songList.add(library.id2Song[id]!);
+    }
+
+    canModify = true;
+    changeNotifier.value++;
+    layersManager.updateBackground();
   }
 
   Future<void> _saveSongIdList() async {
@@ -148,10 +158,10 @@ class Folder {
     update();
   }
 
-  void update() {
+  Future<void> update() async {
     changeNotifier.value++;
     layersManager.updateBackground();
-    _saveSongIdList();
+    await _saveSongIdList();
   }
 
   void delete() {
@@ -163,6 +173,7 @@ class Folder {
   }
 
   Future<void> sync() async {
+    canModify = false;
     final songIdList = await readJsonListFile(_songIdListFile);
 
     for (final id in songIdList) {
@@ -195,6 +206,9 @@ class Folder {
       }
     }
 
-    update();
+    await update();
+
+    canModify = true;
+    changeNotifier.value++;
   }
 }

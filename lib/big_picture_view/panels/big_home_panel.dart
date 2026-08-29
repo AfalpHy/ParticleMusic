@@ -1,13 +1,11 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
 import 'package:sylvakru/base/data/artist_album.dart';
-import 'package:sylvakru/base/data/folder.dart';
 import 'package:sylvakru/base/data/history.dart';
 import 'package:sylvakru/base/data/library.dart';
 import 'package:sylvakru/base/data/playlist.dart';
-import 'package:sylvakru/base/my_audio_metadata.dart';
 import 'package:sylvakru/base/services/interaction.dart';
-import 'package:sylvakru/base/services/metadata_service.dart';
+import 'package:sylvakru/base/services/picture_service.dart';
 import 'package:sylvakru/base/utils/media_query.dart';
 import 'package:sylvakru/base/utils/metadata_utils.dart';
 import 'package:sylvakru/base/utils/zoom_page_route.dart';
@@ -39,9 +37,7 @@ class _BigHomePanelState extends State<BigHomePanel> {
         _ListView(
           title: l10n.artists,
           count: artistAlbumManager.artistList.length,
-          getCoverSong: (index) {
-            return artistAlbumManager.artistList[index].getCoverSong();
-          },
+          getPicture: (index) => artistAlbumManager.artistList[index].picture,
           onTap: (index) {
             Navigator.of(context).push(
               ZoomPageRoute(
@@ -53,22 +49,28 @@ class _BigHomePanelState extends State<BigHomePanel> {
               ),
             );
           },
-          getBottomTitle: (index) => artistAlbumManager.artistList[index].name,
+          getBottomWidget: (index) {
+            return ListTile(
+              contentPadding: .zero,
+              mouseCursor: SystemMouseCursors.click,
+              title: Text(
+                artistAlbumManager.artistList[index].name,
+                style: .new(overflow: .ellipsis),
+              ),
+
+              visualDensity: .new(vertical: -4),
+            );
+          },
           verticalController: verticalController,
-          changeNotifier: (index) => artistAlbumManager
-              .artistList[index]
-              .songListManager
-              .changeNotifier,
         ),
 
         _ListView(
           title: l10n.albums,
           count: artistAlbumManager.albumList.length,
-          getCoverSong: (index) =>
-              artistAlbumManager.albumList[index].getCoverSong(),
+          getPicture: (index) => artistAlbumManager.albumList[index].picture,
           onTap: (index) async {
-            final baseColor = await computeCoverArtColor(
-              artistAlbumManager.albumList[index].getCoverSong(),
+            final baseColor = await computeColor(
+              artistAlbumManager.albumList[index].picture,
             );
             if (!context.mounted) {
               return;
@@ -84,41 +86,33 @@ class _BigHomePanelState extends State<BigHomePanel> {
               ),
             );
           },
-          getBottomTitle: (index) => artistAlbumManager.albumList[index].name,
+          getBottomWidget: (index) {
+            return ListTile(
+              contentPadding: .zero,
+              mouseCursor: SystemMouseCursors.click,
+              title: Text(
+                artistAlbumManager.albumList[index].name,
+                style: .new(overflow: .ellipsis),
+              ),
+
+              visualDensity: .new(vertical: -4),
+            );
+          },
           getTag: (index) =>
-              'big${artistAlbumManager.albumList[index].getCoverSong().id}${artistAlbumManager.albumList[index].name}',
+              'big${artistAlbumManager.albumList[index].picture.id}${artistAlbumManager.albumList[index].name}',
 
           verticalController: verticalController,
-          changeNotifier: (index) => artistAlbumManager
-              .albumList[index]
-              .songListManager
-              .changeNotifier,
         ),
 
         _ListView(
           title: l10n.folders,
-          count:
-              library.localFolderList.length + library.webdavFolderList.length,
-          getCoverSong: (index) {
-            late Folder folder;
-            if (index < library.localFolderList.length) {
-              folder = library.localFolderList[index];
-            } else {
-              folder = library
-                  .webdavFolderList[index - library.localFolderList.length];
-            }
-            return getFirstSong(folder.songList);
-          },
+          count: library.folderList.length,
+          getPicture: (index) =>
+              getFirstSong(library.folderList[index].songList)?.picture,
           onTap: (index) async {
-            late Folder folder;
-            if (index < library.localFolderList.length) {
-              folder = library.localFolderList[index];
-            } else {
-              folder = library
-                  .webdavFolderList[index - library.localFolderList.length];
-            }
-            final baseColor = await computeCoverArtColor(
-              getFirstSong(folder.songList),
+            final folder = library.folderList[index];
+            final baseColor = await computeColor(
+              getFirstSong(folder.songList)?.picture,
             );
             if (!context.mounted) {
               return;
@@ -134,41 +128,53 @@ class _BigHomePanelState extends State<BigHomePanel> {
               ),
             );
           },
-          getBottomTitle: (index) => library.localFolderList[index].id,
+          getBottomWidget: (index) {
+            return ListTile(
+              contentPadding: .zero,
+              mouseCursor: SystemMouseCursors.click,
+              title: Text(
+                library.folderList[index].id,
+                style: .new(overflow: .ellipsis),
+              ),
+
+              visualDensity: .new(vertical: -4),
+            );
+          },
           getTag: (index) {
-            late Folder folder;
-            if (index < library.localFolderList.length) {
-              folder = library.localFolderList[index];
-            } else {
-              folder = library
-                  .webdavFolderList[index - library.localFolderList.length];
-            }
+            final folder = library.folderList[index];
+
             return 'big${getFirstSong(folder.songList)?.id}${folder.id}';
           },
           verticalController: verticalController,
           changeNotifier: (index) {
-            late Folder folder;
-            if (index < library.localFolderList.length) {
-              folder = library.localFolderList[index];
-            } else {
-              folder = library
-                  .webdavFolderList[index - library.localFolderList.length];
-            }
-            return folder.changeNotifier;
+            return library.folderList[index].changeNotifier;
           },
         ),
 
         _ListView(
           title: l10n.ranking,
-          count: history.rankingSongListManager.currentSongList.length,
-          getCoverSong: (index) =>
-              history.rankingSongListManager.currentSongList[index],
+          count: history.rankingSongList.length,
+          getPicture: (index) => history.rankingSongList[index].picture,
           onTap: (index) {
             showSongOptions(
               context: context,
-              song: history.rankingSongListManager.currentSongList[index],
+              song: history.rankingSongList[index],
               includeGoToArtist: true,
               includeGoToAlbum: true,
+            );
+          },
+          getBottomWidget: (index) {
+            final song = history.rankingSongList[index];
+            return ListTile(
+              contentPadding: .zero,
+              mouseCursor: SystemMouseCursors.click,
+              title: Text(getTitle(song), style: .new(overflow: .ellipsis)),
+              subtitle: Text(
+                '${getArtist(song)} - ${getAlbum(song)}',
+                style: .new(overflow: .ellipsis),
+              ),
+
+              visualDensity: .new(vertical: -4),
             );
           },
           verticalController: verticalController,
@@ -176,15 +182,28 @@ class _BigHomePanelState extends State<BigHomePanel> {
 
         _ListView(
           title: l10n.recently,
-          count: history.recentlySongListManager.currentSongList.length,
-          getCoverSong: (index) =>
-              history.recentlySongListManager.currentSongList[index],
+          count: history.recentlySongList.length,
+          getPicture: (index) => history.recentlySongList[index].picture,
           onTap: (index) {
             showSongOptions(
               context: context,
-              song: history.recentlySongListManager.currentSongList[index],
+              song: history.recentlySongList[index],
               includeGoToArtist: true,
               includeGoToAlbum: true,
+            );
+          },
+          getBottomWidget: (index) {
+            final song = history.recentlySongList[index];
+            return ListTile(
+              contentPadding: .zero,
+              mouseCursor: SystemMouseCursors.click,
+              title: Text(getTitle(song), style: .new(overflow: .ellipsis)),
+              subtitle: Text(
+                '${getArtist(song)} - ${getAlbum(song)}',
+                style: .new(overflow: .ellipsis),
+              ),
+
+              visualDensity: .new(vertical: -4),
             );
           },
           verticalController: verticalController,
@@ -193,11 +212,11 @@ class _BigHomePanelState extends State<BigHomePanel> {
         _ListView(
           title: l10n.playlists,
           count: playlistManager.playlists.length,
-          getCoverSong: (index) =>
-              playlistManager.playlists[index].getCoverSong(),
+          getPicture: (index) =>
+              playlistManager.playlists[index].getCoverSong()?.picture,
           onTap: (index) async {
-            final baseColor = await computeCoverArtColor(
-              playlistManager.playlists[index].getCoverSong(),
+            final baseColor = await computeColor(
+              playlistManager.playlists[index].getCoverSong()?.picture,
             );
             if (!context.mounted) {
               return;
@@ -213,14 +232,25 @@ class _BigHomePanelState extends State<BigHomePanel> {
               ),
             );
           },
-          getBottomTitle: (index) => index == 0
-              ? l10n.favorites
-              : playlistManager.playlists[index].name,
+          getBottomWidget: (index) {
+            return ListTile(
+              contentPadding: .zero,
+              mouseCursor: SystemMouseCursors.click,
+              title: Text(
+                index == 0
+                    ? l10n.favorites
+                    : playlistManager.playlists[index].name,
+                style: .new(overflow: .ellipsis),
+              ),
+
+              visualDensity: .new(vertical: -4),
+            );
+          },
           getTag: (index) =>
               'big${playlistManager.playlists[index].getCoverSong()?.id}${index == 0 ? l10n.favorites : playlistManager.playlists[index].name}',
           verticalController: verticalController,
           changeNotifier: (index) =>
-              playlistManager.playlists[index].songListManager.changeNotifier,
+              playlistManager.playlists[index].changeNotifier,
         ),
       ],
     );
@@ -230,9 +260,9 @@ class _BigHomePanelState extends State<BigHomePanel> {
 class _ListView extends StatefulWidget {
   final String title;
   final int count;
-  final MyAudioMetadata? Function(int) getCoverSong;
+  final MyPicture? Function(int) getPicture;
   final void Function(int) onTap;
-  final String Function(int)? getBottomTitle;
+  final Widget Function(int) getBottomWidget;
   final String Function(int)? getTag;
   final ScrollController verticalController;
   final ValueNotifier Function(int)? changeNotifier;
@@ -240,9 +270,9 @@ class _ListView extends StatefulWidget {
   const _ListView({
     required this.title,
     required this.count,
-    required this.getCoverSong,
+    required this.getPicture,
     required this.onTap,
-    this.getBottomTitle,
+    required this.getBottomWidget,
     this.getTag,
     required this.verticalController,
     this.changeNotifier,
@@ -267,6 +297,7 @@ class _ListViewState extends State<_ListView> {
       return SizedBox.shrink();
     }
     return Column(
+      mainAxisSize: .min,
       children: [
         Row(
           children: [
@@ -279,7 +310,7 @@ class _ListViewState extends State<_ListView> {
           ],
         ),
         SizedBox(
-          height: widget.getBottomTitle == null ? 280 : 260,
+          height: 300,
           child: ListView.separated(
             key: rowKey,
             controller: controller,
@@ -297,7 +328,7 @@ class _ListViewState extends State<_ListView> {
                   widget.changeNotifier?.call(index),
                 ]),
                 builder: (context, _) {
-                  final song = widget.getCoverSong(index);
+                  final picture = widget.getPicture(index);
                   return ScaleWidget(
                     onTap: () {
                       widget.onTap.call(index);
@@ -346,6 +377,7 @@ class _ListViewState extends State<_ListView> {
                       );
                     },
                     child: Column(
+                      mainAxisSize: .min,
                       children: [
                         SizedBox(height: 15),
                         widget.getTag != null
@@ -354,33 +386,17 @@ class _ListViewState extends State<_ListView> {
                                 child: CoverArtWidget(
                                   size: 200,
                                   borderRadius: 20,
-                                  song: song,
+                                  picture: picture,
                                 ),
                               )
                             : CoverArtWidget(
                                 size: 200,
                                 borderRadius: 20,
-                                song: song,
+                                picture: picture,
                               ),
                         SizedBox(
                           width: 180,
-                          child: ListTile(
-                            contentPadding: .zero,
-                            mouseCursor: SystemMouseCursors.click,
-                            title: Text(
-                              widget.getBottomTitle == null
-                                  ? getTitle(song)
-                                  : widget.getBottomTitle!.call(index),
-                              style: .new(overflow: .ellipsis),
-                            ),
-                            subtitle: widget.getBottomTitle == null
-                                ? Text(
-                                    '${getArtist(song)} - ${getAlbum(song)}',
-                                    style: .new(overflow: .ellipsis),
-                                  )
-                                : null,
-                            visualDensity: .new(vertical: -4),
-                          ),
+                          child: widget.getBottomWidget(index),
                         ),
                       ],
                     ),

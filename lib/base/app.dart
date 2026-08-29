@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:material_ui/material_ui.dart';
 import 'package:screen_corner_radius/screen_corner_radius.dart';
 
-const String versionNumber = '3.6.0';
+const String versionNumber = '3.7.0';
 
 late final Directory appDocsDir;
 late final Directory appSupportDir;
@@ -21,7 +21,12 @@ final lyricsPageThemeNotifier = ValueNotifier(ThemeType.vivid);
 
 final ValueNotifier<Locale?> localeNotifier = ValueNotifier(null);
 
-enum SourceType { local, webdav, subsonic, navidrome, emby }
+enum SourceType { local, webdav, navidrome, emby }
+
+SourceType sourceType = .navidrome;
+
+bool isStreamSource = true;
+bool isNotStreamSource = false;
 
 final ValueNotifier<String?> fontFamilyNotifier = ValueNotifier(null);
 

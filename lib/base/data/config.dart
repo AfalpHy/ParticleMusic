@@ -7,7 +7,6 @@ import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/services/emby_client.dart';
 import 'package:sylvakru/base/services/logger.dart';
 import 'package:sylvakru/base/services/navidrome_client.dart';
-import 'package:sylvakru/base/services/subsonic_client.dart';
 import 'package:sylvakru/base/services/webdav_client.dart';
 import 'package:sylvakru/layer/premium_layer.dart';
 
@@ -87,19 +86,6 @@ class Config {
       );
     }
 
-    final subsonicMap = map['subsonic'] as Map<String, dynamic>?;
-    if (subsonicMap != null) {
-      String? securePassword = await _trySecureRead('subsonic_password');
-      securePassword ??= subsonicMap['password'];
-      securePassword ??= '';
-
-      subsonicClient = SubsonicClient(
-        baseUrl: subsonicMap['baseUrl'],
-        username: subsonicMap['username'],
-        password: securePassword,
-      );
-    }
-
     final navidromeMap = map['navidrome'] as Map<String, dynamic>?;
     if (navidromeMap != null) {
       String? securePassword = await _trySecureRead('navidrome_password');
@@ -124,7 +110,7 @@ class Config {
         username: embyMap['username'],
         password: securePassword,
       );
-      await embyClient!.login();
+      await (embyClient as EmbyClient).login();
     }
 
     if (_hasPlainTextPassword(map)) {
@@ -144,7 +130,6 @@ class Config {
     // the plaintext as a fallback in that one field until a write actually
     // succeeds, instead of losing it outright.
     bool webdavSecured = true;
-    bool subsonicSecured = true;
     bool navidromeSecured = true;
     bool embySecured = true;
 
@@ -154,12 +139,7 @@ class Config {
         webdavClient!.password,
       );
     }
-    if (subsonicClient != null) {
-      subsonicSecured = await _trySecureWrite(
-        'subsonic_password',
-        subsonicClient!.password,
-      );
-    }
+
     if (navidromeClient != null) {
       navidromeSecured = await _trySecureWrite(
         'navidrome_password',
@@ -180,13 +160,6 @@ class Config {
             'baseUrl': webdavClient!.baseUrl,
             'username': webdavClient!.username,
             if (!webdavSecured) 'password': webdavClient!.password,
-          },
-
-        if (subsonicClient != null)
-          'subsonic': {
-            'baseUrl': subsonicClient!.baseUrl,
-            'username': subsonicClient!.username,
-            if (!subsonicSecured) 'password': subsonicClient!.password,
           },
 
         if (navidromeClient != null)

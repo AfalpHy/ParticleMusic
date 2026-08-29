@@ -69,6 +69,6 @@ LazyDatabase openMetadataDB(String name) {
 
     final file = File(p.join(dir.path, name));
 
-    return NativeDatabase(file);
+    return NativeDatabase.createInBackground(file);
   });
 }

@@ -1,8 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:smooth_corner/smooth_corner.dart';
-import 'package:sylvakru/base/data/folder.dart';
 import 'package:sylvakru/base/data/library.dart';
-import 'package:sylvakru/base/services/metadata_service.dart';
+import 'package:sylvakru/base/services/picture_service.dart';
 import 'package:sylvakru/base/utils/media_query.dart';
 import 'package:sylvakru/base/utils/metadata_utils.dart';
 import 'package:sylvakru/base/utils/zoom_page_route.dart';
@@ -24,16 +23,9 @@ class _BigFoldersPanelState extends State<BigFoldersPanel> {
         horizontal: isTooNarrow(context) ? 20 : 40,
         vertical: 75 + getTopOffset(context),
       ),
-      itemCount:
-          library.localFolderList.length + library.webdavFolderList.length,
+      itemCount: library.folderList.length,
       itemBuilder: (_, index) {
-        late Folder folder;
-        if (index < library.localFolderList.length) {
-          folder = library.localFolderList[index];
-        } else {
-          folder =
-              library.webdavFolderList[index - library.localFolderList.length];
-        }
+        final folder = library.folderList[index];
         return ValueListenableBuilder(
           valueListenable: folder.changeNotifier,
           builder: (context, value, child) {
@@ -57,7 +49,7 @@ class _BigFoldersPanelState extends State<BigFoldersPanel> {
                           child: CoverArtWidget(
                             size: 100,
                             borderRadius: 10,
-                            song: coverSong,
+                            picture: coverSong?.picture,
                           ),
                         );
                       },
@@ -73,8 +65,8 @@ class _BigFoldersPanelState extends State<BigFoldersPanel> {
                   ],
                 ),
                 onTap: () async {
-                  final baseColor = await computeCoverArtColor(
-                    getFirstSong(folder.songList),
+                  final baseColor = await computeColor(
+                    getFirstSong(folder.songList)?.picture,
                   );
                   if (!context.mounted) {
                     return;

@@ -1,10 +1,10 @@
+import 'package:lpinyin/lpinyin.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:sylvakru/base/app.dart';
-import 'package:sylvakru/base/data/song_list_manager.dart';
 import 'package:sylvakru/base/services/interaction.dart';
+import 'package:sylvakru/base/services/picture_service.dart';
 import 'package:sylvakru/base/widgets/cover_art_widget.dart';
 import 'package:sylvakru/layer/layers_manager.dart';
-import 'package:sylvakru/base/data/library.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
 import 'package:sylvakru/base/utils/metadata_utils.dart';
 
@@ -12,10 +12,11 @@ final artistAlbumManager = ArtistAlbumManager();
 
 class ArtistAlbumManager {
   List<Artist> artistList = [];
-  Map<String, Artist> name2Artist = {};
+  Map<String, Artist> artistMap = {};
 
   List<Album> albumList = [];
-  Map<String, Album> name2Album = {};
+  // streamSoure will has duplicate name album
+  Map<String, Album> albumMap = {};
   final updateNotifier = ValueNotifier(0);
 
   final artistsIsListViewNotifier = ValueNotifier(true);
@@ -46,50 +47,42 @@ class ArtistAlbumManager {
   }
 
   void classify() {
-    for (final sourceType in SourceType.values) {
-      for (final song in library.songListManager.getSongList(sourceType)) {
-        _processSong(song);
-      }
-    }
-
     sortArtists();
     sortAlbums();
 
     for (final album in albumList) {
       album.sort();
-      album.songListManager.resetSourceType();
     }
 
     for (final artist in artistList) {
       artist.combineAlbums();
-      artist.songListManager.resetSourceType();
     }
 
     updateNotifier.value++;
   }
 
-  void _processSong(MyAudioMetadata song) {
+  void processSong(MyAudioMetadata song) {
     final albumName = getAlbum(song);
 
-    Album? album = name2Album[albumName];
+    Album? album = albumMap[albumName];
     if (album == null) {
       album = Album(albumName);
       albumList.add(album);
-      name2Album[albumName] = album;
+      albumMap[albumName] = album;
     }
 
     if (song.year != null && album.year == null) {
       album.year = song.year;
     }
 
-    album.songListManager.getSongList(song.sourceType).add(song);
+    album.songList.add(song);
 
     for (String artistName in getArtists(getArtist(song))) {
-      Artist? artist = name2Artist[artistName];
+      Artist? artist = artistMap[artistName];
       if (artist == null) {
         artist = Artist(artistName);
         artistList.add(artist);
-        name2Artist[artistName] = artist;
+        artistMap[artistName] = artist;
       }
       artist.albumSet.add(album);
     }
@@ -98,9 +91,9 @@ class ArtistAlbumManager {
   void sortArtists() {
     artistList.sort((a, b) {
       if (artistsIsAscendingNotifier.value) {
-        return compareMixed(a.name, b.name);
+        return a.compareName.compareTo(b.compareName);
       } else {
-        return compareMixed(b.name, a.name);
+        return b.compareName.compareTo(a.compareName);
       }
     });
   }
@@ -108,9 +101,9 @@ class ArtistAlbumManager {
   void sortAlbums() {
     albumList.sort((a, b) {
       if (albumsIsAscendingNotifier.value) {
-        return compareMixed(a.name, b.name);
+        return a.compareName.compareTo(b.compareName);
       } else {
-        return compareMixed(b.name, a.name);
+        return b.compareName.compareTo(a.compareName);
       }
     });
   }
@@ -155,53 +148,50 @@ class ArtistAlbumManager {
 
   void clear() {
     artistList = [];
-    name2Artist = {};
+    artistMap = {};
     albumList = [];
-    name2Album = {};
+    albumMap = {};
     updateNotifier.value++;
   }
 }
 
 abstract class ArtistAlbumBase {
+  String? id;
   final String name;
+  late final String compareName;
 
-  SongListManager songListManager = SongListManager();
+  final List<MyAudioMetadata> songList = [];
 
   final bool isArtist;
-  ArtistAlbumBase(this.name, this.isArtist);
 
-  bool get isEmpty => songListManager.isEmpty;
+  MyPicture? _picture;
+  MyPicture get picture => isStreamSource ? _picture! : getCoverSong().picture;
 
-  MyAudioMetadata getCoverSong() {
-    return songListManager.currentSongList.first;
+  ArtistAlbumBase(this.name, this.isArtist, {this.id, String? coverArtId}) {
+    id ??= name;
+    compareName = PinyinHelper.getPinyinE(name);
+    if (coverArtId != null) {
+      _picture = MyPicture(coverArtId);
+    }
   }
 
-  int get totalCount => songListManager.totalCount;
+  bool get isEmpty => songList.isEmpty;
+
+  MyAudioMetadata getCoverSong() {
+    return songList.first;
+  }
+
+  int get totalCount => songList.length;
 }
 
 class Artist extends ArtistAlbumBase {
-  Artist(String name) : super(name, true);
+  Artist(String name, {super.id, super.coverArtId}) : super(name, false);
 
   Set<Album> albumSet = {};
 
   List<Album> albumList = [];
 
-  void _fetchSongs(
-    List<MyAudioMetadata> fromSongList,
-    List<MyAudioMetadata> toSongList,
-  ) {
-    for (final song in fromSongList) {
-      for (String artistName in getArtists(getArtist(song))) {
-        if (artistName == name) {
-          toSongList.add(song);
-          break;
-        }
-      }
-    }
-  }
-
   void combineAlbums() {
-    songListManager.clear();
     albumSet.removeWhere((album) => album.isEmpty);
     albumList = albumSet.toList();
     albumList.sort((a, b) {
@@ -212,19 +202,15 @@ class Artist extends ArtistAlbumBase {
     });
 
     for (final album in albumList) {
-      for (final sourceType in SourceType.values) {
-        _fetchSongs(
-          album.songListManager.getSongList(sourceType),
-          songListManager.getSongList(sourceType),
-        );
-      }
+      songList.addAll(album.artist2SongList[name]!);
     }
   }
 }
 
 class Album extends ArtistAlbumBase {
-  Album(String name) : super(name, false);
+  Album(String name, {super.id, super.coverArtId}) : super(name, false);
 
+  Map<String, List<MyAudioMetadata>> artist2SongList = {};
   int? year;
 
   int _sort(MyAudioMetadata a, MyAudioMetadata b) {
@@ -241,8 +227,12 @@ class Album extends ArtistAlbumBase {
   }
 
   void sort() {
-    for (final sourceType in SourceType.values) {
-      songListManager.getSongList(sourceType).sort(_sort);
+    songList.sort((a, b) => _sort(a, b));
+    for (final song in songList) {
+      for (String artistName in getArtists(getArtist(song))) {
+        final tmp = artist2SongList.putIfAbsent(artistName, () => []);
+        tmp.add(song);
+      }
     }
   }
 }
@@ -265,7 +255,7 @@ void showArtistEntries(BuildContext context, List<String> artists) {
                 leading: CoverArtWidget(
                   size: 50,
                   borderRadius: 5,
-                  song: artistAlbumManager.name2Artist[name]!.getCoverSong(),
+                  picture: artistAlbumManager.artistMap[name]!.picture,
                 ),
                 title: Text(name),
                 onTap: () async {
@@ -274,7 +264,7 @@ void showArtistEntries(BuildContext context, List<String> artists) {
 
                   layersManager.switchRootLayer('artists');
                   layersManager.pushDetailIfNeed(
-                    artistAlbumManager.name2Artist[name],
+                    artistAlbumManager.artistMap[name],
                   );
                 },
               ),

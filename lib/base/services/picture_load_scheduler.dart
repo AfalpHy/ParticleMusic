@@ -17,7 +17,7 @@ class PictureLoadScheduler {
 
     final completer = Completer<void>();
 
-    final task = _Task(() async {
+    final task = _Task(key, () async {
       try {
         await loader();
         completer.complete();
@@ -33,7 +33,9 @@ class PictureLoadScheduler {
     _inFlight[key] = completer.future;
     _queue.add(task);
 
-    _schedule();
+    if (_running == 0) {
+      _schedule();
+    }
 
     return completer.future;
   }
@@ -41,13 +43,20 @@ class PictureLoadScheduler {
   void _schedule() {
     while (_running < maxConcurrent && _queue.isNotEmpty) {
       final task = _queue.removeAt(0);
-      _running++;
-      task.run();
+      if (_inFlight.containsKey(task.key)) {
+        _running++;
+        task.run();
+      }
     }
+  }
+
+  void cancel(String key) {
+    _inFlight.remove(key);
   }
 }
 
 class _Task {
+  final String key;
   final Future<void> Function() run;
-  _Task(this.run);
+  _Task(this.key, this.run);
 }

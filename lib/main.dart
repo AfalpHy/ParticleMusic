@@ -15,6 +15,7 @@ import 'package:sylvakru/base/services/single_instance.dart';
 import 'package:sylvakru/l10n/generated/app_localizations.dart';
 import 'package:sylvakru/l10n/generated/app_localizations_en.dart';
 import 'package:sylvakru/base/data/loader.dart';
+import 'package:sylvakru/layer/layers_manager.dart';
 import 'package:sylvakru/portrait_view/custom_page_transition_builder.dart';
 import 'package:sylvakru/view_entry.dart';
 import 'dart:async';
@@ -68,12 +69,14 @@ Future<void> main() async {
   await initAudioService();
 
   await Loader.init();
-  await Loader.load();
   await LiquidGlassWidgets.initialize();
   if (isTV) {
     FocusManager.instance.highlightStrategy =
         FocusHighlightStrategy.alwaysTraditional;
+  } else {
+    layersManager.switchRootLayer('songs');
   }
+
   runApp(
     ListenableBuilder(
       listenable: Listenable.merge([
@@ -247,7 +250,7 @@ Future<void> main() async {
       ),
     ),
   );
-
+  await Loader.load();
   logger.output('App start');
 }
 
