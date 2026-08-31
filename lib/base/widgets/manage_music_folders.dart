@@ -231,7 +231,7 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
     if (await showConfirmDialog(context, l10n.confirm)) {
       if (Loader.busy) {
         if (context.mounted) {
-          showCenterMessage(context, l10n.syncingTryLater);
+          showCenterMessage(l10n.syncingTryLater);
         }
         return;
       }
@@ -384,14 +384,14 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
 
     if (!isOnMyiPhone && !path.contains(appDocsDir.path)) {
       if (context.mounted) {
-        showCenterMessage(context, l10n.folderNotSupportedYet);
+        showCenterMessage(l10n.folderNotSupportedYet);
       }
       return false;
     }
 
     if (isOnMyiPhone && !await BookmarkService.active(path)) {
       if (context.mounted) {
-        showCenterMessage(context, l10n.getPermissionFailed);
+        showCenterMessage(l10n.getPermissionFailed);
       }
       return false;
     }
@@ -431,7 +431,7 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
 
     if (currentFolderIdList.contains(id)) {
       if (context.mounted) {
-        showCenterMessage(context, AppLocalizations.of(context).folderExist);
+        showCenterMessage(AppLocalizations.of(context).folderExist);
       }
       return;
     }
@@ -486,7 +486,7 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
 
   Future<bool> _isWebdavValid(BuildContext context) async {
     if (webdavClient == null) {
-      showCenterMessage(context, 'Please connect to WebDAV first');
+      showCenterMessage('Please connect to WebDAV first');
       return false;
     }
     try {
@@ -495,7 +495,7 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
       if (!context.mounted) {
         return false;
       }
-      showCenterMessage(context, 'Can not connect to WebDAV');
+      showCenterMessage('Can not connect to WebDAV');
       return false;
     }
     return true;
@@ -517,7 +517,7 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
     }
     if (currentFolderIdList.contains(id)) {
       if (context.mounted) {
-        showCenterMessage(context, AppLocalizations.of(context).folderExist);
+        showCenterMessage(AppLocalizations.of(context).folderExist);
       }
       return;
     }

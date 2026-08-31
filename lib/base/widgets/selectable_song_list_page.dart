@@ -234,7 +234,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
               textController: textController,
               onSearchTextChanged: updateSongList,
               isSearchNotifier: isSearchNotifier,
-              song: getFirstSong(songList),
+              picture: null, // TODO
               useCurrentSong: false,
             ),
             moreButton(context),
@@ -379,7 +379,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                                   );
                                 }
                               }
-                              showCenterMessage(context, 'Added to Play Queue');
+                              showCenterMessage('Added to Play Queue');
                               if (audioHandler.currentIndex == -1) {
                                 await audioHandler.skipToNext();
                                 audioHandler.play();
@@ -418,7 +418,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                                   );
                                 }
                               }
-                              showCenterMessage(context, 'Added to Play Queue');
+                              showCenterMessage('Added to Play Queue');
                               if (audioHandler.currentIndex == -1) {
                                 await audioHandler.skipToNext();
                                 audioHandler.play();
@@ -509,12 +509,6 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                                   }
                                   playlist!.remove(tmpSongList);
                                   updateSongList();
-                                  if (context.mounted) {
-                                    showCenterMessage(
-                                      context,
-                                      'Successfully Deleted',
-                                    );
-                                  }
                                 }
                               }
                             },

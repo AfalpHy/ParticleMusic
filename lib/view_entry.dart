@@ -10,7 +10,6 @@ import 'package:sylvakru/base/data/loader.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/services/keyboard.dart';
-import 'package:sylvakru/base/services/network_error_reporter.dart';
 import 'package:sylvakru/base/services/system_ui_service.dart';
 import 'package:sylvakru/base/services/taskbar_service.dart';
 import 'package:sylvakru/base/utils/dynamic_lyrics_page_route.dart';
@@ -70,18 +69,6 @@ class _ViewEntryState extends State<ViewEntry> with WidgetsBindingObserver {
         setupTaskbar();
       }
     });
-
-    networkErrorNotifier.addListener(_onNetworkError);
-  }
-
-  // Server clients report failures here since they have no BuildContext of
-  // their own; this is the single place that turns that into something the
-  // user actually sees, instead of the failure only ever reaching the log.
-  void _onNetworkError() {
-    final message = lastNetworkErrorMessage;
-    if (message != null && mounted) {
-      showCenterMessage(context, message, duration: 3000);
-    }
   }
 
   @override
@@ -89,7 +76,6 @@ class _ViewEntryState extends State<ViewEntry> with WidgetsBindingObserver {
     if (Platform.isAndroid) {
       WidgetsBinding.instance.removeObserver(this);
     }
-    networkErrorNotifier.removeListener(_onNetworkError);
     super.dispose();
   }
 
@@ -137,7 +123,7 @@ class _ViewEntryState extends State<ViewEntry> with WidgetsBindingObserver {
         } else {
           systemCanPop = true;
           if (context.mounted) {
-            showCenterMessage(context, AppLocalizations.of(context).tapAgain);
+            showCenterMessage(AppLocalizations.of(context).tapAgain);
           }
           _exitTimer = Timer(const Duration(seconds: 2), () {
             systemCanPop = false;

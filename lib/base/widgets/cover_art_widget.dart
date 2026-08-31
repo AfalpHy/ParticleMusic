@@ -3,7 +3,6 @@ import 'dart:io';
 import 'package:material_ui/material_ui.dart';
 import 'package:sylvakru/base/asset_images.dart';
 import 'package:smooth_corner/smooth_corner.dart';
-import 'package:sylvakru/base/services/picture_load_scheduler.dart';
 import 'package:sylvakru/base/services/picture_service.dart';
 
 class CoverArtWidget extends StatelessWidget {
@@ -46,7 +45,7 @@ class CoverArtWidget extends StatelessWidget {
     }
 
     if (picture!.isLoaded) {
-      return imageWidget(picture!.path);
+      return picture!.isExist ? imageWidget(picture!.path) : musicNote();
     }
     return _FuturePicture(
       picture: picture!,
@@ -97,7 +96,7 @@ class _FuturePicture extends StatefulWidget {
 class _FuturePictureState extends State<_FuturePicture> {
   @override
   void dispose() {
-    pictureLoadScheduler.cancel(widget.picture.id);
+    // TODO: canel load
     super.dispose();
   }
 
@@ -109,7 +108,6 @@ class _FuturePictureState extends State<_FuturePicture> {
         if (asyncSnapshot.connectionState == ConnectionState.waiting) {
           return SizedBox(width: widget.size, height: widget.size);
         }
-
         if (asyncSnapshot.hasError) {
           return widget.musicNote();
         }

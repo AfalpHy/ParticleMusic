@@ -24,7 +24,7 @@ extension _CollectionListPage on CollectionListState {
           Loader.stateNotifier,
         ]),
         builder: (context, child) {
-          if (Loader.busy || (currentPictureList.isEmpty && !reachEnd)) {
+          if (firstLoading) {
             return Center(
               child: CircularProgressIndicator(color: iconColor.value),
             );
@@ -171,7 +171,6 @@ extension _CollectionListPage on CollectionListState {
                         valueNotifier: isAscendingNotifier!,
                         onToggleCallBack: () {
                           setting.save();
-                          updateCurrentList();
                         },
                       ),
                     );

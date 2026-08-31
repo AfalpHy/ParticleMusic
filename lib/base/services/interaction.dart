@@ -30,12 +30,18 @@ import 'package:sylvakru/layer/layers_manager.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 import 'package:sylvakru/layer/premium_layer.dart';
 
-void showCenterMessage(
-  BuildContext context,
-  String message, {
-  int duration = 2000,
-}) {
-  final overlay = Overlay.of(context);
+DateTime? _lastShowTime;
+
+void showCenterMessage(String message, {int duration = 2000}) {
+  final now = DateTime.now();
+  if (_lastShowTime != null &&
+      now.difference(_lastShowTime!) < const Duration(seconds: 5)) {
+    return;
+  }
+  _lastShowTime = now;
+
+  final overlay = globalNavigatorKey.currentState?.overlay;
+  if (overlay == null) return;
   final overlayEntry = OverlayEntry(
     builder: (context) => Center(
       child: ConstrainedBox(

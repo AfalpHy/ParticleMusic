@@ -9,6 +9,7 @@ import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/widgets/buttons.dart';
 import 'package:sylvakru/base/widgets/cover_art_widget.dart';
 import 'package:sylvakru/base/widgets/playlist_widgets.dart';
+import 'package:sylvakru/base/widgets/song_info.dart';
 import 'package:sylvakru/l10n/generated/app_localizations.dart';
 import 'package:sylvakru/base/services/keyboard.dart';
 import 'package:sylvakru/base/utils/metadata_utils.dart';
@@ -404,6 +405,21 @@ class PlayQueuePageState extends State<PlayQueuePage> {
                   },
                 ),
               );
+
+              if (selectedSongList.length == 1) {
+                menuItems.add(
+                  MenuItem(
+                    text: l10n.songInfo,
+                    iconData: Icons.info_outline_rounded,
+                    callback: () {
+                      showAnimationDialog(
+                        context: context,
+                        child: SongInfo(song: selectedSongList[0]),
+                      );
+                    },
+                  ),
+                );
+              }
 
               menuItems.add(
                 MenuItem(

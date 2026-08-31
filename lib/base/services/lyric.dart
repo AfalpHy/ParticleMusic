@@ -4,7 +4,7 @@ import 'dart:ui';
 import 'package:charset/charset.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
-import 'package:sylvakru/base/services/navidrome_client.dart';
+import 'package:sylvakru/base/services/stream_client.dart';
 import 'package:sylvakru/base/services/webdav_client.dart';
 import 'package:sylvakru/base/services/logger.dart';
 import 'package:sylvakru/l10n/generated/app_localizations.dart';
@@ -99,7 +99,7 @@ Future<void> setParsedLyrics(MyAudioMetadata song) async {
   }
 
   if (song.sourceType == .navidrome) {
-    final lyrics = await navidromeClient!.getLyricsById(song.id);
+    final lyrics = await streamClient!.getLyricsById(song.id);
     lines = lyrics.split(RegExp(r'[\n]'));
   } else if (song.sourceType == .emby) {
     result.lines.add(LyricLine(Duration.zero, l10n.noLyrics, []));

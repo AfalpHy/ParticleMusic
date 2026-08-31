@@ -26,8 +26,8 @@ class Library {
 
   final ValueNotifier<double> cacheSizeNotifier = ValueNotifier(0);
 
-  final Map<String, MyAudioMetadata> id2Song = {};
-  final List<MyAudioMetadata> songList = [];
+  Map<String, MyAudioMetadata> id2Song = {};
+  List<MyAudioMetadata> songList = [];
 
   final changeNotifier = ValueNotifier(0);
 
@@ -246,10 +246,11 @@ class Library {
       return;
     }
     final savePath = song.cachePath!;
+
     if (song.sourceType == .webdav) {
-      await webdavClient!.download(remotePath: song.path!, localPath: savePath);
+      await webdavClient?.download(remotePath: song.path!, localPath: savePath);
     } else {
-      await getStreamClient(song.sourceType)!.downloadSong(song.id, savePath);
+      await streamClient?.downloadSong(song.id, savePath);
     }
     final tmp = File(savePath);
     if (await tmp.exists()) {
@@ -498,8 +499,8 @@ class Library {
         await pool.close();
         await _saveMetadata();
       default:
-        id2Song.clear();
-        songList.clear();
+        id2Song = {};
+        songList = [];
     }
 
     canModify = true;

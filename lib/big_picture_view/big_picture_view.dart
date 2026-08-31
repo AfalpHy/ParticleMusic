@@ -181,23 +181,7 @@ class _BigPictureViewState extends State<BigPictureView> {
                   },
                   icon: ImageIcon(bigPictureModeImage),
                 ),
-              if (!isMobile && !isMaximizedNotifier.value)
-                IconButton(
-                  onPressed: () async {
-                    if (isFullScreenNotifier.value) {
-                      isFullScreenNotifier.value = false;
-                      await windowManager.setFullScreen(false);
-                    } else {
-                      isFullScreenNotifier.value = true;
-                      await windowManager.setFullScreen(true);
-                    }
-                  },
-                  icon: ImageIcon(
-                    isFullScreenNotifier.value
-                        ? fullscreenExitImage
-                        : fullscreenImage,
-                  ),
-                ),
+
               if (!isMobile && !isFullScreenNotifier.value) ...[
                 IconButton(
                   onPressed: () {
@@ -263,8 +247,33 @@ class _BigPictureViewState extends State<BigPictureView> {
                     color: Colors.transparent,
                     child: Row(
                       children: [
-                        SizedBox(width: 30),
+                        SizedBox(width: isMobile ? 10 : 20),
 
+                        if (!isMobile && !isMaximizedNotifier.value)
+                          GlassContainer(
+                            settings: LiquidGlassSettings(
+                              glassColor: glassColor.value,
+                            ),
+                            shape: const LiquidRoundedSuperellipse(
+                              borderRadius: 30,
+                            ),
+                            child: IconButton(
+                              onPressed: () async {
+                                if (isFullScreenNotifier.value) {
+                                  isFullScreenNotifier.value = false;
+                                  await windowManager.setFullScreen(false);
+                                } else {
+                                  isFullScreenNotifier.value = true;
+                                  await windowManager.setFullScreen(true);
+                                }
+                              },
+                              icon: ImageIcon(
+                                isFullScreenNotifier.value
+                                    ? fullscreenExitImage
+                                    : fullscreenImage,
+                              ),
+                            ),
+                          ),
                         // Expanded(
                         //   child: GlassContainer(
                         //     settings: LiquidGlassSettings(
@@ -298,7 +307,7 @@ class _BigPictureViewState extends State<BigPictureView> {
                   ),
                 ),
                 Expanded(
-                  flex: 2,
+                  flex: 3,
                   child: LayoutBuilder(
                     builder: (context, constraints) {
                       return GlassContainer(
@@ -467,7 +476,11 @@ class _BigPictureViewState extends State<BigPictureView> {
                 child: ValueListenableBuilder(
                   valueListenable: _currentIndexNotifier,
                   builder: (context, value, child) {
-                    if (value == 0 || value == 4 || value >= 7) {
+                    if (value == 0 ||
+                        value == 4 ||
+                        value >= 7 ||
+                        (sourceType == .navidrome &&
+                            (value == 5 || value == 6))) {
                       return SizedBox.shrink();
                     }
                     return Row(

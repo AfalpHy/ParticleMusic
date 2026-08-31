@@ -3,7 +3,6 @@ import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/services/picture_service.dart';
 import 'package:sylvakru/base/utils/contrast_color_generator.dart';
 import 'package:sylvakru/layer/lyrics_page_layer.dart';
-import 'package:sylvakru/base/my_audio_metadata.dart';
 
 final colorManager = ColorManager();
 
@@ -326,21 +325,21 @@ class ColorManager {
     }
   }
 
-  Color? getSpecificMainPageCoverArtBaseColorForm(MyAudioMetadata? song) {
+  Color? getSpecificMainPageCoverArtBaseColorForm(MyPicture? picture) {
     return mainPageThemeNotifier.value == .vivid
-        ? song == null
+        ? picture == null
               ? Colors.grey
-              : song.picture.color
+              : picture.color
         : isMobile
         ? pageBackgroundColor.value
         : panelColor.value;
   }
 
-  Color? getSpecificMainPageSearchFieldColorForm(MyAudioMetadata? song) {
+  Color? getSpecificMainPageSearchFieldColorForm(MyPicture? picture) {
     return mainPageThemeNotifier.value == .vivid
-        ? song == null
+        ? picture == null
               ? Colors.grey.withAlpha(75)
-              : song.picture.color?.withAlpha(75)
+              : picture.color?.withAlpha(75)
         : searchFieldColor.value;
   }
 

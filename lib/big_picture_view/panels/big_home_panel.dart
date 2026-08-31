@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/rendering.dart';
+import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/data/artist_album.dart';
 import 'package:sylvakru/base/data/history.dart';
 import 'package:sylvakru/base/data/library.dart';
@@ -26,6 +27,47 @@ class BigHomePanel extends StatefulWidget {
 
 class _BigHomePanelState extends State<BigHomePanel> {
   final verticalController = ScrollController();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
+      if (isStreamSource) {
+        if (artistAlbumManager.artistList.isEmpty) {
+          artistAlbumManager.loadArtists().then((_) {
+            if (mounted) {
+              setState(() {});
+            }
+          });
+        }
+
+        if (artistAlbumManager.albumList.isEmpty) {
+          artistAlbumManager.loadAlbums().then((_) {
+            if (mounted) {
+              setState(() {});
+            }
+          });
+        }
+
+        if (sourceType == .navidrome) {
+          if (history.rankingAlbumList.isEmpty) {
+            history.loadAlbums(true).then((_) {
+              if (mounted) {
+                setState(() {});
+              }
+            });
+          }
+          if (history.recentlyAlbumList.isEmpty) {
+            history.loadAlbums(false).then((_) {
+              if (mounted) {
+                setState(() {});
+              }
+            });
+          }
+        }
+      }
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -153,17 +195,35 @@ class _BigHomePanelState extends State<BigHomePanel> {
 
         _ListView(
           title: l10n.ranking,
-          count: history.rankingSongList.length,
-          getPicture: (index) => history.rankingSongList[index].picture,
+          count: sourceType == .navidrome
+              ? history.rankingAlbumList.length
+              : history.rankingSongList.length,
+          getPicture: (index) => sourceType == .navidrome
+              ? history.rankingAlbumList[index].picture
+              : history.rankingSongList[index].picture,
           onTap: (index) {
-            showSongOptions(
-              context: context,
-              song: history.rankingSongList[index],
-              includeGoToArtist: true,
-              includeGoToAlbum: true,
-            );
+            if (sourceType == .navidrome) {
+            } else {
+              showSongOptions(
+                context: context,
+                song: history.rankingSongList[index],
+                includeGoToArtist: true,
+                includeGoToAlbum: true,
+              );
+            }
           },
           getBottomWidget: (index) {
+            if (sourceType == .navidrome) {
+              return ListTile(
+                contentPadding: .zero,
+                mouseCursor: SystemMouseCursors.click,
+                title: Text(
+                  history.rankingAlbumList[index].name,
+                  style: .new(overflow: .ellipsis),
+                ),
+                visualDensity: .new(vertical: -4),
+              );
+            }
             final song = history.rankingSongList[index];
             return ListTile(
               contentPadding: .zero,
@@ -182,17 +242,35 @@ class _BigHomePanelState extends State<BigHomePanel> {
 
         _ListView(
           title: l10n.recently,
-          count: history.recentlySongList.length,
-          getPicture: (index) => history.recentlySongList[index].picture,
+          count: sourceType == .navidrome
+              ? history.recentlyAlbumList.length
+              : history.recentlySongList.length,
+          getPicture: (index) => sourceType == .navidrome
+              ? history.recentlyAlbumList[index].picture
+              : history.recentlySongList[index].picture,
           onTap: (index) {
-            showSongOptions(
-              context: context,
-              song: history.recentlySongList[index],
-              includeGoToArtist: true,
-              includeGoToAlbum: true,
-            );
+            if (sourceType == .navidrome) {
+            } else {
+              showSongOptions(
+                context: context,
+                song: history.recentlySongList[index],
+                includeGoToArtist: true,
+                includeGoToAlbum: true,
+              );
+            }
           },
           getBottomWidget: (index) {
+            if (sourceType == .navidrome) {
+              return ListTile(
+                contentPadding: .zero,
+                mouseCursor: SystemMouseCursors.click,
+                title: Text(
+                  history.recentlyAlbumList[index].name,
+                  style: .new(overflow: .ellipsis),
+                ),
+                visualDensity: .new(vertical: -4),
+              );
+            }
             final song = history.recentlySongList[index];
             return ListTile(
               contentPadding: .zero,
@@ -209,48 +287,53 @@ class _BigHomePanelState extends State<BigHomePanel> {
           verticalController: verticalController,
         ),
 
-        _ListView(
-          title: l10n.playlists,
-          count: playlistManager.playlists.length,
-          getPicture: (index) =>
-              playlistManager.playlists[index].getCoverSong()?.picture,
-          onTap: (index) async {
-            final baseColor = await computeColor(
-              playlistManager.playlists[index].getCoverSong()?.picture,
-            );
-            if (!context.mounted) {
-              return;
-            }
-            Navigator.of(context).push(
-              ZoomPageRoute(
-                builder: (context) {
-                  return BigSinglePlaylistPanel(
-                    playlist: playlistManager.playlists[index],
-                    baseColor: baseColor,
-                  );
-                },
-              ),
-            );
-          },
-          getBottomWidget: (index) {
-            return ListTile(
-              contentPadding: .zero,
-              mouseCursor: SystemMouseCursors.click,
-              title: Text(
-                index == 0
-                    ? l10n.favorites
-                    : playlistManager.playlists[index].name,
-                style: .new(overflow: .ellipsis),
-              ),
+        ValueListenableBuilder(
+          valueListenable: playlistManager.updateNotifier,
+          builder: (context, value, child) {
+            return _ListView(
+              title: l10n.playlists,
+              count: playlistManager.playlists.length,
+              getPicture: (index) =>
+                  playlistManager.playlists[index].getCoverSong()?.picture,
+              onTap: (index) async {
+                final baseColor = await computeColor(
+                  playlistManager.playlists[index].getCoverSong()?.picture,
+                );
+                if (!context.mounted) {
+                  return;
+                }
+                Navigator.of(context).push(
+                  ZoomPageRoute(
+                    builder: (context) {
+                      return BigSinglePlaylistPanel(
+                        playlist: playlistManager.playlists[index],
+                        baseColor: baseColor,
+                      );
+                    },
+                  ),
+                );
+              },
+              getBottomWidget: (index) {
+                return ListTile(
+                  contentPadding: .zero,
+                  mouseCursor: SystemMouseCursors.click,
+                  title: Text(
+                    index == 0
+                        ? l10n.favorites
+                        : playlistManager.playlists[index].name,
+                    style: .new(overflow: .ellipsis),
+                  ),
 
-              visualDensity: .new(vertical: -4),
+                  visualDensity: .new(vertical: -4),
+                );
+              },
+              getTag: (index) =>
+                  'big${playlistManager.playlists[index].getCoverSong()?.id}${index == 0 ? l10n.favorites : playlistManager.playlists[index].name}',
+              verticalController: verticalController,
+              changeNotifier: (index) =>
+                  playlistManager.playlists[index].changeNotifier,
             );
           },
-          getTag: (index) =>
-              'big${playlistManager.playlists[index].getCoverSong()?.id}${index == 0 ? l10n.favorites : playlistManager.playlists[index].name}',
-          verticalController: verticalController,
-          changeNotifier: (index) =>
-              playlistManager.playlists[index].changeNotifier,
         ),
       ],
     );
@@ -310,7 +393,7 @@ class _ListViewState extends State<_ListView> {
           ],
         ),
         SizedBox(
-          height: 300,
+          height: 280,
           child: ListView.separated(
             key: rowKey,
             controller: controller,

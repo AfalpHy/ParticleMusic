@@ -4,7 +4,6 @@ import 'dart:io';
 
 import 'package:dio/dio.dart';
 import 'package:sylvakru/base/services/logger.dart';
-import 'package:sylvakru/base/services/network_error_reporter.dart';
 import 'package:path/path.dart' as p;
 import 'package:xml/xml.dart';
 
@@ -100,12 +99,9 @@ class WebDavClient {
         logger.output(e.response!.data.toString());
       }
 
-      reportNetworkError('$runtimeType', 'network error');
-
       return null;
     } catch (e) {
       logger.output('[$runtimeType] [$mark] Unknown error: $e');
-      reportNetworkError('$runtimeType', 'network error');
 
       return null;
     }

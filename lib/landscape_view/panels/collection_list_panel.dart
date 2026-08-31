@@ -79,7 +79,6 @@ extension _CollectionListPanel on CollectionListState {
                                   valueNotifier: isAscendingNotifier!,
                                   onToggleCallBack: () {
                                     setting.save();
-                                    updateCurrentList();
                                   },
                                 );
                               },

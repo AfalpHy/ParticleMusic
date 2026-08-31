@@ -12,6 +12,8 @@ late final Directory tmpDir;
 final isMobile = Platform.isAndroid || Platform.isIOS;
 const isTV = bool.fromEnvironment('TV', defaultValue: false);
 
+final globalNavigatorKey = GlobalKey<NavigatorState>();
+
 late final ScreenRadius? screenRadius;
 
 enum ThemeType { vivid, light, dark, custom }

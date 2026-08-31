@@ -3,6 +3,7 @@ import 'package:flutter/rendering.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 import 'package:sylvakru/base/asset_images.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
+import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/utils/common_utils.dart';
 import 'package:sylvakru/base/utils/media_query.dart';
@@ -16,16 +17,20 @@ abstract class BigSongListBasePanel extends StatefulWidget {
 abstract class BigSongListBasePanelState extends State<BigSongListBasePanel> {
   late final List<MyAudioMetadata> songList;
   final bool isRanking = false;
-  final _scrollController = ScrollController();
+  final scrollController = ScrollController();
+  bool firstLoading = false;
 
   @override
   void dispose() {
-    _scrollController.dispose();
+    scrollController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
+    if (firstLoading) {
+      return Center(child: CircularProgressIndicator(color: iconColor.value));
+    }
     final itemExtent = isTooNarrow(context) ? 60.0 : 80.0;
 
     return ListView.builder(
@@ -33,7 +38,7 @@ abstract class BigSongListBasePanelState extends State<BigSongListBasePanel> {
         horizontal: isTooNarrow(context) ? 0 : 40,
         vertical: 75 + getTopOffset(context),
       ),
-      controller: _scrollController,
+      controller: scrollController,
       itemExtent: itemExtent,
       itemCount: songList.length,
       itemBuilder: (context, index) {
@@ -66,10 +71,10 @@ abstract class BigSongListBasePanelState extends State<BigSongListBasePanel> {
                         viewport.getOffsetToReveal(box, 0.5).offset +
                         itemExtent / 2;
 
-                    _scrollController.animateTo(
+                    scrollController.animateTo(
                       target.clamp(
-                        _scrollController.position.minScrollExtent,
-                        _scrollController.position.maxScrollExtent,
+                        scrollController.position.minScrollExtent,
+                        scrollController.position.maxScrollExtent,
                       ),
                       duration: const Duration(milliseconds: 250),
                       curve: Curves.easeOut,

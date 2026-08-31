@@ -4,11 +4,12 @@ import 'dart:math';
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:sylvakru/base/data/artist_album.dart';
+import 'package:sylvakru/base/data/playlist.dart';
+import 'package:sylvakru/base/my_audio_metadata.dart';
+import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/services/logger.dart';
-import 'package:sylvakru/base/services/network_error_reporter.dart';
 import 'package:sylvakru/base/services/stream_client.dart';
-
-NavidromeClient? navidromeClient;
 
 class NavidromeClient extends StreamClient {
   NavidromeClient({
@@ -57,7 +58,8 @@ class NavidromeClient extends StreamClient {
     String path, {
     Map<String, dynamic>? query,
     Options? options,
-    String errorMessage = 'Network error',
+    String errorMessage = '',
+    bool showRealError = false,
   }) async {
     try {
       final res = await dio.get(
@@ -73,29 +75,37 @@ class NavidromeClient extends StreamClient {
       final response = res.data['subsonic-response'];
 
       if (response['status'] != 'ok') {
+        final resErrorMessage = response['error']?['message'];
         logger.output(
-          '[$runtimeType] ${response['error']?['message'] ?? 'Unknown error'}',
+          '[$runtimeType]\n[request]$path\n[query]$query\n[options]$options\n[error]${resErrorMessage ?? 'Unknown error'}',
         );
+
+        if (showRealError && resErrorMessage != null) {
+          showCenterMessage(resErrorMessage, duration: 3000);
+        }
+
         return null;
       }
 
       return response;
     } on DioException catch (e) {
       logger.output(
-        '[$runtimeType] Dio: ${e.message} (${e.response?.statusCode})',
+        '[$runtimeType]\n[request]$path\n[query]$query\n[options]$options\n[error]Dio: ${e.message} (${e.response?.statusCode}\n[data]${e.response?.data.toString()})',
       );
 
-      if (e.response?.data != null) {
-        logger.output(e.response!.data.toString());
+      if (errorMessage.isNotEmpty) {
+        showCenterMessage(errorMessage, duration: 3000);
       }
-
-      reportNetworkError('$runtimeType', errorMessage);
 
       return null;
     } catch (e) {
-      logger.output('[$runtimeType] $e');
+      logger.output(
+        '[$runtimeType]\n[request]$path\n[query]$query\n[options]$options\n[error]$e',
+      );
 
-      reportNetworkError('$runtimeType', errorMessage);
+      if (errorMessage.isNotEmpty) {
+        showCenterMessage(errorMessage, duration: 3000);
+      }
 
       return null;
     }
@@ -103,10 +113,127 @@ class NavidromeClient extends StreamClient {
 
   @override
   Future<bool> ping() async {
-    return await safeRequest('/rest/ping.view') != null;
+    return await safeRequest('/rest/ping.view', showRealError: true) != null;
   }
 
-  Future<List<Map<String, dynamic>>?> search(
+  @override
+  Future<List<Artist>?> getArtistList() async {
+    final res = await safeRequest('/rest/getArtists.view');
+    if (res == null) {
+      return null;
+    }
+
+    final indexs = normalize(res['artists']['index']) ?? [];
+    List<Artist> artistList = [];
+    for (final index in indexs) {
+      for (final map in normalize(index['artist']) ?? []) {
+        final name = map['name'];
+        artistList.add(
+          Artist(name, id: map['id'], coverArtId: map['coverArt']),
+        );
+      }
+    }
+
+    return artistList;
+  }
+
+  @override
+  Future<List<Album>?> getArtistAlbumList(String id) async {
+    final res = await safeRequest('/rest/getArtist.view', query: {'id': id});
+
+    if (res == null) {
+      return null;
+    }
+    return (normalize(res['artist']['album']) ?? []).map((map) {
+      final name = map['name'];
+      final id = map['id'];
+      return artistAlbumManager.albumMap.putIfAbsent(
+        id,
+        () => Album(name, id: id, coverArtId: map['coverArt']),
+      );
+    }).toList();
+  }
+
+  @override
+  Future<List<MyAudioMetadata>?> getArtistSongs(String id) async {
+    final res = await safeRequest('/rest/getArtist.view', query: {'id': id});
+
+    if (res == null) {
+      return null;
+    }
+    final albums = normalize(res['artist']['album']) ?? [];
+    List<MyAudioMetadata> songs = [];
+    for (final album in albums) {
+      songs.addAll(await getAlbumSongs(album['id']) ?? []);
+    }
+    return songs;
+  }
+
+  @override
+  Future<List<Album>?> getAlbumList(
+    int offset, {
+    String type = 'alphabeticalByName',
+  }) async {
+    final res = await safeRequest(
+      '/rest/getAlbumList2.view',
+      query: {'type': type, 'size': 500, 'offset': offset},
+    );
+    if (res == null) {
+      return null;
+    }
+    final albumList = <Album>[];
+    for (final map in normalize(res['albumList2']['album']) ?? []) {
+      final name = map['name'];
+      final id = map['id'];
+      albumList.add(
+        artistAlbumManager.albumMap.putIfAbsent(
+          id,
+          () => Album(name, id: id, coverArtId: map['coverArt']),
+        ),
+      );
+    }
+    return albumList;
+  }
+
+  @override
+  Future<List<MyAudioMetadata>?> getAlbumSongs(String id) async {
+    final albumRes = await safeRequest(
+      '/rest/getAlbum.view',
+      query: {'id': id},
+    );
+
+    if (albumRes == null) {
+      return null;
+    }
+
+    return (normalize(albumRes['album']['song']) ?? [])
+        .map((e) => MyAudioMetadata.fromMap(e, .navidrome))
+        .toList();
+  }
+
+  // @override
+  // Future<List<MyAudioMetadata>?> getPlayQueue() async {
+  //   final res = await safeRequest('/rest/getPlayQueue.view');
+  //   if (res == null) {
+  //     return null;
+  //   }
+
+  //   return (normalize(res['playQueue']['entry']) ?? [])
+  //       .map((e) => MyAudioMetadata.fromMap(e, .navidrome))
+  //       .toList();
+  // }
+
+  // @override
+  // Future<bool> savePlayQueue(List<String> songIds) async {
+  //   final res = await safeRequest(
+  //     '/rest/savePlayQueue.view',
+  //     query: {'id': songIds},
+  //   );
+  //   return res == null ? false : res['status'] == 'ok';
+  // }
+
+  @override
+  Future<List<MyAudioMetadata>?> searchSongs(
     String query,
     int size,
     int offset,
@@ -127,96 +254,14 @@ class NavidromeClient extends StreamClient {
       return null;
     }
 
-    // null means reach the end
-    return normalize(response['searchResult3']['song']) ?? [];
-  }
-
-  Future<List<Map<String, dynamic>>?> getArtistList(int offset) async {
-    final res = await safeRequest('/rest/getArtists.view');
-    if (res == null) {
-      return null;
-    }
-
-    final indexs = normalize(res['artists']['index']) ?? [];
-    List<Map<String, dynamic>> artistList = [];
-    for (final index in indexs) {
-      artistList.addAll(normalize(index['artist']) ?? []);
-    }
-    return artistList;
-  }
-
-  Future<List<Map<String, dynamic>>?> getArtistSongs(String id) async {
-    final res = await safeRequest('/rest/getArtist.view', query: {'id': id});
-
-    if (res == null) {
-      return null;
-    }
-    final albums = normalize(res['artist']['album']) ?? [];
-    List<Map<String, dynamic>> songs = [];
-    for (final album in albums) {
-      songs.addAll(await getAlbumSongs(album['id']) ?? []);
-    }
-    return songs;
-  }
-
-  Future<List<Map<String, dynamic>>?> getAlbumList(
-    int offset, {
-    String type = 'alphabeticalByName',
-  }) async {
-    final res = await safeRequest(
-      '/rest/getAlbumList2.view',
-      query: {'type': type, 'size': 500, 'offset': offset},
-    );
-    if (res == null) {
-      return null;
-    }
-
-    return normalize(res['albumList2']['album']);
-  }
-
-  Future<List<Map<String, dynamic>>?> getAlbumSongs(String id) async {
-    final albumRes = await safeRequest(
-      '/rest/getAlbum.view',
-      query: {'id': id},
-    );
-
-    if (albumRes == null) {
-      return null;
-    }
-
-    return normalize(albumRes['album']['song']) ?? [];
-  }
-
-  Future<List<Map<String, dynamic>>?> getPlayQueue() async {
-    final res = await safeRequest('/rest/getPlayQueue.view');
-    if (res == null) {
-      return null;
-    }
-
-    return normalize(res['playQueue']['entry']) ?? [];
-  }
-
-  Future<bool> savePlayQueue(List<String> ids) async {
-    final res = await safeRequest(
-      '/rest/savePlayQueue.view',
-      query: {'id': ids},
-    );
-    return res == null ? false : res['status'] == 'ok';
+    return (normalize(response['searchResult3']['song']) ?? [])
+        .map((e) => MyAudioMetadata.fromMap(e, .navidrome))
+        .toList();
   }
 
   @override
-  Future<List<Map<String, dynamic>>?> getSongs(int size, int offset) async {
-    final response = await safeRequest(
-      '/rest/search3.view',
-      query: {'query': '', 'songCount': size, 'songOffset': offset},
-      errorMessage: "Failed to fetch songs",
-    );
-
-    if (response == null) {
-      return null;
-    }
-
-    final songs = normalize(response['searchResult3']['song']);
+  Future<List<MyAudioMetadata>?> getSongs(int size, int offset) async {
+    final songs = await searchSongs('', size, offset);
 
     if (songs != null) {
       logger.output('[Navidrome] Fetched ${offset + songs.length} songs...');
@@ -226,23 +271,29 @@ class NavidromeClient extends StreamClient {
   }
 
   @override
-  Future<List<Map<String, dynamic>>?> getStarredSongs() async {
+  Future<List<MyAudioMetadata>?> getStarredSongs() async {
     final response = await safeRequest('/rest/getStarred2.view');
     if (response == null) {
       return null;
     }
+
     // response['starred2'] is not empty but response['starred2']['song'] sometimes is null
-    return normalize(response['starred2']['song']) ?? [];
+    return (normalize(response['starred2']['song']) ?? [])
+        .map((e) => MyAudioMetadata.fromMap(e, .navidrome))
+        .toList();
   }
 
   @override
   Future<bool> updateStarredSongs(List<String> songIds) async {
-    final oldSongIds = (await getStarredSongs())
-        ?.map((e) => e['id'].toString())
-        .toList();
-    if (oldSongIds == null) {
+    final response = await safeRequest('/rest/getStarred2.view');
+    if (response == null) {
       return false;
     }
+
+    final oldSongIds = (normalize(response['starred2']['song']) ?? [])
+        .map((e) => e['id'].toString())
+        .toList();
+
     final songToRemoveIds = [];
     for (int i = 0; i < oldSongIds.length; i++) {
       songToRemoveIds.add(oldSongIds[i]);
@@ -250,7 +301,6 @@ class NavidromeClient extends StreamClient {
         final res = await safeRequest(
           '/rest/unstar.view',
           query: {'id': songToRemoveIds},
-          errorMessage: 'update favorites failed',
         );
         if (res == null) {
           return false;
@@ -262,7 +312,6 @@ class NavidromeClient extends StreamClient {
       final res = await safeRequest(
         '/rest/unstar.view',
         query: {'id': songToRemoveIds},
-        errorMessage: 'update favorites failed',
       );
 
       if (res == null) {
@@ -277,7 +326,6 @@ class NavidromeClient extends StreamClient {
         final res = await safeRequest(
           '/rest/star.view',
           query: {'id': songToAddIds},
-          errorMessage: 'update favorites failed',
         );
         if (res == null) {
           return false;
@@ -289,7 +337,6 @@ class NavidromeClient extends StreamClient {
       return await safeRequest(
             '/rest/star.view',
             query: {'id': songToAddIds},
-            errorMessage: 'update favorites failed',
           ) !=
           null;
     }
@@ -297,18 +344,17 @@ class NavidromeClient extends StreamClient {
   }
 
   @override
-  Future<List<Map<String, dynamic>>?> getPlaylistSongs(
-    String playlistId,
-  ) async {
+  Future<List<MyAudioMetadata>?> getPlaylistSongs(String playlistId) async {
     final response = await safeRequest(
       '/rest/getPlaylist.view',
       query: {'id': playlistId},
-      errorMessage: 'Failed to get playlist songs',
     );
     if (response == null) {
       return null;
     }
-    return normalize(response?['playlist']['entry']) ?? [];
+    return (normalize(response?['playlist']['entry']) ?? [])
+        .map((e) => MyAudioMetadata.fromMap(e, .navidrome))
+        .toList();
   }
 
   @override
@@ -330,12 +376,11 @@ class NavidromeClient extends StreamClient {
   }
 
   @override
-  Future<List<Map<String, dynamic>>?> getPlaylists() async {
-    final response = await safeRequest(
-      '/rest/getPlaylists.view',
-      errorMessage: 'Failed to get playlists',
-    );
-    return normalize(response?['playlists']['playlist']);
+  Future<List<Playlist>?> getPlaylists() async {
+    final response = await safeRequest('/rest/getPlaylists.view');
+    return (normalize(
+      response?['playlists']['playlist'],
+    ))?.map((e) => Playlist(name: e['name'], id: e['id'])).toList();
   }
 
   @override
@@ -357,7 +402,6 @@ class NavidromeClient extends StreamClient {
             'playlistId': playlistId,
             'songIndexToRemove': songIndexToRemove,
           },
-          errorMessage: 'update playlist failed',
         );
         if (res == null) {
           return false;
@@ -372,7 +416,6 @@ class NavidromeClient extends StreamClient {
           'playlistId': playlistId,
           'songIndexToRemove': songIndexToRemove,
         },
-        errorMessage: 'update playlist failed',
       );
 
       if (res == null) {
@@ -387,7 +430,6 @@ class NavidromeClient extends StreamClient {
         final res = await safeRequest(
           '/rest/updatePlaylist.view',
           query: {'playlistId': playlistId, 'songIdToAdd': songToAddIds},
-          errorMessage: 'update playlist failed',
         );
         if (res == null) {
           return false;
@@ -399,7 +441,6 @@ class NavidromeClient extends StreamClient {
       return await safeRequest(
             '/rest/updatePlaylist.view',
             query: {'playlistId': playlistId, 'songIdToAdd': songToAddIds},
-            errorMessage: 'update playlist failed',
           ) !=
           null;
     }
@@ -420,7 +461,6 @@ class NavidromeClient extends StreamClient {
       '/rest/getCoverArt.view',
       query: {'id': id},
       options: Options(responseType: ResponseType.bytes),
-      errorMessage: "Failed to get cover art",
     );
   }
 

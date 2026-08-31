@@ -32,6 +32,9 @@ class MyAudioMetadata {
   final isFavoriteNotifier = ValueNotifier(false);
   final updateNotifier = ValueNotifier(0);
 
+  String? artistId;
+  String? albumId;
+
   int playCount;
   DateTime? lastPlayed;
 
@@ -43,6 +46,8 @@ class MyAudioMetadata {
     this._audioMetadata, {
     required this.id,
     this.path,
+    this.artistId,
+    this.albumId,
     this.modified,
     this.sourceType = .local,
     this.playCount = 0,
@@ -120,6 +125,8 @@ class MyAudioMetadata {
           sourceType: sourceType,
           id: song['id'],
           path: song['path'],
+          artistId: song['artistId'],
+          albumId: song['albumId'],
           playCount: song['playCount'] as int? ?? 0,
           lastPlayed: song['played'] != null
               ? DateTime.parse(song['played'])
@@ -180,6 +187,8 @@ class MyAudioMetadata {
         sourceType: SourceType.emby,
 
         id: song['Id'],
+
+        albumId: song['AlbumId'],
 
         playCount: song['UserData']?['PlayCount'] as int? ?? 0,
 

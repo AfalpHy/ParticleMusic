@@ -1,14 +1,17 @@
+import 'dart:async';
+
 import 'package:lpinyin/lpinyin.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/services/picture_service.dart';
+import 'package:sylvakru/base/services/stream_client.dart';
 import 'package:sylvakru/base/widgets/cover_art_widget.dart';
 import 'package:sylvakru/layer/layers_manager.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
 import 'package:sylvakru/base/utils/metadata_utils.dart';
 
-final artistAlbumManager = ArtistAlbumManager();
+ArtistAlbumManager artistAlbumManager = ArtistAlbumManager();
 
 class ArtistAlbumManager {
   List<Artist> artistList = [];
@@ -27,6 +30,17 @@ class ArtistAlbumManager {
   final albumsIsAscendingNotifier = ValueNotifier(true);
   final albumsUseLargePictureNotifier = ValueNotifier(false);
   final albumsRandomizeNotifier = ValueNotifier(false);
+
+  ArtistAlbumManager() {
+    artistsIsAscendingNotifier.addListener(() {
+      sortArtists();
+      updateNotifier.value++;
+    });
+    albumsIsAscendingNotifier.addListener(() {
+      sortAlbums();
+      updateNotifier.value++;
+    });
+  }
 
   List<ArtistAlbumBase> getArtistAlbumList(bool isArtist) {
     return isArtist ? artistList : albumList;
@@ -146,12 +160,53 @@ class ArtistAlbumManager {
         albumsUseLargePictureNotifier.value;
   }
 
-  void clear() {
-    artistList = [];
-    artistMap = {};
-    albumList = [];
-    albumMap = {};
-    updateNotifier.value++;
+  // use completer to avoid loading same data multiple times
+  Completer<void>? artistCompleter;
+  Completer<int?>? ablumCompleter;
+
+  Future<void> loadArtists() async {
+    if (artistCompleter == null) {
+      artistCompleter = Completer<void>();
+      final tmpArtistList = await streamClient!.getArtistList();
+      if (tmpArtistList == null) {
+        artistCompleter!.complete();
+        return;
+      }
+
+      for (final artist in tmpArtistList) {
+        artistList.add(artist);
+        artistMap[artist.name] = artist;
+      }
+      sortArtists();
+      artistAlbumManager.updateNotifier.value++;
+      artistCompleter!.complete();
+      return;
+    }
+    return artistCompleter!.future;
+  }
+
+  // null: error; 0: end
+  Future<int?> loadAlbums() async {
+    if (ablumCompleter == null) {
+      ablumCompleter = Completer<int?>();
+      final albumList = await streamClient!.getAlbumList(
+        artistAlbumManager.albumList.length,
+      );
+      if (albumList == null) {
+        ablumCompleter!.complete(null);
+        ablumCompleter = null;
+        return null;
+      }
+
+      artistAlbumManager.albumList.addAll(albumList);
+      sortAlbums();
+      artistAlbumManager.updateNotifier.value++;
+
+      ablumCompleter!.complete(albumList.length);
+      ablumCompleter = null;
+      return albumList.length;
+    }
+    return ablumCompleter!.future;
   }
 }
 
@@ -170,8 +225,8 @@ abstract class ArtistAlbumBase {
   ArtistAlbumBase(this.name, this.isArtist, {this.id, String? coverArtId}) {
     id ??= name;
     compareName = PinyinHelper.getPinyinE(name);
-    if (coverArtId != null) {
-      _picture = MyPicture(coverArtId);
+    if (isStreamSource) {
+      _picture = MyPicture(coverArtId ?? '');
     }
   }
 
@@ -182,6 +237,10 @@ abstract class ArtistAlbumBase {
   }
 
   int get totalCount => songList.length;
+
+  Completer<void>? completer;
+
+  Future<void> load();
 }
 
 class Artist extends ArtistAlbumBase {
@@ -190,6 +249,8 @@ class Artist extends ArtistAlbumBase {
   Set<Album> albumSet = {};
 
   List<Album> albumList = [];
+
+  final changeNotifier = ValueNotifier(0);
 
   void combineAlbums() {
     albumSet.removeWhere((album) => album.isEmpty);
@@ -204,6 +265,36 @@ class Artist extends ArtistAlbumBase {
     for (final album in albumList) {
       songList.addAll(album.artist2SongList[name]!);
     }
+  }
+
+  @override
+  Future<void> load() async {
+    if (completer == null) {
+      completer = Completer<void>();
+      if (sourceType == .navidrome) {
+        final albums = await streamClient!.getArtistAlbumList(id!);
+        if (albums == null) {
+          completer!.complete();
+          return;
+        } else {
+          albumList.addAll(albums);
+        }
+
+        for (final album in albumList) {
+          await album.load();
+          songList.addAll(album.songList);
+          changeNotifier.value++;
+        }
+        completer!.complete();
+        return;
+      } else {
+        songList.addAll(await streamClient!.getArtistSongs(id!) ?? []);
+        changeNotifier.value++;
+        completer!.complete();
+        return;
+      }
+    }
+    return completer!.future;
   }
 }
 
@@ -234,6 +325,18 @@ class Album extends ArtistAlbumBase {
         tmp.add(song);
       }
     }
+  }
+
+  @override
+  Future<void> load() async {
+    if (completer == null) {
+      // ensure load one time
+      completer = Completer<void>();
+      songList.addAll(await streamClient?.getAlbumSongs(id!) ?? []);
+      completer!.complete();
+      return;
+    }
+    return completer!.future;
   }
 }
 

@@ -31,11 +31,10 @@ class PictureLoadScheduler {
     });
 
     _inFlight[key] = completer.future;
+
     _queue.add(task);
 
-    if (_running == 0) {
-      _schedule();
-    }
+    _schedule();
 
     return completer.future;
   }
@@ -43,16 +42,13 @@ class PictureLoadScheduler {
   void _schedule() {
     while (_running < maxConcurrent && _queue.isNotEmpty) {
       final task = _queue.removeAt(0);
-      if (_inFlight.containsKey(task.key)) {
-        _running++;
-        task.run();
-      }
+      _running++;
+      task.run();
     }
   }
 
-  void cancel(String key) {
-    _inFlight.remove(key);
-  }
+  // TODO
+  void release(String key) {}
 }
 
 class _Task {

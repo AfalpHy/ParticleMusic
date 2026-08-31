@@ -2,11 +2,13 @@ import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 
+import 'package:flutter/foundation.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/services/emby_client.dart';
 import 'package:sylvakru/base/services/logger.dart';
 import 'package:sylvakru/base/services/navidrome_client.dart';
+import 'package:sylvakru/base/services/stream_client.dart';
 import 'package:sylvakru/base/services/webdav_client.dart';
 import 'package:sylvakru/layer/premium_layer.dart';
 
@@ -20,7 +22,7 @@ class Config {
   );
 
   Future<void> load() async {
-    if (Platform.isIOS) {
+    if (kReleaseMode && Platform.isIOS) {
       final isPremiumTmp = await _trySecureRead('isPremium');
       if (isPremiumTmp != 'true') {
         isPremiumNotifier.value = false;
@@ -92,7 +94,7 @@ class Config {
       securePassword ??= navidromeMap['password'];
       securePassword ??= '';
 
-      navidromeClient = NavidromeClient(
+      streamClient = NavidromeClient(
         baseUrl: navidromeMap['baseUrl'],
         username: navidromeMap['username'],
         password: securePassword,
@@ -105,12 +107,11 @@ class Config {
       securePassword ??= embyMap['password'];
       securePassword ??= '';
 
-      embyClient = EmbyClient(
+      streamClient = EmbyClient(
         baseUrl: embyMap['baseUrl'],
         username: embyMap['username'],
         password: securePassword,
       );
-      await (embyClient as EmbyClient).login();
     }
 
     if (_hasPlainTextPassword(map)) {
@@ -130,8 +131,7 @@ class Config {
     // the plaintext as a fallback in that one field until a write actually
     // succeeds, instead of losing it outright.
     bool webdavSecured = true;
-    bool navidromeSecured = true;
-    bool embySecured = true;
+    bool streamSecured = true;
 
     if (webdavClient != null) {
       webdavSecured = await _trySecureWrite(
@@ -140,16 +140,10 @@ class Config {
       );
     }
 
-    if (navidromeClient != null) {
-      navidromeSecured = await _trySecureWrite(
-        'navidrome_password',
-        navidromeClient!.password,
-      );
-    }
-    if (embyClient != null) {
-      embySecured = await _trySecureWrite(
-        'emby_password',
-        embyClient!.password,
+    if (streamClient != null) {
+      streamSecured = await _trySecureWrite(
+        '${sourceType.name}_password',
+        streamClient!.password,
       );
     }
 
@@ -162,18 +156,11 @@ class Config {
             if (!webdavSecured) 'password': webdavClient!.password,
           },
 
-        if (navidromeClient != null)
-          'navidrome': {
-            'baseUrl': navidromeClient!.baseUrl,
-            'username': navidromeClient!.username,
-            if (!navidromeSecured) 'password': navidromeClient!.password,
-          },
-
-        if (embyClient != null)
-          'emby': {
-            'baseUrl': embyClient!.baseUrl,
-            'username': embyClient!.username,
-            if (!embySecured) 'password': embyClient!.password,
+        if (streamClient != null)
+          sourceType.name: {
+            'baseUrl': streamClient!.baseUrl,
+            'username': streamClient!.username,
+            if (!streamSecured) 'password': streamClient!.password,
           },
       }),
     );

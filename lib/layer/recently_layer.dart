@@ -1,9 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/asset_images.dart';
-import 'package:sylvakru/base/data/artist_album.dart';
 import 'package:sylvakru/base/data/history.dart';
-import 'package:sylvakru/base/services/navidrome_client.dart';
 import 'package:sylvakru/base/widgets/collection_list.dart';
 import 'package:sylvakru/base/widgets/song_list.dart';
 import 'package:sylvakru/l10n/generated/app_localizations.dart';
@@ -58,27 +56,7 @@ class _RecentlyLayerState extends CollectionListState {
 
   @override
   Future<void> fetchCollectionList() async {
-    final albumList = await navidromeClient!.getAlbumList(
-      history.recentlySongList.length,
-      type: 'recent',
-    );
-    if (!mounted || albumList == null) {
-      return;
-    }
-
-    if (albumList.isEmpty) {
-      reachEnd = true;
-    }
-
-    for (final map in albumList) {
-      final name = map['name'];
-      final id = map['id'];
-      final album = artistAlbumManager.albumMap.putIfAbsent(
-        id,
-        () => Album(name, id: id, coverArtId: map['coverArt']),
-      );
-      history.recentlyAlbumList.add(album);
-    }
+    reachEnd = await history.loadAlbums(false) == 0;
   }
 
   @override
@@ -86,18 +64,17 @@ class _RecentlyLayerState extends CollectionListState {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (isStreamSource) {
-        if (history.recentlyAlbumList.isEmpty) {
-          await fetchCollectionList();
-        }
+      if (sourceType == .navidrome && history.recentlyAlbumList.isEmpty) {
+        reachEnd = await history.loadAlbums(false) == 0;
       }
+      firstLoading = false;
       updateCurrentList();
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    if (isNotStreamSource) {
+    if (sourceType != .navidrome) {
       return SongList(isRecently: true);
     }
     final l10n = AppLocalizations.of(context);

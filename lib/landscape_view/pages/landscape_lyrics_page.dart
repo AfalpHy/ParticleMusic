@@ -364,10 +364,7 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
                       width: 40,
                       child: IconButton(
                         onPressed: () async {
-                          showCenterMessage(
-                            context,
-                            'Desktop lyrics has been removed',
-                          );
+                          showCenterMessage('Desktop lyrics has been removed');
                         },
                         icon: const ImageIcon(desktopLyricsImage, size: 25),
 

@@ -1,7 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/data/artist_album.dart';
-import 'package:sylvakru/base/services/navidrome_client.dart';
 import 'package:sylvakru/base/widgets/collection_list.dart';
 import 'package:sylvakru/l10n/generated/app_localizations.dart';
 import 'package:sylvakru/base/asset_images.dart';
@@ -37,7 +36,6 @@ class _AlbumsLayerState extends CollectionListState {
   @override
   void updateCurrentList() {
     final value = textController.text;
-    artistAlbumManager.sortAlbums();
     final list = artistAlbumManager.albumList
         .where((e) => (e.name.toLowerCase().contains(value.toLowerCase())))
         .toList();
@@ -60,28 +58,7 @@ class _AlbumsLayerState extends CollectionListState {
 
   @override
   Future<void> fetchCollectionList() async {
-    final albumList = await navidromeClient!.getAlbumList(
-      artistAlbumManager.albumList.length,
-    );
-    if (!mounted || albumList == null) {
-      return;
-    }
-
-    if (albumList.isEmpty) {
-      reachEnd = true;
-    }
-
-    for (final map in albumList) {
-      final name = map['name'];
-      final id = map['id'];
-      final album = artistAlbumManager.albumMap.putIfAbsent(
-        id,
-        () => Album(name, id: id, coverArtId: map['coverArt']),
-      );
-      artistAlbumManager.albumList.add(album);
-    }
-    artistAlbumManager.sortAlbums();
-    artistAlbumManager.updateNotifier.value++;
+    reachEnd = await artistAlbumManager.loadAlbums() == 0;
   }
 
   @override
@@ -95,11 +72,10 @@ class _AlbumsLayerState extends CollectionListState {
     );
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (isStreamSource) {
-        if (artistAlbumManager.albumList.isEmpty) {
-          await fetchCollectionList();
-        }
+      if (isStreamSource && artistAlbumManager.albumList.isEmpty) {
+        reachEnd = await artistAlbumManager.loadAlbums() == 0;
       }
+      firstLoading = false;
       updateCurrentList();
     });
     artistAlbumManager.updateNotifier.addListener(updateCurrentList);

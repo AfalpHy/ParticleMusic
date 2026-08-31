@@ -23,6 +23,12 @@ class MyPicture {
   Color? lowerLuminance;
 
   MyPicture(this.id, {String? md5Hash}) {
+    if (id.isEmpty) {
+      isExist = false;
+      isLoaded = true;
+      color = Colors.grey;
+      return;
+    }
     md5Hash ??= md5.convert(utf8.encode(id)).toString();
     path = '${getPicturesPath(sourceType)}/$md5Hash';
     if (File(path).existsSync()) {
@@ -68,7 +74,7 @@ Future<void> _loadPicture(MyPicture picture) async {
         }
         break;
       default:
-        bytes = await getStreamClient(sourceType)!.getPictureBytes(picture.id);
+        bytes = await streamClient?.getPictureBytes(picture.id);
         break;
     }
 
@@ -77,7 +83,7 @@ Future<void> _loadPicture(MyPicture picture) async {
       if (!await pictureFile.exists()) {
         await pictureFile.create(recursive: true);
       }
-      await pictureFile.writeAsBytes(bytes);
+      await pictureFile.writeAsBytes(bytes, flush: true);
       picture.isExist = true;
     }
   } catch (e) {
@@ -138,11 +144,17 @@ Future<Color> _calculateAverageColor(Uint8List bytes) async {
     return _calculateWithImagePackage(bytes);
   }
 
-  final codec = await ui.instantiateImageCodec(
-    bytes,
-    targetWidth: 20,
-    targetHeight: 20,
-  );
+  ui.Codec codec;
+  try {
+    codec = await ui.instantiateImageCodec(
+      bytes,
+      targetWidth: 20,
+      targetHeight: 20,
+    );
+  } catch (e) {
+    logger.output(e.toString());
+    return Colors.grey;
+  }
 
   final frameInfo = await codec.getNextFrame();
   final image = frameInfo.image;

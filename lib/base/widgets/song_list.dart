@@ -14,8 +14,8 @@ import 'package:sylvakru/base/data/artist_album.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/services/keyboard.dart';
-import 'package:sylvakru/base/services/navidrome_client.dart';
 import 'package:sylvakru/base/services/picture_service.dart';
+import 'package:sylvakru/base/services/stream_client.dart';
 import 'package:sylvakru/base/utils/common_utils.dart';
 import 'package:sylvakru/base/utils/media_query.dart';
 import 'package:sylvakru/base/utils/source_type.dart';
@@ -151,15 +151,23 @@ class _SongListState extends State<SongList> {
         : title;
   }
 
+  MyPicture? get mainPicture {
+    MyPicture? picture = getFirstSong(songList)?.picture;
+    if (isStreamSource) {
+      if (artist != null) {
+        picture = artist!.picture;
+      } else if (album != null) {
+        picture = album!.picture;
+      }
+    }
+    return picture;
+  }
+
   int currentRequestId = 0;
   Future<List<MyAudioMetadata>?> _fetchSongList(int offset) async {
     currentRequestId++;
     int tmp = currentRequestId;
-    final result = (await navidromeClient?.search(
-      searchValue,
-      100,
-      offset,
-    ))?.map((e) => MyAudioMetadata.fromMap(e, sourceType)).toList();
+    final result = await streamClient?.searchSongs(searchValue, 100, offset);
     if (!mounted) {
       return null;
     }
@@ -170,6 +178,8 @@ class _SongListState extends State<SongList> {
   }
 
   void updateSongList() {
+    firstLoading = false;
+
     final currentSongList = List<MyAudioMetadata>.from(
       searchValue.isEmpty ? songList : tmpSongList,
     );
@@ -207,7 +217,7 @@ class _SongListState extends State<SongList> {
     searchTimer = Timer(Duration(milliseconds: 300), () async {
       if (searchValue.isNotEmpty) {
         tmpSongList.clear();
-        if (isLibrary) {
+        if (isLibrary && sourceType == .navidrome) {
           tmpSongList = await _fetchSongList(0) ?? [];
           if (!mounted) {
             return;
@@ -216,6 +226,7 @@ class _SongListState extends State<SongList> {
           tmpSongList = filterSongList(songList, searchValue);
         }
       }
+      _reachEnd = false;
       updateSongList();
     });
   }
@@ -223,7 +234,7 @@ class _SongListState extends State<SongList> {
   bool _isLoadingMoreData = false;
   bool _reachEnd = false;
   void _onScroll() async {
-    if (_isLoadingMoreData | _reachEnd) {
+    if (firstLoading | _isLoadingMoreData | _reachEnd) {
       return;
     }
     _isLoadingMoreData = true;
@@ -231,7 +242,10 @@ class _SongListState extends State<SongList> {
     if (scrollController.position.pixels >=
         scrollController.position.maxScrollExtent) {
       if (searchValue.isEmpty) {
-        final fetchedSongList = await _fetchSongList(songList.length);
+        final fetchedSongList = await streamClient?.getSongs(
+          100,
+          songList.length,
+        );
         if (!mounted) {
           return;
         }
@@ -290,6 +304,7 @@ class _SongListState extends State<SongList> {
         layersManager.popDetail('artists');
       };
       rootLabel = 'artists';
+      changeNotifier = artist!.changeNotifier;
     } else if (album != null) {
       title = album!.name;
       songList = album!.songList;
@@ -337,28 +352,27 @@ class _SongListState extends State<SongList> {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (isStreamSource) {
         if (songList.isEmpty) {
-          currentSongListNotifier.value = [];
           if (isLibrary) {
-            songList.addAll(await _fetchSongList(0) ?? []);
+            final songs = await streamClient?.getSongs(100, 0) ?? [];
+
+            if (!mounted) {
+              return;
+            }
+            songList.addAll(songs);
             layersManager.updateBackground();
-          } else if (album != null) {
-            songList.addAll(
-              (await navidromeClient!.getAlbumSongs(
-                    album!.id!,
-                  ))?.map((e) => MyAudioMetadata.fromMap(e, sourceType)) ??
-                  [],
-            );
           } else if (artist != null) {
-            songList.addAll(
-              (await navidromeClient!.getArtistSongs(
-                    artist!.id!,
-                  ))?.map((e) => MyAudioMetadata.fromMap(e, sourceType)) ??
-                  [],
-            );
+            await artist!.load();
+            if (!mounted) {
+              return;
+            }
+          } else if (album != null) {
+            await album!.load();
+            if (!mounted) {
+              return;
+            }
           }
         }
       }
-      firstLoading = false;
       updateSongList();
     });
 
@@ -385,17 +399,9 @@ class _SongListState extends State<SongList> {
     return ValueListenableBuilder(
       valueListenable: currentSongListNotifier,
       builder: (_, _, _) {
-        final song = getFirstSong(songList);
-        MyPicture? picture = song?.picture;
-        if (isStreamSource) {
-          if (artist != null) {
-            picture = artist!.picture;
-          } else if (album != null) {
-            picture = album!.picture;
-          }
-        }
+        MyPicture? picture = mainPicture;
         return ListenableBuilder(
-          listenable: Listenable.merge([song?.updateNotifier]),
+          listenable: Listenable.merge([]),
           builder: (_, _) {
             return ValueListenableBuilder(
               valueListenable: mainPageThemeNotifier,
@@ -406,7 +412,7 @@ class _SongListState extends State<SongList> {
                   picture: picture,
                   elevation: 5,
                   color: colorManager.getSpecificMainPageCoverArtBaseColorForm(
-                    song,
+                    picture,
                   ), // keep stable color
                 );
 

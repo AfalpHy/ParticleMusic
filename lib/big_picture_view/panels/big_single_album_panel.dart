@@ -50,7 +50,9 @@ class _BigSingleAlbumPanelState extends State<BigSingleAlbumPanel> {
   void updateSongList() async {
     baseColor = await computeColor(widget.album.picture);
     colorManager.updateBigPictureRelatedColors(widget.album.picture);
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -61,8 +63,21 @@ class _BigSingleAlbumPanelState extends State<BigSingleAlbumPanel> {
 
     baseColor = widget.baseColor;
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    currentSongList = widget.album.songList;
+
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       colorManager.updateBigPictureRelatedColors(widget.album.picture);
+
+      if (isStreamSource) {
+        if (currentSongList.isEmpty) {
+          await widget.album.load();
+          if (!mounted) {
+            return;
+          }
+        }
+      }
+
+      setState(() {});
     });
 
     super.initState();
@@ -324,7 +339,7 @@ class _BigSingleAlbumPanelState extends State<BigSingleAlbumPanel> {
     return [
       SizedBox(height: 120),
       Hero(
-        tag: 'big${widget.album.id}${widget.album.name}',
+        tag: 'big${widget.album.picture.id}${widget.album.name}',
         flightShuttleBuilder:
             (
               flightContext,

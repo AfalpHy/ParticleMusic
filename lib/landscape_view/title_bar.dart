@@ -224,6 +224,8 @@ class _TitleBarState extends State<TitleBar> {
                 layersManager.popDetail('artists');
                 layersManager.popDetail('albums');
                 layersManager.popDetail('folders');
+                layersManager.popDetail('ranking');
+                layersManager.popDetail('recently');
                 layersManager.popDetail('playlists');
                 while (await layersManager.popDetail('settings')) {}
               });
@@ -355,6 +357,8 @@ class _TitleBarState extends State<TitleBar> {
                       layersManager.popDetail('artists');
                       layersManager.popDetail('albums');
                       layersManager.popDetail('folders');
+                      layersManager.popDetail('ranking');
+                      layersManager.popDetail('recently');
                       layersManager.popDetail('playlists');
                       while (await layersManager.popDetail('settings')) {}
                     },

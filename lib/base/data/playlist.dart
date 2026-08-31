@@ -4,8 +4,7 @@ import 'dart:io';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:sylvakru/base/app.dart';
-import 'package:sylvakru/base/services/logger.dart';
-import 'package:sylvakru/base/services/navidrome_client.dart';
+import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/services/stream_client.dart';
 import 'package:sylvakru/base/utils/path.dart';
 import 'package:sylvakru/base/utils/metadata_utils.dart';
@@ -23,11 +22,13 @@ class PlaylistManager {
   ValueNotifier<int> updateNotifier = ValueNotifier(0);
   final useLargePictureNotifier = ValueNotifier(true);
 
+  Playlist playQueueForStream = Playlist(name: '_sylvakru_play_queue_');
+
   PlaylistManager() {
     addPlaylist(Playlist(name: 'Favorite'));
   }
 
-  Future<void> _prepare() async {
+  Future<void> prepare() async {
     _playlistsFile = File(
       "${getPlaylistConfigPath(sourceType)}/sylvakru_playlists.json",
     );
@@ -39,16 +40,16 @@ class PlaylistManager {
       addPlaylist(playlist);
     }
     if (isStreamSource) {
-      final playlistMapList = await getStreamClient(sourceType)?.getPlaylists();
-      if (playlistMapList != null) {
-        for (final playlist in playlistMapList) {
-          String id = playlist['id'];
-          String name = playlist['name'];
-          if (playlistMap[name] == null) {
-            addPlaylist(Playlist(name: name));
-          }
-          playlistMap[name]!.id = id;
+      final tmpPlaylist = await streamClient?.getPlaylists();
+      for (final playlist in tmpPlaylist ?? <Playlist>[]) {
+        if (playlist.name == playQueueForStream.name) {
+          playQueueForStream.id = playlist.id;
+          continue;
         }
+        if (playlistMap[playlist.name] == null) {
+          addPlaylist(playlist);
+        }
+        playlistMap[playlist.name]!.id = playlist.id;
       }
       playlists.removeWhere((e) => e.isNotFavorite && e.id == null);
       playlistMap.removeWhere((k, v) => v.isNotFavorite && v.id == null);
@@ -58,7 +59,6 @@ class PlaylistManager {
   }
 
   Future<void> load() async {
-    await _prepare();
     for (final playlist in playlists) {
       await playlist.load();
     }
@@ -71,9 +71,9 @@ class PlaylistManager {
     addPlaylist(Playlist(name: 'Favorite'));
     updateNotifier.value++;
 
-    await _prepare();
+    await prepare();
     for (final playlist in playlists) {
-      await playlist.load();
+      await playlist.reload();
     }
   }
 
@@ -95,13 +95,20 @@ class PlaylistManager {
     for (Playlist playlist in playlists) {
       // check whether the name exists
       if (name == playlist.name) {
+        showCenterMessage('Playlist exists');
         return;
       }
     }
 
     final playlist = Playlist(name: name);
     if (isStreamSource) {
-      playlist.id = await getStreamClient(sourceType)!.createPlaylist(name);
+      playlist.id = await streamClient?.createPlaylist(name);
+
+      // failed
+      if (playlist.id == null) {
+        showCenterMessage('Create playlist failed');
+        return;
+      }
     }
     addPlaylist(playlist);
 
@@ -112,7 +119,10 @@ class PlaylistManager {
     playlist.songListFile?.deleteSync();
 
     if (playlist.id != null) {
-      await getStreamClient(sourceType)!.deletePlaylist(playlist.id!);
+      if (!await streamClient!.deletePlaylist(playlist.id!)) {
+        showCenterMessage('Delete playlist failed');
+        return;
+      }
     }
 
     playlists.remove(playlist);
@@ -152,7 +162,7 @@ class Playlist {
 
   bool canModify = false;
 
-  Playlist({required this.name}) {
+  Playlist({required this.name, this.id}) {
     if (isNotStreamSource) {
       songListFile = File("${getPlaylistConfigPath(sourceType)}/$name.json");
       initFile(songListFile!, true);
@@ -170,7 +180,6 @@ class Playlist {
 
   Future<void> load() async {
     canModify = false;
-    songList.clear();
     changeNotifier.value++;
     if (isNotStreamSource) {
       final decoded = await readJsonListFile(songListFile!);
@@ -188,21 +197,16 @@ class Playlist {
         jsonEncode(songList.map((e) => e.id).toList()),
       );
     } else {
-      final client = getStreamClient(sourceType);
-
-      List<Map<String, dynamic>>? tmpSongs;
+      List<MyAudioMetadata>? tmpSongs;
       if (isFavorite) {
-        tmpSongs = (await client?.getStarredSongs());
+        tmpSongs = (await streamClient?.getStarredSongs());
       } else {
-        tmpSongs = (await client?.getPlaylistSongs(id!));
+        tmpSongs = (await streamClient?.getPlaylistSongs(id!));
       }
-      if (tmpSongs != null) {
-        for (final map in tmpSongs) {
-          final song = MyAudioMetadata.fromMap(map, sourceType);
-          songList.add(song);
-          if (isFavorite) {
-            song.isFavoriteNotifier.value = true;
-          }
+      for (final song in tmpSongs ?? []) {
+        songList.add(song);
+        if (isFavorite) {
+          song.isFavoriteNotifier.value = true;
         }
       }
     }
@@ -212,7 +216,16 @@ class Playlist {
     layersManager.updateBackground();
   }
 
+  Future<void> reload() async {
+    songList.clear();
+    await load();
+  }
+
   Future<void> add(List<MyAudioMetadata> songList) async {
+    if (!canModify) {
+      showCenterMessage('Playlist is updating');
+      return;
+    }
     for (MyAudioMetadata song in songList) {
       final targetSongList = this.songList;
       if (targetSongList.contains(song)) {
@@ -228,6 +241,10 @@ class Playlist {
   }
 
   Future<void> remove(List<MyAudioMetadata> songList) async {
+    if (!canModify) {
+      showCenterMessage('Playlist is updating');
+      return;
+    }
     for (MyAudioMetadata song in songList) {
       final targetSongList = this.songList;
       targetSongList.remove(song);
@@ -247,14 +264,17 @@ class Playlist {
     final songIds = songList.map((e) => e.id).toList();
     await songListFile?.writeAsString(jsonEncode(songIds));
     if (isStreamSource) {
-      final client = getStreamClient(sourceType);
       late bool success;
       if (isFavorite) {
-        success = await client!.updateStarredSongs(songIds);
+        success = await streamClient?.updateStarredSongs(songIds) ?? false;
       } else {
-        success = await navidromeClient!.updatePlaylistSongs(id!, songIds);
+        success =
+            await streamClient?.updatePlaylistSongs(id!, songIds) ?? false;
       }
-      logger.output('update playlist: $name ${success ? 'success' : 'failed'}');
+      showCenterMessage('Update playlist ${success ? 'success' : 'failed'}');
+      if (!success) {
+        return reload();
+      }
     }
     canModify = true;
     changeNotifier.value++;

@@ -242,7 +242,8 @@ abstract class BigSongListWithCoverBasePanelState<
           SliverToBoxAdapter(
             child: Center(
               child: Hero(
-                tag: 'big${getFirstSong(currentSongList)?.id}$title',
+                tag:
+                    'big${getFirstSong(currentSongList)?.picture.id ?? ''}$title',
                 flightShuttleBuilder:
                     (
                       flightContext,
@@ -269,7 +270,7 @@ abstract class BigSongListWithCoverBasePanelState<
       children: [
         SizedBox(width: 40),
         Hero(
-          tag: 'big${getFirstSong(currentSongList)?.id}$title',
+          tag: 'big${getFirstSong(currentSongList)?.picture.id ?? ''}$title',
           flightShuttleBuilder:
               (
                 flightContext,

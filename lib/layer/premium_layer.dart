@@ -30,7 +30,7 @@ class _PremiumLayerState extends State<PremiumLayer> {
     super.initState();
     _iapService.initialize();
     _iapService.onMessage = (msg, {duration}) {
-      showCenterMessage(context, msg, duration: duration ?? 3000);
+      showCenterMessage(msg, duration: duration ?? 3000);
     };
 
     WidgetsBinding.instance.addPostFrameCallback((_) {

@@ -59,6 +59,7 @@ class _PlaylistsLayerState extends CollectionListState {
   void initState() {
     super.initState();
     isListViewNotifier = ValueNotifier(true);
+    firstLoading = false;
     updateCurrentList();
     playlistManager.updateNotifier.addListener(updateCurrentList);
   }
@@ -75,7 +76,7 @@ class _PlaylistsLayerState extends CollectionListState {
     title = l10n.playlists;
     searchHint = l10n.searchPlaylists;
     if (currentTextList.isNotEmpty) {
-      currentTextList[0] = AppLocalizations.of(context).favorites;
+      currentTextList[0] = l10n.favorites;
     }
     return super.build(context);
   }

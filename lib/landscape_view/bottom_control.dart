@@ -156,7 +156,7 @@ class BottomControl extends StatelessWidget {
         Spacer(),
         IconButton(
           onPressed: () {
-            showCenterMessage(context, 'Desktop lyrics has been removed');
+            showCenterMessage('Desktop lyrics has been removed');
           },
           icon: const ImageIcon(desktopLyricsImage, size: 25),
         ),

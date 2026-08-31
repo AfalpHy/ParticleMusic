@@ -1,12 +1,14 @@
+import 'dart:async';
+
 import 'package:material_ui/material_ui.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/data/artist_album.dart';
-import 'package:sylvakru/base/services/navidrome_client.dart';
+import 'package:sylvakru/base/services/stream_client.dart';
 import 'package:sylvakru/layer/layers_manager.dart';
 import 'package:sylvakru/base/data/library.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
 
-final History history = History();
+History history = History();
 
 class History {
   final List<MyAudioMetadata> rankingSongList = [];
@@ -62,7 +64,7 @@ class History {
 
     if (song.sourceType == .navidrome) {
       while (times-- > 0) {
-        await navidromeClient!.scrobble(song.id);
+        await streamClient!.scrobble(song.id);
       }
     }
 
@@ -82,12 +84,52 @@ class History {
     recentlyChangeNotifier.value++;
   }
 
-  void clear() {
-    rankingSongList.clear();
-    recentlySongList.clear();
-    rankingAlbumList.clear();
-    recentlyAlbumList.clear();
-    rankingChangeNotifier.value++;
-    recentlyChangeNotifier.value++;
+  Completer<int?>? rankingCompleter;
+  Completer<int?>? recentlyCompleter;
+
+  // null: error; 0: end
+  Future<int?> loadAlbums(bool isRanking) async {
+    if (isRanking && rankingCompleter != null) {
+      return rankingCompleter!.future;
+    }
+    if (!isRanking && recentlyCompleter != null) {
+      return recentlyCompleter!.future;
+    }
+
+    Completer<int?> tmpCompleter = Completer<int?>();
+
+    if (isRanking) {
+      rankingCompleter = tmpCompleter;
+    } else {
+      recentlyCompleter = tmpCompleter;
+    }
+
+    final albumList = await streamClient!.getAlbumList(
+      isRanking ? rankingAlbumList.length : recentlyAlbumList.length,
+      type: isRanking ? 'frequent' : 'recent',
+    );
+
+    if (albumList == null) {
+      tmpCompleter.complete(null);
+      if (isRanking) {
+        rankingCompleter = null;
+      } else {
+        recentlyCompleter = null;
+      }
+      return null;
+    }
+
+    if (isRanking) {
+      rankingAlbumList.addAll(albumList);
+      rankingChangeNotifier.value++;
+      rankingCompleter = null;
+    } else {
+      recentlyAlbumList.addAll(albumList);
+      recentlyChangeNotifier.value++;
+      recentlyCompleter = null;
+    }
+
+    tmpCompleter.complete(albumList.length);
+    return albumList.length;
   }
 }

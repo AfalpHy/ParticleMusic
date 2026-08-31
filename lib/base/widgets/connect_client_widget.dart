@@ -8,6 +8,7 @@ import 'package:sylvakru/base/services/emby_client.dart';
 import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/services/logger.dart';
 import 'package:sylvakru/base/services/navidrome_client.dart';
+import 'package:sylvakru/base/services/stream_client.dart';
 import 'package:sylvakru/base/services/webdav_client.dart';
 import 'package:sylvakru/base/utils/source_type.dart';
 import 'package:sylvakru/base/widgets/custom_text_field.dart';
@@ -33,14 +34,10 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
       baseUrlTmp.text = webdavClient?.baseUrl ?? '';
       usernameTmp.text = webdavClient?.username ?? '';
       passwordTmp.text = webdavClient?.password ?? '';
-    } else if (widget.sourceType == .navidrome) {
-      baseUrlTmp.text = navidromeClient?.baseUrl ?? '';
-      usernameTmp.text = navidromeClient?.username ?? '';
-      passwordTmp.text = navidromeClient?.password ?? '';
     } else {
-      baseUrlTmp.text = embyClient?.baseUrl ?? '';
-      usernameTmp.text = embyClient?.username ?? '';
-      passwordTmp.text = embyClient?.password ?? '';
+      baseUrlTmp.text = streamClient?.baseUrl ?? '';
+      usernameTmp.text = streamClient?.username ?? '';
+      passwordTmp.text = streamClient?.password ?? '';
     }
   }
 
@@ -142,7 +139,7 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
             ElevatedButton(
               onPressed: () async {
                 if (Loader.busy) {
-                  showCenterMessage(context, l10n.syncingTryLater);
+                  showCenterMessage(l10n.syncingTryLater);
                   return;
                 }
 
@@ -152,10 +149,8 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
                 if (sourceType == .webdav) {
                   await library.updateFolders([]);
                   webdavClient = null;
-                } else if (sourceType == .navidrome) {
-                  navidromeClient = null;
                 } else {
-                  embyClient = null;
+                  streamClient = null;
                 }
                 if (context.mounted) {
                   Navigator.pop(context);
@@ -174,7 +169,7 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
             ElevatedButton(
               onPressed: () async {
                 if (Loader.busy) {
-                  showCenterMessage(context, l10n.syncingTryLater);
+                  showCenterMessage(l10n.syncingTryLater);
                   return;
                 }
                 try {
@@ -190,32 +185,33 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
                       return;
                     }
                   } else if (widget.sourceType == .navidrome) {
-                    final tmp = navidromeClient;
-                    navidromeClient = NavidromeClient(
+                    final tmp = streamClient;
+                    streamClient = NavidromeClient(
                       baseUrl: baseUrlTmp.text,
                       username: usernameTmp.text,
                       password: passwordTmp.text,
                     );
-                    if (!await navidromeClient!.ping()) {
-                      navidromeClient = tmp;
+                    if (!await streamClient!.ping()) {
+                      streamClient = tmp;
                       return;
                     }
                   } else {
-                    final tmp = embyClient;
-                    embyClient = EmbyClient(
+                    final tmp = streamClient;
+                    final embyClient = EmbyClient(
                       baseUrl: baseUrlTmp.text,
                       username: usernameTmp.text,
                       password: passwordTmp.text,
                     );
 
-                    if (!await embyClient!.login()) {
-                      embyClient = tmp;
+                    if (!await embyClient.ping()) {
+                      streamClient = tmp;
                       return;
                     }
+                    streamClient = embyClient;
                   }
                 } catch (e) {
                   if (context.mounted) {
-                    showCenterMessage(context, e.toString(), duration: 5000);
+                    showCenterMessage(e.toString(), duration: 5000);
                   }
                   logger.output(e.toString());
                   return;
@@ -223,7 +219,7 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
 
                 if (context.mounted) {
                   Navigator.pop(context);
-                  showCenterMessage(context, 'Connected successfully');
+                  showCenterMessage('Connected successfully');
                 }
                 await config.save();
                 if (widget.sourceType != .webdav) {

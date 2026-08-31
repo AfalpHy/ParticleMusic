@@ -421,6 +421,8 @@ class LayersManager {
     popDetail('artists', executePop: false);
     popDetail('albums', executePop: false);
     popDetail('folders', executePop: false);
+    popDetail('ranking', executePop: false);
+    popDetail('recently', executePop: false);
     popDetail('playlists', executePop: false);
 
     layerInfoMap.removeWhere((k, v) => k != topRootLayer);

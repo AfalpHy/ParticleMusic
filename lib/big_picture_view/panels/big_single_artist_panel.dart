@@ -17,9 +17,12 @@ import 'package:sylvakru/base/services/picture_service.dart';
 import 'package:sylvakru/base/utils/common_utils.dart';
 import 'package:sylvakru/base/utils/media_query.dart';
 import 'package:sylvakru/base/utils/metadata_utils.dart';
+import 'package:sylvakru/base/utils/source_type.dart';
+import 'package:sylvakru/base/utils/zoom_page_route.dart';
 import 'package:sylvakru/base/widgets/big_play_bar.dart';
 import 'package:sylvakru/base/widgets/cover_art_widget.dart';
 import 'package:sylvakru/base/widgets/my_divider.dart';
+import 'package:sylvakru/base/widgets/selectable_song_list_page.dart';
 import 'package:sylvakru/l10n/generated/app_localizations.dart';
 
 class BigSingleArtistPanel extends StatefulWidget {
@@ -36,7 +39,9 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
   final _scrollController = ScrollController();
 
   void update() {
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -45,17 +50,25 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
     backgroundPictureTmp = backgroundPicture;
     useCurrentSongForBg = true;
 
-    WidgetsBinding.instance.addPostFrameCallback((_) {
+    WidgetsBinding.instance.addPostFrameCallback((_) async {
       colorManager.updateBigPictureRelatedColors(
         currentSongNotifier.value?.picture,
       );
+      if (isStreamSource) {
+        widget.artist.changeNotifier.addListener(update);
+        await widget.artist.load();
+      }
     });
+
     super.initState();
   }
 
   @override
   void dispose() {
     useCurrentSongForBg = useCurrentSongForBgTmp;
+    if (isStreamSource) {
+      widget.artist.changeNotifier.removeListener(update);
+    }
     WidgetsBinding.instance.addPostFrameCallback((_) {
       colorManager.updateBigPictureRelatedColors(
         useCurrentSongForBg
@@ -132,48 +145,41 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
                         ),
                         IconButton(
                           onPressed: () async {
-                            // audioHandler.currentIndex = Random().nextInt(
-                            //   widget
-                            //       .artist
-                            //       .songListManager
-                            //       .currentSongList
-                            //       .length,
-                            // );
-                            // playModeNotifier.value = 1;
-                            // await audioHandler.setPlayQueue(
-                            //   widget.artist.songListManager.currentSongList,
-                            // );
-                            // await audioHandler.load();
-                            // audioHandler.play();
+                            audioHandler.currentIndex = Random().nextInt(
+                              widget.artist.songList.length,
+                            );
+                            playModeNotifier.value = 1;
+                            await audioHandler.setPlayQueue(
+                              widget.artist.songList,
+                            );
+                            await audioHandler.load();
+                            audioHandler.play();
                           },
                           icon: ImageIcon(shuffleImage),
                         ),
                         IconButton(
                           onPressed: () async {
-                            // audioHandler.currentIndex = 0;
-                            // playModeNotifier.value = 0;
-                            // await audioHandler.setPlayQueue(
-                            //   widget.artist.songListManager.currentSongList,
-                            // );
-                            // await audioHandler.load();
-                            // audioHandler.play();
+                            audioHandler.currentIndex = 0;
+                            playModeNotifier.value = 0;
+                            await audioHandler.setPlayQueue(
+                              widget.artist.songList,
+                            );
+                            await audioHandler.load();
+                            audioHandler.play();
                           },
                           icon: Icon(Icons.play_arrow_rounded),
                           iconSize: 30,
                         ),
                         IconButton(
                           onPressed: () {
-                            // Navigator.of(context).push(
-                            //   ZoomPageRoute(
-                            //     builder: (_) => SelectableSongListPage(
-                            //       songList: widget
-                            //           .artist
-                            //           .songListManager
-                            //           .currentSongList,
-                            //       reorderable: false,
-                            //     ),
-                            //   ),
-                            // );
+                            Navigator.of(context).push(
+                              ZoomPageRoute(
+                                builder: (_) => SelectableSongListPage(
+                                  songList: widget.artist.songList,
+                                  reorderable: false,
+                                ),
+                              ),
+                            );
                           },
                           icon: Transform.scale(
                             scale: 0.95,
@@ -186,9 +192,9 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
                     MyDivider(color: dividerColor),
                     Row(
                       children: [
-                        // Text(
-                        //   '${getSourceTypeDisplayName(l10n, widget.artist.songListManager.sourceType)}: ${widget.artist.albumList.where((album) => album.songListManager.getSongList(sourceType).isNotEmpty).toList().length} ${l10n.albums}, ${l10n.songCount(widget.artist.songListManager.currentSongList.length)}',
-                        // ),
+                        Text(
+                          '${getSourceTypeDisplayName(l10n, sourceType)}: ${widget.artist.albumList.length} ${l10n.albums}, ${l10n.songCount(widget.artist.songList.length)}',
+                        ),
                       ],
                     ),
                     SizedBox(height: 10),
@@ -246,67 +252,61 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
   }
 
   Widget albumContent(Album album, double panelWidth) {
-    return SizedBox();
-    // final songList = [
-    //   album.songListManager
-    //       .getSongList(sourceType)
-    //       .where((song) => getArtist(song).contains(widget.artist.name))
-    //       .toList(),
-    // ];
-    // if (songList.isEmpty) {
-    //   return SliverToBoxAdapter(child: SizedBox());
-    // }
-    // if (isTooNarrow(context)) {
-    //   return SliverMainAxisGroup(
-    //     slivers: [
-    //       SliverToBoxAdapter(
-    //         child: Center(
-    //           child: CoverArtWidget(
-    //             song: songList.first,
-    //             size: panelWidth * 0.6,
-    //             borderRadius: panelWidth * 0.06,
-    //           ),
-    //         ),
-    //       ),
-    //       SliverToBoxAdapter(child: SizedBox(height: 10)),
-    //       albumTitleAndSongList(album, songList),
-    //       SliverToBoxAdapter(
-    //         child: SizedBox(height: isTooNarrow(context) ? 10 : 40),
-    //       ),
-    //     ],
-    //   );
-    // }
-    // return SliverMainAxisGroup(
-    //   slivers: [
-    //     SliverCrossAxisGroup(
-    //       slivers: [
-    //         SliverConstrainedCrossAxis(
-    //           maxExtent: 40,
-    //           sliver: SliverToBoxAdapter(child: SizedBox()),
-    //         ),
-    //         SliverConstrainedCrossAxis(
-    //           maxExtent: panelWidth * 0.2,
-    //           sliver: SliverToBoxAdapter(
-    //             child: CoverArtWidget(
-    //               song: songList.first,
-    //               size: panelWidth * 0.2,
-    //               borderRadius: panelWidth * 0.01,
-    //             ),
-    //           ),
-    //         ),
+    final songList = album.songList;
+    if (songList.isEmpty) {
+      return SliverToBoxAdapter(child: SizedBox());
+    }
+    if (isTooNarrow(context)) {
+      return SliverMainAxisGroup(
+        slivers: [
+          SliverToBoxAdapter(
+            child: Center(
+              child: CoverArtWidget(
+                picture: album.picture,
+                size: panelWidth * 0.6,
+                borderRadius: panelWidth * 0.06,
+              ),
+            ),
+          ),
+          SliverToBoxAdapter(child: SizedBox(height: 10)),
+          albumTitleAndSongList(album, songList),
+          SliverToBoxAdapter(
+            child: SizedBox(height: isTooNarrow(context) ? 10 : 40),
+          ),
+        ],
+      );
+    }
+    return SliverMainAxisGroup(
+      slivers: [
+        SliverCrossAxisGroup(
+          slivers: [
+            SliverConstrainedCrossAxis(
+              maxExtent: 40,
+              sliver: SliverToBoxAdapter(child: SizedBox()),
+            ),
+            SliverConstrainedCrossAxis(
+              maxExtent: panelWidth * 0.2,
+              sliver: SliverToBoxAdapter(
+                child: CoverArtWidget(
+                  picture: album.picture,
+                  size: panelWidth * 0.2,
+                  borderRadius: panelWidth * 0.01,
+                ),
+              ),
+            ),
 
-    //         albumTitleAndSongList(album, songList),
-    //         SliverConstrainedCrossAxis(
-    //           maxExtent: 20,
-    //           sliver: SliverToBoxAdapter(child: SizedBox()),
-    //         ),
-    //       ],
-    //     ),
-    //     SliverToBoxAdapter(
-    //       child: SizedBox(height: isTooNarrow(context) ? 10 : 40),
-    //     ),
-    //   ],
-    // );
+            albumTitleAndSongList(album, songList),
+            SliverConstrainedCrossAxis(
+              maxExtent: 20,
+              sliver: SliverToBoxAdapter(child: SizedBox()),
+            ),
+          ],
+        ),
+        SliverToBoxAdapter(
+          child: SizedBox(height: isTooNarrow(context) ? 10 : 40),
+        ),
+      ],
+    );
   }
 
   Widget albumTitleAndSongList(Album album, List<MyAudioMetadata> songList) {

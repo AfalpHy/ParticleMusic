@@ -193,7 +193,7 @@ class SettingsList extends StatelessWidget {
         if (await showConfirmDialog(context, l10n.syncLibrary)) {
           if (Loader.busy) {
             if (context.mounted) {
-              showCenterMessage(context, l10n.syncingTryLater);
+              showCenterMessage(l10n.syncingTryLater);
             }
             return;
           }
@@ -748,7 +748,6 @@ class SettingsList extends StatelessWidget {
           if (response.statusCode != 200) {
             if (context.mounted) {
               showCenterMessage(
-                context,
                 'Failed to fetch GitHub release:${response.statusCode}',
               );
             }
@@ -831,13 +830,12 @@ class SettingsList extends StatelessWidget {
             }
           } else {
             if (context.mounted) {
-              showCenterMessage(context, l10n.alreadyLatest);
+              showCenterMessage(l10n.alreadyLatest);
             }
           }
         } catch (e) {
           if (context.mounted) {
             showCenterMessage(
-              context,
               'Failed to fetch GitHub release:$e',
               duration: 5000,
             );
@@ -894,18 +892,12 @@ class SettingsList extends StatelessWidget {
                                   }
                                   logger.export2Directory(result);
                                   if (context.mounted) {
-                                    showCenterMessage(
-                                      context,
-                                      'Export to $result',
-                                    );
+                                    showCenterMessage('Export to $result');
                                   }
                                 } else {
                                   result = '${appDocsDir.path}/logs';
                                   logger.export2Directory(result);
-                                  showCenterMessage(
-                                    context,
-                                    'Export to Sylvakru/logs',
-                                  );
+                                  showCenterMessage('Export to Sylvakru/logs');
                                 }
                               },
                               child: Text(l10n.exportLog),

@@ -57,35 +57,36 @@ abstract class CollectionListState extends State<CollectionList> {
 
   late final String Function(int) countFunction;
 
+  bool firstLoading = true;
+
   void updateCurrentList();
 
   Future<void> fetchCollectionList() async {}
 
-  bool _isLoadingMoreData = false;
   bool reachEnd = false;
   void _onScroll() async {
-    if (_isLoadingMoreData | reachEnd) {
+    if (firstLoading | reachEnd) {
       return;
     }
-    _isLoadingMoreData = true;
 
     if (scrollController.position.pixels >=
         scrollController.position.maxScrollExtent) {
       await fetchCollectionList();
     }
-    _isLoadingMoreData = false;
   }
 
   @override
   void initState() {
     super.initState();
 
+    isAscendingNotifier?.addListener(updateCurrentList);
     textController.addListener(updateCurrentList);
     scrollController.addListener(_onScroll);
   }
 
   @override
   void dispose() {
+    isAscendingNotifier?.removeListener(updateCurrentList);
     textController.dispose();
     scrollController.dispose();
     super.dispose();

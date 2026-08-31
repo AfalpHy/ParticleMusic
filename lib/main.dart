@@ -93,7 +93,8 @@ Future<void> main() async {
             AppLocalizations.delegate,
             ...GlobalMaterialLocalizations.delegates,
           ],
-          title: 'Sylvaklu',
+          navigatorKey: globalNavigatorKey,
+          title: 'Sylvakru',
           theme: ThemeData(
             focusColor: lightHoverFocusColorNotifier.value
                 ? Colors.white.withAlpha(20)

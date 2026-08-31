@@ -259,7 +259,7 @@ class _EditMetadataState extends State<EditMetadata> {
       if (Platform.isAndroid) {
         if (await Permission.manageExternalStorage.request() == .denied) {
           if (context.mounted) {
-            showCenterMessage(context, l10n.updateFailed);
+            showCenterMessage(l10n.updateFailed);
           }
           return;
         }
@@ -348,7 +348,6 @@ class _EditMetadataState extends State<EditMetadata> {
       }
       if (context.mounted) {
         showCenterMessage(
-          context,
           success ? l10n.updateSuccessfully : l10n.updateFailed,
         );
         Navigator.pop(context);

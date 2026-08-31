@@ -1,8 +1,8 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:sylvakru/base/audio_handler.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
-import 'package:sylvakru/base/my_audio_metadata.dart';
 import 'package:sylvakru/base/services/keyboard.dart';
+import 'package:sylvakru/base/services/picture_service.dart';
 
 class MySearchField extends StatefulWidget {
   final String hintText;
@@ -11,7 +11,7 @@ class MySearchField extends StatefulWidget {
 
   final void Function()? onSearchTextChanged;
 
-  final MyAudioMetadata? song;
+  final MyPicture? picture;
   final bool useCurrentSong;
   final ValueNotifier<bool> isSearchNotifier;
 
@@ -21,7 +21,7 @@ class MySearchField extends StatefulWidget {
     required this.textController,
     required this.isSearchNotifier,
     this.onSearchTextChanged,
-    this.song,
+    this.picture,
     this.useCurrentSong = true,
   });
 
@@ -98,8 +98,8 @@ class _MySearchFieldState extends State<MySearchField> {
                       fillColor: colorManager
                           .getSpecificMainPageSearchFieldColorForm(
                             widget.useCurrentSong
-                                ? currentSongNotifier.value
-                                : widget.song,
+                                ? currentSongNotifier.value?.picture
+                                : widget.picture,
                           ),
                       contentPadding: EdgeInsets.zero,
                       isDense: true,

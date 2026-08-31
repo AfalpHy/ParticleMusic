@@ -57,9 +57,11 @@ class Loader {
 
     history.load();
 
-    await playlistManager.load();
+    await playlistManager.prepare();
 
     await audioHandler.loadStates();
+
+    await playlistManager.load();
 
     if (isNotStreamSource) {
       artistAlbumManager.classify();
@@ -74,11 +76,13 @@ class Loader {
 
     layersManager.perpareForSync();
 
-    artistAlbumManager.clear();
-    history.clear();
+    artistAlbumManager = ArtistAlbumManager();
+
+    history = History();
 
     await library.sync();
     history.load();
+
     await playlistManager.sync();
 
     await audioHandler.sync();
