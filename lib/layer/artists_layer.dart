@@ -66,7 +66,7 @@ class _ArtistsLayerState extends CollectionListState {
     isListViewNotifier = artistAlbumManager.artistsIsListViewNotifier;
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (isStreamSource) {
+      if (isStreamSource && artistAlbumManager.artistList.isEmpty) {
         await artistAlbumManager.loadArtists();
       }
       firstLoading = false;

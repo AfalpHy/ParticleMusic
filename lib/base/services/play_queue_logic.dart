@@ -38,7 +38,11 @@ class PlayQueueLogic {
         return QueueInsertResult(currentIndex, false);
       }
     } else {
-      playQueue.insert(currentIndex + 1, song);
+      if (playQueue.isEmpty) {
+        playQueue.add(song);
+      } else {
+        playQueue.insert(currentIndex + 1, song);
+      }
       return QueueInsertResult(currentIndex, true);
     }
   }

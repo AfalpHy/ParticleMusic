@@ -364,7 +364,7 @@ class Library {
   ) async {
     MyAudioMetadata? song = library.id2Song[id];
 
-    if (song?.modified != modified) {
+    if ((song?.modified?.difference(modified).inSeconds.abs() ?? 2) > 1) {
       String realPath = path;
       Map<String, String>? headers;
       bool isWebdav = path.startsWith('http://') || path.startsWith('https://');
@@ -489,6 +489,8 @@ class Library {
 
         await Future.wait(tasks);
 
+        await pool.close();
+
         id2Song.removeWhere((id, song) => !validId.contains(id));
 
         for (final folder in folderList) {
@@ -496,7 +498,6 @@ class Library {
           folder.clearPathAndModified();
         }
 
-        await pool.close();
         await _saveMetadata();
       default:
         id2Song = {};

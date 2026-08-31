@@ -137,7 +137,7 @@ extension _CollectionListPanel on CollectionListState {
     return ListenableBuilder(
       listenable: Listenable.merge([changeNotifier, Loader.stateNotifier]),
       builder: (context, child) {
-        if (Loader.busy || (currentPictureList.isEmpty && !reachEnd)) {
+        if (firstLoading) {
           return SliverFillRemaining(
             hasScrollBody: false,
             child: Center(
