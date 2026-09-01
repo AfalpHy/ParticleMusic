@@ -569,13 +569,12 @@ class EmbyClient extends StreamClient {
   }
 
   @override
-  Future<List<Album>?> getArtistAlbumList(String id) {
-    throw UnimplementedError();
+  Future<List<Album>?> getArtistAlbumList(String id) async {
+    return null;
   }
 
   @override
-  Future<Album?> getAlbum(String id) {
-    // TODO: implement getAlbum
-    throw UnimplementedError();
+  Future<Album?> getAlbum(String id) async {
+    return null;
   }
 }
