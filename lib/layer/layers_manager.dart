@@ -363,9 +363,9 @@ class LayersManager {
       return getFirstSong(songList)?.picture;
     } else if (layer is SongsLayer) {
       return getFirstSong(library.songList)?.picture;
-    } else if (layer is RankingLayer && isNotStreamSource) {
+    } else if (layer is RankingLayer && sourceType != .navidrome) {
       return getFirstSong(history.rankingSongList)?.picture;
-    } else if (layer is RecentlyLayer && isNotStreamSource) {
+    } else if (layer is RecentlyLayer && sourceType != .navidrome) {
       return getFirstSong(history.recentlySongList)?.picture;
     } else if (layer is SinglePlaylistLayer) {
       return layer.playlist.getCoverSong()?.picture;

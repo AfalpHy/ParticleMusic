@@ -85,7 +85,7 @@ class EmbyClient extends StreamClient {
       return null;
     } on DioException catch (e) {
       logger.output(
-        '[$runtimeType]\n[error]Dio: ${e.message} (${e.response?.statusCode}\n[data]${e.response?.data.toString()})',
+        '\n[$runtimeType]\n[error]Dio: ${e.message} (${e.response?.statusCode}\n[data]${e.response?.data.toString()})',
       );
 
       if (errorMessage.isNotEmpty) {
@@ -94,7 +94,7 @@ class EmbyClient extends StreamClient {
 
       return null;
     } catch (e) {
-      logger.output('[$runtimeType]\n[error]$e');
+      logger.output('\n[$runtimeType]\n[error]$e');
 
       if (errorMessage.isNotEmpty) {
         showCenterMessage(errorMessage, duration: 3000);

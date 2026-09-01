@@ -77,7 +77,7 @@ class NavidromeClient extends StreamClient {
       if (response['status'] != 'ok') {
         final resErrorMessage = response['error']?['message'];
         logger.output(
-          '[$runtimeType]\n[request]$path\n[query]$query\n[options]$options\n[error]${resErrorMessage ?? 'Unknown error'}',
+          '\n[$runtimeType]\n[request]$path\n[query]$query\n[options]$options\n[error]${resErrorMessage ?? 'Unknown error'}',
         );
 
         if (showRealError && resErrorMessage != null) {
@@ -90,7 +90,7 @@ class NavidromeClient extends StreamClient {
       return response;
     } on DioException catch (e) {
       logger.output(
-        '[$runtimeType]\n[request]$path\n[query]$query\n[options]$options\n[error]Dio: ${e.message} (${e.response?.statusCode}\n[data]${e.response?.data.toString()})',
+        '\n[$runtimeType]\n[request]$path\n[query]$query\n[options]$options\n[error]Dio: ${e.message} (${e.response?.statusCode}\n[data]${e.response?.data.toString()})',
       );
 
       if (errorMessage.isNotEmpty) {
@@ -100,7 +100,7 @@ class NavidromeClient extends StreamClient {
       return null;
     } catch (e) {
       logger.output(
-        '[$runtimeType]\n[request]$path\n[query]$query\n[options]$options\n[error]$e',
+        '\n[$runtimeType]\n[request]$path\n[query]$query\n[options]$options\n[error]$e',
       );
 
       if (errorMessage.isNotEmpty) {

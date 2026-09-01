@@ -1321,10 +1321,6 @@ void goToArtist(
     );
     artist = artistAlbumManager.artistMap[artistName];
   } else {
-    if (song.artistId == null) {
-      showCenterMessage('Can not get this artist');
-      return;
-    }
     if (artistAlbumManager.artistList.isEmpty) {
       showCenterLoading();
       await artistAlbumManager.loadArtists();
