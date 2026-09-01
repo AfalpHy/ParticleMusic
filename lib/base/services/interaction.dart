@@ -14,8 +14,8 @@ import 'package:sylvakru/base/data/playlist.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/services/picture_service.dart';
+import 'package:sylvakru/base/services/stream_client.dart';
 import 'package:sylvakru/base/utils/metadata_utils.dart';
-import 'package:sylvakru/base/utils/source_type.dart';
 import 'package:sylvakru/base/utils/zoom_page_route.dart';
 import 'package:sylvakru/base/widgets/cover_art_widget.dart';
 import 'package:sylvakru/base/widgets/custom_text_field.dart';
@@ -69,6 +69,28 @@ void showCenterMessage(String message, {int duration = 2000}) {
   Future.delayed(Duration(milliseconds: duration), () {
     overlayEntry.remove();
   });
+}
+
+OverlayEntry? _centerOverlayEntry;
+
+Future<void> showCenterLoading() async {
+  final overlay = globalNavigatorKey.currentState?.overlay;
+  if (overlay == null) return;
+  _centerOverlayEntry = OverlayEntry(
+    builder: (context) => Stack(
+      children: [
+        const ModalBarrier(dismissible: false, color: Colors.black26),
+        Center(child: CircularProgressIndicator(color: iconColor.value)),
+      ],
+    ),
+  );
+
+  overlay.insert(_centerOverlayEntry!);
+}
+
+void removeCenterLoading() {
+  _centerOverlayEntry?.remove();
+  _centerOverlayEntry = null;
 }
 
 Future<bool> showConfirmDialog(BuildContext context, String action) async {
@@ -950,64 +972,14 @@ void showSongOptions({
                           horizontal: 0,
                           vertical: -4,
                         ),
-                        onTap: () async {
+                        onTap: () {
                           Navigator.pop(context);
-                          final artists = getArtists(getArtist(song));
-
-                          if (artists.length == 1) {
-                            Navigator.of(context).push(
-                              ZoomPageRoute(
-                                builder: (context) {
-                                  return BigSingleArtistPanel(
-                                    artist: artistAlbumManager
-                                        .artistMap[artists.first]!,
-                                  );
-                                },
-                              ),
-                            );
-                          } else {
-                            showAnimationDialog(
-                              context: context,
-                              child: ConstrainedBox(
-                                constraints: BoxConstraints(
-                                  maxWidth: max(
-                                    320,
-                                    min(MediaQuery.widthOf(context) / 3, 400),
-                                  ),
-                                  maxHeight:
-                                      MediaQuery.sizeOf(context).height * 0.8,
-                                ),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(10),
-                                  child: ListView.builder(
-                                    shrinkWrap: true,
-                                    itemCount: artists.length,
-                                    itemBuilder: (context, index) {
-                                      final name = artists[index];
-                                      return ListTile(
-                                        title: Text(name),
-                                        onTap: name == excludedArtist
-                                            ? null
-                                            : () {
-                                                Navigator.of(context).pop();
-                                                Navigator.of(context).push(
-                                                  ZoomPageRoute(
-                                                    builder: (context) {
-                                                      return BigSingleArtistPanel(
-                                                        artist: artistAlbumManager
-                                                            .artistMap[name]!,
-                                                      );
-                                                    },
-                                                  ),
-                                                );
-                                              },
-                                      );
-                                    },
-                                  ),
-                                ),
-                              ),
-                            );
-                          }
+                          goToArtist(
+                            song,
+                            context,
+                            bigPictureMode: true,
+                            excludedArtist: excludedArtist,
+                          );
                         },
                       ),
 
@@ -1024,24 +996,10 @@ void showSongOptions({
                         ),
                         onTap: () async {
                           Navigator.pop(context);
-                          await Future.delayed(Duration(milliseconds: 250));
-                          final album =
-                              artistAlbumManager.albumMap[getAlbum(song)]!;
-                          final baseColor = await computeColor(
-                            album.getCoverSong().picture,
-                          );
-                          if (!context.mounted) {
-                            return;
-                          }
-                          Navigator.of(context).push(
-                            ZoomPageRoute(
-                              builder: (context) {
-                                return BigSingleAlbumPanel(
-                                  album: album,
-                                  baseColor: baseColor,
-                                );
-                              },
-                            ),
+                          goToAlbum(
+                            song,
+                            bigPictureMode: true,
+                            context: context,
                           );
                         },
                       ),
@@ -1094,50 +1052,6 @@ void showSongOptions({
           ),
         );
       },
-    ),
-  );
-}
-
-void showSwitchDialogIfNeed(BuildContext context) {
-  showAnimationDialog(
-    context: context,
-    child: SizedBox(
-      width: 300,
-      child: Padding(
-        padding: const EdgeInsets.all(10),
-        child: Builder(
-          builder: (context) {
-            return ListView(
-              shrinkWrap: true,
-              children: [
-                for (final tmpSourceType in SourceType.values)
-                  ListTile(
-                    leading: Image(
-                      image: getSourceTypeImage(tmpSourceType),
-                      height: 30,
-                      width: 30,
-                    ),
-                    title: Text(
-                      getSourceTypeDisplayName(
-                        AppLocalizations.of(context),
-                        tmpSourceType,
-                      ),
-                    ),
-                    onTap: () async {
-                      Navigator.pop(context);
-                      await Future.delayed(Duration(milliseconds: 250));
-
-                      layersManager.updateBackground();
-                    },
-                    trailing: tmpSourceType == sourceType
-                        ? Icon(Icons.check)
-                        : null,
-                  ),
-              ],
-            );
-          },
-        ),
-      ),
     ),
   );
 }
@@ -1334,12 +1248,6 @@ void showArtistsAlbumsOptions(BuildContext context, bool isArtist) {
                   await Future.delayed(Duration(milliseconds: 250));
 
                   isAscending.value = !isAscending.value;
-                  if (isArtist) {
-                    artistAlbumManager.sortArtists();
-                  } else {
-                    artistAlbumManager.sortAlbums();
-                  }
-                  artistAlbumManager.updateNotifier.value++;
                 },
               ),
 
@@ -1350,4 +1258,166 @@ void showArtistsAlbumsOptions(BuildContext context, bool isArtist) {
       ),
     ),
   );
+}
+
+Future<String?> _selectArtist(
+  BuildContext context,
+  List<String> artists, {
+  String? excludedArtist,
+}) async {
+  artists.removeWhere((e) => e == excludedArtist);
+  if (artists.isEmpty) {
+    return null;
+  }
+  if (artists.length == 1 && excludedArtist == null) {
+    return artists.first;
+  }
+
+  return showAnimationDialog(
+    context: context,
+    child: SizedBox(
+      width: 300,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(10, 20, 10, 20),
+        child: ListView.builder(
+          shrinkWrap: true,
+          itemCount: artists.length,
+          itemExtent: 60,
+          itemBuilder: (context, index) {
+            String name = artists[index];
+
+            return Center(
+              child: ListTile(
+                leading: CoverArtWidget(
+                  size: 50,
+                  borderRadius: 5,
+                  picture: artistAlbumManager.artistMap[name]!.picture,
+                ),
+                title: Text(name, style: .new(overflow: .ellipsis)),
+                onTap: () {
+                  Navigator.pop(context, name);
+                },
+              ),
+            );
+          },
+        ),
+      ),
+    ),
+  );
+}
+
+void goToArtist(
+  MyAudioMetadata song,
+  BuildContext context, {
+  bool bigPictureMode = false,
+  String? excludedArtist,
+}) async {
+  Artist? artist;
+  if (isNotStreamSource) {
+    final artistName = await _selectArtist(
+      context,
+      getArtists(getArtist(song)),
+      excludedArtist: excludedArtist,
+    );
+    artist = artistAlbumManager.artistMap[artistName];
+  } else {
+    if (song.artistId == null) {
+      showCenterMessage('Can not get this artist');
+      return;
+    }
+    if (artistAlbumManager.artistList.isEmpty) {
+      showCenterLoading();
+      await artistAlbumManager.loadArtists();
+      removeCenterLoading();
+    }
+
+    artist = artistAlbumManager.artistMap[song.artist];
+  }
+
+  if (artist == null) {
+    showCenterMessage('Get artist failed');
+    return;
+  }
+
+  if (bigPictureMode) {
+    if (context.mounted) {
+      Navigator.of(context).push(
+        ZoomPageRoute(
+          builder: (context) {
+            return BigSingleArtistPanel(artist: artist!);
+          },
+        ),
+      );
+    }
+  } else {
+    await Future.delayed(Duration(milliseconds: 250));
+    layersManager.switchRootLayer('artists');
+    layersManager.pushDetailIfNeed(artist);
+  }
+}
+
+Future<Album?> _loadStreamAlbum(MyAudioMetadata song) async {
+  // it probably would not happen
+  if (song.albumId == null) {
+    showCenterMessage('Can not get this album');
+    return null;
+  }
+
+  showCenterLoading();
+  if (artistAlbumManager.albumList.isEmpty) {
+    await artistAlbumManager.loadAlbums();
+  }
+  if (artistAlbumManager.albumMap[song.albumId] == null) {
+    final album = await streamClient!.getAlbum(song.albumId!);
+    if (album != null) {
+      artistAlbumManager.albumList.add(album);
+      artistAlbumManager.sortAlbums();
+      artistAlbumManager.updateNotifier.value++;
+    }
+  }
+  removeCenterLoading();
+
+  return artistAlbumManager.albumMap[song.albumId];
+}
+
+void goToAlbum(
+  MyAudioMetadata song, {
+  bool bigPictureMode = false,
+  BuildContext? context,
+}) async {
+  await Future.delayed(Duration(milliseconds: 250));
+
+  Album? album;
+  if (isNotStreamSource) {
+    album = artistAlbumManager.albumMap[getAlbum(song)];
+  } else {
+    album = await _loadStreamAlbum(song);
+  }
+  if (album == null) {
+    showCenterMessage('Get album failed');
+    return;
+  }
+
+  if (bigPictureMode) {
+    final baseColor = await computeColor(album.picture);
+    if (!context!.mounted) {
+      return;
+    }
+    Navigator.of(context).push(
+      ZoomPageRoute(
+        builder: (context) {
+          return BigSingleAlbumPanel(album: album!, baseColor: baseColor);
+        },
+      ),
+    );
+    return;
+  }
+
+  layersManager.switchRootLayer('albums');
+
+  if (isNotStreamSource) {
+    layersManager.pushDetailIfNeed(artistAlbumManager.albumMap[getAlbum(song)]);
+  } else {
+    layersManager.pushDetailIfNeed(album);
+  }
 }

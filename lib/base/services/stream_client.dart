@@ -46,6 +46,8 @@ abstract class StreamClient {
 
   Future<List<Album>?> getAlbumList(int offset, {String type});
 
+  Future<Album?> getAlbum(String id);
+
   Future<List<MyAudioMetadata>?> getAlbumSongs(String id);
 
   // use playlist to save playqueue(no limit)

@@ -866,38 +866,35 @@ extension _SongListPanel on _SongListState {
     menuItems.add(MenuItem(isDivider: true));
 
     if (selectedSongList.length == 1) {
-      menuItems.add(
-        MenuItem(
-          text: l10n.go2Artist,
-          iconData: Icons.people,
-          callback: () async {
-            final artists = getArtists(getArtist(currentSongList[index]));
-            if (artists.length > 1) {
-              showArtistEntries(context, artists);
-            } else {
-              await Future.delayed(Duration(milliseconds: 250));
-              layersManager.switchRootLayer('artists');
-              layersManager.pushDetailIfNeed(
-                artistAlbumManager.artistMap[artists[0]],
-              );
-            }
-          },
-        ),
-      );
+      final song = selectedSongList.first;
+      if (artist == null) {
+        menuItems.add(
+          MenuItem(
+            text: l10n.go2Artist,
+            iconData: Icons.people,
+            callback: () => goToArtist(song, context),
+          ),
+        );
+      } else if (isNotStreamSource && artist!.name != song.artist) {
+        menuItems.add(
+          MenuItem(
+            text: l10n.go2Artist,
+            iconData: Icons.people,
+            callback: () =>
+                goToArtist(song, context, excludedArtist: artist!.name),
+          ),
+        );
+      }
 
-      menuItems.add(
-        MenuItem(
-          text: l10n.go2Album,
-          iconData: Icons.album_rounded,
-          callback: () async {
-            await Future.delayed(Duration(milliseconds: 250));
-            layersManager.switchRootLayer('albums');
-            layersManager.pushDetailIfNeed(
-              artistAlbumManager.albumMap[getAlbum(currentSongList[index])],
-            );
-          },
-        ),
-      );
+      if (album == null) {
+        menuItems.add(
+          MenuItem(
+            text: l10n.go2Album,
+            iconData: Icons.album_rounded,
+            callback: () => goToAlbum(song),
+          ),
+        );
+      }
 
       menuItems.add(
         MenuItem(
@@ -906,7 +903,7 @@ extension _SongListPanel on _SongListState {
           callback: () {
             showAnimationDialog(
               context: context,
-              child: SongInfo(song: currentSongList[index]),
+              child: SongInfo(song: song),
             );
           },
         ),
@@ -920,7 +917,7 @@ extension _SongListPanel on _SongListState {
             callback: () {
               showAnimationDialog(
                 context: context,
-                child: EditMetadata(song: currentSongList[index]),
+                child: EditMetadata(song: song),
               );
             },
           ),

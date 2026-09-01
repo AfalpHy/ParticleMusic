@@ -3,11 +3,8 @@ import 'dart:async';
 import 'package:lpinyin/lpinyin.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:sylvakru/base/app.dart';
-import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/services/picture_service.dart';
 import 'package:sylvakru/base/services/stream_client.dart';
-import 'package:sylvakru/base/widgets/cover_art_widget.dart';
-import 'package:sylvakru/layer/layers_manager.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
 import 'package:sylvakru/base/utils/metadata_utils.dart';
 
@@ -339,43 +336,4 @@ class Album extends ArtistAlbumBase {
     }
     return completer!.future;
   }
-}
-
-void showArtistEntries(BuildContext context, List<String> artists) {
-  showAnimationDialog(
-    context: context,
-    child: SizedBox(
-      width: 300,
-      height: 350,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(10, 20, 10, 20),
-        child: ListView.builder(
-          itemCount: artists.length,
-          itemExtent: 60,
-          itemBuilder: (context, index) {
-            String name = artists[index];
-            return Center(
-              child: ListTile(
-                leading: CoverArtWidget(
-                  size: 50,
-                  borderRadius: 5,
-                  picture: artistAlbumManager.artistMap[name]!.picture,
-                ),
-                title: Text(name),
-                onTap: () async {
-                  Navigator.pop(context);
-                  await Future.delayed(Duration(milliseconds: 250));
-
-                  layersManager.switchRootLayer('artists');
-                  layersManager.pushDetailIfNeed(
-                    artistAlbumManager.artistMap[name],
-                  );
-                },
-              ),
-            );
-          },
-        ),
-      ),
-    ),
-  );
 }

@@ -362,6 +362,8 @@ extension _SongListPage on _SongListState {
                   child: SongListTile(
                     index: index,
                     songList: currentSongList,
+                    artist: artist,
+                    album: album,
                     folder: folder,
                     playlist: playlist,
                     isRanking: isRanking,

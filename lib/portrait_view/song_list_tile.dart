@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/audio_handler.dart';
 import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/data/artist_album.dart';
@@ -10,7 +11,6 @@ import 'package:sylvakru/base/widgets/playlist_widgets.dart';
 import 'package:sylvakru/base/data/folder.dart';
 import 'package:sylvakru/l10n/generated/app_localizations.dart';
 import 'package:sylvakru/base/widgets/edit_metadata.dart';
-import 'package:sylvakru/layer/layers_manager.dart';
 import 'package:sylvakru/base/data/library.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
 import 'package:sylvakru/base/data/playlist.dart';
@@ -21,6 +21,9 @@ import '../base/widgets/cover_art_widget.dart';
 class SongListTile extends StatelessWidget {
   final int index;
   final List<MyAudioMetadata> songList;
+  final Artist? artist;
+  final Album? album;
+
   final Folder? folder;
   final Playlist? playlist;
 
@@ -32,6 +35,8 @@ class SongListTile extends StatelessWidget {
     super.key,
     required this.index,
     required this.songList,
+    required this.artist,
+    required this.album,
     required this.folder,
     required this.playlist,
     required this.isLibrary,
@@ -269,51 +274,60 @@ class SongListTile extends StatelessWidget {
                             showAddPlaylistDialog(context, [song]);
                           },
                         ),
-
-                        ListTile(
-                          leading: Icon(Icons.people),
-                          title: Text(
-                            l10n.go2Artist,
-                            style: TextStyle(fontWeight: FontWeight.bold),
-                          ),
-                          visualDensity: const VisualDensity(
-                            horizontal: 0,
-                            vertical: -4,
-                          ),
-                          onTap: () async {
-                            Navigator.pop(context);
-                            final artists = getArtists(getArtist(song));
-                            if (artists.length > 1) {
-                              showArtistEntries(context, artists);
-                            } else {
-                              await Future.delayed(Duration(milliseconds: 250));
-                              layersManager.switchRootLayer('artists');
-                              layersManager.pushDetailIfNeed(
-                                artistAlbumManager.artistMap[artists[0]],
+                        if (artist == null)
+                          ListTile(
+                            leading: Icon(Icons.people),
+                            title: Text(
+                              l10n.go2Artist,
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            visualDensity: const VisualDensity(
+                              horizontal: 0,
+                              vertical: -4,
+                            ),
+                            onTap: () {
+                              Navigator.pop(context);
+                              goToArtist(song, context);
+                            },
+                          )
+                        else if (isNotStreamSource &&
+                            artist!.name != song.artist)
+                          ListTile(
+                            leading: Icon(Icons.people),
+                            title: Text(
+                              l10n.go2Artist,
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            visualDensity: const VisualDensity(
+                              horizontal: 0,
+                              vertical: -4,
+                            ),
+                            onTap: () {
+                              Navigator.pop(context);
+                              goToArtist(
+                                song,
+                                context,
+                                excludedArtist: artist!.name,
                               );
-                            }
-                          },
-                        ),
+                            },
+                          ),
 
-                        ListTile(
-                          leading: Icon(Icons.album_rounded),
-                          title: Text(
-                            l10n.go2Album,
-                            style: TextStyle(fontWeight: FontWeight.bold),
+                        if (album == null)
+                          ListTile(
+                            leading: Icon(Icons.album_rounded),
+                            title: Text(
+                              l10n.go2Album,
+                              style: TextStyle(fontWeight: FontWeight.bold),
+                            ),
+                            visualDensity: const VisualDensity(
+                              horizontal: 0,
+                              vertical: -4,
+                            ),
+                            onTap: () {
+                              Navigator.pop(context);
+                              goToAlbum(song);
+                            },
                           ),
-                          visualDensity: const VisualDensity(
-                            horizontal: 0,
-                            vertical: -4,
-                          ),
-                          onTap: () async {
-                            Navigator.pop(context);
-                            await Future.delayed(Duration(milliseconds: 250));
-                            layersManager.switchRootLayer('albums');
-                            layersManager.pushDetailIfNeed(
-                              artistAlbumManager.albumMap[getAlbum(song)],
-                            );
-                          },
-                        ),
 
                         ListTile(
                           leading: Icon(Icons.info_outline_rounded),

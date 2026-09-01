@@ -201,6 +201,27 @@ class NavidromeClient extends StreamClient {
   }
 
   @override
+  Future<Album?> getAlbum(String id) async {
+    final albumRes = await safeRequest(
+      '/rest/getAlbum.view',
+      query: {'id': id},
+    );
+
+    if (albumRes == null) {
+      return null;
+    }
+
+    final map = albumRes['album'];
+
+    final name = map['name'];
+
+    return artistAlbumManager.albumMap.putIfAbsent(
+      id,
+      () => Album(name, id: id, coverArtId: map['coverArt'], year: map['year']),
+    );
+  }
+
+  @override
   Future<List<MyAudioMetadata>?> getAlbumSongs(String id) async {
     final albumRes = await safeRequest(
       '/rest/getAlbum.view',

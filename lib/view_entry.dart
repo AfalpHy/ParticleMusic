@@ -112,7 +112,7 @@ class _ViewEntryState extends State<ViewEntry> with WidgetsBindingObserver {
           portraitKey.currentState?.closeDrawer();
           return;
         }
-        if (await layersManager.popDetail(sidebarHighlighLabel.value)) {
+        if (layersManager.popDetail(sidebarHighlighLabel.value)) {
           return;
         }
 
