@@ -1,3 +1,4 @@
+import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/data/artist_album.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
 import 'package:path/path.dart';
@@ -108,11 +109,16 @@ void sortSongList(int sortType, List<MyAudioMetadata> songList) {
         if (tmp != 0) {
           return tmp;
         }
-        final albumA = artistAlbumManager.albumMap[getAlbum(a)];
-        final albumB = artistAlbumManager.albumMap[getAlbum(b)];
+        final albumA = artistAlbumManager
+            .albumMap[isStreamSource ? a.albumId : getAlbum(a)];
+        final albumB = artistAlbumManager
+            .albumMap[isStreamSource ? a.albumId : getAlbum(b)];
+        if (albumA == null || albumB == null) {
+          return 0;
+        }
         if (albumA != albumB) {
-          int aYear = albumA!.year ?? 9999;
-          int bYear = albumB!.year ?? 9999;
+          int aYear = albumA.year ?? 9999;
+          int bYear = albumB.year ?? 9999;
 
           final yearTmp = aYear.compareTo(bYear);
           if (yearTmp != 0) {
@@ -138,11 +144,16 @@ void sortSongList(int sortType, List<MyAudioMetadata> songList) {
         if (tmp != 0) {
           return tmp;
         }
-        final albumA = artistAlbumManager.albumMap[getAlbum(a)];
-        final albumB = artistAlbumManager.albumMap[getAlbum(b)];
+        final albumA = artistAlbumManager
+            .albumMap[isStreamSource ? a.albumId : getAlbum(a)];
+        final albumB = artistAlbumManager
+            .albumMap[isStreamSource ? a.albumId : getAlbum(b)];
+        if (albumA == null || albumB == null) {
+          return 0;
+        }
         if (albumA != albumB) {
-          int aYear = albumA!.year ?? 9999;
-          int bYear = albumB!.year ?? 9999;
+          int aYear = albumA.year ?? 9999;
+          int bYear = albumB.year ?? 9999;
 
           final yearTmp = aYear.compareTo(bYear);
           if (yearTmp != 0) {
@@ -200,11 +211,17 @@ void sortSongList(int sortType, List<MyAudioMetadata> songList) {
       break;
     case 7: // Duration Ascending
       songList.sort((a, b) {
+        if (a.duration == null || b.duration == null) {
+          return 0;
+        }
         return a.duration!.compareTo(b.duration!);
       });
       break;
     case 8: // Duration Descending
       songList.sort((a, b) {
+        if (a.duration == null || b.duration == null) {
+          return 0;
+        }
         return b.duration!.compareTo(a.duration!);
       });
       break;

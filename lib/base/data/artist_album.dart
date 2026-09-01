@@ -299,7 +299,8 @@ class Artist extends ArtistAlbumBase {
 }
 
 class Album extends ArtistAlbumBase {
-  Album(String name, {super.id, super.coverArtId}) : super(name, false);
+  Album(String name, {super.id, super.coverArtId, this.year})
+    : super(name, false);
 
   Map<String, List<MyAudioMetadata>> artist2SongList = {};
   int? year;

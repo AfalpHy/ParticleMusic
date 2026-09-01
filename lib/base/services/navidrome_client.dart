@@ -188,7 +188,12 @@ class NavidromeClient extends StreamClient {
       albumList.add(
         artistAlbumManager.albumMap.putIfAbsent(
           id,
-          () => Album(name, id: id, coverArtId: map['coverArt']),
+          () => Album(
+            name,
+            id: id,
+            coverArtId: map['coverArt'],
+            year: map['year'],
+          ),
         ),
       );
     }
