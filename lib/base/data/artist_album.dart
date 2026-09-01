@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:lpinyin/lpinyin.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:sylvakru/base/app.dart';
+import 'package:sylvakru/base/data/setting.dart';
 import 'package:sylvakru/base/services/picture_service.dart';
 import 'package:sylvakru/base/services/stream_client.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
@@ -19,15 +20,6 @@ class ArtistAlbumManager {
   Map<String, Album> albumMap = {};
   final updateNotifier = ValueNotifier(0);
 
-  final artistsIsListViewNotifier = ValueNotifier(true);
-  final artistsIsAscendingNotifier = ValueNotifier(true);
-  final artistsUseLargePictureNotifier = ValueNotifier(false);
-  final artistsRandomizeNotifier = ValueNotifier(false);
-
-  final albumsIsAscendingNotifier = ValueNotifier(true);
-  final albumsUseLargePictureNotifier = ValueNotifier(false);
-  final albumsRandomizeNotifier = ValueNotifier(false);
-
   ArtistAlbumManager() {
     artistsIsAscendingNotifier.addListener(() {
       sortArtists();
@@ -43,7 +35,7 @@ class ArtistAlbumManager {
     return isArtist ? artistList : albumList;
   }
 
-  ValueNotifier<bool> getIsRandomizeNotifier(bool isArtist) {
+  ValueNotifier<bool> getRandomizeNotifier(bool isArtist) {
     return isArtist ? artistsRandomizeNotifier : albumsRandomizeNotifier;
   }
 
@@ -127,36 +119,6 @@ class ArtistAlbumManager {
     // TODO
   }
 
-  Map<String, bool> settingToMap() {
-    return {
-      'artistsIsList': artistsIsListViewNotifier.value,
-      'artistsIsAscend': artistsIsAscendingNotifier.value,
-      'artistsUseLargePicture': artistsUseLargePictureNotifier.value,
-
-      'albumsIsAscend': albumsIsAscendingNotifier.value,
-      'albumsUseLargePicture': albumsUseLargePictureNotifier.value,
-    };
-  }
-
-  void loadSetting(Map<String, dynamic> json) {
-    artistsIsListViewNotifier.value =
-        json['artistsIsList'] as bool? ?? artistsIsListViewNotifier.value;
-
-    artistsIsAscendingNotifier.value =
-        json['artistsIsAscend'] as bool? ?? artistsIsAscendingNotifier.value;
-
-    artistsUseLargePictureNotifier.value =
-        json['artistsUseLargePicture'] as bool? ??
-        artistsUseLargePictureNotifier.value;
-
-    albumsIsAscendingNotifier.value =
-        json['albumsIsAscend'] as bool? ?? albumsIsAscendingNotifier.value;
-
-    albumsUseLargePictureNotifier.value =
-        json['albumsUseLargePicture'] as bool? ??
-        albumsUseLargePictureNotifier.value;
-  }
-
   // use completer to avoid loading same data multiple times
   Completer<void>? artistCompleter;
   Completer<int?>? ablumCompleter;
@@ -164,7 +126,7 @@ class ArtistAlbumManager {
   Future<void> loadArtists() async {
     if (artistCompleter == null) {
       artistCompleter = Completer<void>();
-      final tmpArtistList = await streamClient!.getArtistList();
+      final tmpArtistList = await streamClient?.getArtistList();
       if (tmpArtistList == null) {
         artistCompleter!.complete();
         return;
@@ -186,7 +148,7 @@ class ArtistAlbumManager {
   Future<int?> loadAlbums() async {
     if (ablumCompleter == null) {
       ablumCompleter = Completer<int?>();
-      final albumList = await streamClient!.getAlbumList(
+      final albumList = await streamClient?.getAlbumList(
         artistAlbumManager.albumList.length,
       );
       if (albumList == null) {
@@ -269,7 +231,7 @@ class Artist extends ArtistAlbumBase {
     if (completer == null) {
       completer = Completer<void>();
       if (sourceType == .navidrome) {
-        final albums = await streamClient!.getArtistAlbumList(id!);
+        final albums = await streamClient?.getArtistAlbumList(id!);
         if (albums == null) {
           completer!.complete();
           return;
@@ -285,7 +247,7 @@ class Artist extends ArtistAlbumBase {
         completer!.complete();
         return;
       } else {
-        songList.addAll(await streamClient!.getArtistSongs(id!) ?? []);
+        songList.addAll(await streamClient?.getArtistSongs(id!) ?? []);
         changeNotifier.value++;
         completer!.complete();
         return;

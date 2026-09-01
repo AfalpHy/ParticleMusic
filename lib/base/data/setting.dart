@@ -3,15 +3,24 @@ import 'dart:io';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:sylvakru/base/audio_handler.dart';
-import 'package:sylvakru/base/data/playlist.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/widgets/lyric_list_view.dart';
-import 'package:sylvakru/base/data/artist_album.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/utils/path.dart';
 import 'package:sylvakru/base/widgets/manage_music_folders.dart';
 import 'package:sylvakru/portrait_view/portrait_view.dart';
+
+final artistsIsListViewNotifier = ValueNotifier(true);
+final artistsIsAscendingNotifier = ValueNotifier(true);
+final artistsUseLargePictureNotifier = ValueNotifier(false);
+final artistsRandomizeNotifier = ValueNotifier(false);
+
+final albumsIsAscendingNotifier = ValueNotifier(true);
+final albumsUseLargePictureNotifier = ValueNotifier(false);
+final albumsRandomizeNotifier = ValueNotifier(false);
+
+final playlistsUseLargePictureNotifier = ValueNotifier(true);
 
 final exitOnCloseNotifier = ValueNotifier(false);
 
@@ -26,11 +35,26 @@ class Setting {
 
     final json = await readJsonMapFile(file);
 
-    artistAlbumManager.loadSetting(json);
+    artistsIsListViewNotifier.value =
+        json['artistsIsList'] as bool? ?? artistsIsListViewNotifier.value;
 
-    playlistManager.useLargePictureNotifier.value =
+    artistsIsAscendingNotifier.value =
+        json['artistsIsAscend'] as bool? ?? artistsIsAscendingNotifier.value;
+
+    artistsUseLargePictureNotifier.value =
+        json['artistsUseLargePicture'] as bool? ??
+        artistsUseLargePictureNotifier.value;
+
+    albumsIsAscendingNotifier.value =
+        json['albumsIsAscend'] as bool? ?? albumsIsAscendingNotifier.value;
+
+    albumsUseLargePictureNotifier.value =
+        json['albumsUseLargePicture'] as bool? ??
+        albumsUseLargePictureNotifier.value;
+
+    playlistsUseLargePictureNotifier.value =
         json['playlistsUseLargePicture'] as bool? ??
-        playlistManager.useLargePictureNotifier.value;
+        playlistsUseLargePictureNotifier.value;
 
     endDrawerNotifier.value = json['endDrawer'] as bool? ?? Platform.isIOS;
 
@@ -82,10 +106,14 @@ class Setting {
   void save() {
     file.writeAsStringSync(
       jsonEncode({
-        ...artistAlbumManager.settingToMap(),
+        'artistsIsList': artistsIsListViewNotifier.value,
+        'artistsIsAscend': artistsIsAscendingNotifier.value,
+        'artistsUseLargePicture': artistsUseLargePictureNotifier.value,
 
-        'playlistsUseLargePicture':
-            playlistManager.useLargePictureNotifier.value,
+        'albumsIsAscend': albumsIsAscendingNotifier.value,
+        'albumsUseLargePicture': albumsUseLargePictureNotifier.value,
+
+        'playlistsUseLargePicture': playlistsUseLargePictureNotifier.value,
 
         'endDrawer': endDrawerNotifier.value,
 

@@ -65,7 +65,7 @@ class _AlbumsLayerState extends CollectionListState {
   void initState() {
     super.initState();
 
-    randomizeNotifier = artistAlbumManager.getIsRandomizeNotifier(false);
+    randomizeNotifier = artistAlbumManager.getRandomizeNotifier(false);
     isAscendingNotifier = artistAlbumManager.getIsAscendingNotifier(false);
     useLargePictureNotifier = artistAlbumManager.getUseLargePictureNotifier(
       false,

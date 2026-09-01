@@ -34,10 +34,14 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
       baseUrlTmp.text = webdavClient?.baseUrl ?? '';
       usernameTmp.text = webdavClient?.username ?? '';
       passwordTmp.text = webdavClient?.password ?? '';
+    } else if (widget.sourceType == .navidrome) {
+      baseUrlTmp.text = config.navidromeBaseUrl ?? '';
+      usernameTmp.text = config.navidromeUsername ?? '';
+      passwordTmp.text = config.navidromePassword ?? '';
     } else {
-      baseUrlTmp.text = streamClient?.baseUrl ?? '';
-      usernameTmp.text = streamClient?.username ?? '';
-      passwordTmp.text = streamClient?.password ?? '';
+      baseUrlTmp.text = config.embyBaseUrl ?? '';
+      usernameTmp.text = config.embyUsername ?? '';
+      passwordTmp.text = config.embyPassword ?? '';
     }
   }
 
@@ -146,17 +150,28 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
                 if (!await showConfirmDialog(context, l10n.clear)) {
                   return;
                 }
-                if (sourceType == .webdav) {
+                if (widget.sourceType == .webdav) {
                   await library.updateFolders([]);
                   webdavClient = null;
+                } else if (widget.sourceType == .navidrome) {
+                  config.navidromeBaseUrl = null;
+                  config.navidromeUsername = null;
+                  config.navidromePassword = null;
+                  streamClient = null;
                 } else {
+                  config.embyBaseUrl = null;
+                  config.embyUsername = null;
+                  config.embyPassword = null;
                   streamClient = null;
                 }
                 if (context.mounted) {
                   Navigator.pop(context);
                 }
+
                 await config.save();
-                await Loader.sync();
+                if (widget.sourceType == sourceType) {
+                  await Loader.sync();
+                }
               },
               style: ElevatedButton.styleFrom(
                 backgroundColor: firstLaunch ? null : value,
@@ -195,6 +210,9 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
                       streamClient = tmp;
                       return;
                     }
+                    config.navidromeBaseUrl = baseUrlTmp.text;
+                    config.navidromeUsername = usernameTmp.text;
+                    config.navidromePassword = passwordTmp.text;
                   } else {
                     final tmp = streamClient;
                     final embyClient = EmbyClient(
@@ -208,6 +226,9 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
                       return;
                     }
                     streamClient = embyClient;
+                    config.embyBaseUrl = baseUrlTmp.text;
+                    config.embyUsername = usernameTmp.text;
+                    config.embyPassword = passwordTmp.text;
                   }
                 } catch (e) {
                   if (context.mounted) {
@@ -222,7 +243,8 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
                   showCenterMessage('Connected successfully');
                 }
                 await config.save();
-                if (widget.sourceType != .webdav) {
+                if (widget.sourceType != .webdav &&
+                    widget.sourceType == sourceType) {
                   await Loader.sync();
                 }
               },

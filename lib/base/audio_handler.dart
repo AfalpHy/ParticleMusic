@@ -175,11 +175,9 @@ class MyAudioHandler extends BaseAudioHandler {
   }
 
   void initStateFiles() {
-    if (isNotStreamSource) {
-      _playQueueState = File("${appSupportDir.path}/play_queue_state.json");
-      if (!(_playQueueState!.existsSync())) {
-        _savePlayQueueState();
-      }
+    _playQueueState = File("${appSupportDir.path}/play_queue_state.json");
+    if (!(_playQueueState!.existsSync())) {
+      _savePlayQueueState();
     }
     _playState = File("${appSupportDir.path}/play_state.json");
     if (!(_playState.existsSync())) {
@@ -460,6 +458,15 @@ class MyAudioHandler extends BaseAudioHandler {
     savePlayState();
   }
 
+  void justClear() {
+    stop();
+    playQueue = [];
+    _playQueueTmp = [];
+    currentIndex = -1;
+    currentSongNotifier.value = null;
+    currentCoverArtColor = Colors.grey;
+  }
+
   List<MyAudioMetadata> getNewQueue(List<MyAudioMetadata> oldQueue) {
     final List<MyAudioMetadata> newPlayQueue = [];
     for (final song in oldQueue) {
@@ -589,7 +596,7 @@ class MyAudioHandler extends BaseAudioHandler {
             break;
           case .navidrome:
           case .emby:
-            resource = streamClient!.getStreamUrl(currentSong.id);
+            resource = streamClient?.getStreamUrl(currentSong.id);
             break;
           default:
             break;

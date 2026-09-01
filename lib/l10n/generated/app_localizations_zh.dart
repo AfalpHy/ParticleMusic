@@ -392,7 +392,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get local => '本地';
 
   @override
-  String get switch_ => '切换';
+  String get switchSource => '切换音乐来源';
 
   @override
   String get connect2Navidrome => '连接到Navidrome';
@@ -408,6 +408,9 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get connect2Server => '连接到服务器';
+
+  @override
+  String get manageServers => 'Manage Servers';
 
   @override
   String get username => '账号';

@@ -1367,7 +1367,7 @@ Future<Album?> _loadStreamAlbum(MyAudioMetadata song) async {
     await artistAlbumManager.loadAlbums();
   }
   if (artistAlbumManager.albumMap[song.albumId] == null) {
-    final album = await streamClient!.getAlbum(song.albumId!);
+    final album = await streamClient?.getAlbum(song.albumId!);
     if (album != null) {
       artistAlbumManager.albumList.add(album);
       artistAlbumManager.sortAlbums();

@@ -5,6 +5,7 @@ import 'package:cupertino_ui/cupertino_ui.dart';
 import 'package:sylvakru/base/audio_handler.dart';
 import 'package:sylvakru/base/data/config.dart';
 import 'package:sylvakru/base/data/artist_album.dart';
+import 'package:sylvakru/base/data/font_manager.dart';
 import 'package:sylvakru/base/services/bookmark_service.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/data/history.dart';
@@ -45,7 +46,7 @@ class Loader {
 
     colorManager.updateColors();
 
-    await library.loadFonts();
+    await fontManager.loadFonts();
 
     audioHandler.initStateFiles();
   }
@@ -53,6 +54,7 @@ class Loader {
   static Future<void> load() async {
     _busy = true;
     stateNotifier.value++;
+
     await library.load();
 
     history.load();
@@ -70,11 +72,21 @@ class Loader {
     stateNotifier.value++;
   }
 
+  static Future<void> reload() async {
+    layersManager.clearDataLayers();
+    audioHandler.justClear();
+    library = Library();
+    artistAlbumManager = ArtistAlbumManager();
+    history = History();
+
+    await load();
+  }
+
   static Future<void> sync() async {
     _busy = true;
     stateNotifier.value++;
 
-    layersManager.perpareForSync();
+    layersManager.clearDataLayers();
 
     artistAlbumManager = ArtistAlbumManager();
 
@@ -83,9 +95,11 @@ class Loader {
     await library.sync();
     history.load();
 
-    await playlistManager.sync();
+    await playlistManager.prepare();
 
     await audioHandler.sync();
+
+    await playlistManager.load();
 
     if (isNotStreamSource) {
       artistAlbumManager.classify();

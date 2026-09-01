@@ -420,7 +420,7 @@ class LayersManager {
     }
   }
 
-  void perpareForSync() {
+  void clearDataLayers() {
     popDetail('artists', executePop: false);
     popDetail('albums', executePop: false);
     popDetail('folders', executePop: false);

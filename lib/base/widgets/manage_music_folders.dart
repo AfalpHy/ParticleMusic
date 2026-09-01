@@ -396,7 +396,7 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
       return false;
     }
     if (isOnMyiPhone) {
-      library.setIOSFileProviderStorageIfNeed(path);
+      setIOSFileProviderStorageIfNeed(path);
     }
     return true;
   }

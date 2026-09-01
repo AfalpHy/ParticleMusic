@@ -20,7 +20,6 @@ class PlaylistManager {
   List<Playlist> playlists = [];
   Map<String, Playlist> playlistMap = {};
   ValueNotifier<int> updateNotifier = ValueNotifier(0);
-  final useLargePictureNotifier = ValueNotifier(true);
 
   Playlist playQueueForStream = Playlist(name: '_sylvakru_play_queue_');
 
@@ -29,6 +28,12 @@ class PlaylistManager {
   }
 
   Future<void> prepare() async {
+    playlists.clear();
+    playlistMap.clear();
+
+    addPlaylist(Playlist(name: 'Favorite'));
+    updateNotifier.value++;
+
     _playlistsFile = File(
       "${getPlaylistConfigPath(sourceType)}/sylvakru_playlists.json",
     );
@@ -61,19 +66,6 @@ class PlaylistManager {
   Future<void> load() async {
     for (final playlist in playlists) {
       await playlist.load();
-    }
-  }
-
-  Future<void> sync() async {
-    playlists.clear();
-    playlistMap.clear();
-
-    addPlaylist(Playlist(name: 'Favorite'));
-    updateNotifier.value++;
-
-    await prepare();
-    for (final playlist in playlists) {
-      await playlist.reload();
     }
   }
 
@@ -118,7 +110,7 @@ class PlaylistManager {
   Future<void> deletePlaylist(Playlist playlist) async {
     playlist.songListFile?.deleteSync();
 
-    if (playlist.id != null) {
+    if (playlist.id != null && streamClient != null) {
       if (!await streamClient!.deletePlaylist(playlist.id!)) {
         showCenterMessage('Delete playlist failed');
         return;
@@ -272,9 +264,6 @@ class Playlist {
             await streamClient?.updatePlaylistSongs(id!, songIds) ?? false;
       }
       showCenterMessage('Update playlist ${success ? 'success' : 'failed'}');
-      if (!success) {
-        return reload();
-      }
     }
     canModify = true;
     changeNotifier.value++;

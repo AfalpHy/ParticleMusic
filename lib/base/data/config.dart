@@ -17,6 +17,14 @@ final config = Config();
 class Config {
   late final File file;
 
+  String? navidromeBaseUrl;
+  String? navidromeUsername;
+  String? navidromePassword;
+
+  String? embyBaseUrl;
+  String? embyUsername;
+  String? embyPassword;
+
   static const _secureStorage = FlutterSecureStorage(
     mOptions: MacOsOptions(usesDataProtectionKeychain: false),
   );
@@ -90,27 +98,51 @@ class Config {
 
     final navidromeMap = map['navidrome'] as Map<String, dynamic>?;
     if (navidromeMap != null) {
-      String? securePassword = await _trySecureRead('navidrome_password');
-      securePassword ??= navidromeMap['password'];
-      securePassword ??= '';
+      navidromeBaseUrl = navidromeMap['baseUrl'];
+      navidromeUsername = navidromeMap['username'];
 
-      streamClient = NavidromeClient(
-        baseUrl: navidromeMap['baseUrl'],
-        username: navidromeMap['username'],
-        password: securePassword,
-      );
+      navidromePassword = await _trySecureRead('navidrome_password');
+      navidromePassword ??= navidromeMap['password'];
+      navidromePassword ??= '';
     }
 
     final embyMap = map['emby'] as Map<String, dynamic>?;
     if (embyMap != null) {
-      String? securePassword = await _trySecureRead('emby_password');
-      securePassword ??= embyMap['password'];
-      securePassword ??= '';
+      embyBaseUrl = embyMap['baseUrl'];
+      embyUsername = embyMap['username'];
 
+      embyPassword = await _trySecureRead('emby_password');
+      embyPassword ??= embyMap['password'];
+      embyPassword ??= '';
+    }
+
+    final tmpSourceType = map['sourceType'] as String?;
+    if (tmpSourceType != null) {
+      sourceType = SourceType.values.firstWhere((e) => e.name == tmpSourceType);
+    } else {
+      if (webdavClient != null) {
+        sourceType = .webdav;
+      } else if (navidromeMap != null) {
+        sourceType = .navidrome;
+      } else if (embyMap != null) {
+        sourceType = .emby;
+      }
+    }
+
+    isStreamSource = sourceType == .navidrome || sourceType == .emby;
+    isNotStreamSource = !isStreamSource;
+
+    if (sourceType == .navidrome && navidromeMap != null) {
+      streamClient = NavidromeClient(
+        baseUrl: navidromeBaseUrl!,
+        username: navidromeUsername!,
+        password: navidromePassword!,
+      );
+    } else if (sourceType == .emby && embyMap != null) {
       streamClient = EmbyClient(
-        baseUrl: embyMap['baseUrl'],
-        username: embyMap['username'],
-        password: securePassword,
+        baseUrl: embyBaseUrl!,
+        username: embyUsername!,
+        password: embyPassword!,
       );
     }
 
@@ -131,7 +163,8 @@ class Config {
     // the plaintext as a fallback in that one field until a write actually
     // succeeds, instead of losing it outright.
     bool webdavSecured = true;
-    bool streamSecured = true;
+    bool navidromeSecured = true;
+    bool embySecured = true;
 
     if (webdavClient != null) {
       webdavSecured = await _trySecureWrite(
@@ -140,15 +173,21 @@ class Config {
       );
     }
 
-    if (streamClient != null) {
-      streamSecured = await _trySecureWrite(
-        '${sourceType.name}_password',
-        streamClient!.password,
+    if (navidromePassword != null) {
+      navidromeSecured = await _trySecureWrite(
+        'navidrome_password',
+        navidromePassword!,
       );
+    }
+
+    if (embyPassword != null) {
+      embySecured = await _trySecureWrite('emby_password', embyPassword!);
     }
 
     await file.writeAsString(
       jsonEncode({
+        'sourceType': sourceType.name,
+
         if (webdavClient != null)
           'webdav': {
             'baseUrl': webdavClient!.baseUrl,
@@ -156,11 +195,18 @@ class Config {
             if (!webdavSecured) 'password': webdavClient!.password,
           },
 
-        if (streamClient != null)
-          sourceType.name: {
-            'baseUrl': streamClient!.baseUrl,
-            'username': streamClient!.username,
-            if (!streamSecured) 'password': streamClient!.password,
+        if (navidromeBaseUrl != null)
+          'navidrome': {
+            'baseUrl': navidromeBaseUrl,
+            'username': navidromeUsername,
+            if (!navidromeSecured) 'password': navidromePassword,
+          },
+
+        if (embyBaseUrl != null)
+          'emby': {
+            'baseUrl': embyBaseUrl,
+            'username': embyUsername,
+            if (!embySecured) 'password': embyPassword,
           },
       }),
     );
@@ -187,9 +233,7 @@ class Config {
 
   bool _hasPlainTextPassword(Map<String, dynamic> map) {
     for (var key in ['webdav', 'navidrome', 'emby']) {
-      if (map[key] != null &&
-          map[key]['password'] != null &&
-          map[key]['password'].toString().isNotEmpty) {
+      if (map[key] != null && map[key]['password'] != null) {
         return true;
       }
     }

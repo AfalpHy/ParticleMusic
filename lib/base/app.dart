@@ -8,6 +8,7 @@ const String versionNumber = '3.7.0';
 late final Directory appDocsDir;
 late final Directory appSupportDir;
 late final Directory tmpDir;
+String? iosFileProviderStorage;
 
 final isMobile = Platform.isAndroid || Platform.isIOS;
 const isTV = bool.fromEnvironment('TV', defaultValue: false);
@@ -25,10 +26,10 @@ final ValueNotifier<Locale?> localeNotifier = ValueNotifier(null);
 
 enum SourceType { local, webdav, navidrome, emby }
 
-SourceType sourceType = .navidrome;
+SourceType sourceType = .local;
 
-bool isStreamSource = true;
-bool isNotStreamSource = false;
+bool isStreamSource = false;
+bool isNotStreamSource = !isStreamSource;
 
 final ValueNotifier<String?> fontFamilyNotifier = ValueNotifier(null);
 

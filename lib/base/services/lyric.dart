@@ -99,7 +99,7 @@ Future<void> setParsedLyrics(MyAudioMetadata song) async {
   }
 
   if (song.sourceType == .navidrome) {
-    final lyrics = await streamClient!.getLyricsById(song.id);
+    final lyrics = await streamClient?.getLyricsById(song.id) ?? '';
     lines = lyrics.split(RegExp(r'[\n]'));
   } else if (song.sourceType == .emby) {
     result.lines.add(LyricLine(Duration.zero, l10n.noLyrics, []));

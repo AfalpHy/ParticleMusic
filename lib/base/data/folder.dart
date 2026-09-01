@@ -72,7 +72,7 @@ class Folder {
             '${appDocsDir.parent.path}/${id.replaceFirst('Sylvakru', 'Documents')}';
       } else {
         path = await BookmarkService.getUrlById(id) ?? '';
-        library.setIOSFileProviderStorageIfNeed(path);
+        setIOSFileProviderStorageIfNeed(path);
       }
     }
 
@@ -87,7 +87,7 @@ class Folder {
         path =
             '${appDocsDir.parent.path}/${id.replaceFirst('Sylvakru', 'Documents')}';
       } else {
-        path = library.iosFileProviderStorage! + id;
+        path = iosFileProviderStorage! + id;
         if (!await BookmarkService.saveDirectoryAndActive(id, path)) {
           path = '';
         }

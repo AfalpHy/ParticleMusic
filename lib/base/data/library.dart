@@ -4,7 +4,6 @@ import 'dart:io';
 import 'package:audio_tags_lofty/audio_tags_lofty.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/data/artist_album.dart';
 import 'package:sylvakru/base/data/database.dart';
@@ -16,10 +15,9 @@ import 'package:sylvakru/base/utils/path.dart';
 import 'package:sylvakru/base/data/folder.dart';
 import 'package:sylvakru/layer/layers_manager.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
-import 'package:path/path.dart';
 import 'package:pool/pool.dart';
 
-final library = Library();
+Library library = Library();
 
 class Library {
   MetadataDB? _metadataDB;
@@ -34,22 +32,11 @@ class Library {
   File? _folderIdListFile;
   List<Folder> folderList = [];
   final folderListChangeNotifier = ValueNotifier(0);
-  String? iosFileProviderStorage;
-
-  late File _fontMapFile;
-  Map<String, List<String>> _fontMap = {};
-
-  SourceType? last;
 
   bool canModify = false;
 
-  Future<void> prepare() async {
-    if (last == sourceType) {
-      return;
-    }
-    last = sourceType;
-    _metadataDB = null;
-    _folderIdListFile = null;
+  Library() {
+    driftRuntimeOptions.dontWarnAboutMultipleDatabases = true;
     if (isNotStreamSource) {
       _metadataDB = MetadataDB(
         openMetadataDB('${sourceType.name}/metadata.db'),
@@ -58,74 +45,6 @@ class Library {
         "${getFolderConfigPath(sourceType)}/folder_id_list.json",
       );
       initFile(_folderIdListFile!, true);
-
-      final folderIdList = await readJsonListFile(_folderIdListFile!);
-
-      for (final id in folderIdList) {
-        folderList.add(await Folder.from(id, sourceType == .webdav));
-      }
-    }
-  }
-
-  Future<void> loadFonts() async {
-    _fontMapFile = File("${appSupportDir.path}/fonts/font_map.json");
-    initFile(_fontMapFile, false);
-
-    _fontMap = readJsonMapFileSync(
-      _fontMapFile,
-    ).map((key, value) => MapEntry(key, List<String>.from(value)));
-    for (final entry in _fontMap.entries) {
-      final name = entry.key;
-      final fontPathList = entry.value;
-      final loader = FontLoader(name);
-
-      for (final fontPath in fontPathList) {
-        final fontFile = File("${appSupportDir.path}/fonts/$fontPath");
-        if (!fontFile.existsSync()) {
-          continue;
-        }
-        final bytes = fontFile.readAsBytesSync();
-        loader.addFont(Future.value(ByteData.view(bytes.buffer)));
-      }
-      await loader.load();
-      importedFonts.add(name);
-    }
-  }
-
-  Future<void> addFonts(String name, List<String> paths) async {
-    for (String path in paths) {
-      File originFile = File(path);
-      path = basename(path);
-      originFile.copySync("${appSupportDir.path}/fonts/$path");
-      _fontMap
-          .putIfAbsent(name, () {
-            return [];
-          })
-          .add(path);
-    }
-
-    await _fontMapFile.writeAsString(json.encode(_fontMap));
-  }
-
-  Future<void> deleteFonts(String name) async {
-    if (_fontMap[name] == null) {
-      return;
-    }
-    for (final path in _fontMap[name]!) {
-      final tmp = File("${appSupportDir.path}/fonts/$path");
-      if (await tmp.exists()) {
-        await tmp.delete();
-      }
-    }
-    _fontMap.remove(name);
-    importedFonts.remove(name);
-    await _fontMapFile.writeAsString(json.encode(_fontMap));
-  }
-
-  void setIOSFileProviderStorageIfNeed(String? iosPath) {
-    if (iosFileProviderStorage == null && iosPath != null) {
-      final tmp = iosPath.split('File Provider Storage/').first;
-      iosFileProviderStorage = "${tmp}File Provider Storage/";
     }
   }
 
@@ -190,7 +109,6 @@ class Library {
   }
 
   Future<void> load() async {
-    await prepare();
     if (isNotStreamSource) {
       List<MetadataItem> rows = [];
       int offset = 0;
@@ -219,8 +137,11 @@ class Library {
       canModify = true;
       changeNotifier.value++;
 
-      for (final folder in folderList) {
+      for (final id in await readJsonListFile(_folderIdListFile!)) {
+        final folder = await Folder.from(id, sourceType == .webdav);
         await folder.load();
+
+        folderList.add(folder);
       }
     }
 
@@ -407,8 +328,6 @@ class Library {
     canModify = false;
     await library.clearCache();
     await library.clearPicture();
-
-    await prepare();
 
     switch (sourceType) {
       case .local:

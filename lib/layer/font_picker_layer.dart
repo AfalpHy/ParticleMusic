@@ -7,7 +7,7 @@ import 'package:just_font_scan/just_font_scan.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/asset_images.dart';
-import 'package:sylvakru/base/data/library.dart';
+import 'package:sylvakru/base/data/font_manager.dart';
 import 'package:sylvakru/base/data/setting.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/services/interaction.dart';
@@ -112,7 +112,7 @@ class _FontPickerLayerState extends State<FontPickerLayer> {
 
         await loader.load();
 
-        await library.addFonts(
+        await fontManager.addFonts(
           result,
           fileResult.files.map((e) => e.path!).toList(),
         );
@@ -148,7 +148,7 @@ class _FontPickerLayerState extends State<FontPickerLayer> {
                     title: Text(font),
                     onTap: () async {
                       if (await showConfirmDialog(context, l10n.deleteFont)) {
-                        await library.deleteFonts(font);
+                        await fontManager.deleteFonts(font);
 
                         if (importedFonts.isEmpty && context.mounted) {
                           Navigator.pop(context);

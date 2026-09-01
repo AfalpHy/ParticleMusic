@@ -1,5 +1,6 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:sylvakru/base/data/playlist.dart';
+import 'package:sylvakru/base/data/setting.dart';
 import 'package:sylvakru/base/widgets/collection_list.dart';
 import 'package:sylvakru/l10n/generated/app_localizations.dart';
 import 'package:sylvakru/layer/layers_manager.dart';
@@ -21,6 +22,10 @@ class _PlaylistsLayerState extends CollectionListState {
 
   @override
   ValueNotifier<bool> get visibleNotifier => playlistsVisibleNotifier;
+
+  @override
+  ValueNotifier<bool> get useLargePictureNotifier =>
+      playlistsUseLargePictureNotifier;
 
   @override
   AssetImage get image => playlistsImage;

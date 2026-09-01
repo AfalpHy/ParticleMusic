@@ -5,14 +5,19 @@ import 'package:file_picker/file_picker.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:http/http.dart' as http;
 import 'package:sylvakru/base/audio_handler.dart';
+import 'package:sylvakru/base/data/config.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/asset_images.dart';
+import 'package:sylvakru/base/services/emby_client.dart';
 import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/services/logger.dart';
+import 'package:sylvakru/base/services/navidrome_client.dart';
+import 'package:sylvakru/base/services/stream_client.dart';
 import 'package:sylvakru/base/services/system_ui_service.dart';
 import 'package:sylvakru/base/utils/common_utils.dart';
 import 'package:sylvakru/base/utils/media_query.dart';
+import 'package:sylvakru/base/utils/source_type.dart';
 import 'package:sylvakru/base/widgets/connect_client_widget.dart';
 import 'package:sylvakru/base/widgets/equalizer.dart';
 import 'package:sylvakru/base/widgets/my_divider.dart';
@@ -29,9 +34,22 @@ import 'package:sylvakru/base/widgets/my_switch.dart';
 import 'package:smooth_corner/smooth_corner.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class SettingsList extends StatelessWidget {
+class SettingsList extends StatefulWidget {
   final double? iconSize;
   const SettingsList({super.key, this.iconSize});
+
+  @override
+  State<StatefulWidget> createState() => _SettingsListState();
+}
+
+class _SettingsListState extends State<SettingsList> {
+  double? iconSize;
+
+  @override
+  void initState() {
+    super.initState();
+    iconSize = widget.iconSize;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -89,12 +107,20 @@ class SettingsList extends StatelessWidget {
           ),
 
         sliverBox(
-          paddingIfNeed(isLandscape, connect2ServerListTile(context, l10n)),
+          paddingIfNeed(isLandscape, switchSourceTypeListTile(context, l10n)),
         ),
 
         sliverBox(
-          paddingIfNeed(isLandscape, selectMusicFoldersListTile(context, l10n)),
+          paddingIfNeed(isLandscape, manageServersListTile(context, l10n)),
         ),
+
+        if (isNotStreamSource)
+          sliverBox(
+            paddingIfNeed(
+              isLandscape,
+              selectMusicFoldersListTile(context, l10n),
+            ),
+          ),
 
         sliverBox(paddingIfNeed(isLandscape, syncListTile(context, l10n))),
 
@@ -242,10 +268,84 @@ class SettingsList extends StatelessWidget {
     );
   }
 
-  Widget connect2ServerListTile(BuildContext context, AppLocalizations l10n) {
+  Widget switchSourceTypeListTile(BuildContext context, AppLocalizations l10n) {
     return ListTile(
       leading: ImageIcon(serverImage, size: iconSize),
-      title: Text(l10n.connect2Server),
+      title: Text(l10n.switchSource),
+      onTap: () {
+        showAnimationDialog(
+          context: context,
+          child: SizedBox(
+            width: 300,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 10.0,
+                vertical: 15,
+              ),
+              child: Builder(
+                builder: (context) {
+                  return Column(
+                    mainAxisSize: .min,
+                    children: [
+                      for (final tmp in SourceType.values)
+                        ListTile(
+                          leading: Image(
+                            image: getSourceTypeImage(tmp),
+                            width: 30,
+                            height: 30,
+                          ),
+
+                          title: Text(getSourceTypeDisplayName(l10n, tmp)),
+                          trailing: sourceType == tmp
+                              ? Icon(Icons.check)
+                              : null,
+                          onTap: () {
+                            if (sourceType == tmp) {
+                              return;
+                            }
+                            Navigator.pop(context);
+                            sourceType = tmp;
+                            isStreamSource =
+                                sourceType == .navidrome || sourceType == .emby;
+                            isNotStreamSource = !isStreamSource;
+                            config.save();
+                            streamClient = null;
+                            if (sourceType == .navidrome &&
+                                config.navidromeBaseUrl != null) {
+                              streamClient = NavidromeClient(
+                                baseUrl: config.navidromeBaseUrl!,
+                                username: config.navidromeUsername!,
+                                password: config.navidromePassword!,
+                              );
+                            } else if (sourceType == .emby &&
+                                config.embyBaseUrl != null) {
+                              streamClient = EmbyClient(
+                                baseUrl: config.embyBaseUrl!,
+                                username: config.embyUsername!,
+                                password: config.embyPassword!,
+                              );
+                            }
+
+                            setState(() {});
+
+                            Loader.reload();
+                          },
+                        ),
+                    ],
+                  );
+                },
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  Widget manageServersListTile(BuildContext context, AppLocalizations l10n) {
+    return ListTile(
+      leading: ImageIcon(serverImage, size: iconSize),
+      title: Text(l10n.manageServers),
       onTap: () {
         showAnimationDialog(
           context: context,
@@ -284,7 +384,7 @@ class SettingsList extends StatelessWidget {
         color: iconColor.value,
       ),
 
-      title: Text(l10n.connect2WebDAV),
+      title: Text(getSourceTypeDisplayName(l10n, .webdav)),
       onTap: () {
         showAnimationDialog(
           context: context,
@@ -297,7 +397,7 @@ class SettingsList extends StatelessWidget {
   Widget navidromeListTile(BuildContext context, AppLocalizations l10n) {
     return ListTile(
       leading: Image(image: navidromeImage, width: 30, height: 30),
-      title: Text(l10n.connect2Navidrome),
+      title: Text(getSourceTypeDisplayName(l10n, .navidrome)),
       onTap: () {
         showAnimationDialog(
           context: context,
@@ -311,7 +411,7 @@ class SettingsList extends StatelessWidget {
     return ListTile(
       leading: Image(image: embyImage, width: 30, height: 30),
 
-      title: Text(l10n.connect2Emby),
+      title: Text(getSourceTypeDisplayName(l10n, .emby)),
       onTap: () {
         showAnimationDialog(
           context: context,

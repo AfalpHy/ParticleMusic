@@ -64,7 +64,7 @@ class History {
 
     if (song.sourceType == .navidrome) {
       while (times-- > 0) {
-        await streamClient!.scrobble(song.id);
+        await streamClient?.scrobble(song.id);
       }
     }
 
@@ -104,7 +104,7 @@ class History {
       recentlyCompleter = tmpCompleter;
     }
 
-    final albumList = await streamClient!.getAlbumList(
+    final albumList = await streamClient?.getAlbumList(
       isRanking ? rankingAlbumList.length : recentlyAlbumList.length,
       type: isRanking ? 'frequent' : 'recent',
     );

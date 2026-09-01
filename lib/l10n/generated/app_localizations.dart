@@ -836,11 +836,11 @@ abstract class AppLocalizations {
   /// **'Local'**
   String get local;
 
-  /// No description provided for @switch_.
+  /// No description provided for @switchSource.
   ///
   /// In en, this message translates to:
-  /// **'Switch'**
-  String get switch_;
+  /// **'Switch Source'**
+  String get switchSource;
 
   /// No description provided for @connect2Navidrome.
   ///
@@ -871,6 +871,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Connect to Server'**
   String get connect2Server;
+
+  /// No description provided for @manageServers.
+  ///
+  /// In en, this message translates to:
+  /// **'Manage Servers'**
+  String get manageServers;
 
   /// No description provided for @username.
   ///

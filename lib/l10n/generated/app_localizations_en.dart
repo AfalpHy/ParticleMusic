@@ -392,7 +392,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get local => 'Local';
 
   @override
-  String get switch_ => 'Switch';
+  String get switchSource => 'Switch Source';
 
   @override
   String get connect2Navidrome => 'Connect to Navidrome';
@@ -408,6 +408,9 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get connect2Server => 'Connect to Server';
+
+  @override
+  String get manageServers => 'Manage Servers';
 
   @override
   String get username => 'Username';

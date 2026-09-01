@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/data/artist_album.dart';
+import 'package:sylvakru/base/data/setting.dart';
 import 'package:sylvakru/base/services/picture_service.dart';
 import 'package:sylvakru/base/utils/zoom_page_route.dart';
 import 'package:sylvakru/big_picture_view/panels/big_collection_list_panel.dart';
@@ -15,12 +16,10 @@ class BigAlbumsPanel extends BigCollectionListPanel {
 
 class _BigAlbumsPanelState extends BigCollectionListPanelState {
   @override
-  ValueNotifier<bool> get randomizeNotifier =>
-      artistAlbumManager.albumsRandomizeNotifier;
+  ValueNotifier<bool> get randomizeNotifier => albumsRandomizeNotifier;
 
   @override
-  ValueNotifier<bool> get isAscendingNotifier =>
-      artistAlbumManager.albumsIsAscendingNotifier;
+  ValueNotifier<bool> get isAscendingNotifier => albumsIsAscendingNotifier;
 
   @override
   void updateCurrentList() {
