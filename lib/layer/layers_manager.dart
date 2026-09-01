@@ -328,7 +328,7 @@ class LayersManager {
     return true;
   }
 
-  void pushDetailIfNeed(dynamic detail) async {
+  Future<void> pushDetailIfNeed(dynamic detail) async {
     if (detail is Artist) {
       if ((detailWidgetMap[getRootLayer('artists')] as SingleArtistLayer?)
               ?.artist !=

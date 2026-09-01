@@ -79,7 +79,7 @@ Future<void> showCenterLoading() async {
   _centerOverlayEntry = OverlayEntry(
     builder: (context) => Stack(
       children: [
-        const ModalBarrier(dismissible: false, color: Colors.black26),
+        const ModalBarrier(dismissible: false, color: Colors.transparent),
         Center(child: CircularProgressIndicator(color: iconColor.value)),
       ],
     ),
@@ -973,7 +973,6 @@ void showSongOptions({
                           vertical: -4,
                         ),
                         onTap: () {
-                          Navigator.pop(context);
                           goToArtist(
                             song,
                             context,
@@ -994,7 +993,7 @@ void showSongOptions({
                           horizontal: 0,
                           vertical: -4,
                         ),
-                        onTap: () async {
+                        onTap: () {
                           Navigator.pop(context);
                           goToAlbum(
                             song,
@@ -1320,6 +1319,9 @@ void goToArtist(
       excludedArtist: excludedArtist,
     );
     artist = artistAlbumManager.artistMap[artistName];
+    if (artist == null) {
+      return;
+    }
   } else {
     if (artistAlbumManager.artistList.isEmpty) {
       showCenterLoading();
@@ -1328,11 +1330,10 @@ void goToArtist(
     }
 
     artist = artistAlbumManager.artistMap[song.artist];
-  }
-
-  if (artist == null) {
-    showCenterMessage('Get artist failed');
-    return;
+    if (artist == null) {
+      showCenterMessage('Get artist failed');
+      return;
+    }
   }
 
   if (bigPictureMode) {
@@ -1346,9 +1347,11 @@ void goToArtist(
       );
     }
   } else {
+    showCenterLoading();
     await Future.delayed(Duration(milliseconds: 250));
     layersManager.switchRootLayer('artists');
-    layersManager.pushDetailIfNeed(artist);
+    await layersManager.pushDetailIfNeed(artist);
+    removeCenterLoading();
   }
 }
 
@@ -1395,10 +1398,13 @@ void goToAlbum(
   }
 
   if (bigPictureMode) {
+    showCenterLoading();
     final baseColor = await computeColor(album.picture);
     if (!context!.mounted) {
       return;
     }
+    removeCenterLoading();
+
     Navigator.of(context).push(
       ZoomPageRoute(
         builder: (context) {
@@ -1411,9 +1417,13 @@ void goToAlbum(
 
   layersManager.switchRootLayer('albums');
 
+  showCenterLoading();
   if (isNotStreamSource) {
-    layersManager.pushDetailIfNeed(artistAlbumManager.albumMap[getAlbum(song)]);
+    await layersManager.pushDetailIfNeed(
+      artistAlbumManager.albumMap[getAlbum(song)],
+    );
   } else {
-    layersManager.pushDetailIfNeed(album);
+    await layersManager.pushDetailIfNeed(album);
   }
+  removeCenterLoading();
 }
