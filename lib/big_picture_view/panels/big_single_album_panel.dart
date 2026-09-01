@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'dart:ui';
 
 import 'package:material_ui/material_ui.dart';
@@ -378,24 +377,14 @@ class _BigSingleAlbumPanelState extends State<BigSingleAlbumPanel> {
         children: [
           IconButton(
             onPressed: () async {
-              audioHandler.currentIndex = Random().nextInt(
-                currentSongList.length,
-              );
-              playModeNotifier.value = 1;
-              await audioHandler.setPlayQueue(currentSongList);
-              await audioHandler.load();
-              audioHandler.play();
+              await audioHandler.setPlayQueue(currentSongList, 1);
             },
             icon: ImageIcon(shuffleImage),
             iconSize: 30,
           ),
           IconButton(
             onPressed: () async {
-              audioHandler.currentIndex = 0;
-              playModeNotifier.value = 0;
-              await audioHandler.setPlayQueue(currentSongList);
-              await audioHandler.load();
-              audioHandler.play();
+              await audioHandler.setPlayQueue(currentSongList, 0);
             },
             icon: Icon(Icons.play_circle_fill_rounded),
             iconSize: 50,

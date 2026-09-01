@@ -49,70 +49,63 @@ extension _CollectionListPanel on CollectionListState {
                   );
                 },
               ),
-              trailing: LayoutBuilder(
-                builder: (context, constraints) {
-                  // avoid triggering assertion
-                  if (constraints.maxWidth < 325) {
-                    return SizedBox();
-                  }
-                  return SizedBox(
-                    width: 325,
-                    child: Column(
+              trailing: SizedBox(
+                width: isAscendingNotifier == null ? 100 : 320,
+                child: Column(
+                  mainAxisSize: .min,
+                  children: [
+                    SizedBox(height: 20),
+                    Row(
                       children: [
-                        SizedBox(height: 20),
-                        Row(
-                          children: [
-                            Spacer(),
-                            ListenableBuilder(
-                              listenable: Listenable.merge([
-                                isAscendingNotifier,
-                                randomizeNotifier,
-                              ]),
-                              builder: (context, child) {
-                                if (isAscendingNotifier == null ||
-                                    (randomizeNotifier?.value ?? false)) {
-                                  return SizedBox.shrink();
-                                }
-                                return MySwitch(
-                                  trueText: l10n.ascending,
-                                  falseText: l10n.descending,
-                                  valueNotifier: isAscendingNotifier!,
-                                  onToggleCallBack: () {
-                                    setting.save();
-                                  },
-                                );
-                              },
-                            ),
-
-                            SizedBox(width: 5),
-                            if (randomizeNotifier != null) ...[
-                              MySwitch(
-                                trueText: l10n.randomize,
-                                falseText: l10n.normal,
-                                valueNotifier: randomizeNotifier!,
-                                onToggleCallBack: () {
-                                  updateCurrentList();
-                                },
-                              ),
-
-                              SizedBox(width: 5),
-                            ],
-
-                            MySwitch(
-                              trueText: l10n.large,
-                              falseText: l10n.small,
-                              valueNotifier: useLargePictureNotifier,
+                        Spacer(),
+                        ListenableBuilder(
+                          listenable: Listenable.merge([
+                            isAscendingNotifier,
+                            randomizeNotifier,
+                          ]),
+                          builder: (context, child) {
+                            if (isAscendingNotifier == null ||
+                                (randomizeNotifier?.value ?? false)) {
+                              return SizedBox.shrink();
+                            }
+                            return MySwitch(
+                              trueText: l10n.ascending,
+                              falseText: l10n.descending,
+                              valueNotifier: isAscendingNotifier!,
                               onToggleCallBack: () {
                                 setting.save();
                               },
-                            ),
-                            SizedBox(width: 5),
-                          ],
+                            );
+                          },
                         ),
+
+                        SizedBox(width: 5),
+                        if (randomizeNotifier != null) ...[
+                          MySwitch(
+                            trueText: l10n.randomize,
+                            falseText: l10n.normal,
+                            valueNotifier: randomizeNotifier!,
+                            onToggleCallBack: () {
+                              updateCurrentList();
+                            },
+                          ),
+
+                          SizedBox(width: 5),
+                        ],
+
+                        MySwitch(
+                          trueText: l10n.large,
+                          falseText: l10n.small,
+                          valueNotifier: useLargePictureNotifier,
+                          onToggleCallBack: () {
+                            setting.save();
+                          },
+                        ),
+                        SizedBox(width: 5),
                       ],
                     ),
-                  );
-                },
+                  ],
+                ),
               ),
             ),
           ),
@@ -159,7 +152,7 @@ extension _CollectionListPanel on CollectionListState {
                       maxCrossAxisExtent: useLargePicture ? 240 : 120,
                       crossAxisSpacing: 10,
                       mainAxisSpacing: 5,
-                      textExtent: 25,
+                      textExtent: 30,
                     ),
                     itemCount: currentPictureList.length,
                     itemBuilder: (context, index) {

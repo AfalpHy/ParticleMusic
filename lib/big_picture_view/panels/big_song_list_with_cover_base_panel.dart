@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'dart:ui';
 
 import 'package:material_ui/material_ui.dart';
@@ -138,25 +137,14 @@ abstract class BigSongListWithCoverBasePanelState<
                     ),
 
                     IconButton(
-                      onPressed: () async {
-                        audioHandler.currentIndex = Random().nextInt(
-                          currentSongList.length,
-                        );
-                        playModeNotifier.value = 1;
-                        await audioHandler.setPlayQueue(currentSongList);
-                        await audioHandler.load();
-                        audioHandler.play();
-                      },
+                      onPressed: () =>
+                          audioHandler.setPlayQueue(currentSongList, 1),
+
                       icon: ImageIcon(shuffleImage),
                     ),
                     IconButton(
-                      onPressed: () async {
-                        audioHandler.currentIndex = 0;
-                        playModeNotifier.value = 0;
-                        await audioHandler.setPlayQueue(currentSongList);
-                        await audioHandler.load();
-                        audioHandler.play();
-                      },
+                      onPressed: () =>
+                          audioHandler.setPlayQueue(currentSongList, 0),
                       icon: Icon(Icons.play_arrow_rounded),
                       iconSize: 30,
                     ),

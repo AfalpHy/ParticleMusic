@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:material_ui/material_ui.dart';
 import 'package:sylvakru/base/app.dart';
+import 'package:sylvakru/base/audio_handler.dart';
 import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/services/stream_client.dart';
 import 'package:sylvakru/base/utils/path.dart';
@@ -21,13 +22,11 @@ class PlaylistManager {
   Map<String, Playlist> playlistMap = {};
   ValueNotifier<int> updateNotifier = ValueNotifier(0);
 
-  Playlist playQueueForStream = Playlist(name: '_sylvakru_play_queue_');
-
   PlaylistManager() {
     addPlaylist(Playlist(name: 'Favorite'));
   }
 
-  Future<void> prepare() async {
+  Future<void> _prepare() async {
     playlists.clear();
     playlistMap.clear();
 
@@ -47,8 +46,7 @@ class PlaylistManager {
     if (isStreamSource) {
       final tmpPlaylist = await streamClient?.getPlaylists();
       for (final playlist in tmpPlaylist ?? <Playlist>[]) {
-        if (playlist.name == playQueueForStream.name) {
-          playQueueForStream.id = playlist.id;
+        if (playlist.name == playQueueForStreamName) {
           continue;
         }
         if (playlistMap[playlist.name] == null) {
@@ -64,6 +62,7 @@ class PlaylistManager {
   }
 
   Future<void> load() async {
+    await _prepare();
     for (final playlist in playlists) {
       await playlist.load();
     }

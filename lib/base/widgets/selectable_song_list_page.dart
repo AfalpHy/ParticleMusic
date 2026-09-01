@@ -234,7 +234,6 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
               textController: textController,
               onSearchTextChanged: updateSongList,
               isSearchNotifier: isSearchNotifier,
-              picture: null, // TODO
               useCurrentSong: false,
             ),
             moreButton(context),

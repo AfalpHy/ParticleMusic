@@ -170,17 +170,14 @@ extension _SongListPanel on _SongListState {
                           children: [
                             SizedBox(width: 10),
                             ElevatedButton(
-                              onPressed: () async {
+                              onPressed: () {
                                 if (currentSongListNotifier.value.isEmpty) {
                                   return;
                                 }
-                                audioHandler.currentIndex = 0;
-                                playModeNotifier.value = 0;
-                                await audioHandler.setPlayQueue(
+                                audioHandler.setPlayQueue(
                                   currentSongListNotifier.value,
+                                  0,
                                 );
-                                await audioHandler.load();
-                                audioHandler.play();
                               },
                               style: buttonStyle,
                               child: Text(l10n.playAll),
@@ -188,19 +185,15 @@ extension _SongListPanel on _SongListState {
 
                             SizedBox(width: 15),
                             ElevatedButton(
-                              onPressed: () async {
+                              onPressed: () {
                                 if (currentSongListNotifier.value.isEmpty) {
                                   return;
                                 }
-                                audioHandler.currentIndex = Random().nextInt(
-                                  currentSongListNotifier.value.length,
-                                );
-                                playModeNotifier.value = 1;
-                                await audioHandler.setPlayQueue(
+
+                                audioHandler.setPlayQueue(
                                   currentSongListNotifier.value,
+                                  1,
                                 );
-                                await audioHandler.load();
-                                audioHandler.play();
                               },
                               style: buttonStyle,
                               child: Text(l10n.shuffle),
@@ -654,10 +647,11 @@ extension _SongListPanel on _SongListState {
                   if (isMobile || waitForSecondClick) {
                     waitForSecondClick = false;
                     doubleClicktimer?.cancel();
-                    audioHandler.currentIndex = index;
-                    await audioHandler.setPlayQueue(currentSongList);
-                    await audioHandler.load();
-                    audioHandler.play();
+                    await audioHandler.setPlayQueue(
+                      currentSongList,
+                      0,
+                      targetIndex: index,
+                    );
                   } else {
                     doubleClicktimer = Timer(Duration(milliseconds: 250), () {
                       waitForSecondClick = false;

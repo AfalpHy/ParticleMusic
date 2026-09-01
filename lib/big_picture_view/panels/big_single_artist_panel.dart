@@ -1,4 +1,3 @@
-import 'dart:math';
 import 'dart:ui';
 
 import 'package:material_ui/material_ui.dart';
@@ -145,27 +144,19 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
                         ),
                         IconButton(
                           onPressed: () async {
-                            audioHandler.currentIndex = Random().nextInt(
-                              widget.artist.songList.length,
-                            );
-                            playModeNotifier.value = 1;
                             await audioHandler.setPlayQueue(
                               widget.artist.songList,
+                              1,
                             );
-                            await audioHandler.load();
-                            audioHandler.play();
                           },
                           icon: ImageIcon(shuffleImage),
                         ),
                         IconButton(
                           onPressed: () async {
-                            audioHandler.currentIndex = 0;
-                            playModeNotifier.value = 0;
                             await audioHandler.setPlayQueue(
                               widget.artist.songList,
+                              0,
                             );
-                            await audioHandler.load();
-                            audioHandler.play();
                           },
                           icon: Icon(Icons.play_arrow_rounded),
                           iconSize: 30,
@@ -338,25 +329,11 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
                   ),
                 ),
                 IconButton(
-                  onPressed: () async {
-                    audioHandler.currentIndex = Random().nextInt(
-                      songList.length,
-                    );
-                    playModeNotifier.value = 1;
-                    await audioHandler.setPlayQueue(songList);
-                    await audioHandler.load();
-                    audioHandler.play();
-                  },
+                  onPressed: () => audioHandler.setPlayQueue(songList, 1),
                   icon: ImageIcon(shuffleImage),
                 ),
                 IconButton(
-                  onPressed: () async {
-                    audioHandler.currentIndex = 0;
-                    playModeNotifier.value = 0;
-                    await audioHandler.setPlayQueue(songList);
-                    await audioHandler.load();
-                    audioHandler.play();
-                  },
+                  onPressed: () => audioHandler.setPlayQueue(songList, 0),
                   icon: Icon(Icons.play_arrow_rounded),
                   iconSize: 30,
                 ),

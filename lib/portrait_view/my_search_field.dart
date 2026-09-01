@@ -2,7 +2,6 @@ import 'package:material_ui/material_ui.dart';
 import 'package:sylvakru/base/audio_handler.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/services/keyboard.dart';
-import 'package:sylvakru/base/services/picture_service.dart';
 
 class MySearchField extends StatefulWidget {
   final String hintText;
@@ -11,7 +10,6 @@ class MySearchField extends StatefulWidget {
 
   final void Function()? onSearchTextChanged;
 
-  final MyPicture? picture;
   final bool useCurrentSong;
   final ValueNotifier<bool> isSearchNotifier;
 
@@ -21,7 +19,6 @@ class MySearchField extends StatefulWidget {
     required this.textController,
     required this.isSearchNotifier,
     this.onSearchTextChanged,
-    this.picture,
     this.useCurrentSong = true,
   });
 
@@ -99,7 +96,7 @@ class _MySearchFieldState extends State<MySearchField> {
                           .getSpecificMainPageSearchFieldColorForm(
                             widget.useCurrentSong
                                 ? currentSongNotifier.value?.picture
-                                : widget.picture,
+                                : backgroundPicture,
                           ),
                       contentPadding: EdgeInsets.zero,
                       isDense: true,

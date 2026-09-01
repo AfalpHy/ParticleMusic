@@ -32,6 +32,8 @@ late AudioSession _session;
 late MyAudioHandler audioHandler;
 
 List<MyAudioMetadata> playQueue = [];
+String? playQueueForStreamId;
+const String playQueueForStreamName = '_sylvakru_play_queue_';
 
 final ValueNotifier<MyAudioMetadata?> currentSongNotifier = ValueNotifier(null);
 final isPlayingNotifier = ValueNotifier(false);
@@ -77,9 +79,9 @@ class MyAudioHandler extends BaseAudioHandler {
   Duration _playedDuration = Duration.zero;
 
   File? _playQueueState;
-  late final File _playState;
-  late final File _equalizerState;
-  late final File _positionState;
+  late File _playState;
+  late File _equalizerState;
+  late File _positionState;
 
   Timer? _positionTimer;
 
@@ -174,17 +176,29 @@ class MyAudioHandler extends BaseAudioHandler {
     );
   }
 
-  void initStateFiles() {
-    _playQueueState = File("${appSupportDir.path}/play_queue_state.json");
-    if (!(_playQueueState!.existsSync())) {
-      _savePlayQueueState();
+  void _prepare() {
+    if (isNotStreamSource) {
+      _playQueueState = File(
+        "${appSupportDir.path}/${sourceType.name}/play_queue_state.json",
+      );
+      if (!(_playQueueState!.existsSync())) {
+        _playQueueState!.createSync(recursive: true);
+        _savePlayQueueState();
+      }
     }
-    _playState = File("${appSupportDir.path}/play_state.json");
+
+    _playState = File(
+      "${appSupportDir.path}/${sourceType.name}/play_state.json",
+    );
     if (!(_playState.existsSync())) {
+      _playState.createSync(recursive: true);
       savePlayState();
     }
-    _equalizerState = File("${appSupportDir.path}/equalizer_state.json");
+    _equalizerState = File(
+      "${appSupportDir.path}//${sourceType.name}/equalizer_state.json",
+    );
     if (!(_equalizerState.existsSync())) {
+      _equalizerState.createSync(recursive: true);
       saveEqualizerState();
     }
 
@@ -206,9 +220,11 @@ class MyAudioHandler extends BaseAudioHandler {
   }
 
   Future<void> loadStates() async {
-    await _loadPlayQueueState();
+    _prepare();
     await _loadPlayState();
+    await _loadPlayQueueState();
     await _loadEqualizerState();
+    await _tryPlay();
   }
 
   Future<void> _loadPlayQueueState() async {
@@ -226,7 +242,7 @@ class MyAudioHandler extends BaseAudioHandler {
     }
   }
 
-  void _savePlayQueueState() {
+  Future<void> _savePlayQueueState() async {
     if (isNotStreamSource) {
       _playQueueState!.writeAsStringSync(
         jsonEncode({
@@ -235,21 +251,11 @@ class MyAudioHandler extends BaseAudioHandler {
         }),
       );
     } else {
-      streamClient?.savePlayQueue(playQueue.map((e) => e.id).toList());
+      await streamClient?.savePlayQueue(playQueue.map((e) => e.id).toList());
     }
   }
 
-  Future<void> _loadPlayState() async {
-    final content = await _playState.readAsString();
-    final Map<String, dynamic> json =
-        jsonDecode(content) as Map<String, dynamic>;
-
-    currentIndex = json['currentIndex'] as int? ?? -1;
-    playModeNotifier.value = json['playMode'] as int? ?? 0;
-    _tmpPlayMode = json['tmpPlayMode'] as int? ?? 0;
-
-    volumeNotifier.value = json['volume'] as double? ?? 0.3;
-
+  Future<void> _tryPlay() async {
     if (!_started) {
       _started = true;
       if (autoPlayOnStartupNotifier.value) {
@@ -265,13 +271,9 @@ class MyAudioHandler extends BaseAudioHandler {
       }
     }
 
-    if (currentIndex == -1 && playQueue.isNotEmpty) {
-      currentIndex = 0;
-    }
-
-    if (currentIndex != -1 && playQueue.isNotEmpty) {
+    if (playQueue.isNotEmpty) {
       // reload may make some songs not in the library to be removed
-      if (currentIndex >= playQueue.length) {
+      if (currentIndex == -1 || currentIndex >= playQueue.length) {
         currentIndex = 0;
       }
 
@@ -285,6 +287,21 @@ class MyAudioHandler extends BaseAudioHandler {
         });
       }
     }
+  }
+
+  Future<void> _loadPlayState() async {
+    final content = await _playState.readAsString();
+    final Map<String, dynamic> json =
+        jsonDecode(content) as Map<String, dynamic>;
+
+    currentIndex = json['currentIndex'] as int? ?? -1;
+    playModeNotifier.value = json['playMode'] as int? ?? 0;
+    _tmpPlayMode = json['tmpPlayMode'] as int? ?? 0;
+
+    volumeNotifier.value = json['volume'] as double? ?? 0.3;
+
+    playQueueForStreamId = json['playQueueForStreamId'] as String?;
+
     if (!isMobile) {
       setVolume(volumeNotifier.value);
     }
@@ -297,6 +314,7 @@ class MyAudioHandler extends BaseAudioHandler {
         'playMode': playModeNotifier.value,
         'tmpPlayMode': _tmpPlayMode,
         'volume': volumeNotifier.value,
+        'playQueueForStreamId': playQueueForStreamId,
       }),
     );
   }
@@ -307,16 +325,16 @@ class MyAudioHandler extends BaseAudioHandler {
     }
     final content = await _equalizerState.readAsString();
     gains = (jsonDecode(content) as List<dynamic>).cast();
-    applyEqualizer();
+    await applyEqualizer();
   }
 
   void saveEqualizerState() {
     _equalizerState.writeAsStringSync(jsonEncode(gains));
   }
 
-  void saveAllStates() {
+  void saveAllStates() async {
+    await audioHandler._savePlayQueueState();
     audioHandler.savePlayState();
-    audioHandler._savePlayQueueState();
   }
 
   bool insert2Next(MyAudioMetadata song) {
@@ -354,13 +372,26 @@ class MyAudioHandler extends BaseAudioHandler {
     play();
   }
 
-  Future<void> setPlayQueue(List<MyAudioMetadata> source) async {
+  Future<void> setPlayQueue(
+    List<MyAudioMetadata> source,
+    int playMode, {
+    int? targetIndex,
+  }) async {
+    if (targetIndex != null) {
+      currentIndex = targetIndex;
+    } else {
+      currentIndex = playMode == 0 ? 0 : math.Random().nextInt(source.length);
+      playModeNotifier.value = playMode;
+    }
     playQueue = List.from(source);
     if (playModeNotifier.value == 1 ||
         (playModeNotifier.value == 2 && audioHandler._tmpPlayMode == 1)) {
       shuffle();
     }
-    _savePlayQueueState();
+    await audioHandler.load();
+    audioHandler.play();
+
+    saveAllStates();
   }
 
   void reversePlayQueue() {
@@ -383,7 +414,7 @@ class MyAudioHandler extends BaseAudioHandler {
     currentIndex = 0;
   }
 
-  void changePlayMode(int newPlayMode) {
+  void changePlayMode(int newPlayMode) async {
     if (newPlayMode == playModeNotifier.value) {
       return;
     }
@@ -394,20 +425,20 @@ class MyAudioHandler extends BaseAudioHandler {
           playQueue = List.from(_playQueueTmp);
           _playQueueTmp = [];
           currentIndex = playQueue.indexOf(currentSongNotifier.value!);
-          _savePlayQueueState();
         }
         break;
       case 1:
         if (_playQueueTmp.isEmpty) {
           shuffle();
-          _savePlayQueueState();
         }
         break;
       default:
         break;
     }
-
     playModeNotifier.value = newPlayMode;
+    if (newPlayMode != 2) {
+      await _savePlayQueueState();
+    }
 
     savePlayState();
   }
@@ -421,12 +452,10 @@ class MyAudioHandler extends BaseAudioHandler {
       playQueue = List.from(_playQueueTmp);
       _playQueueTmp = [];
       currentIndex = playQueue.indexOf(currentSongNotifier.value!);
-      _savePlayQueueState();
     } else if (playMode == 1) {
       shuffle();
-      _savePlayQueueState();
     }
-    savePlayState();
+    saveAllStates();
   }
 
   void toggleRepeat() {
@@ -454,8 +483,7 @@ class MyAudioHandler extends BaseAudioHandler {
     currentIndex = -1;
     currentSongNotifier.value = null;
     currentCoverArtColor = Colors.grey;
-    _savePlayQueueState();
-    savePlayState();
+    saveAllStates();
   }
 
   void justClear() {
@@ -501,8 +529,7 @@ class MyAudioHandler extends BaseAudioHandler {
           }
         }
       }
-      _savePlayQueueState();
-      savePlayState();
+      saveAllStates();
     } else {
       await _loadPlayQueueState();
       currentIndex = playQueue.indexWhere(
@@ -738,7 +765,7 @@ class MyAudioHandler extends BaseAudioHandler {
     _player.setVolume(adjustedVolume);
   }
 
-  void applyEqualizer() async {
+  Future<void> applyEqualizer() async {
     bool isAllZero = gains.every((g) => g.abs() < 0.01);
     String af = '';
 

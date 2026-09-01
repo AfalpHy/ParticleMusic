@@ -47,8 +47,6 @@ class Loader {
     colorManager.updateColors();
 
     await fontManager.loadFonts();
-
-    audioHandler.initStateFiles();
   }
 
   static Future<void> load() async {
@@ -57,11 +55,9 @@ class Loader {
 
     await library.load();
 
+    audioHandler.loadStates();
+
     history.load();
-
-    await playlistManager.prepare();
-
-    await audioHandler.loadStates();
 
     await playlistManager.load();
 
@@ -93,11 +89,10 @@ class Loader {
     history = History();
 
     await library.sync();
+
+    audioHandler.sync();
+
     history.load();
-
-    await playlistManager.prepare();
-
-    await audioHandler.sync();
 
     await playlistManager.load();
 

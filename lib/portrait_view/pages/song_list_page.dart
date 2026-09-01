@@ -31,7 +31,6 @@ extension _SongListPage on _SongListState {
               hintText: AppLocalizations.of(context).searchSongs,
               textController: textController,
               isSearchNotifier: isSearchNotifier,
-              picture: mainPicture,
               useCurrentSong: false,
             );
           },

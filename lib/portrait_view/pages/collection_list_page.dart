@@ -230,6 +230,7 @@ extension _CollectionListPage on CollectionListState {
           gridDelegate: MyGirdDelegate(
             maxCrossAxisExtent: useLargePicture ? 180 : 120,
             crossAxisSpacing: 10,
+            mainAxisSpacing: 5,
             textExtent: 25,
           ),
           itemCount: currentPictureList.length,

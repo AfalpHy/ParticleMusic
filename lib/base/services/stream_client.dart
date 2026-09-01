@@ -1,5 +1,6 @@
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
+import 'package:sylvakru/base/audio_handler.dart';
 import 'package:sylvakru/base/data/artist_album.dart';
 import 'package:sylvakru/base/data/playlist.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
@@ -52,23 +53,33 @@ abstract class StreamClient {
 
   // use playlist to save playqueue(no limit)
   Future<List<MyAudioMetadata>?> getPlayQueue() async {
-    if (playlistManager.playQueueForStream.id == null) {
+    if (playQueueForStreamId == null) {
       return null;
     }
-    return getPlaylistSongs(playlistManager.playQueueForStream.id!);
+    return getPlaylistSongs(playQueueForStreamId!);
   }
 
+  bool _saving = false;
   Future<bool> savePlayQueue(List<String> songIds) async {
-    if (playlistManager.playQueueForStream.id != null) {
-      if (!await deletePlaylist(playlistManager.playQueueForStream.id!)) {
+    if (_saving) {
+      return false;
+    }
+    _saving = true;
+    if (playQueueForStreamId != null) {
+      if (!await deletePlaylist(playQueueForStreamId!)) {
+        playQueueForStreamId = null;
+        _saving = false;
         return false;
       }
     }
-    playlistManager.playQueueForStream.id = await createPlaylist(
-      playlistManager.playQueueForStream.name,
-    );
-
-    return updatePlaylistSongs(playlistManager.playQueueForStream.id!, songIds);
+    playQueueForStreamId = await createPlaylist(playQueueForStreamName);
+    if (playQueueForStreamId == null) {
+      _saving = false;
+      return false;
+    }
+    final res = await updatePlaylistSongs(playQueueForStreamId!, songIds);
+    _saving = false;
+    return res;
   }
 
   Future<List<MyAudioMetadata>?> getStarredSongs();

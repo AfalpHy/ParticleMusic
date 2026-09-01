@@ -1170,12 +1170,7 @@ void showSongListOptions(BuildContext context, List<MyAudioMetadata> songList) {
                 onTap: () async {
                   Navigator.pop(context);
                   await Future.delayed(Duration(milliseconds: 250));
-
-                  audioHandler.currentIndex = 0;
-                  playModeNotifier.value = 0;
-                  await audioHandler.setPlayQueue(songList);
-                  await audioHandler.load();
-                  audioHandler.play();
+                  audioHandler.setPlayQueue(songList, 0);
                 },
               ),
               ListTile(
@@ -1185,11 +1180,7 @@ void showSongListOptions(BuildContext context, List<MyAudioMetadata> songList) {
                   Navigator.pop(context);
                   await Future.delayed(Duration(milliseconds: 250));
 
-                  audioHandler.currentIndex = Random().nextInt(songList.length);
-                  playModeNotifier.value = 1;
-                  await audioHandler.setPlayQueue(songList);
-                  await audioHandler.load();
-                  audioHandler.play();
+                  audioHandler.setPlayQueue(songList, 1);
                 },
               ),
 
