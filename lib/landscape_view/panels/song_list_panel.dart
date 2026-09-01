@@ -903,7 +903,7 @@ extension _SongListPanel on _SongListState {
         ),
       );
 
-      if (sourceType == .local) {
+      if (sourceType == .local && artist == null && album == null) {
         menuItems.add(
           MenuItem(
             iconData: Icons.edit_rounded,

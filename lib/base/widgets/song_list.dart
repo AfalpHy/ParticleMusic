@@ -400,7 +400,7 @@ class _SongListState extends State<SongList> {
       builder: (_, _, _) {
         MyPicture? picture = mainPicture;
         return ListenableBuilder(
-          listenable: Listenable.merge([]),
+          listenable: Listenable.merge([picture?.changeNotifier]),
           builder: (_, _) {
             return ValueListenableBuilder(
               valueListenable: mainPageThemeNotifier,

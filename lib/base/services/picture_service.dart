@@ -22,6 +22,8 @@ class MyPicture {
   Color? color;
   Color? lowerLuminance;
 
+  final changeNotifier = ValueNotifier(0);
+
   MyPicture(this.id, {String? md5Hash}) {
     if (id.isEmpty) {
       isExist = false;

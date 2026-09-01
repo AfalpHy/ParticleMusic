@@ -279,6 +279,9 @@ class LayersManager {
   }
 
   Future<bool> popDetail(String label, {bool executePop = true}) async {
+    if (rootLayerMap[label] == null) {
+      return false;
+    }
     final rootLayer = getRootLayer(label);
     if (detailWidgetMap[rootLayer] == null) {
       return false;
@@ -431,6 +434,22 @@ class LayersManager {
     layerInfoMap.removeWhere((k, v) => k != topRootLayer);
     rootLayerMap.removeWhere((k, v) => k != 'settings');
     rootPageMap.removeWhere((k, v) => k != topRootLayer);
+
+    switchNotifier.value++;
+
+    bottomRootPage = null;
+  }
+
+  void clearArtistAlbum() {
+    popDetail('artists', executePop: false);
+    popDetail('albums', executePop: false);
+
+    final artistsLayer = rootLayerMap['artists'];
+    final albumLayer = rootLayerMap['albums'];
+
+    layerInfoMap.removeWhere((k, v) => k == artistsLayer || k == albumLayer);
+    rootPageMap.removeWhere((k, v) => k == artistsLayer || k == albumLayer);
+    rootLayerMap.removeWhere((k, v) => k == 'artists' || k == 'albums');
 
     switchNotifier.value++;
 

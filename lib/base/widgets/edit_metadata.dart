@@ -21,7 +21,6 @@ import 'package:sylvakru/base/widgets/custom_text_field.dart';
 import 'package:sylvakru/base/widgets/my_divider.dart';
 import 'package:sylvakru/l10n/generated/app_localizations.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
-import 'package:sylvakru/base/utils/metadata_utils.dart';
 import 'package:sylvakru/layer/layers_manager.dart';
 import 'package:permission_handler/permission_handler.dart';
 
@@ -338,11 +337,10 @@ class _EditMetadataState extends State<EditMetadata> {
           );
           colorManager.updateLyricsPageColors();
         }
-        final originArtist = getArtist(song);
-        final originAlbum = getAlbum(song);
-        artistAlbumManager.updateArtistAlbum(song, originArtist, originAlbum);
+        artistAlbumManager.updateArtistAlbum();
 
         song.updateNotifier.value++;
+        song.picture.changeNotifier.value++;
 
         layersManager.updateBackground();
       }

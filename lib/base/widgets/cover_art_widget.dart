@@ -25,6 +25,7 @@ class CoverArtWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Material(
+      key: ValueKey(picture?.changeNotifier.value),
       elevation: elevation,
       color: color ?? Colors.transparent,
       shape: SmoothRectangleBorder(

@@ -3,11 +3,13 @@ import 'dart:async';
 import 'package:lpinyin/lpinyin.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:sylvakru/base/app.dart';
+import 'package:sylvakru/base/data/library.dart';
 import 'package:sylvakru/base/data/setting.dart';
 import 'package:sylvakru/base/services/picture_service.dart';
 import 'package:sylvakru/base/services/stream_client.dart';
 import 'package:sylvakru/base/my_audio_metadata.dart';
 import 'package:sylvakru/base/utils/metadata_utils.dart';
+import 'package:sylvakru/layer/layers_manager.dart';
 
 ArtistAlbumManager artistAlbumManager = ArtistAlbumManager();
 
@@ -111,12 +113,16 @@ class ArtistAlbumManager {
     });
   }
 
-  void updateArtistAlbum(
-    MyAudioMetadata song,
-    String originArtist,
-    String originAlbum,
-  ) {
-    // TODO
+  void updateArtistAlbum() {
+    layersManager.clearArtistAlbum();
+    artistList.clear();
+    albumList.clear();
+    artistMap.clear();
+    albumMap.clear();
+    for (final song in library.songList) {
+      processSong(song);
+    }
+    classify();
   }
 
   // use completer to avoid loading same data multiple times
