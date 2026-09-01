@@ -54,6 +54,14 @@ abstract class StreamClient {
   // use playlist to save playqueue(no limit)
   Future<List<MyAudioMetadata>?> getPlayQueue() async {
     if (playQueueForStreamId == null) {
+      for (Playlist pl in await getPlaylists() ?? []) {
+        if (pl.name == playQueueForStreamName) {
+          playQueueForStreamId = pl.id;
+          break;
+        }
+      }
+    }
+    if (playQueueForStreamId == null) {
       return null;
     }
     return getPlaylistSongs(playQueueForStreamId!);
