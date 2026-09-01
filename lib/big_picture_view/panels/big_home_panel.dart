@@ -201,8 +201,23 @@ class _BigHomePanelState extends State<BigHomePanel> {
           getPicture: (index) => sourceType == .navidrome
               ? history.rankingAlbumList[index].picture
               : history.rankingSongList[index].picture,
-          onTap: (index) {
+          onTap: (index) async {
             if (sourceType == .navidrome) {
+              final album = history.rankingAlbumList[index];
+              final baseColor = await computeColor(album.picture);
+              if (!context.mounted) {
+                return;
+              }
+              Navigator.of(context).push(
+                ZoomPageRoute(
+                  builder: (context) {
+                    return BigSingleAlbumPanel(
+                      album: album,
+                      baseColor: baseColor,
+                    );
+                  },
+                ),
+              );
             } else {
               showSongOptions(
                 context: context,
@@ -248,8 +263,23 @@ class _BigHomePanelState extends State<BigHomePanel> {
           getPicture: (index) => sourceType == .navidrome
               ? history.recentlyAlbumList[index].picture
               : history.recentlySongList[index].picture,
-          onTap: (index) {
+          onTap: (index) async {
             if (sourceType == .navidrome) {
+              final album = history.recentlyAlbumList[index];
+              final baseColor = await computeColor(album.picture);
+              if (!context.mounted) {
+                return;
+              }
+              Navigator.of(context).push(
+                ZoomPageRoute(
+                  builder: (context) {
+                    return BigSingleAlbumPanel(
+                      album: album,
+                      baseColor: baseColor,
+                    );
+                  },
+                ),
+              );
             } else {
               showSongOptions(
                 context: context,
