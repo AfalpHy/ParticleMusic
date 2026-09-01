@@ -114,9 +114,11 @@ void sortSongList(int sortType, List<MyAudioMetadata> songList) {
         final albumB = artistAlbumManager
             .albumMap[isStreamSource ? a.albumId : getAlbum(b)];
         if (albumA == null || albumB == null) {
-          return 0;
-        }
-        if (albumA != albumB) {
+          final albumTmp = a.compareAlbum.compareTo(b.compareAlbum);
+          if (albumTmp != 0) {
+            return albumTmp;
+          }
+        } else if (albumA != albumB) {
           int aYear = albumA.year ?? 9999;
           int bYear = albumB.year ?? 9999;
 
@@ -126,6 +128,7 @@ void sortSongList(int sortType, List<MyAudioMetadata> songList) {
           }
           return albumA.compareName.compareTo(albumB.compareName);
         }
+
         final discA = a.disc ?? 9999;
         final discB = b.disc ?? 9999;
 
@@ -149,9 +152,11 @@ void sortSongList(int sortType, List<MyAudioMetadata> songList) {
         final albumB = artistAlbumManager
             .albumMap[isStreamSource ? a.albumId : getAlbum(b)];
         if (albumA == null || albumB == null) {
-          return 0;
-        }
-        if (albumA != albumB) {
+          final albumTmp = a.compareAlbum.compareTo(b.compareAlbum);
+          if (albumTmp != 0) {
+            return albumTmp;
+          }
+        } else if (albumA != albumB) {
           int aYear = albumA.year ?? 9999;
           int bYear = albumB.year ?? 9999;
 
