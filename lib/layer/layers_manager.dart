@@ -278,7 +278,7 @@ class LayersManager {
     });
   }
 
-  bool popDetail(String label, {bool executePop = true}) {
+  Future<bool> popDetail(String label, {bool executePop = true}) async {
     final rootLayer = getRootLayer(label);
     if (detailWidgetMap[rootLayer] == null) {
       return false;
@@ -316,7 +316,7 @@ class LayersManager {
       }
     }
 
-    layersManager.updateBackground();
+    await layersManager.updateBackground();
 
     if ((rootKey.currentState?.canPop() ?? false) && executePop) {
       rootKey.currentState?.pop();
@@ -334,7 +334,7 @@ class LayersManager {
               ?.artist !=
           detail) {
         await Future.delayed(Duration(milliseconds: 500));
-        if (popDetail('artists')) {
+        if (await popDetail('artists')) {
           await Future.delayed(Duration(milliseconds: 500));
         }
         pushDetail('artists', detail);
@@ -344,7 +344,7 @@ class LayersManager {
               ?.album !=
           detail) {
         await Future.delayed(Duration(milliseconds: 500));
-        if (popDetail('albums')) {
+        if (await popDetail('albums')) {
           await Future.delayed(Duration(milliseconds: 500));
         }
 

@@ -227,7 +227,7 @@ class _TitleBarState extends State<TitleBar> {
                 layersManager.popDetail('ranking');
                 layersManager.popDetail('recently');
                 layersManager.popDetail('playlists');
-                while (layersManager.popDetail('settings')) {}
+                while (await layersManager.popDetail('settings')) {}
               });
             },
             icon: ImageIcon(bigPictureModeImage),
@@ -360,7 +360,7 @@ class _TitleBarState extends State<TitleBar> {
                       layersManager.popDetail('ranking');
                       layersManager.popDetail('recently');
                       layersManager.popDetail('playlists');
-                      while (layersManager.popDetail('settings')) {}
+                      while (await layersManager.popDetail('settings')) {}
                     },
                     icon: ImageIcon(miniModeImage),
                   ),
