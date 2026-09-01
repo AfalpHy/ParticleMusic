@@ -122,7 +122,7 @@ String getPicturesPath(SourceType sourceType) {
 
 final _httpClient = http.Client();
 
-Future<String?> convertToRealPathIfNeed(String path) async {
+Future<String?> covertToRedirectPathIfNeed(String path) async {
   final request = http.Request('HEAD', Uri.parse(path))
     ..followRedirects = false
     ..headers.addAll(webdavClient?.headers ?? {});
@@ -130,9 +130,9 @@ Future<String?> convertToRealPathIfNeed(String path) async {
   final response = await _httpClient.send(request);
 
   if (response.statusCode == 302) {
-    final realLocation = response.headers['location'];
-    if (realLocation != null) {
-      return realLocation;
+    final redirectLocation = response.headers['location'];
+    if (redirectLocation != null) {
+      return redirectLocation;
     }
   }
   return null;

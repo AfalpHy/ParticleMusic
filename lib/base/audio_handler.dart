@@ -619,7 +619,7 @@ class MyAudioHandler extends BaseAudioHandler {
         bool needHeader = false;
         switch (currentSong.sourceType) {
           case .webdav:
-            final tmpPath = await convertToRealPathIfNeed(currentSong.path!);
+            final tmpPath = await covertToRedirectPathIfNeed(currentSong.path!);
             if (tmpPath == null) {
               needHeader = true;
             } else {

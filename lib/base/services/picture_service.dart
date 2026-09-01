@@ -65,7 +65,7 @@ Future<void> _loadPicture(MyPicture picture) async {
         bytes = await readPictureAsync(picture.id);
         break;
       case .webdav:
-        final tmpPath = await convertToRealPathIfNeed(picture.id);
+        final tmpPath = await covertToRedirectPathIfNeed(picture.id);
         if (tmpPath == null) {
           bytes = await readPictureAsync(
             picture.id,

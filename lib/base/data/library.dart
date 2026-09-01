@@ -110,6 +110,12 @@ class Library {
 
   Future<void> load() async {
     if (isNotStreamSource) {
+      // must execute before loading metadata(set ios path)
+      for (final id in await readJsonListFile(_folderIdListFile!)) {
+        final folder = await Folder.from(id, sourceType == .webdav);
+        folderList.add(folder);
+      }
+
       List<MetadataItem> rows = [];
       int offset = 0;
 
@@ -137,11 +143,8 @@ class Library {
       canModify = true;
       changeNotifier.value++;
 
-      for (final id in await readJsonListFile(_folderIdListFile!)) {
-        final folder = await Folder.from(id, sourceType == .webdav);
+      for (final folder in folderList) {
         await folder.load();
-
-        folderList.add(folder);
       }
     }
 
@@ -299,20 +302,20 @@ class Library {
     MyAudioMetadata? song = library.id2Song[id];
 
     if ((song?.modified?.difference(modified).inSeconds.abs() ?? 2) > 1) {
-      String realPath = path;
+      String readPath = path;
       Map<String, String>? headers;
       bool isWebdav = path.startsWith('http://') || path.startsWith('https://');
       if (isWebdav) {
-        final tmpPath = await convertToRealPathIfNeed(path);
+        final tmpPath = await covertToRedirectPathIfNeed(path);
         if (tmpPath == null) {
           headers = webdavClient?.headers;
         } else {
-          realPath = tmpPath;
+          readPath = tmpPath;
         }
       }
       AudioMetadata? tmp;
       try {
-        tmp = await readMetadataAsync(realPath, false, headers: headers);
+        tmp = await readMetadataAsync(readPath, false, headers: headers);
       } catch (e) {
         logger.output("$path: $e");
       }
