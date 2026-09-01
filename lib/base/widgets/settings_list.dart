@@ -431,7 +431,7 @@ class _SettingsListState extends State<SettingsList> {
         }
       },
       trailing: ValueListenableBuilder(
-        valueListenable: library.cacheSizeNotifier,
+        valueListenable: cacheSizeNotifier,
         builder: (context, value, child) {
           // use blank as placeholders
           return Text("${value.toStringAsFixed(1)}MB  ");

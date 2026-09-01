@@ -19,10 +19,10 @@ import 'package:pool/pool.dart';
 
 Library library = Library();
 
+final ValueNotifier<double> cacheSizeNotifier = ValueNotifier(0);
+
 class Library {
   MetadataDB? _metadataDB;
-
-  final ValueNotifier<double> cacheSizeNotifier = ValueNotifier(0);
 
   Map<String, MyAudioMetadata> id2Song = {};
   List<MyAudioMetadata> songList = [];
@@ -149,6 +149,7 @@ class Library {
   }
 
   Future<void> _accumulateCache() async {
+    cacheSizeNotifier.value = 0;
     Directory cacheDir = Directory(getCachesPath(sourceType));
     if (!await cacheDir.exists()) {
       return;
@@ -167,16 +168,28 @@ class Library {
       return;
     }
     final savePath = song.cachePath!;
+    late bool success;
+    // delay download to prevent it from running at the same time as audio loading
+    await Future.delayed(Duration(seconds: 3));
 
     if (song.sourceType == .webdav) {
-      await webdavClient?.download(remotePath: song.path!, localPath: savePath);
+      success =
+          await webdavClient?.download(
+            remotePath: song.path!,
+            localPath: savePath,
+          ) ??
+          false;
     } else {
-      await streamClient?.downloadSong(song.id, savePath);
+      success = await streamClient?.downloadSong(song.id, savePath) ?? false;
     }
     final tmp = File(savePath);
     if (await tmp.exists()) {
-      song.cacheExist = true;
-      cacheSizeNotifier.value += await tmp.length() / (1024 * 1024);
+      if (success) {
+        song.cacheExist = true;
+        cacheSizeNotifier.value += await tmp.length() / (1024 * 1024);
+      } else {
+        await tmp.delete();
+      }
     }
   }
 
@@ -326,8 +339,6 @@ class Library {
 
   Future<void> sync() async {
     canModify = false;
-    await library.clearCache();
-    await library.clearPicture();
 
     switch (sourceType) {
       case .local:
