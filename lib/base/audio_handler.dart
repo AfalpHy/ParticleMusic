@@ -194,16 +194,16 @@ class MyAudioHandler extends BaseAudioHandler {
       _playState.createSync(recursive: true);
       savePlayState();
     }
-    _equalizerState = File(
-      "${appSupportDir.path}//${sourceType.name}/equalizer_state.json",
-    );
+    _equalizerState = File("${appSupportDir.path}/equalizer_state.json");
     if (!(_equalizerState.existsSync())) {
-      _equalizerState.createSync(recursive: true);
       saveEqualizerState();
     }
 
-    _positionState = File("${appSupportDir.path}/position_state.json");
+    _positionState = File(
+      "${appSupportDir.path}/${sourceType.name}/position_state.json",
+    );
     if (!(_positionState.existsSync())) {
+      _positionState.createSync(recursive: true);
       _positionState.writeAsString(Duration.zero.inMilliseconds.toString());
     }
   }
@@ -487,7 +487,12 @@ class MyAudioHandler extends BaseAudioHandler {
   }
 
   void justClear() {
-    stop();
+    _player.stop();
+    updateIsPlaying(false);
+    updatePlaybackState(stop: true);
+    _positionTimer?.cancel();
+    _positionTimer = null;
+
     playQueue = [];
     _playQueueTmp = [];
     currentIndex = -1;

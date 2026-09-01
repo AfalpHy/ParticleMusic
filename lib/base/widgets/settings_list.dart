@@ -308,7 +308,6 @@ class _SettingsListState extends State<SettingsList> {
                             isStreamSource =
                                 sourceType == .navidrome || sourceType == .emby;
                             isNotStreamSource = !isStreamSource;
-                            config.save();
                             streamClient = null;
                             if (sourceType == .navidrome &&
                                 config.navidromeBaseUrl != null) {
@@ -325,6 +324,7 @@ class _SettingsListState extends State<SettingsList> {
                                 password: config.embyPassword!,
                               );
                             }
+                            config.save();
 
                             setState(() {});
 
