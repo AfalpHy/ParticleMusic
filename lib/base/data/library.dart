@@ -107,13 +107,17 @@ class Library {
     return null;
   }
 
+  Future<void> initFolders() async {
+    // must execute before loading metadata(set ios path)
+    for (final id in await readJsonListFile(_folderIdListFile!)) {
+      final folder = await Folder.from(id, sourceType == .webdav);
+      folderList.add(folder);
+    }
+  }
+
   Future<void> load() async {
     if (isNotStreamSource) {
-      // must execute before loading metadata(set ios path)
-      for (final id in await readJsonListFile(_folderIdListFile!)) {
-        final folder = await Folder.from(id, sourceType == .webdav);
-        folderList.add(folder);
-      }
+      await initFolders();
 
       List<MetadataItem> rows = [];
       int offset = 0;

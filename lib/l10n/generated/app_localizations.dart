@@ -581,20 +581,8 @@ abstract class AppLocalizations {
   /// No description provided for @addRecursiveFolder.
   ///
   /// In en, this message translates to:
-  /// **'Add Folder(Recursive)'**
+  /// **'Add Folder and All Subfolders'**
   String get addRecursiveFolder;
-
-  /// No description provided for @addWebDAVFolder.
-  ///
-  /// In en, this message translates to:
-  /// **'Add WebDAV Folder'**
-  String get addWebDAVFolder;
-
-  /// No description provided for @addWebDAVRecursiveFolder.
-  ///
-  /// In en, this message translates to:
-  /// **'Add WebDAV Folder(Recursive)'**
-  String get addWebDAVRecursiveFolder;
 
   /// No description provided for @replacePicture.
   ///
@@ -841,36 +829,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Switch Source'**
   String get switchSource;
-
-  /// No description provided for @connect2Navidrome.
-  ///
-  /// In en, this message translates to:
-  /// **'Connect to Navidrome'**
-  String get connect2Navidrome;
-
-  /// No description provided for @connect2Subsonic.
-  ///
-  /// In en, this message translates to:
-  /// **'Connect to Subsonic'**
-  String get connect2Subsonic;
-
-  /// No description provided for @connect2WebDAV.
-  ///
-  /// In en, this message translates to:
-  /// **'Connect to WebDAV'**
-  String get connect2WebDAV;
-
-  /// No description provided for @connect2Emby.
-  ///
-  /// In en, this message translates to:
-  /// **'Connect to Emby'**
-  String get connect2Emby;
-
-  /// No description provided for @connect2Server.
-  ///
-  /// In en, this message translates to:
-  /// **'Connect to Server'**
-  String get connect2Server;
 
   /// No description provided for @manageServers.
   ///
@@ -1381,6 +1339,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Save'**
   String get save;
+
+  /// No description provided for @chooseMusicSource.
+  ///
+  /// In en, this message translates to:
+  /// **'Choose a Music Source'**
+  String get chooseMusicSource;
 }
 
 class _AppLocalizationsDelegate

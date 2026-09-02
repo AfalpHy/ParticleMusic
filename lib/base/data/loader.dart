@@ -108,6 +108,32 @@ class Loader {
     stateNotifier.value++;
   }
 
+  static Future<void> firstSync() async {
+    _busy = true;
+    stateNotifier.value++;
+
+    layersManager.switchRootLayer('songs');
+
+    artistAlbumManager = ArtistAlbumManager();
+
+    history = History();
+
+    await library.sync();
+
+    audioHandler.loadStates();
+
+    history.load();
+
+    await playlistManager.load();
+
+    if (isNotStreamSource) {
+      artistAlbumManager.classify();
+    }
+
+    _busy = false;
+    stateNotifier.value++;
+  }
+
   static void _handleLegacyVersionData() {
     File tmp = File('${appSupportDir.path}/version.json');
     if (tmp.existsSync()) {

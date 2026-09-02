@@ -4,8 +4,9 @@ import 'dart:io';
 import 'package:material_ui/material_ui.dart';
 import 'package:flutter/services.dart';
 import 'package:sylvakru/base/app.dart';
-import 'package:sylvakru/base/asset_images.dart';
 import 'package:sylvakru/base/audio_handler.dart';
+import 'package:sylvakru/base/data/config.dart';
+import 'package:sylvakru/base/data/library.dart';
 import 'package:sylvakru/base/data/loader.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/services/interaction.dart';
@@ -14,6 +15,7 @@ import 'package:sylvakru/base/services/system_ui_service.dart';
 import 'package:sylvakru/base/services/taskbar_service.dart';
 import 'package:sylvakru/base/utils/dynamic_lyrics_page_route.dart';
 import 'package:sylvakru/base/utils/media_query.dart';
+import 'package:sylvakru/base/utils/source_type.dart';
 import 'package:sylvakru/base/widgets/connect_client_widget.dart';
 import 'package:sylvakru/base/widgets/manage_music_folders.dart';
 import 'package:sylvakru/big_picture_view/big_picture_view.dart';
@@ -168,114 +170,221 @@ class _ViewEntryState extends State<ViewEntry> with WidgetsBindingObserver {
 
   Widget firstLaunchView() {
     final l10n = AppLocalizations.of(context);
-    return Material(
-      child: Center(
+
+    return Scaffold(
+      body: Center(
         child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 500),
-          child: Padding(
-            padding: .symmetric(horizontal: 20),
-            child: Column(
-              children: [
-                SizedBox(height: MediaQuery.of(context).padding.top + 20),
-                Expanded(
-                  child: ListView(
-                    padding: .zero,
-                    children: [
-                      Card(
-                        child: Column(
-                          children: [
-                            ListTile(
-                              leading: Image(
-                                image: webdavImage,
-                                width: 30,
-                                height: 30,
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: LayoutBuilder(
+            builder: (context, constraints) {
+              final isCompact = constraints.maxWidth < 600;
+
+              return CustomScrollView(
+                slivers: [
+                  SliverPadding(
+                    padding: EdgeInsets.only(
+                      left: 20,
+                      right: 20,
+                      top: MediaQuery.of(context).padding.top == 0 ? 20 : 0,
+                      bottom: 20,
+                    ),
+                    sliver: SliverList(
+                      delegate: SliverChildListDelegate([
+                        Center(
+                          child: Text(
+                            l10n.chooseMusicSource,
+                            style: const TextStyle(
+                              fontWeight: FontWeight.bold,
+                              fontSize: 24,
+                            ),
+                          ),
+                        ),
+                      ]),
+                    ),
+                  ),
+
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 30),
+                    sliver: isCompact
+                        ? SliverGrid(
+                            delegate: SliverChildListDelegate([
+                              _buildSourceCard(
+                                thisSourceType: .local,
                                 color: iconColor.value,
                               ),
-
-                              title: Text(l10n.connect2WebDAV),
-                              onTap: () {
-                                showAnimationDialog(
-                                  context: context,
-                                  child: ConnectClientWidget(
-                                    sourceType: .webdav,
-                                  ),
-                                );
-                              },
-                            ),
-                            ListTile(
-                              leading: Image(
-                                image: navidromeImage,
-                                width: 30,
-                                height: 30,
+                              _buildSourceCard(
+                                thisSourceType: .webdav,
+                                color: iconColor.value,
                               ),
-
-                              title: Text(l10n.connect2Navidrome),
-                              onTap: () {
-                                showAnimationDialog(
-                                  context: context,
-                                  child: ConnectClientWidget(
-                                    sourceType: .navidrome,
+                              _buildSourceCard(thisSourceType: .navidrome),
+                              _buildSourceCard(thisSourceType: .emby),
+                            ]),
+                            gridDelegate:
+                                const SliverGridDelegateWithFixedCrossAxisCount(
+                                  crossAxisCount: 2,
+                                  mainAxisSpacing: 5,
+                                  crossAxisSpacing: 5,
+                                ),
+                          )
+                        : SliverToBoxAdapter(
+                            child: Row(
+                              children: [
+                                Expanded(
+                                  child: _buildSourceCard(
+                                    thisSourceType: .local,
+                                    color: iconColor.value,
                                   ),
-                                );
-                              },
-                            ),
-                            ListTile(
-                              leading: Image(
-                                image: embyImage,
-                                width: 30,
-                                height: 30,
-                              ),
+                                ),
+                                Expanded(
+                                  child: _buildSourceCard(
+                                    thisSourceType: .webdav,
 
-                              title: Text(l10n.connect2Emby),
-                              onTap: () {
-                                showAnimationDialog(
-                                  context: context,
-                                  child: ConnectClientWidget(sourceType: .emby),
-                                );
-                              },
+                                    color: iconColor.value,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: _buildSourceCard(
+                                    thisSourceType: .navidrome,
+                                  ),
+                                ),
+                                Expanded(
+                                  child: _buildSourceCard(
+                                    thisSourceType: .emby,
+                                  ),
+                                ),
+                              ],
                             ),
-                          ],
+                          ),
+                  ),
+
+                  const SliverToBoxAdapter(child: SizedBox(height: 10)),
+
+                  if (sourceType != .local) ...[
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 30),
+                      sliver: SliverToBoxAdapter(
+                        child: Card(
+                          child: ConnectClientWidget(
+                            key: ValueKey(sourceType),
+                            sourceType: sourceType,
+                          ),
                         ),
                       ),
+                    ),
+                    const SliverToBoxAdapter(child: SizedBox(height: 10)),
+                  ],
 
-                      SizedBox(height: 10),
+                  if (isNotStreamSource) ...[
+                    SliverPadding(
+                      padding: const EdgeInsets.symmetric(horizontal: 30),
+                      sliver: SliverToBoxAdapter(
+                        child: Card(
+                          child: ManageMusicFolders(key: ValueKey(sourceType)),
+                        ),
+                      ),
+                    ),
+                    const SliverToBoxAdapter(child: SizedBox(height: 10)),
+                  ],
 
-                      Card(child: ManageMusicFolders(inSetting: false)),
+                  SliverPadding(
+                    padding: const EdgeInsets.symmetric(horizontal: 30),
+                    sliver: SliverToBoxAdapter(
+                      child: Card(
+                        clipBehavior: Clip.antiAlias,
+                        child: InkWell(
+                          mouseCursor: SystemMouseCursors.click,
+                          onTap: () async {
+                            setState(() {
+                              firstLaunch = false;
+                            });
+
+                            if (Platform.isIOS) {
+                              WidgetsBinding.instance.addPostFrameCallback((
+                                _,
+                              ) async {
+                                if (trialRemainingMinNotifier.value > 0) {
+                                  showTrialDialog(context);
+                                }
+                                await NativeMenu.init();
+                              });
+                            }
+
+                            config.save();
+                            await Loader.firstSync();
+                          },
+                          child: Padding(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 18,
+                              vertical: 12,
+                            ),
+                            child: Center(child: Text(l10n.getStart)),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  SliverToBoxAdapter(child: SizedBox(height: 40)),
+                ],
+              );
+            },
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSourceCard({required SourceType thisSourceType, Color? color}) {
+    return AspectRatio(
+      aspectRatio: 1,
+      child: Card(
+        clipBehavior: Clip.antiAlias,
+        child: InkWell(
+          mouseCursor: SystemMouseCursors.click,
+          onTap: () async {
+            sourceType = thisSourceType;
+            isStreamSource = sourceType == .navidrome || sourceType == .emby;
+            isNotStreamSource = !isStreamSource;
+            library = Library();
+            if (isNotStreamSource) {
+              await library.initFolders();
+            }
+            if (mounted) {
+              setState(() {});
+            }
+          },
+          child: Stack(
+            children: [
+              Transform.scale(
+                scale: 0.6,
+                child: Center(
+                  child: Column(
+                    children: [
+                      Expanded(
+                        child: Image(
+                          image: getSourceTypeImage(thisSourceType),
+                          color: color,
+                        ),
+                      ),
+                      Text(
+                        getSourceTypeDisplayName(
+                          AppLocalizations.of(context),
+                          thisSourceType,
+                        ),
+                        style: .new(fontSize: 24),
+                      ),
                     ],
                   ),
                 ),
-                SizedBox(height: 10),
+              ),
 
-                Card(
-                  clipBehavior: .antiAlias,
-                  child: InkWell(
-                    mouseCursor: SystemMouseCursors.click,
-                    onTap: () async {
-                      setState(() {
-                        firstLaunch = false;
-                      });
-                      if (Platform.isIOS) {
-                        WidgetsBinding.instance.addPostFrameCallback((_) async {
-                          if (trialRemainingMinNotifier.value > 0) {
-                            showTrialDialog(context);
-                          }
-                          await NativeMenu.init();
-                        });
-                      }
-                      await Loader.sync();
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 18.0,
-                        vertical: 12.0,
-                      ),
-                      child: Text(l10n.getStart),
-                    ),
-                  ),
+              if (sourceType == thisSourceType)
+                Positioned(
+                  top: 8,
+                  right: 8,
+                  child: Icon(Icons.check_circle, color: Colors.black),
                 ),
-                SizedBox(height: 20),
-              ],
-            ),
+            ],
           ),
         ),
       ),

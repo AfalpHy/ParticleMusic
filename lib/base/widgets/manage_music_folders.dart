@@ -24,8 +24,7 @@ import 'package:smooth_corner/smooth_corner.dart';
 final ValueNotifier<bool> recursiveScanNotifier = ValueNotifier(false);
 
 class ManageMusicFolders extends StatefulWidget {
-  final bool inSetting;
-  const ManageMusicFolders({super.key, this.inSetting = true});
+  const ManageMusicFolders({super.key});
 
   @override
   State<StatefulWidget> createState() => _ManageMusicFoldersState();
@@ -48,7 +47,7 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
     currentFolderIdList = library.folderList.map((e) => e.id).toList();
     tmpRecursiveScanNotifier = ValueNotifier(recursiveScanNotifier.value);
 
-    if (!widget.inSetting) {
+    if (firstLaunch) {
       updateNotifier.addListener(updateFolders);
       tmpRecursiveScanNotifier.addListener(() {
         recursiveScanNotifier.value = tmpRecursiveScanNotifier.value;
@@ -66,7 +65,7 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
 
   @override
   Widget build(BuildContext context) {
-    if (!widget.inSetting) {
+    if (firstLaunch) {
       return _notInSettingView(context);
     }
 
@@ -143,7 +142,7 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
 
               folderListSliver(),
 
-              if (widget.inSetting)
+              if (!firstLaunch)
                 SliverFillRemaining(
                   hasScrollBody: false,
                   child: Column(
@@ -285,7 +284,7 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
           child: ListTile(
             title: Text(l10n.recursiveScan),
             contentPadding: .fromLTRB(15, 0, 0, 0),
-            dense: widget.inSetting,
+            dense: !firstLaunch,
             trailing: SizedBox(
               width: 70,
               child: MySwitch(valueNotifier: tmpRecursiveScanNotifier),
@@ -302,7 +301,7 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
           clipBehavior: .antiAlias,
           child: ListTile(
             contentPadding: .fromLTRB(15, 0, 0, 0),
-            dense: widget.inSetting,
+            dense: !firstLaunch,
             onTap: () {
               sourceType == .local
                   ? _addFolder(context)
@@ -321,7 +320,7 @@ class _ManageMusicFoldersState extends State<ManageMusicFolders> {
           clipBehavior: .antiAlias,
           child: ListTile(
             contentPadding: .fromLTRB(15, 0, 0, 0),
-            dense: widget.inSetting,
+            dense: !firstLaunch,
             onTap: () {
               sourceType == .local
                   ? _addFolders(context)

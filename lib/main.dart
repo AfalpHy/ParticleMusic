@@ -73,7 +73,7 @@ Future<void> main() async {
   if (isTV) {
     FocusManager.instance.highlightStrategy =
         FocusHighlightStrategy.alwaysTraditional;
-  } else {
+  } else if (viewModeNotifier.value != .bigPicture && !firstLaunch) {
     layersManager.switchRootLayer('songs');
   }
 
@@ -251,8 +251,8 @@ Future<void> main() async {
       ),
     ),
   );
-  await Loader.load();
   logger.output('App start');
+  await Loader.load();
 }
 
 Future<void> _setupWindow() async {

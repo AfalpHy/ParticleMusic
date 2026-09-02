@@ -79,9 +79,7 @@
   "cancel": "取消",
   "confirm": "确认",
   "addFolder": "添加文件夹",
-  "addRecursiveFolder": "添加文件夹(包含子目录)",
-  "addWebDAVFolder": "添加WebDAV文件夹",
-  "addWebDAVRecursiveFolder": "添加WebDAV文件夹(包含子目录)",
+  "addRecursiveFolder": "添加文件夹及所有子文件夹",
   "replacePicture": "替换图片",
   "unknown": "未知",
   "updateMedata": "更新元数据",
@@ -123,11 +121,6 @@
   "customMode": "自定义模式",
   "local": "本地",
   "switchSource": "切换音乐来源",
-  "connect2Navidrome": "连接到Navidrome",
-  "connect2Subsonic": "连接到Subsonic",
-  "connect2WebDAV": "连接到WebDAV",
-  "connect2Emby": "连接到Emby",
-  "connect2Server": "连接到服务器",
   "manageServers": "管理服务器",
   "username": "账号",
   "password": "密码",
@@ -212,5 +205,6 @@
   "getStart": "开始使用",
   "immersiveWideLayout": "宽布局启用沉浸模式",
   "menuOnRight": "菜单显示在右侧",
-  "save": "保存"
+  "save": "保存",
+  "chooseMusicSource": "选择音乐来源"
 }

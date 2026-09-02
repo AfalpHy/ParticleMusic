@@ -263,13 +263,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get addFolder => 'Add Folder';
 
   @override
-  String get addRecursiveFolder => 'Add Folder(Recursive)';
-
-  @override
-  String get addWebDAVFolder => 'Add WebDAV Folder';
-
-  @override
-  String get addWebDAVRecursiveFolder => 'Add WebDAV Folder(Recursive)';
+  String get addRecursiveFolder => 'Add Folder and All Subfolders';
 
   @override
   String get replacePicture => 'Replace Picture';
@@ -393,21 +387,6 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get switchSource => 'Switch Source';
-
-  @override
-  String get connect2Navidrome => 'Connect to Navidrome';
-
-  @override
-  String get connect2Subsonic => 'Connect to Subsonic';
-
-  @override
-  String get connect2WebDAV => 'Connect to WebDAV';
-
-  @override
-  String get connect2Emby => 'Connect to Emby';
-
-  @override
-  String get connect2Server => 'Connect to Server';
 
   @override
   String get manageServers => 'Manage Servers';
@@ -672,4 +651,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get save => 'Save';
+
+  @override
+  String get chooseMusicSource => 'Choose a Music Source';
 }

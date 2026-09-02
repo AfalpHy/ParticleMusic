@@ -59,7 +59,7 @@ class Folder {
       "${getFolderConfigPath(isWebdav ? .webdav : .local)}/${md5.convert(utf8.encode(id)).toString()}.json",
     );
     if (!_songIdListFile.existsSync()) {
-      _songIdListFile.writeAsStringSync('[]');
+      initFile(_songIdListFile, true);
     }
   }
 

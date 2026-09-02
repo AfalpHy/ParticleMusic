@@ -270,7 +270,7 @@ class _SettingsListState extends State<SettingsList> {
 
   Widget switchSourceTypeListTile(BuildContext context, AppLocalizations l10n) {
     return ListTile(
-      leading: ImageIcon(serverImage, size: iconSize),
+      leading: ImageIcon(optionImage, size: iconSize),
       title: Text(l10n.switchSource),
       onTap: () {
         if (Loader.busy) {

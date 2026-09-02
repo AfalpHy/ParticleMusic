@@ -76,74 +76,86 @@ class _BigHomePanelState extends State<BigHomePanel> {
       controller: verticalController,
       padding: EdgeInsets.symmetric(vertical: 75 + getTopOffset(context)),
       children: [
-        _ListView(
-          title: l10n.artists,
-          count: artistAlbumManager.artistList.length,
-          getPicture: (index) => artistAlbumManager.artistList[index].picture,
-          onTap: (index) {
-            Navigator.of(context).push(
-              ZoomPageRoute(
-                builder: (context) {
-                  return BigSingleArtistPanel(
-                    artist: artistAlbumManager.artistList[index],
-                  );
-                },
-              ),
-            );
-          },
-          getBottomWidget: (index) {
-            return ListTile(
-              contentPadding: .zero,
-              mouseCursor: SystemMouseCursors.click,
-              title: Text(
-                artistAlbumManager.artistList[index].name,
-                style: .new(overflow: .ellipsis),
-              ),
+        ValueListenableBuilder(
+          valueListenable: artistAlbumManager.updateNotifier,
+          builder: (context, value, child) {
+            return _ListView(
+              title: l10n.artists,
+              count: artistAlbumManager.artistList.length,
+              getPicture: (index) =>
+                  artistAlbumManager.artistList[index].picture,
+              onTap: (index) {
+                Navigator.of(context).push(
+                  ZoomPageRoute(
+                    builder: (context) {
+                      return BigSingleArtistPanel(
+                        artist: artistAlbumManager.artistList[index],
+                      );
+                    },
+                  ),
+                );
+              },
+              getBottomWidget: (index) {
+                return ListTile(
+                  contentPadding: .zero,
+                  mouseCursor: SystemMouseCursors.click,
+                  title: Text(
+                    artistAlbumManager.artistList[index].name,
+                    style: .new(overflow: .ellipsis),
+                  ),
 
-              visualDensity: .new(vertical: -4),
+                  visualDensity: .new(vertical: -4),
+                );
+              },
+              verticalController: verticalController,
             );
           },
-          verticalController: verticalController,
         ),
 
-        _ListView(
-          title: l10n.albums,
-          count: artistAlbumManager.albumList.length,
-          getPicture: (index) => artistAlbumManager.albumList[index].picture,
-          onTap: (index) async {
-            final baseColor = await computeColor(
-              artistAlbumManager.albumList[index].picture,
-            );
-            if (!context.mounted) {
-              return;
-            }
-            Navigator.of(context).push(
-              ZoomPageRoute(
-                builder: (context) {
-                  return BigSingleAlbumPanel(
-                    album: artistAlbumManager.albumList[index],
-                    baseColor: baseColor,
-                  );
-                },
-              ),
+        ValueListenableBuilder(
+          valueListenable: artistAlbumManager.updateNotifier,
+          builder: (context, value, child) {
+            return _ListView(
+              title: l10n.albums,
+              count: artistAlbumManager.albumList.length,
+              getPicture: (index) =>
+                  artistAlbumManager.albumList[index].picture,
+              onTap: (index) async {
+                final baseColor = await computeColor(
+                  artistAlbumManager.albumList[index].picture,
+                );
+                if (!context.mounted) {
+                  return;
+                }
+                Navigator.of(context).push(
+                  ZoomPageRoute(
+                    builder: (context) {
+                      return BigSingleAlbumPanel(
+                        album: artistAlbumManager.albumList[index],
+                        baseColor: baseColor,
+                      );
+                    },
+                  ),
+                );
+              },
+              getBottomWidget: (index) {
+                return ListTile(
+                  contentPadding: .zero,
+                  mouseCursor: SystemMouseCursors.click,
+                  title: Text(
+                    artistAlbumManager.albumList[index].name,
+                    style: .new(overflow: .ellipsis),
+                  ),
+
+                  visualDensity: .new(vertical: -4),
+                );
+              },
+              getTag: (index) =>
+                  'big${artistAlbumManager.albumList[index].picture.id}${artistAlbumManager.albumList[index].name}',
+
+              verticalController: verticalController,
             );
           },
-          getBottomWidget: (index) {
-            return ListTile(
-              contentPadding: .zero,
-              mouseCursor: SystemMouseCursors.click,
-              title: Text(
-                artistAlbumManager.albumList[index].name,
-                style: .new(overflow: .ellipsis),
-              ),
-
-              visualDensity: .new(vertical: -4),
-            );
-          },
-          getTag: (index) =>
-              'big${artistAlbumManager.albumList[index].picture.id}${artistAlbumManager.albumList[index].name}',
-
-          verticalController: verticalController,
         ),
 
         _ListView(

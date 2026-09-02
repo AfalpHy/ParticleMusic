@@ -128,9 +128,7 @@
   "cancel": "Cancel",
   "confirm": "Confirm",
   "addFolder": "Add Folder",
-  "addRecursiveFolder": "Add Folder(Recursive)",
-  "addWebDAVFolder": "Add WebDAV Folder",
-  "addWebDAVRecursiveFolder": "Add WebDAV Folder(Recursive)",
+  "addRecursiveFolder": "Add Folder and All Subfolders",
   "replacePicture": "Replace Picture",
   "unknown": "Unknown",
   "updateMedata": "Update Metadata",
@@ -172,11 +170,6 @@
   "customMode": "Custom Mode",
   "local": "Local",
   "switchSource": "Switch Source",
-  "connect2Navidrome": "Connect to Navidrome",
-  "connect2Subsonic": "Connect to Subsonic",
-  "connect2WebDAV": "Connect to WebDAV",
-  "connect2Emby": "Connect to Emby",
-  "connect2Server": "Connect to Server",
   "manageServers": "Manage Servers",
   "username": "Username",
   "password": "Password",
@@ -268,5 +261,6 @@
   "getStart": "Get Start",
   "immersiveWideLayout": "Immersive for Wide Layout",
   "menuOnRight": "Menu on Right",
-  "save": "Save"
+  "save": "Save",
+  "chooseMusicSource": "Choose a Music Source"
 }

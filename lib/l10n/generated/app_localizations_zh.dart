@@ -263,13 +263,7 @@ class AppLocalizationsZh extends AppLocalizations {
   String get addFolder => '添加文件夹';
 
   @override
-  String get addRecursiveFolder => '添加文件夹(包含子目录)';
-
-  @override
-  String get addWebDAVFolder => '添加WebDAV文件夹';
-
-  @override
-  String get addWebDAVRecursiveFolder => '添加WebDAV文件夹(包含子目录)';
+  String get addRecursiveFolder => '添加文件夹及所有子文件夹';
 
   @override
   String get replacePicture => '替换图片';
@@ -393,21 +387,6 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get switchSource => '切换音乐来源';
-
-  @override
-  String get connect2Navidrome => '连接到Navidrome';
-
-  @override
-  String get connect2Subsonic => '连接到Subsonic';
-
-  @override
-  String get connect2WebDAV => '连接到WebDAV';
-
-  @override
-  String get connect2Emby => '连接到Emby';
-
-  @override
-  String get connect2Server => '连接到服务器';
 
   @override
   String get manageServers => '管理服务器';
@@ -665,4 +644,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get save => '保存';
+
+  @override
+  String get chooseMusicSource => '选择音乐来源';
 }
