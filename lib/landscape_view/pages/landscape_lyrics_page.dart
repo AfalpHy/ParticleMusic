@@ -59,7 +59,9 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
           child: child,
         );
       },
-      child: content(),
+      child: immersiveWideLayoutNotifier.value
+          ? content()
+          : SafeArea(child: content()),
     );
   }
 

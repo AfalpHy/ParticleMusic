@@ -821,7 +821,7 @@ class _SettingsListState extends State<SettingsList> {
                   applySystemUiMode(
                     mode: immersiveWideLayoutNotifier.value
                         ? .immersiveSticky
-                        : .manual,
+                        : .edgeToEdge,
                   );
                 }
                 setting.save();

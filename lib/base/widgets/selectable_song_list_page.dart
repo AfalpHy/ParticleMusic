@@ -215,6 +215,13 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
 
   @override
   Widget build(BuildContext context) {
+    if (immersiveWideLayoutNotifier.value) {
+      return content(context);
+    }
+    return SafeArea(child: content(context));
+  }
+
+  Widget content(BuildContext context) {
     final l10n = AppLocalizations.of(context);
 
     return Container(
@@ -225,9 +232,11 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
         appBar: AppBar(
           backgroundColor: Colors.transparent,
           scrolledUnderElevation: 0,
-          systemOverlayStyle: mainPageThemeNotifier.value == .dark
-              ? .light
-              : .dark,
+          systemOverlayStyle: immersiveWideLayoutNotifier.value
+              ? mainPageThemeNotifier.value == .dark
+                    ? .light
+                    : .dark
+              : null,
           actions: [
             MySearchField(
               hintText: l10n.searchSongs,

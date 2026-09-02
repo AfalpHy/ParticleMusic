@@ -150,9 +150,18 @@ class _ViewEntryState extends State<ViewEntry> with WidgetsBindingObserver {
           applySystemUiMode(
             mode: immersiveWideLayoutNotifier.value
                 ? .immersiveSticky
-                : .manual,
+                : .edgeToEdge,
           );
-          return BigPictureView();
+
+          if (immersiveWideLayoutNotifier.value) {
+            return BigPictureView();
+          }
+          SystemChrome.setSystemUIOverlayStyle(
+            const SystemUiOverlayStyle(
+              statusBarIconBrightness: Brightness.light,
+            ),
+          );
+          return SafeArea(child: BigPictureView());
         }
         if (isTooNarrow(context)) {
           applySystemUiMode(mode: .manual);
@@ -161,9 +170,18 @@ class _ViewEntryState extends State<ViewEntry> with WidgetsBindingObserver {
         // immersiveSticky：上滑临时显示的系统栏是透明浮层、不派发 insets
         // 变化也会自动隐藏，全面屏手势可正常完成；immersive 被唤出后会常驻
         applySystemUiMode(
-          mode: immersiveWideLayoutNotifier.value ? .immersiveSticky : .manual,
+          mode: immersiveWideLayoutNotifier.value
+              ? .immersiveSticky
+              : .edgeToEdge,
         );
-        return LandscapeView();
+
+        if (immersiveWideLayoutNotifier.value) {
+          return LandscapeView();
+        }
+        SystemChrome.setSystemUIOverlayStyle(
+          const SystemUiOverlayStyle(statusBarIconBrightness: Brightness.light),
+        );
+        return SafeArea(child: LandscapeView());
       },
     );
   }

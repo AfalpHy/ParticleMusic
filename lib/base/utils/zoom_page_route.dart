@@ -1,4 +1,5 @@
 import 'package:material_ui/material_ui.dart';
+import 'package:sylvakru/base/app.dart';
 
 class ZoomPageRoute<T> extends PageRoute<T> {
   ZoomPageRoute({required this.builder});
@@ -30,7 +31,7 @@ class ZoomPageRoute<T> extends PageRoute<T> {
       context,
       animation,
       secondaryAnimation,
-      child,
+      immersiveWideLayoutNotifier.value ? child : SafeArea(child: child),
     );
   }
 

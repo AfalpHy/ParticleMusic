@@ -86,6 +86,15 @@ Future<void> main() async {
         lightHoverFocusColorNotifier,
       ]),
       builder: (context, child) {
+        if (!immersiveWideLayoutNotifier.value) {
+          WidgetsBinding.instance.addPersistentFrameCallback((_) {
+            SystemChrome.setSystemUIOverlayStyle(
+              const SystemUiOverlayStyle(
+                statusBarIconBrightness: Brightness.light,
+              ),
+            );
+          });
+        }
         return MaterialApp(
           locale: localeNotifier.value,
           supportedLocales: AppLocalizations.supportedLocales,
