@@ -816,8 +816,7 @@ class _SettingsListState extends State<SettingsList> {
             return MySwitch(
               valueNotifier: immersiveWideLayoutNotifier,
               onToggleCallBack: () {
-                if (viewModeNotifier.value == .bigPicture ||
-                    !isTooNarrow(context)) {
+                if (!isTooNarrow(context)) {
                   applySystemUiMode(
                     mode: immersiveWideLayoutNotifier.value
                         ? .immersiveSticky
