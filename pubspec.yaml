@@ -88,7 +88,7 @@ dependencies:
   in_app_purchase: ^3.3.0
   text_scroll: ^0.2.1
   flutter_gamepads: ^0.1.11+4
-  liquid_glass_widgets: ^0.29.6
+  liquid_glass_widgets: ^1.2.3
   rive_animated_icon:
     git:
       url: https://github.com/AfalpHy/rive_animated_icons.git
