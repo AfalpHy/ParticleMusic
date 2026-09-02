@@ -48,11 +48,17 @@ class CoverArtWidget extends StatelessWidget {
     if (picture!.isLoaded) {
       return picture!.isExist ? imageWidget(picture!.path) : musicNote();
     }
-    return _FuturePicture(
-      picture: picture!,
-      size: size,
-      imageWidget: imageWidget,
-      musicNote: musicNote,
+    return FutureBuilder(
+      future: loadPictureSafe(picture!),
+      builder: (context, asyncSnapshot) {
+        if (asyncSnapshot.connectionState == ConnectionState.waiting) {
+          return SizedBox(width: size, height: size);
+        }
+        if (asyncSnapshot.hasError) {
+          return musicNote();
+        }
+        return imageWidget(picture!.path);
+      },
     );
   }
 
@@ -75,45 +81,5 @@ class CoverArtWidget extends StatelessWidget {
 
   Widget musicNote() {
     return ImageIcon(musicNoteImage, size: size);
-  }
-}
-
-class _FuturePicture extends StatefulWidget {
-  final MyPicture picture;
-  final double? size;
-  final Widget Function(String) imageWidget;
-  final Widget Function() musicNote;
-
-  const _FuturePicture({
-    required this.picture,
-    required this.size,
-    required this.imageWidget,
-    required this.musicNote,
-  });
-  @override
-  State<StatefulWidget> createState() => _FuturePictureState();
-}
-
-class _FuturePictureState extends State<_FuturePicture> {
-  @override
-  void dispose() {
-    // TODO: canel load
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return FutureBuilder(
-      future: loadPictureSafe(widget.picture),
-      builder: (context, asyncSnapshot) {
-        if (asyncSnapshot.connectionState == ConnectionState.waiting) {
-          return SizedBox(width: widget.size, height: widget.size);
-        }
-        if (asyncSnapshot.hasError) {
-          return widget.musicNote();
-        }
-        return widget.imageWidget(widget.picture.path);
-      },
-    );
   }
 }
