@@ -58,6 +58,7 @@ abstract class BigCollectionListPanelState
       itemBuilder: (context, index) {
         final picture = pictureList[index];
 
+        // TODO: update cover(playlist cover will change)
         return Builder(
           builder: (context) {
             return ScaleWidget(

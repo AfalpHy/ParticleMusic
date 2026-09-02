@@ -35,7 +35,6 @@ class _BigSingleFolderPanelState
 
   @override
   void initState() {
-    currentSongList = List.from(songList);
     widget.folder.changeNotifier.addListener(updateSongList);
     super.initState();
   }

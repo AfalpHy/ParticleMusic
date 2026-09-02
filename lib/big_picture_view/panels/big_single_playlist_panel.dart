@@ -38,7 +38,6 @@ class _BigSinglePlaylistPanelState
 
   @override
   void initState() {
-    currentSongList = List.from(songList);
     widget.playlist.changeNotifier.addListener(updateSongList);
     super.initState();
   }

@@ -37,7 +37,6 @@ abstract class BigSongListWithCoverBasePanelState<
     extends State<T> {
   late final String title;
   List<MyAudioMetadata> songList = [];
-  List<MyAudioMetadata> currentSongList = [];
 
   late Color baseColor;
 
@@ -49,14 +48,11 @@ abstract class BigSongListWithCoverBasePanelState<
   Playlist? playlist;
 
   void updateSongList() async {
-    baseColor = await computeColor(getFirstSong(currentSongList)?.picture);
-    colorManager.updateBigPictureRelatedColors(
-      getFirstSong(currentSongList)?.picture,
-    );
+    baseColor = await computeColor(getFirstSong(songList)?.picture);
+    colorManager.updateBigPictureRelatedColors(getFirstSong(songList)?.picture);
     if (!mounted) {
       return;
     }
-    currentSongList = List.from(songList);
     setState(() {});
   }
 
@@ -66,7 +62,7 @@ abstract class BigSongListWithCoverBasePanelState<
     baseColor = widget.baseColor;
     WidgetsBinding.instance.addPostFrameCallback((_) {
       colorManager.updateBigPictureRelatedColors(
-        getFirstSong(currentSongList)?.picture,
+        getFirstSong(songList)?.picture,
       );
     });
     super.initState();
@@ -96,7 +92,7 @@ abstract class BigSongListWithCoverBasePanelState<
       children: [
         if (mainPageThemeNotifier.value == .vivid) ...[
           CoverArtWidget(
-            picture: getFirstSong(currentSongList)?.picture,
+            picture: getFirstSong(songList)?.picture,
             color: baseColor,
           ),
           RepaintBoundary(
@@ -137,14 +133,12 @@ abstract class BigSongListWithCoverBasePanelState<
                     ),
 
                     IconButton(
-                      onPressed: () =>
-                          audioHandler.setPlayQueue(currentSongList, 1),
+                      onPressed: () => audioHandler.setPlayQueue(songList, 1),
 
                       icon: ImageIcon(shuffleImage),
                     ),
                     IconButton(
-                      onPressed: () =>
-                          audioHandler.setPlayQueue(currentSongList, 0),
+                      onPressed: () => audioHandler.setPlayQueue(songList, 0),
                       icon: Icon(Icons.play_arrow_rounded),
                       iconSize: 30,
                     ),
@@ -153,7 +147,7 @@ abstract class BigSongListWithCoverBasePanelState<
                         Navigator.of(context).push(
                           ZoomPageRoute(
                             builder: (_) => SelectableSongListPage(
-                              songList: currentSongList,
+                              songList: songList,
                               reorderable: true,
                               folder: folder,
                               playlist: playlist,
@@ -178,7 +172,7 @@ abstract class BigSongListWithCoverBasePanelState<
                 children: [
                   SizedBox(width: horizontalPadding),
                   Text(
-                    '${getSourceTypeDisplayName(l10n, sourceType)}: ${l10n.songCount(currentSongList.length)}',
+                    '${getSourceTypeDisplayName(l10n, sourceType)}: ${l10n.songCount(songList.length)}',
                   ),
                 ],
               ),
@@ -230,8 +224,7 @@ abstract class BigSongListWithCoverBasePanelState<
           SliverToBoxAdapter(
             child: Center(
               child: Hero(
-                tag:
-                    'big${getFirstSong(currentSongList)?.picture.id ?? ''}$title',
+                tag: 'big${getFirstSong(songList)?.picture.id ?? ''}$title',
                 flightShuttleBuilder:
                     (
                       flightContext,
@@ -241,7 +234,7 @@ abstract class BigSongListWithCoverBasePanelState<
                       toHeroContext,
                     ) => FittedBox(child: toHeroContext.widget),
                 child: CoverArtWidget(
-                  picture: getFirstSong(currentSongList)?.picture,
+                  picture: getFirstSong(songList)?.picture,
                   size: panelWidth * 0.6,
                   borderRadius: panelWidth * 0.06,
                 ),
@@ -258,7 +251,7 @@ abstract class BigSongListWithCoverBasePanelState<
       children: [
         SizedBox(width: 40),
         Hero(
-          tag: 'big${getFirstSong(currentSongList)?.picture.id ?? ''}$title',
+          tag: 'big${getFirstSong(songList)?.picture.id ?? ''}$title',
           flightShuttleBuilder:
               (
                 flightContext,
@@ -268,7 +261,7 @@ abstract class BigSongListWithCoverBasePanelState<
                 toHeroContext,
               ) => FittedBox(child: toHeroContext.widget),
           child: CoverArtWidget(
-            picture: getFirstSong(currentSongList)?.picture,
+            picture: getFirstSong(songList)?.picture,
             size: panelWidth * 0.2,
             borderRadius: panelWidth * 0.01,
           ),
@@ -282,20 +275,20 @@ abstract class BigSongListWithCoverBasePanelState<
   Widget songListView(bool sliver) {
     if (sliver) {
       return SliverList.builder(
-        itemCount: currentSongList.length,
+        itemCount: songList.length,
         itemBuilder: _itemBuilder,
       );
     }
     return ListView.builder(
       controller: _scrollController,
       padding: EdgeInsets.only(bottom: 30, right: 40),
-      itemCount: currentSongList.length,
+      itemCount: songList.length,
       itemBuilder: _itemBuilder,
     );
   }
 
   Widget _itemBuilder(BuildContext context, int index) {
-    final song = currentSongList[index];
+    final song = songList[index];
     return Builder(
       builder: (itemContext) {
         return Material(

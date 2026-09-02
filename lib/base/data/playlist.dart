@@ -151,7 +151,7 @@ class Playlist {
   final changeNotifier = ValueNotifier(0);
   final sortTypeNotifier = ValueNotifier(0);
 
-  bool canModify = false;
+  bool canModify = true;
 
   Playlist({required this.name, this.id}) {
     if (isNotStreamSource) {
