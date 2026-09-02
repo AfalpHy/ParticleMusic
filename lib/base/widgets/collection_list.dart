@@ -1,6 +1,5 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:sylvakru/base/app.dart';
-import 'package:sylvakru/base/data/loader.dart';
 import 'package:sylvakru/base/services/interaction.dart';
 import 'package:sylvakru/base/services/picture_service.dart';
 import 'package:sylvakru/base/utils/my_gird_delegate.dart';
@@ -57,7 +56,7 @@ abstract class CollectionListState extends State<CollectionList> {
 
   late final String Function(int) countFunction;
 
-  bool firstLoading = true;
+  bool preparing = true;
 
   void updateCurrentList();
 
@@ -65,7 +64,7 @@ abstract class CollectionListState extends State<CollectionList> {
 
   bool reachEnd = false;
   void _onScroll() async {
-    if (firstLoading | reachEnd) {
+    if (preparing | reachEnd) {
       return;
     }
 

@@ -33,6 +33,8 @@ class _ArtistsLayerState extends CollectionListState {
 
   @override
   void updateCurrentList() {
+    preparing = false;
+
     final value = textController.text;
     final list = artistAlbumManager.artistList
         .where((e) => (e.name.toLowerCase().contains(value.toLowerCase())))
@@ -51,6 +53,7 @@ class _ArtistsLayerState extends CollectionListState {
           },
         )
         .toList();
+
     changeNotifier.value++;
   }
 
@@ -66,12 +69,14 @@ class _ArtistsLayerState extends CollectionListState {
 
     isListViewNotifier = artistsIsListViewNotifier;
 
+    reachEnd = true;
+
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (isStreamSource && artistAlbumManager.artistList.isEmpty) {
+      if (artistAlbumManager.artistList.isNotEmpty) {
+        updateCurrentList();
+      } else if (isStreamSource) {
         await artistAlbumManager.loadArtists();
       }
-      firstLoading = false;
-      updateCurrentList();
     });
 
     artistAlbumManager.updateNotifier.addListener(updateCurrentList);

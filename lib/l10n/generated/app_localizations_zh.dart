@@ -662,4 +662,7 @@ class AppLocalizationsZh extends AppLocalizations {
 
   @override
   String get menuOnRight => '菜单显示在右侧';
+
+  @override
+  String get save => '保存';
 }

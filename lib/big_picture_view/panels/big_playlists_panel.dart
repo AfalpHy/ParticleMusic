@@ -52,7 +52,7 @@ class _BigPlaylistsPanelState extends BigCollectionListPanelState {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      firstLoading = false;
+      preparing = false;
       updateCurrentList();
     });
     playlistManager.updateNotifier.addListener(updateCurrentList);

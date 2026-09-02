@@ -23,6 +23,7 @@ class _BigAlbumsPanelState extends BigCollectionListPanelState {
 
   @override
   void updateCurrentList() {
+    preparing = false;
     final value = textController.text;
     final list = artistAlbumManager.albumList
         .where((e) => (e.name.toLowerCase().contains(value.toLowerCase())))
@@ -57,7 +58,7 @@ class _BigAlbumsPanelState extends BigCollectionListPanelState {
 
   bool _reachEnd = false;
   void _onScroll() async {
-    if (firstLoading | _reachEnd) {
+    if (preparing | _reachEnd) {
       return;
     }
 
@@ -71,11 +72,11 @@ class _BigAlbumsPanelState extends BigCollectionListPanelState {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (isStreamSource && artistAlbumManager.albumList.isEmpty) {
+      if (artistAlbumManager.albumList.isNotEmpty) {
+        updateCurrentList();
+      } else if (isStreamSource) {
         _reachEnd = await artistAlbumManager.loadAlbums() == 0;
       }
-      firstLoading = false;
-      updateCurrentList();
     });
     artistAlbumManager.updateNotifier.addListener(updateCurrentList);
     if (isStreamSource) {

@@ -36,6 +36,7 @@ class _RankingLayerState extends CollectionListState {
 
   @override
   void updateCurrentList() {
+    preparing = false;
     final value = textController.text;
     final list = history.rankingAlbumList
         .where((e) => (e.name.toLowerCase().contains(value.toLowerCase())))
@@ -64,12 +65,19 @@ class _RankingLayerState extends CollectionListState {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      updateCurrentList();
       if (sourceType == .navidrome && history.rankingAlbumList.isEmpty) {
         reachEnd = await history.loadAlbums(true) == 0;
       }
-      firstLoading = false;
-      updateCurrentList();
     });
+
+    history.rankingChangeNotifier.addListener(updateCurrentList);
+  }
+
+  @override
+  void dispose() {
+    history.rankingChangeNotifier.removeListener(updateCurrentList);
+    super.dispose();
   }
 
   @override

@@ -36,6 +36,7 @@ class _RecentlyLayerState extends CollectionListState {
 
   @override
   void updateCurrentList() {
+    preparing = false;
     final value = textController.text;
     final list = history.recentlyAlbumList
         .where((e) => (e.name.toLowerCase().contains(value.toLowerCase())))
@@ -64,12 +65,13 @@ class _RecentlyLayerState extends CollectionListState {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
+      updateCurrentList();
       if (sourceType == .navidrome && history.recentlyAlbumList.isEmpty) {
         reachEnd = await history.loadAlbums(false) == 0;
       }
-      firstLoading = false;
-      updateCurrentList();
     });
+
+    history.recentlyChangeNotifier.addListener(updateCurrentList);
   }
 
   @override

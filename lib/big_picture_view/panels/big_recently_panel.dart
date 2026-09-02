@@ -43,7 +43,7 @@ class _BigRecentlyAlbumListPanel extends BigCollectionListPanel {
 class _BigRecentlyAlbumListPanelState extends BigCollectionListPanelState {
   bool _reachEnd = false;
   void _onScroll() async {
-    if (firstLoading | _reachEnd) {
+    if (preparing | _reachEnd) {
       return;
     }
     if (scrollController.position.pixels >=
@@ -59,7 +59,7 @@ class _BigRecentlyAlbumListPanelState extends BigCollectionListPanelState {
       if (sourceType == .navidrome && history.recentlyAlbumList.isEmpty) {
         _reachEnd = await history.loadAlbums(false) == 0;
       }
-      firstLoading = false;
+      preparing = false;
       updateCurrentList();
     });
     history.recentlyChangeNotifier.addListener(updateCurrentList);

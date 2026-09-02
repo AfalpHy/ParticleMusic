@@ -52,6 +52,10 @@ class ArtistAlbumManager {
   }
 
   void classify() {
+    for (final song in library.songList) {
+      _processSong(song);
+    }
+
     sortArtists();
     sortAlbums();
 
@@ -66,7 +70,7 @@ class ArtistAlbumManager {
     updateNotifier.value++;
   }
 
-  void processSong(MyAudioMetadata song) {
+  void _processSong(MyAudioMetadata song) {
     final albumName = getAlbum(song);
 
     Album? album = albumMap[albumName];
@@ -119,9 +123,7 @@ class ArtistAlbumManager {
     albumList.clear();
     artistMap.clear();
     albumMap.clear();
-    for (final song in library.songList) {
-      processSong(song);
-    }
+
     classify();
   }
 
@@ -134,6 +136,7 @@ class ArtistAlbumManager {
       artistCompleter = Completer<void>();
       final tmpArtistList = await streamClient?.getArtistList();
       if (tmpArtistList == null) {
+        artistAlbumManager.updateNotifier.value++;
         artistCompleter!.complete();
         return;
       }
@@ -147,6 +150,7 @@ class ArtistAlbumManager {
       artistCompleter!.complete();
       return;
     }
+    artistAlbumManager.updateNotifier.value++;
     return artistCompleter!.future;
   }
 
@@ -158,6 +162,7 @@ class ArtistAlbumManager {
         artistAlbumManager.albumList.length,
       );
       if (albumList == null) {
+        artistAlbumManager.updateNotifier.value++;
         ablumCompleter!.complete(null);
         ablumCompleter = null;
         return null;

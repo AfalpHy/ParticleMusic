@@ -211,5 +211,6 @@
   "offset": "偏移",
   "getStart": "开始使用",
   "immersiveWideLayout": "宽布局启用沉浸模式",
-  "menuOnRight": "菜单显示在右侧"
+  "menuOnRight": "菜单显示在右侧",
+  "save": "保存"
 }

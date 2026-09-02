@@ -273,6 +273,10 @@ class _SettingsListState extends State<SettingsList> {
       leading: ImageIcon(serverImage, size: iconSize),
       title: Text(l10n.switchSource),
       onTap: () {
+        if (Loader.busy) {
+          showCenterMessage(l10n.syncingTryLater);
+          return;
+        }
         showAnimationDialog(
           context: context,
           child: SizedBox(
@@ -287,6 +291,13 @@ class _SettingsListState extends State<SettingsList> {
                   return Column(
                     mainAxisSize: .min,
                     children: [
+                      SizedBox(
+                        height: 35,
+                        child: Text(
+                          l10n.switchSource,
+                          style: .new(fontSize: 18, fontWeight: .bold),
+                        ),
+                      ),
                       for (final tmp in SourceType.values)
                         ListTile(
                           leading: Image(
@@ -299,11 +310,19 @@ class _SettingsListState extends State<SettingsList> {
                           trailing: sourceType == tmp
                               ? Icon(Icons.check)
                               : null,
-                          onTap: () {
+                          onTap: () async {
                             if (sourceType == tmp) {
                               return;
                             }
-                            Navigator.pop(context);
+                            if (!await showConfirmDialog(
+                              context,
+                              l10n.switchSource,
+                            )) {
+                              return;
+                            }
+                            if (context.mounted) {
+                              Navigator.pop(context);
+                            }
                             sourceType = tmp;
                             isStreamSource =
                                 sourceType == .navidrome || sourceType == .emby;
@@ -361,6 +380,13 @@ class _SettingsListState extends State<SettingsList> {
                   return Column(
                     mainAxisSize: .min,
                     children: [
+                      SizedBox(
+                        height: 35,
+                        child: Text(
+                          l10n.manageServers,
+                          style: .new(fontSize: 18, fontWeight: .bold),
+                        ),
+                      ),
                       webdavListTile(context, l10n),
                       navidromeListTile(context, l10n),
                       embyListTile(context, l10n),
@@ -386,6 +412,10 @@ class _SettingsListState extends State<SettingsList> {
 
       title: Text(getSourceTypeDisplayName(l10n, .webdav)),
       onTap: () {
+        if (Loader.busy && sourceType == .webdav) {
+          showCenterMessage(l10n.syncingTryLater);
+          return;
+        }
         showAnimationDialog(
           context: context,
           child: ConnectClientWidget(sourceType: .webdav),
@@ -399,6 +429,10 @@ class _SettingsListState extends State<SettingsList> {
       leading: Image(image: navidromeImage, width: 30, height: 30),
       title: Text(getSourceTypeDisplayName(l10n, .navidrome)),
       onTap: () {
+        if (Loader.busy && sourceType == .navidrome) {
+          showCenterMessage(l10n.syncingTryLater);
+          return;
+        }
         showAnimationDialog(
           context: context,
           child: ConnectClientWidget(sourceType: .navidrome),
@@ -413,6 +447,10 @@ class _SettingsListState extends State<SettingsList> {
 
       title: Text(getSourceTypeDisplayName(l10n, .emby)),
       onTap: () {
+        if (Loader.busy && sourceType == .emby) {
+          showCenterMessage(l10n.syncingTryLater);
+          return;
+        }
         showAnimationDialog(
           context: context,
           child: ConnectClientWidget(sourceType: .emby),
@@ -426,6 +464,10 @@ class _SettingsListState extends State<SettingsList> {
       leading: ImageIcon(cacheImage, size: iconSize),
       title: Text(l10n.clearCache),
       onTap: () async {
+        if (Loader.busy) {
+          showCenterMessage(l10n.syncLibrary);
+          return;
+        }
         if (await showConfirmDialog(context, l10n.clear)) {
           await library.clearCache();
         }

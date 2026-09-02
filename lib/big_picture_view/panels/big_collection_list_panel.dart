@@ -26,7 +26,7 @@ abstract class BigCollectionListPanelState
 
   final scrollController = ScrollController();
 
-  bool firstLoading = true;
+  bool preparing = true;
 
   void updateCurrentList();
 
@@ -39,7 +39,7 @@ abstract class BigCollectionListPanelState
 
   @override
   Widget build(BuildContext context) {
-    if (firstLoading) {
+    if (preparing) {
       return Center(child: CircularProgressIndicator(color: iconColor.value));
     }
     return GridView.builder(

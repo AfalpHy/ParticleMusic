@@ -46,7 +46,7 @@ class _BigRankingAlbumListPanel extends BigCollectionListPanel {
 class _BigRankingAlbumListPanelState extends BigCollectionListPanelState {
   bool _reachEnd = false;
   void _onScroll() async {
-    if (firstLoading | _reachEnd) {
+    if (preparing | _reachEnd) {
       return;
     }
     if (scrollController.position.pixels >=
@@ -58,14 +58,15 @@ class _BigRankingAlbumListPanelState extends BigCollectionListPanelState {
   @override
   void initState() {
     super.initState();
+
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (sourceType == .navidrome && history.rankingAlbumList.isEmpty) {
         _reachEnd = await history.loadAlbums(true) == 0;
       }
-      firstLoading = false;
+      preparing = false;
       updateCurrentList();
     });
-    history.recentlyChangeNotifier.addListener(updateCurrentList);
+    history.rankingChangeNotifier.addListener(updateCurrentList);
     if (sourceType == .navidrome) {
       scrollController.addListener(_onScroll);
     }

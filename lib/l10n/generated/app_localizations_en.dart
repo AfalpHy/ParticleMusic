@@ -669,4 +669,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get menuOnRight => 'Menu on Right';
+
+  @override
+  String get save => 'Save';
 }

@@ -35,7 +35,7 @@ DateTime? _lastShowTime;
 void showCenterMessage(String message, {int duration = 2000}) {
   final now = DateTime.now();
   if (_lastShowTime != null &&
-      now.difference(_lastShowTime!) < const Duration(seconds: 5)) {
+      now.difference(_lastShowTime!) < const Duration(seconds: 2)) {
     return;
   }
   _lastShowTime = now;

@@ -267,5 +267,6 @@
   "offset": "Offset",
   "getStart": "Get Start",
   "immersiveWideLayout": "Immersive for Wide Layout",
-  "menuOnRight": "Menu on Right"
+  "menuOnRight": "Menu on Right",
+  "save": "Save"
 }

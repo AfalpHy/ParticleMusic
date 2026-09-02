@@ -64,7 +64,7 @@ class _PlaylistsLayerState extends CollectionListState {
   void initState() {
     super.initState();
     isListViewNotifier = ValueNotifier(true);
-    firstLoading = false;
+    preparing = false;
     updateCurrentList();
     playlistManager.updateNotifier.addListener(updateCurrentList);
   }

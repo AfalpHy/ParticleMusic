@@ -128,9 +128,9 @@ extension _CollectionListPanel on CollectionListState {
 
   Widget panelGridView() {
     return ListenableBuilder(
-      listenable: Listenable.merge([changeNotifier, Loader.stateNotifier]),
+      listenable: Listenable.merge([changeNotifier]),
       builder: (context, child) {
-        if (firstLoading) {
+        if (preparing) {
           return SliverFillRemaining(
             hasScrollBody: false,
             child: Center(
@@ -144,60 +144,55 @@ extension _CollectionListPanel on CollectionListState {
           sliver: ValueListenableBuilder(
             valueListenable: useLargePictureNotifier,
             builder: (context, useLargePicture, child) {
-              return ValueListenableBuilder(
-                valueListenable: changeNotifier,
-                builder: (context, _, child) {
-                  return SliverGrid.builder(
-                    gridDelegate: MyGirdDelegate(
-                      maxCrossAxisExtent: useLargePicture ? 240 : 120,
-                      crossAxisSpacing: 10,
-                      mainAxisSpacing: 5,
-                      textExtent: 30,
-                    ),
-                    itemCount: currentPictureList.length,
-                    itemBuilder: (context, index) {
-                      final picture = currentPictureList[index];
-                      final text = currentTextList[index];
-                      return LayoutBuilder(
-                        builder: (context, constraints) {
-                          return Column(
-                            children: [
-                              InkWell(
-                                mouseCursor: SystemMouseCursors.click,
-                                focusColor: Colors.transparent,
-                                splashColor: Colors.transparent,
-                                hoverColor: Colors.transparent,
-                                highlightColor: Colors.transparent,
+              return SliverGrid.builder(
+                gridDelegate: MyGirdDelegate(
+                  maxCrossAxisExtent: useLargePicture ? 240 : 120,
+                  crossAxisSpacing: 10,
+                  mainAxisSpacing: 5,
+                  textExtent: 30,
+                ),
+                itemCount: currentPictureList.length,
+                itemBuilder: (context, index) {
+                  final picture = currentPictureList[index];
+                  final text = currentTextList[index];
+                  return LayoutBuilder(
+                    builder: (context, constraints) {
+                      return Column(
+                        children: [
+                          InkWell(
+                            mouseCursor: SystemMouseCursors.click,
+                            focusColor: Colors.transparent,
+                            splashColor: Colors.transparent,
+                            hoverColor: Colors.transparent,
+                            highlightColor: Colors.transparent,
 
-                                child: Hero(
-                                  tag: (picture?.id ?? '') + label + text,
-                                  child: CoverArtWidget(
-                                    size: constraints.maxWidth,
-                                    borderRadius: constraints.maxWidth / 10,
-                                    picture: picture,
-                                  ),
-                                ),
-                                onTap: () {
-                                  currentOnTapList[index].call();
-                                },
+                            child: Hero(
+                              tag: (picture?.id ?? '') + label + text,
+                              child: CoverArtWidget(
+                                size: constraints.maxWidth,
+                                borderRadius: constraints.maxWidth / 10,
+                                picture: picture,
                               ),
-                              SizedBox(height: 5),
+                            ),
+                            onTap: () {
+                              currentOnTapList[index].call();
+                            },
+                          ),
+                          SizedBox(height: 5),
 
-                              SizedBox(
-                                width: constraints.maxWidth - 10,
-                                child: Center(
-                                  child: Text(
-                                    text,
-                                    textAlign: .center,
-                                    style: TextStyle(
-                                      overflow: TextOverflow.ellipsis,
-                                    ),
-                                  ),
+                          SizedBox(
+                            width: constraints.maxWidth - 10,
+                            child: Center(
+                              child: Text(
+                                text,
+                                textAlign: .center,
+                                style: TextStyle(
+                                  overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                            ],
-                          );
-                        },
+                            ),
+                          ),
+                        ],
                       );
                     },
                   );

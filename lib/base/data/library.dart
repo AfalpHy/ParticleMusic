@@ -5,7 +5,6 @@ import 'package:audio_tags_lofty/audio_tags_lofty.dart';
 import 'package:drift/drift.dart';
 import 'package:flutter/foundation.dart';
 import 'package:sylvakru/base/app.dart';
-import 'package:sylvakru/base/data/artist_album.dart';
 import 'package:sylvakru/base/data/database.dart';
 import 'package:sylvakru/base/extensions/metadata_extension.dart';
 import 'package:sylvakru/base/services/logger.dart';
@@ -132,7 +131,6 @@ class Library {
           final song = row.toMetadata();
           id2Song.putIfAbsent(row.id, () => song);
           songList.add(song);
-          artistAlbumManager.processSong(song);
         }
 
         changeNotifier.value++;
@@ -368,7 +366,6 @@ class Library {
           if (song != null) {
             validId.add(id);
             songList.add(song);
-            artistAlbumManager.processSong(song);
             if (validId.length % updateCount == 0) {
               _syncNotify();
             }

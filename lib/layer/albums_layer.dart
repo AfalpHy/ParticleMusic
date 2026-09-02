@@ -35,6 +35,8 @@ class _AlbumsLayerState extends CollectionListState {
 
   @override
   void updateCurrentList() {
+    preparing = false;
+
     final value = textController.text;
     final list = artistAlbumManager.albumList
         .where((e) => (e.name.toLowerCase().contains(value.toLowerCase())))
@@ -72,11 +74,11 @@ class _AlbumsLayerState extends CollectionListState {
     );
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (isStreamSource && artistAlbumManager.albumList.isEmpty) {
+      if (artistAlbumManager.albumList.isNotEmpty) {
+        updateCurrentList();
+      } else if (isStreamSource) {
         reachEnd = await artistAlbumManager.loadAlbums() == 0;
       }
-      firstLoading = false;
-      updateCurrentList();
     });
     artistAlbumManager.updateNotifier.addListener(updateCurrentList);
   }

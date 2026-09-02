@@ -142,12 +142,7 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
             Spacer(),
             ElevatedButton(
               onPressed: () async {
-                if (Loader.busy) {
-                  showCenterMessage(l10n.syncingTryLater);
-                  return;
-                }
-
-                if (!await showConfirmDialog(context, l10n.clear)) {
+                if (!await showConfirmDialog(context, l10n.delete)) {
                   return;
                 }
                 if (widget.sourceType == .webdav) {
@@ -157,12 +152,16 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
                   config.navidromeBaseUrl = null;
                   config.navidromeUsername = null;
                   config.navidromePassword = null;
-                  streamClient = null;
+                  if (sourceType == widget.sourceType) {
+                    streamClient = null;
+                  }
                 } else {
                   config.embyBaseUrl = null;
                   config.embyUsername = null;
                   config.embyPassword = null;
-                  streamClient = null;
+                  if (sourceType == widget.sourceType) {
+                    streamClient = null;
+                  }
                 }
                 if (context.mounted) {
                   Navigator.pop(context);
@@ -176,17 +175,13 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: firstLaunch ? null : value,
               ),
-              child: Text(l10n.clear),
+              child: Text(l10n.delete),
             ),
 
             SizedBox(width: 20),
 
             ElevatedButton(
               onPressed: () async {
-                if (Loader.busy) {
-                  showCenterMessage(l10n.syncingTryLater);
-                  return;
-                }
                 try {
                   if (widget.sourceType == .webdav) {
                     final tmp = webdavClient;
@@ -196,19 +191,24 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
                       password: passwordTmp.text,
                     );
                     if (!await webdavClient!.ping()) {
+                      showCenterMessage('Can not connect to WebDav');
                       webdavClient = tmp;
                       return;
                     }
                   } else if (widget.sourceType == .navidrome) {
                     final tmp = streamClient;
-                    streamClient = NavidromeClient(
+                    final navidromeClient = NavidromeClient(
                       baseUrl: baseUrlTmp.text,
                       username: usernameTmp.text,
                       password: passwordTmp.text,
                     );
-                    if (!await streamClient!.ping()) {
+                    if (!await navidromeClient.ping()) {
+                      showCenterMessage('Can not connect to Navidrome');
                       streamClient = tmp;
                       return;
+                    }
+                    if (widget.sourceType == sourceType) {
+                      streamClient = navidromeClient;
                     }
                     config.navidromeBaseUrl = baseUrlTmp.text;
                     config.navidromeUsername = usernameTmp.text;
@@ -222,10 +222,13 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
                     );
 
                     if (!await embyClient.ping()) {
+                      showCenterMessage('Can not connect to Emby');
                       streamClient = tmp;
                       return;
                     }
-                    streamClient = embyClient;
+                    if (widget.sourceType == sourceType) {
+                      streamClient = embyClient;
+                    }
                     config.embyBaseUrl = baseUrlTmp.text;
                     config.embyUsername = usernameTmp.text;
                     config.embyPassword = passwordTmp.text;
@@ -240,7 +243,7 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
 
                 if (context.mounted) {
                   Navigator.pop(context);
-                  showCenterMessage('Connected successfully');
+                  showCenterMessage('Save successfully');
                 }
                 await config.save();
                 if (widget.sourceType != .webdav &&
@@ -251,7 +254,7 @@ class _ConnectClientWidgetState extends State<ConnectClientWidget> {
               style: ElevatedButton.styleFrom(
                 backgroundColor: firstLaunch ? null : value,
               ),
-              child: Text(l10n.confirm),
+              child: Text(l10n.save),
             ),
             Spacer(),
           ],

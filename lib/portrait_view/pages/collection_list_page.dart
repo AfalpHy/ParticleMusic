@@ -18,13 +18,9 @@ extension _CollectionListPage on CollectionListState {
         actions: [searchField(searchHint), moreButton(context)],
       ),
       body: ListenableBuilder(
-        listenable: Listenable.merge([
-          isListViewNotifier,
-          changeNotifier,
-          Loader.stateNotifier,
-        ]),
+        listenable: Listenable.merge([isListViewNotifier, changeNotifier]),
         builder: (context, child) {
-          if (firstLoading) {
+          if (preparing) {
             return Center(
               child: CircularProgressIndicator(color: iconColor.value),
             );
