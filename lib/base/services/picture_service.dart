@@ -14,6 +14,8 @@ import 'package:sylvakru/base/services/stream_client.dart';
 import 'package:sylvakru/base/services/webdav_client.dart';
 import 'package:sylvakru/base/utils/path.dart';
 
+List<MyPicture> globalPictureList = [];
+
 class MyPicture {
   String id;
   bool isLoaded = false;
@@ -39,6 +41,12 @@ class MyPicture {
     } else {
       isExist = false;
     }
+  }
+
+  factory MyPicture.form(String id, {String? md5Hash}) {
+    final picture = MyPicture(id, md5Hash: md5Hash);
+    globalPictureList.add(picture);
+    return picture;
   }
 
   void reset() {
@@ -85,7 +93,7 @@ Future<void> _loadPicture(MyPicture picture) async {
       if (!await pictureFile.exists()) {
         await pictureFile.create(recursive: true);
       }
-      await pictureFile.writeAsBytes(bytes, flush: true);
+      await pictureFile.writeAsBytes(bytes);
       picture.isExist = true;
     }
   } catch (e) {

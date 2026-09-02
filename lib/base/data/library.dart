@@ -3,11 +3,12 @@ import 'dart:io';
 
 import 'package:audio_tags_lofty/audio_tags_lofty.dart';
 import 'package:drift/drift.dart';
-import 'package:flutter/foundation.dart';
+import 'package:material_ui/material_ui.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/data/database.dart';
 import 'package:sylvakru/base/extensions/metadata_extension.dart';
 import 'package:sylvakru/base/services/logger.dart';
+import 'package:sylvakru/base/services/picture_service.dart';
 import 'package:sylvakru/base/services/stream_client.dart';
 import 'package:sylvakru/base/services/webdav_client.dart';
 import 'package:sylvakru/base/utils/path.dart';
@@ -209,18 +210,25 @@ class Library {
     }
 
     cacheSizeNotifier.value = 0;
+    for (final song in library.id2Song.values) {
+      song.cacheExist = false;
+    }
   }
 
   Future<void> clearPicture() async {
-    for (final song in songList) {
-      song.picture.reset();
-    }
     Directory pictureDir = Directory(getPicturesPath(sourceType));
     if (await pictureDir.exists()) {
       await for (final file in pictureDir.list()) {
         await file.delete();
       }
     }
+    for (final picture in globalPictureList) {
+      picture.reset();
+    }
+
+    final imageCache = PaintingBinding.instance.imageCache;
+    imageCache.clear();
+    imageCache.clearLiveImages();
   }
 
   Future<void> _saveMetadata() async {

@@ -14,6 +14,7 @@ import 'package:sylvakru/base/data/library.dart';
 import 'package:sylvakru/base/data/playlist.dart';
 import 'package:sylvakru/base/data/setting.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:sylvakru/base/services/picture_service.dart';
 import 'package:sylvakru/base/utils/common_utils.dart';
 import 'package:sylvakru/base/utils/path.dart';
 import 'package:sylvakru/layer/layers_manager.dart';
@@ -73,6 +74,9 @@ class Loader {
       layersManager.clearDataLayers();
     }
     audioHandler.justClear();
+
+    globalPictureList = [];
+
     library = Library();
     artistAlbumManager = ArtistAlbumManager();
     history = History();
@@ -87,6 +91,8 @@ class Loader {
     if (viewModeNotifier.value == .normal) {
       layersManager.clearDataLayers();
     }
+
+    globalPictureList = [];
 
     artistAlbumManager = ArtistAlbumManager();
 

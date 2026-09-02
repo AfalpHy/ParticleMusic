@@ -196,7 +196,7 @@ abstract class ArtistAlbumBase {
     id ??= name;
     compareName = PinyinHelper.getPinyinE(name);
     if (isStreamSource) {
-      _picture = MyPicture(coverArtId ?? '');
+      _picture = MyPicture.form(coverArtId ?? '');
     }
   }
 

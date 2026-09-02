@@ -203,7 +203,9 @@ class _ViewEntryState extends State<ViewEntry> with WidgetsBindingObserver {
                     padding: EdgeInsets.only(
                       left: 20,
                       right: 20,
-                      top: MediaQuery.of(context).padding.top == 0 ? 20 : 0,
+                      top: MediaQuery.of(context).padding.top == 0
+                          ? 20
+                          : MediaQuery.of(context).padding.top,
                       bottom: 20,
                     ),
                     sliver: SliverList(

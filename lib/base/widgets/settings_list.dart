@@ -6,6 +6,7 @@ import 'package:material_ui/material_ui.dart';
 import 'package:http/http.dart' as http;
 import 'package:sylvakru/base/audio_handler.dart';
 import 'package:sylvakru/base/data/config.dart';
+import 'package:sylvakru/base/data/playlist.dart';
 import 'package:sylvakru/base/services/color_manager.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/asset_images.dart';
@@ -469,7 +470,12 @@ class _SettingsListState extends State<SettingsList> {
           return;
         }
         if (await showConfirmDialog(context, l10n.clear)) {
+          showCenterLoading();
+          layersManager.clearDataLayers();
           await library.clearCache();
+          await library.clearPicture();
+          playlistManager.updateNotifier.value++;
+          removeCenterLoading();
         }
       },
       trailing: ValueListenableBuilder(
