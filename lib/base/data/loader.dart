@@ -69,7 +69,9 @@ class Loader {
   }
 
   static Future<void> reload() async {
-    layersManager.clearDataLayers();
+    if (viewModeNotifier.value == .normal) {
+      layersManager.clearDataLayers();
+    }
     audioHandler.justClear();
     library = Library();
     artistAlbumManager = ArtistAlbumManager();
@@ -82,7 +84,9 @@ class Loader {
     _busy = true;
     stateNotifier.value++;
 
-    layersManager.clearDataLayers();
+    if (viewModeNotifier.value == .normal) {
+      layersManager.clearDataLayers();
+    }
 
     artistAlbumManager = ArtistAlbumManager();
 

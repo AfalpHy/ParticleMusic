@@ -39,6 +39,7 @@ class _PlaylistsLayerState extends CollectionListState {
 
   @override
   void updateCurrentList() {
+    preparing = false;
     final value = textController.text;
     final list = playlistManager.playlists.where((playlist) {
       return playlist.name.toLowerCase().contains(value.toLowerCase());
@@ -64,7 +65,6 @@ class _PlaylistsLayerState extends CollectionListState {
   void initState() {
     super.initState();
     isListViewNotifier = ValueNotifier(true);
-    preparing = false;
     updateCurrentList();
     playlistManager.updateNotifier.addListener(updateCurrentList);
   }

@@ -65,10 +65,10 @@ class _RankingLayerState extends CollectionListState {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      updateCurrentList();
       if (sourceType == .navidrome && history.rankingAlbumList.isEmpty) {
         reachEnd = await history.loadAlbums(true) == 0;
       }
+      updateCurrentList();
     });
 
     history.rankingChangeNotifier.addListener(updateCurrentList);

@@ -220,14 +220,8 @@ class _TitleBarState extends State<TitleBar> {
               );
               viewModeNotifier.value = .bigPicture;
 
-              WidgetsBinding.instance.addPostFrameCallback((_) async {
-                layersManager.popDetail('artists');
-                layersManager.popDetail('albums');
-                layersManager.popDetail('folders');
-                layersManager.popDetail('ranking');
-                layersManager.popDetail('recently');
-                layersManager.popDetail('playlists');
-                while (await layersManager.popDetail('settings')) {}
+              WidgetsBinding.instance.addPostFrameCallback((_) {
+                layersManager.clearAll();
               });
             },
             icon: ImageIcon(bigPictureModeImage),

@@ -1,6 +1,7 @@
 import 'package:material_ui/material_ui.dart';
 import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/data/artist_album.dart';
+import 'package:sylvakru/base/data/loader.dart';
 import 'package:sylvakru/base/data/setting.dart';
 import 'package:sylvakru/base/services/picture_service.dart';
 import 'package:sylvakru/base/utils/zoom_page_route.dart';
@@ -72,10 +73,12 @@ class _BigAlbumsPanelState extends BigCollectionListPanelState {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      if (artistAlbumManager.albumList.isNotEmpty) {
+      if (artistAlbumManager.albumList.isNotEmpty ||
+          (isNotStreamSource && !Loader.busy)) {
         updateCurrentList();
       } else if (isStreamSource) {
         _reachEnd = await artistAlbumManager.loadAlbums() == 0;
+        updateCurrentList();
       }
     });
     artistAlbumManager.updateNotifier.addListener(updateCurrentList);

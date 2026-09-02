@@ -177,7 +177,7 @@ class _BigPictureViewState extends State<BigPictureView> {
                     }
                     await Future.delayed(Duration(milliseconds: 250));
                     viewModeNotifier.value = .normal;
-                    layersManager.updateBackground();
+                    layersManager.switchRootLayer('songs');
                   },
                   icon: ImageIcon(bigPictureModeImage),
                 ),

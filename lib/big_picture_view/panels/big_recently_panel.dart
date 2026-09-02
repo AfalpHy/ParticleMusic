@@ -59,7 +59,6 @@ class _BigRecentlyAlbumListPanelState extends BigCollectionListPanelState {
       if (sourceType == .navidrome && history.recentlyAlbumList.isEmpty) {
         _reachEnd = await history.loadAlbums(false) == 0;
       }
-      preparing = false;
       updateCurrentList();
     });
     history.recentlyChangeNotifier.addListener(updateCurrentList);
@@ -76,6 +75,7 @@ class _BigRecentlyAlbumListPanelState extends BigCollectionListPanelState {
 
   @override
   void updateCurrentList() {
+    preparing = false;
     final value = textController.text;
     final list = history.recentlyAlbumList
         .where((e) => (e.name.toLowerCase().contains(value.toLowerCase())))

@@ -423,6 +423,26 @@ class LayersManager {
     }
   }
 
+  void clearAll() async {
+    popDetail('artists', executePop: false);
+    popDetail('albums', executePop: false);
+    popDetail('folders', executePop: false);
+    popDetail('ranking', executePop: false);
+    popDetail('recently', executePop: false);
+    popDetail('playlists', executePop: false);
+    while (await layersManager.popDetail('settings')) {}
+
+    layerInfoMap.clear();
+    rootLayerMap.clear();
+    rootPageMap.clear();
+
+    topRootLayer = null;
+    topRootPage = null;
+    bottomRootPage = null;
+
+    switchNotifier.value++;
+  }
+
   void clearDataLayers() {
     popDetail('artists', executePop: false);
     popDetail('albums', executePop: false);

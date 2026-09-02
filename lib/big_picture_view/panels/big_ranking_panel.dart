@@ -58,12 +58,10 @@ class _BigRankingAlbumListPanelState extends BigCollectionListPanelState {
   @override
   void initState() {
     super.initState();
-
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (sourceType == .navidrome && history.rankingAlbumList.isEmpty) {
         _reachEnd = await history.loadAlbums(true) == 0;
       }
-      preparing = false;
       updateCurrentList();
     });
     history.rankingChangeNotifier.addListener(updateCurrentList);
@@ -80,6 +78,7 @@ class _BigRankingAlbumListPanelState extends BigCollectionListPanelState {
 
   @override
   void updateCurrentList() {
+    preparing = false;
     final value = textController.text;
     final list = history.rankingAlbumList
         .where((e) => (e.name.toLowerCase().contains(value.toLowerCase())))

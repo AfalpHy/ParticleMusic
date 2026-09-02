@@ -90,9 +90,11 @@ class History {
   // null: error; 0: end
   Future<int?> loadAlbums(bool isRanking) async {
     if (isRanking && rankingCompleter != null) {
+      rankingChangeNotifier.value++;
       return rankingCompleter!.future;
     }
     if (!isRanking && recentlyCompleter != null) {
+      recentlyChangeNotifier.value++;
       return recentlyCompleter!.future;
     }
 
@@ -113,8 +115,10 @@ class History {
       tmpCompleter.complete(null);
       if (isRanking) {
         rankingCompleter = null;
+        rankingChangeNotifier.value++;
       } else {
         recentlyCompleter = null;
+        recentlyChangeNotifier.value++;
       }
       return null;
     }

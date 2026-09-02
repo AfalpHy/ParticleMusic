@@ -65,10 +65,10 @@ class _RecentlyLayerState extends CollectionListState {
     super.initState();
 
     WidgetsBinding.instance.addPostFrameCallback((_) async {
-      updateCurrentList();
       if (sourceType == .navidrome && history.recentlyAlbumList.isEmpty) {
         reachEnd = await history.loadAlbums(false) == 0;
       }
+      updateCurrentList();
     });
 
     history.recentlyChangeNotifier.addListener(updateCurrentList);

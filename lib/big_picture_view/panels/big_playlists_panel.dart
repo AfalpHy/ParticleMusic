@@ -16,6 +16,7 @@ class BigPlaylistsPanel extends BigCollectionListPanel {
 class _BigPlaylistsPanelState extends BigCollectionListPanelState {
   @override
   void updateCurrentList() {
+    preparing = false;
     final value = textController.text;
     final list = playlistManager.playlists
         .where((e) => (e.name.toLowerCase().contains(value.toLowerCase())))
@@ -52,7 +53,6 @@ class _BigPlaylistsPanelState extends BigCollectionListPanelState {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((timeStamp) {
-      preparing = false;
       updateCurrentList();
     });
     playlistManager.updateNotifier.addListener(updateCurrentList);
