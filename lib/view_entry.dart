@@ -24,7 +24,6 @@ import 'package:sylvakru/landscape_view/landscape_view.dart';
 import 'package:sylvakru/landscape_view/sidebar.dart';
 import 'package:sylvakru/layer/layers_manager.dart';
 import 'package:sylvakru/layer/lyrics_page_layer.dart';
-import 'package:sylvakru/layer/premium_layer.dart';
 import 'package:sylvakru/mini_view/mini_view.dart';
 import 'package:sylvakru/portrait_view/portrait_view.dart';
 
@@ -58,9 +57,6 @@ class _ViewEntryState extends State<ViewEntry> with WidgetsBindingObserver {
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (Platform.isIOS) {
         if (!firstLaunch) {
-          if (trialRemainingMinNotifier.value > 0) {
-            showTrialDialog(context);
-          }
           await Future.delayed(Duration(milliseconds: 500));
           await NativeMenu.init();
         }
@@ -322,9 +318,6 @@ class _ViewEntryState extends State<ViewEntry> with WidgetsBindingObserver {
                               WidgetsBinding.instance.addPostFrameCallback((
                                 _,
                               ) async {
-                                if (trialRemainingMinNotifier.value > 0) {
-                                  showTrialDialog(context);
-                                }
                                 await NativeMenu.init();
                               });
                             }
