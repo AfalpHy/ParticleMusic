@@ -93,7 +93,10 @@ dependencies:
     git:
       url: https://github.com/AfalpHy/rive_animated_icons.git
       ref: main
-  windows_taskbar: ^1.1.2
+  windows_taskbar:
+    git:
+      url: https://github.com/axel10/windows_taskbar.git
+      ref: master
 
   intl: any
   material_ui: any

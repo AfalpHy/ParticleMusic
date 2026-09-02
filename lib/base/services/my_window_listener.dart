@@ -21,6 +21,8 @@ late Size mainSize;
 late Size miniSize;
 late bool mainMaximized;
 
+bool windowIsClosed = false;
+
 class MyWindowListener extends WindowListener {
   late File windowConfigFile;
 
@@ -123,6 +125,7 @@ class MyWindowListener extends WindowListener {
 
   @override
   void onWindowClose() {
+    windowIsClosed = true;
     if (exitOnCloseNotifier.value) {
       exitApp();
     } else {

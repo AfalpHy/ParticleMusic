@@ -5,6 +5,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:media_kit/media_kit.dart';
+import 'package:sylvakru/base/services/my_window_listener.dart';
 import 'package:sylvakru/base/services/picture_service.dart';
 import 'package:sylvakru/base/services/play_queue_logic.dart';
 import 'package:sylvakru/base/services/stream_client.dart';
@@ -155,7 +156,9 @@ class MyAudioHandler extends BaseAudioHandler {
     needPause = false;
     isPlayingNotifier.value = isPlaying;
     if (Platform.isWindows) {
-      setupTaskbar();
+      if (!windowIsClosed) {
+        setupTaskbar();
+      }
     }
   }
 
