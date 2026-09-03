@@ -147,7 +147,7 @@ extension _CollectionListPanel on CollectionListState {
               return SliverGrid.builder(
                 gridDelegate: MyGirdDelegate(
                   maxCrossAxisExtent: useLargePicture ? 240 : 120,
-                  crossAxisSpacing: 10,
+                  crossAxisSpacing: 15,
                   mainAxisSpacing: 5,
                   textExtent: 30,
                 ),
