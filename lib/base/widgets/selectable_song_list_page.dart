@@ -122,6 +122,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
     final l10n = AppLocalizations.of(context);
 
     return MySheet(
+      height: 250,
       Column(
         children: [
           ListTile(title: Text(l10n.select, style: TextStyle(fontSize: 15))),
@@ -156,8 +157,7 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                       l10n.durationDescending,
                     ];
 
-                    if (isLibrary && songList == library.songList ||
-                        folder != null) {
+                    if ((isLibrary && sourceType == .local) || folder != null) {
                       orderText.add(l10n.modifiedTimeAscending);
                       orderText.add(l10n.modifiedTimedescending);
                       orderText.add(l10n.randomizeTemp);
@@ -176,7 +176,6 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                                 updateSongList();
                               },
                               trailing: value == i ? Icon(Icons.check) : null,
-                              dense: true,
                               visualDensity: VisualDensity(
                                 horizontal: 0,
                                 vertical: -4,
@@ -238,6 +237,8 @@ class SelectableSongListPageState extends State<SelectableSongListPage> {
                     : .dark
               : null,
           actions: [
+            // TODO: search libary songs by search3 when
+            // sourceType == navidrome && isLibrary == true
             MySearchField(
               hintText: l10n.searchSongs,
               textController: textController,
