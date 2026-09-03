@@ -303,8 +303,6 @@ class MyAudioHandler extends BaseAudioHandler {
 
     volumeNotifier.value = json['volume'] as double? ?? 0.3;
 
-    playQueueForStreamId = json['playQueueForStreamId'] as String?;
-
     if (!isMobile) {
       setVolume(volumeNotifier.value);
     }
@@ -317,7 +315,6 @@ class MyAudioHandler extends BaseAudioHandler {
         'playMode': playModeNotifier.value,
         'tmpPlayMode': _tmpPlayMode,
         'volume': volumeNotifier.value,
-        'playQueueForStreamId': playQueueForStreamId,
       }),
     );
   }

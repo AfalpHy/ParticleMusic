@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:sylvakru/base/audio_handler.dart';
@@ -53,20 +55,21 @@ abstract class StreamClient {
 
   // use playlist to save playqueue(no limit)
   Future<List<MyAudioMetadata>?> getPlayQueue() async {
-    if (playQueueForStreamId == null) {
-      for (Playlist pl in await getPlaylists() ?? []) {
-        if (pl.name == playQueueForStreamName) {
-          playQueueForStreamId = pl.id;
-          break;
-        }
+    for (Playlist pl in await getPlaylists() ?? []) {
+      if (pl.name == playQueueForStreamName) {
+        // if mutiple instance, chose the latest one
+        playQueueForStreamId = pl.id;
       }
     }
+
     if (playQueueForStreamId == null) {
       return null;
     }
+
     return getPlaylistSongs(playQueueForStreamId!);
   }
 
+  // TODO: add cancel token to interrupt saveing, and start a new saving
   bool _saving = false;
   Future<bool> savePlayQueue(List<String> songIds) async {
     if (_saving) {
@@ -74,12 +77,9 @@ abstract class StreamClient {
     }
     _saving = true;
     if (playQueueForStreamId != null) {
-      if (!await deletePlaylist(playQueueForStreamId!)) {
-        playQueueForStreamId = null;
-        _saving = false;
-        return false;
-      }
+      await deletePlaylist(playQueueForStreamId!);
     }
+
     playQueueForStreamId = await createPlaylist(playQueueForStreamName);
     if (playQueueForStreamId == null) {
       _saving = false;

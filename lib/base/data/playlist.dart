@@ -214,7 +214,7 @@ class Playlist {
 
   Future<void> add(List<MyAudioMetadata> songList) async {
     if (!canModify) {
-      showCenterMessage('Playlist is updating');
+      showCenterMessage('Can not modify, it\'s updating');
       return;
     }
     for (MyAudioMetadata song in songList) {
@@ -233,7 +233,7 @@ class Playlist {
 
   Future<void> remove(List<MyAudioMetadata> songList) async {
     if (!canModify) {
-      showCenterMessage('Playlist is updating');
+      showCenterMessage('Can not modify, it\'s updating');
       return;
     }
     for (MyAudioMetadata song in songList) {
