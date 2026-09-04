@@ -1,3 +1,4 @@
+import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
 import 'dart:typed_data';
@@ -57,11 +58,15 @@ class MyPicture {
   }
 }
 
-Future<void> loadPictureSafe(MyPicture picture) async {
+Future<void> loadPictureSafe(MyPicture picture, {int? widgetId}) async {
   if (picture.isLoaded) {
     return;
   }
-  return pictureLoadScheduler.load(picture.id, () => _loadPicture(picture));
+  return pictureLoadScheduler.load(
+    picture.id,
+    () => _loadPicture(picture),
+    widgetId,
+  );
 }
 
 Future<void> _loadPicture(MyPicture picture) async {

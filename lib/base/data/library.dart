@@ -8,6 +8,7 @@ import 'package:sylvakru/base/app.dart';
 import 'package:sylvakru/base/data/database.dart';
 import 'package:sylvakru/base/extensions/metadata_extension.dart';
 import 'package:sylvakru/base/services/logger.dart';
+import 'package:sylvakru/base/services/picture_load_scheduler.dart';
 import 'package:sylvakru/base/services/picture_service.dart';
 import 'package:sylvakru/base/services/stream_client.dart';
 import 'package:sylvakru/base/services/webdav_client.dart';
@@ -222,6 +223,7 @@ class Library {
         await file.delete();
       }
     }
+    pictureLoadScheduler.clear();
     for (final picture in globalPictureList) {
       picture.reset();
     }
