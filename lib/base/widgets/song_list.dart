@@ -352,7 +352,7 @@ class _SongListState extends State<SongList> {
       if (isStreamSource) {
         if (songList.isEmpty) {
           if (isLibrary) {
-            final songs = await streamClient?.getSongs(100, 0) ?? [];
+            final songs = await streamClient?.getSongs(500, 0) ?? [];
 
             if (!mounted) {
               return;
