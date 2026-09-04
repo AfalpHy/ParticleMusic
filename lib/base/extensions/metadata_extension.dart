@@ -34,8 +34,6 @@ extension MetadataItemMapper on MetadataItem {
       id: id,
       path: path,
 
-      sourceType: sourceType,
-
       modified: modified != null
           ? DateTime.fromMillisecondsSinceEpoch(modified!)
           : null,
@@ -55,8 +53,6 @@ extension MyAudioMetadataMapper on MyAudioMetadata {
       id: id,
 
       modified: Value(modified?.millisecondsSinceEpoch),
-
-      sourceType: sourceType,
 
       format: Value(format),
 

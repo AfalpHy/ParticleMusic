@@ -295,7 +295,7 @@ class _EditMetadataState extends State<EditMetadata> {
           disc: writeDisc,
           lyrics: writeLyrics,
           pictureBytes: writePictureBytes,
-          headers: song.sourceType == .webdav ? webdavClient?.headers : null,
+          headers: sourceType == .webdav ? webdavClient?.headers : null,
         );
       } catch (e) {
         logger.output(e.toString());

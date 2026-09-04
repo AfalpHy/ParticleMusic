@@ -2,7 +2,6 @@ import 'dart:io';
 
 import 'package:drift/drift.dart';
 import 'package:drift/native.dart';
-import 'package:sylvakru/base/app.dart';
 import 'package:path/path.dart' as p;
 import 'package:path_provider/path_provider.dart';
 
@@ -12,8 +11,6 @@ class MetadataItems extends Table {
   TextColumn get id => text()();
 
   IntColumn get modified => integer().nullable()();
-
-  TextColumn get sourceType => textEnum<SourceType>()();
 
   TextColumn get format => text().nullable()();
 
@@ -46,7 +43,7 @@ class MetadataDB extends _$MetadataDB {
   MetadataDB(super.executor);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration {
@@ -57,6 +54,10 @@ class MetadataDB extends _$MetadataDB {
       onUpgrade: (Migrator m, int from, int to) async {
         if (from < 2) {
           await m.addColumn(metadataItems, metadataItems.albumArtist);
+        }
+
+        if (from < 3) {
+          await m.dropColumn(metadataItems, 'source_type');
         }
       },
     );

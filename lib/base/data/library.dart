@@ -170,7 +170,7 @@ class Library {
   }
 
   Future<void> tryAddCache(MyAudioMetadata song) async {
-    if (song.sourceType == .local || song.cacheExist) {
+    if (sourceType == .local || song.cacheExist) {
       return;
     }
     final savePath = song.cachePath!;
@@ -178,7 +178,7 @@ class Library {
     // delay download to prevent it from running at the same time as audio loading
     await Future.delayed(Duration(seconds: 3));
 
-    if (song.sourceType == .webdav) {
+    if (sourceType == .webdav) {
       success =
           await webdavClient?.download(
             remotePath: song.path!,
@@ -331,13 +331,7 @@ class Library {
       }
 
       if (tmp != null) {
-        song = MyAudioMetadata(
-          tmp,
-          id: id,
-          path: path,
-          modified: modified,
-          sourceType: isWebdav ? .webdav : .local,
-        );
+        song = MyAudioMetadata(tmp, id: id, path: path, modified: modified);
       } else {
         song = null;
       }

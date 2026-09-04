@@ -344,7 +344,7 @@ class SongListTile extends StatelessWidget {
                           },
                         ),
 
-                        if (song.sourceType == .local &&
+                        if (sourceType == .local &&
                             artist == null &&
                             album == null)
                           ListTile(

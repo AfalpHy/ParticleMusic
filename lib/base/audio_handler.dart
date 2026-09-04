@@ -5,6 +5,7 @@ import 'package:audio_service/audio_service.dart';
 import 'package:audio_session/audio_session.dart';
 import 'package:material_ui/material_ui.dart';
 import 'package:media_kit/media_kit.dart';
+import 'package:sylvakru/base/data/loader.dart';
 import 'package:sylvakru/base/services/my_window_listener.dart';
 import 'package:sylvakru/base/services/picture_service.dart';
 import 'package:sylvakru/base/services/play_queue_logic.dart';
@@ -87,7 +88,6 @@ class MyAudioHandler extends BaseAudioHandler {
   Timer? _positionTimer;
 
   bool isLoading = false;
-  bool isSyncing = false;
 
   MyAudioHandler() {
     // avoid reading .lrc files
@@ -110,8 +110,9 @@ class MyAudioHandler extends BaseAudioHandler {
 
         bool needPauseTmp = needPause;
 
-        while (isSyncing) {
-          await Future.delayed(Duration(milliseconds: 500));
+        if (Loader.busy) {
+          await pause();
+          return;
         }
         if (playModeNotifier.value == 2) {
           // repeat
@@ -139,11 +140,11 @@ class MyAudioHandler extends BaseAudioHandler {
       layersManager.updateBackground();
     });
 
-    _player.stream.position.listen((position) {
-      if (isLoading || isSyncing) {
-        return;
-      }
-    });
+    // _player.stream.position.listen((position) {
+    //   if (isLoading) {
+    //     return;
+    //   }
+    // });
   }
 
   void updateIsPlaying(bool isPlaying) {
@@ -512,7 +513,6 @@ class MyAudioHandler extends BaseAudioHandler {
   }
 
   Future<void> sync() async {
-    isSyncing = true;
     if (isNotStreamSource) {
       playQueue = getNewQueue(playQueue);
       _playQueueTmp = getNewQueue(_playQueueTmp);
@@ -552,8 +552,6 @@ class MyAudioHandler extends BaseAudioHandler {
         await stop();
       }
     }
-
-    isSyncing = false;
   }
 
   Future<void> _setLyricsAndUpdateColors(MyAudioMetadata song) async {
@@ -617,7 +615,7 @@ class MyAudioHandler extends BaseAudioHandler {
       } else {
         String? resource;
         bool needHeader = false;
-        switch (currentSong.sourceType) {
+        switch (sourceType) {
           case .webdav:
             final tmpPath = await covertToRedirectPathIfNeed(currentSong.path!);
             if (tmpPath == null) {

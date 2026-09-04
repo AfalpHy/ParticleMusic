@@ -305,6 +305,9 @@ class _SettingsListState extends State<SettingsList> {
                             image: getSourceTypeImage(tmp),
                             width: 30,
                             height: 30,
+                            color: tmp == .local || tmp == .webdav
+                                ? iconColor.value
+                                : null,
                           ),
 
                           title: Text(getSourceTypeDisplayName(l10n, tmp)),

@@ -55,11 +55,19 @@ abstract class StreamClient {
 
   // use playlist to save playqueue(no limit)
   Future<List<MyAudioMetadata>?> getPlayQueue() async {
+    final ids = <String>[];
     for (Playlist pl in await getPlaylists() ?? []) {
       if (pl.name == playQueueForStreamName) {
         // if mutiple instance, chose the latest one
         playQueueForStreamId = pl.id;
+        ids.add(pl.id!);
       }
+    }
+    if (ids.isNotEmpty) {
+      ids.removeLast();
+    }
+    for (final id in ids) {
+      await deletePlaylist(id);
     }
 
     if (playQueueForStreamId == null) {
@@ -69,25 +77,31 @@ abstract class StreamClient {
     return getPlaylistSongs(playQueueForStreamId!);
   }
 
-  // TODO: add cancel token to interrupt saveing, and start a new saving
+  Timer? _savePlayQueueTimer;
   bool _saving = false;
   Future<bool> savePlayQueue(List<String> songIds) async {
     if (_saving) {
       return false;
     }
-    _saving = true;
-    if (playQueueForStreamId != null) {
-      await deletePlaylist(playQueueForStreamId!);
-    }
+    _savePlayQueueTimer?.cancel();
+    _savePlayQueueTimer = Timer(Duration(seconds: 5), () async {
+      _saving = true;
 
-    playQueueForStreamId = await createPlaylist(playQueueForStreamName);
-    if (playQueueForStreamId == null) {
+      if (playQueueForStreamId != null) {
+        await deletePlaylist(playQueueForStreamId!);
+        playQueueForStreamId = null;
+      }
+
+      playQueueForStreamId ??= await createPlaylist(playQueueForStreamName);
+      if (playQueueForStreamId == null) {
+        _saving = false;
+        return;
+      }
+      await updatePlaylistSongs(playQueueForStreamId!, songIds);
       _saving = false;
-      return false;
-    }
-    final res = await updatePlaylistSongs(playQueueForStreamId!, songIds);
-    _saving = false;
-    return res;
+    });
+
+    return true;
   }
 
   Future<List<MyAudioMetadata>?> getStarredSongs();

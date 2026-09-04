@@ -18,8 +18,6 @@ class MyAudioMetadata {
   String? path;
   DateTime? modified;
 
-  final SourceType sourceType;
-
   final AudioMetadata _audioMetadata;
 
   late MyPicture picture;
@@ -49,7 +47,6 @@ class MyAudioMetadata {
     this.artistId,
     this.albumId,
     this.modified,
-    this.sourceType = .local,
     this.playCount = 0,
     this.lastPlayed,
   }) {
@@ -122,7 +119,6 @@ class MyAudioMetadata {
                 ? Duration(seconds: song['duration'])
                 : null,
           ),
-          sourceType: sourceType,
           id: song['id'],
           path: song['path'],
           artistId: song['artistId'],
@@ -183,8 +179,6 @@ class MyAudioMetadata {
 
           lyrics: lyricStream?['Extradata'],
         ),
-
-        sourceType: SourceType.emby,
 
         id: song['Id'],
 
