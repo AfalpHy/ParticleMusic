@@ -14,6 +14,7 @@ import 'package:sylvakru/base/data/library.dart';
 import 'package:sylvakru/base/data/playlist.dart';
 import 'package:sylvakru/base/data/setting.dart';
 import 'package:permission_handler/permission_handler.dart';
+import 'package:sylvakru/base/services/picture_load_scheduler.dart';
 import 'package:sylvakru/base/services/picture_service.dart';
 import 'package:sylvakru/base/utils/common_utils.dart';
 import 'package:sylvakru/base/utils/path.dart';
@@ -73,6 +74,7 @@ class Loader {
     if (viewModeNotifier.value == .normal) {
       layersManager.clearDataLayers();
     }
+    pictureLoadScheduler.clear();
     audioHandler.justClear();
 
     globalPictureList = [];

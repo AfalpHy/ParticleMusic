@@ -347,11 +347,10 @@ class _SettingsListState extends State<SettingsList> {
                                 password: config.embyPassword!,
                               );
                             }
-                            config.save();
-
                             setState(() {});
 
                             Loader.reload();
+                            config.save();
                           },
                         ),
                     ],

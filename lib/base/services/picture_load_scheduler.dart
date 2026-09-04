@@ -49,10 +49,17 @@ class PictureLoadScheduler {
 
   // TODO
   void release(String key) {}
+
+  void clear() {
+    _queue.clear();
+    _inFlight.clear();
+    _running = 0;
+  }
 }
 
 class _Task {
   final String key;
   final Future<void> Function() run;
+
   _Task(this.key, this.run);
 }
