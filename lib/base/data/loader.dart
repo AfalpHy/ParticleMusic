@@ -146,8 +146,7 @@ class Loader {
     File tmp = File('${appSupportDir.path}/version.json');
     if (tmp.existsSync()) {
       firstLaunch = false;
-      if (compareVersion(versionNumber, jsonDecode(tmp.readAsStringSync())) >
-          0) {
+      if (compareVersion('4.0.1', jsonDecode(tmp.readAsStringSync())) > 0) {
         File playlistsFile = File(
           "${getPlaylistConfigPath(.local)}/sylvakru_playlists.json",
         );
