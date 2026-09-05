@@ -1,5 +1,7 @@
 import 'dart:async';
 
+import 'package:sylvakru/base/services/picture_service.dart';
+
 PictureLoadScheduler pictureLoadScheduler = PictureLoadScheduler();
 
 class PictureLoadScheduler {
@@ -51,6 +53,11 @@ class PictureLoadScheduler {
 
   void cancel(int widgetId) {
     _needRun.remove(widgetId);
+  }
+
+  void resetPicture(MyPicture picture) {
+    _scheduled.remove(picture.id);
+    _pictureCompleterMap.remove(picture.id);
   }
 
   void clear() {

@@ -510,11 +510,11 @@ extension _SongListPanel on _SongListState {
 
   Widget songListItem(int index) {
     final currentSongList = currentSongListNotifier.value;
-    final isSelected = isSelectedList[index];
     final song = currentSongList[index];
+    final isSelectedNotifier = isSelectedNotifierMap[song]!;
     final showPlayButtonNotifier = showPlayButtonNotifierMap[song]!;
     return ValueListenableBuilder(
-      valueListenable: isSelected,
+      valueListenable: isSelectedNotifier,
       builder: (context, value, child) {
         return ValueListenableBuilder(
           valueListenable: selectedItemColor.valueNotifier,
@@ -618,7 +618,7 @@ extension _SongListPanel on _SongListState {
                 ),
                 onTap: () async {
                   if (ctrlIsPressed) {
-                    isSelected.value = !isSelected.value;
+                    isSelectedNotifier.value = !isSelectedNotifier.value;
                     continuousSelectBeginIndex = index;
                   } else if (shiftIsPressed) {
                     int left = continuousSelectBeginIndex < index
@@ -628,19 +628,20 @@ extension _SongListPanel on _SongListState {
                         ? continuousSelectBeginIndex
                         : index;
 
-                    for (int i = 0; i < isSelectedList.length; i++) {
+                    for (int i = 0; i < currentSongList.length; i++) {
+                      final song = currentSongList[i];
                       if (i < left || i > right) {
-                        isSelectedList[i].value = false;
+                        isSelectedNotifierMap[song]!.value = false;
                       } else {
-                        isSelectedList[i].value = true;
+                        isSelectedNotifierMap[song]!.value = true;
                       }
                     }
                   } else {
                     // clear select
-                    for (var tmp in isSelectedList) {
+                    for (var tmp in isSelectedNotifierMap.values) {
                       tmp.value = false;
                     }
-                    isSelected.value = true;
+                    isSelectedNotifier.value = true;
                     continuousSelectBeginIndex = index;
                   }
 
@@ -747,47 +748,35 @@ extension _SongListPanel on _SongListState {
 
   void popContextMenu(BuildContext context, int index, Offset globalPosition) {
     final currentSongList = currentSongListNotifier.value;
-    final isSelected = isSelectedList[index];
+    final isSelectedNotifier = isSelectedNotifierMap[currentSongList[index]]!;
     // select current and clear others if it's not selected
-    if (!isSelected.value) {
-      for (var tmp in isSelectedList) {
+    if (!isSelectedNotifier.value) {
+      for (var tmp in isSelectedNotifierMap.values) {
         tmp.value = false;
       }
-      isSelected.value = true;
+      isSelectedNotifier.value = true;
       continuousSelectBeginIndex = index;
     }
 
     final selectedSongList = <MyAudioMetadata>[];
 
-    for (int i = 0; i < isSelectedList.length; i++) {
-      if (isSelectedList[i].value) {
-        selectedSongList.add(currentSongList[i]);
+    for (int i = 0; i < currentSongList.length; i++) {
+      final song = currentSongList[i];
+
+      if (isSelectedNotifierMap[song]!.value) {
+        selectedSongList.add(song);
       }
     }
 
     final l10n = AppLocalizations.of(context);
     List<MenuItem> menuItems = [];
 
-    if (selectedSongList.length == 1 &&
-        reorderable &&
-        textController.text.isEmpty &&
-        sortTypeNotifier.value == 0) {
+    if (selectedSongList.length == 1 && reorderable) {
       menuItems.add(
         MenuItem(
           iconData: Icons.vertical_align_top_rounded,
           text: l10n.move2Top,
-          callback: () async {
-            final item = songList.removeAt(index);
-            songList.insert(0, item);
-
-            if (isLibrary) {
-              library.update();
-            } else if (folder != null) {
-              folder!.update();
-            } else {
-              playlist!.update();
-            }
-          },
+          callback: () => moveToTop(index),
         ),
       );
     }

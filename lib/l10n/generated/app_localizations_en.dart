@@ -647,7 +647,7 @@ class AppLocalizationsEn extends AppLocalizations {
   String get immersiveWideLayout => 'Immersive for Wide Layout';
 
   @override
-  String get menuOnRight => 'Menu on Right';
+  String get menuOnRight => 'Open Menu from Right';
 
   @override
   String get save => 'Save';

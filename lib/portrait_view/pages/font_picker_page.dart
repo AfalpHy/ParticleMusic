@@ -35,7 +35,6 @@ extension _FontPickerPage on _FontPickerLayerState {
         MySearchField(
           hintText: AppLocalizations.of(context).searchFonts,
           textController: textController,
-          isSearchNotifier: isSearchNotifier,
         ),
 
         moreButton(context),

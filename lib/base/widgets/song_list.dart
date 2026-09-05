@@ -43,7 +43,6 @@ import 'package:sylvakru/layer/ranking_layer.dart';
 import 'package:sylvakru/layer/recently_layer.dart';
 import 'package:sylvakru/portrait_view/custom_appbar_leading.dart';
 import 'package:sylvakru/portrait_view/my_search_field.dart';
-import 'package:sylvakru/portrait_view/song_list_tile.dart';
 import 'package:text_scroll/text_scroll.dart';
 
 part '../../landscape_view/panels/song_list_panel.dart';
@@ -92,7 +91,6 @@ class _SongListState extends State<SongList> {
   bool isRanking = false;
   bool isRecently = false;
 
-  bool reorderable = false;
   bool canModify = false;
 
   Timer? timer;
@@ -113,15 +111,13 @@ class _SongListState extends State<SongList> {
   ValueNotifier<int> sortTypeNotifier = ValueNotifier(0);
   ValueNotifier<int> changeNotifier = ValueNotifier(0);
 
-  List<ValueNotifier<bool>> isSelectedList = [];
-  bool isFixed = false;
+  Map<MyAudioMetadata, ValueNotifier<bool>> isSelectedNotifierMap = {};
+
   int continuousSelectBeginIndex = 0;
 
   final showPlayButtonNotifierMap = <MyAudioMetadata, ValueNotifier<bool>>{};
 
   final padding = const EdgeInsets.symmetric(horizontal: 30);
-
-  final isSearchNotifier = ValueNotifier(false);
 
   ValueNotifier<bool>? rootVisibleNotifier;
   Function()? backToRoot;
@@ -131,6 +127,16 @@ class _SongListState extends State<SongList> {
   String rootLabel = '';
 
   bool firstLoading = false;
+
+  bool get reorderable {
+    return searchValue.isEmpty &&
+        sortTypeNotifier.value == 0 &&
+        (playlist != null ||
+            folder != null ||
+            (isLibrary && isNotStreamSource));
+  }
+
+  bool get isFixed => isMobile || !reorderable;
 
   void updateHideOthers() {
     setState(() {
@@ -176,6 +182,14 @@ class _SongListState extends State<SongList> {
     return null;
   }
 
+  void resetSelectedAndUpdateSongList() {
+    continuousSelectBeginIndex = 0;
+    for (final tmp in isSelectedNotifierMap.values) {
+      tmp.value = false;
+    }
+    updateSongList();
+  }
+
   void updateSongList() {
     firstLoading = false;
 
@@ -183,21 +197,10 @@ class _SongListState extends State<SongList> {
       searchValue.isEmpty ? songList : tmpSongList,
     );
 
-    isSelectedList = List.generate(
-      currentSongList.length,
-      (_) => ValueNotifier(false),
-    );
-    isFixed =
-        isMobile ||
-        !reorderable ||
-        searchValue.isNotEmpty ||
-        sortTypeNotifier.value > 0;
-
-    continuousSelectBeginIndex = 0;
-
     showPlayButtonNotifierMap.clear();
     for (var e in currentSongList) {
       showPlayButtonNotifierMap[e] = ValueNotifier(false);
+      isSelectedNotifierMap.putIfAbsent(e, () => ValueNotifier(false));
     }
 
     if (playlist != null) {
@@ -226,7 +229,7 @@ class _SongListState extends State<SongList> {
         }
       }
       _reachEnd = false;
-      updateSongList();
+      resetSelectedAndUpdateSongList();
     });
   }
 
@@ -287,7 +290,6 @@ class _SongListState extends State<SongList> {
       songList = playlist!.songList;
       sortTypeNotifier = playlist!.sortTypeNotifier;
       changeNotifier = playlist!.changeNotifier;
-      reorderable = true;
       if (!widget.isRoot) {
         rootVisibleNotifier = playlistsVisibleNotifier;
         backToRoot = () {
@@ -323,7 +325,6 @@ class _SongListState extends State<SongList> {
       songList = folder!.songList;
       sortTypeNotifier = folder!.sortTypeNotifier;
       changeNotifier = folder!.changeNotifier;
-      reorderable = true;
       rootVisibleNotifier = foldersVisibleNotifier;
       backToRoot = () {
         layersManager.popDetail('folders');
@@ -339,7 +340,6 @@ class _SongListState extends State<SongList> {
       isLibrary = true;
       songList = library.songList;
       library.changeNotifier.addListener(updateSongList);
-      reorderable = isNotStreamSource;
       if (isStreamSource) {
         scrollController.addListener(_onScroll);
       }
@@ -375,7 +375,7 @@ class _SongListState extends State<SongList> {
       updateSongList();
     });
 
-    sortTypeNotifier.addListener(updateSongList);
+    sortTypeNotifier.addListener(resetSelectedAndUpdateSongList);
     changeNotifier.addListener(updateSongList);
     textController.addListener(startNewSearchIfNeed);
   }
@@ -384,7 +384,7 @@ class _SongListState extends State<SongList> {
   void dispose() {
     rootVisibleNotifier?.removeListener(updateHideOthers);
 
-    sortTypeNotifier.removeListener(updateSongList);
+    sortTypeNotifier.removeListener(resetSelectedAndUpdateSongList);
     changeNotifier.removeListener(updateSongList);
     textController.removeListener(startNewSearchIfNeed);
     scrollController.dispose();
@@ -439,6 +439,19 @@ class _SongListState extends State<SongList> {
         );
       },
     );
+  }
+
+  void moveToTop(int index) {
+    final item = songList.removeAt(index);
+    songList.insert(0, item);
+
+    if (isLibrary) {
+      library.update();
+    } else if (folder != null) {
+      folder!.update();
+    } else {
+      playlist!.update();
+    }
   }
 
   @override

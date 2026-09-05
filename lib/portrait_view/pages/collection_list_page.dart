@@ -38,7 +38,6 @@ extension _CollectionListPage on CollectionListState {
       hintText: hintText,
       textController: textController,
       onSearchTextChanged: updateCurrentList,
-      isSearchNotifier: isSearchNotifier,
     );
   }
 

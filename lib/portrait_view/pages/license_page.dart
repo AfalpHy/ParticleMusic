@@ -26,7 +26,6 @@ extension _LicensePage on _LicenseLayerState {
         MySearchField(
           hintText: AppLocalizations.of(context).searchLicenses,
           textController: textController,
-          isSearchNotifier: isSearchNotifier,
         ),
       ],
     );

@@ -1331,7 +1331,7 @@ abstract class AppLocalizations {
   /// No description provided for @menuOnRight.
   ///
   /// In en, this message translates to:
-  /// **'Menu on Right'**
+  /// **'Open Menu from Right'**
   String get menuOnRight;
 
   /// No description provided for @save.

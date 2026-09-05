@@ -11,13 +11,11 @@ class MySearchField extends StatefulWidget {
   final void Function()? onSearchTextChanged;
 
   final bool useCurrentSong;
-  final ValueNotifier<bool> isSearchNotifier;
 
   const MySearchField({
     super.key,
     required this.hintText,
     required this.textController,
-    required this.isSearchNotifier,
     this.onSearchTextChanged,
     this.useCurrentSong = true,
   });
@@ -28,6 +26,7 @@ class MySearchField extends StatefulWidget {
 
 class _MySearchFieldState extends State<MySearchField> {
   final focusNode = FocusNode();
+  final isSearchNotifier = ValueNotifier(false);
 
   @override
   void initState() {
@@ -46,12 +45,12 @@ class _MySearchFieldState extends State<MySearchField> {
   @override
   Widget build(BuildContext context) {
     return ValueListenableBuilder<bool>(
-      valueListenable: widget.isSearchNotifier,
+      valueListenable: isSearchNotifier,
       builder: (context, value, child) {
         if (!value) {
           return IconButton(
             onPressed: () {
-              widget.isSearchNotifier.value = true;
+              isSearchNotifier.value = true;
               WidgetsBinding.instance.addPostFrameCallback((_) {
                 focusNode.requestFocus();
               });
@@ -83,7 +82,7 @@ class _MySearchFieldState extends State<MySearchField> {
                       prefixIcon: Icon(Icons.search),
                       suffixIcon: IconButton(
                         onPressed: () {
-                          widget.isSearchNotifier.value = false;
+                          isSearchNotifier.value = false;
                           widget.textController.clear();
                           FocusScope.of(context).unfocus();
                           widget.onSearchTextChanged?.call();

@@ -40,8 +40,6 @@ abstract class CollectionListState extends State<CollectionList> {
   ValueNotifier<bool>? isAscendingNotifier;
   ValueNotifier<bool> useLargePictureNotifier = ValueNotifier(false);
 
-  final isSearchNotifier = ValueNotifier(false);
-
   final changeNotifier = ValueNotifier(0);
 
   ValueNotifier<bool>? isListViewNotifier;

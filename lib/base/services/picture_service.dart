@@ -55,6 +55,7 @@ class MyPicture {
     isExist = false;
     color = null;
     lowerLuminance = null;
+    pictureLoadScheduler.resetPicture(this);
   }
 }
 
