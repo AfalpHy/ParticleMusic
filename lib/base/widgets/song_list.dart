@@ -108,6 +108,8 @@ class _SongListState extends State<SongList> {
 
   String get searchValue => textController.text;
 
+  bool isSearching = false;
+
   ValueNotifier<int> sortTypeNotifier = ValueNotifier(0);
   ValueNotifier<int> changeNotifier = ValueNotifier(0);
 
@@ -126,7 +128,7 @@ class _SongListState extends State<SongList> {
 
   String rootLabel = '';
 
-  bool firstLoading = false;
+  bool prepareing = true;
 
   bool get reorderable {
     return searchValue.isEmpty &&
@@ -191,7 +193,7 @@ class _SongListState extends State<SongList> {
   }
 
   void updateSongList() {
-    firstLoading = false;
+    prepareing = false;
 
     final currentSongList = List<MyAudioMetadata>.from(
       searchValue.isEmpty ? songList : tmpSongList,
@@ -215,6 +217,9 @@ class _SongListState extends State<SongList> {
   }
 
   void startNewSearchIfNeed() {
+    if (prepareing) {
+      return;
+    }
     searchTimer?.cancel();
     searchTimer = Timer(Duration(milliseconds: 300), () async {
       if (searchValue.isNotEmpty) {
@@ -236,7 +241,7 @@ class _SongListState extends State<SongList> {
   bool _isLoadingMoreData = false;
   bool _reachEnd = false;
   void _onScroll() async {
-    if (firstLoading | _isLoadingMoreData | _reachEnd) {
+    if (prepareing | _isLoadingMoreData | _reachEnd) {
       return;
     }
     _isLoadingMoreData = true;
@@ -347,7 +352,6 @@ class _SongListState extends State<SongList> {
 
     rootVisibleNotifier?.addListener(updateHideOthers);
 
-    firstLoading = true;
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (isStreamSource) {
         if (songList.isEmpty) {

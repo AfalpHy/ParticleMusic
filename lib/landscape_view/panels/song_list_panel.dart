@@ -68,7 +68,7 @@ extension _SongListPanel on _SongListState {
           sliver: ValueListenableBuilder(
             valueListenable: currentSongListNotifier,
             builder: (context, currentSongList, child) {
-              if (firstLoading) {
+              if (prepareing) {
                 return SliverFillRemaining(
                   hasScrollBody: false,
                   child: Center(

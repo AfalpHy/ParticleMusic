@@ -353,7 +353,7 @@ extension _SongListPage on _SongListState {
         ValueListenableBuilder(
           valueListenable: currentSongListNotifier,
           builder: (context, currentSongList, child) {
-            if (firstLoading) {
+            if (prepareing) {
               return SliverFillRemaining(
                 hasScrollBody: false,
                 child: Center(

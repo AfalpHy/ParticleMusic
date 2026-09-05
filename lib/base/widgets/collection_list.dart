@@ -72,12 +72,19 @@ abstract class CollectionListState extends State<CollectionList> {
     }
   }
 
+  void onSearch() {
+    if (preparing) {
+      return;
+    }
+    updateCurrentList();
+  }
+
   @override
   void initState() {
     super.initState();
 
     isAscendingNotifier?.addListener(updateCurrentList);
-    textController.addListener(updateCurrentList);
+    textController.addListener(onSearch);
     scrollController.addListener(_onScroll);
   }
 
