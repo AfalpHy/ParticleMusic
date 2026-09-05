@@ -242,7 +242,9 @@ class MyAudioHandler extends BaseAudioHandler {
     } else {
       playQueue.clear();
       playQueue = await streamClient?.getPlayQueue() ?? [];
-      _playQueueTmp = List.from(playQueue);
+      if (playModeNotifier.value == 1) {
+        _playQueueTmp = List.from(playQueue);
+      }
     }
   }
 
@@ -442,21 +444,6 @@ class MyAudioHandler extends BaseAudioHandler {
     }
 
     savePlayState();
-  }
-
-  void switchPlayMode() {
-    int playMode = playModeNotifier.value;
-    playMode += 1;
-    playMode %= 2;
-    playModeNotifier.value = playMode;
-    if (playMode == 0) {
-      playQueue = List.from(_playQueueTmp);
-      _playQueueTmp = [];
-      currentIndex = playQueue.indexOf(currentSongNotifier.value!);
-    } else if (playMode == 1) {
-      shuffle();
-    }
-    saveAllStates();
   }
 
   void toggleRepeat() {
