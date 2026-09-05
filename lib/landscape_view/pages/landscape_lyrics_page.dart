@@ -44,6 +44,12 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
     immersiveModeTimer = Timer(const Duration(milliseconds: 5000), () {
       immersiveModeNotifier.value = true;
     });
+    final mediaQueryData = MediaQuery.of(context);
+    final pageWidth = mediaQueryData.size.width;
+    final pageHight =
+        mediaQueryData.size.height -
+        mediaQueryData.padding.top -
+        mediaQueryData.padding.bottom;
     return ValueListenableBuilder(
       valueListenable: immersiveModeNotifier,
       builder: (context, value, child) {
@@ -60,17 +66,15 @@ class _LandscapeLyricsPageState extends State<LandscapeLyricsPage> {
         );
       },
       child: immersiveWideLayoutNotifier.value
-          ? content()
-          : SafeArea(child: content()),
+          ? content(pageWidth, pageHight)
+          : SafeArea(child: content(pageWidth, pageHight)),
     );
   }
 
-  Widget content() {
+  Widget content(double pageWidth, double pageHight) {
     return ValueListenableBuilder(
       valueListenable: currentSongNotifier,
       builder: (context, currentSong, child) {
-        final pageWidth = MediaQuery.widthOf(context);
-        final pageHight = MediaQuery.heightOf(context);
         final coverArtSize = min(
           pageWidth * (isMobile ? 0.35 : 0.3),
           pageHight * (isMobile ? 0.7 : 0.6),

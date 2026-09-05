@@ -19,6 +19,8 @@ void applySystemUiMode({SystemUiMode? mode, bool forceApply = false}) {
       overlays: [SystemUiOverlay.top],
     );
   } else {
-    SystemChrome.setEnabledSystemUIMode(_appliedUiMode!);
+    if (_appliedUiMode != null) {
+      SystemChrome.setEnabledSystemUIMode(_appliedUiMode!);
+    }
   }
 }
