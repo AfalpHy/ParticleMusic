@@ -730,6 +730,7 @@ extension _SongListPanel on _SongListState {
                 ? IconButton(
                     onPressed: () {
                       audioHandler.singlePlay(song);
+                      audioHandler.saveAllStates();
                     },
                     icon: Icon(Icons.play_arrow_rounded),
                   )
