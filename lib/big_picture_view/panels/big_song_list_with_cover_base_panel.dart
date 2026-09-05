@@ -47,13 +47,22 @@ abstract class BigSongListWithCoverBasePanelState<
   Folder? folder;
   Playlist? playlist;
 
+  Map<MyAudioMetadata, ValueNotifier<bool>> isSelectedNotifierMap = {};
+
+  final songListChangeNotifer = ValueNotifier(0);
+
   void updateSongList() async {
     baseColor = await computeColor(getFirstSong(songList)?.picture);
     colorManager.updateBigPictureRelatedColors(getFirstSong(songList)?.picture);
+    for (var e in songList) {
+      isSelectedNotifierMap.putIfAbsent(e, () => ValueNotifier(false));
+    }
     if (!mounted) {
       return;
     }
-    setState(() {});
+    setState(() {
+      songListChangeNotifer.value++;
+    });
   }
 
   @override
@@ -64,6 +73,9 @@ abstract class BigSongListWithCoverBasePanelState<
       colorManager.updateBigPictureRelatedColors(
         getFirstSong(songList)?.picture,
       );
+      for (var e in songList) {
+        isSelectedNotifierMap.putIfAbsent(e, () => ValueNotifier(false));
+      }
     });
     super.initState();
   }
@@ -144,13 +156,22 @@ abstract class BigSongListWithCoverBasePanelState<
                     ),
                     IconButton(
                       onPressed: () {
+                        for (var e in isSelectedNotifierMap.values) {
+                          e.value = false;
+                        }
                         Navigator.of(context).push(
                           ZoomPageRoute(
-                            builder: (_) => SelectableSongListPage(
-                              songList: songList,
-                              reorderable: true,
-                              folder: folder,
-                              playlist: playlist,
+                            builder: (_) => ValueListenableBuilder(
+                              valueListenable: songListChangeNotifer,
+                              builder: (context, value, child) {
+                                return SelectableSongListPage(
+                                  songList: songList,
+                                  reorderable: true,
+                                  folder: folder,
+                                  playlist: playlist,
+                                  isSelectedNotifierMap: isSelectedNotifierMap,
+                                );
+                              },
                             ),
                           ),
                         );

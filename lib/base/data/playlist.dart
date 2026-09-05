@@ -248,8 +248,13 @@ class Playlist {
   }
 
   Future<void> update() async {
+    if (!canModify) {
+      showCenterMessage('Can not modify, it\'s updating');
+      return;
+    }
     canModify = false;
     changeNotifier.value++;
+    playlistManager.updateNotifier.value++;
     layersManager.updateBackground();
 
     final songIds = songList.map((e) => e.id).toList();
@@ -262,7 +267,9 @@ class Playlist {
         success =
             await streamClient?.updatePlaylistSongs(id!, songIds) ?? false;
       }
-      showCenterMessage('Update playlist ${success ? 'success' : 'failed'}');
+      if (!success) {
+        showCenterMessage('Update playlist failed');
+      }
     }
     canModify = true;
     changeNotifier.value++;

@@ -168,6 +168,11 @@ class _BigSingleArtistPanelState extends State<BigSingleArtistPanel> {
                                 builder: (_) => SelectableSongListPage(
                                   songList: widget.artist.songList,
                                   reorderable: false,
+                                  isSelectedNotifierMap: Map.fromEntries(
+                                    widget.artist.songList.map(
+                                      (e) => MapEntry(e, ValueNotifier(false)),
+                                    ),
+                                  ),
                                 ),
                               ),
                             );

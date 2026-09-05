@@ -444,18 +444,17 @@ class Sidebar extends StatelessWidget {
             label: '_${playlist.name}',
             leading: ValueListenableBuilder(
               valueListenable: playlist.changeNotifier,
-              builder: (_, _, _) {
+              builder: (context, value, child) {
                 final coverSong = playlist.getCoverSong();
-                if (coverSong == null) {
-                  return CoverArtWidget(size: 30, borderRadius: 3);
-                }
-                return ValueListenableBuilder(
-                  valueListenable: coverSong.updateNotifier,
-                  builder: (_, _, _) {
+                return ListenableBuilder(
+                  listenable: Listenable.merge([
+                    coverSong?.picture.changeNotifier,
+                  ]),
+                  builder: (_, _) {
                     return CoverArtWidget(
                       size: 30,
                       borderRadius: 3,
-                      picture: coverSong.picture,
+                      picture: coverSong?.picture,
                     );
                   },
                 );

@@ -396,6 +396,11 @@ class _BigSingleAlbumPanelState extends State<BigSingleAlbumPanel> {
                   builder: (_) => SelectableSongListPage(
                     songList: currentSongList,
                     reorderable: false,
+                    isSelectedNotifierMap: Map.fromEntries(
+                      currentSongList.map(
+                        (e) => MapEntry(e, ValueNotifier(false)),
+                      ),
+                    ),
                   ),
                 ),
               );

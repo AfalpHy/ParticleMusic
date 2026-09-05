@@ -203,19 +203,31 @@ extension _SongListPanel on _SongListState {
                               SizedBox(width: 15),
                               ElevatedButton(
                                 onPressed: () {
+                                  for (var e in isSelectedNotifierMap.values) {
+                                    e.value = false;
+                                  }
                                   Navigator.of(
                                     context,
                                     rootNavigator: true,
                                   ).push(
                                     MaterialPageRoute(
-                                      builder: (_) => SelectableSongListPage(
-                                        songList: songList,
-                                        playlist: playlist,
-                                        folder: folder,
-                                        isRanking: isRanking,
-                                        isRecently: isRecently,
-                                        isLibrary: isLibrary,
-                                        reorderable: reorderable,
+                                      builder: (_) => ValueListenableBuilder(
+                                        valueListenable:
+                                            currentSongListNotifier,
+                                        builder:
+                                            (context, currentSongList, child) {
+                                              return SelectableSongListPage(
+                                                songList: currentSongList,
+                                                playlist: playlist,
+                                                folder: folder,
+                                                isRanking: isRanking,
+                                                isRecently: isRecently,
+                                                isLibrary: isLibrary,
+                                                reorderable: reorderable,
+                                                isSelectedNotifierMap:
+                                                    isSelectedNotifierMap,
+                                              );
+                                            },
                                       ),
                                     ),
                                   );

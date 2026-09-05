@@ -1134,6 +1134,11 @@ void showSongListOptions(BuildContext context, List<MyAudioMetadata> songList) {
                         builder: (_) => SelectableSongListPage(
                           songList: songList,
                           reorderable: false,
+                          isSelectedNotifierMap: Map.fromEntries(
+                            songList.map(
+                              (e) => MapEntry(e, ValueNotifier(false)),
+                            ),
+                          ),
                         ),
                       ),
                     );

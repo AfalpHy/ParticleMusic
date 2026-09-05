@@ -101,16 +101,25 @@ extension _SongListPage on _SongListState {
             visualDensity: const VisualDensity(horizontal: 0, vertical: -4),
             onTap: () {
               Navigator.pop(context);
+              for (var e in isSelectedNotifierMap.values) {
+                e.value = false;
+              }
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (_) => SelectableSongListPage(
-                    songList: songList,
-                    playlist: playlist,
-                    folder: folder,
-                    isRanking: isRanking,
-                    isRecently: isRecently,
-                    isLibrary: isLibrary,
-                    reorderable: reorderable,
+                  builder: (_) => ValueListenableBuilder(
+                    valueListenable: currentSongListNotifier,
+                    builder: (context, currentSongList, child) {
+                      return SelectableSongListPage(
+                        songList: currentSongList,
+                        playlist: playlist,
+                        folder: folder,
+                        isRanking: isRanking,
+                        isRecently: isRecently,
+                        isLibrary: isLibrary,
+                        reorderable: reorderable,
+                        isSelectedNotifierMap: isSelectedNotifierMap,
+                      );
+                    },
                   ),
                 ),
               );
