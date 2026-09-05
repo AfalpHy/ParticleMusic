@@ -160,30 +160,32 @@ Future<Color> _calculateAverageColor(Uint8List bytes) async {
     return _calculateWithImagePackage(bytes);
   }
 
-  ui.Codec codec;
+  Uint8List buffer = Uint8List(0);
+  ui.Codec? codec;
   try {
     codec = await ui.instantiateImageCodec(
       bytes,
       targetWidth: 20,
       targetHeight: 20,
     );
+    final frameInfo = await codec.getNextFrame();
+    final image = frameInfo.image;
+
+    final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
+
+    image.dispose();
+
+    if (byteData == null) {
+      return Colors.grey;
+    }
+
+    buffer = byteData.buffer.asUint8List();
   } catch (e) {
     logger.output(e.toString());
     return Colors.grey;
+  } finally {
+    codec?.dispose();
   }
-
-  final frameInfo = await codec.getNextFrame();
-  final image = frameInfo.image;
-
-  final byteData = await image.toByteData(format: ui.ImageByteFormat.rawRgba);
-
-  image.dispose();
-
-  if (byteData == null) {
-    return Colors.grey;
-  }
-
-  final buffer = byteData.buffer.asUint8List();
 
   double r = 0;
   double g = 0;
